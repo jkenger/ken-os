@@ -1,0 +1,16 @@
+{
+  "name": "ken-os",
+  "private": true,
+  "packageManager": "pnpm@11.19.0",
+  "scripts": {
+    "dev": "pnpm --filter @ken-os/web dev",
+    "build": "pnpm --filter @ken-os/web build",
+    "check": "pnpm --filter @ken-os/web check",
+    "test": "pnpm --filter @ken-os/web test",
+    "test:db": "pnpm --filter @ken-os/web test:db",
+    "db:generate": "pnpm --filter @ken-os/web db:generate",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "db:migrate": "pnpm --filter @ken-os/web db:migrate"
+  }
+}

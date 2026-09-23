@@ -1,0 +1,8 @@
+{
+  "name": "@ken-os/agents",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "exports": { ".": "./src/index.ts" },
+  "dependencies": { "@openai/agents": "latest", "zod": "^4.0.0" }
+}
