@@ -37,6 +37,23 @@ export async function listSkills(userId: string): Promise<StoredSkill[]> {
   }));
 }
 
+export async function getSkill(userId: string, id: string): Promise<StoredSkill | null> {
+  const rows = await db().select().from(skills)
+    .where(and(eq(skills.userId, userId), eq(skills.id, id))).limit(1);
+  const row = rows[0];
+  if (!row) return null;
+  return {
+    id: row.id,
+    slug: row.slug,
+    name: row.name,
+    description: row.description,
+    version: row.version,
+    files: row.files,
+    enabled: row.enabled,
+    createdAt: row.createdAt.toISOString(),
+  };
+}
+
 export async function saveSkill(userId: string, bundle: ParsedSkillBundle): Promise<string> {
   return db().transaction(async (transaction) => {
     await transaction.execute(sql`SELECT pg_advisory_xact_lock(hashtext(${`${userId}:${bundle.slug}`}))`);

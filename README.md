@@ -9,7 +9,7 @@ A private, hosted developer workspace. The first module keeps one canonical resu
 - Persistent canonical resume selection by Drive file ID
 - Live metadata refresh, preview, and download
 - Read-only resume assistant for Google Docs files
-- Private Skills library: upload Markdown skill bundles, review versions, and enable them for the resume assistant
+- Private Skills library: upload Markdown skill bundles, review versions, export source or ZIP, and enable them for the resume assistant
 
 See [the product brief](docs/product/brief.md) and [architecture](docs/architecture/overview.md).
 
@@ -27,6 +27,10 @@ The proposed [one-app starter standard](docs/architecture/starter-standard.md) a
 The Google OAuth consent screen may need your email added as a test user while the application is in testing mode.
 
 After signing in, open `/skills` to upload `SKILL.md` or a ZIP containing one top-level skill folder with `SKILL.md` and optional Markdown files under `references/`. Review the saved files, then enable a version for the resume assistant. Uploads do not execute scripts or grant the assistant new permissions.
+
+## Verification
+
+Run `pnpm check`, `pnpm test`, and `pnpm build` before release. The tests cover skill ZIP round-tripping and the selected Drive file's latest metadata/content behavior without calling Google. `pnpm test:db` checks skill versioning and owner isolation; `pnpm test:db:resume` checks that a metadata refresh keeps the selected Drive ID. Both database checks refuse non-local URLs. After a production deploy, check the resume flow in the browser and inspect Vercel runtime logs for errors. Do not run tests against the owner's live resume.
 
 ## Hosting
 

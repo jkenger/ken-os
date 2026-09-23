@@ -5,7 +5,7 @@ import { eq } from "drizzle-orm";
 import { closeDb, db } from "../src/lib/db";
 import { users } from "../src/lib/schema";
 import { parseSkillBundle } from "../src/lib/skill-bundle";
-import { getEnabledSkills, listSkills, saveSkill, setSkillEnabled } from "../src/lib/skills";
+import { getEnabledSkills, getSkill, listSkills, saveSkill, setSkillEnabled } from "../src/lib/skills";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
@@ -22,6 +22,8 @@ async function main() {
     const id = await saveSkill(userId, bundle);
     assert.equal(await saveSkill(userId, bundle), id);
     assert.equal((await listSkills(userId)).length, 1);
+    assert.equal((await getSkill(userId, id))?.files["SKILL.md"], bundle.files["SKILL.md"]);
+    assert.equal(await getSkill("another-user", id), null);
     await setSkillEnabled(userId, id, true);
     assert.equal((await getEnabledSkills(userId))[0]?.slug, "local-test");
     const revision = await parseSkillBundle("SKILL.md", Buffer.from("---\nname: local-test\ndescription: A local test skill.\n---\n\nCheck the resume carefully."));

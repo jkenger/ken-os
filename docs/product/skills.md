@@ -28,11 +28,11 @@ The owner uploads `SKILL.md` or a ZIP containing `SKILL.md` and Markdown files u
 
 ## Later
 
-### Next increment: portable export
+### Portable export (implemented)
 
-- Add `Copy SKILL.md`, `Download SKILL.md`, and `Export ZIP` to a selected immutable version. The ZIP contains one top-level skill folder, its `SKILL.md`, and the supported Markdown references; it should round-trip through the current importer without changing the digest or content.
-- Present the version and file list before export. Do not include secrets, connection tokens, or generated runtime context. An export is a copy of stored source, not a claim that another agent or product will execute it identically.
-- Keep version assignment separate from export. Disabling a skill for the resume agent does not remove the source or prevent its owner from exporting it.
+- `Copy SKILL.md`, `Download SKILL.md`, and `Export ZIP` are available for each immutable version. The ZIP contains one top-level skill folder, its `SKILL.md`, and supported Markdown references; a round-trip test verifies unchanged content and digest.
+- The version and file list appear before export. Exports copy stored source only, without connection tokens or generated runtime context. They do not guarantee identical behavior in another agent or product.
+- Assignment remains separate from export. Disabling a skill for the resume agent does not remove the source or prevent its owner from exporting it.
 
 ### Assignment and installation scopes
 

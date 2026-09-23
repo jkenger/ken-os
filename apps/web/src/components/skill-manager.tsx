@@ -10,6 +10,16 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [copyStatus, setCopyStatus] = useState<{ id: string; message: string } | null>(null);
+
+  async function copyManifest(skill: StoredSkill) {
+    try {
+      await navigator.clipboard.writeText(skill.files["SKILL.md"]);
+      setCopyStatus({ id: skill.id, message: `Copied ${skill.name} v${skill.version} SKILL.md.` });
+    } catch {
+      setCopyStatus({ id: skill.id, message: "Could not copy. Download SKILL.md instead." });
+    }
+  }
 
   async function upload(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -79,7 +89,20 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
             <p>{skill.description}</p>
             <p className="skill-note">{Object.keys(skill.files).length} Markdown file{Object.keys(skill.files).length === 1 ? "" : "s"} · Uploaded {new Date(skill.createdAt).toLocaleDateString()}</p>
             <div className="skill-actions">
-              <details><summary>Review files</summary><div className="skill-files">{Object.entries(skill.files).map(([path, content]) => <details key={path}><summary>{path}</summary><pre>{content}</pre></details>)}</div></details>
+              <details className="skill-export-panel">
+                <summary>Review &amp; export</summary>
+                <div className="skill-files">
+                  <p className="skill-note">Exporting {skill.name} v{skill.version}. This is a copy of the stored source; it does not change which version is enabled.</p>
+                  <ul>{Object.keys(skill.files).sort().map((path) => <li key={path}>{path}</li>)}</ul>
+                  {Object.entries(skill.files).sort(([left], [right]) => left.localeCompare(right)).map(([path, content]) => <details key={path}><summary>{path}</summary><pre>{content}</pre></details>)}
+                  <div className="skill-export-actions">
+                    <button className="secondary-button" type="button" onClick={() => void copyManifest(skill)}>Copy SKILL.md</button>
+                    <a className="secondary-button" href={`/api/skills/${encodeURIComponent(skill.id)}/export?format=md`}>Download SKILL.md</a>
+                    <a className="secondary-button" href={`/api/skills/${encodeURIComponent(skill.id)}/export?format=zip`}>Export ZIP</a>
+                  </div>
+                  {copyStatus?.id === skill.id && <p className="skill-copy-status" role="status">{copyStatus.message}</p>}
+                </div>
+              </details>
               <Button type="button" variant={skill.enabled ? "outline" : "default"} disabled={busy} onClick={() => void toggle(skill)}>{skill.enabled ? "Disable" : "Enable for resume agent"}</Button>
             </div>
           </article>

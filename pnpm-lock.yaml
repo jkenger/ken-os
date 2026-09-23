@@ -58,6 +58,9 @@ importers:
       yauzl:
         specifier: ^3.4.0
         version: 3.4.0
+      yazl:
+        specifier: ^3.3.1
+        version: 3.3.1
     devDependencies:
       '@tailwindcss/postcss':
         specifier: ^4.3.3
@@ -98,9 +101,6 @@ importers:
       typescript:
         specifier: latest
         version: 7.0.2
-      yazl:
-        specifier: ^3.3.1
-        version: 3.3.1
 
   packages/agents:
     dependencies:

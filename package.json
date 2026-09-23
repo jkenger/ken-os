@@ -8,6 +8,7 @@
     "check": "pnpm --filter @ken-os/web check",
     "test": "pnpm --filter @ken-os/web test",
     "test:db": "pnpm --filter @ken-os/web test:db",
+    "test:db:resume": "pnpm --filter @ken-os/web test:db:resume",
     "db:generate": "pnpm --filter @ken-os/web db:generate",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
