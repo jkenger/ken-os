@@ -1,7 +1,7 @@
 {
   "name": "ken-os",
   "private": true,
-  "packageManager": "pnpm@11.19.0",
+  "packageManager": "pnpm@10.34.5",
   "scripts": {
     "dev": "pnpm --filter @ken-os/web dev",
     "build": "pnpm --filter @ken-os/web build",
