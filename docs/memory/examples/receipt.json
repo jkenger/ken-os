@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "projectId": "ken-os",
+  "policyVersion": 1,
+  "taskKey": "example-task",
+  "idempotencyKey": "replace-with-a-unique-task-receipt-key",
+  "outcome": "Example outcome — do not submit",
+  "verification": ["Name the relevant test and its result"],
+  "remaining": ["Name unresolved work or an open question"],
+  "evidence": [{ "kind": "repo_file", "locator": "docs/product/project-memory.md", "relation": "context" }]
+}

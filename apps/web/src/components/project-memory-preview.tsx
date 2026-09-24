@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Check, Copy, FileText } from "lucide-react";
 import { Button, ButtonEndIcon } from "@/components/ui/button";
+import { DisclosureSummary } from "@/components/ui/disclosure-summary";
 import { Card, CardAction, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { WorkspaceShell } from "@/components/workspace-shell";
 
@@ -64,7 +65,7 @@ export function ProjectMemoryPreview() {
 
         <div className="grid lg:grid-cols-[minmax(0,1.75fr)_minmax(300px,0.85fr)]">
           <div className="min-w-0">
-            <section className="scroll-mt-24 border-b border-border px-5 pt-4 pb-3 sm:px-8 lg:px-10" id="decisions" aria-labelledby="confirmed-title">
+            <section className="scroll-mt-24 border-b border-border px-5 py-8 sm:px-8 lg:px-10" id="decisions" aria-labelledby="confirmed-title">
               <h2 className={label} id="confirmed-title">CONFIRMED DECISIONS</h2>
               <p className="mt-1 mb-2 text-sm leading-5 text-muted-foreground">These choices came from you and should be treated as current.</p>
               <div className="space-y-2">
@@ -87,7 +88,7 @@ export function ProjectMemoryPreview() {
               </div>
             </section>
 
-            <section className="border-b border-border px-5 py-3 sm:px-8 lg:px-10" aria-labelledby="proposed-title">
+            <section className="border-b border-border px-5 py-8 sm:px-8 lg:px-10" aria-labelledby="proposed-title">
               <h2 className={label} id="proposed-title">PROPOSED NEXT STEP</h2>
               <p className="mt-1 mb-2 text-sm leading-5 text-muted-foreground">Not yet confirmed. Suggested for your review.</p>
               <Card>
@@ -99,7 +100,7 @@ export function ProjectMemoryPreview() {
               </Card>
             </section>
 
-            <section className="scroll-mt-24 border-b border-border px-5 py-3 sm:px-8 lg:px-10" id="open-questions" aria-labelledby="questions-title">
+            <section className="scroll-mt-24 border-b border-border px-5 py-8 sm:px-8 lg:px-10" id="open-questions" aria-labelledby="questions-title">
               <h2 className={label} id="questions-title">OPEN QUESTIONS</h2>
               <p className="mt-1 mb-2 text-sm leading-5 text-muted-foreground">Needs your input before the policy is settled.</p>
               <Card>
@@ -125,11 +126,11 @@ export function ProjectMemoryPreview() {
             <section className="scroll-mt-24 border-b border-border px-5 py-8 sm:px-8 lg:px-9" id="sources">
               <h2 className={label}>SOURCES IN THIS BRIEF</h2>
               <details className="group mt-4 text-sm text-muted-foreground">
-                <summary className="flex cursor-pointer items-center gap-2 rounded-md py-1 hover:text-foreground"><FileText size={16} aria-hidden="true" />Resume hub → How it works</summary>
+                <DisclosureSummary className="rounded-md py-1 hover:text-foreground"><FileText size={16} aria-hidden="true" />Resume hub → How it works</DisclosureSummary>
                 <p className="pl-6 pt-2 text-xs leading-5">Current workspace UI and the repository guidance in <code>AGENTS.md</code>.</p>
               </details>
               <details className="group mt-3 text-sm text-muted-foreground">
-                <summary className="flex cursor-pointer items-center gap-2 rounded-md py-1 hover:text-foreground"><FileText size={16} aria-hidden="true" />Ken OS visual system</summary>
+                <DisclosureSummary className="rounded-md py-1 hover:text-foreground"><FileText size={16} aria-hidden="true" />Ken OS visual system</DisclosureSummary>
                 <p className="pl-6 pt-2 text-xs leading-5">The selected typography baseline in <code>docs/architecture/starter-standard.md</code> and the current preview.</p>
               </details>
               <p className="mt-6 text-sm leading-6 text-muted-foreground">Only sample content from this personal project is used here. Future receipts will need their own provenance and review.</p>

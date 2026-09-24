@@ -15,6 +15,27 @@
       "when": 1790151271506,
       "tag": "0001_skills_library",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790243912158,
+      "tag": "0002_material_sister_grimm",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790244576921,
+      "tag": "0003_vengeful_mathemanic",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790244714607,
+      "tag": "0004_equal_toro",
+      "breakpoints": true
     }
   ]
 }

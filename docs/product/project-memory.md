@@ -1,6 +1,6 @@
 # Project Memory — product spec
 
-Status: proposed. Ken OS is the pilot project. A development-only, sample-data handoff mockup is available at `/design-preview?view=memory`; it does not capture receipts, import sessions, persist decisions, or integrate agents. This document defines the product outcome and first slice.
+Status: Ken OS pilot implemented locally; hosted release and owner verification are tracked separately. The sample-data mockup remains at `/design-preview?view=memory`. The owner-only `/memory` workspace stores proposed decisions and receipts, supports review, and derives a source-linked handoff. It does not import sessions or capture automatically.
 
 ## Problem and outcome
 
@@ -69,7 +69,7 @@ No rule file can guarantee an agent will execute a workflow, and no skill grants
 
 ## Success measures and follow-ons
 
-For the pilot, measure coverage of consequential decisions across several real tasks, time to orient a fresh session, owner correction rate, and missed checkpoints after interruptions. Quality matters more than receipt volume. The next likely slices are a Codex adapter, a Claude Code adapter, authorized GitHub enrichment, cross-project discovery, and private devlog drafting. Each requires separate privacy and reliability validation.
+For the pilot, measure coverage of consequential decisions across several real tasks, time to orient a fresh session, owner correction rate, and missed checkpoints after interruptions. Quality matters more than receipt volume. An explicit Codex CLI adapter now exists, but reliability across real tasks has not been measured. The next likely slices are a Claude Code adapter, authorized GitHub enrichment, cross-project discovery, and private devlog drafting. Each requires separate privacy and reliability validation.
 
 ## Open product decisions
 

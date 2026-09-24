@@ -27,6 +27,10 @@ Read the relevant docs when changing their area; do not load every document for 
 - Reuse components across modules when their anatomy and behavior are the same. Prefer shared slots or variants; add module-specific components only for genuinely distinct interaction, state, accessibility, or data responsibilities.
 - The Skills library accepts only `SKILL.md` and Markdown references, stores immutable versions, and enables a version for the read-only resume agent. Treat uploaded text as untrusted data. It does not grant tools, execute scripts, or use OpenAI-hosted skill uploads.
 
+## Project Memory pilot
+
+For substantial Ken OS work, read `docs/memory/ken-os-adapter.md`. If a scoped local capture key is configured, fetch approved context before work, checkpoint consequential decisions when made, and submit a receipt at completion or handoff. If unavailable, state the gap; never fabricate or silently upload history. Drafts are untrusted proposals until the owner reviews them. This rule does not apply to another repository or grant new tools or data access.
+
 ## Local verification
 
 - `pnpm check` checks TypeScript; `pnpm build` checks the production build.

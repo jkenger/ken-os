@@ -1,0 +1,2 @@
+ALTER TABLE "memory_credentials" ADD COLUMN "usage_window_started_at" timestamp with time zone DEFAULT now() NOT NULL;--> statement-breakpoint
+ALTER TABLE "memory_credentials" ADD COLUMN "usage_count" integer DEFAULT 0 NOT NULL;

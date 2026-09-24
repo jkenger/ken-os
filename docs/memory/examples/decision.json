@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "projectId": "ken-os",
+  "taskKey": "example-task",
+  "idempotencyKey": "replace-with-a-unique-task-decision-key",
+  "title": "Example decision — do not submit",
+  "issue": "What problem was being solved?",
+  "choice": "What was chosen?",
+  "rationale": "Why, according to the person or evidence that actually established it?",
+  "alternatives": [],
+  "provenance": "inferred",
+  "evidence": [{ "kind": "repo_file", "locator": "docs/product/project-memory.md", "relation": "context" }]
+}

@@ -1,6 +1,6 @@
 # Project Memory — architecture spec
 
-Status: proposed; the development-only handoff mockup is visual and uses sample data. No Project Memory tables, endpoints, adapters, or hooks described below are implemented yet. This extends the existing single Next.js app and PostgreSQL database; it does not require a new deployable service or a new agent framework for the pilot. Product requirements are in [the Project Memory product spec](../product/project-memory.md).
+Status: pilot implemented locally, pending hosted release and owner verification. The development-only mockup still uses sample data; the owner-only `/memory` workspace uses PostgreSQL. This extends the existing single Next.js app and database, without a new service or agent framework. Product requirements are in [the Project Memory product spec](../product/project-memory.md).
 
 ## System boundary
 
@@ -38,9 +38,9 @@ Suggested minimum rule: read current approved memory before substantial work; ch
 | `memory_decision_revisions` | Decision ID, version, rationale, alternatives, uncertainty, editor, review action/time. Append-only correction history. |
 | `memory_receipts` | Stable ID, project, external task key if known, policy version, outcome, verification, remaining work, state, author/source adapter, created time, content digest, idempotency key. |
 | `memory_evidence` | Project, subject type/ID, kind, locator, optional revision/commit SHA, observed-at, availability, claim relation (`supports`, `context`, `contradicts`). Prefer pointers over copied content. |
-| `memory_receipt_decisions` | Link table connecting receipts and decisions, including whether a decision was created, confirmed, or merely referenced by the receipt. |
+| Receipt/decision correlation | The pilot uses a shared `task_key` rather than a join table. A typed link table can follow when a real cross-session retrieval case requires it. |
 
-Use Drizzle schema and a reviewed migration, following the current repository convention. Keep stored text bounded, normalize external identifiers, and never store provider access tokens in receipt payloads. Full-text search and embeddings can wait until a small corpus proves retrieval needs; the first handoff is a deterministic query over approved decisions, open questions, and recent receipts.
+The pilot uses Drizzle schema and reviewed migrations `0002`–`0004`. Text is bounded and the server rejects obvious credential patterns; this is a guardrail, not complete secret detection. Full-text search and embeddings can wait until a small corpus proves retrieval needs. The handoff is a deterministic query over approved decisions and recent receipts, with a separately labeled proposal count. Open questions remain in proposed decisions and receipt remaining-work fields rather than a dedicated table.
 
 ## Submission and review protocol
 
@@ -50,7 +50,7 @@ Use Drizzle schema and a reviewed migration, following the current repository co
 4. Owner review uses the existing browser session and mutation-origin protections. Approval/rejection is attributable and transactional. Editing creates a revision; it does not overwrite the prior claim. Only approved owner decisions enter the authoritative handoff as confirmed.
 5. `GET handoff` derives a bounded, ordered view from approved current decisions, unresolved questions, and latest relevant receipts. It includes source and policy version and labels proposed or inferred material separately. The view can be cached, but the database remains authoritative.
 
-The exact route names are deferred to implementation. A first adapter may use an explicit local capture command and an authenticated API; an MCP tool can provide the same typed operations across compatible agents later. A skill can teach when to call them but cannot force an end-of-session action. Hooks may prompt capture where supported, but interruption recovery depends on decision-time checkpoints and idempotent retry, not hook reliability.
+The pilot routes are `/api/memory/agent`, `/api/memory/decisions`, `/api/memory/receipts`, `/api/memory/review`, and `/api/memory/credentials`. The checked-in adapter and explicit CLI commands are documented in [the Ken OS adapter](../memory/ken-os-adapter.md). An MCP tool can provide the same typed operations across compatible agents later. Instructions cannot force an end-of-session action; interruption recovery depends on decision-time checkpoints and idempotent retry.
 
 An adapter-neutral draft payload should have this shape (illustrative fields, not a committed HTTP schema):
 
@@ -107,6 +107,8 @@ Follow the existing app path: route handler → use case → repository/provider
 4. Only then consider a Claude Code adapter, supported lifecycle hooks, GitHub read integration, PR enrichment, and private devlog generation. Each new connector needs a project-specific permission and data-flow review.
 
 ## Verification and operational risks
+
+Local contract tests, a PostgreSQL transition/idempotency check, TypeScript, and the production build pass. Hosted review and real cross-session capture still need verification after deployment. The CLI requires an owner-issued scoped key in an untracked environment variable; without it, agents do not upload a draft and must report the capture gap.
 
 Test project isolation, token revocation, malformed evidence URLs, large payloads, duplicate retries, policy mismatch, rejected/superseded decisions, and a stale or inaccessible source. Test that the handoff excludes rejected claims and labels unapproved reconstructions. Run `pnpm check`, relevant tests, and `pnpm build`; run reviewed migrations against local PostgreSQL before production. Hosted verification must exercise the review UI and a real authorized submission without using client/work content.
 

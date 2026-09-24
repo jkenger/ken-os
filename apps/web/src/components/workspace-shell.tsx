@@ -13,10 +13,10 @@ const modules = [
   { id: "resume" as const, label: "Resume hub", href: "/", icon: FileText },
   { id: "skills" as const, label: "Agent skills", href: "/skills", icon: Sparkles },
   { id: "design" as const, label: "Design system", href: "/design-system", icon: Palette },
+  { id: "memory" as const, label: "Project Memory", href: "/memory", icon: BookOpenText },
 ];
 const previewModules = [
-  ...modules.map((module) => module.id === "design" ? { ...module, href: "/design-preview?view=design" } : module),
-  { id: "memory" as const, label: "Project Memory", href: "/design-preview?view=memory", icon: BookOpenText },
+  ...modules.map((module) => module.id === "design" ? { ...module, href: "/design-preview?view=design" } : module.id === "memory" ? { ...module, href: "/design-preview?view=memory" } : module),
 ];
 
 const moduleDetails: Record<Module, {
@@ -38,9 +38,11 @@ const moduleDetails: Record<Module, {
   memory: {
     title: "Project Memory",
     sections: [
-      { label: "Handoff brief", href: "/design-preview?view=memory", icon: BookOpenText },
-      { label: "Decisions", href: "/design-preview?view=memory#decisions", icon: Library },
-      { label: "Open questions", href: "/design-preview?view=memory#open-questions", icon: FileText },
+      { label: "Handoff brief", href: "/memory", icon: BookOpenText },
+      { label: "Decisions", href: "/memory#decisions", icon: Library },
+      { label: "Receipts", href: "/memory#receipts", icon: FileText },
+      { label: "Capture", href: "/memory#capture", icon: Sparkles },
+      { label: "Policy", href: "/memory#policy", icon: FileText },
     ],
   },
   design: {
@@ -55,6 +57,12 @@ const moduleDetails: Record<Module, {
     ],
   },
 };
+
+const previewMemorySections = [
+  { label: "Handoff brief", href: "/design-preview?view=memory", icon: BookOpenText },
+  { label: "Decisions", href: "/design-preview?view=memory#decisions", icon: Library },
+  { label: "Open questions", href: "/design-preview?view=memory#open-questions", icon: FileText },
+];
 
 const sidebarLabel = "mb-2 px-3 text-[10px] font-bold tracking-[0.14em] text-muted-foreground";
 const sidebarLink = "flex h-10 items-center gap-3 rounded-lg px-3 text-[13px] font-medium transition-colors hover:bg-muted hover:text-foreground";
@@ -224,7 +232,8 @@ export function WorkspaceShell({ email, active, children, preview = false }: { e
             <div className="mt-7">
               <p className={sidebarLabel}>{detail.title.toUpperCase()}</p>
               <nav className="grid gap-1" aria-label={`${detail.title} sections`}>
-                {detail.sections.map(({ label, href, icon: Icon }, index) => {
+                {(preview && active === "memory" ? previewMemorySections : detail.sections).map(({ label, href: originalHref, icon: Icon }, index) => {
+                  const href = preview && active === "memory" ? originalHref.replace("/memory", "/design-preview?view=memory") : originalHref;
                   const resolvedHref = preview && active === "design" ? href.replace("/design-system", "/design-preview?view=design") : href;
                   const selected = preview && (active === "memory" || active === "design")
                     ? (index === 0 ? !hash : resolvedHref.endsWith(hash) && Boolean(hash))
