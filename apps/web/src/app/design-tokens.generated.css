@@ -1,0 +1,32 @@
+/* Generated from features/design-system/contract.ts. Do not edit. */
+:root {
+  --font-body: "Source Sans 3", Arial, sans-serif;
+  --font-heading: "Manrope", Arial, sans-serif;
+  --background: #fffefb;
+  --foreground: #242321;
+  --primary: #292824;
+  --primary-foreground: #fffefb;
+  --muted: #f4f1eb;
+  --secondary: #edeae4;
+  --muted-foreground: #766f66;
+  --border: #ddd9d2;
+  --input: #d5d0c8;
+  --ring: #726a5e;
+  --destructive: #bd3434;
+  --card: var(--background);
+  --card-foreground: var(--foreground);
+  --popover: var(--background);
+  --popover-foreground: var(--foreground);
+  --secondary-foreground: var(--foreground);
+  --accent: var(--secondary);
+  --accent-foreground: var(--foreground);
+  --sidebar: var(--background);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--secondary);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+  --radius: 0.625rem;
+}

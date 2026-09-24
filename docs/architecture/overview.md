@@ -39,3 +39,4 @@ The next deployable process is a worker only when background jobs are needed. A 
 - Add durable background work for sync, notifications, and long agent runs.
 - Add an approval record before any agent can write to external services.
 - Extend the private skill library from its current resume-agent assignment to explicit multi-agent assignment only when another agent needs it. Uploaded scripts remain unsupported until a sandbox and approval model exist.
+- Add the proposed [Project Memory module](project-memory.md) inside the existing web app and PostgreSQL boundary before considering a separate worker or cross-tool connector.

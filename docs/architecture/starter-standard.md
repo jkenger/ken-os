@@ -18,7 +18,9 @@ The first three gates can be brief and iterative. Do not generate code until the
 
 - Start with **one application in one repository**, managed with pnpm and TypeScript. Move to a pnpm workspace when there are multiple deployables, a truly reusable package, or an independently versioned component. Multiple agents inside one app do not alone require a monorepo.
 - For a hosted full-stack web product, default to Next.js. Choose Vite + React when a client-only app or an existing separate API makes that simpler.
-- For UI, default to Tailwind CSS plus shadcn/ui, tailored to the product. Do not scaffold a generic dashboard as a substitute for designing the user flow.
+- For UI, default to Tailwind CSS utilities for components and layouts plus tailored shadcn/ui primitives. Reserve CSS files for theme tokens, font imports, and minimal global rules; do not build routine screens with page-level CSS selectors. Do not scaffold a generic dashboard as a substitute for designing the user flow.
+- For the Ken OS visual baseline, use Manrope for headings and Source Sans 3 for UI/body copy, paired with the warm monochrome tokens. Treat these as design defaults, not hard-coded constraints on unrelated projects; confirm typography alongside the app shell before extracting a reusable design skill.
+- The current Ken OS component decisions are recorded in [component language](../design/component-language.md). They are a working product baseline, not a scaffold requirement for every new project.
 - Use PostgreSQL and Drizzle with reviewed migrations when persistent relational data is part of the first outcome. A stateless app should not acquire a database merely to fit the preset.
 - Prefer framework server-side loading first. Add SWR for light client revalidation or TanStack Query when client-side cache, mutations, and invalidation are central; select one deliberately.
 - Add an agent runtime only when the first outcome needs an agent. Start with one bounded agent and explicit tools rather than speculative specialists.

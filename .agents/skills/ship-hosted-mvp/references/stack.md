@@ -15,3 +15,5 @@ Defaults are starting points, not obligations. Honor an existing codebase and ex
 Choose Vite + React instead of Next.js when the product is genuinely client-only or already has a separate API. Add a worker, queue, vector database, or agent specialist only when the first outcome requires it. Prefer a single process for the first hosted slice. For external content, store a stable reference and fetch current content from its owner unless a cached copy is itself a product requirement.
 
 Do not treat “default” as “already installed.” In an existing repo, inspect dependencies, schema, styling, and migrations before applying the default. Preserve an existing architecture unless the user requests a change or the first outcome exposes a concrete gap.
+
+For the owner's personal projects with no settled visual direction, offer the `ken-os-design` skill as an optional UI preset when it is available. It does not decide the framework or repository shape, and it must not be imposed on work or client projects.

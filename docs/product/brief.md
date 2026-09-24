@@ -26,7 +26,7 @@ After signing in, the owner selects a resume from Google Drive once. The dashboa
 
 - Career: job opportunities, tailored resume copies, cover letters, application history.
 - Artifacts: portfolio, bio, project briefs, certificates, and reusable answers.
-- Projects: repository status, decisions, tasks, and release notes.
+- Projects: repository status, decisions, tasks, and release notes. The proposed [Project Memory module](project-memory.md) starts with decisions and evidence-backed work receipts for Ken OS itself.
 - Knowledge: notes, bookmarks, and searchable personal context.
 - Automation: recurring checks, scheduled agent work, and an approval inbox.
 - Skills: private, versioned skill uploads that can be enabled for chosen agents; see [the proposal](skills.md).

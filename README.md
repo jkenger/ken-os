@@ -17,6 +17,8 @@ The [Skills library](docs/product/skills.md) describes the current first slice a
 
 The proposed [one-app starter standard](docs/architecture/starter-standard.md) and [hosting playbook](docs/architecture/hosting.md) are design documents, not yet a scaffold CLI or deployment skill.
 
+The proposed Project Memory module has separate [product](docs/product/project-memory.md) and [architecture](docs/architecture/project-memory.md) specs. Receipt capture and agent connectors are not implemented yet.
+
 ## Local setup
 
 1. Run `pnpm install`, then `pnpm db:up`. This starts a development-only Docker PostgreSQL service on `127.0.0.1:5435`; the other nearby ports are already in use on this machine.

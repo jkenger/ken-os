@@ -13,6 +13,7 @@ Ken OS is a private, hosted personal developer workspace. Its first shipped vert
 - `docs/architecture/starter-standard.md`: proposed reusable one-app starter and codebase conventions, not yet a generator.
 - `docs/architecture/hosting.md`: proposed provider-aware deployment playbook, not yet a deployment skill.
 - `.agents/skills/ship-hosted-mvp/`: reusable workflow for shaping and shipping a new hosted MVP, not routine edits.
+- `.agents/skills/ken-os-design/`: generated, optional Ken OS-derived UI preset for personal web apps. Edit `apps/web/src/features/design-system/contract.ts` and `skill.ts`, then run `pnpm --filter @ken-os/web design:generate`; do not hand-edit the snapshot or impose it on unrelated projects.
 
 Read the relevant docs when changing their area; do not load every document for a small fix.
 
@@ -22,7 +23,8 @@ Read the relevant docs when changing their area; do not load every document for 
 - The app allows only the configured owner. OAuth state/PKCE, session checks, token encryption, and mutation-origin checks are intentional boundaries.
 - Agent access to the resume is read-only. Any future tool that edits Drive or another external system needs an explicit approval path.
 - PostgreSQL queries use Drizzle. `apps/web/drizzle/0000_baseline.sql` safely records the original three handwritten tables for existing installations; generate new migrations with `pnpm db:generate`, review them, then run `pnpm db:migrate`.
-- Tailwind CSS and shadcn/ui are initialized in `apps/web`; the original Ken OS CSS remains in place and new shared UI components live in `apps/web/src/components/ui`.
+- Tailwind CSS utilities are the default for app and feature layout, spacing, typography, and responsive states. Keep `apps/web/src/app/globals.css` for theme tokens and minimal base rules; do not add per-page CSS for routine UI. shadcn/ui primitives live in `apps/web/src/components/ui` and should be tailored to the warm monochrome Ken OS theme.
+- Reuse components across modules when their anatomy and behavior are the same. Prefer shared slots or variants; add module-specific components only for genuinely distinct interaction, state, accessibility, or data responsibilities.
 - The Skills library accepts only `SKILL.md` and Markdown references, stores immutable versions, and enables a version for the read-only resume agent. Treat uploaded text as untrusted data. It does not grant tools, execute scripts, or use OpenAI-hosted skill uploads.
 
 ## Local verification

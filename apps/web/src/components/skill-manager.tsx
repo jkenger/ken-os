@@ -2,7 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
+import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import type { StoredSkill } from "@/lib/skills";
 
 export function SkillManager({ skills }: { skills: StoredSkill[] }) {
@@ -10,30 +12,46 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
   const [file, setFile] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [copyStatus, setCopyStatus] = useState<{ id: string; message: string } | null>(null);
+  const [copyStatus, setCopyStatus] = useState<{
+    id: string;
+    message: string;
+  } | null>(null);
 
   async function copyManifest(skill: StoredSkill) {
     try {
       await navigator.clipboard.writeText(skill.files["SKILL.md"]);
-      setCopyStatus({ id: skill.id, message: `Copied ${skill.name} v${skill.version} SKILL.md.` });
+      setCopyStatus({
+        id: skill.id,
+        message: `Copied ${skill.name} v${skill.version} SKILL.md.`,
+      });
     } catch {
-      setCopyStatus({ id: skill.id, message: "Could not copy. Download SKILL.md instead." });
+      setCopyStatus({
+        id: skill.id,
+        message: "Could not copy. Download SKILL.md instead.",
+      });
     }
   }
 
   async function upload(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!file) return;
-    const input = event.currentTarget.elements.namedItem("bundle") as HTMLInputElement;
+    const input = event.currentTarget.elements.namedItem(
+      "bundle",
+    ) as HTMLInputElement;
     setBusy(true);
     setMessage(null);
     try {
       const form = new FormData();
       form.set("bundle", file);
-      const response = await fetch("/api/skills", { method: "POST", body: form });
-      const data = await response.json() as { error?: string; name?: string };
+      const response = await fetch("/api/skills", {
+        method: "POST",
+        body: form,
+      });
+      const data = (await response.json()) as { error?: string; name?: string };
       if (!response.ok) throw new Error(data.error ?? "Upload failed.");
-      setMessage(`${data.name ?? "Skill"} saved. Review it below before enabling.`);
+      setMessage(
+        `${data.name ?? "Skill"} saved. Review it below before enabling.`,
+      );
       setFile(null);
       input.value = "";
       router.refresh();
@@ -48,65 +66,169 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
     setBusy(true);
     setMessage(null);
     try {
-      const response = await fetch(`/api/skills/${encodeURIComponent(skill.id)}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ enabled: !skill.enabled }),
-      });
-      const data = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(data.error ?? "Could not update skill.");
-      setMessage(`${skill.name} v${skill.version} ${skill.enabled ? "disabled" : "enabled"}.`);
+      const response = await fetch(
+        `/api/skills/${encodeURIComponent(skill.id)}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ enabled: !skill.enabled }),
+        },
+      );
+      const data = (await response.json()) as { error?: string };
+      if (!response.ok)
+        throw new Error(data.error ?? "Could not update skill.");
+      setMessage(
+        `${skill.name} v${skill.version} ${skill.enabled ? "disabled" : "enabled"}.`,
+      );
       router.refresh();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Could not update skill.");
+      setMessage(
+        error instanceof Error ? error.message : "Could not update skill.",
+      );
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <div className="skills-grid">
-      <section className="info-card skill-upload-card">
-        <p className="kicker">ADD A SKILL</p>
-        <h2>Upload instructions.</h2>
-        <p>Use a standalone <code>SKILL.md</code>, or a ZIP with <code>SKILL.md</code> and Markdown files under <code>references/</code>.</p>
-        <form onSubmit={upload}>
-          <label htmlFor="skill-bundle">Skill file</label>
-          <input id="skill-bundle" name="bundle" type="file" accept=".md,.zip,application/zip,text/markdown" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
-          <Button type="submit" disabled={!file || busy}>{busy ? "Working…" : "Upload skill"}</Button>
+    <div className="grid items-start gap-6 xl:grid-cols-[minmax(300px,0.8fr)_minmax(400px,1.2fr)]">
+      <section>
+        <Card className="[--card-spacing:--spacing(6)]"><CardContent>
+        <p className="mb-3 text-[11px] font-bold tracking-[0.16em] text-muted-foreground">ADD A SKILL</p>
+        <h2 className="font-display text-2xl font-semibold tracking-[-0.04em]">Upload instructions.</h2>
+        <p className="mt-3 text-base leading-6 text-muted-foreground">
+          Use a standalone <code>SKILL.md</code>, or a ZIP with{" "}
+          <code>SKILL.md</code> and Markdown files under{" "}
+          <code>references/</code>.
+        </p>
+        <form className="mt-7 grid gap-3" onSubmit={upload}>
+          <label className="text-xs font-semibold" htmlFor="skill-bundle">Skill file</label>
+          <input
+            className="w-full rounded-lg border border-dashed border-input bg-background p-3 text-xs file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-2 file:py-1.5 file:text-xs file:font-medium"
+            id="skill-bundle"
+            name="bundle"
+            type="file"
+            accept=".md,.zip,application/zip,text/markdown"
+            onChange={(event) => setFile(event.target.files?.[0] ?? null)}
+          />
+          <Button className="h-10 justify-self-start px-4" type="submit" disabled={!file || busy}>
+            {busy ? "Working…" : "Upload skill"}
+          </Button>
         </form>
-        <p className="skill-note">Uploads are private and disabled by default. Do not include credentials. Scripts, binary assets, and external tool permissions are not supported.</p>
-        {message && <p className="feedback" role="status">{message}</p>}
+        <p className="mt-5 text-xs leading-5 text-muted-foreground">
+          Uploads are private and disabled by default. Do not include
+          credentials. Scripts, binary assets, and external tool permissions are
+          not supported.
+        </p>
+        {message && (
+          <p className="mt-4 rounded-lg bg-muted p-3 text-sm" role="status">
+            {message}
+          </p>
+        )}
+        </CardContent></Card>
       </section>
-      <section className="skill-list">
-        <div className="section-heading"><span>YOUR SKILLS</span><span>{skills.length} VERSION{skills.length === 1 ? "" : "S"}</span></div>
-        {skills.length === 0 ? <div className="info-card skill-empty"><h2>No skills yet.</h2><p>Upload a resume-related skill to guide the current assistant. The hosted MVP skill can be uploaded to test the library, but it is not relevant to resume questions.</p></div> : skills.map((skill) => (
-          <article className="info-card skill-item" key={skill.id}>
-            <div className="skill-item-header">
-              <div><p className="kicker">{skill.slug} / v{skill.version}</p><h2>{skill.name}</h2></div>
-              <span className={`skill-state${skill.enabled ? " enabled" : ""}`}>{skill.enabled ? "ENABLED" : "DISABLED"}</span>
-            </div>
-            <p>{skill.description}</p>
-            <p className="skill-note">{Object.keys(skill.files).length} Markdown file{Object.keys(skill.files).length === 1 ? "" : "s"} · Uploaded {new Date(skill.createdAt).toLocaleDateString()}</p>
-            <div className="skill-actions">
-              <details className="skill-export-panel">
-                <summary>Review &amp; export</summary>
-                <div className="skill-files">
-                  <p className="skill-note">Exporting {skill.name} v{skill.version}. This is a copy of the stored source; it does not change which version is enabled.</p>
-                  <ul>{Object.keys(skill.files).sort().map((path) => <li key={path}>{path}</li>)}</ul>
-                  {Object.entries(skill.files).sort(([left], [right]) => left.localeCompare(right)).map(([path, content]) => <details key={path}><summary>{path}</summary><pre>{content}</pre></details>)}
-                  <div className="skill-export-actions">
-                    <button className="secondary-button" type="button" onClick={() => void copyManifest(skill)}>Copy SKILL.md</button>
-                    <a className="secondary-button" href={`/api/skills/${encodeURIComponent(skill.id)}/export?format=md`}>Download SKILL.md</a>
-                    <a className="secondary-button" href={`/api/skills/${encodeURIComponent(skill.id)}/export?format=zip`}>Export ZIP</a>
-                  </div>
-                  {copyStatus?.id === skill.id && <p className="skill-copy-status" role="status">{copyStatus.message}</p>}
+      <section className="grid gap-4">
+        <div className="flex items-center justify-between text-[11px] font-bold tracking-[0.14em] text-muted-foreground">
+          <span>YOUR SKILLS</span>
+          <span>
+            {skills.length} VERSION{skills.length === 1 ? "" : "S"}
+          </span>
+        </div>
+        {skills.length === 0 ? (
+          <Card className="[--card-spacing:--spacing(6)]"><CardContent>
+            <h2 className="font-display text-xl font-semibold tracking-[-0.04em]">No skills yet.</h2>
+            <p className="mt-3 text-base leading-6 text-muted-foreground">
+              Upload a resume-related skill to guide the current assistant. The
+              hosted MVP skill can be uploaded to test the library, but it is
+              not relevant to resume questions.
+            </p>
+          </CardContent></Card>
+        ) : (
+          skills.map((skill) => (
+            <Card key={skill.id}><CardContent>
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <div className="flex min-w-0 items-center gap-2">
+                  <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground"><FileText size={15} aria-hidden="true" /></span>
+                  <span className="truncate text-[11px] font-bold tracking-[0.1em] text-muted-foreground">{skill.slug} / v{skill.version}</span>
                 </div>
-              </details>
-              <Button type="button" variant={skill.enabled ? "outline" : "default"} disabled={busy} onClick={() => void toggle(skill)}>{skill.enabled ? "Disable" : "Enable for resume agent"}</Button>
-            </div>
-          </article>
-        ))}
+                <span
+                  className={`shrink-0 rounded-md px-2 py-1 text-[10px] font-bold tracking-[0.1em] ${skill.enabled ? "bg-secondary text-foreground" : "bg-background text-muted-foreground"}`}
+                >
+                  {skill.enabled ? "ENABLED" : "DISABLED"}
+                </span>
+              </div>
+              <h2 className="font-display text-base font-semibold leading-6 tracking-[-0.035em]">{skill.name}</h2>
+              <p className="mt-0.5 text-sm leading-[21px] text-muted-foreground">{skill.description}</p>
+              <p className="mt-2 text-[13px] leading-5 text-muted-foreground">
+                {Object.keys(skill.files).length} Markdown file
+                {Object.keys(skill.files).length === 1 ? "" : "s"} · Uploaded{" "}
+                {new Date(skill.createdAt).toLocaleDateString()}
+              </p>
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
+                <details className="min-w-[min(100%,320px)]">
+                  <summary className="cursor-pointer text-xs font-semibold">Review &amp; export</summary>
+                  <div className="mt-4 max-w-xl">
+                    <p className="text-xs leading-5 text-muted-foreground">
+                      Exporting {skill.name} v{skill.version}. This is a copy of
+                      the stored source; it does not change which version is
+                      enabled.
+                    </p>
+                    <ul className="my-4 list-disc break-all pl-5 text-xs leading-6 text-muted-foreground">
+                      {Object.keys(skill.files)
+                        .sort()
+                        .map((path) => (
+                          <li key={path}>{path}</li>
+                        ))}
+                    </ul>
+                    {Object.entries(skill.files)
+                      .sort(([left], [right]) => left.localeCompare(right))
+                      .map(([path, content]) => (
+                        <details className="mt-2 rounded-lg border border-border p-3" key={path}>
+                          <summary className="cursor-pointer break-all text-xs font-medium">{path}</summary>
+                          <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap break-all text-xs leading-5">{content}</pre>
+                        </details>
+                      ))}
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button
+                        className="inline-flex h-9 items-center rounded-lg border border-border bg-background px-3 text-xs font-medium hover:bg-muted"
+                        type="button"
+                        onClick={() => void copyManifest(skill)}
+                      >
+                        Copy SKILL.md
+                      </button>
+                      <a
+                        className="inline-flex h-9 items-center rounded-lg border border-border bg-background px-3 text-xs font-medium hover:bg-muted"
+                        href={`/api/skills/${encodeURIComponent(skill.id)}/export?format=md`}
+                      >
+                        Download SKILL.md
+                      </a>
+                      <a
+                        className="inline-flex h-9 items-center rounded-lg border border-border bg-background px-3 text-xs font-medium hover:bg-muted"
+                        href={`/api/skills/${encodeURIComponent(skill.id)}/export?format=zip`}
+                      >
+                        Export ZIP
+                      </a>
+                    </div>
+                    {copyStatus?.id === skill.id && (
+                      <p className="mt-3 text-xs text-muted-foreground" role="status">
+                        {copyStatus.message}
+                      </p>
+                    )}
+                  </div>
+                </details>
+                <Button
+                  className="h-9 px-3"
+                  type="button"
+                  variant={skill.enabled ? "outline" : "default"}
+                  disabled={busy}
+                  onClick={() => void toggle(skill)}
+                >
+                  {skill.enabled ? "Disable" : "Enable for resume agent"}
+                </Button>
+              </div>
+            </CardContent></Card>
+          ))
+        )}
       </section>
     </div>
   );
