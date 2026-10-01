@@ -1,14 +1,16 @@
 # Ken OS repository guidance
 
-Ken OS is a private, hosted personal developer workspace. Its first shipped vertical slice is a canonical resume selected from Google Drive. Do not relate this project to Haven.
+Ken OS is the owner's private, hosted platform; each workflow is a module under it. The first shipped module is a canonical resume selected from Google Drive. Engineering Lab, an adaptive learning system, is in progress. Do not relate this project to Haven.
 
 ## Where things live
 
 - `apps/web`: Next.js UI, API routes, Google OAuth, sessions, and database access.
 - `packages/domain`: shared artifact types and format rules.
 - `packages/drive`: Google Drive adapter.
-- `packages/agents`: currently one read-only resume assistant.
-- `docs/product/brief.md`: current product scope and acceptance criteria.
+- `packages/agents`: the read-only resume assistant and the Engineering Lab Researcher.
+- `docs/product/brief.md`: platform-wide scope and acceptance criteria.
+- `docs/product/ai-engineering-learning-handoff.md`: source of truth for the Engineering Lab module. Preserve its baseline assessment; record decisions in `docs/architecture/engineering-lab.md` instead of editing it.
+- `apps/web/src/features/engineering-lab/` and `content/engineering-lab/`: Engineering Lab code and its saved source packets, which are never overwritten.
 - `docs/architecture/overview.md`: current system boundaries.
 - `docs/architecture/starter-standard.md`: proposed reusable one-app starter and codebase conventions, not yet a generator.
 - `docs/architecture/hosting.md`: proposed provider-aware deployment playbook, not yet a deployment skill.

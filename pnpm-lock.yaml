@@ -104,6 +104,9 @@ importers:
 
   packages/agents:
     dependencies:
+      '@ken-os/domain':
+        specifier: workspace:*
+        version: link:../domain
       '@openai/agents':
         specifier: latest
         version: 0.18.0(undici@7.29.1)(ws@8.21.3)(zod@4.6.5)

@@ -4,5 +4,5 @@
   "private": true,
   "type": "module",
   "exports": { ".": "./src/index.ts" },
-  "dependencies": { "@openai/agents": "latest", "zod": "^4.0.0" }
+  "dependencies": { "@ken-os/domain": "workspace:*", "@openai/agents": "latest", "zod": "^4.0.0" }
 }

@@ -1,5 +1,6 @@
 import { Agent, run, tool } from "@openai/agents";
 import { z } from "zod";
+export { researchSkill } from "./researcher";
 
 export interface EnabledSkill {
   slug: string;
