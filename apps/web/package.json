@@ -19,7 +19,8 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "lab:generate": "tsx scripts/generate-lab-content.ts --write",
     "lab:import-sources": "tsx scripts/import-sources.ts",
-    "test:db:lab": "tsx scripts/verify-lab.ts"
+    "test:db:lab": "tsx scripts/verify-lab.ts",
+    "db:migrate:deploy": "tsx scripts/migrate-on-deploy.ts"
   },
   "dependencies": {
     "@ken-os/agents": "workspace:*",
