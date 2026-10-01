@@ -10,6 +10,7 @@ Status: **proposed, awaiting owner review.** Nothing here is built. v0 is live (
 - **The AI engineering track starts**, with retrieval evaluation and structured outputs, the two places your semantic search work leads next.
 - **Checkpoints** (§16): one mixed scenario at the end of each module, to test whether the pieces work together.
 - **Still no new infrastructure** unless a module needs it. The one candidate is a real Postgres for lock and isolation-level labs, which stays optional.
+- **After polish: a roadmap graph and a full course** (section 8). A visual map of the road ahead with a pace estimate, and a topic map that covers full-stack and AI engineering from top to bottom, not only your current gaps.
 
 ## 1. The gate: is v0 working?
 
@@ -116,6 +117,34 @@ At the end of each module there's one mixed scenario, like §16's broken checkou
   - PGlite loads from a CDN. Pin its integrity, or serve it from Ken OS.
   - Check the probes in Firefox and Safari.
 
+## 8. After polish: a roadmap graph and a full course
+
+The owner asked for both on 2026-10-01, to come once the current build is polished and improved. They come after steps 1 to 8 below, not alongside them.
+
+**Why they're missing today.** v0's map holds only the topics the baseline flagged as gaps, plus two prerequisites, because §23 says not to generate the whole curriculum up front. That made it a good start, but it isn't a course: nothing yet takes you through full-stack or AI engineering from top to bottom. And `/lab/topics` is a flat list, so there's no view of the road ahead.
+
+### A roadmap timeline graph
+
+A `/lab/roadmap` page that draws the topic map as a graph, one track per row:
+
+- **Every topic as a node**, shaded by status: proven, in progress, needs another look, or not started.
+- **Lines for "builds on"**, so you can see what blocks a topic and what it opens up.
+- **"You are here"** at the Planner's current pick, with the path to the end of each track highlighted.
+- **A pace projection.** Using how long your proven topics actually took, it estimates when you'd reach each track's end at your current pace. It's labelled as an estimate and moves as you go.
+
+The graph follows the prerequisite map, not a calendar, so it stays within §9's rule against a fixed week-by-week course. All the data already exists: topics, prerequisites, statuses, and when each topic was proven. A hand-drawn SVG is enough at about 50 nodes; a graph library only if that stops being true.
+
+### A full course, top to bottom
+
+Grow the topic map from "your gaps" to the whole of §24: about 46 topics across the full-stack, production and AI engineering tracks, in prerequisite order.
+
+- **New topics without a baseline entry** already work; they start as "not assessed".
+- **No reteaching what you know.** A topic you already know gets a short placement check: the Assessor's questions, with no lesson first. Pass it, and the topic is proven the normal way. This extends the v0 rule that baseline-solid topics skip the lesson.
+- **The Planner needs no change.** It already orders topics by prerequisites and redirects to weak ones.
+- **The gaps stay the priority.** Topics the baseline flagged are scheduled first, so the full course doesn't slow down the repair work.
+
+**The real work is content, not code:** writing the prerequisite links, the gap or goal for each topic, and labs for about 30 more topics. That should be done a track at a time and reviewed like code, in the repo.
+
 ## Implementation order
 
 Each step ends with something you can use or check.
@@ -128,12 +157,14 @@ Each step ends with something you can use or check.
 6. **AI track: retrieval evaluation, then structured outputs.**
 7. **Checkpoints** for Modules 1 to 3, then 4 and 5.
 8. **Smaller changes**, as the review shows they matter.
+9. **After polish: the roadmap graph.** *Check: it matches the Topics page node for node, and the projection updates when a topic is proven.*
+10. **After polish: the full course**, one track at a time, with placement checks for topics you already know. *Check: every new lab's starter fails and its solution passes, and the Planner's order still puts baseline gaps first.*
 
 ## Not in v1
 
 - More than one learner, public pages, or sharing.
 - Gamification: streaks, points, badges.
-- The full §24 map. v1 adds 14 topics, not 40.
+- The full §24 map during the main v1 work. Steps 1 to 8 add 14 topics; the rest comes with the full course (section 8), after polish.
 - Agent patterns, MCP, memory and evals from the AI track. They follow once retrieval evaluation is proven.
 - Automatic pull request checks for knowledge debt.
 - Any change that lets the app edit the curriculum by itself.
