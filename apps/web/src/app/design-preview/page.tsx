@@ -4,6 +4,7 @@ import { ResumeWorkspace } from "@/components/resume-workspace";
 import { SkillsWorkspace } from "@/components/skills-workspace";
 import { ProjectMemoryPreview } from "@/components/project-memory-preview";
 import { DesignSystemWorkspace } from "@/components/design-system-workspace";
+import { WritingStudioPreview } from "@/components/writing-studio-preview";
 
 export default async function DesignPreview({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
   if (process.env.NODE_ENV !== "development") notFound();
@@ -20,6 +21,9 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
   }
   if (view === "design") {
     return <DesignSystemWorkspace email="preview@example.invalid" preview />;
+  }
+  if (view === "writing") {
+    return <WritingStudioPreview />;
   }
 
   return (

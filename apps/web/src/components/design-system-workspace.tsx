@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowUpRight, Download, FileText, Layers3 } from "lucide-react";
 import { Button, ButtonEndIcon } from "@/components/ui/button";
+import { DisclosureSummary } from "@/components/ui/disclosure-summary";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { ComponentExamples } from "@/features/design-system/examples";
 import { designSystem } from "@/features/design-system/contract";
@@ -164,10 +165,10 @@ export function DesignSystemWorkspace({
             </p>
           </div>
           <ComponentExamples />
-          <details className="mt-4 rounded-xl border border-border px-4 py-3 text-sm">
-            <summary className="cursor-pointer font-semibold">
+          <details className="group mt-4 rounded-xl border border-border px-4 py-3 text-sm">
+            <DisclosureSummary className="font-semibold">
               Usage rules and anatomy
-            </summary>
+            </DisclosureSummary>
             <div className="mt-4 grid gap-4 border-t border-border pt-4 sm:grid-cols-2">
               {designSystem.componentRules.map((rule) => (
                 <div key={rule.name}>
