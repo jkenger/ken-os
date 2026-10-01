@@ -40,3 +40,4 @@ The next deployable process is a worker only when background jobs are needed. A 
 - Add an approval record before any agent can write to external services.
 - Extend the private skill library from its current resume-agent assignment to explicit multi-agent assignment only when another agent needs it. Uploaded scripts remain unsupported until a sandbox and approval model exist.
 - Add the proposed [Project Memory module](project-memory.md) inside the existing web app and PostgreSQL boundary before considering a separate worker or cross-tool connector.
+- Add the proposed [Blog Writing Studio](blog-writing-studio.md) as private authoring plus a public published-snapshot read path in the same app; keep Project Memory an optional, owner-selected source rather than a publishing pipeline.

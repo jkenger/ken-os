@@ -11,6 +11,7 @@ import {
   Plus,
 } from "lucide-react";
 import { Button, ButtonEndIcon } from "@/components/ui/button";
+import { DisclosureSummary } from "@/components/ui/disclosure-summary";
 import {
   Card,
   CardAction,
@@ -133,10 +134,10 @@ export function ComponentExamples() {
         >
           {name ? `Preview name: ${name}` : "Try typing a name."}
         </p>
-        <details className="mt-2 text-[13px] text-muted-foreground">
-          <summary className="w-fit cursor-pointer rounded-sm underline underline-offset-4 hover:text-foreground">
+        <details className="group mt-2 text-[13px] text-muted-foreground">
+          <DisclosureSummary className="w-fit rounded-sm underline underline-offset-4 hover:text-foreground">
             Inspect disabled and error states
-          </summary>
+          </DisclosureSummary>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <div>
               <label htmlFor="design-example-disabled" className="mb-1 block">

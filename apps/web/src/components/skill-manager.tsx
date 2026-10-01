@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { DisclosureSummary } from "@/components/ui/disclosure-summary";
 import type { StoredSkill } from "@/lib/skills";
 
 export function SkillManager({ skills }: { skills: StoredSkill[] }) {
@@ -165,8 +166,8 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
                 {new Date(skill.createdAt).toLocaleDateString()}
               </p>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
-                <details className="min-w-[min(100%,320px)]">
-                  <summary className="cursor-pointer text-xs font-semibold">Review &amp; export</summary>
+                <details className="group min-w-[min(100%,320px)]">
+                  <DisclosureSummary className="text-xs font-semibold">Review &amp; export</DisclosureSummary>
                   <div className="mt-4 max-w-xl">
                     <p className="text-xs leading-5 text-muted-foreground">
                       Exporting {skill.name} v{skill.version}. This is a copy of
@@ -183,8 +184,8 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
                     {Object.entries(skill.files)
                       .sort(([left], [right]) => left.localeCompare(right))
                       .map(([path, content]) => (
-                        <details className="mt-2 rounded-lg border border-border p-3" key={path}>
-                          <summary className="cursor-pointer break-all text-xs font-medium">{path}</summary>
+                        <details className="group mt-2 rounded-lg border border-border p-3" key={path}>
+                          <DisclosureSummary className="break-all text-xs font-medium">{path}</DisclosureSummary>
                           <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap break-all text-xs leading-5">{content}</pre>
                         </details>
                       ))}

@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BookOpenText, FileText, FlaskConical, Library, ListTree, Menu, Palette, Search, Sparkles, Sun, X } from "lucide-react";
+import { Archive, BookOpenText, FileText, FlaskConical, Image, Library, Lightbulb, ListTree, Menu, PanelLeftClose, PanelLeftOpen, Palette, PenLine, Search, Sparkles, Sun, X } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-type Module = "resume" | "skills" | "memory" | "design" | "lab";
+type Module = "resume" | "skills" | "memory" | "design" | "lab" | "writing";
 
 const modules = [
   { id: "resume" as const, label: "Resume hub", href: "/", icon: FileText },
@@ -18,6 +18,7 @@ const modules = [
 ];
 const previewModules = [
   ...modules.map((module) => module.id === "design" ? { ...module, href: "/design-preview?view=design" } : module.id === "memory" ? { ...module, href: "/design-preview?view=memory" } : module),
+  { id: "writing" as const, label: "Writing studio", href: "/design-preview?view=writing", icon: PenLine },
 ];
 
 const moduleDetails: Record<Module, {
@@ -64,7 +65,24 @@ const moduleDetails: Record<Module, {
       { label: "Export", href: "/design-system#export", icon: FileText },
     ],
   },
+  writing: { title: "Writing studio", sections: [] },
 };
+
+const writingPreviewGroups = [
+  { title: "Create", items: [
+    { label: "New post", icon: FileText },
+    { label: "Templates", icon: Library },
+    { label: "Snippets", icon: PenLine },
+    { label: "Media", icon: Image },
+  ] },
+  { title: "Library", items: [
+    { label: "All posts", icon: FileText },
+    { label: "Drafts", icon: FileText },
+    { label: "Published", icon: FileText },
+    { label: "Ideas", icon: Lightbulb },
+    { label: "Archive", icon: Archive },
+  ] },
+];
 
 const previewMemorySections = [
   { label: "Handoff brief", href: "/design-preview?view=memory", icon: BookOpenText },
@@ -159,11 +177,13 @@ function ModuleSearch({ preview }: { preview: boolean }) {
   );
 }
 
-export function WorkspaceShell({ email, active, children, preview = false }: { email: string; active: Module; children: ReactNode; preview?: boolean }) {
+export function WorkspaceShell({ email, active, children, preview = false, headerActions, onPreviewAction }: { email: string; active: Module; children: ReactNode; preview?: boolean; headerActions?: ReactNode; onPreviewAction?: (label: string) => void }) {
   const detail = moduleDetails[active];
   const pathname = usePathname();
   const [hash, setHash] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [desktopCollapsed, setDesktopCollapsed] = useState(false);
+  const writingPreview = preview && active === "writing";
   const sidebarRef = useRef<HTMLDivElement>(null);
   const sidebarToggleRef = useRef<HTMLButtonElement>(null);
 
@@ -204,7 +224,7 @@ export function WorkspaceShell({ email, active, children, preview = false }: { e
 
   return (
     <div className="min-h-screen bg-[#f5f3ef] text-foreground md:flex">
-      <aside className="h-[60px] md:sticky md:top-0 md:h-screen md:w-[280px] md:shrink-0 md:p-3 xl:w-[292px]" aria-label="Workspace sidebar">
+      <aside className={cn("h-[60px] md:sticky md:top-0 md:h-screen md:shrink-0 md:p-3", writingPreview && desktopCollapsed ? "md:w-[76px]" : "md:w-[280px] xl:w-[292px]")} aria-label="Workspace sidebar">
         {mobileOpen && <button className="fixed inset-0 z-40 bg-foreground/50 md:hidden" type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)} />}
         <div
           ref={sidebarRef}
@@ -217,27 +237,34 @@ export function WorkspaceShell({ email, active, children, preview = false }: { e
           aria-label={mobileOpen ? "Navigation menu" : undefined}
           onKeyDown={trapSidebarFocus}
         >
-          <div className={cn("flex h-[60px] shrink-0 items-center justify-between px-4 md:h-[70px] md:border-b md:border-sidebar-border", mobileOpen && "border-b border-sidebar-border")}>
+          <div className={cn("flex h-[60px] shrink-0 items-center justify-between px-4 md:h-[70px] md:border-b md:border-sidebar-border", mobileOpen && "border-b border-sidebar-border", writingPreview && desktopCollapsed && "md:justify-center md:px-2")}>
             <Link className="flex items-center gap-2.5 font-display text-xl font-bold tracking-[-0.055em]" href="/" aria-label="Ken OS home" onClick={() => setMobileOpen(false)}>
               <span className="grid size-9 place-items-center rounded-lg bg-primary text-xl text-primary-foreground">K</span>
-              <span>ken<span className="text-muted-foreground">.os</span></span>
+              <span className={cn(writingPreview && desktopCollapsed && "md:hidden")}>ken<span className="text-muted-foreground">.os</span></span>
             </Link>
-            <Button className="md:hidden" ref={sidebarToggleRef} variant="outline" type="button" aria-label={mobileOpen ? "Close menu" : "Open menu"} aria-expanded={mobileOpen} aria-controls="workspace-sidebar-content" onClick={() => setMobileOpen((value) => !value)}>
+            <Button className={cn("md:hidden", writingPreview && "hidden")} ref={sidebarToggleRef} variant="outline" type="button" aria-label={mobileOpen ? "Close menu" : "Open menu"} aria-expanded={mobileOpen} aria-controls="workspace-sidebar-content" onClick={() => setMobileOpen((value) => !value)}>
               {mobileOpen ? <X size={18} /> : <Menu size={18} />} Menu
             </Button>
           </div>
-          <div className={cn("min-h-0 flex-1 overflow-y-auto px-3 py-6", mobileOpen ? "block" : "hidden md:block")} id="workspace-sidebar-content">
+          <div className={cn("min-h-0 flex-1 overflow-y-auto px-3 py-6", mobileOpen ? "block" : "hidden md:block", writingPreview && desktopCollapsed && "md:px-2")} id="workspace-sidebar-content">
             <div>
-              <p className={sidebarLabel}>WORKSPACE</p>
+              <p className={cn(sidebarLabel, writingPreview && desktopCollapsed && "md:sr-only")}>WORKSPACE</p>
               <nav className="grid gap-1" aria-label="Modules">
                 {(preview ? previewModules : modules).map(({ id, label, href, icon: Icon }) => (
-                  <Link key={id} className={cn(sidebarLink, active === id ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground")} href={href} aria-current={active === id ? "page" : undefined} onClick={() => setMobileOpen(false)}>
-                    <Icon size={18} strokeWidth={1.8} aria-hidden="true" /><span>{label}</span>
+                  <Link key={id} className={cn(sidebarLink, active === id ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground", writingPreview && desktopCollapsed && "md:justify-center md:px-2")} href={href} aria-label={writingPreview && desktopCollapsed ? label : undefined} title={writingPreview && desktopCollapsed ? label : undefined} aria-current={active === id ? "page" : undefined} onClick={() => setMobileOpen(false)}>
+                    <Icon size={18} strokeWidth={1.8} aria-hidden="true" /><span className={cn(writingPreview && desktopCollapsed && "md:sr-only")}>{label}</span>
                   </Link>
                 ))}
               </nav>
             </div>
-            <div className="mt-7">
+            {writingPreview ? writingPreviewGroups.map((group) => (
+              <div className={cn("mt-7", desktopCollapsed && "md:hidden")} key={group.title}>
+                <p className={sidebarLabel}>{group.title.toUpperCase()}</p>
+                <nav className="grid gap-1" aria-label={`${group.title} preview actions`}>
+                  {group.items.map(({ label, icon: Icon }) => <button className={cn(sidebarLink, "w-full text-left text-muted-foreground")} key={label} type="button" onClick={() => { onPreviewAction?.(label); setMobileOpen(false); }}><Icon size={17} strokeWidth={1.8} aria-hidden="true" />{label}</button>)}
+                </nav>
+              </div>
+            )) : <div className="mt-7">
               <p className={sidebarLabel}>{detail.title.toUpperCase()}</p>
               <nav className="grid gap-1" aria-label={`${detail.title} sections`}>
                 {(preview && active === "memory" ? previewMemorySections : detail.sections).map(({ label, href: originalHref, icon: Icon }, index) => {
@@ -249,20 +276,23 @@ export function WorkspaceShell({ email, active, children, preview = false }: { e
                   return <Link key={href} className={cn(sidebarLink, selected ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground")} href={resolvedHref} aria-current={selected ? "location" : undefined} onClick={() => setMobileOpen(false)}><Icon size={17} strokeWidth={1.8} aria-hidden="true" />{label}</Link>;
                 })}
               </nav>
-            </div>
+            </div>}
           </div>
-          <div className={cn("items-center gap-2.5 border-t border-sidebar-border px-4 py-3", mobileOpen ? "flex" : "hidden md:flex")} title={email}>
+          <div className={cn("items-center gap-2.5 border-t border-sidebar-border px-4 py-3", mobileOpen ? "flex" : "hidden md:flex", writingPreview && desktopCollapsed && "md:justify-center md:px-2")} title={email}>
             <span className="grid size-8 shrink-0 place-items-center rounded-full bg-secondary text-xs font-bold">{email[0]?.toUpperCase()}</span>
-            <span className="min-w-0"><strong className="block text-xs">Personal space</strong><small className="block truncate text-[11px] text-muted-foreground">{email}</small></span>
+            <span className={cn("min-w-0", writingPreview && desktopCollapsed && "md:hidden")}><strong className="block text-xs">Personal space</strong><small className="block truncate text-[11px] text-muted-foreground">{email}</small></span>
           </div>
         </div>
       </aside>
 
       <div className="min-w-0 flex-1 md:p-3 md:pl-0">
         <div className="min-h-[calc(100vh-60px)] bg-background md:min-h-[calc(100vh-24px)] md:rounded-xl md:border md:border-border md:shadow-sm">
-          <header className="flex h-16 items-center justify-between gap-4 border-b border-border px-5 sm:px-8">
-            <div className="min-w-0 truncate text-sm font-medium"><span className="hidden text-muted-foreground sm:inline">Ken OS <span className="px-2 text-border">/</span></span>{detail.title}</div>
-            <div className="flex items-center gap-3"><ModuleSearch preview={preview} /><form action="/api/auth/signout" method="post"><Button variant="ghost" type="submit" className="text-xs">Sign out</Button></form></div>
+          <header className={cn("flex h-16 items-center justify-between gap-4 border-b border-border px-5 sm:px-8", writingPreview && "sm:px-5")}>
+            <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
+              {writingPreview && <><button className="grid size-9 shrink-0 place-items-center rounded-lg border border-border hover:bg-muted md:hidden" type="button" aria-label="Open sidebar" aria-controls="workspace-sidebar-content" aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><Menu size={17} /></button><button className="hidden size-9 shrink-0 place-items-center rounded-lg border border-border hover:bg-muted md:grid" type="button" aria-label={desktopCollapsed ? "Expand sidebar" : "Collapse sidebar"} aria-controls="workspace-sidebar-content" aria-expanded={!desktopCollapsed} onClick={() => setDesktopCollapsed((value) => !value)}>{desktopCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</button></>}
+              <span className="truncate"><span className="hidden text-muted-foreground sm:inline">Ken OS <span className="px-2 text-border">/</span></span>{detail.title}{writingPreview && <><span className="px-2 text-border">/</span>Draft</>}</span>
+            </div>
+            {writingPreview ? headerActions : <div className="flex items-center gap-3"><ModuleSearch preview={preview} /><form action="/api/auth/signout" method="post"><Button variant="ghost" type="submit" className="text-xs">Sign out</Button></form></div>}
           </header>
           <main className="min-w-0" id="main-content">{children}</main>
         </div>

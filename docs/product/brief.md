@@ -25,7 +25,8 @@ After signing in, the owner selects a resume from Google Drive once. The dashboa
 ## Later modules to evaluate
 
 - Career: job opportunities, tailored resume copies, cover letters, application history.
-- Artifacts: portfolio, bio, project briefs, certificates, and reusable answers.
+- Artifacts: bio, project briefs, certificates, and reusable answers.
+- Publishing: a private [Blog Writing Studio](blog-writing-studio.md) for owner-authored technical diary entries, followed later by public portfolio curation.
 - Projects: repository status, decisions, tasks, and release notes. The proposed [Project Memory module](project-memory.md) starts with decisions and evidence-backed work receipts for Ken OS itself.
 - Knowledge: notes, bookmarks, and searchable personal context.
 - Automation: recurring checks, scheduled agent work, and an approval inbox.

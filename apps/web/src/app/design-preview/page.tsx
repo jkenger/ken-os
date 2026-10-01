@@ -8,6 +8,7 @@ import { LabToday } from "@/components/lab/lab-today";
 import { LabTopic } from "@/components/lab/lab-topic";
 import { findTopic, labsForTopic } from "@/features/engineering-lab/curriculum";
 import { previewToday, previewTopic } from "@/features/engineering-lab/preview";
+import { WritingStudioPreview } from "@/components/writing-studio-preview";
 
 export default async function DesignPreview({ searchParams }: { searchParams: Promise<{ view?: string; topic?: string }> }) {
   if (process.env.NODE_ENV !== "development") notFound();
@@ -31,6 +32,9 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
   }
   if (view === "design") {
     return <DesignSystemWorkspace email="preview@example.invalid" preview />;
+  }
+  if (view === "writing") {
+    return <WritingStudioPreview />;
   }
 
   return (
