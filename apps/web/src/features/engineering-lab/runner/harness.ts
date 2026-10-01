@@ -62,6 +62,11 @@ const assert = {
   ok(value, message) {
     if (!value) throw new Error(message || "Expected a truthy value, got " + __format(value));
   },
+  async rejects(promiseOrFn, message) {
+    try { await (typeof promiseOrFn === "function" ? promiseOrFn() : promiseOrFn); }
+    catch { return; }
+    throw new Error(message || "Expected it to fail, but it succeeded");
+  },
 };
 `;
 
@@ -72,12 +77,33 @@ function load(source: string) {
 
 const POST = `const __post = (message) => { if (typeof postMessage === "function") postMessage(message); else globalThis.__result = message; };`;
 
+export interface LabScriptOptions {
+  /** The app origin, for labs that make cross-origin requests back to the practice endpoints. */
+  origin?: string;
+  /** Database labs: PGlite is imported from this URL (null when a test already set globalThis.db), then setup runs. */
+  pglite?: { url: string | null; setup: string };
+}
+
 /** Learner code plus the lab's tests. Each test runs in order; the worker reports every result. */
-export function buildLabScript(code: string, tests: string) {
+export function buildLabScript(code: string, tests: string, options: LabScriptOptions = {}) {
+  const database = options.pglite ? `
+  try {
+    const url = ${JSON.stringify(options.pglite.url)};
+    if (url) {
+      const { PGlite } = await import(url);
+      globalThis.db = new PGlite();
+    }
+    await globalThis.db.exec(${JSON.stringify(options.pglite.setup)});
+  } catch (error) {
+    __post({ type: "error", message: "The practice database could not start: " + String(error && error.message || error), logs: __logs });
+    return;
+  }` : "";
   return `${HARNESS}
 ${POST}
-${load(`${code}\n;\n${tests}`)}
-(async () => {
+globalThis.LAB_ORIGIN = ${JSON.stringify(options.origin ?? "")};
+(async () => {${database}
+  try { (0, eval)(${JSON.stringify(`${code}\n;\n${tests}`)}); }
+  catch (error) { __post({ type: "error", message: String(error && error.message || error), logs: __logs }); return; }
   const results = [];
   for (const { name, fn } of __tests) {
     try { await fn(); results.push({ name, passed: true }); }

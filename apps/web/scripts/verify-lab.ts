@@ -67,11 +67,17 @@ async function main() {
     assert.equal(afterReveal.solutionSeen, true);
     const failedLab = await store.submitLabRun(userId, { labId: "shallow-copy", code: "// broken", run: { passed: 0, failed: 2, output: "" } });
     assert.equal(failedLab.grade.label, "gap");
-    assert.equal(failedLab.statuses[topicId], "NEEDS_REVISIT", "a failed lab run after validation brings the topic back");
-    console.log("ok - solution reveal recorded, later failure sets NEEDS_REVISIT");
+    assert.equal(failedLab.statuses[topicId], "VALIDATED", "a lab run after seeing the solution counts neither way");
+
+    const reviewId = randomUUID();
+    await db().insert(labAssessments).values({ id: reviewId, userId, topicId, kind: "review", items: [items[0]], promptVersion: "check", model: "none" });
+    const slip = await store.submitAnswer(userId, { assessmentId: reviewId, itemIndex: 0, selfRating: 5, response: { lines: ["true", "true"] }, actualOutput: ["false", "true"] });
+    assert.equal(slip.status, "NEEDS_REVISIT", "a failed review after validation brings the topic back");
+    console.log("ok - solution reveal recorded and ignored as proof; a failed review sets NEEDS_REVISIT");
 
     const view = await store.getTopicView(userId, topicId);
-    assert.equal(view.assessment?.items.length, 3);
+    assert.equal(view.assessment?.kind, "review", "the topic page shows the newest question set");
+    assert.equal(view.assessment?.items[0].answered?.label, "partial", "a wrong value, not a wrong order");
     assert.ok(view.assessment?.items.every((item) => !("expectedOutput" in item) && !("rubric" in item)), "answers and rubrics never reach the browser");
     assert.equal(view.revealedLabs.includes("shallow-copy"), true);
     const plan = (await store.getToday(userId)).plan;
