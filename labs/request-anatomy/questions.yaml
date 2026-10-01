@@ -1,0 +1,21 @@
+questions:
+  - id: get_origin
+    prompt: Does a same-origin GET request from fetch carry an Origin header?
+    options: ["yes", "no"]
+    why: The Fetch standard adds Origin to same-origin requests only when the method isn't GET or HEAD. Cross-origin requests always carry it.
+  - id: post_origin
+    prompt: Does a same-origin POST carry an Origin header?
+    options: ["yes", "no"]
+    why: Any request that can change state gets Origin, so servers can check where it came from. Ken OS's own routes rely on this.
+  - id: sec_fetch_site
+    prompt: What does the Sec-Fetch-Site header say for these requests?
+    options: ["same-origin", "same-site", "cross-site", "not sent"]
+    why: Browsers label each request with how it relates to the page that made it; servers can use this to refuse cross-site requests.
+  - id: cookies_by_default
+    prompt: With no credentials option, does a same-origin fetch send your cookies?
+    options: ["yes", "no"]
+    why: The default credentials mode is same-origin, so cookies go to your own origin automatically and not to others.
+  - id: encrypted
+    prompt: Is the connection between this browser and Ken OS encrypted right now?
+    options: ["yes", "no"]
+    why: HTTPS is HTTP sent inside a TLS connection, which gives encryption, tamper detection and proof of the server's identity. Plain http, as on localhost, has none of those, whether the server is public or private.

@@ -3,12 +3,13 @@
 import { useEffect, useState, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ExternalLink, Play, RotateCcw } from "lucide-react";
-import { parsePredictedLines, type LabDefinition, type Topic } from "@ken-os/domain";
+import { parsePredictedLines, scoreProbe, type LabDefinition, type Topic } from "@ken-os/domain";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button } from "@/components/ui/button";
 import { DisclosureSummary } from "@/components/ui/disclosure-summary";
 import type { TopicView } from "@/features/engineering-lab/store";
-import { buildLabScript, buildPredictScript, type TestResult } from "@/features/engineering-lab/runner/harness";
+import { buildLabScript, buildPredictScript, PGLITE_URL, type TestResult } from "@/features/engineering-lab/runner/harness";
+import { PROBES } from "@/features/engineering-lab/runner/probes";
 import { runInWorker } from "@/features/engineering-lab/runner/run-in-worker";
 import { cn } from "@/lib/utils";
 import { CodeBlock, Markdown } from "./markdown";
@@ -65,7 +66,11 @@ function Lab({ lab, revealed, onDone }: { lab: LabDefinition; revealed: boolean;
   async function run() {
     setBusy(true); setProblem(""); setResults(null);
     try {
-      const outcome = await runInWorker(buildLabScript(code, lab.tests), lab.timeoutMs + 1000);
+      const script = buildLabScript(code, lab.tests, {
+        origin: window.location.origin,
+        pglite: lab.runner === "pglite" ? { url: PGLITE_URL, setup: lab.setup } : undefined,
+      });
+      const outcome = await runInWorker(script, lab.timeoutMs + 1000);
       if (outcome.type !== "tests") {
         setProblem(outcome.type === "output" ? "No tests ran." : outcome.message);
         return;
@@ -112,6 +117,65 @@ function Lab({ lab, revealed, onDone }: { lab: LabDefinition; revealed: boolean;
       )}
       <details className="group mt-4" id={`${lab.id}-tests`}><DisclosureSummary className="text-xs font-semibold">See the tests</DisclosureSummary><div className="mt-2"><CodeBlock code={lab.tests} /></div></details>
       {solution && <div className="mt-4"><p className="mb-2 text-sm font-semibold">Solution</p><CodeBlock code={solution} /></div>}
+    </article>
+  );
+}
+
+function ProbeLab({ lab, onDone }: { lab: LabDefinition; onDone: (message: string) => void }) {
+  const questions = lab.probe!.questions;
+  const [predicted, setPredicted] = useState<Record<string, string>>({});
+  const [results, setResults] = useState<TestResult[] | null>(null);
+  const [problem, setProblem] = useState("");
+  const [busy, setBusy] = useState(false);
+  const ready = questions.every((question) => predicted[question.id]);
+
+  async function check() {
+    setBusy(true); setProblem(""); setResults(null);
+    try {
+      const probe = PROBES[lab.probe!.id];
+      if (!probe) throw new Error("This check isn't available in this build.");
+      const observed = await probe();
+      const score = scoreProbe(questions, predicted, observed);
+      setResults(score.results);
+      const output = score.results.map((item) => `${item.passed ? "PASS" : "FAIL"} ${item.name}${item.error ? `: ${item.error}` : ""}`).join("\n");
+      await post("/api/lab/attempts", { type: "lab", labId: lab.id, code: JSON.stringify(predicted), run: { passed: score.passed, failed: score.failed, output } });
+      onDone("Check saved.");
+    } catch (error) {
+      setProblem(error instanceof Error ? error.message : "The check could not run.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <article className="mt-5 rounded-xl border border-border p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <h3 className="font-display text-lg font-semibold tracking-[-0.03em]">{lab.title}</h3>
+        <span className={label}>PREDICT, THEN CHECK</span>
+      </div>
+      <div className="mt-3"><Markdown text={lab.readme} /></div>
+      <ol className="mt-5 space-y-4">
+        {questions.map((question, index) => (
+          <li key={question.id}>
+            <fieldset>
+              <legend className="text-[15px] font-semibold">{index + 1}. {question.prompt}</legend>
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {question.options.map((option) => (
+                  <Button key={option} type="button" size="sm" variant={predicted[question.id] === option ? "default" : "outline"} aria-pressed={predicted[question.id] === option}
+                    onClick={() => setPredicted((current) => ({ ...current, [question.id]: option }))}>{option}</Button>
+                ))}
+              </div>
+            </fieldset>
+          </li>
+        ))}
+      </ol>
+      <Button type="button" className="mt-5" disabled={busy || !ready} onClick={() => void check()}><Play size={15} aria-hidden="true" />{busy ? "Running real requests..." : ready ? "Run the check" : "Answer every question first"}</Button>
+      {problem && <p className="mt-3 rounded-lg bg-muted px-4 py-3 text-sm" role="alert">{problem}</p>}
+      {results && (
+        <ul className="mt-4 space-y-2 text-sm" role="status">
+          {results.map((item) => <li key={item.name} className="flex gap-2"><Tag value={item.passed ? "solid" : "gap"}>{item.passed ? "Right" : "Wrong"}</Tag><span>{item.name}{item.error && <span className="block text-muted-foreground">{item.error}</span>}</span></li>)}
+        </ul>
+      )}
     </article>
   );
 }
@@ -291,9 +355,16 @@ export function LabTopic({ email, topic, view, labs, skipLesson }: { email: stri
         {labs.length > 0 && (
           <section className={section} id="labs" aria-labelledby="labs-title">
             <p className={label}>LABS</p>
-            <h2 className={heading} id="labs-title">Fix it in code</h2>
-            <p className="mt-2 text-sm text-muted-foreground">Code runs in your browser, cut off from your Ken OS session. A full pass counts as proof unless you looked at the solution first.</p>
-            {labs.map((lab) => <Lab key={lab.id} lab={lab} revealed={view.revealedLabs.includes(lab.id)} onDone={done} />)}
+            <h2 className={heading} id="labs-title">{labs.every((lab) => lab.runner === "probe") ? "Predict, then watch the browser" : "Fix it in code"}</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {labs.every((lab) => lab.runner === "probe")
+                ? "Your predictions are checked against real requests your browser makes now. Every answer right counts as proof."
+                : "Code runs in your browser, cut off from your Ken OS session. A full pass counts as proof unless you looked at the solution first."}
+              {labs.some((lab) => lab.runner === "pglite") && " Database labs load a small Postgres (PGlite) into the page the first time, which takes a few seconds."}
+            </p>
+            {labs.map((lab) => lab.runner === "probe"
+              ? <ProbeLab key={lab.id} lab={lab} onDone={done} />
+              : <Lab key={lab.id} lab={lab} revealed={view.revealedLabs.includes(lab.id)} onDone={done} />)}
           </section>
         )}
 

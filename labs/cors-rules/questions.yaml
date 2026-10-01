@@ -1,0 +1,25 @@
+questions:
+  - id: none_readable
+    prompt: With no CORS headers, can the other site read the response?
+    options: ["yes", "no"]
+    why: The server still answered; the browser refused to hand the response to the calling page. CORS controls reading, not access, so it never replaces authorization on the server.
+  - id: star_readable
+    prompt: With Access-Control-Allow-Origin set to *, can it read the response?
+    options: ["yes", "no"]
+    why: "* lets any origin read responses to requests sent without credentials."
+  - id: star_credentials_readable
+    prompt: With * and Allow-Credentials true, can a request with credentials included read the response?
+    options: ["yes", "no"]
+    why: Browsers refuse * for credentialed requests. The server has to name the exact origin it trusts.
+  - id: echo_credentials_readable
+    prompt: With the caller's exact origin and Allow-Credentials true, can a credentialed request read the response?
+    options: ["yes", "no"]
+    why: That is the one combination that allows credentialed cross-origin reads. Echoing any origin back like this is dangerous on a real API.
+  - id: custom_header_denied_readable
+    prompt: With a custom header the preflight doesn't allow, can it read the response?
+    options: ["yes", "no"]
+    why: A custom header makes the browser send an OPTIONS preflight first. When the preflight doesn't allow the header, the real request is never sent.
+  - id: custom_header_allowed_readable
+    prompt: When the preflight allows the custom header, can it read the response?
+    options: ["yes", "no"]
+    why: The preflight approved the header, so the browser sends the real request and lets the page read the answer.

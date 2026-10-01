@@ -39,6 +39,24 @@ export function Markdown({ text }: { text: string }) {
       blocks.push(<CodeBlock key={blocks.length} code={code.join("\n")} />);
       continue;
     }
+    if (line.trim().startsWith("|")) {
+      const rows: string[][] = [];
+      while (index < lines.length && lines[index].trim().startsWith("|")) {
+        const cells = lines[index++].trim().replace(/^\||\|$/g, "").split("|").map((cell) => cell.trim());
+        if (!cells.every((cell) => /^:?-{2,}:?$/.test(cell))) rows.push(cells);
+      }
+      const [head, ...body] = rows;
+      const key = blocks.length;
+      blocks.push(
+        <div key={key} className="overflow-x-auto">
+          <table className="w-full border-collapse text-left text-sm">
+            <thead><tr>{head.map((cell, cellIndex) => <th key={cellIndex} className="border-b border-border px-3 py-2 font-semibold">{inline(cell, `${key}-h${cellIndex}`)}</th>)}</tr></thead>
+            <tbody>{body.map((row, rowIndex) => <tr key={rowIndex}>{row.map((cell, cellIndex) => <td key={cellIndex} className="border-b border-border px-3 py-2 align-top">{inline(cell, `${key}-${rowIndex}-${cellIndex}`)}</td>)}</tr>)}</tbody>
+          </table>
+        </div>,
+      );
+      continue;
+    }
     if (/^\s*([-*]|\d+\.)\s+/.test(line)) {
       const ordered = /^\s*\d+\./.test(line);
       const items: string[] = [];
@@ -54,7 +72,7 @@ export function Markdown({ text }: { text: string }) {
     }
     if (!line.trim()) { index += 1; continue; }
     const paragraph: string[] = [];
-    while (index < lines.length && lines[index].trim() && !lines[index].startsWith("```") && !/^\s*([-*]|\d+\.)\s+/.test(lines[index]) && !/^#{1,4}\s/.test(lines[index])) paragraph.push(lines[index++]);
+    while (index < lines.length && lines[index].trim() && !lines[index].trim().startsWith("|") && !lines[index].startsWith("```") && !/^\s*([-*]|\d+\.)\s+/.test(lines[index]) && !/^#{1,4}\s/.test(lines[index])) paragraph.push(lines[index++]);
     blocks.push(<p key={blocks.length}>{inline(paragraph.join(" "), `${blocks.length}`)}</p>);
   }
   return <div className="space-y-3 text-[15px] leading-6">{blocks.map((block, blockIndex) => <Fragment key={blockIndex}>{block}</Fragment>)}</div>;

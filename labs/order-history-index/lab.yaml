@@ -1,0 +1,6 @@
+id: order-history-index
+title: Fix the index that's in the wrong order
+topics: [db.composite_indexes, db.query_plans]
+modes: [debug, implement]
+runner: pglite
+timeoutMs: 25000

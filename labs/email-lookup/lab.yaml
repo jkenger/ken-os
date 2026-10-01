@@ -1,0 +1,6 @@
+id: email-lookup
+title: Find a customer without reading the whole table
+topics: [db.indexes]
+modes: [implement]
+runner: pglite
+timeoutMs: 25000

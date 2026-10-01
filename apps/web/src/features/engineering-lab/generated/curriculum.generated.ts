@@ -7,6 +7,16 @@ export const topicMap: TopicMap = {
       "id": "m1-js-runtime",
       "title": "JavaScript runtime and async",
       "track": "fullstack"
+    },
+    {
+      "id": "m2-http-browser",
+      "title": "HTTP and the browser",
+      "track": "fullstack"
+    },
+    {
+      "id": "m3-db-concurrency",
+      "title": "Database transactions, concurrency and indexes",
+      "track": "fullstack"
     }
   ],
   "topics": [
@@ -132,6 +142,254 @@ export const topicMap: TopicMap = {
       "labs": [
         "search-race"
       ]
+    },
+    {
+      "id": "web.request_lifecycle",
+      "title": "From URL to response, including HTTPS",
+      "module": "m2-http-browser",
+      "requires": [],
+      "freshness": "web_platform",
+      "sourceGroups": [
+        "web"
+      ],
+      "gap": "Could not explain what happens between typing a URL and seeing a page, had no working model of DNS, and described HTTP as local or unsecured and HTTPS as public. Needs: DNS lookup, TCP and TLS at concept level, HTTPS as HTTP inside TLS (encryption, integrity, server identity), the request and response, and which headers the browser adds.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "predict"
+      ],
+      "labs": [
+        "request-anatomy"
+      ]
+    },
+    {
+      "id": "web.cookies_sessions",
+      "title": "Cookies and sessions",
+      "module": "m2-http-browser",
+      "requires": [
+        "web.request_lifecycle"
+      ],
+      "freshness": "web_platform",
+      "sourceGroups": [
+        "web"
+      ],
+      "gap": "Remembered credentials include and origin ideas, but the browser's cookie and session rules were unclear. Needs: how a server-set cookie becomes a session, Path, Max-Age, HttpOnly, Secure, SameSite, and when a cookie travels with a request.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "predict"
+      ],
+      "labs": [
+        "cookie-rules"
+      ]
+    },
+    {
+      "id": "web.cors",
+      "title": "CORS, and what it does not protect",
+      "module": "m2-http-browser",
+      "requires": [
+        "web.cookies_sessions"
+      ],
+      "freshness": "web_platform",
+      "sourceGroups": [
+        "web"
+      ],
+      "gap": "Described CORS as protection against unauthorized bad actors. Needs: CORS is a browser rule about which origins may read a response, not server authorization; simple versus preflighted requests; credentials and the wildcard.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "predict"
+      ],
+      "labs": [
+        "cors-rules"
+      ]
+    },
+    {
+      "id": "web.http_caching",
+      "title": "Browser caching and HTTP cache headers",
+      "module": "m2-http-browser",
+      "requires": [
+        "web.request_lifecycle"
+      ],
+      "freshness": "web_platform",
+      "sourceGroups": [
+        "web"
+      ],
+      "gap": "Could not tell browser caching from server caching. Needs: Cache-Control max-age, no-cache and no-store, ETag revalidation and 304, private versus shared caches, and where a CDN or server cache sits relative to the browser.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "predict"
+      ],
+      "labs": [
+        "cache-rules"
+      ]
+    },
+    {
+      "id": "db.transactions",
+      "title": "Transactions and all-or-nothing writes",
+      "module": "m3-db-concurrency",
+      "requires": [],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "database"
+      ],
+      "gap": "Baseline was solid: related writes should roll back together. Check it in code, including that a failure in the middle leaves nothing behind, and that a database transaction cannot undo emails or calls to other services.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "transfer-rollback"
+      ]
+    },
+    {
+      "id": "db.constraints",
+      "title": "Constraints as the source of truth",
+      "module": "m3-db-concurrency",
+      "requires": [
+        "db.transactions"
+      ],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "database"
+      ],
+      "gap": "Knew database uniqueness beats application checks but not why. Needs: why check-then-insert races, unique constraints and expression indexes, and handling a unique violation as a normal outcome.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "debug"
+      ],
+      "labs": [
+        "unique-signup"
+      ]
+    },
+    {
+      "id": "db.lost_update",
+      "title": "Lost updates",
+      "module": "m3-db-concurrency",
+      "requires": [
+        "db.transactions"
+      ],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "database"
+      ],
+      "gap": "Sensed possible inconsistency but could not explain lost updates or isolation, or two buyers both succeeding on the same stock. Needs: read-modify-write races, why a transaction alone does not prevent them at the default isolation level, and the options that do.",
+      "depth": "deep",
+      "prove": [
+        "explain",
+        "debug"
+      ],
+      "labs": [
+        "stock-race"
+      ]
+    },
+    {
+      "id": "db.atomic_updates",
+      "title": "Atomic updates and conditional writes",
+      "module": "m3-db-concurrency",
+      "requires": [
+        "db.lost_update"
+      ],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "database"
+      ],
+      "gap": "No working fix for concurrent stock decrements. Needs: doing the check and the change in one statement, UPDATE with WHERE and RETURNING, and when to reach for row locks or a stricter isolation level instead.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "stock-race"
+      ]
+    },
+    {
+      "id": "db.indexes",
+      "title": "What an index is and when Postgres uses it",
+      "module": "m3-db-concurrency",
+      "requires": [],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "database"
+      ],
+      "gap": "Knew indexes help on large tables but could not design or inspect one. Needs: B-tree basics, Seq Scan versus Index Scan, reading EXPLAIN, and the write and storage cost of an index.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "email-lookup"
+      ]
+    },
+    {
+      "id": "db.composite_indexes",
+      "title": "Composite indexes and column order",
+      "module": "m3-db-concurrency",
+      "requires": [
+        "db.indexes"
+      ],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "database"
+      ],
+      "gap": "No model of composite indexes; for a slow user_id plus created_at query, only suggested selecting fewer columns. Needs: how column order decides which queries an index can serve, and an index that also returns rows in order.",
+      "depth": "deep",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "order-history-index"
+      ]
+    },
+    {
+      "id": "db.query_plans",
+      "title": "Reading query plans",
+      "module": "m3-db-concurrency",
+      "requires": [
+        "db.indexes"
+      ],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "database"
+      ],
+      "gap": "Missed the execution plan and scan and sort behavior when diagnosing a slow query. Needs: reading EXPLAIN and EXPLAIN ANALYZE, Index Cond versus Filter, Sort nodes, and row estimates versus actual rows.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "debug"
+      ],
+      "labs": [
+        "order-history-index"
+      ]
+    },
+    {
+      "id": "api.idempotency_basics",
+      "title": "Idempotent create requests",
+      "module": "m3-db-concurrency",
+      "requires": [
+        "db.constraints",
+        "db.atomic_updates"
+      ],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "web",
+        "database"
+      ],
+      "gap": "No working model of idempotency; missed that a retried create needs a stable request key. Needs: which HTTP methods are idempotent, idempotency keys, enforcing them with a unique constraint, and returning the original result on a retry.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "idempotent-payment"
+      ]
     }
   ]
 };
@@ -177,11 +435,167 @@ export const baseline: Baseline = {
         "useCallback prevents out-of-order responses",
         "A [query] effect dependency causes an infinite loop"
       ]
+    },
+    {
+      "topicId": "web.request_lifecycle",
+      "label": "gap",
+      "mode": "explain",
+      "notes": "Could not explain what happens from entering a URL to rendering a page, had no deep model of DNS, and described HTTP as local or unsecured and HTTPS as public.",
+      "misconceptions": [
+        "HTTP is for local use and HTTPS is for public sites"
+      ]
+    },
+    {
+      "topicId": "web.cookies_sessions",
+      "label": "rusty",
+      "mode": "explain",
+      "notes": "Remembered credentials include and origin-related ideas, but browser cookie and session behavior was unclear.",
+      "misconceptions": []
+    },
+    {
+      "topicId": "web.cors",
+      "label": "misconception",
+      "mode": "explain",
+      "notes": "Described CORS as protection against unauthorized bad actors.",
+      "misconceptions": [
+        "CORS protects a server from unauthorized callers"
+      ]
+    },
+    {
+      "topicId": "web.http_caching",
+      "label": "gap",
+      "mode": "explain",
+      "notes": "Could not clearly distinguish browser caching from server caching.",
+      "misconceptions": []
+    },
+    {
+      "topicId": "db.transactions",
+      "label": "solid",
+      "mode": "explain",
+      "notes": "Correctly understood that related writes should roll back together if one fails.",
+      "misconceptions": []
+    },
+    {
+      "topicId": "db.constraints",
+      "label": "partial",
+      "mode": "explain",
+      "notes": "Understood database uniqueness is more authoritative than application checks, but initially not why.",
+      "misconceptions": []
+    },
+    {
+      "topicId": "db.lost_update",
+      "label": "partial",
+      "mode": "explain",
+      "notes": "Recognized possible data inconsistency but could not clearly explain lost updates or isolation.",
+      "misconceptions": []
+    },
+    {
+      "topicId": "db.atomic_updates",
+      "label": "gap",
+      "mode": "explain",
+      "notes": "Could not confidently explain two simultaneous buyers reading the same stock and both succeeding.",
+      "misconceptions": []
+    },
+    {
+      "topicId": "db.indexes",
+      "label": "partial",
+      "mode": "explain",
+      "notes": "Knows indexes are used for performance on large datasets but cannot confidently design or inspect them.",
+      "misconceptions": []
+    },
+    {
+      "topicId": "db.composite_indexes",
+      "label": "gap",
+      "mode": "design",
+      "notes": "For a slow query, only suggested selecting fewer fields and missed the composite index on user_id and created_at.",
+      "misconceptions": [
+        "Selecting fewer columns is the main fix for a slow filtered and sorted query"
+      ]
+    },
+    {
+      "topicId": "db.query_plans",
+      "label": "gap",
+      "mode": "debug",
+      "notes": "Missed the execution plan and scan or sort behavior when diagnosing a slow query.",
+      "misconceptions": []
+    },
+    {
+      "topicId": "api.idempotency_basics",
+      "label": "gap",
+      "mode": "explain",
+      "notes": "No working understanding of idempotency, and missed the idempotency key for retry safety in a create flow.",
+      "misconceptions": []
     }
   ]
 };
 
 export const labs: LabDefinition[] = [
+  {
+    "id": "cache-rules",
+    "title": "When the browser asks the server again",
+    "topics": [
+      "web.http_caching"
+    ],
+    "modes": [
+      "predict"
+    ],
+    "runner": "probe",
+    "timeoutMs": 15000,
+    "readme": "The check fetches the same URL twice for each of three caching policies and reads the browser's own timing data to\nsee what the second request did. Each response body is about 20 KB, so a full download is easy to spot.\n\n| Policy | Response headers |\n|---|---|\n| max-age | `Cache-Control: private, max-age=120` |\n| no-cache | `Cache-Control: private, no-cache` plus an `ETag` |\n| no-store | `Cache-Control: no-store` |\n\nTurn off \"Disable cache\" in DevTools before running, or every answer will be \"reaches the server\". This is the\nbrowser's cache only. A CDN or server cache in front of Ken OS would be a separate layer with its own rules.",
+    "starter": "",
+    "tests": "",
+    "setup": "",
+    "probe": {
+      "id": "cache-rules",
+      "questions": [
+        {
+          "id": "maxage_server",
+          "prompt": "With max-age=120, does the second request reach the server?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "For 120 seconds the browser treats its copy as fresh and answers from its own cache with no network request."
+        },
+        {
+          "id": "nocache_server",
+          "prompt": "With no-cache and an ETag, does the second request reach the server?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "no-cache doesn't mean \"don't cache\". It means \"check with the server before reusing\", so the browser asks, sending If-None-Match."
+        },
+        {
+          "id": "nocache_body",
+          "prompt": "With no-cache and an ETag, does the server send the full body again?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "The ETag still matches, so the server answers 304 Not Modified with no body and the browser reuses its copy."
+        },
+        {
+          "id": "nostore_server",
+          "prompt": "With no-store, does the second request reach the server?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "no-store forbids keeping a copy at all, so every request goes to the server."
+        },
+        {
+          "id": "nostore_body",
+          "prompt": "With no-store, is the full body downloaded again?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "With no stored copy there's nothing to revalidate, so the whole response comes back every time."
+        }
+      ]
+    }
+  },
   {
     "id": "closure-loop",
     "title": "Fix the handlers that all see the last value",
@@ -195,7 +609,185 @@ export const labs: LabDefinition[] = [
     "timeoutMs": 2000,
     "readme": "Two bugs, both about what a function remembers.\n\n1. `makeHandlers([\"a\", \"b\", \"c\"])` should return three functions that return `clicked a`, `clicked b` and\n   `clicked c`. Today every handler returns the wrong label.\n2. `createCounter()` should return a counter with its own count. Today two counters share one count.\n\nFix both without changing how they are called. For each bug, write one sentence on what the function captured.",
     "starter": "function makeHandlers(labels) {\n  var handlers = [];\n  for (var i = 0; i < labels.length; i++) {\n    handlers.push(function () {\n      return \"clicked \" + labels[i];\n    });\n  }\n  return handlers;\n}\n\nlet count = 0;\n\nfunction createCounter() {\n  return {\n    increment() {\n      count += 1;\n      return count;\n    },\n    read() {\n      return count;\n    },\n  };\n}\n",
-    "tests": "test(\"each handler returns its own label\", () => {\n  const handlers = makeHandlers([\"a\", \"b\", \"c\"]);\n  assert.deepEqual(handlers.map((handler) => handler()), [\"clicked a\", \"clicked b\", \"clicked c\"]);\n});\n\ntest(\"counters keep separate counts\", () => {\n  const first = createCounter();\n  const second = createCounter();\n  first.increment();\n  first.increment();\n  second.increment();\n  assert.equal(first.read(), 2);\n  assert.equal(second.read(), 1);\n});\n"
+    "tests": "test(\"each handler returns its own label\", () => {\n  const handlers = makeHandlers([\"a\", \"b\", \"c\"]);\n  assert.deepEqual(handlers.map((handler) => handler()), [\"clicked a\", \"clicked b\", \"clicked c\"]);\n});\n\ntest(\"counters keep separate counts\", () => {\n  const first = createCounter();\n  const second = createCounter();\n  first.increment();\n  first.increment();\n  second.increment();\n  assert.equal(first.read(), 2);\n  assert.equal(second.read(), 1);\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
+    "id": "cookie-rules",
+    "title": "Which cookies go where",
+    "topics": [
+      "web.cookies_sessions"
+    ],
+    "modes": [
+      "predict"
+    ],
+    "runner": "probe",
+    "timeoutMs": 15000,
+    "readme": "The practice endpoint sets five cookies, all valid for 10 minutes unless noted:\n\n| Cookie | Rule |\n|---|---|\n| `kos_lab_basic` | `Path=/` |\n| `kos_lab_httponly` | `Path=/; HttpOnly` |\n| `kos_lab_path` | `Path=/api/lab/playground/cookies/inner` |\n| `kos_lab_expired` | `Path=/; Max-Age=0` |\n| `kos_lab_strict` | `Path=/; SameSite=Strict` |\n\nThen the check reads `document.cookie`, calls two endpoints that report which cookies arrived, and makes one request\nfrom another site (the code box's isolated worker). Predict each answer first.",
+    "starter": "",
+    "tests": "",
+    "setup": "",
+    "probe": {
+      "id": "cookie-rules",
+      "questions": [
+        {
+          "id": "basic_visible",
+          "prompt": "Can page JavaScript see kos_lab_basic in document.cookie?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "Cookies without HttpOnly are readable by any script on the page, which is why session cookies should never be plain cookies."
+        },
+        {
+          "id": "httponly_visible",
+          "prompt": "Can page JavaScript see kos_lab_httponly in document.cookie?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "HttpOnly hides a cookie from scripts, so an XSS bug can't read the session token. The browser still sends it."
+        },
+        {
+          "id": "httponly_sent",
+          "prompt": "Does the server receive kos_lab_httponly?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "HttpOnly only affects scripts. The browser attaches the cookie to matching requests as usual."
+        },
+        {
+          "id": "path_sent_outside",
+          "prompt": "Is kos_lab_path sent to /api/lab/playground/cookies?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "A cookie is only sent to URLs under its Path. /cookies is the parent of /cookies/inner, not inside it."
+        },
+        {
+          "id": "path_sent_inside",
+          "prompt": "Is kos_lab_path sent to /api/lab/playground/cookies/inner?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "That URL is inside the cookie's Path, so it matches."
+        },
+        {
+          "id": "expired_sent",
+          "prompt": "Is kos_lab_expired sent anywhere?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "Max-Age=0 tells the browser to delete the cookie at once. This is how servers log a cookie out."
+        },
+        {
+          "id": "cross_site_sent",
+          "prompt": "Does a request from another site carry kos_lab_basic, even with credentials included?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "A cookie with no SameSite is treated as Lax by modern browsers, and other browsers block third-party cookies anyway, so a cross-site fetch doesn't carry it. This is a CSRF defence, separate from CORS."
+        }
+      ]
+    }
+  },
+  {
+    "id": "cors-rules",
+    "title": "What another site may read",
+    "topics": [
+      "web.cors"
+    ],
+    "modes": [
+      "predict"
+    ],
+    "runner": "probe",
+    "timeoutMs": 15000,
+    "readme": "The code box runs in an isolated worker whose origin is `null`, so to Ken OS it is another site. The check sends six\nrequests from there to a practice endpoint, each answered with a different CORS policy, and records whether the\ncalling code could read the response.\n\n| Variant | Server sends |\n|---|---|\n| none | no CORS headers |\n| star | `Access-Control-Allow-Origin: *` |\n| star-credentials | `*` plus `Allow-Credentials: true`; request uses `credentials: \"include\"` |\n| echo-credentials | the caller's origin plus `Allow-Credentials: true`; request uses `credentials: \"include\"` |\n| preflight-denied | the caller's origin; request adds an `X-Lab-Token` header, which the preflight doesn't allow |\n| preflight-allowed | the same, but the preflight allows `X-Lab-Token` |\n\nBefore you start, write down who enforces CORS: the server, the browser, or both.",
+    "starter": "",
+    "tests": "",
+    "setup": "",
+    "probe": {
+      "id": "cors-rules",
+      "questions": [
+        {
+          "id": "none_readable",
+          "prompt": "With no CORS headers, can the other site read the response?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "The server still answered; the browser refused to hand the response to the calling page. CORS controls reading, not access, so it never replaces authorization on the server."
+        },
+        {
+          "id": "star_readable",
+          "prompt": "With Access-Control-Allow-Origin set to *, can it read the response?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "* lets any origin read responses to requests sent without credentials."
+        },
+        {
+          "id": "star_credentials_readable",
+          "prompt": "With * and Allow-Credentials true, can a request with credentials included read the response?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "Browsers refuse * for credentialed requests. The server has to name the exact origin it trusts."
+        },
+        {
+          "id": "echo_credentials_readable",
+          "prompt": "With the caller's exact origin and Allow-Credentials true, can a credentialed request read the response?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "That is the one combination that allows credentialed cross-origin reads. Echoing any origin back like this is dangerous on a real API."
+        },
+        {
+          "id": "custom_header_denied_readable",
+          "prompt": "With a custom header the preflight doesn't allow, can it read the response?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "A custom header makes the browser send an OPTIONS preflight first. When the preflight doesn't allow the header, the real request is never sent."
+        },
+        {
+          "id": "custom_header_allowed_readable",
+          "prompt": "When the preflight allows the custom header, can it read the response?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "The preflight approved the header, so the browser sends the real request and lets the page read the answer."
+        }
+      ]
+    }
+  },
+  {
+    "id": "email-lookup",
+    "title": "Find a customer without reading the whole table",
+    "topics": [
+      "db.indexes"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "pglite",
+    "timeoutMs": 25000,
+    "readme": "The `customers` table has 30,000 rows. `findCustomer(db, email)` works, but the query plan shows Postgres reading every\nrow to find one.\n\nAdd what's missing in `migrate(db)` so the lookup no longer scans the whole table. The tests read the plan with\n`EXPLAIN (FORMAT JSON)` and fail on any `Seq Scan`.\n\nRun `EXPLAIN` yourself before and after:\n\n```js\nconst { rows } = await db.query(\"explain select * from customers where email = 'user42@example.com'\");\nconsole.log(rows.map((row) => row[\"QUERY PLAN\"]).join(\"\\n\"));\n```",
+    "starter": "async function migrate(db) {\n  // Schema changes go here.\n}\n\nasync function findCustomer(db, email) {\n  const { rows } = await db.query(\"select * from customers where email = $1\", [email]);\n  return rows[0] ?? null;\n}\n",
+    "tests": "function planNodes(plan) {\n  const nodes = [];\n  const walk = (node) => { nodes.push(node); (node.Plans ?? []).forEach(walk); };\n  walk(plan);\n  return nodes;\n}\n\nasync function explain(sql) {\n  const { rows } = await db.query(`explain (format json) ${sql}`);\n  return planNodes(rows[0][\"QUERY PLAN\"][0].Plan);\n}\n\ntest(\"migrate runs\", async () => {\n  await migrate(db);\n});\n\ntest(\"findCustomer still finds the right customer\", async () => {\n  const customer = await findCustomer(db, \"user42@example.com\");\n  assert.equal(customer?.name, \"Customer 42\");\n  assert.equal(await findCustomer(db, \"nobody@example.com\"), null);\n});\n\ntest(\"the lookup does not scan the whole table\", async () => {\n  const nodes = await explain(\"select * from customers where email = 'user42@example.com'\");\n  const types = nodes.map((node) => node[\"Node Type\"]);\n  assert.ok(!types.includes(\"Seq Scan\"), `The plan still reads every row: ${types.join(\" > \")}`);\n});\n",
+    "setup": "create table customers (\n  id serial primary key,\n  email text not null,\n  name text not null\n);\ninsert into customers (email, name)\nselect 'user' || n || '@example.com', 'Customer ' || n from generate_series(1, 30000) as n;\nanalyze customers;\n",
+    "probe": null
   },
   {
     "id": "event-loop-order",
@@ -211,7 +803,113 @@ export const labs: LabDefinition[] = [
     "timeoutMs": 2000,
     "readme": "A form submit handler logs four steps. The screen has to update right away, so `button disabled` and\n`spinner shown` must be logged synchronously. Then the form must be `validated`, and only after that `saved`.\n\nRight now `saved` is logged before `validated`. Fix `submitForm` so the order is:\n\n1. `button disabled`\n2. `spinner shown`\n3. `validated`\n4. `saved`\n\nKeep validation and saving asynchronous: right after `submitForm` returns, only the first two lines may have been logged.\nBefore you change anything, write down why the current code logs `saved` first.",
     "starter": "function submitForm(log) {\n  log(\"button disabled\");\n  setTimeout(() => log(\"validated\"), 0);\n  Promise.resolve().then(() => log(\"saved\"));\n  log(\"spinner shown\");\n}\n",
-    "tests": "test(\"logs the four steps in order\", async () => {\n  const lines = [];\n  submitForm((line) => lines.push(line));\n  await wait(20);\n  assert.deepEqual(lines, [\"button disabled\", \"spinner shown\", \"validated\", \"saved\"]);\n});\n\ntest(\"only the synchronous steps have run when submitForm returns\", () => {\n  const lines = [];\n  submitForm((line) => lines.push(line));\n  assert.deepEqual(lines, [\"button disabled\", \"spinner shown\"]);\n});\n"
+    "tests": "test(\"logs the four steps in order\", async () => {\n  const lines = [];\n  submitForm((line) => lines.push(line));\n  await wait(20);\n  assert.deepEqual(lines, [\"button disabled\", \"spinner shown\", \"validated\", \"saved\"]);\n});\n\ntest(\"only the synchronous steps have run when submitForm returns\", () => {\n  const lines = [];\n  submitForm((line) => lines.push(line));\n  assert.deepEqual(lines, [\"button disabled\", \"spinner shown\"]);\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
+    "id": "idempotent-payment",
+    "title": "Charge once, however many times the request arrives",
+    "topics": [
+      "api.idempotency_basics"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "pglite",
+    "timeoutMs": 20000,
+    "readme": "A phone on a bad connection retries `POST /payments` until it gets an answer. Each retry carries the same\n`idempotencyKey`, which the client generated once for this payment. Today every retry creates another payment.\n\nMake `createPayment(db, { idempotencyKey, amount })` safe to call any number of times, including all at once:\n\n- one key creates exactly one payment row;\n- every call with that key returns the same payment;\n- reusing a key with a different amount rejects, because that is a client bug, not a retry.\n\nUse `migrate(db)` for schema changes.",
+    "starter": "async function migrate(db) {\n  // Schema changes go here.\n}\n\nasync function createPayment(db, { idempotencyKey, amount }) {\n  const { rows } = await db.query(\n    \"insert into payments (idempotency_key, amount) values ($1, $2) returning id, amount\",\n    [idempotencyKey, amount],\n  );\n  return rows[0];\n}\n",
+    "tests": "async function paymentsFor(key) {\n  return (await db.query(\"select count(*)::int as n from payments where idempotency_key = $1\", [key])).rows[0].n;\n}\n\ntest(\"migrate runs\", async () => {\n  await migrate(db);\n});\n\ntest(\"five simultaneous retries create one payment\", async () => {\n  const results = await Promise.all(Array.from({ length: 5 }, () => createPayment(db, { idempotencyKey: \"pay-1\", amount: 2500 })));\n  assert.equal(await paymentsFor(\"pay-1\"), 1);\n  assert.equal(new Set(results.map((payment) => payment.id)).size, 1, \"every retry must return the same payment\");\n});\n\ntest(\"a later retry returns the original payment\", async () => {\n  const first = (await db.query(\"select id from payments where idempotency_key = 'pay-1'\")).rows[0];\n  const again = await createPayment(db, { idempotencyKey: \"pay-1\", amount: 2500 });\n  assert.equal(again.id, first.id);\n});\n\ntest(\"a different key is a different payment\", async () => {\n  await createPayment(db, { idempotencyKey: \"pay-2\", amount: 900 });\n  assert.equal(await paymentsFor(\"pay-2\"), 1);\n});\n\ntest(\"reusing a key with a different amount rejects\", async () => {\n  await assert.rejects(() => createPayment(db, { idempotencyKey: \"pay-1\", amount: 9999 }));\n  assert.equal(await paymentsFor(\"pay-1\"), 1);\n});\n",
+    "setup": "create table payments (\n  id serial primary key,\n  idempotency_key text not null,\n  amount int not null,\n  created_at timestamptz not null default now()\n);\n",
+    "probe": null
+  },
+  {
+    "id": "order-history-index",
+    "title": "Fix the index that's in the wrong order",
+    "topics": [
+      "db.composite_indexes",
+      "db.query_plans"
+    ],
+    "modes": [
+      "debug",
+      "implement"
+    ],
+    "runner": "pglite",
+    "timeoutMs": 25000,
+    "readme": "The order history page shows a user's 20 newest orders:\n\n```sql\nselect * from order_history where user_id = $1 order by created_at desc limit 20\n```\n\nSomeone already added an index on `(created_at, user_id)`. Busy customers load fine, but customer 9999, who has three\norders from last year, waits much longer. Fix it in `migrate(db)`.\n\nBefore you change anything, run this and note which index it uses and how many pages (`Buffers`) it touches:\n\n```js\nconst { rows } = await db.query(\"explain (analyze, buffers) select * from order_history where user_id = 9999 order by created_at desc limit 20\");\nconsole.log(rows.map((row) => row[\"QUERY PLAN\"]).join(\"\\n\"));\n```\n\nThe tests pass when the plan uses an index that starts with `user_id`, needs no separate sort, and touches only a few\npages.",
+    "starter": "async function migrate(db) {\n  // Schema changes go here.\n}\n\nasync function recentOrders(db, userId) {\n  const { rows } = await db.query(\n    \"select * from order_history where user_id = $1 order by created_at desc limit 20\",\n    [userId],\n  );\n  return rows;\n}\n",
+    "tests": "function planNodes(plan) {\n  const nodes = [];\n  const walk = (node) => { nodes.push(node); (node.Plans ?? []).forEach(walk); };\n  walk(plan);\n  return nodes;\n}\n\nasync function explain(sql) {\n  const { rows } = await db.query(`explain (analyze, buffers, format json) ${sql}`);\n  return { root: rows[0][\"QUERY PLAN\"][0].Plan, nodes: planNodes(rows[0][\"QUERY PLAN\"][0].Plan) };\n}\n\nasync function firstColumn(indexName) {\n  const { rows } = await db.query(\n    `select a.attname from pg_index i\n       join pg_class c on c.oid = i.indexrelid\n       join pg_attribute a on a.attrelid = i.indrelid and a.attnum = i.indkey[0]\n     where c.relname = $1`,\n    [indexName],\n  );\n  return rows[0]?.attname;\n}\n\nconst query = (userId) => `select * from order_history where user_id = ${userId} order by created_at desc limit 20`;\n\ntest(\"migrate runs\", async () => {\n  await migrate(db);\n});\n\ntest(\"recentOrders returns the newest orders for that user\", async () => {\n  const rows = await recentOrders(db, 42);\n  assert.equal(rows.length, 20);\n  assert.ok(rows.every((row) => row.user_id === 42));\n  const times = rows.map((row) => new Date(row.created_at).getTime());\n  assert.deepEqual(times, [...times].sort((a, b) => b - a), \"rows must be newest first\");\n  assert.equal((await recentOrders(db, 9999)).length, 3);\n});\n\ntest(\"the plan uses an index that starts with user_id\", async () => {\n  const { nodes } = await explain(query(9999));\n  const scan = nodes.find((node) => node[\"Index Name\"]);\n  assert.ok(scan, `No index is used: ${nodes.map((node) => node[\"Node Type\"]).join(\" > \")}`);\n  const leading = await firstColumn(scan[\"Index Name\"]);\n  assert.equal(leading, \"user_id\", `The plan uses ${scan[\"Index Name\"]}, which is sorted by ${leading} first, so one user's rows are spread through the whole index.`);\n});\n\ntest(\"the plan needs no separate sort and reads only a few pages\", async () => {\n  const { root, nodes } = await explain(query(9999));\n  const types = nodes.map((node) => node[\"Node Type\"]);\n  assert.ok(!types.includes(\"Sort\"), `The plan still sorts: ${types.join(\" > \")}`);\n  const pages = (root[\"Shared Hit Blocks\"] ?? 0) + (root[\"Shared Read Blocks\"] ?? 0);\n  assert.ok(pages < 20, `The query touched ${pages} pages for 3 rows.`);\n});\n",
+    "setup": "create table order_history (\n  id serial primary key,\n  user_id int not null,\n  status text not null,\n  total int not null,\n  created_at timestamptz not null\n);\ninsert into order_history (user_id, status, total, created_at)\nselect (n % 600) + 1, case when n % 7 = 0 then 'refunded' else 'paid' end, (n * 37) % 9000, timestamptz '2026-01-01' + (n || ' minutes')::interval\nfrom generate_series(1, 60000) as n;\n-- A customer with only three orders, all from last year: the slow case for the existing index.\ninsert into order_history (user_id, status, total, created_at) values\n  (9999, 'paid', 1200, timestamptz '2025-03-02'), (9999, 'paid', 800, timestamptz '2025-06-14'), (9999, 'refunded', 450, timestamptz '2025-09-30');\ncreate index order_history_created_user_idx on order_history (created_at, user_id);\nanalyze order_history;\n",
+    "probe": null
+  },
+  {
+    "id": "request-anatomy",
+    "title": "What your browser adds to a request",
+    "topics": [
+      "web.request_lifecycle"
+    ],
+    "modes": [
+      "predict"
+    ],
+    "runner": "probe",
+    "timeoutMs": 10000,
+    "readme": "Your page is about to send a GET and a POST to Ken OS's own practice endpoint, which reports back exactly what it\nreceived. Predict each answer first; then run the check and compare.\n\nOpen DevTools on the Network tab while it runs, and find each answer in the request headers yourself.",
+    "starter": "",
+    "tests": "",
+    "setup": "",
+    "probe": {
+      "id": "request-anatomy",
+      "questions": [
+        {
+          "id": "get_origin",
+          "prompt": "Does a same-origin GET request from fetch carry an Origin header?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "The Fetch standard adds Origin to same-origin requests only when the method isn't GET or HEAD. Cross-origin requests always carry it."
+        },
+        {
+          "id": "post_origin",
+          "prompt": "Does a same-origin POST carry an Origin header?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "Any request that can change state gets Origin, so servers can check where it came from. Ken OS's own routes rely on this."
+        },
+        {
+          "id": "sec_fetch_site",
+          "prompt": "What does the Sec-Fetch-Site header say for these requests?",
+          "options": [
+            "same-origin",
+            "same-site",
+            "cross-site",
+            "not sent"
+          ],
+          "why": "Browsers label each request with how it relates to the page that made it; servers can use this to refuse cross-site requests."
+        },
+        {
+          "id": "cookies_by_default",
+          "prompt": "With no credentials option, does a same-origin fetch send your cookies?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "The default credentials mode is same-origin, so cookies go to your own origin automatically and not to others."
+        },
+        {
+          "id": "encrypted",
+          "prompt": "Is the connection between this browser and Ken OS encrypted right now?",
+          "options": [
+            "yes",
+            "no"
+          ],
+          "why": "HTTPS is HTTP sent inside a TLS connection, which gives encryption, tamper detection and proof of the server's identity. Plain http, as on localhost, has none of those, whether the server is public or private."
+        }
+      ]
+    }
   },
   {
     "id": "search-race",
@@ -226,7 +924,9 @@ export const labs: LabDefinition[] = [
     "timeoutMs": 3000,
     "readme": "`createSearch(fetchResults, onResults)` returns a `search(query)` function for a search box. Each keystroke calls\n`search` with the new text. Responses can come back in any order, so today a slow old response can replace the\nresults of a newer query.\n\n`fetchResults(query, signal)` returns a promise of results and rejects with an `AbortError` if `signal` is aborted.\n\nMake it so that:\n\n- `onResults` only ever receives results for the latest query;\n- starting a new search aborts the request still in flight;\n- an aborted request never calls `onResults` and never causes an unhandled rejection.\n\nThen explain why `useCallback` would not have fixed this in a React version.",
     "starter": "function createSearch(fetchResults, onResults) {\n  return function search(query) {\n    fetchResults(query).then(onResults);\n  };\n}\n",
-    "tests": "function fakeFetch(delays) {\n  const signals = {};\n  const fetchResults = (query, signal) => {\n    signals[query] = signal;\n    return new Promise((resolve, reject) => {\n      const timer = setTimeout(() => resolve([`${query}-result`]), delays[query] ?? 5);\n      signal?.addEventListener(\"abort\", () => {\n        clearTimeout(timer);\n        reject(new DOMException(\"Aborted\", \"AbortError\"));\n      });\n    });\n  };\n  return { fetchResults, signals };\n}\n\ntest(\"a slow old response never replaces newer results\", async () => {\n  const { fetchResults } = fakeFetch({ a: 60, ab: 10 });\n  const received = [];\n  const search = createSearch(fetchResults, (results) => received.push(results));\n  search(\"a\");\n  search(\"ab\");\n  await wait(120);\n  assert.deepEqual(received, [[\"ab-result\"]]);\n});\n\ntest(\"starting a new search aborts the one in flight\", async () => {\n  const { fetchResults, signals } = fakeFetch({ a: 60, ab: 10 });\n  const search = createSearch(fetchResults, () => {});\n  search(\"a\");\n  search(\"ab\");\n  await wait(80);\n  assert.ok(signals.a, \"fetchResults must be given a signal\");\n  assert.equal(signals.a.aborted, true);\n  assert.equal(signals.ab.aborted, false);\n});\n\ntest(\"searches that don't overlap all deliver results\", async () => {\n  const { fetchResults } = fakeFetch({ a: 5, ab: 5 });\n  const received = [];\n  const search = createSearch(fetchResults, (results) => received.push(results));\n  search(\"a\");\n  await wait(30);\n  search(\"ab\");\n  await wait(30);\n  assert.deepEqual(received, [[\"a-result\"], [\"ab-result\"]]);\n});\n\ntest(\"no unhandled rejection when a search is aborted\", async () => {\n  const { fetchResults } = fakeFetch({ a: 40, ab: 5 });\n  const search = createSearch(fetchResults, () => {});\n  search(\"a\");\n  search(\"ab\");\n  await wait(60);\n  assert.equal(unhandledRejections(), 0);\n});\n"
+    "tests": "function fakeFetch(delays) {\n  const signals = {};\n  const fetchResults = (query, signal) => {\n    signals[query] = signal;\n    return new Promise((resolve, reject) => {\n      const timer = setTimeout(() => resolve([`${query}-result`]), delays[query] ?? 5);\n      signal?.addEventListener(\"abort\", () => {\n        clearTimeout(timer);\n        reject(new DOMException(\"Aborted\", \"AbortError\"));\n      });\n    });\n  };\n  return { fetchResults, signals };\n}\n\ntest(\"a slow old response never replaces newer results\", async () => {\n  const { fetchResults } = fakeFetch({ a: 60, ab: 10 });\n  const received = [];\n  const search = createSearch(fetchResults, (results) => received.push(results));\n  search(\"a\");\n  search(\"ab\");\n  await wait(120);\n  assert.deepEqual(received, [[\"ab-result\"]]);\n});\n\ntest(\"starting a new search aborts the one in flight\", async () => {\n  const { fetchResults, signals } = fakeFetch({ a: 60, ab: 10 });\n  const search = createSearch(fetchResults, () => {});\n  search(\"a\");\n  search(\"ab\");\n  await wait(80);\n  assert.ok(signals.a, \"fetchResults must be given a signal\");\n  assert.equal(signals.a.aborted, true);\n  assert.equal(signals.ab.aborted, false);\n});\n\ntest(\"searches that don't overlap all deliver results\", async () => {\n  const { fetchResults } = fakeFetch({ a: 5, ab: 5 });\n  const received = [];\n  const search = createSearch(fetchResults, (results) => received.push(results));\n  search(\"a\");\n  await wait(30);\n  search(\"ab\");\n  await wait(30);\n  assert.deepEqual(received, [[\"a-result\"], [\"ab-result\"]]);\n});\n\ntest(\"no unhandled rejection when a search is aborted\", async () => {\n  const { fetchResults } = fakeFetch({ a: 40, ab: 5 });\n  const search = createSearch(fetchResults, () => {});\n  search(\"a\");\n  search(\"ab\");\n  await wait(60);\n  assert.equal(unhandledRejections(), 0);\n});\n",
+    "setup": "",
+    "probe": null
   },
   {
     "id": "shallow-copy",
@@ -241,6 +941,61 @@ export const labs: LabDefinition[] = [
     "timeoutMs": 2000,
     "readme": "Both functions are meant to return an updated copy and leave their input untouched. Both change the input.\n\n- `withTheme(settings, theme)` returns the settings with `display.theme` replaced.\n- `addTag(post, tag)` returns the post with `tag` added to `tags`.\n\nFix them so the original objects never change. Don't use `structuredClone` on the whole object; copy only\nwhat you change. Then explain why `{ ...settings }` wasn't enough.",
     "starter": "function withTheme(settings, theme) {\n  const copy = { ...settings };\n  copy.display.theme = theme;\n  return copy;\n}\n\nfunction addTag(post, tag) {\n  post.tags.push(tag);\n  return post;\n}\n",
-    "tests": "test(\"withTheme leaves the original settings alone\", () => {\n  const settings = { language: \"en\", display: { theme: \"light\", fontSize: 14 } };\n  const updated = withTheme(settings, \"dark\");\n  assert.equal(updated.display.theme, \"dark\");\n  assert.equal(updated.display.fontSize, 14);\n  assert.equal(settings.display.theme, \"light\");\n  assert.ok(updated.display !== settings.display, \"the nested display object must be a new object\");\n});\n\ntest(\"addTag returns a new post and keeps the old tags\", () => {\n  const post = { title: \"Hello\", tags: [\"intro\"] };\n  const updated = addTag(post, \"news\");\n  assert.deepEqual(updated.tags, [\"intro\", \"news\"]);\n  assert.deepEqual(post.tags, [\"intro\"]);\n  assert.ok(updated !== post, \"addTag must return a new post object\");\n});\n"
+    "tests": "test(\"withTheme leaves the original settings alone\", () => {\n  const settings = { language: \"en\", display: { theme: \"light\", fontSize: 14 } };\n  const updated = withTheme(settings, \"dark\");\n  assert.equal(updated.display.theme, \"dark\");\n  assert.equal(updated.display.fontSize, 14);\n  assert.equal(settings.display.theme, \"light\");\n  assert.ok(updated.display !== settings.display, \"the nested display object must be a new object\");\n});\n\ntest(\"addTag returns a new post and keeps the old tags\", () => {\n  const post = { title: \"Hello\", tags: [\"intro\"] };\n  const updated = addTag(post, \"news\");\n  assert.deepEqual(updated.tags, [\"intro\", \"news\"]);\n  assert.deepEqual(post.tags, [\"intro\"]);\n  assert.ok(updated !== post, \"addTag must return a new post object\");\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
+    "id": "stock-race",
+    "title": "Stop five buyers from taking three items",
+    "topics": [
+      "db.lost_update",
+      "db.atomic_updates"
+    ],
+    "modes": [
+      "debug",
+      "implement"
+    ],
+    "runner": "pglite",
+    "timeoutMs": 20000,
+    "readme": "Product 1 has 3 left in stock. Five people press Buy at the same moment, and `buyOne(db, productId)` runs five times\nat once. Today all five succeed, five orders are created, and the stock still says 2.\n\nFix `buyOne` so that exactly as many orders succeed as there was stock, the stock ends at 0 and never goes below,\nand a buyer who misses out gets `false`.\n\nThe tests interleave the five calls between their queries, which is what two server requests do. Before you fix it,\nwrite down which two steps of the current code let a buyer act on a number that is already out of date.",
+    "starter": "async function buyOne(db, productId) {\n  const { rows } = await db.query(\"select stock from products where id = $1\", [productId]);\n  if (rows[0].stock < 1) return false;\n  await db.query(\"update products set stock = $1 where id = $2\", [rows[0].stock - 1, productId]);\n  await db.query(\"insert into orders (product_id) values ($1)\", [productId]);\n  return true;\n}\n",
+    "tests": "async function stockOf(productId) {\n  return (await db.query(\"select stock from products where id = $1\", [productId])).rows[0].stock;\n}\n\nasync function ordersFor(productId) {\n  return (await db.query(\"select count(*)::int as n from orders where product_id = $1\", [productId])).rows[0].n;\n}\n\ntest(\"five buyers, three in stock: exactly three orders\", async () => {\n  const results = await Promise.all(Array.from({ length: 5 }, () => buyOne(db, 1)));\n  assert.equal(results.filter(Boolean).length, 3, \"three buyers should succeed\");\n  assert.equal(await ordersFor(1), 3);\n  assert.equal(await stockOf(1), 0);\n});\n\ntest(\"stock never goes below zero\", async () => {\n  await Promise.all(Array.from({ length: 6 }, () => buyOne(db, 2)));\n  assert.equal(await stockOf(2), 0);\n  assert.equal(await ordersFor(2), 2);\n});\n\ntest(\"a sold-out product returns false\", async () => {\n  assert.equal(await buyOne(db, 1), false);\n});\n",
+    "setup": "create table products (\n  id int primary key,\n  name text not null,\n  stock int not null\n);\ninsert into products values (1, 'Desk lamp', 3), (2, 'Notebook', 2);\n\ncreate table orders (\n  id serial primary key,\n  product_id int not null references products (id),\n  created_at timestamptz not null default now()\n);\n",
+    "probe": null
+  },
+  {
+    "id": "transfer-rollback",
+    "title": "Make a failed transfer leave no trace",
+    "topics": [
+      "db.transactions"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "pglite",
+    "timeoutMs": 20000,
+    "readme": "`transfer(db, fromId, toId, amount)` moves money and records the transfer. Account 3 is frozen: a trigger rejects any\nupdate that adds money to it.\n\nToday a transfer to account 3 takes the money out of the sender, then fails, and the money is gone.\nMake every transfer all or nothing: either both balances change and the transfer is recorded, or nothing changes and\nthe call rejects.\n\n`db` is a PGlite database. `db.query(sql, params)` runs one statement and `db.transaction(async (tx) => { ... })` runs\na callback inside a transaction that rolls back if the callback throws.",
+    "starter": "async function transfer(db, fromId, toId, amount) {\n  await db.query(\"update accounts set balance = balance - $1 where id = $2\", [amount, fromId]);\n  await db.query(\"update accounts set balance = balance + $1 where id = $2\", [amount, toId]);\n  await db.query(\"insert into transfers (from_id, to_id, amount) values ($1, $2, $3)\", [fromId, toId, amount]);\n}\n",
+    "tests": "async function balances() {\n  const { rows } = await db.query(\"select id, balance from accounts order by id\");\n  return Object.fromEntries(rows.map((row) => [row.id, row.balance]));\n}\n\nasync function transferCount() {\n  return (await db.query(\"select count(*)::int as n from transfers\")).rows[0].n;\n}\n\ntest(\"a normal transfer moves the money and records it\", async () => {\n  const before = await balances();\n  await transfer(db, 1, 2, 30);\n  const after = await balances();\n  assert.equal(after[1], before[1] - 30);\n  assert.equal(after[2], before[2] + 30);\n  assert.equal(await transferCount(), 1);\n});\n\ntest(\"a transfer to a frozen account changes nothing\", async () => {\n  const before = await balances();\n  const count = await transferCount();\n  await assert.rejects(() => transfer(db, 1, 3, 20), \"the transfer should reject\");\n  assert.deepEqual(await balances(), before);\n  assert.equal(await transferCount(), count);\n});\n\ntest(\"an overdraft changes nothing\", async () => {\n  const before = await balances();\n  await assert.rejects(() => transfer(db, 2, 1, 1000), \"the transfer should reject\");\n  assert.deepEqual(await balances(), before);\n});\n",
+    "setup": "create table accounts (\n  id int primary key,\n  owner text not null,\n  balance int not null check (balance >= 0),\n  frozen boolean not null default false\n);\ninsert into accounts values (1, 'ana', 100, false), (2, 'ben', 50, false), (3, 'cy', 0, true);\n\ncreate table transfers (\n  id serial primary key,\n  from_id int not null,\n  to_id int not null,\n  amount int not null,\n  created_at timestamptz not null default now()\n);\n\n-- A frozen account cannot receive money.\ncreate function block_frozen() returns trigger as $$\nbegin\n  if new.frozen and new.balance > old.balance then\n    raise exception 'account % is frozen', new.id;\n  end if;\n  return new;\nend\n$$ language plpgsql;\ncreate trigger accounts_frozen before update on accounts for each row execute function block_frozen();\n",
+    "probe": null
+  },
+  {
+    "id": "unique-signup",
+    "title": "One account per email, even under a double-click",
+    "topics": [
+      "db.constraints"
+    ],
+    "modes": [
+      "debug"
+    ],
+    "runner": "pglite",
+    "timeoutMs": 20000,
+    "readme": "`signUp(db, email)` checks whether the email exists, then inserts it. A double-clicked Sign up button runs it twice at\nonce, and both calls see \"not taken\". Emails also differ only in capitals: `Ana@example.com` and `ana@example.com` are\nthe same person.\n\nUse `migrate(db)` for schema changes; the tests call it once before anything else. Make sure that:\n\n- only one account exists per email, ignoring capitals, however many calls run at once;\n- every other call returns `{ ok: false, reason: \"taken\" }` instead of throwing.\n\nThen explain why the \"check first\" in the starter can never be enough on its own.",
+    "starter": "async function migrate(db) {\n  // Schema changes go here.\n}\n\nasync function signUp(db, email) {\n  const existing = await db.query(\"select id from members where email = $1\", [email]);\n  if (existing.rows.length) return { ok: false, reason: \"taken\" };\n  const { rows } = await db.query(\"insert into members (email) values ($1) returning id\", [email]);\n  return { ok: true, id: rows[0].id };\n}\n",
+    "tests": "async function memberCount() {\n  return (await db.query(\"select count(*)::int as n from members\")).rows[0].n;\n}\n\ntest(\"migrate runs\", async () => {\n  await migrate(db);\n});\n\ntest(\"four simultaneous sign-ups with one email create one account\", async () => {\n  const results = await Promise.all(Array.from({ length: 4 }, () => signUp(db, \"ana@example.com\")));\n  assert.equal(results.filter((result) => result.ok).length, 1);\n  assert.equal(await memberCount(), 1);\n  assert.ok(results.filter((result) => !result.ok).every((result) => result.reason === \"taken\"));\n});\n\ntest(\"capitals don't make a second account\", async () => {\n  const result = await signUp(db, \"Ana@Example.com\");\n  assert.deepEqual(result, { ok: false, reason: \"taken\" });\n  assert.equal(await memberCount(), 1);\n});\n\ntest(\"a different email still works\", async () => {\n  const result = await signUp(db, \"ben@example.com\");\n  assert.equal(result.ok, true);\n  assert.equal(await memberCount(), 2);\n});\n",
+    "setup": "create table members (\n  id serial primary key,\n  email text not null,\n  created_at timestamptz not null default now()\n);\n",
+    "probe": null
   }
 ];

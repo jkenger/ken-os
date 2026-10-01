@@ -34,3 +34,69 @@ entries:
     misconceptions:
       - useCallback prevents out-of-order responses
       - A [query] effect dependency causes an infinite loop
+
+  - topicId: web.request_lifecycle
+    label: gap
+    mode: explain
+    notes: Could not explain what happens from entering a URL to rendering a page, had no deep model of DNS, and described HTTP as local or unsecured and HTTPS as public.
+    misconceptions:
+      - HTTP is for local use and HTTPS is for public sites
+
+  - topicId: web.cookies_sessions
+    label: rusty
+    mode: explain
+    notes: Remembered credentials include and origin-related ideas, but browser cookie and session behavior was unclear.
+
+  - topicId: web.cors
+    label: misconception
+    mode: explain
+    notes: Described CORS as protection against unauthorized bad actors.
+    misconceptions:
+      - CORS protects a server from unauthorized callers
+
+  - topicId: web.http_caching
+    label: gap
+    mode: explain
+    notes: Could not clearly distinguish browser caching from server caching.
+
+  - topicId: db.transactions
+    label: solid
+    mode: explain
+    notes: Correctly understood that related writes should roll back together if one fails.
+
+  - topicId: db.constraints
+    label: partial
+    mode: explain
+    notes: Understood database uniqueness is more authoritative than application checks, but initially not why.
+
+  - topicId: db.lost_update
+    label: partial
+    mode: explain
+    notes: Recognized possible data inconsistency but could not clearly explain lost updates or isolation.
+
+  - topicId: db.atomic_updates
+    label: gap
+    mode: explain
+    notes: Could not confidently explain two simultaneous buyers reading the same stock and both succeeding.
+
+  - topicId: db.indexes
+    label: partial
+    mode: explain
+    notes: Knows indexes are used for performance on large datasets but cannot confidently design or inspect them.
+
+  - topicId: db.composite_indexes
+    label: gap
+    mode: design
+    notes: For a slow query, only suggested selecting fewer fields and missed the composite index on user_id and created_at.
+    misconceptions:
+      - Selecting fewer columns is the main fix for a slow filtered and sorted query
+
+  - topicId: db.query_plans
+    label: gap
+    mode: debug
+    notes: Missed the execution plan and scan or sort behavior when diagnosing a slow query.
+
+  - topicId: api.idempotency_basics
+    label: gap
+    mode: explain
+    notes: No working understanding of idempotency, and missed the idempotency key for retry safety in a create flow.

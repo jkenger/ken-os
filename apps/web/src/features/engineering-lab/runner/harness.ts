@@ -120,3 +120,18 @@ ${POST}
 ${load(code)}
 __settle(${limitMs}).then(() => __post({ type: "output", logs: __logs }));`;
 }
+
+/** An async probe body that logs its result; reports once the body settles rather than when timers go quiet. */
+export function buildProbeScript(body: string, origin: string) {
+  return `${HARNESS}
+${POST}
+const LAB_ORIGIN = ${JSON.stringify(origin)};
+(async () => { ${body} })().then(
+  () => __post({ type: "output", logs: __logs }),
+  (error) => __post({ type: "error", message: String(error && error.message || error), logs: __logs }),
+);`;
+}
+
+/** PGlite for database labs, loaded by the worker from a pinned CDN build. Keep in step with the devDependency. */
+export const PGLITE_VERSION = "0.5.8";
+export const PGLITE_URL = `https://cdn.jsdelivr.net/npm/@electric-sql/pglite@${PGLITE_VERSION}/dist/index.js`;

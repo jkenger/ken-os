@@ -1,0 +1,7 @@
+id: request-anatomy
+title: What your browser adds to a request
+topics: [web.request_lifecycle]
+modes: [predict]
+runner: probe
+probe: request-anatomy
+timeoutMs: 10000

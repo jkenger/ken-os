@@ -2,7 +2,7 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
-import { parseBaseline, parseLabMeta, parseTopicMap, type LabDefinition } from "@ken-os/domain";
+import { parseBaseline, parseLabMeta, parseProbeQuestions, parseTopicMap, type LabDefinition } from "@ken-os/domain";
 
 // Turns content/engineering-lab and labs/ into checked TypeScript, so the hosted app never reads repo files at runtime.
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
@@ -16,12 +16,19 @@ const read = (...parts: string[]) => readFileSync(resolve(repoRoot, ...parts), "
 const labs: LabDefinition[] = [];
 const solutions: Record<string, string> = {};
 for (const folder of readdirSync(resolve(repoRoot, "labs"), { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).sort()) {
-  const meta = parseLabMeta(parse(read("labs", folder, "lab.yaml")), folder);
+  const { probeId, ...meta } = parseLabMeta(parse(read("labs", folder, "lab.yaml")), folder);
+  const readme = read("labs", folder, "README.md").trim();
+  if (meta.runner === "probe") {
+    labs.push({ ...meta, readme, starter: "", tests: "", setup: "", probe: { id: probeId!, questions: parseProbeQuestions(parse(read("labs", folder, "questions.yaml")), folder) } });
+    continue;
+  }
   labs.push({
     ...meta,
-    readme: read("labs", folder, "README.md").trim(),
+    readme,
     starter: read("labs", folder, "starter", "main.js"),
     tests: read("labs", folder, "tests", "main.test.js"),
+    setup: meta.runner === "pglite" ? read("labs", folder, "setup.sql") : "",
+    probe: null,
   });
   solutions[folder] = read("labs", folder, "solution", "main.js");
 }

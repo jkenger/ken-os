@@ -16,6 +16,9 @@ export function previewTopic(topicId: string): TopicView {
   const topic = topicMap.topics.find((item) => item.id === topicId)!;
   const progress = computeProgress(topic, baselineAttempts(), true).progress;
   const mdn = "https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide";
+  if (topicId !== "js.event_loop") {
+    return { progress, lessonCount: 0, lesson: null, sources: [], sourceCheckedAt: null, assessment: null, attempts: [], revealedLabs: [], practiceResults: {} };
+  }
   return {
     progress,
     lessonCount: 1,

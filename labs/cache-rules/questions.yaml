@@ -1,0 +1,21 @@
+questions:
+  - id: maxage_server
+    prompt: With max-age=120, does the second request reach the server?
+    options: ["yes", "no"]
+    why: For 120 seconds the browser treats its copy as fresh and answers from its own cache with no network request.
+  - id: nocache_server
+    prompt: With no-cache and an ETag, does the second request reach the server?
+    options: ["yes", "no"]
+    why: no-cache doesn't mean "don't cache". It means "check with the server before reusing", so the browser asks, sending If-None-Match.
+  - id: nocache_body
+    prompt: With no-cache and an ETag, does the server send the full body again?
+    options: ["yes", "no"]
+    why: The ETag still matches, so the server answers 304 Not Modified with no body and the browser reuses its copy.
+  - id: nostore_server
+    prompt: With no-store, does the second request reach the server?
+    options: ["yes", "no"]
+    why: no-store forbids keeping a copy at all, so every request goes to the server.
+  - id: nostore_body
+    prompt: With no-store, is the full body downloaded again?
+    options: ["yes", "no"]
+    why: With no stored copy there's nothing to revalidate, so the whole response comes back every time.

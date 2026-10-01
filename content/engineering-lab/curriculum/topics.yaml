@@ -7,6 +7,12 @@ modules:
   - id: m1-js-runtime
     title: JavaScript runtime and async
     track: fullstack
+  - id: m2-http-browser
+    title: HTTP and the browser
+    track: fullstack
+  - id: m3-db-concurrency
+    title: Database transactions, concurrency and indexes
+    track: fullstack
 
 topics:
   - id: js.call_stack
@@ -91,3 +97,165 @@ topics:
     depth: working
     prove: [explain, implement]
     labs: [search-race]
+
+  # Module 2. Predictions are checked by probes that run real requests; the Assessor covers explain.
+  - id: web.request_lifecycle
+    title: From URL to response, including HTTPS
+    module: m2-http-browser
+    requires: []
+    freshness: web_platform
+    sourceGroups: [web]
+    gap: >-
+      Could not explain what happens between typing a URL and seeing a page, had no working model of DNS, and described
+      HTTP as local or unsecured and HTTPS as public. Needs: DNS lookup, TCP and TLS at concept level, HTTPS as HTTP
+      inside TLS (encryption, integrity, server identity), the request and response, and which headers the browser adds.
+    depth: working
+    prove: [explain, predict]
+    labs: [request-anatomy]
+
+  - id: web.cookies_sessions
+    title: Cookies and sessions
+    module: m2-http-browser
+    requires: [web.request_lifecycle]
+    freshness: web_platform
+    sourceGroups: [web]
+    gap: >-
+      Remembered credentials include and origin ideas, but the browser's cookie and session rules were unclear. Needs:
+      how a server-set cookie becomes a session, Path, Max-Age, HttpOnly, Secure, SameSite, and when a cookie travels
+      with a request.
+    depth: working
+    prove: [explain, predict]
+    labs: [cookie-rules]
+
+  - id: web.cors
+    title: CORS, and what it does not protect
+    module: m2-http-browser
+    requires: [web.cookies_sessions]
+    freshness: web_platform
+    sourceGroups: [web]
+    gap: >-
+      Described CORS as protection against unauthorized bad actors. Needs: CORS is a browser rule about which origins
+      may read a response, not server authorization; simple versus preflighted requests; credentials and the wildcard.
+    depth: working
+    prove: [explain, predict]
+    labs: [cors-rules]
+
+  - id: web.http_caching
+    title: Browser caching and HTTP cache headers
+    module: m2-http-browser
+    requires: [web.request_lifecycle]
+    freshness: web_platform
+    sourceGroups: [web]
+    gap: >-
+      Could not tell browser caching from server caching. Needs: Cache-Control max-age, no-cache and no-store, ETag
+      revalidation and 304, private versus shared caches, and where a CDN or server cache sits relative to the browser.
+    depth: working
+    prove: [explain, predict]
+    labs: [cache-rules]
+
+  # Module 3. Labs run on PGlite in the browser; concurrent calls interleave between queries, as real requests do.
+  - id: db.transactions
+    title: Transactions and all-or-nothing writes
+    module: m3-db-concurrency
+    requires: []
+    freshness: core_concept
+    sourceGroups: [database]
+    gap: >-
+      Baseline was solid: related writes should roll back together. Check it in code, including that a failure in the
+      middle leaves nothing behind, and that a database transaction cannot undo emails or calls to other services.
+    depth: working
+    prove: [explain, implement]
+    labs: [transfer-rollback]
+
+  - id: db.constraints
+    title: Constraints as the source of truth
+    module: m3-db-concurrency
+    requires: [db.transactions]
+    freshness: core_concept
+    sourceGroups: [database]
+    gap: >-
+      Knew database uniqueness beats application checks but not why. Needs: why check-then-insert races, unique
+      constraints and expression indexes, and handling a unique violation as a normal outcome.
+    depth: working
+    prove: [explain, debug]
+    labs: [unique-signup]
+
+  - id: db.lost_update
+    title: Lost updates
+    module: m3-db-concurrency
+    requires: [db.transactions]
+    freshness: core_concept
+    sourceGroups: [database]
+    gap: >-
+      Sensed possible inconsistency but could not explain lost updates or isolation, or two buyers both succeeding on
+      the same stock. Needs: read-modify-write races, why a transaction alone does not prevent them at the default
+      isolation level, and the options that do.
+    depth: deep
+    prove: [explain, debug]
+    labs: [stock-race]
+
+  - id: db.atomic_updates
+    title: Atomic updates and conditional writes
+    module: m3-db-concurrency
+    requires: [db.lost_update]
+    freshness: core_concept
+    sourceGroups: [database]
+    gap: >-
+      No working fix for concurrent stock decrements. Needs: doing the check and the change in one statement,
+      UPDATE with WHERE and RETURNING, and when to reach for row locks or a stricter isolation level instead.
+    depth: working
+    prove: [explain, implement]
+    labs: [stock-race]
+
+  - id: db.indexes
+    title: What an index is and when Postgres uses it
+    module: m3-db-concurrency
+    requires: []
+    freshness: core_concept
+    sourceGroups: [database]
+    gap: >-
+      Knew indexes help on large tables but could not design or inspect one. Needs: B-tree basics, Seq Scan versus
+      Index Scan, reading EXPLAIN, and the write and storage cost of an index.
+    depth: working
+    prove: [explain, implement]
+    labs: [email-lookup]
+
+  - id: db.composite_indexes
+    title: Composite indexes and column order
+    module: m3-db-concurrency
+    requires: [db.indexes]
+    freshness: core_concept
+    sourceGroups: [database]
+    gap: >-
+      No model of composite indexes; for a slow user_id plus created_at query, only suggested selecting fewer columns.
+      Needs: how column order decides which queries an index can serve, and an index that also returns rows in order.
+    depth: deep
+    prove: [explain, implement]
+    labs: [order-history-index]
+
+  - id: db.query_plans
+    title: Reading query plans
+    module: m3-db-concurrency
+    requires: [db.indexes]
+    freshness: core_concept
+    sourceGroups: [database]
+    gap: >-
+      Missed the execution plan and scan and sort behavior when diagnosing a slow query. Needs: reading EXPLAIN and
+      EXPLAIN ANALYZE, Index Cond versus Filter, Sort nodes, and row estimates versus actual rows.
+    depth: working
+    prove: [explain, debug]
+    labs: [order-history-index]
+
+  - id: api.idempotency_basics
+    title: Idempotent create requests
+    module: m3-db-concurrency
+    requires: [db.constraints, db.atomic_updates]
+    freshness: core_concept
+    sourceGroups: [web, database]
+    gap: >-
+      No working model of idempotency; missed that a retried create needs a stable request key. Needs: which HTTP
+      methods are idempotent, idempotency keys, enforcing them with a unique constraint, and returning the original
+      result on a retry.
+    depth: working
+    prove: [explain, implement]
+    labs: [idempotent-payment]

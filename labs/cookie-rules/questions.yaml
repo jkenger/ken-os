@@ -1,0 +1,29 @@
+questions:
+  - id: basic_visible
+    prompt: Can page JavaScript see kos_lab_basic in document.cookie?
+    options: ["yes", "no"]
+    why: Cookies without HttpOnly are readable by any script on the page, which is why session cookies should never be plain cookies.
+  - id: httponly_visible
+    prompt: Can page JavaScript see kos_lab_httponly in document.cookie?
+    options: ["yes", "no"]
+    why: HttpOnly hides a cookie from scripts, so an XSS bug can't read the session token. The browser still sends it.
+  - id: httponly_sent
+    prompt: Does the server receive kos_lab_httponly?
+    options: ["yes", "no"]
+    why: HttpOnly only affects scripts. The browser attaches the cookie to matching requests as usual.
+  - id: path_sent_outside
+    prompt: Is kos_lab_path sent to /api/lab/playground/cookies?
+    options: ["yes", "no"]
+    why: A cookie is only sent to URLs under its Path. /cookies is the parent of /cookies/inner, not inside it.
+  - id: path_sent_inside
+    prompt: Is kos_lab_path sent to /api/lab/playground/cookies/inner?
+    options: ["yes", "no"]
+    why: That URL is inside the cookie's Path, so it matches.
+  - id: expired_sent
+    prompt: Is kos_lab_expired sent anywhere?
+    options: ["yes", "no"]
+    why: Max-Age=0 tells the browser to delete the cookie at once. This is how servers log a cookie out.
+  - id: cross_site_sent
+    prompt: Does a request from another site carry kos_lab_basic, even with credentials included?
+    options: ["yes", "no"]
+    why: A cookie with no SameSite is treated as Lax by modern browsers, and other browsers block third-party cookies anyway, so a cross-site fetch doesn't carry it. This is a CSRF defence, separate from CORS.
