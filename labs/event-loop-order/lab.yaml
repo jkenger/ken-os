@@ -1,0 +1,6 @@
+id: event-loop-order
+title: Fix the save that runs before validation
+topics: [js.event_loop, js.promises]
+modes: [debug]
+runner: browser
+timeoutMs: 2000

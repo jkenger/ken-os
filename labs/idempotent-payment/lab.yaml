@@ -1,0 +1,6 @@
+id: idempotent-payment
+title: Charge once, however many times the request arrives
+topics: [api.idempotency_basics]
+modes: [implement]
+runner: pglite
+timeoutMs: 20000

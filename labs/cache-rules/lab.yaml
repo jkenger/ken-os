@@ -1,0 +1,7 @@
+id: cache-rules
+title: When the browser asks the server again
+topics: [web.http_caching]
+modes: [predict]
+runner: probe
+probe: cache-rules
+timeoutMs: 15000

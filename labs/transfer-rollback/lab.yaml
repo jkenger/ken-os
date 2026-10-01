@@ -1,0 +1,6 @@
+id: transfer-rollback
+title: Make a failed transfer leave no trace
+topics: [db.transactions]
+modes: [implement]
+runner: pglite
+timeoutMs: 20000

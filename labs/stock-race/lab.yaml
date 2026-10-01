@@ -1,0 +1,6 @@
+id: stock-race
+title: Stop five buyers from taking three items
+topics: [db.lost_update, db.atomic_updates]
+modes: [debug, implement]
+runner: pglite
+timeoutMs: 20000

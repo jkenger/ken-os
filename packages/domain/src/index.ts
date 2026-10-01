@@ -19,3 +19,4 @@ export interface Artifact {
   canDownload?: boolean;
   trashed?: boolean;
 }
+export * from "./engineering-lab";

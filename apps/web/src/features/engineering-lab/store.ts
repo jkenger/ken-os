@@ -1,0 +1,369 @@
+import { randomUUID } from "node:crypto";
+import { and, desc, eq, gte, sql } from "drizzle-orm";
+import { gradeAnswer, researchTopic, TUTOR_PROMPT_VERSION, ASSESSOR_PROMPT_VERSION, writeAssessment, writeLesson } from "@ken-os/agents";
+import {
+  computeProgress, finalizeLesson, gradeLabRun, gradePrediction, isPacketUsable, planNext, researchTargetFor, toPublicItem,
+  type AssessmentItem, type AttemptKind, type AttemptRecord, type AttemptResponse, type CodeRun, type Grade, type LessonSnapshot,
+  type Mode, type PlanDecision, type PublicItem, type SourcePacket, type TopicProgress,
+} from "@ken-os/domain";
+import { db } from "@/lib/db";
+import { labAssessments, labAttempts, labLessons, labProgress, labProgressChanges, labSolutionReveals, labSourcePackets } from "@/lib/schema";
+import { assessorModes, baseline, baselineAttempts, findLab, findTopic, labsForTopic, topicMap } from "./curriculum";
+import { labSolutions } from "./generated/lab-solutions.generated";
+
+export class LabInputError extends Error {
+  constructor(message: string, readonly status = 400) {
+    super(message);
+  }
+}
+
+/** Lessons, packets and question sets the AI may create per UTC day. Keeps a runaway loop or a stuck button cheap. */
+export const DAILY_GENERATION_LIMIT = 20;
+
+type Database = ReturnType<typeof db>;
+type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
+
+function today() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function requireTopic(topicId: string) {
+  const topic = findTopic(topicId);
+  if (!topic) throw new LabInputError("Unknown topic.", 404);
+  return topic;
+}
+
+function toRecord(row: typeof labAttempts.$inferSelect): AttemptRecord {
+  return {
+    id: row.id, topicId: row.topicId, kind: row.kind, mode: row.mode, label: row.label, gradedBy: row.gradedBy,
+    voided: row.voided, selfRating: row.selfRating, misconceptions: row.misconceptions, solutionSeen: row.solutionSeen, createdAt: row.createdAt,
+  };
+}
+
+export async function generationsToday(userId: string) {
+  const since = new Date(`${today()}T00:00:00Z`);
+  const [packets, lessons, assessments] = await Promise.all([
+    db().select({ n: sql<number>`count(*)::int` }).from(labSourcePackets).where(and(eq(labSourcePackets.userId, userId), gte(labSourcePackets.createdAt, since))),
+    db().select({ n: sql<number>`count(*)::int` }).from(labLessons).where(and(eq(labLessons.userId, userId), gte(labLessons.createdAt, since))),
+    db().select({ n: sql<number>`count(*)::int` }).from(labAssessments).where(and(eq(labAssessments.userId, userId), gte(labAssessments.createdAt, since))),
+  ]);
+  return (packets[0]?.n ?? 0) + (lessons[0]?.n ?? 0) + (assessments[0]?.n ?? 0);
+}
+
+async function assertBudget(userId: string, needed = 1) {
+  const used = await generationsToday(userId);
+  if (used + needed > DAILY_GENERATION_LIMIT) {
+    throw new LabInputError(`Today's limit of ${DAILY_GENERATION_LIMIT} AI generations is used up. It resets at midnight UTC.`, 429);
+  }
+}
+
+/**
+ * Rebuilds a topic's progress from every attempt. The progress row is locked first, so two answers submitted at
+ * the same moment can't both read the old status and record the same change twice.
+ */
+async function recompute(tx: Transaction, userId: string, topicId: string, causeAttemptId: string | null) {
+  const topic = requireTopic(topicId);
+  await tx.insert(labProgress).values({ userId, topicId, status: "NOT_STARTED", progress: emptyProgress(topicId) }).onConflictDoNothing();
+  const [current] = await tx.select({ status: labProgress.status }).from(labProgress)
+    .where(and(eq(labProgress.userId, userId), eq(labProgress.topicId, topicId))).for("update");
+  const rows = await tx.select().from(labAttempts).where(and(eq(labAttempts.userId, userId), eq(labAttempts.topicId, topicId)));
+  const [lesson] = await tx.select({ id: labLessons.id }).from(labLessons).where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId))).limit(1);
+  const { progress } = computeProgress(topic, [...baselineAttempts(), ...rows.map(toRecord)], Boolean(lesson));
+  await tx.update(labProgress).set({ status: progress.status, progress, updatedAt: new Date() })
+    .where(and(eq(labProgress.userId, userId), eq(labProgress.topicId, topicId)));
+  if (current && current.status !== progress.status) {
+    const latest = rows.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
+    await tx.insert(labProgressChanges).values({
+      id: randomUUID(), userId, topicId, fromStatus: current.status, toStatus: progress.status, attemptId: causeAttemptId,
+      reason: causeAttemptId && latest ? `${latest.kind} ${latest.mode} answer graded ${latest.label}` : rows.length ? "recalculated" : "lesson started",
+    });
+  }
+  return progress;
+}
+
+function emptyProgress(topicId: string): TopicProgress {
+  const topic = requireTopic(topicId);
+  return computeProgress(topic, baselineAttempts(), false).progress;
+}
+
+/**
+ * Progress is always rebuilt from attempts, the source of truth, so a change to the topic map (for example a new
+ * proof mode) can never leave a stale status on screen. lab_progress only remembers the last status for the change log.
+ */
+export async function getAllProgress(userId: string): Promise<TopicProgress[]> {
+  const [rows, lessons] = await Promise.all([
+    db().select().from(labAttempts).where(eq(labAttempts.userId, userId)),
+    db().selectDistinct({ topicId: labLessons.topicId }).from(labLessons).where(eq(labLessons.userId, userId)),
+  ]);
+  const attempts = [...baselineAttempts(), ...rows.map(toRecord)];
+  const started = new Set(lessons.map((row) => row.topicId));
+  return topicMap.topics.map((topic) => computeProgress(topic, attempts, started.has(topic.id)).progress);
+}
+
+/** Recalculates one topic and logs a status change if there is one. */
+export async function rebuildProgress(userId: string, topicId: string) {
+  return db().transaction((tx) => recompute(tx, userId, topicId, null));
+}
+
+async function latestLabels(userId: string) {
+  const rows = await db().select({ topicId: labAttempts.topicId, label: labAttempts.label, createdAt: labAttempts.createdAt })
+    .from(labAttempts).where(and(eq(labAttempts.userId, userId), eq(labAttempts.voided, false))).orderBy(desc(labAttempts.createdAt)).limit(200);
+  const latest: Record<string, string> = {};
+  for (const row of rows) latest[row.topicId] ??= row.label;
+  return latest;
+}
+
+export interface TodayView {
+  plan: PlanDecision | null;
+  progress: TopicProgress[];
+  reviewsDue: string[];
+  recentlyValidated: { topicId: string; at: string }[];
+  recentChanges: { topicId: string; from: string; to: string; reason: string; at: string }[];
+  generationsUsed: number;
+  generationLimit: number;
+}
+
+export async function getToday(userId: string): Promise<TodayView> {
+  const now = new Date();
+  const [progress, latestLabel, changes, used] = await Promise.all([
+    getAllProgress(userId),
+    latestLabels(userId),
+    db().select().from(labProgressChanges).where(eq(labProgressChanges.userId, userId)).orderBy(desc(labProgressChanges.createdAt)).limit(8),
+    generationsToday(userId),
+  ]);
+  return {
+    plan: planNext({ map: topicMap, progress, latestLabel, now }),
+    progress,
+    reviewsDue: progress.filter((item) => item.status === "NEEDS_REVISIT" || (item.status === "VALIDATED" && item.nextReviewAt && new Date(item.nextReviewAt) <= now)).map((item) => item.topicId),
+    recentlyValidated: progress.filter((item) => item.validatedAt).sort((a, b) => b.validatedAt!.localeCompare(a.validatedAt!)).slice(0, 5).map((item) => ({ topicId: item.topicId, at: item.validatedAt! })),
+    recentChanges: changes.map((row) => ({ topicId: row.topicId, from: row.fromStatus, to: row.toStatus, reason: row.reason, at: row.createdAt.toISOString() })),
+    generationsUsed: used,
+    generationLimit: DAILY_GENERATION_LIMIT,
+  };
+}
+
+async function latestPacket(userId: string, topicId: string) {
+  const [row] = await db().select().from(labSourcePackets)
+    .where(and(eq(labSourcePackets.userId, userId), eq(labSourcePackets.topicId, topicId))).orderBy(desc(labSourcePackets.generatedAt)).limit(1);
+  return row ?? null;
+}
+
+export async function savePacket(userId: string, packet: SourcePacket) {
+  const id = randomUUID();
+  const inserted = await db().insert(labSourcePackets).values({
+    id, userId, topicId: packet.topicId, packet, refreshAfter: packet.refreshAfter, generatedAt: new Date(packet.generatedAt),
+  }).onConflictDoNothing().returning({ id: labSourcePackets.id });
+  return inserted[0]?.id ?? null;
+}
+
+/** Researches the topic again only when its newest packet is past its refresh date. */
+async function freshPacket(userId: string, topicId: string) {
+  const existing = await latestPacket(userId, topicId);
+  if (existing && existing.refreshAfter >= today()) return existing;
+  await assertBudget(userId);
+  const packet = await researchTopic(researchTargetFor(requireTopic(topicId)));
+  if (!isPacketUsable(packet)) throw new LabInputError("The Researcher found no usable official sources. Try again later.", 502);
+  await savePacket(userId, packet);
+  return (await latestPacket(userId, topicId))!;
+}
+
+export async function generateLesson(userId: string, topicId: string) {
+  const topic = requireTopic(topicId);
+  const packet = await freshPacket(userId, topicId);
+  await assertBudget(userId);
+  const progress = (await getAllProgress(userId)).find((item) => item.topicId === topicId)!;
+  const recent = await db().select({ mode: labAttempts.mode, label: labAttempts.label, feedback: labAttempts.feedback }).from(labAttempts)
+    .where(and(eq(labAttempts.userId, userId), eq(labAttempts.topicId, topicId))).orderBy(desc(labAttempts.createdAt)).limit(5);
+  const { draft, model } = await writeLesson({
+    topic,
+    packet: packet.packet,
+    baseline: baseline.entries.find((entry) => entry.topicId === topicId) ?? null,
+    openMisconceptions: progress.weaknesses,
+    recentAttempts: recent.reverse(),
+  });
+  return db().transaction(async (tx) => {
+    const [last] = await tx.select({ version: labLessons.version }).from(labLessons)
+      .where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId))).orderBy(desc(labLessons.version)).limit(1);
+    const version = (last?.version ?? 0) + 1;
+    const snapshot = finalizeLesson(draft, packet.packet, {
+      topicId, version, sourcePacketId: packet.id, promptVersion: TUTOR_PROMPT_VERSION, model, labIds: labsForTopic(topicId).map((lab) => lab.id),
+    });
+    const id = randomUUID();
+    await tx.insert(labLessons).values({ id, userId, topicId, version, sourcePacketId: packet.id, snapshot });
+    await recompute(tx, userId, topicId, null);
+    return { id, version };
+  });
+}
+
+function fingerprint(prompt: string) {
+  return prompt.replace(/\s+/g, " ").trim().slice(0, 100);
+}
+
+export async function generateAssessment(userId: string, topicId: string, kind: "assessment" | "review") {
+  const topic = requireTopic(topicId);
+  const modes = assessorModes(topic);
+  if (!modes.length) throw new LabInputError("This topic is proven entirely by its labs.", 409);
+  await assertBudget(userId);
+  const [lessons, previous, packet] = await Promise.all([
+    db().select({ snapshot: labLessons.snapshot }).from(labLessons).where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId))),
+    db().select({ items: labAssessments.items }).from(labAssessments).where(and(eq(labAssessments.userId, userId), eq(labAssessments.topicId, topicId))).orderBy(desc(labAssessments.createdAt)).limit(5),
+    latestPacket(userId, topicId),
+  ]);
+  const avoid = [
+    ...lessons.flatMap((lesson) => [lesson.snapshot.sections.workedExample.code, ...lesson.snapshot.practice.map((item) => item.prompt)]),
+    ...previous.flatMap((set) => set.items.map((item) => item.prompt)),
+  ].map(fingerprint);
+  const { items, model } = await writeAssessment({ topic, packet: packet?.packet ?? null, modes, avoid });
+  const id = randomUUID();
+  await db().insert(labAssessments).values({ id, userId, topicId, kind, items, promptVersion: ASSESSOR_PROMPT_VERSION, model });
+  return { id };
+}
+
+async function insertAttempt(tx: Transaction, values: Omit<typeof labAttempts.$inferInsert, "id">) {
+  const id = randomUUID();
+  const inserted = await tx.insert(labAttempts).values({ ...values, id }).onConflictDoNothing().returning({ id: labAttempts.id });
+  if (!inserted.length) throw new LabInputError("This question already has an answer.", 409);
+  return id;
+}
+
+function gradeFields(grade: Grade) {
+  return { label: grade.label, gradedBy: grade.by, voided: grade.voided ?? false, misconceptions: grade.misconceptions, feedback: grade.feedback, run: grade.run ?? null };
+}
+
+export interface AnswerInput {
+  assessmentId: string;
+  itemIndex: number;
+  response: AttemptResponse;
+  selfRating: number;
+  /** What the snippet printed when the learner's browser ran it. Only for predict questions. */
+  actualOutput?: string[];
+}
+
+export async function submitAnswer(userId: string, input: AnswerInput) {
+  const [assessment] = await db().select().from(labAssessments).where(and(eq(labAssessments.id, input.assessmentId), eq(labAssessments.userId, userId))).limit(1);
+  if (!assessment) throw new LabInputError("Question set not found.", 404);
+  const item = assessment.items[input.itemIndex];
+  if (!item) throw new LabInputError("Question not found.", 404);
+  if (!Number.isInteger(input.selfRating) || input.selfRating < 1 || input.selfRating > 5) throw new LabInputError("Rate how sure you are from 1 to 5 before answering.");
+  const [existing] = await db().select({ id: labAttempts.id }).from(labAttempts)
+    .where(and(eq(labAttempts.assessmentId, assessment.id), eq(labAttempts.itemIndex, input.itemIndex))).limit(1);
+  if (existing) throw new LabInputError("This question already has an answer.", 409);
+
+  let grade: Grade;
+  if (item.mode === "predict") {
+    if (!input.actualOutput || !input.response.lines) throw new LabInputError("A prediction needs your answer and the real output.");
+    grade = gradePrediction(input.response.lines, input.actualOutput, item.expectedOutput);
+  } else {
+    const answer = input.response.text?.trim() ?? "";
+    if (answer.length < 10) throw new LabInputError("Write at least a sentence.");
+    if (!process.env.OPENAI_API_KEY) throw new LabInputError("The grader is not configured yet.", 503);
+    grade = await gradeAnswer(requireTopic(assessment.topicId), item, answer);
+  }
+
+  return db().transaction(async (tx) => {
+    const attemptId = await insertAttempt(tx, {
+      userId, topicId: assessment.topicId, kind: assessment.kind, mode: item.mode, assessmentId: assessment.id, itemIndex: input.itemIndex,
+      item: item as unknown as Record<string, unknown>, response: { ...input.response, ...(input.actualOutput ? { actual: input.actualOutput } : {}) } as AttemptResponse,
+      selfRating: input.selfRating, ...gradeFields(grade),
+    });
+    const progress = await recompute(tx, userId, assessment.topicId, attemptId);
+    return { attemptId, grade, status: progress.status };
+  });
+}
+
+export async function submitPractice(userId: string, input: { lessonId: string; practiceIndex: number; lines: string[]; actualOutput: string[] }) {
+  const [lesson] = await db().select().from(labLessons).where(and(eq(labLessons.id, input.lessonId), eq(labLessons.userId, userId))).limit(1);
+  if (!lesson) throw new LabInputError("Lesson not found.", 404);
+  const item = lesson.snapshot.practice[input.practiceIndex];
+  if (!item || item.kind !== "predict") throw new LabInputError("Only predict practice is recorded.");
+  const grade = gradePrediction(input.lines, input.actualOutput, item.expectedOutput);
+  return db().transaction(async (tx) => {
+    const attemptId = await insertAttempt(tx, {
+      userId, topicId: lesson.topicId, kind: "lesson", mode: "predict", lessonId: lesson.id, itemIndex: input.practiceIndex,
+      item: item as unknown as Record<string, unknown>, response: { lines: input.lines }, selfRating: null, ...gradeFields(grade),
+    });
+    const progress = await recompute(tx, userId, lesson.topicId, attemptId);
+    return { grade, status: progress.status };
+  });
+}
+
+export async function submitLabRun(userId: string, input: { labId: string; code: string; run: CodeRun }) {
+  const lab = findLab(input.labId);
+  if (!lab) throw new LabInputError("Unknown lab.", 404);
+  const [reveal] = await db().select().from(labSolutionReveals).where(and(eq(labSolutionReveals.userId, userId), eq(labSolutionReveals.labId, lab.id))).limit(1);
+  const grade = gradeLabRun(input.run);
+  return db().transaction(async (tx) => {
+    const statuses: Record<string, string> = {};
+    for (const topicId of lab.topics) {
+      for (const mode of lab.modes) {
+        const attemptId = await insertAttempt(tx, {
+          userId, topicId, kind: "lab" as AttemptKind, mode: mode as Mode, labId: lab.id,
+          item: { labId: lab.id, title: lab.title }, response: { code: input.code.slice(0, 50_000) },
+          selfRating: null, solutionSeen: Boolean(reveal), ...gradeFields(grade),
+        });
+        statuses[topicId] = (await recompute(tx, userId, topicId, attemptId)).status;
+      }
+    }
+    return { grade, solutionSeen: Boolean(reveal), statuses };
+  });
+}
+
+/** Records that the solution was shown, so later passes of this lab can't count as proof. */
+export async function revealSolution(userId: string, labId: string) {
+  if (!findLab(labId) || !labSolutions[labId]) throw new LabInputError("Unknown lab.", 404);
+  await db().insert(labSolutionReveals).values({ userId, labId }).onConflictDoNothing();
+  return labSolutions[labId];
+}
+
+export interface TopicView {
+  progress: TopicProgress;
+  lesson: (LessonSnapshot & { id: string; createdAt: string }) | null;
+  lessonCount: number;
+  sources: SourcePacket["sources"];
+  sourceCheckedAt: string | null;
+  assessment: { id: string; kind: string; createdAt: string; items: (PublicItem & { answered: null | { label: string; feedback: string; voided: boolean } })[] } | null;
+  attempts: { id: string; kind: string; mode: string; label: string; gradedBy: string; voided: boolean; feedback: string; createdAt: string }[];
+  revealedLabs: string[];
+  practiceResults: Record<number, { label: string; feedback: string }>;
+}
+
+export async function getTopicView(userId: string, topicId: string): Promise<TopicView> {
+  requireTopic(topicId);
+  const [progress, lessons, packet, assessments, attempts, reveals] = await Promise.all([
+    getAllProgress(userId).then((all) => all.find((item) => item.topicId === topicId)!),
+    db().select().from(labLessons).where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId))).orderBy(desc(labLessons.version)),
+    latestPacket(userId, topicId),
+    db().select().from(labAssessments).where(and(eq(labAssessments.userId, userId), eq(labAssessments.topicId, topicId))).orderBy(desc(labAssessments.createdAt)).limit(1),
+    db().select().from(labAttempts).where(and(eq(labAttempts.userId, userId), eq(labAttempts.topicId, topicId))).orderBy(desc(labAttempts.createdAt)).limit(60),
+    db().select({ labId: labSolutionReveals.labId }).from(labSolutionReveals).where(eq(labSolutionReveals.userId, userId)),
+  ]);
+  const lesson = lessons[0];
+  const assessment = assessments[0];
+  const lessonPacket = lesson ? (await db().select().from(labSourcePackets).where(eq(labSourcePackets.id, lesson.sourcePacketId)).limit(1))[0] : packet;
+  const practiceResults: TopicView["practiceResults"] = {};
+  for (const attempt of attempts) {
+    if (lesson && attempt.lessonId === lesson.id && attempt.itemIndex !== null) practiceResults[attempt.itemIndex] ??= { label: attempt.label, feedback: attempt.feedback };
+  }
+  return {
+    progress,
+    lesson: lesson ? { ...lesson.snapshot, id: lesson.id, createdAt: lesson.createdAt.toISOString() } : null,
+    lessonCount: lessons.length,
+    sources: lessonPacket?.packet.sources ?? [],
+    sourceCheckedAt: lessonPacket?.packet.sourceCheckedAt ?? null,
+    assessment: assessment ? {
+      id: assessment.id,
+      kind: assessment.kind,
+      createdAt: assessment.createdAt.toISOString(),
+      items: assessment.items.map((item: AssessmentItem, index) => {
+        const answer = attempts.find((attempt) => attempt.assessmentId === assessment.id && attempt.itemIndex === index);
+        return { ...toPublicItem(item), answered: answer ? { label: answer.label, feedback: answer.feedback, voided: answer.voided } : null };
+      }),
+    } : null,
+    attempts: attempts.map((attempt) => ({
+      id: attempt.id, kind: attempt.kind, mode: attempt.mode, label: attempt.label, gradedBy: attempt.gradedBy,
+      voided: attempt.voided, feedback: attempt.feedback, createdAt: attempt.createdAt.toISOString(),
+    })),
+    revealedLabs: reveals.map((row) => row.labId),
+    practiceResults,
+  };
+}

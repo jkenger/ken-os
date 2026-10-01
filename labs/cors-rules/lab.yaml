@@ -1,0 +1,7 @@
+id: cors-rules
+title: What another site may read
+topics: [web.cors]
+modes: [predict]
+runner: probe
+probe: cors-rules
+timeoutMs: 15000

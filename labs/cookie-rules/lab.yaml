@@ -1,0 +1,7 @@
+id: cookie-rules
+title: Which cookies go where
+topics: [web.cookies_sessions]
+modes: [predict]
+runner: probe
+probe: cookie-rules
+timeoutMs: 15000

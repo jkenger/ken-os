@@ -4,18 +4,22 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "tsx scripts/generate-design-system.ts --check && next build",
+    "build": "tsx scripts/generate-design-system.ts --check && tsx scripts/generate-lab-content.ts --check && next build",
     "start": "next start",
-    "check": "tsx scripts/generate-design-system.ts --check && tsc --noEmit",
+    "check": "tsx scripts/generate-design-system.ts --check && tsx scripts/generate-lab-content.ts --check && tsc --noEmit",
     "design:generate": "tsx scripts/generate-design-system.ts --write",
     "memory:context": "tsx scripts/memory.ts context",
     "memory:submit": "tsx scripts/memory.ts submit",
     "test:db:memory": "tsx scripts/verify-memory.ts",
-    "test": "tsx --test src/lib/*.test.ts src/features/project-memory/*.test.ts",
+    "test": "tsx --test src/lib/*.test.ts src/features/project-memory/*.test.ts src/features/engineering-lab/*.test.ts",
+    "lab:research": "tsx scripts/research.ts",
     "test:db": "tsx scripts/verify-skills.ts",
     "test:db:resume": "tsx scripts/verify-resume.ts",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx scripts/migrate.ts"
+    "db:migrate": "tsx scripts/migrate.ts",
+    "lab:generate": "tsx scripts/generate-lab-content.ts --write",
+    "lab:import-sources": "tsx scripts/import-sources.ts",
+    "test:db:lab": "tsx scripts/verify-lab.ts"
   },
   "dependencies": {
     "@ken-os/agents": "workspace:*",
@@ -37,6 +41,7 @@
     "yazl": "^3.3.1"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.8",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "latest",
     "@types/react": "latest",

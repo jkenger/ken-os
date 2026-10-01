@@ -1,0 +1,6 @@
+id: closure-loop
+title: Fix the handlers that all see the last value
+topics: [js.closures]
+modes: [debug]
+runner: browser
+timeoutMs: 2000

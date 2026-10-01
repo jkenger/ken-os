@@ -4,11 +4,15 @@ import { ResumeWorkspace } from "@/components/resume-workspace";
 import { SkillsWorkspace } from "@/components/skills-workspace";
 import { ProjectMemoryPreview } from "@/components/project-memory-preview";
 import { DesignSystemWorkspace } from "@/components/design-system-workspace";
+import { LabToday } from "@/components/lab/lab-today";
+import { LabTopic } from "@/components/lab/lab-topic";
+import { findTopic, labsForTopic } from "@/features/engineering-lab/curriculum";
+import { previewToday, previewTopic } from "@/features/engineering-lab/preview";
 import { WritingStudioPreview } from "@/components/writing-studio-preview";
 
-export default async function DesignPreview({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
+export default async function DesignPreview({ searchParams }: { searchParams: Promise<{ view?: string; topic?: string }> }) {
   if (process.env.NODE_ENV !== "development") notFound();
-  const { view } = await searchParams;
+  const { view, topic: topicParam } = await searchParams;
 
   if (view === "resume") {
     return <ResumeWorkspace email="preview@example.invalid" selection={null} file={null} error={null} previewUrl={null} canAsk={false} preview />;
@@ -18,6 +22,13 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
   }
   if (view === "memory") {
     return <ProjectMemoryPreview />;
+  }
+  if (view === "lab") {
+    return <LabToday email="preview@example.invalid" today={previewToday()} />;
+  }
+  if (view === "lab-topic") {
+    const topic = findTopic(topicParam ?? "js.event_loop") ?? findTopic("js.event_loop")!;
+    return <LabTopic email="preview@example.invalid" topic={topic} view={previewTopic(topic.id)} labs={labsForTopic(topic.id)} skipLesson={false} />;
   }
   if (view === "design") {
     return <DesignSystemWorkspace email="preview@example.invalid" preview />;
