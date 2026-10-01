@@ -1,6 +1,6 @@
 # Engineering Lab v0 architecture (proposal)
 
-Status: **proposed, awaiting owner review.** Nothing in this file is built yet except the Researcher. It answers §27 of [the handoff](../product/ai-engineering-learning-handoff.md), which stays the module's source of truth. Decisions already made are in [engineering-lab.md](engineering-lab.md).
+Status: **proposed, awaiting owner approval.** Three of four open questions were answered on 2026-10-01; the last one only affects Module 2. Nothing in this file is built yet except the Researcher. It answers §27 of [the handoff](../product/ai-engineering-learning-handoff.md), which stays the module's source of truth. Decisions already made are in [engineering-lab.md](engineering-lab.md).
 
 ## The short version
 
@@ -121,7 +121,7 @@ Status rules, as plain code in `mastery.ts`:
 - **NEEDS_REVISIT:** the topic was validated, then a later review came back below `solid`.
 - Opening or reading a lesson never changes status.
 
-Confidence is tracked separately (§10). Before each answer you rate how sure you are, from 1 to 5. A rating of 4 or 5 on an answer graded `misconception` marks `overconfident`, which is exactly the pattern the baseline found.
+Confidence is tracked separately (§10). Before each **assessment or review** answer you rate how sure you are, from 1 to 5 (decided 2026-10-01). Lesson practice and lab runs don't ask, so learning stays quick. A rating of 4 or 5 on an answer graded `misconception` marks `overconfident`, which is exactly the pattern the baseline found.
 
 Review timing after validation is fixed, not adaptive: 3, 10, 30, then 90 days. A passed review moves to the next gap; a failed one sets NEEDS_REVISIT. Why fixed: the handoff warns against tuning a scoring formula too early (§10, §25). Labels first, numbers later.
 
@@ -172,7 +172,7 @@ interface Attempt {
   lessonId: string | null;
   item: AssessmentItem;         // the exact question as shown, stored with the attempt
   response: { text?: string; code?: string; order?: string[] };
-  selfRating: 1 | 2 | 3 | 4 | 5 | null;
+  selfRating: 1 | 2 | 3 | 4 | 5 | null;   // required for assessment and review, null otherwise
   grade: {
     by: "code" | "assessor";
     label: Label;
@@ -204,6 +204,8 @@ Runners, cheapest first (costs are in [engineering-lab.md](engineering-lab.md)):
 - **sandbox:** Vercel Sandbox with real Postgres. Used only for race labs (two buyers, one item) in Module 3.
 
 Tests are plain TypeScript assertion files with a tiny shared harness. That keeps them runnable in a Worker, and full Vitest runs only in the sandbox. Solutions are never sent to the browser until you pass or give up.
+
+**You write lab code in a code box on the topic page** (decided 2026-10-01). The box opens with the lab's starter code. Pressing Run sends your code and the lab's tests to the right runner: a Worker for browser labs, PGlite for index labs, or the sandbox for race labs. Step 6 decides between a plain text box and a lightweight editor with syntax highlighting. There is no local runner in v0.
 
 ## 9. AI role interfaces
 
@@ -261,7 +263,7 @@ A new "Engineering Lab" entry goes in the workspace shell, next to Resume, Agent
 
 Why three pages instead of the handoff's six: §20 says the learning engine is the product, not the UI. History and Sources fit on the topic page until they outgrow it. Labs and Assessments are steps inside a topic, not places to browse.
 
-Wording: the UI says **"topic"** where the code says skill, because Ken OS already has an "Agent skills" page. See open questions.
+Wording: **"topic" everywhere**, in the UI and in new code (decided 2026-10-01). Ken OS already has an "Agent skills" page, so "skill" would mean two things. Step 1 renames the Researcher's `skillId` to `topicId` so the module uses one word.
 
 ## 11. MVP scope for Modules 1–3
 
@@ -321,7 +323,12 @@ Knowledge debt is deliberately not in v0 even though §18 calls it the key diffe
 
 ## Open questions for review
 
-1. **"Topic" in the UI** to avoid a clash with Agent skills, or keep "skill" everywhere and rename the Agent skills page?
-2. **Second origin for CORS labs.** The options are a Vercel deployment URL (each deployment has its own origin) or a small second project. Deployment URLs may sit behind Vercel's protection, which would need checking.
-3. **Where you write lab code.** v0 assumes a simple code box in the browser. The alternative is working in the repo with Claude Code and running a local command that reports results to Ken OS, using a scoped key like Project Memory's.
-4. **Self-rating before every answer.** It's one tap, but it's on every question. Keep it on everything, or only on assessments?
+Decided by the owner on 2026-10-01:
+
+- **Wording:** "topic" everywhere, UI and code.
+- **Lab code:** written in a code box in the browser.
+- **Confidence rating:** asked only on assessment and review answers.
+
+Still open, needed before Module 2 rather than before the first slice:
+
+- **Second origin for CORS labs.** The options are a Vercel deployment URL (each deployment has its own origin) or a small second project. Deployment URLs may sit behind Vercel's protection, which would need checking.

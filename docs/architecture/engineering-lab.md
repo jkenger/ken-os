@@ -8,6 +8,9 @@ Status: the Researcher is built and has run once locally. The rest of the v0 arc
 
 - **Engineering Lab is a Ken OS module**, not a separate repo. Ken OS is the umbrella platform. The module reuses the owner sign-in, PostgreSQL with Drizzle, and `packages/agents`. (Owner, 2026-10-01.)
 - **Which document wins:** the handoff decides anything inside the module. [The product brief](../product/brief.md) decides platform-wide rules such as owner-only access and approval for external writes.
+- **"Topic", not "skill"**, in the UI and in new code, because Ken OS already has an "Agent skills" page. (Owner, 2026-10-01.)
+- **Lab code is written in a browser code box** on the topic page. There is no local runner in v0. (Owner, 2026-10-01.)
+- **Confidence is rated only on assessment and review answers**, not on lesson practice or lab runs. (Owner, 2026-10-01.)
 
 ## Researcher
 
