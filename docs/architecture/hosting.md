@@ -13,7 +13,7 @@ The MVP-building workflow chooses a host early and can hand deployment work to t
 - Inputs: repository/app path, framework/runtime, chosen provider, target environment, database choice, external integrations, and intended public domain or provider URL.
 - Preflight: confirm account/project access, Git or image source, runtime fit, env/secrets inventory, managed-database reachability, OAuth callback/origin changes, cost-sensitive plan choices, and any background/long-running work.
 - Generated configuration: only the selected provider's required files or dashboard instructions. Keep application domain and use-case code host-neutral.
-- Release: build, apply reviewed migrations once per release using the provider-supported mechanism, deploy, and confirm rollback/recovery path. Do not run migrations independently on every app instance start.
+- Release: build, apply reviewed migrations once per release using the provider-supported mechanism, deploy, and confirm rollback/recovery path. Do not run migrations independently on every app instance start. Ken OS on Vercel runs them as the last build step for production deploys only (`apps/web/vercel.json`).
 - Verification: public URL responds; sign-in and external callbacks work; persistence survives restart/redeploy; the first user outcome works; failures are visible. Record the exact tested URL and any owner-only steps.
 - Reporting states: `designed`, `configured`, `deployed`, and `verified` are distinct. Missing account access or credentials should be reported as a specific remaining prerequisite, not glossed over as hosted.
 
