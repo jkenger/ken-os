@@ -1,6 +1,6 @@
 # Engineering Lab decisions
 
-Status: v0 is built and verified locally ([as-built notes](engineering-lab-v0.md#as-built-2026-10-01)). It is not deployed yet.
+Status: v0 is live on ken-os-web.vercel.app ([as-built notes](engineering-lab-v0.md#as-built-2026-10-01)). The next version is proposed in [engineering-lab-v1.md](engineering-lab-v1.md).
 
 [The handoff](../product/ai-engineering-learning-handoff.md) is the module's source of truth. This file records decisions made while building it, so the handoff and its baseline assessment stay unchanged.
 
