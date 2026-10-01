@@ -10,6 +10,8 @@ Status: **proposed, awaiting owner review.** Nothing here is built. v0 is live (
 - **The AI engineering track starts**, with retrieval evaluation and structured outputs, the two places your semantic search work leads next.
 - **Checkpoints** (§16): one mixed scenario at the end of each module, to test whether the pieces work together.
 - **Still no new infrastructure** unless a module needs it. The one candidate is a real Postgres for lock and isolation-level labs, which stays optional.
+- **Daily practice** (section 9): a short hands-on set every day that mixes topics you have already learned, so they stay fresh. It comes right after the review.
+- **After polish: a roadmap graph and a full course** (section 8). A visual map of the road ahead with a pace estimate, and a topic map that covers full-stack and AI engineering from top to bottom, not only your current gaps.
 
 ## 1. The gate: is v0 working?
 
@@ -108,7 +110,7 @@ At the end of each module there's one mixed scenario, like §16's broken checkou
 
 ## 7. Smaller changes
 
-- **Review sessions.** Due reviews run as one session that mixes topics, instead of one topic at a time.
+- **Review sessions** are now part of daily practice (section 9).
 - **Obsidian export** (§21). At the end of a lesson, "copy note scaffold" copies a Markdown stub with the topic, its sources and the note suggestions. You still write the note yourself.
 - **Lock and isolation-level labs.** Real `SELECT ... FOR UPDATE`, deadlocks and isolation levels need parallel database connections, which PGlite can't provide. **Recommended:** a throwaway Neon branch per run, created and deleted by the server, instead of Vercel Sandbox, because Ken OS already uses Neon. Build it only if Module 3's review shows the need.
 - **Known v0 gaps to close:**
@@ -116,24 +118,94 @@ At the end of each module there's one mixed scenario, like §16's broken checkou
   - PGlite loads from a CDN. Pin its integrity, or serve it from Ken OS.
   - Check the probes in Firefox and Safari.
 
+## 8. After polish: a roadmap graph and a full course
+
+The owner asked for both on 2026-10-01, to come once the current build is polished and improved. They come after steps 1 to 9 below, not alongside them.
+
+**Why they're missing today.** v0's map holds only the topics the baseline flagged as gaps, plus two prerequisites, because §23 says not to generate the whole curriculum up front. That made it a good start, but it isn't a course: nothing yet takes you through full-stack or AI engineering from top to bottom. And `/lab/topics` is a flat list, so there's no view of the road ahead.
+
+### A roadmap timeline graph
+
+A `/lab/roadmap` page that draws the topic map as a graph, one track per row:
+
+- **Every topic as a node**, shaded by status: proven, in progress, needs another look, or not started.
+- **Lines for "builds on"**, so you can see what blocks a topic and what it opens up.
+- **"You are here"** at the Planner's current pick, with the path to the end of each track highlighted.
+- **A pace projection.** Using how long your proven topics actually took, it estimates when you'd reach each track's end at your current pace. It's labelled as an estimate and moves as you go.
+
+The graph follows the prerequisite map, not a calendar, so it stays within §9's rule against a fixed week-by-week course. All the data already exists: topics, prerequisites, statuses, and when each topic was proven. A hand-drawn SVG is enough at about 50 nodes; a graph library only if that stops being true.
+
+### A full course, top to bottom
+
+Grow the topic map from "your gaps" to the whole of §24: about 46 topics across the full-stack, production and AI engineering tracks, in prerequisite order.
+
+- **New topics without a baseline entry** already work; they start as "not assessed".
+- **No reteaching what you know.** A topic you already know gets a short placement check: the Assessor's questions, with no lesson first. Pass it, and the topic is proven the normal way. This extends the v0 rule that baseline-solid topics skip the lesson.
+- **The Planner needs no change.** It already orders topics by prerequisites and redirects to weak ones.
+- **The gaps stay the priority.** Topics the baseline flagged are scheduled first, so the full course doesn't slow down the repair work.
+
+**The real work is content, not code:** writing the prerequisite links, the gap or goal for each topic, and labs for about 30 more topics. That should be done a track at a time and reviewed like code, in the repo.
+
+## 9. Daily practice
+
+The owner asked for this on 2026-10-01. Every day there's a short, hands-on set of practice that keeps what you've learned fresh, so proven topics don't quietly fade.
+
+**What a day looks like.** A "Today's practice" card at the top of `/lab`, about 15 minutes, with four or five items:
+
+- **One or two predictions**: fresh snippets from the Assessor, checked by running them, like the checks in v0.
+- **One hands-on fix**: an authored lab from a topic you've already proven, started again from its starter code. Repeating an exercise is normally avoided, but §26 rule 17 allows it exactly when the point is retention.
+- **One or two short explanations**: one-paragraph answers, graded by the Assessor.
+
+Items mix topics instead of grouping them, because switching between topics is what makes recall stick.
+
+**How items are chosen**, in this order:
+
+1. Reviews that are due, or topics that need another look.
+2. Proven topics you haven't touched for the longest time.
+3. Topics with open misconceptions.
+4. A topic in progress, so the set isn't only revision.
+
+**How it counts.** Practice answers are recorded as reviews, so they use the progress rules that already exist:
+
+- A solid answer on a due topic moves its next review further out.
+- A slip marks the topic "needs another look", and the Planner brings it back.
+- Nothing is proven from practice alone that wasn't proven already.
+- The confidence rating applies, as it does for every review.
+
+**What it doesn't do:**
+
+- No streaks, points or badges. The handoff's §25 rules out gamification.
+- Today shows whether today's set is done, and nothing more.
+- Missing a day costs nothing; the next set simply leans harder on what's due.
+
+**Cost and build.**
+
+- **Cost:** one small question set a day counts toward the daily AI budget; the rest reuses authored labs and needs no AI.
+- **Data:** a new `lab_daily_sets` table stores each day's items, so the set is stable if you leave and come back.
+- **Code:** answers reuse the existing attempt route with kind `review`.
+- **Before anything is proven:** until the first topic is proven, the card offers a short warm-up from in-progress topics instead.
+
 ## Implementation order
 
 Each step ends with something you can use or check.
 
 1. **Gate tooling:** grade disputes and `/lab/health`. *Check: numbers match a hand count on your real data.*
 2. **Use v0 for two to three weeks, then hold the review.** Record the outcome in [engineering-lab.md](engineering-lab.md).
-3. **Knowledge debt:** the local command, the scoped key, `lab_debt_items`, and the list on Today. *Check: run it on ken-os's own recent commits.*
-4. **Module 4 labs**, with the fake clock in the harness. *Check: every starter fails and every solution passes.*
-5. **Module 5 labs.**
-6. **AI track: retrieval evaluation, then structured outputs.**
-7. **Checkpoints** for Modules 1 to 3, then 4 and 5.
-8. **Smaller changes**, as the review shows they matter.
+3. **Daily practice** (section 9). It comes first after the review because it protects everything already proven, and it reuses existing parts. *Check: a day's set is stable across reloads, mixes topics, and a slip sets "needs another look".*
+4. **Knowledge debt:** the local command, the scoped key, `lab_debt_items`, and the list on Today. *Check: run it on ken-os's own recent commits.*
+5. **Module 4 labs**, with the fake clock in the harness. *Check: every starter fails and every solution passes.*
+6. **Module 5 labs.**
+7. **AI track: retrieval evaluation, then structured outputs.**
+8. **Checkpoints** for Modules 1 to 3, then 4 and 5.
+9. **Smaller changes**, as the review shows they matter.
+10. **After polish: the roadmap graph.** *Check: it matches the Topics page node for node, and the projection updates when a topic is proven.*
+11. **After polish: the full course**, one track at a time, with placement checks for topics you already know. *Check: every new lab's starter fails and its solution passes, and the Planner's order still puts baseline gaps first.*
 
 ## Not in v1
 
 - More than one learner, public pages, or sharing.
 - Gamification: streaks, points, badges.
-- The full §24 map. v1 adds 14 topics, not 40.
+- The full §24 map during the main v1 work. Steps 1 to 9 add 14 topics; the rest comes with the full course (section 8), after polish.
 - Agent patterns, MCP, memory and evals from the AI track. They follow once retrieval evaluation is proven.
 - Automatic pull request checks for knowledge debt.
 - Any change that lets the app edit the curriculum by itself.
