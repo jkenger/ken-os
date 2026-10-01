@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "lab-web",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--dir", "apps/web", "exec", "next", "dev", "-p", "3100"],
+      "port": 3100
+    }
+  ]
+}

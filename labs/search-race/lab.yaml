@@ -1,0 +1,6 @@
+id: search-race
+title: Show only the latest search results
+topics: [js.async_races]
+modes: [implement]
+runner: browser
+timeoutMs: 3000

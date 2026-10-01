@@ -2,18 +2,19 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BookOpenText, FileText, Library, Menu, Palette, Search, Sparkles, X } from "lucide-react";
+import { BookOpenText, FileText, FlaskConical, Library, ListTree, Menu, Palette, Search, Sparkles, Sun, X } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-type Module = "resume" | "skills" | "memory" | "design";
+type Module = "resume" | "skills" | "memory" | "design" | "lab";
 
 const modules = [
   { id: "resume" as const, label: "Resume hub", href: "/", icon: FileText },
   { id: "skills" as const, label: "Agent skills", href: "/skills", icon: Sparkles },
   { id: "design" as const, label: "Design system", href: "/design-system", icon: Palette },
   { id: "memory" as const, label: "Project Memory", href: "/memory", icon: BookOpenText },
+  { id: "lab" as const, label: "Engineering Lab", href: "/lab", icon: FlaskConical },
 ];
 const previewModules = [
   ...modules.map((module) => module.id === "design" ? { ...module, href: "/design-preview?view=design" } : module.id === "memory" ? { ...module, href: "/design-preview?view=memory" } : module),
@@ -43,6 +44,13 @@ const moduleDetails: Record<Module, {
       { label: "Receipts", href: "/memory#receipts", icon: FileText },
       { label: "Capture", href: "/memory#capture", icon: Sparkles },
       { label: "Policy", href: "/memory#policy", icon: FileText },
+    ],
+  },
+  lab: {
+    title: "Engineering Lab",
+    sections: [
+      { label: "Today", href: "/lab", icon: Sun },
+      { label: "Topics", href: "/lab/topics", icon: ListTree },
     ],
   },
   design: {

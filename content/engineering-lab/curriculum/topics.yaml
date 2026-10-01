@@ -1,0 +1,93 @@
+# Engineering Lab topic map. Rules: docs/architecture/engineering-lab-v0.md, section 3.
+# Each gap quotes or paraphrases the 2026-10-01 baseline in docs/product/ai-engineering-learning-handoff.md.
+# Validation needs every mode in `prove` to be solid, with at least one checked by code
+# (a predict question or a lab), so every topic lists predict or a lab that covers one of its modes.
+
+modules:
+  - id: m1-js-runtime
+    title: JavaScript runtime and async
+    track: fullstack
+
+topics:
+  - id: js.call_stack
+    title: The call stack and run to completion
+    module: m1-js-runtime
+    requires: []
+    freshness: core_concept
+    sourceGroups: [javascript]
+    gap: >-
+      The event-loop answer described code as running top to bottom with no model of the call stack. Needs: what the
+      call stack is, that a function runs to completion before anything else runs, and why a busy stack blocks every
+      callback, timer and render.
+    depth: working
+    prove: [predict, explain]
+    labs: []
+
+  - id: js.event_loop
+    title: Event loop, tasks and microtasks
+    module: m1-js-runtime
+    requires: [js.call_stack]
+    freshness: web_platform
+    sourceGroups: [javascript]
+    gap: >-
+      Predicted A B D C for sync logs, setTimeout(..., 0) and Promise.resolve().then(...). Believes code runs top to
+      bottom with timers and promises as generic async. Needs: synchronous code first, then the whole microtask queue,
+      then the next task; where setTimeout, promise callbacks and queueMicrotask land.
+    depth: deep
+    prove: [predict, explain, debug]
+    labs: [event-loop-order]
+
+  - id: js.promises
+    title: Promises and async/await ordering
+    module: m1-js-runtime
+    requires: [js.event_loop]
+    freshness: web_platform
+    sourceGroups: [javascript]
+    gap: >-
+      No reliable model of when promise callbacks and code after await run. Needs: promise states, then callbacks as
+      microtasks, await as a pause that resumes in a microtask, chaining, error propagation and unhandled rejections.
+    depth: working
+    prove: [predict, explain]
+    labs: []
+
+  - id: js.closures
+    title: Closures and captured variables
+    module: m1-js-runtime
+    requires: [js.call_stack]
+    freshness: core_concept
+    sourceGroups: [javascript]
+    gap: >-
+      Could not explain closures and thought captured state only exists after the function is invoked. Needs: a
+      function keeps its surrounding scope from when it was created, closure lifetime, let versus var in loops, and how
+      this produces stale values in callbacks.
+    depth: working
+    prove: [predict, explain, debug]
+    labs: [closure-loop]
+
+  - id: js.references_mutation
+    title: References, equality and shallow copies
+    module: m1-js-runtime
+    requires: []
+    freshness: core_concept
+    sourceGroups: [javascript]
+    gap: >-
+      Predicted nested objects become different after object spread and said objects cannot be compared with ===.
+      Needs: reference versus value, === on objects compares identity, spread copies one level so nested objects stay
+      shared, and structuredClone for deep copies.
+    depth: working
+    prove: [predict, explain, debug]
+    labs: [shallow-copy]
+
+  - id: js.async_races
+    title: Async request races and cancellation
+    module: m1-js-runtime
+    requires: [js.promises, js.closures]
+    freshness: web_platform
+    sourceGroups: [javascript, react]
+    gap: >-
+      Thought useCallback would fix an out-of-order search response and worried a [query] dependency would loop
+      forever. Needs: why responses arrive out of order, ignoring stale responses, AbortController cancellation,
+      debouncing, and timeouts with AbortSignal.timeout.
+    depth: working
+    prove: [explain, implement]
+    labs: [search-race]

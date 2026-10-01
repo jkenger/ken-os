@@ -1,0 +1,36 @@
+# The 2026-10-01 baseline, one entry per topic it actually assessed. Never edit to reflect later progress:
+# this is the "before" picture. Topics with no entry were not assessed directly.
+# Source: docs/product/ai-engineering-learning-handoff.md, section 3.
+
+assessedOn: "2026-10-01"
+entries:
+  - topicId: js.event_loop
+    label: misconception
+    mode: predict
+    notes: Predicted A B D C for synchronous logs, setTimeout(..., 0) and Promise.resolve().then(...), described as top-to-bottom execution with a timeout and an async promise.
+    misconceptions:
+      - Code runs top to bottom, with timers and promises as the same kind of async work
+      - setTimeout(..., 0) runs before promise callbacks
+
+  - topicId: js.closures
+    label: gap
+    mode: explain
+    notes: Could not fully explain closure behavior; thought captured state mainly existed only after function invocation.
+    misconceptions:
+      - Captured state only exists after the function is invoked
+
+  - topicId: js.references_mutation
+    label: misconception
+    mode: predict
+    notes: Understood some top-level copying but predicted nested objects differ after object spread, and said objects cannot be compared with ===.
+    misconceptions:
+      - Object spread copies nested objects too
+      - Objects cannot be compared with ===
+
+  - topicId: js.async_races
+    label: partial
+    mode: review
+    notes: Noticed a possible race in a React search component but thought useCallback would solve it and worried about an infinite rerender from [query].
+    misconceptions:
+      - useCallback prevents out-of-order responses
+      - A [query] effect dependency causes an infinite loop

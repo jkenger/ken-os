@@ -4,6 +4,10 @@ import { ResumeWorkspace } from "@/components/resume-workspace";
 import { SkillsWorkspace } from "@/components/skills-workspace";
 import { ProjectMemoryPreview } from "@/components/project-memory-preview";
 import { DesignSystemWorkspace } from "@/components/design-system-workspace";
+import { LabToday } from "@/components/lab/lab-today";
+import { LabTopic } from "@/components/lab/lab-topic";
+import { findTopic, labsForTopic } from "@/features/engineering-lab/curriculum";
+import { previewToday, previewTopic } from "@/features/engineering-lab/preview";
 
 export default async function DesignPreview({ searchParams }: { searchParams: Promise<{ view?: string }> }) {
   if (process.env.NODE_ENV !== "development") notFound();
@@ -17,6 +21,12 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
   }
   if (view === "memory") {
     return <ProjectMemoryPreview />;
+  }
+  if (view === "lab") {
+    return <LabToday email="preview@example.invalid" today={previewToday()} />;
+  }
+  if (view === "lab-topic") {
+    return <LabTopic email="preview@example.invalid" topic={findTopic("js.event_loop")!} view={previewTopic("js.event_loop")} labs={labsForTopic("js.event_loop")} skipLesson={false} />;
   }
   if (view === "design") {
     return <DesignSystemWorkspace email="preview@example.invalid" preview />;

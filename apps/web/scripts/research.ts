@@ -1,29 +1,31 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { config } from "dotenv";
-import { researchSkill } from "@ken-os/agents";
-import { isPacketUsable } from "@ken-os/domain";
-import { findResearchTarget, RESEARCH_TARGETS } from "../src/features/engineering-lab/research-targets";
+import { researchTopic } from "@ken-os/agents";
+import { isPacketUsable, researchTargetFor } from "@ken-os/domain";
+import { findTopic, topicMap } from "../src/features/engineering-lab/curriculum";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
 
-// Saves a dated source packet snapshot. Snapshots are never overwritten, so a lesson keeps the sources it was built from.
+// Saves a dated source packet snapshot to the repo. Snapshots are never overwritten, so a lesson keeps the
+// sources it was built from. `pnpm lab:import-sources` loads saved packets into the database.
 async function main() {
-  const skillId = process.argv[2];
-  const target = skillId ? findResearchTarget(skillId) : undefined;
-  if (!target) {
-    console.error(`Usage: pnpm --filter @ken-os/web lab:research <skill>\nSkills: ${RESEARCH_TARGETS.map((item) => item.skillId).join(", ")}`);
+  const topicId = process.argv[2];
+  const topic = topicId ? findTopic(topicId) : undefined;
+  if (!topic) {
+    console.error(`Usage: pnpm --filter @ken-os/web lab:research <topic>\nTopics: ${topicMap.topics.map((item) => item.id).join(", ")}`);
     process.exit(1);
   }
   if (!process.env.OPENAI_API_KEY) throw new Error("Set OPENAI_API_KEY in your untracked local environment.");
 
-  const directory = resolve(process.cwd(), "../../content/engineering-lab/sources", target.skillId);
+  const directory = resolve(process.cwd(), "../../content/engineering-lab/sources", topic.id);
   const file = resolve(directory, `${new Date().toISOString().slice(0, 10)}.json`);
-  if (existsSync(file)) throw new Error(`A packet for ${target.skillId} already exists today: ${file}`);
+  if (existsSync(file)) throw new Error(`A packet for ${topic.id} already exists today: ${file}`);
 
-  console.log(`Researching ${target.skillId} on ${target.allowedDomains.join(", ")}...`);
-  const packet = await researchSkill(target);
+  const target = researchTargetFor(topic);
+  console.log(`Researching ${topic.id} on ${target.allowedDomains.join(", ")}...`);
+  const packet = await researchTopic(target);
   if (!isPacketUsable(packet)) {
     console.error(`No usable sources survived the checks. Rejected:\n- ${packet.rejected.join("\n- ")}`);
     process.exit(1);

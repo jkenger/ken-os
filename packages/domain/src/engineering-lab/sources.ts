@@ -1,4 +1,4 @@
-// Engineering Lab source rules. The module spec lives in docs/product/ai-engineering-learning-handoff.md.
+// Source packet rules for the Engineering Lab Researcher. Module spec: docs/product/ai-engineering-learning-handoff.md.
 
 /** How fast a topic's facts go stale, which decides when its sources must be checked again. */
 export type FreshnessClass = "core_concept" | "web_platform" | "framework" | "ai_ecosystem";
@@ -14,7 +14,7 @@ export const REFRESH_AFTER_DAYS: Record<FreshnessClass, number> = {
 export const SOURCE_TIERS = ["specification", "official_docs", "provider_docs", "technical_reference", "community"] as const;
 export type SourceTier = (typeof SOURCE_TIERS)[number];
 
-/** Domains the Researcher may cite, grouped so a skill can pick only the ones that fit it. */
+/** Domains the Researcher may cite, grouped so a topic can pick only the ones that fit it. */
 export const SOURCE_DOMAINS = {
   javascript: ["developer.mozilla.org", "tc39.es", "html.spec.whatwg.org", "nodejs.org", "v8.dev"],
   web: ["developer.mozilla.org", "fetch.spec.whatwg.org", "html.spec.whatwg.org", "httpwg.org", "rfc-editor.org", "datatracker.ietf.org", "web.dev"],
@@ -22,9 +22,10 @@ export const SOURCE_DOMAINS = {
   database: ["postgresql.org", "www.postgresql.org"],
   ai: ["platform.openai.com", "developers.openai.com", "docs.anthropic.com", "docs.claude.com", "modelcontextprotocol.io", "ai-sdk.dev"],
 } as const satisfies Record<string, readonly string[]>;
+export type SourceGroup = keyof typeof SOURCE_DOMAINS;
 
 export interface ResearchTarget {
-  skillId: string;
+  topicId: string;
   title: string;
   /** The exact gap to repair, taken from the baseline assessment. */
   gap: string;
@@ -47,7 +48,7 @@ export interface PacketSource {
 
 export interface SourcePacket {
   schemaVersion: 1;
-  skillId: string;
+  topicId: string;
   title: string;
   gap: string;
   generatedAt: string;
@@ -127,7 +128,7 @@ export function finalizeSourcePacket(target: ResearchTarget, draft: ResearchDraf
 
   return {
     schemaVersion: 1,
-    skillId: target.skillId,
+    topicId: target.topicId,
     title: target.title,
     gap: target.gap,
     generatedAt: now.toISOString(),

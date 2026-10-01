@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { finalizeSourcePacket, isPacketUsable, type ResearchDraft } from "@ken-os/domain";
-import { findResearchTarget, RESEARCH_TARGETS } from "./research-targets";
+import { finalizeSourcePacket, isPacketUsable, researchTargetFor, type ResearchDraft } from "@ken-os/domain";
+import { findTopic, topicMap } from "./curriculum";
 
-const target = findResearchTarget("js.event_loop")!;
+const target = researchTargetFor(findTopic("js.event_loop")!);
 const now = new Date("2026-10-01T12:00:00Z");
 const mdn = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop";
 
@@ -64,7 +64,10 @@ test("caps a packet at five sources", () => {
   assert.equal(packet.rejected.length, 2);
 });
 
-test("every research target has a unique id and an allowlist", () => {
-  assert.equal(new Set(RESEARCH_TARGETS.map((item) => item.skillId)).size, RESEARCH_TARGETS.length);
-  assert.ok(RESEARCH_TARGETS.every((item) => item.allowedDomains.length > 0 && item.gap.length > 40));
+test("every topic resolves to a research target with an allowlist", () => {
+  for (const topic of topicMap.topics) {
+    const item = researchTargetFor(topic);
+    assert.equal(item.topicId, topic.id);
+    assert.ok(item.allowedDomains.length > 0 && new Set(item.allowedDomains).size === item.allowedDomains.length);
+  }
 });
