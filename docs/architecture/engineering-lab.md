@@ -1,6 +1,6 @@
 # Engineering Lab decisions
 
-Status: the Researcher is built and has run once locally. The rest of the v0 architecture (§27 of the handoff) is not yet proposed or approved.
+Status: v0 is built and verified locally ([as-built notes](engineering-lab-v0.md#as-built-2026-10-01)). It is not deployed yet.
 
 [The handoff](../product/ai-engineering-learning-handoff.md) is the module's source of truth. This file records decisions made while building it, so the handoff and its baseline assessment stay unchanged.
 
@@ -11,19 +11,20 @@ Status: the Researcher is built and has run once locally. The rest of the v0 arc
 - **"Topic", not "skill"**, in the UI and in new code, because Ken OS already has an "Agent skills" page. (Owner, 2026-10-01.)
 - **Lab code is written in a browser code box** on the topic page. There is no local runner in v0. (Owner, 2026-10-01.)
 - **Confidence is rated only on assessment and review answers**, not on lesson practice or lab runs. (Owner, 2026-10-01.)
+- **No second domain for CORS labs.** The code box's worker has an opaque origin, so its requests to Ken OS are already cross-origin. This closed the last open question in the proposal. (Found during the build, 2026-10-01.)
+- **No Vercel Sandbox in v0.** Race labs interleave concurrent calls between queries on PGlite, which reproduces lost updates, check-then-insert races and duplicate creates. A sandbox with real parallel connections is only needed for lock and isolation-level labs, which v0 doesn't have. (Found during the build, 2026-10-01.)
 
 ## Researcher
 
-The Researcher builds a small source packet for one skill: 2 to 5 sources and 5 to 12 short claims, each tied to the page that supports it. A separate Tutor will teach from it later. The Researcher does not teach or grade.
+The Researcher builds a small source packet for one topic: 2 to 5 sources and 5 to 12 short claims, each tied to the page that supports it. The Tutor teaches from it. The Researcher does not teach or grade.
 
 Where it lives:
 
-- `packages/domain/src/engineering-lab.ts`: source tiers, allowed domains, refresh timing, and `finalizeSourcePacket`.
-- `packages/agents/src/researcher.ts`: the agent, using the OpenAI web search tool limited to the skill's allowed domains.
-- `apps/web/src/features/engineering-lab/research-targets.ts`: the Module 1 skills and the exact gap each one repairs. Provisional until the skill graph schema is approved.
-- `apps/web/scripts/research.ts`: saves a packet to `content/engineering-lab/sources/<skill>/<date>.json`.
-
-Run it with:
+- `packages/domain/src/engineering-lab/sources.ts`: source tiers, allowed domains, refresh timing, and `finalizeSourcePacket`.
+- `packages/agents/src/engineering-lab/researcher.ts`: the agent, using the OpenAI web search tool limited to the topic's allowed domains.
+- The topic map (`content/engineering-lab/curriculum/topics.yaml`) gives each topic its gap and source groups.
+- In the app, writing a lesson researches the topic first whenever its newest packet is past its refresh date, and stores the packet in `lab_source_packets`.
+- `apps/web/scripts/research.ts` saves a packet to `content/engineering-lab/sources/<topic>/<date>.json` from the command line; `lab:import-sources` loads saved packets into the database.
 
 ```bash
 pnpm --filter @ken-os/web lab:research js.event_loop
@@ -33,33 +34,25 @@ Why it is built this way:
 
 - **The model only proposes.** Code checks every source URL against the allowlist (HTTPS only, exact host or subdomain), drops claims that point at a source it did not keep, caps sources at five, and stamps all dates. The model never sets dates or freshness.
 - **Rejections stay visible.** Anything dropped is listed in the packet's `rejected` field instead of disappearing.
-- **Snapshots are never overwritten**, so a lesson keeps the exact sources it was built from. A second run on the same day fails instead of replacing the file.
+- **Snapshots are never overwritten**, so a lesson keeps the exact sources it was built from. The first packet file still says `skillId`; the importer reads both names rather than rewriting it.
 - **Refresh timing follows how fast a topic changes:** core concepts 365 days, web platform 180, frameworks 60, AI providers and tools 14.
-- **Read-only.** The Researcher reads public pages and writes only to the local repo. Page content is treated as untrusted and the prompt says to ignore instructions inside it. The allowlist check in code is the real guard.
+- **Read-only.** The Researcher reads public pages and writes only its own packet. Page content is treated as untrusted and the prompt says to ignore instructions inside it. The allowlist check in code is the real guard.
 
-Verified on 2026-10-01: unit tests cover the allowlist, lookalike hosts, plain HTTP, unbacked claims and the source cap. One live run for `js.event_loop` saved 4 sources (three MDN pages and the WHATWG HTML spec) and 8 claims with nothing rejected.
+## Lab runners
 
-Not yet done: a hosted route or UI, storing packets in the database, and skills beyond Module 1.
+Ken OS runs on Vercel, where a normal request cannot run a lab's tests. Every v0 lab runs in the learner's browser instead, for free.
 
-## Hosted lab runner (proposal, not decided)
-
-Ken OS runs on Vercel, where a normal request cannot run a lab's test suite. Each lab type has a cheaper fit than one general sandbox:
-
-| Lab type | Runner | Cost |
+| Lab type | Runner | Used for |
 | --- | --- | --- |
-| Predict the output (event loop, closures) | No runner. Compare the answer with a stored expected answer. | Free |
-| Small JS exercises | A Web Worker in the browser, with the tests sent alongside | Free |
-| HTTP, cookies, CORS, caching | Practice endpoints in Ken OS that set real headers; the browser is the lab | Free |
-| Indexes and `EXPLAIN ANALYZE` | PGlite (Postgres compiled to WebAssembly) in the browser | Free, open source |
-| Concurrency, races, full Vitest suites | Vercel Sandbox (isolated microVM) | See below |
+| Predict the output | The snippet runs in a Web Worker; its real output is the answer key | Module 1 practice and Assessor questions |
+| JavaScript exercises | A Web Worker started from a `data:` URL, with the lab's tests | Module 1 labs |
+| HTTP, cookies, CORS, caching | Probes: the page makes real requests to anonymous, data-free practice endpoints and records what happened | Module 2 labs |
+| Databases | PGlite (Postgres compiled to WebAssembly) inside the same worker, from a pinned CDN build | Module 3 labs |
 
-Vercel Sandbox, checked 2026-10-01 on [the pricing page](https://vercel.com/docs/sandbox/pricing): Hobby includes 5 active CPU hours, 420 GB-hours of memory and 5,000 sandbox creations per month at no charge, with sessions up to 45 minutes. Usage pauses rather than bills when the allowance runs out. Pro charges $0.128 per CPU hour and $0.0212 per GB-hour, and Vercel's own example puts a 2-minute test run at about $0.0018. Personal use should stay inside the Hobby allowance.
+The `data:` URL matters: it gives the worker an opaque origin, so lab code can't send the owner's cookies or pass the API's origin check, and `terminate()` stops infinite loops.
 
-PGlite allows only one connection at a time ([docs](https://pglite.dev/docs/)), so it cannot reproduce two buyers racing for the same stock. Race labs need a real Postgres inside a sandbox, or a throwaway database branch.
+Considered for later and not needed yet:
 
-Considered and not chosen:
-
-- **E2B:** comparable sandboxes, but $100 of one-time credit and then a $150 monthly plan for longer sessions ([pricing](https://e2b.dev/pricing)). Vercel Sandbox is already on the same account.
-- **WebContainers (StackBlitz):** runs Node in the browser, but needs a commercial license for production use in a for-profit setting ([terms](https://webcontainers.io/enterprise)). Avoid it unless Ken OS stays strictly personal.
-
-Effort estimate: the browser runners and the expected-answer check are about a day together. Vercel Sandbox integration (create, copy lab files, run tests with a JSON reporter, read the results, stop) is about one to two days, plus a timeout and a cap on runs per day.
+- **Vercel Sandbox**, for labs needing real parallel connections. Checked 2026-10-01 on [the pricing page](https://vercel.com/docs/sandbox/pricing): Hobby includes 5 active CPU hours, 420 GB-hours of memory and 5,000 sandbox creations per month at no charge, and pauses rather than bills past that. Vercel's example puts a 2-minute test run at about $0.0018 on Pro.
+- **E2B:** comparable, but $100 of one-time credit and then a $150 monthly plan for longer sessions ([pricing](https://e2b.dev/pricing)).
+- **WebContainers (StackBlitz):** needs a commercial license for production use in a for-profit setting ([terms](https://webcontainers.io/enterprise)).

@@ -10,7 +10,7 @@ Ken OS is the owner's private, hosted platform; each workflow is a module under 
 - `packages/agents`: the read-only resume assistant and the Engineering Lab Researcher.
 - `docs/product/brief.md`: platform-wide scope and acceptance criteria.
 - `docs/product/ai-engineering-learning-handoff.md`: source of truth for the Engineering Lab module. Preserve its baseline assessment; record decisions in `docs/architecture/engineering-lab.md` instead of editing it.
-- `apps/web/src/features/engineering-lab/` and `content/engineering-lab/`: Engineering Lab code and its saved source packets, which are never overwritten.
+- `apps/web/src/features/engineering-lab/`, `content/engineering-lab/` and `labs/`: Engineering Lab code, its topic map and baseline, and its labs. After editing the YAML or a lab, run `pnpm --filter @ken-os/web lab:generate`; never hand-edit the generated files. Never edit `baseline.yaml` to reflect progress. Saved source packets are never overwritten. Every lab starter must fail at least one test and every solution must pass; `pnpm test` checks both.
 - `docs/architecture/overview.md`: current system boundaries.
 - `docs/architecture/starter-standard.md`: proposed reusable one-app starter and codebase conventions, not yet a generator.
 - `docs/architecture/hosting.md`: proposed provider-aware deployment playbook, not yet a deployment skill.

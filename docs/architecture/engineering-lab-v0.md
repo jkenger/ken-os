@@ -1,6 +1,6 @@
 # Engineering Lab v0 architecture (proposal)
 
-Status: **proposed, awaiting owner approval.** Three of four open questions were answered on 2026-10-01; the last one only affects Module 2. Nothing in this file is built yet except the Researcher. It answers §27 of [the handoff](../product/ai-engineering-learning-handoff.md), which stays the module's source of truth. Decisions already made are in [engineering-lab.md](engineering-lab.md).
+Status: **built and verified locally on 2026-10-01; not yet deployed.** Read [As built](#as-built-2026-10-01) at the end first: it lists where the build differs from this proposal and why. The proposal below is kept as written. It answers §27 of [the handoff](../product/ai-engineering-learning-handoff.md), which stays the module's source of truth. Decisions are in [engineering-lab.md](engineering-lab.md).
 
 ## The short version
 
@@ -329,6 +329,43 @@ Decided by the owner on 2026-10-01:
 - **Lab code:** written in a code box in the browser.
 - **Confidence rating:** asked only on assessment and review answers.
 
-Still open, needed before Module 2 rather than before the first slice:
+Answered during the build:
 
-- **Second origin for CORS labs.** The options are a Vercel deployment URL (each deployment has its own origin) or a small second project. Deployment URLs may sit behind Vercel's protection, which would need checking.
+- **Second origin for CORS labs:** not needed. See the as-built notes below.
+
+## As built (2026-10-01)
+
+All three modules, all three pages and steps 1 to 9 are built. Step 10, the hosted check, waits on a deploy (see the end of this section).
+
+**What exists**
+
+- 18 topics across the three modules, the 2026-10-01 baseline for the 16 topics it assessed, and 14 labs: 4 JavaScript, 4 browser probes and 6 database.
+- Progress rules, Planner, Researcher, Tutor, Assessor and grader, seven `lab_*` tables (migration `0005_engineering_lab.sql`), the API routes, and `/lab`, `/lab/topics` and `/lab/topics/[id]`.
+- Commands: `pnpm --filter @ken-os/web lab:generate` after editing `content/engineering-lab` or `labs/`; `test` for unit tests; `test:db:lab` for the database check; `lab:research <topic>` and `lab:import-sources` for packets from the command line.
+
+**Where it differs from the proposal, and why**
+
+| Proposal | Built | Why |
+|---|---|---|
+| Five tables | Seven: adds `lab_assessments` and `lab_solution_reveals` | Question sets have to be stored before they're answered, so expected answers and rubrics never reach the browser. Solution reveals are recorded on the server, not reported by the browser. |
+| Baseline loaded into the database as attempts | Read from `baseline.yaml` and merged in at read time | The file stays the only copy of the "before" picture, so it can't drift. |
+| `lab_progress` holds current progress | Progress is rebuilt from attempts on every read; `lab_progress` keeps the last status for the change log | A later change to the topic map, such as a new proof mode, can never leave a stale status on screen. |
+| Validation only from assessments | Assessments, reviews, or an authored lab passed without first seeing its solution | Labs are the code-checked proof for debug and implement. The Assessor only writes questions for modes a lab doesn't already cover. |
+| YAML read at runtime | `lab:generate` compiles YAML and lab folders into checked TypeScript; `check` and `build` fail when it's stale | The hosted app can't read repo files at runtime. Lab solutions go into a separate server-only file and were confirmed absent from the browser bundles. |
+| Topics `web.https` and `web.request_lifecycle` | One topic, `web.request_lifecycle`, covering HTTPS | HTTPS can't be checked in code on its own; the request-anatomy probe covers both. |
+| Module 2 labs as DevTools exercises | Probe labs: you predict, then the page makes real requests and scores the predictions | Gives code-checked proof without a second domain. CORS runs from the code box worker, whose `data:` URL origin is already cross-origin. |
+| Race labs on Vercel Sandbox | PGlite in the browser, with concurrent calls interleaved between queries | Reproduces lost updates, signup races and duplicate payments for free. A sandbox is still the answer for lock and isolation-level labs, which v0 doesn't include. |
+| Step 6 decides the code box | A plain text box with Tab support and a per-lab draft in browser storage | No editor dependency for v0. |
+
+**Verified**
+
+- 61 unit tests: progress rules, the Planner on the real baseline, grading, the topic map checks, source packets, and every lab. Each starter fails at least one test and each solution passes all of them, including the database labs on real PGlite.
+- `test:db:lab` against the local Postgres, using a throwaway user that's deleted afterwards. It covers two answers submitted at once logging one status change, one answer per question, the confidence rating being required, validation, solution reveals, and NEEDS_REVISIT after a failed review.
+- One live run each of the Researcher, Tutor, Assessor and grader. The lesson kept all five citations. Both predict answer keys matched real event-loop order. The grader marked a wrong answer as a misconception and docked a correct but incomplete one to partial.
+- In a real browser via the development preview: the event-loop lab, the stock-race lab on PGlite loaded from the CDN, and all four probes, with every observation matching the expected browser rule. Pages have no sideways scroll at 280 px, and the lowest text contrast is 4.92:1.
+- `next build` succeeds.
+
+**Not yet verified**
+
+- The signed-in pages with your real session, and the whole loop on the hosted app (step 10). Both need a deploy and the migration run on the production database.
+- Probe results in browsers other than Chromium. The cookie and cache rules are standard, but third-party cookie handling varies by browser.
