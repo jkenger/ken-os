@@ -33,7 +33,7 @@ export function previewTopic(topicId: string): TopicView {
         workedExample: { code: "console.log(\"A\");\nsetTimeout(() => console.log(\"B\"), 0);\nPromise.resolve().then(() => console.log(\"C\"));\nconsole.log(\"D\");", walkthrough: "A and D are synchronous. C is a microtask. B waits for a new task." },
       },
       practice: [
-        { kind: "predict", prompt: "What does this print?", code: "setTimeout(() => console.log(1));\nqueueMicrotask(() => console.log(2));\nconsole.log(3);", expectedOutput: ["3", "2", "1"] },
+        { kind: "predict", prompt: "What does this print?", code: "setTimeout(() => console.log(1));\nqueueMicrotask(() => console.log(2));\nconsole.log(3);", expectedOutput: ["3", "2", "1"], explanation: "`3` is synchronous, so it prints first. `queueMicrotask` runs as soon as the stack is empty, before the timer's task." },
         { kind: "think", prompt: "Why can a long synchronous loop freeze a page?", answer: "Nothing else, including rendering, runs until the stack is empty." },
       ],
       citations: [{ claim: "Microtasks drain before the next task.", sourceUrl: mdn }],
@@ -45,11 +45,11 @@ export function previewTopic(topicId: string): TopicView {
       id: "preview-assessment", kind: "assessment", createdAt: new Date().toISOString(),
       items: [
         { mode: "predict", prompt: "What does this print, in order?", code: "Promise.resolve().then(() => console.log(\"x\"));\nsetTimeout(() => console.log(\"y\"));\nconsole.log(\"z\");", answered: null },
-        { mode: "explain", prompt: "Explain why a promise callback runs before a zero-delay timer.", code: null, answered: { label: "partial", feedback: "Right that promises are microtasks; you didn't say the queue drains fully before the next task.", voided: false } },
+        { mode: "explain", prompt: "Explain why a promise callback runs before a zero-delay timer.", code: null, answered: { label: "partial", feedback: "Right that promises are microtasks; you didn't say the queue drains fully before the next task.", voided: false, answer: { lines: null, text: "Promises are microtasks, so they run before timers.", why: null }, explanation: null } },
       ],
     },
     attempts: [],
     revealedLabs: [],
-    practiceResults: {},
+    practiceResults: { 0: { label: "partial", feedback: "The code printed 3, 2, 1. You predicted 3, 1.", voided: false, answer: { lines: ["3", "1"], text: null, why: "The timer was queued first, so it runs first." } } },
   };
 }

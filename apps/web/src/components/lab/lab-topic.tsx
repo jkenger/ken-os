@@ -3,11 +3,11 @@
 import { useEffect, useState, type KeyboardEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ExternalLink, Play, RotateCcw } from "lucide-react";
-import { parsePredictedLines, scoreProbe, type LabDefinition, type Topic } from "@ken-os/domain";
+import { parsePredictedLines, scoreProbe, type LabDefinition, type PracticePredict as PracticePredictItem, type Topic } from "@ken-os/domain";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button } from "@/components/ui/button";
 import { DisclosureSummary } from "@/components/ui/disclosure-summary";
-import type { TopicView } from "@/features/engineering-lab/store";
+import type { SavedAnswer, TopicView } from "@/features/engineering-lab/store";
 import { buildLabScript, buildPredictScript, PGLITE_URL, type TestResult } from "@/features/engineering-lab/runner/harness";
 import { PROBES } from "@/features/engineering-lab/runner/probes";
 import { runInWorker } from "@/features/engineering-lab/runner/run-in-worker";
@@ -184,6 +184,7 @@ function Confidence({ value, onChange }: { value: number | null; onChange: (valu
   return (
     <fieldset className="mt-4">
       <legend className="text-sm font-semibold">How sure are you, before answering?</legend>
+      <p className="mt-1 text-sm text-muted-foreground">This doesn't change your grade. It flags answers you were sure about but got wrong, since those beliefs are the hardest to notice.</p>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {[1, 2, 3, 4, 5].map((rating) => (
           <Button key={rating} type="button" size="sm" variant={value === rating ? "default" : "outline"} aria-pressed={value === rating} onClick={() => onChange(rating)}>
@@ -197,9 +198,43 @@ function Confidence({ value, onChange }: { value: number | null; onChange: (valu
 
 type AssessmentView = NonNullable<TopicView["assessment"]>;
 
+/** Two boxes for a prediction: the printed lines, which code checks, and the reason, which is only saved. */
+function PredictInputs({ lines, why, onLines, onWhy, tall }: { lines: string; why: string; onLines: (value: string) => void; onWhy: (value: string) => void; tall?: boolean }) {
+  return (
+    <>
+      <label className="mt-4 block">
+        <span className="mb-2 block text-sm font-semibold">What it prints, one line per log</span>
+        <textarea className={cn(textarea, tall ? "min-h-[110px]" : "min-h-[80px]", "font-mono")} spellCheck={false} value={lines} onChange={(event) => onLines(event.target.value)} />
+      </label>
+      <label className="mt-3 block">
+        <span className="block text-sm font-semibold">Why</span>
+        <span className="mb-2 block text-sm text-muted-foreground">Optional and not graded. Compare it with the explanation after you check.</span>
+        <textarea className={cn(textarea, "min-h-[72px]")} value={why} onChange={(event) => onWhy(event.target.value)} />
+      </label>
+    </>
+  );
+}
+
+function YourAnswer({ answer }: { answer: SavedAnswer }) {
+  return (
+    <div className="mt-3">
+      <p className="font-semibold">Your answer</p>
+      {answer.lines && <pre className="mt-1 whitespace-pre-wrap font-mono text-[13px] leading-5">{answer.lines.join("\n") || "(nothing)"}</pre>}
+      {answer.text && <p className="mt-1 whitespace-pre-wrap leading-5">{answer.text}</p>}
+      {answer.why && <p className="mt-2 whitespace-pre-wrap leading-5"><span className="font-semibold">Your why: </span>{answer.why}</p>}
+    </div>
+  );
+}
+
+function Explanation({ text }: { text?: string | null }) {
+  if (!text) return null;
+  return <div className="mt-3"><p className="mb-1 font-semibold">Why it prints this</p><Markdown text={text} /></div>;
+}
+
 function Question({ assessment, index, onDone }: { assessment: AssessmentView; index: number; onDone: (message: string) => void }) {
   const item = assessment.items[index];
   const [answer, setAnswer] = useState("");
+  const [why, setWhy] = useState("");
   const [rating, setRating] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState("");
@@ -209,7 +244,7 @@ function Question({ assessment, index, onDone }: { assessment: AssessmentView; i
     setBusy(true); setProblem("");
     try {
       const body = item.mode === "predict"
-        ? { type: "answer", assessmentId: assessment.id, itemIndex: index, selfRating: rating, response: { lines: parsePredictedLines(answer) }, actualOutput: await realOutput(item.code ?? "") }
+        ? { type: "answer", assessmentId: assessment.id, itemIndex: index, selfRating: rating, response: { lines: parsePredictedLines(answer), ...(why.trim() ? { why: why.trim() } : {}) }, actualOutput: await realOutput(item.code ?? "") }
         : { type: "answer", assessmentId: assessment.id, itemIndex: index, selfRating: rating, response: { text: answer } };
       await post("/api/lab/attempts", body);
       onDone("Answer graded.");
@@ -229,14 +264,18 @@ function Question({ assessment, index, onDone }: { assessment: AssessmentView; i
         <div className="mt-4 rounded-lg bg-muted/60 p-4 text-sm" role="status">
           <Tag value={item.answered.voided ? "partial" : item.answered.label}>{item.answered.voided ? "Thrown out" : labelWords[item.answered.label as keyof typeof labelWords]}</Tag>
           <p className="mt-2 leading-5">{item.answered.feedback}</p>
+          <YourAnswer answer={item.answered.answer} />
+          <Explanation text={item.answered.explanation} />
         </div>
       ) : (
         <>
           <Confidence value={rating} onChange={setRating} />
-          <label className="mt-4 block">
-            <span className="mb-2 block text-sm font-semibold">{item.mode === "predict" ? "What does it print? One line per log." : "Your answer"}</span>
-            <textarea className={cn(textarea, item.mode === "predict" ? "min-h-[110px] font-mono" : "min-h-[130px]")} value={answer} onChange={(event) => setAnswer(event.target.value)} />
-          </label>
+          {item.mode === "predict" ? <PredictInputs lines={answer} why={why} onLines={setAnswer} onWhy={setWhy} tall /> : (
+            <label className="mt-4 block">
+              <span className="mb-2 block text-sm font-semibold">Your answer</span>
+              <textarea className={cn(textarea, "min-h-[130px]")} value={answer} onChange={(event) => setAnswer(event.target.value)} />
+            </label>
+          )}
           {problem && <p className="mt-3 rounded-lg bg-muted px-4 py-3 text-sm" role="alert">{problem}</p>}
           <Button type="button" className="mt-3" disabled={busy || !answer.trim()} onClick={() => void submit()}>{busy ? "Grading..." : "Submit answer"}</Button>
         </>
@@ -245,27 +284,53 @@ function Question({ assessment, index, onDone }: { assessment: AssessmentView; i
   );
 }
 
-function PracticePredict({ lessonId, index, prompt, code, result, onDone }: { lessonId: string; index: number; prompt: string; code: string; result?: { label: string; feedback: string }; onDone: (message: string) => void }) {
+type PracticeResult = TopicView["practiceResults"][number];
+
+function PracticePredict({ lessonId, index, item, result, onDone }: { lessonId: string; index: number; item: PracticePredictItem; result?: PracticeResult; onDone: (message: string) => void }) {
   const [answer, setAnswer] = useState("");
+  const [why, setWhy] = useState("");
+  const [retrying, setRetrying] = useState(false);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState("");
+  const solid = result?.label === "solid" && !result.voided;
+
   async function check() {
     setBusy(true); setProblem("");
     try {
-      await post("/api/lab/attempts", { type: "practice", lessonId, practiceIndex: index, lines: parsePredictedLines(answer), actualOutput: await realOutput(code) });
+      await post("/api/lab/attempts", { type: "practice", lessonId, practiceIndex: index, lines: parsePredictedLines(answer), why, actualOutput: await realOutput(item.code) });
+      setRetrying(false);
       onDone("Practice checked.");
     } catch (error) { setProblem(error instanceof Error ? error.message : "Could not check."); }
     finally { setBusy(false); }
   }
+  function tryAgain() {
+    setAnswer(result?.answer.lines?.join("\n") ?? "");
+    setWhy(result?.answer.why ?? "");
+    setRetrying(true);
+  }
+
   return (
     <div className="mt-4 rounded-xl border border-border p-4">
-      <p className="text-[15px] leading-6">{prompt}</p>
-      <div className="mt-3"><CodeBlock code={code} /></div>
-      {result && <div className="mt-3 text-sm" role="status"><Tag value={result.label}>{labelWords[result.label as keyof typeof labelWords]}</Tag><p className="mt-2">{result.feedback}</p></div>}
-      <label className="mt-3 block"><span className="mb-2 block text-sm font-semibold">{result ? "Try again" : "Your prediction, one line per log"}</span>
-        <textarea className={cn(textarea, "min-h-[80px] font-mono")} value={answer} onChange={(event) => setAnswer(event.target.value)} /></label>
-      {problem && <p className="mt-2 text-sm" role="alert">{problem}</p>}
-      <Button type="button" size="sm" variant="outline" className="mt-2" disabled={busy || !answer.trim()} onClick={() => void check()}>{busy ? "Running..." : "Check by running it"}</Button>
+      <p className="text-[15px] leading-6">{item.prompt}</p>
+      <div className="mt-3"><CodeBlock code={item.code} /></div>
+      {result && !retrying ? (
+        <div className="mt-3 rounded-lg bg-muted/60 p-4 text-sm" role="status">
+          <Tag value={result.voided ? "partial" : result.label}>{result.voided ? "Thrown out" : labelWords[result.label as keyof typeof labelWords]}</Tag>
+          <p className="mt-2 leading-5">{result.feedback}</p>
+          <YourAnswer answer={result.answer} />
+          <Explanation text={item.explanation} />
+          {!solid && <Button type="button" size="sm" variant="outline" className="mt-3" onClick={tryAgain}><RotateCcw size={14} aria-hidden="true" />Try again</Button>}
+        </div>
+      ) : (
+        <>
+          <PredictInputs lines={answer} why={why} onLines={setAnswer} onWhy={setWhy} />
+          {problem && <p className="mt-2 text-sm" role="alert">{problem}</p>}
+          <div className="mt-2 flex flex-wrap gap-2">
+            <Button type="button" size="sm" variant="outline" disabled={busy || !answer.trim()} onClick={() => void check()}>{busy ? "Running..." : "Check by running it"}</Button>
+            {retrying && <Button type="button" size="sm" variant="ghost" disabled={busy} onClick={() => setRetrying(false)}>Cancel</Button>}
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -344,7 +409,7 @@ export function LabTopic({ email, topic, view, labs, skipLesson }: { email: stri
                 {lesson.practice.map((item, index) => item.kind === "think" ? (
                   <details key={index} className="group mt-4 rounded-xl border border-border p-4"><DisclosureSummary className="text-[15px]">{item.prompt}</DisclosureSummary><div className="mt-3 pl-6"><Markdown text={item.answer} /></div></details>
                 ) : (
-                  <PracticePredict key={index} lessonId={lesson.id} index={index} prompt={item.prompt} code={item.code} result={view.practiceResults[index]} onDone={done} />
+                  <PracticePredict key={index} lessonId={lesson.id} index={index} item={item} result={view.practiceResults[index]} onDone={done} />
                 ))}
               </div>
               {lesson.noteSuggestions.length > 0 && <div><h3 className="font-semibold">For your notes</h3><p className="text-sm text-muted-foreground">Write these up in Obsidian in your own words.</p><ul className="mt-2 list-disc pl-5 text-sm">{lesson.noteSuggestions.map((item) => <li key={item}>{item}</li>)}</ul></div>}

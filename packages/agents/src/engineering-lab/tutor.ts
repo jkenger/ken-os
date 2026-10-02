@@ -2,7 +2,7 @@ import { Agent, getDefaultModel, run } from "@openai/agents";
 import type { BaselineEntry, LessonDraft, SourcePacket, Topic } from "@ken-os/domain";
 import { z } from "zod";
 
-export const TUTOR_PROMPT_VERSION = "tutor-v1";
+export const TUTOR_PROMPT_VERSION = "tutor-v2";
 
 const draftSchema = z.object({
   sections: z.object({
@@ -15,7 +15,7 @@ const draftSchema = z.object({
   }),
   practice: z.array(z.discriminatedUnion("kind", [
     z.object({ kind: z.literal("think"), prompt: z.string(), answer: z.string() }),
-    z.object({ kind: z.literal("predict"), prompt: z.string(), code: z.string(), expectedOutput: z.array(z.string()) }),
+    z.object({ kind: z.literal("predict"), prompt: z.string(), code: z.string(), expectedOutput: z.array(z.string()), explanation: z.string() }),
   ])),
   citations: z.array(z.object({ claim: z.string(), sourceUrl: z.string() })),
   noteSuggestions: z.array(z.string()),
@@ -33,7 +33,7 @@ Sections (Markdown allowed inside each):
 - mentalModel: one compact model or analogy they can run in their head.
 - workedExample: runnable JavaScript (no imports, no DOM, console.log only) and a step-by-step walkthrough of what runs when.
 
-practice: 3 to 5 items. Use "predict" items with self-contained JavaScript that only prints with console.log; expectedOutput is the exact printed lines in order. Use "think" items for short reasoning questions with a short answer. Practice is for learning, so it may resemble the worked example.
+practice: 3 to 5 items. Use "predict" items with self-contained JavaScript that only prints with console.log; expectedOutput is the exact printed lines in order; explanation is 2 to 3 sentences on why it prints that, naming the rule, shown only after they answer. Use "think" items for short reasoning questions with a short answer. Practice is for learning, so it may resemble the worked example.
 
 citations: tie each key claim in theory to a sourceUrl from the packet. Only use URLs that appear in the packet.
 noteSuggestions: 2 to 4 concept names for the learner's own notes.

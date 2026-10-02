@@ -28,6 +28,7 @@ export async function POST(request: Request) {
         response: {
           ...(response.text !== undefined ? { text: text(response.text, "response.text", 6000) } : {}),
           ...(response.lines !== undefined ? { lines: stringList(response.lines, "response.lines") } : {}),
+          ...(response.why !== undefined ? { why: text(response.why, "response.why", 2000) } : {}),
         },
         ...(body.actualOutput !== undefined ? { actualOutput: stringList(body.actualOutput, "actualOutput", 200) } : {}),
       });
@@ -37,6 +38,7 @@ export async function POST(request: Request) {
         lessonId: text(body.lessonId, "lessonId", 64),
         practiceIndex: integer(body.practiceIndex, "practiceIndex"),
         lines: stringList(body.lines, "lines"),
+        ...(body.why !== undefined ? { why: text(body.why, "why", 2000) } : {}),
         actualOutput: stringList(body.actualOutput, "actualOutput", 200),
       });
     }

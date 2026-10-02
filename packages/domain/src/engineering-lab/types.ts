@@ -25,6 +25,8 @@ export interface PredictItem {
   code: string;
   /** Console lines the Assessor expects. Checked against a real run before it can count. */
   expectedOutput: string[];
+  /** Why it prints that, in a few sentences. Shown only after answering. Items written before tutor-v2 / assessor-v2 have none. */
+  explanation?: string;
 }
 
 export interface WrittenItem {
@@ -41,7 +43,7 @@ export type AssessmentItem = PredictItem | WrittenItem;
 
 /** What the learner's browser may see before answering. */
 export type PublicItem =
-  | Omit<PredictItem, "expectedOutput">
+  | Omit<PredictItem, "expectedOutput" | "explanation">
   | Omit<WrittenItem, "rubric" | "misconceptionsToWatch">;
 
 export function toPublicItem(item: AssessmentItem): PublicItem {
@@ -54,6 +56,8 @@ export interface AttemptResponse {
   code?: string;
   /** Predicted console lines, one per entry. */
   lines?: string[];
+  /** The learner's own reason for a prediction. Saved and shown back, never graded. */
+  why?: string;
 }
 
 export interface CodeRun {
