@@ -1,0 +1,155 @@
+# Engineering Lab UI direction
+
+Status: **agreed with the owner on 2026-10-02, not built yet.** Clickable mockups run at `/design-preview?view=lab-ui` in development, with fake data and no AI calls. This is the "polish" the [v1 proposal](engineering-lab-v1.md) waits for, so it comes before the v1 features.
+
+## The short version
+
+- **A topic becomes four steps (Learn, Practice, Lab, Check)** with a step bar, instead of one long scroll. You can jump to any step; the suggested next one is marked.
+- **Learn is a proper reader:** a sticky outline, a short core lesson, and optional "Go deeper" sections. The other steps show one thing at a time.
+- **The course has a shape:** two tracks (Full-stack, AI Engineering), each with chapters and the full outline from handoff §24, including topics not written yet. A **"My gaps"** switch hides what assessment says you already know.
+- **Today is one card:** "Continue: Event loop · Step 2 of 4 · Practice". Reviews and recent changes sit underneath.
+- **Feedback shows exactly what was wrong:** a line-by-line diff for predictions and a rubric checklist for written answers, plus the explanation.
+- **Look up any word, anywhere in Ken OS:** select text, press Explain (or `E`), get a short meaning and one trusted link, and save it to a new **Terms** page.
+- **CodeMirror 6** replaces the plain text boxes, for writing and for showing code.
+- **Still Ken OS:** same type, spacing and warm monochrome surfaces, plus new learning components. Colour is used only for meaning.
+
+## What the first live test showed
+
+From the owner's test on 2026-10-02:
+
+- The topic page is one long scroll where everything has the same weight. It feels like an editor, not a learning page.
+- You can't tell where you are in a topic or what comes next.
+- Topics look scattered. It isn't clear which path they belong to: a full-stack course, or an AI engineering course.
+- There's no way to look up an unfamiliar term without leaving for a new browser tab.
+
+The bugs from the same test (the "why" being graded as output, answers vanishing on refresh, solid answers resubmitted) were fixed separately in PR #5.
+
+## Decisions
+
+| # | Question | Decision |
+|---|---|---|
+| Q2 | What should it feel like? | Short focused sessions by default, a workbench inside labs, and a full reader in the Learn step. |
+| Q3 | Topic page shape | Steps with a step bar; labs use a split screen on desktop. |
+| Q4 | Code editing | CodeMirror 6 (about 150 KB, works on phones), for writing and reading code. |
+| Q5 | How far from the Ken OS look? | Ken OS base plus purpose-built learning components. Colour only for meaning. |
+| Q6 | Phone or desktop first? | Split by task: desktop for lessons and labs; phone fully designed for daily practice, reviews and predictions. |
+| Q7 | Feedback tone | Quiet and exact, a little warm, and diff-style for predictions. |
+| Q8 | How the course is organized | Tracks, then chapters, then topics, like a book's table of contents. |
+| Q9 | Reader and sessions | The Learn step is the reader; the other steps are focused. |
+| Q10 | Lesson depth | A short core plus optional "Go deeper" sections. |
+| Q11 | Moving between steps | Free. The step bar suggests, it never locks. |
+| Q12 | Today | One main "Continue" card. |
+| Q13 | Term lookup scope | Ken OS-wide, built and tried in the lab first. |
+| Q14 | Where meanings come from | A short AI explanation for the selected context, plus one link from the Researcher's trusted sites. |
+| Q15 | What saving does | A Terms list now, stored so daily practice can quiz saved terms later. |
+| Q16 | What "warm" means | One short human line and a small check on a solid answer; one clear moment when a topic is proven. No confetti, sounds or points. |
+| Q17 | Full course and gap focus | One course with a "My gaps" switch; known topics show "Known · skip". |
+| Q18 | Topics nobody assessed | A 2 to 3 question placement check decides whether they're known or a gap. |
+| Q19 | Topics not written yet | Shown in the outline, greyed, marked "Not written yet". |
+| Q20 | Feedback on written answers | A rubric checklist: each point covered, partly covered or missed. |
+| Q21 | Triggering a lookup | An "Explain" button beside any selection, plus the `E` shortcut. |
+| Q22 | Saved terms page | "Terms", in the main Ken OS sidebar. |
+| Q23 | Where this sits in the plan | It's the polish phase, before v1 features. The full-course outline moves up with it. |
+| Q24 | What the write-up is | This doc plus clickable mockups in `design-preview`. |
+
+Defaults the owner accepted without a separate question: term lookups get their own daily limit, so a reading-heavy day can't block lesson generation; on a phone, a lab shows Instructions and Code as two tabs; a topic without labs has no Lab step.
+
+## Screens
+
+### Today
+
+- **One "Continue" card:** track and chapter, topic title, "Step 2 of 4 · Practice · 1 of 2 predictions done", a four-segment progress bar, one button, and a time estimate.
+- **Underneath, smaller:** reviews due (each opens that topic's Check step) and recent status changes.
+- **Daily practice** (v1) becomes a second card in the same place when it exists.
+
+### Course
+
+- **Track tabs:** Full-stack and AI Engineering, each with a one-line summary and "2 of 37 proven · 17 gaps to close".
+- **Chapters** in order, each with "4 of 6 known or proven" and a thin progress bar.
+- **Topic rows:** a number (1.2), the title, and a status. Unwritten topics are greyed and not clickable. Topics nobody has assessed offer **"Placement check · 3 questions"**.
+- **"My gaps" switch:** hides topics that are proven or known from the baseline or a placement check. Unassessed topics stay. Chapters that are entirely unwritten say so ("8 topics planned, not written yet") rather than "no gaps", which would read as mastered.
+
+### Topic
+
+- **Header:** a breadcrumb (track, chapter), the title and the status.
+- **Step bar,** sticky under the header. Each step shows a number or a check when done, its name, and one line of state ("Read", "1 of 2 done", "Not run yet", "2 questions"). The suggested step says "Suggested next". Nothing is locked; proof rules decide what counts, not the UI.
+- **Learn:** a sticky outline that follows your scroll; a reading column about 680px wide; "The gap" marked with a left rule; the mental model on a tinted panel; the worked example in a read-only editor; "Go deeper" as collapsible sections; sources at the end; then "Next: Practice".
+- **Practice:** one prediction at a time with "Prediction 1 of 2" and dots. Each answered one shows its result, the diff, your why, the explanation, then "Try again" and "Next".
+- **Lab:** on desktop, instructions on the left (sticky) and the editor on the right, with Run tests, Reset and Show solution. On a phone, two tabs: Instructions and Code. Results show the pass count and each test.
+- **Check:** questions as cards. After grading: the label and one line, your answer, then the diff (predictions) or rubric checklist (written answers), then the explanation. The confidence rating sits above the answer and says it doesn't change the grade.
+- **Proven moment:** when a topic turns proven, a tinted banner at the top of Check names the topic, says how it was proven, and gives the first review date. That's the only celebration in the module.
+
+### Term lookup and Terms
+
+- **Select any text** under 60 characters on a Ken OS page, code included. A small "Explain `E`" button appears below the selection.
+- **The popover** gives the term, two sentences of meaning written for the sentence you selected it from, one link from a trusted site, and "Save to Terms". Escape or scrolling closes it. You never leave the page.
+- **Terms** (main sidebar): search, then each term with its meaning, where you found it (a link back), the source link, and when you saved it.
+
+## Feedback rules
+
+- **Every result answers three things:** the label, what exactly was wrong, and why the right answer is right.
+- **Prediction diff:** the real output line by line against yours, matched with a longest-common-subsequence so one missing line doesn't shift everything after it.
+  - A line that printed but somewhere else is "You had it here" and "Actually prints here".
+  - A line you left out is "Missing from yours".
+  - A line that never printed is "Never printed".
+  - A one-line summary underneath counts each kind.
+- **Rubric checklist:** the grader returns a result for each rubric point. The rubric stays hidden until you answer, so showing it afterwards gives nothing away.
+- **Warmth:** one short, specific line on a solid answer ("That's the drain rule exactly"), never generic praise. No streaks, points, sounds or confetti, which also keeps to the handoff's §25 rule against heavy gamification.
+
+## Visual rules
+
+**Ken OS stays the base.** Manrope headings, Source Sans 3 body text, the warm monochrome tokens, the same radii and spacing. Nothing here is a framework default.
+
+**New tokens, for meaning only.** These will move into `features/design-system/contract.ts` when built:
+
+| Token | Text | Tint | Text on tint | Text on page |
+|---|---|---|---|---|
+| `--lab-solid` | `#2d6a45` | `#e5efe7` | 5.47:1 | 6.39:1 |
+| `--lab-partial` | `#7a5710` | `#f5ecd6` | 5.58:1 | 6.51:1 |
+| `--lab-gap` | `#9a2f2b` | `#f6e2df` | 5.99:1 | 7.40:1 |
+
+- **Colour never works alone.** Every status also has words, and "Proven" and "Not assessed yet" have an icon.
+- **Known contrast problem in the current theme:** `--muted-foreground` (`#766f66`) on `--muted` (`#f4f1eb`) is **4.40:1**, below 4.5:1. The mockups avoid that pairing; the real build should either darken the muted text or never put muted text on a muted surface.
+- **Ken OS has no dark theme yet.** When it gets one, these tokens need dark values measured separately.
+- **Motion only where it explains something:** the step bar's underline, the "My gaps" switch, collapsible sections. No fade-in on scroll.
+
+## Components to build
+
+Shared across Ken OS (`components/ui` or a shared folder):
+
+- **CodeEditor:** CodeMirror 6 with a Ken OS theme, editable or read-only.
+- **TermLookup:** the selection button, the popover and the `E` shortcut, wrapping each module's page.
+- **Pill:** a status label with tone (solid, partial, gap, neutral, quiet). It replaces the lab's current `Tag`.
+
+Engineering Lab only (`components/lab`):
+
+- **StepBar**, **PredictionDiff**, **RubricChecklist**, **CourseOutline** (tracks, chapters, rows, gap switch), **ContinueCard**, **ProvenBanner**.
+
+The mockup versions live in `apps/web/src/components/lab-ui-preview/` and are the starting point.
+
+## What the build needs beyond the UI
+
+- **Course outline in content:** `topics.yaml` gains tracks and chapters, plus outline-only entries for unwritten topics (id, title, chapter, no lesson or labs). `lab:generate` checks them like any other topic.
+- **Placement checks:** the Assessor's questions for a topic with no lesson first, recorded as kind `placement`. Passing marks the topic known. This was v1 section 8; it moves up.
+- **Tutor `tutor-v3`:** adds `deeper: { title, body }[]` to lessons. Older lessons simply have none.
+- **Grader:** returns `{ point, result }` for each rubric point alongside the label and feedback. The prompt version goes up.
+- **Term lookup:** a `ken_terms` table (term, meaning, source URL, where found, saved at), a lookup endpoint that sends the selection plus its sentence and returns two sentences and one link from `SOURCE_DOMAINS`, and its own daily limit. The selected text is untrusted data in the prompt. Stored so daily practice can use saved terms later.
+- **Progress per step:** the step bar's state comes from data that already exists (lesson read, practice attempts, lab runs, check answers). No new tables.
+
+## Build order
+
+1. **CodeEditor and Pill** in place of the text boxes and tags. *Check: every existing lab still runs, and contrast holds.*
+2. **The topic page as steps**, Learn as a reader, labs as a split screen. *Check: on a phone and a desktop, you can always tell which step you're on.*
+3. **Feedback:** the prediction diff, then the grader's rubric results and the checklist. *Check: the owner's "outer start, body" answer shows the two missing lines at a glance.*
+4. **Course outline,** "My gaps" and placement checks. *Check: the outline matches §24, and gap focus hides exactly the known topics.*
+5. **Today's Continue card.**
+6. **Term lookup and Terms**, shared across Ken OS. *Check: a lookup never leaves the page, and a saved term links back to where it was found.*
+7. **"Go deeper"** lesson sections (`tutor-v3`).
+
+Then the v1 features, starting from its section 1 gate.
+
+## Not part of this
+
+- A roadmap graph. The Course outline answers "where am I in the whole course" for now; the graph stays in v1 section 8.
+- A dark theme for Ken OS.
+- Writing the content for the unwritten topics. The outline only names them.
