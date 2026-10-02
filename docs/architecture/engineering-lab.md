@@ -13,6 +13,8 @@ Status: v0 is live on ken-os-web.vercel.app ([as-built notes](engineering-lab-v0
 - **Confidence is rated only on assessment and review answers**, not on lesson practice or lab runs. (Owner, 2026-10-01.)
 - **No second domain for CORS labs.** The code box's worker has an opaque origin, so its requests to Ken OS are already cross-origin. This closed the last open question in the proposal. (Found during the build, 2026-10-01.)
 - **No Vercel Sandbox in v0.** Race labs interleave concurrent calls between queries on PGlite, which reproduces lost updates, check-then-insert races and duplicate creates. A sandbox with real parallel connections is only needed for lock and isolation-level labs, which v0 doesn't have. (Found during the build, 2026-10-01.)
+- **A prediction's "why" is saved but not graded.** It has its own box, so it can't be mistaken for a printed line. After answering, the learner sees an explanation the Tutor or Assessor wrote with the question (`tutor-v2`, `assessor-v2`) and compares it themselves, so there's no extra AI call. Older lessons and questions have no explanation. (First live test, 2026-10-02.)
+- **A practice prediction locks once it's right.** Retrying after a wrong answer is still allowed. Assessment questions already allowed one answer each. (First live test, 2026-10-02.)
 
 ## Researcher
 

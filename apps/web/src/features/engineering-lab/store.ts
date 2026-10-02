@@ -271,16 +271,22 @@ export async function submitAnswer(userId: string, input: AnswerInput) {
   });
 }
 
-export async function submitPractice(userId: string, input: { lessonId: string; practiceIndex: number; lines: string[]; actualOutput: string[] }) {
+export async function submitPractice(userId: string, input: { lessonId: string; practiceIndex: number; lines: string[]; why?: string; actualOutput: string[] }) {
   const [lesson] = await db().select().from(labLessons).where(and(eq(labLessons.id, input.lessonId), eq(labLessons.userId, userId))).limit(1);
   if (!lesson) throw new LabInputError("Lesson not found.", 404);
   const item = lesson.snapshot.practice[input.practiceIndex];
   if (!item || item.kind !== "predict") throw new LabInputError("Only predict practice is recorded.");
+  // Once a practice prediction is right, more attempts only add duplicate history.
+  const [last] = await db().select({ label: labAttempts.label, voided: labAttempts.voided }).from(labAttempts)
+    .where(and(eq(labAttempts.userId, userId), eq(labAttempts.lessonId, lesson.id), eq(labAttempts.itemIndex, input.practiceIndex)))
+    .orderBy(desc(labAttempts.createdAt)).limit(1);
+  if (last?.label === "solid" && !last.voided) throw new LabInputError("You already got this one right.", 409);
   const grade = gradePrediction(input.lines, input.actualOutput, item.expectedOutput);
+  const why = input.why?.trim();
   return db().transaction(async (tx) => {
     const attemptId = await insertAttempt(tx, {
       userId, topicId: lesson.topicId, kind: "lesson", mode: "predict", lessonId: lesson.id, itemIndex: input.practiceIndex,
-      item: item as unknown as Record<string, unknown>, response: { lines: input.lines }, selfRating: null, ...gradeFields(grade),
+      item: item as unknown as Record<string, unknown>, response: { lines: input.lines, ...(why ? { why } : {}) }, selfRating: null, ...gradeFields(grade),
     });
     const progress = await recompute(tx, userId, lesson.topicId, attemptId);
     return { grade, status: progress.status };
@@ -315,16 +321,30 @@ export async function revealSolution(userId: string, labId: string) {
   return labSolutions[labId];
 }
 
+/** What the learner typed, shown back with the grade so it survives a page refresh. */
+export interface SavedAnswer {
+  lines: string[] | null;
+  text: string | null;
+  why: string | null;
+}
+
+function savedAnswer(response: AttemptResponse | null): SavedAnswer {
+  return { lines: response?.lines ?? null, text: response?.text ?? null, why: response?.why ?? null };
+}
+
 export interface TopicView {
   progress: TopicProgress;
   lesson: (LessonSnapshot & { id: string; createdAt: string }) | null;
   lessonCount: number;
   sources: SourcePacket["sources"];
   sourceCheckedAt: string | null;
-  assessment: { id: string; kind: string; createdAt: string; items: (PublicItem & { answered: null | { label: string; feedback: string; voided: boolean } })[] } | null;
+  assessment: {
+    id: string; kind: string; createdAt: string;
+    items: (PublicItem & { answered: null | { label: string; feedback: string; voided: boolean; answer: SavedAnswer; explanation: string | null } })[];
+  } | null;
   attempts: { id: string; kind: string; mode: string; label: string; gradedBy: string; voided: boolean; feedback: string; createdAt: string }[];
   revealedLabs: string[];
-  practiceResults: Record<number, { label: string; feedback: string }>;
+  practiceResults: Record<number, { label: string; feedback: string; voided: boolean; answer: SavedAnswer }>;
 }
 
 export async function getTopicView(userId: string, topicId: string): Promise<TopicView> {
@@ -342,7 +362,7 @@ export async function getTopicView(userId: string, topicId: string): Promise<Top
   const lessonPacket = lesson ? (await db().select().from(labSourcePackets).where(eq(labSourcePackets.id, lesson.sourcePacketId)).limit(1))[0] : packet;
   const practiceResults: TopicView["practiceResults"] = {};
   for (const attempt of attempts) {
-    if (lesson && attempt.lessonId === lesson.id && attempt.itemIndex !== null) practiceResults[attempt.itemIndex] ??= { label: attempt.label, feedback: attempt.feedback };
+    if (lesson && attempt.lessonId === lesson.id && attempt.itemIndex !== null) practiceResults[attempt.itemIndex] ??= { label: attempt.label, feedback: attempt.feedback, voided: attempt.voided, answer: savedAnswer(attempt.response) };
   }
   return {
     progress,
@@ -356,7 +376,13 @@ export async function getTopicView(userId: string, topicId: string): Promise<Top
       createdAt: assessment.createdAt.toISOString(),
       items: assessment.items.map((item: AssessmentItem, index) => {
         const answer = attempts.find((attempt) => attempt.assessmentId === assessment.id && attempt.itemIndex === index);
-        return { ...toPublicItem(item), answered: answer ? { label: answer.label, feedback: answer.feedback, voided: answer.voided } : null };
+        return {
+          ...toPublicItem(item),
+          answered: answer ? {
+            label: answer.label, feedback: answer.feedback, voided: answer.voided, answer: savedAnswer(answer.response),
+            explanation: item.mode === "predict" ? item.explanation ?? null : null,
+          } : null,
+        };
       }),
     } : null,
     attempts: attempts.map((attempt) => ({

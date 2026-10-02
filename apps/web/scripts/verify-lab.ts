@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { config } from "dotenv";
 import { and, eq } from "drizzle-orm";
-import type { AssessmentItem } from "@ken-os/domain";
+import type { AssessmentItem, LessonSnapshot, SourcePacket } from "@ken-os/domain";
 import { closeDb, db } from "../src/lib/db";
-import { labAssessments, labAttempts, labProgressChanges, users } from "../src/lib/schema";
+import { labAssessments, labAttempts, labLessons, labProgressChanges, labSourcePackets, users } from "../src/lib/schema";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
@@ -23,7 +23,7 @@ async function main() {
 
     const topicId = "js.references_mutation";
     const items: AssessmentItem[] = [
-      { mode: "predict", prompt: "What prints?", code: "const a = { n: { v: 1 } }; const b = { ...a }; console.log(a === b); console.log(a.n === b.n);", expectedOutput: ["false", "true"] },
+      { mode: "predict", prompt: "What prints?", code: "const a = { n: { v: 1 } }; const b = { ...a }; console.log(a === b); console.log(a.n === b.n);", expectedOutput: ["false", "true"], explanation: "Spread makes a new outer object but copies the nested reference." },
       { mode: "predict", prompt: "What prints?", code: "console.log(1)", expectedOutput: ["2"] },
       { mode: "explain", prompt: "Why?", code: null, rubric: ["identity"], misconceptionsToWatch: [] },
     ];
@@ -71,7 +71,9 @@ async function main() {
 
     const reviewId = randomUUID();
     await db().insert(labAssessments).values({ id: reviewId, userId, topicId, kind: "review", items: [items[0]], promptVersion: "check", model: "none" });
-    const slip = await store.submitAnswer(userId, { assessmentId: reviewId, itemIndex: 0, selfRating: 5, response: { lines: ["true", "true"] }, actualOutput: ["false", "true"] });
+    const fresh = await store.getTopicView(userId, topicId);
+    assert.ok(fresh.assessment?.items.every((item) => !("explanation" in item)), "explanations stay hidden until the question is answered");
+    const slip = await store.submitAnswer(userId, { assessmentId: reviewId, itemIndex: 0, selfRating: 5, response: { lines: ["true", "true"], why: "Spread copies everything." }, actualOutput: ["false", "true"] });
     assert.equal(slip.status, "NEEDS_REVISIT", "a failed review after validation brings the topic back");
     console.log("ok - solution reveal recorded and ignored as proof; a failed review sets NEEDS_REVISIT");
 
@@ -79,11 +81,38 @@ async function main() {
     assert.equal(view.assessment?.kind, "review", "the topic page shows the newest question set");
     assert.equal(view.assessment?.items[0].answered?.label, "partial", "a wrong value, not a wrong order");
     assert.ok(view.assessment?.items.every((item) => !("expectedOutput" in item) && !("rubric" in item)), "answers and rubrics never reach the browser");
+    assert.deepEqual(view.assessment?.items[0].answered?.answer, { lines: ["true", "true"], text: null, why: "Spread copies everything." }, "the learner's answer survives a reload");
+    assert.match(view.assessment?.items[0].answered?.explanation ?? "", /nested reference/, "the explanation appears once answered");
     assert.equal(view.revealedLabs.includes("shallow-copy"), true);
     const plan = (await store.getToday(userId)).plan;
     assert.equal(plan?.kind, "review");
     assert.equal(plan?.topicId, topicId);
-    console.log("ok - topic view hides answers; Today brings the slipped topic back first");
+    console.log("ok - topic view hides answers until answered, keeps the learner's answer; Today brings the slipped topic back first");
+
+    // Lesson practice: the answer and why are kept, and a practice prediction locks once it's right.
+    const practiceTopic = "js.event_loop";
+    const packetId = randomUUID();
+    await db().insert(labSourcePackets).values({
+      id: packetId, userId, topicId: practiceTopic, packet: { topicId: practiceTopic } as unknown as SourcePacket, refreshAfter: "2099-01-01", generatedAt: new Date(),
+    });
+    const lessonId = randomUUID();
+    const practiceItem = { kind: "predict" as const, prompt: "What prints, and why?", code: "setTimeout(() => console.log(1)); console.log(2);", expectedOutput: ["2", "1"], explanation: "The timer waits for a new task." };
+    await db().insert(labLessons).values({
+      id: lessonId, userId, topicId: practiceTopic, version: 1, sourcePacketId: packetId,
+      snapshot: { practice: [practiceItem], sections: {} } as unknown as LessonSnapshot,
+    });
+    const miss = await store.submitPractice(userId, { lessonId, practiceIndex: 0, lines: ["2"], why: "Timers run later.", actualOutput: ["2", "1"] });
+    assert.equal(miss.grade.label, "partial");
+    const missView = await store.getTopicView(userId, practiceTopic);
+    assert.deepEqual(missView.practiceResults[0].answer, { lines: ["2"], text: null, why: "Timers run later." }, "the practice answer survives a reload");
+    const hit = await store.submitPractice(userId, { lessonId, practiceIndex: 0, lines: ["2", "1"], actualOutput: ["2", "1"] });
+    assert.equal(hit.grade.label, "solid", "a wrong practice answer can be retried");
+    await assert.rejects(
+      store.submitPractice(userId, { lessonId, practiceIndex: 0, lines: ["2", "1"], actualOutput: ["2", "1"] }),
+      (error: Error) => error instanceof store.LabInputError && error.status === 409,
+      "a solid practice answer can't be submitted again",
+    );
+    console.log("ok - practice keeps the answer and why, allows retries, and locks once solid");
   } finally {
     await db().delete(users).where(eq(users.id, userId));
     await closeDb();
