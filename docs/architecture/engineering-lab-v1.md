@@ -2,6 +2,8 @@
 
 Status: **proposed, awaiting owner review.** Nothing here is built. v0 is live ([as built](engineering-lab-v0.md#as-built-2026-10-01)), and [the handoff](../product/ai-engineering-learning-handoff.md) stays the module's source of truth.
 
+**Update 2026-10-02:** the polish this plan waits for is now defined in [engineering-lab-ui.md](engineering-lab-ui.md) and comes before the steps below. The full-course outline and placement checks from section 8 move up into that work; the roadmap graph stays here.
+
 ## The short version
 
 - **v1 starts with a gate, not a feature.** The handoff (§23) says to judge whether the learning loop works after the first three modules, and only then expand. v1 therefore opens with two to three weeks of real use and a short review built on numbers the app already records.

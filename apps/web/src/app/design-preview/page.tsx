@@ -9,10 +9,11 @@ import { LabTopic } from "@/components/lab/lab-topic";
 import { findTopic, labsForTopic } from "@/features/engineering-lab/curriculum";
 import { previewToday, previewTopic } from "@/features/engineering-lab/preview";
 import { WritingStudioPreview } from "@/components/writing-studio-preview";
+import { LabUiPreview } from "@/components/lab-ui-preview/lab-ui-preview";
 
-export default async function DesignPreview({ searchParams }: { searchParams: Promise<{ view?: string; topic?: string }> }) {
+export default async function DesignPreview({ searchParams }: { searchParams: Promise<{ view?: string; topic?: string; screen?: string; step?: string }> }) {
   if (process.env.NODE_ENV !== "development") notFound();
-  const { view, topic: topicParam } = await searchParams;
+  const { view, topic: topicParam, screen: screenParam, step: stepParam } = await searchParams;
 
   if (view === "resume") {
     return <ResumeWorkspace email="preview@example.invalid" selection={null} file={null} error={null} previewUrl={null} canAsk={false} preview />;
@@ -29,6 +30,11 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
   if (view === "lab-topic") {
     const topic = findTopic(topicParam ?? "js.event_loop") ?? findTopic("js.event_loop")!;
     return <LabTopic email="preview@example.invalid" topic={topic} view={previewTopic(topic.id)} labs={labsForTopic(topic.id)} skipLesson={false} />;
+  }
+  if (view === "lab-ui") {
+    const screen = (["today", "course", "topic", "terms"] as const).find((item) => item === screenParam) ?? "today";
+    const step = (["learn", "practice", "lab", "check"] as const).find((item) => item === stepParam) ?? "learn";
+    return <LabUiPreview initialScreen={screen} initialStep={step} />;
   }
   if (view === "design") {
     return <DesignSystemWorkspace email="preview@example.invalid" preview />;
