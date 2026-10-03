@@ -11,13 +11,15 @@ export const STATUSES = ["NOT_STARTED", "LEARNING", "PRACTICING", "VALIDATED", "
 export type Status = (typeof STATUSES)[number];
 
 /**
- * baseline: the 2026-10-01 assessment, never proof of anything new.
+ * baseline: an answer in the in-app baseline assessment. It counts like a placement answer. The retired 2026-10-01
+ *   summary also used this kind, with gradedBy "baseline"; those entries are never proof of anything.
+ * checkpoint: an answer in a later retake of the assessment. Counts like a placement answer.
  * lesson: practice inside a lesson.
  * lab: an authored lab run in the code box.
  * assessment / review: Assessor questions, the only kinds that ask for a confidence rating.
  * placement: Assessor questions for a topic you may already know, asked before any lesson.
  */
-export const ATTEMPT_KINDS = ["baseline", "lesson", "lab", "assessment", "review", "placement"] as const;
+export const ATTEMPT_KINDS = ["baseline", "lesson", "lab", "assessment", "review", "placement", "checkpoint"] as const;
 export type AttemptKind = (typeof ATTEMPT_KINDS)[number];
 
 export interface PredictItem {
@@ -99,5 +101,7 @@ export interface AttemptRecord {
   misconceptions: string[];
   /** For lab attempts: whether the solution had been revealed before this run. */
   solutionSeen: boolean;
+  /** The question set it answered, if any. Groups placement-style answers into one sitting. */
+  assessmentId?: string | null;
   createdAt: Date;
 }

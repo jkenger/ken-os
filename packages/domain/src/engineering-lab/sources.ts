@@ -21,6 +21,7 @@ export const SOURCE_DOMAINS = {
   react: ["react.dev", "nextjs.org"],
   database: ["postgresql.org", "www.postgresql.org"],
   ai: ["platform.openai.com", "developers.openai.com", "docs.anthropic.com", "docs.claude.com", "modelcontextprotocol.io", "ai-sdk.dev"],
+  operations: ["opentelemetry.io", "owasp.org", "sre.google"],
 } as const satisfies Record<string, readonly string[]>;
 export type SourceGroup = keyof typeof SOURCE_DOMAINS;
 
@@ -60,6 +61,11 @@ export interface SourcePacket {
   openQuestions: string[];
   /** Anything the Researcher returned that broke the source rules, kept visible instead of silently dropped. */
   rejected: string[];
+  /**
+   * Facts that changed since the previous packet for this topic, when there was one. A non-empty list flags a
+   * proven topic for re-checking. Older packets have none.
+   */
+  changedSinceLast?: string[];
 }
 
 /** What the model is allowed to decide. Dates, allowlist checks, and refresh timing are set in code. */
@@ -68,11 +74,12 @@ export interface ResearchDraft {
   claims: SourceClaim[];
   misconceptionsToAddress: string[];
   openQuestions: string[];
+  changedSinceLast?: string[];
 }
 
 const MAX_SOURCES = 5;
 
-function hostAllowed(url: string, allowedDomains: readonly string[]) {
+export function hostAllowed(url: string, allowedDomains: readonly string[]) {
   let host: string;
   try {
     const parsed = new URL(url);
@@ -139,6 +146,7 @@ export function finalizeSourcePacket(target: ResearchTarget, draft: ResearchDraf
     misconceptionsToAddress: draft.misconceptionsToAddress.map((item) => item.trim()).filter(Boolean),
     openQuestions: draft.openQuestions.map((item) => item.trim()).filter(Boolean),
     rejected,
+    ...(draft.changedSinceLast ? { changedSinceLast: draft.changedSinceLast.map((item) => item.trim()).filter(Boolean) } : {}),
   };
 }
 

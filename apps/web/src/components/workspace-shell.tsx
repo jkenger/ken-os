@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Archive, BookMarked, BookOpenText, FileText, FlaskConical, Image, Library, Lightbulb, ListTree, Menu, PanelLeftClose, PanelLeftOpen, Palette, PenLine, Search, Sparkles, Sun, X } from "lucide-react";
+import { Archive, BookMarked, ClipboardCheck, UserRound, BookOpenText, FileText, FlaskConical, Image, Library, Lightbulb, ListTree, Menu, PanelLeftClose, PanelLeftOpen, Palette, PenLine, Search, Sparkles, Sun, X } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import { TermLookup } from "@/components/terms/term-lookup";
 import { Toaster } from "@/components/ui/toaster";
@@ -55,6 +55,8 @@ const moduleDetails: Record<Module, {
     sections: [
       { label: "Today", href: "/lab", icon: Sun },
       { label: "Course", href: "/lab/topics", icon: ListTree },
+      { label: "Profile", href: "/lab/profile", icon: UserRound },
+      { label: "Assessment", href: "/lab/assessment", icon: ClipboardCheck },
     ],
   },
   design: {

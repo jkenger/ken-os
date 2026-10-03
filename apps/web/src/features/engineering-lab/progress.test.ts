@@ -111,11 +111,11 @@ test("the topic map rejects loops and proof that never touches code", () => {
   const known = new Map(labs.map((lab) => [lab.id, lab.modes]));
   const base = { id: "js.a", title: "A", module: "m", freshness: "core_concept", sourceGroups: ["javascript"], gap: "x".repeat(30), prove: ["predict"] };
   const tracks = [{ id: "fullstack", title: "Full-stack", summary: "Everything." }];
-  const modules = [{ id: "m", title: "M", track: "fullstack" }];
+  const modules = [{ id: "m", title: "M", track: "fullstack", area: "foundations" }];
   assert.throws(() => parseTopicMap({ tracks, modules, topics: [{ ...base, requires: ["js.b"] }, { ...base, id: "js.b", requires: ["js.a"] }] }, known), /loop/);
   assert.throws(() => parseTopicMap({ tracks, modules, topics: [{ ...base, prove: ["explain"] }] }, known), /code/);
   assert.throws(() => parseTopicMap({ tracks: [], modules, topics: [] }, known), /not listed under tracks/);
-  assert.throws(() => parseTopicMap({ tracks, modules: [...modules, { id: "empty", title: "Empty", track: "fullstack" }], topics: [base] }, known), /needs topics or planned/);
+  assert.throws(() => parseTopicMap({ tracks, modules: [...modules, { id: "empty", title: "Empty", track: "fullstack", area: "foundations" }], topics: [base] }, known), /needs topics or planned/);
 });
 
 test("the course outline covers section 24 with planned topics", () => {

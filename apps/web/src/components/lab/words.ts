@@ -1,4 +1,4 @@
-import type { Label, Status } from "@ken-os/domain";
+import type { Label, Level, ReachedDepth, Status } from "@ken-os/domain";
 import type { PillTone } from "@/components/ui/pill";
 
 // Screen wording for codes. The UI says what a person would say, not the internal status names.
@@ -35,6 +35,25 @@ export const kindWords: Record<string, string> = {
   assessment: "Check",
   review: "Review",
   placement: "Placement check",
+  checkpoint: "Checkpoint",
+};
+
+export function levelWords(level: Level | null) {
+  return level === null ? "Not yet junior" : { junior: "Junior", mid: "Mid-level", senior: "Senior" }[level];
+}
+
+export const depthWords: Record<ReachedDepth, string> = {
+  none: "Not yet",
+  aware: "Aware",
+  build: "Can build it",
+  run: "Can run it",
+};
+
+export const radarTagWords: Record<string, string> = {
+  learn: "Learn",
+  experiment: "Experiment",
+  explore: "Explore",
+  recheck: "Re-check",
 };
 
 export const label = "text-[11px] font-bold tracking-[0.15em] text-muted-foreground";

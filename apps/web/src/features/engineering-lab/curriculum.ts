@@ -1,7 +1,11 @@
 import type { AttemptRecord, Mode, Topic } from "@ken-os/domain";
-import { baseline, labs, topicMap } from "./generated/curriculum.generated";
+import { baseline, careers, labs, topicMap } from "./generated/curriculum.generated";
 
-export { baseline, labs, topicMap };
+export { baseline, careers, labs, topicMap };
+
+export function findChapter(chapterId: string) {
+  return topicMap.modules.find((module) => module.id === chapterId);
+}
 
 export function findTopic(topicId: string): Topic | undefined {
   return topicMap.topics.find((topic) => topic.id === topicId);
@@ -32,7 +36,16 @@ export function assessorModes(topic: Topic): Mode[] {
   return topic.prove.filter((mode) => !labModes.has(mode));
 }
 
-/** The baseline as attempts, so before and after come from the same history. Never proof of anything. */
+/**
+ * Question types for a topic in the baseline assessment: the Assessor's types, and the same type twice when there is
+ * only one, so every topic can get a follow-up without the Assessor standing in for a lab's test.
+ */
+export function runModes(topic: Topic): Mode[] {
+  const modes = assessorModes(topic);
+  return modes.length === 1 ? [modes[0], modes[0]] : modes;
+}
+
+/** The retired 2026-10-01 summary as attempts, so before and after come from the same history. Never proof of anything. */
 export function baselineAttempts(): AttemptRecord[] {
   const at = new Date(`${baseline.assessedOn}T00:00:00Z`);
   return baseline.entries.map((entry) => ({

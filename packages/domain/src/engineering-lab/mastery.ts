@@ -20,7 +20,7 @@ export interface TopicProgress {
   weaknesses: string[];
   lastAttemptAt: string | null;
   validatedAt: string | null;
-  /** Result of a placement check: passed when every placement answer was solid. Null if never taken. */
+  /** Result of the latest placement-style sitting (placement check, baseline or checkpoint): passed when every answer in it was solid. Null if never taken. */
   placement: "passed" | "failed" | null;
   reviewStage: number;
   nextReviewAt: string | null;
@@ -37,11 +37,33 @@ export interface ProgressChange {
 
 const DAY = 24 * 60 * 60 * 1000;
 
+/** Kinds asked before learning, to place you: a passed sitting makes a topic known. */
+export const PLACING_KINDS = ["placement", "baseline", "checkpoint"] as const;
+
+/** The retired 2026-10-01 summary, replayed as attempts. Shown as a label only, never evidence. */
+export function isLegacyBaseline(attempt: AttemptRecord) {
+  return attempt.kind === "baseline" && attempt.gradedBy === "baseline";
+}
+
+function isPlacing(attempt: AttemptRecord) {
+  return (PLACING_KINDS as readonly string[]).includes(attempt.kind) && !isLegacyBaseline(attempt);
+}
+
 /** Only these attempts can prove a topic. Lesson practice and labs run after seeing the solution cannot. */
 export function countsAsProof(attempt: AttemptRecord) {
-  if (attempt.voided) return false;
-  if (attempt.kind === "assessment" || attempt.kind === "review" || attempt.kind === "placement") return true;
+  if (attempt.voided || isLegacyBaseline(attempt)) return false;
+  if (attempt.kind === "assessment" || attempt.kind === "review" || isPlacing(attempt)) return true;
   return attempt.kind === "lab" && !attempt.solutionSeen;
+}
+
+/**
+ * One label for a topic's baseline answers: solid only when every answer was solid, otherwise the first answer
+ * that wasn't. Null when the baseline didn't ask about the topic.
+ */
+export function baselineLabelOf(answers: Pick<AttemptRecord, "label" | "voided" | "createdAt">[]): Label | null {
+  const counted = answers.filter((answer) => !answer.voided).sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+  if (!counted.length) return null;
+  return counted.find((answer) => answer.label !== "solid")?.label ?? "solid";
 }
 
 /**
@@ -84,7 +106,7 @@ export function computeProgress(topic: Topic, attempts: AttemptRecord[], lessonS
   };
 
   for (const attempt of ordered) {
-    if (attempt.kind === "baseline") {
+    if (isLegacyBaseline(attempt)) {
       baselineLabel = attempt.label;
       continue;
     }
@@ -136,8 +158,15 @@ export function computeProgress(topic: Topic, attempts: AttemptRecord[], lessonS
     for (const item of attempt.misconceptions) if (!weaknesses.includes(item)) weaknesses.push(item);
   }
 
-  const placed = ordered.filter((attempt) => attempt.kind === "placement" && !attempt.voided);
-  const placement = !placed.length ? null : placed.every((attempt) => attempt.label === "solid") ? "passed" : "failed";
+  // The in-app baseline replaces the old summary's label wherever it asked about the topic.
+  const fromRun = baselineLabelOf(ordered.filter((attempt) => attempt.kind === "baseline" && !isLegacyBaseline(attempt)));
+  if (fromRun) baselineLabel = fromRun;
+
+  // A later sitting replaces an earlier one, so a retake can place a topic the baseline didn't.
+  const placed = ordered.filter((attempt) => isPlacing(attempt) && !attempt.voided);
+  const lastSitting = placed.length ? placed[placed.length - 1].assessmentId ?? null : null;
+  const sitting = lastSitting ? placed.filter((attempt) => attempt.assessmentId === lastSitting) : placed;
+  const placement = !sitting.length ? null : sitting.every((attempt) => attempt.label === "solid") ? "passed" : "failed";
 
   const rated = ordered.filter((attempt) => !attempt.voided && attempt.selfRating !== null);
   const averageSelfRating = rated.length ? Math.round((rated.reduce((sum, attempt) => sum + attempt.selfRating!, 0) / rated.length) * 10) / 10 : null;

@@ -1,0 +1,138 @@
+# Engineering Lab roles and levels. Design: docs/architecture/engineering-lab-profile.md, section 2.
+#
+# A level, per area, is a set of chapters at a depth: aware, build (topic depth `working`) or run (also the `deep`
+# topics). Each level lists only what it adds; the levels below it still count. A role sets the level it needs in
+# each area it cares about. After editing, run `pnpm --filter @ken-os/web lab:generate`.
+#
+# Status stays `draft` until the owner has read it and agrees. Approving means setting `status: approved` and
+# `approvedOn`, in a reviewed commit.
+
+status: draft
+approvedOn: null
+note: >-
+  Drafted on 2026-10-03 by Claude Code, not yet by the in-app Researcher. Level summaries follow the public Dropbox
+  engineering career framework (IC1 to IC3). The chapter lists per level are a judgement mapping those summaries onto
+  this course, and the AI area has no published ladder behind it yet. Check every row before approving.
+
+definitions:
+  developer: >-
+    Builds features well. Owns a feature from data to UI to deploy, and relies on someone else, or on luck, for how it
+    behaves once real users and failures arrive.
+  engineer: >-
+    Owns a system, not only its features: how it fails, how it scales, what it costs and the decisions other people
+    build on. In this lab the line is "can build it" versus "can run it".
+
+levels:
+  - id: junior
+    title: Junior
+    summary: Builds features that someone else has shaped, with guidance on what to build and how.
+    sources: [dropbox-ic1]
+  - id: mid
+    title: Mid-level
+    summary: Owns a feature end to end, from data to UI to deploy, with high-level guidance only.
+    sources: [dropbox-ic2]
+  - id: senior
+    title: Senior
+    summary: Owns a system in production, including failures, scale, tradeoffs and the decisions others build on.
+    sources: [dropbox-ic3]
+
+areas:
+  - id: foundations
+    title: Foundations
+    summary: The JavaScript runtime, async code, HTTP and the browser. Every role needs these, and gaps here block the rest.
+    levels:
+      junior:
+        - { chapter: m1-js-runtime, depth: build }
+        - { chapter: m2-http-browser, depth: aware }
+      mid:
+        - { chapter: m1-js-runtime, depth: run }
+        - { chapter: m2-http-browser, depth: build }
+      senior:
+        - { chapter: m2-http-browser, depth: run }
+
+  - id: frontend
+    title: Frontend
+    summary: How React renders and keeps the screen in sync with data.
+    levels:
+      junior:
+        - { chapter: m4-react, depth: aware }
+      mid:
+        - { chapter: m4-react, depth: build }
+      senior:
+        - { chapter: m4-react, depth: run }
+
+  - id: backend
+    title: Backend and data
+    summary: API boundaries, transactions, concurrency, indexes and safe retries.
+    levels:
+      junior:
+        - { chapter: m4-api-boundaries, depth: build }
+        - { chapter: m3-db-concurrency, depth: aware }
+      mid:
+        - { chapter: m3-db-concurrency, depth: build }
+      senior:
+        - { chapter: m3-db-concurrency, depth: run }
+        - { chapter: m4-api-boundaries, depth: run }
+
+  - id: production
+    title: Production
+    summary: Testing, security, reliability, observability and scale. What keeps a product working with real users.
+    levels:
+      junior:
+        - { chapter: m5-testing-security, depth: aware }
+      mid:
+        - { chapter: m5-testing-security, depth: build }
+        - { chapter: m6-production-reliability, depth: aware }
+        - { chapter: m7-observability, depth: aware }
+      senior:
+        - { chapter: m6-production-reliability, depth: run }
+        - { chapter: m7-observability, depth: build }
+        - { chapter: m8-architecture-scale, depth: build }
+
+  - id: ai
+    title: Applied AI
+    summary: Building products on top of models. Retrieval, structured outputs, tools, agents, evals and cost. Not training models.
+    levels:
+      junior:
+        - { chapter: a2-model-interfaces, depth: build }
+        - { chapter: a1-retrieval, depth: aware }
+      mid:
+        - { chapter: a1-retrieval, depth: build }
+        - { chapter: a3-agents, depth: build }
+        - { chapter: a4-ai-production, depth: aware }
+      senior:
+        - { chapter: a1-retrieval, depth: run }
+        - { chapter: a4-ai-production, depth: run }
+
+roles:
+  - id: frontend-developer
+    title: Frontend developer
+    summary: Builds the parts of a product people see and touch, on top of someone else's backend.
+    targets: { foundations: mid, frontend: senior, backend: junior }
+  - id: fullstack-developer
+    title: Full-stack developer
+    summary: Builds features across the whole stack, from database to screen.
+    targets: { foundations: mid, frontend: mid, backend: mid, production: junior }
+  - id: fullstack-engineer
+    title: Full-stack engineer
+    summary: Owns whole systems across the stack, including how they fail and scale in production.
+    targets: { foundations: senior, frontend: mid, backend: senior, production: senior }
+  - id: fullstack-applied-ai
+    title: Full-stack developer with applied AI
+    summary: Builds and ships your own products across the stack, with AI features that hold up with real users.
+    targets: { foundations: mid, frontend: mid, backend: mid, production: mid, ai: mid }
+  - id: ai-product-engineer
+    title: AI product engineer
+    summary: Owns AI products end to end, from retrieval and agents to evals, cost and reliability in production.
+    targets: { foundations: mid, frontend: mid, backend: mid, production: senior, ai: senior }
+
+sources:
+  - id: dropbox-ic1
+    title: Dropbox Engineering Career Framework, IC1 Software Engineer
+    url: https://dropbox.github.io/dbx-career-framework/ic1_software_engineer.html
+  - id: dropbox-ic2
+    title: Dropbox Engineering Career Framework, IC2 Software Engineer
+    url: https://dropbox.github.io/dbx-career-framework/ic2_software_engineer.html
+  - id: dropbox-ic3
+    title: Dropbox Engineering Career Framework, IC3 Software Engineer
+    url: https://dropbox.github.io/dbx-career-framework/ic3_software_engineer.html

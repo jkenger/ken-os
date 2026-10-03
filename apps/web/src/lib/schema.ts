@@ -1,6 +1,9 @@
 import { relations, sql } from "drizzle-orm";
 import { boolean, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
-import type { AssessmentItem, AttemptKind, AttemptResponse, CodeRun, Grade, Label, LessonSnapshot, Mode, RubricResult, SourcePacket, Status, TermAnswer, TopicProgress } from "@ken-os/domain";
+import type {
+  AddedChapter, AssessmentItem, AttemptKind, AttemptResponse, CodeRun, DailyItem, Grade, GuideMessage, IntakeAnswers, Label, LessonSnapshot, Mode,
+  RadarTag, RubricResult, RunKind, RunPlan, SourcePacket, Status, TermAnswer, TopicProgress, WrittenItem,
+} from "@ken-os/domain";
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -178,16 +181,97 @@ export const labLessons = pgTable("lab_lessons", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [uniqueIndex("lab_lessons_version_unique").on(table.userId, table.topicId, table.version)]);
 
+// The baseline assessment and its retakes. Design: docs/architecture/engineering-lab-profile.md, section 4.
+export const labAssessmentRuns = pgTable("lab_assessment_runs", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  kind: text("kind").$type<RunKind>().notNull(),
+  plan: jsonb("plan").$type<RunPlan>().notNull(),
+  /** AI calls this run has made. Runs have their own allowance instead of the daily one. */
+  generations: integer("generations").notNull().default(0),
+  startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+  completedAt: timestamp("completed_at", { withTimezone: true }),
+}, (table) => [
+  index("lab_assessment_runs_user_idx").on(table.userId, table.startedAt),
+  // Exactly one baseline per person. It never changes once taken; retakes are checkpoints.
+  uniqueIndex("lab_assessment_runs_one_baseline").on(table.userId).where(sql`${table.kind} = 'baseline'`),
+]);
+
 export const labAssessments = pgTable("lab_assessments", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   topicId: text("topic_id").notNull(),
-  kind: text("kind").$type<"assessment" | "review" | "placement">().notNull(),
+  kind: text("kind").$type<"assessment" | "review" | "placement" | RunKind>().notNull(),
   items: jsonb("items").$type<AssessmentItem[]>().notNull(),
   promptVersion: text("prompt_version").notNull(),
   model: text("model").notNull(),
+  /** Where the questions are answered: on the topic page, inside an assessment run, or in a day's practice. */
+  origin: text("origin").$type<"topic" | "run" | "daily">().notNull().default("topic"),
+  runId: text("run_id").references(() => labAssessmentRuns.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [index("lab_assessments_user_topic_idx").on(table.userId, table.topicId, table.createdAt)]);
+
+/**
+ * Screening questions for chapters with no written topics. They have no topic, so they never prove anything; they
+ * only estimate a chapter's depth. setId is the run's id, or its own id for a chapter you added later.
+ */
+export const labChapterScreens = pgTable("lab_chapter_screens", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  setId: text("set_id").notNull(),
+  runId: text("run_id").references(() => labAssessmentRuns.id, { onDelete: "cascade" }),
+  chapterId: text("chapter_id").notNull(),
+  itemIndex: integer("item_index").notNull(),
+  item: jsonb("item").$type<WrittenItem>().notNull(),
+  promptVersion: text("prompt_version").notNull(),
+  model: text("model").notNull(),
+  response: jsonb("response").$type<AttemptResponse>(),
+  selfRating: integer("self_rating"),
+  label: text("label").$type<Label>(),
+  misconceptions: jsonb("misconceptions").$type<string[]>(),
+  feedback: text("feedback"),
+  rubric: jsonb("rubric").$type<RubricResult[]>(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  answeredAt: timestamp("answered_at", { withTimezone: true }),
+}, (table) => [
+  uniqueIndex("lab_chapter_screens_item_unique").on(table.setId, table.chapterId, table.itemIndex),
+  index("lab_chapter_screens_user_idx").on(table.userId, table.chapterId),
+]);
+
+/** One row per person: chosen direction, intake, the Guide conversation and chapters they added. */
+export const labProfile = pgTable("lab_profile", {
+  userId: text("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  direction: text("direction"),
+  intake: jsonb("intake").$type<IntakeAnswers>(),
+  conversation: jsonb("conversation").$type<GuideMessage[]>().notNull().default([]),
+  addedChapters: jsonb("added_chapters").$type<AddedChapter[]>().notNull().default([]),
+  radarCheckedWeek: text("radar_checked_week"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** A day's practice set, stored so it stays the same if you leave and come back. */
+export const labDailySets = pgTable("lab_daily_sets", {
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  day: text("day").notNull(),
+  items: jsonb("items").$type<DailyItem[]>().notNull(),
+  warmUp: boolean("warm_up").notNull().default(false),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [primaryKey({ columns: [table.userId, table.day] })]);
+
+export const labRadarItems = pgTable("lab_radar_items", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  week: text("week").notNull(),
+  area: text("area").notNull(),
+  tag: text("tag").$type<RadarTag>().notNull(),
+  title: text("title").notNull(),
+  reason: text("reason").notNull(),
+  sourceUrl: text("source_url"),
+  /** For a re-check flag: the proven topic whose facts changed. */
+  topicId: text("topic_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  dismissedAt: timestamp("dismissed_at", { withTimezone: true }),
+}, (table) => [index("lab_radar_items_user_week_idx").on(table.userId, table.week)]);
 
 export const labAttempts = pgTable("lab_attempts", {
   id: text("id").primaryKey(),

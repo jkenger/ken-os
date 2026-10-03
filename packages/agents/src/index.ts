@@ -2,7 +2,11 @@ import { Agent, run, tool } from "@openai/agents";
 import { z } from "zod";
 export { researchTopic } from "./engineering-lab/researcher";
 export { TUTOR_PROMPT_VERSION, writeLesson } from "./engineering-lab/tutor";
-export { ASSESSOR_PROMPT_VERSION, GRADER_PROMPT_VERSION, gradeAnswer, writeAssessment } from "./engineering-lab/assessor";
+export {
+  ASSESSOR_PROMPT_VERSION, GRADER_PROMPT_VERSION, SCREENER_PROMPT_VERSION, gradeAnswer, writeAssessment, writeChapterAssessment, writeChapterScreen,
+} from "./engineering-lab/assessor";
+export { GUIDE_PROMPT_VERSION, guideTurn, type GuideReply } from "./engineering-lab/guide";
+export { RADAR_PROMPT_VERSION, scanRadar } from "./engineering-lab/radar";
 export { explainTerm, TERM_PROMPT_VERSION } from "./terms/explain";
 
 export interface EnabledSkill {
