@@ -12,16 +12,16 @@ import { cn } from "@/lib/utils";
 type Module = "resume" | "skills" | "memory" | "design" | "lab" | "writing" | "terms";
 
 const modules = [
-  { id: "resume" as const, label: "Resume hub", href: "/", icon: FileText },
-  { id: "skills" as const, label: "Agent skills", href: "/skills", icon: Sparkles },
-  { id: "design" as const, label: "Design system", href: "/design-system", icon: Palette },
+  { id: "resume" as const, label: "Resume", href: "/", icon: FileText },
+  { id: "skills" as const, label: "Skills", href: "/skills", icon: Sparkles },
+  { id: "design" as const, label: "Design System", href: "/design-system", icon: Palette },
   { id: "memory" as const, label: "Project Memory", href: "/memory", icon: BookOpenText },
   { id: "lab" as const, label: "Engineering Lab", href: "/lab", icon: FlaskConical },
   { id: "terms" as const, label: "Terms", href: "/terms", icon: BookMarked },
 ];
 const previewModules = [
   ...modules.map((module) => module.id === "design" ? { ...module, href: "/design-preview?view=design" } : module.id === "memory" ? { ...module, href: "/design-preview?view=memory" } : module),
-  { id: "writing" as const, label: "Writing studio", href: "/design-preview?view=writing", icon: PenLine },
+  { id: "writing" as const, label: "Writing Studio", href: "/design-preview?view=writing", icon: PenLine },
 ];
 
 const moduleDetails: Record<Module, {
@@ -29,7 +29,7 @@ const moduleDetails: Record<Module, {
   sections: { label: string; href: string; icon: typeof FileText }[];
 }> = {
   resume: {
-    title: "Resume hub",
+    title: "Resume",
     sections: [
       { label: "Overview", href: "/", icon: Library },
       { label: "How it works", href: "/#how-it-works", icon: FileText },
@@ -37,13 +37,13 @@ const moduleDetails: Record<Module, {
     ],
   },
   skills: {
-    title: "Agent skills",
+    title: "Skills",
     sections: [{ label: "Library", href: "/skills", icon: Library }],
   },
   memory: {
     title: "Project Memory",
     sections: [
-      { label: "Handoff brief", href: "/memory", icon: BookOpenText },
+      { label: "Handoff", href: "/memory", icon: BookOpenText },
       { label: "Decisions", href: "/memory#decisions", icon: Library },
       { label: "Receipts", href: "/memory#receipts", icon: FileText },
       { label: "Capture", href: "/memory#capture", icon: Sparkles },
@@ -60,7 +60,7 @@ const moduleDetails: Record<Module, {
     ],
   },
   design: {
-    title: "Design system",
+    title: "Design System",
     sections: [
       { label: "Overview", href: "/design-system", icon: Palette },
       { label: "Foundations", href: "/design-system#foundations", icon: Library },
@@ -70,8 +70,8 @@ const moduleDetails: Record<Module, {
       { label: "Export", href: "/design-system#export", icon: FileText },
     ],
   },
-  writing: { title: "Writing studio", sections: [] },
-  terms: { title: "Terms", sections: [{ label: "Saved terms", href: "/terms", icon: BookMarked }] },
+  writing: { title: "Writing Studio", sections: [] },
+  terms: { title: "Terms", sections: [{ label: "Terms", href: "/terms", icon: BookMarked }] },
 };
 
 const writingPreviewGroups = [
@@ -91,7 +91,7 @@ const writingPreviewGroups = [
 ];
 
 const previewMemorySections = [
-  { label: "Handoff brief", href: "/design-preview?view=memory", icon: BookOpenText },
+  { label: "Handoff", href: "/design-preview?view=memory", icon: BookOpenText },
   { label: "Decisions", href: "/design-preview?view=memory#decisions", icon: Library },
   { label: "Open questions", href: "/design-preview?view=memory#open-questions", icon: FileText },
 ];
@@ -145,7 +145,7 @@ function ModuleSearch({ preview }: { preview: boolean }) {
     <div>
       <button ref={triggerRef} className="flex h-9 w-9 items-center justify-center gap-2 rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:bg-muted sm:w-60 sm:justify-start sm:px-3 lg:w-72" type="button" onClick={() => setOpen(true)} aria-label="Jump to a module">
         <Search size={16} strokeWidth={1.8} aria-hidden="true" />
-        <span className="hidden flex-1 text-left text-xs sm:block">Jump to a module...</span>
+        <span className="hidden flex-1 text-left text-xs sm:block">Jump to a module…</span>
         <kbd className="hidden rounded border border-border px-1.5 py-0.5 text-[10px] sm:block">Ctrl K</kbd>
       </button>
       {open && (
@@ -157,7 +157,7 @@ function ModuleSearch({ preview }: { preview: boolean }) {
                 ref={inputRef}
                 className="min-w-0 flex-1 bg-transparent py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground"
                 aria-label="Search modules"
-                placeholder="Find a module..."
+                placeholder="Find a module…"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 onKeyDown={(event) => {
@@ -175,7 +175,7 @@ function ModuleSearch({ preview }: { preview: boolean }) {
               <Link key={id} className="flex h-10 items-center gap-3 rounded-md px-3 text-sm hover:bg-accent focus-visible:bg-accent" href={href} onClick={() => { setOpen(false); setQuery(""); }}>
                 <Icon size={17} strokeWidth={1.8} aria-hidden="true" /> {label}
               </Link>
-            )) : <p className="px-3 py-3 text-sm text-muted-foreground">No matching module.</p>}
+            )) : <p className="px-3 py-3 text-sm text-muted-foreground">No matches</p>}
           </div>
         </div>
       )}
@@ -286,7 +286,7 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
           </div>
           <div className={cn("items-center gap-2.5 border-t border-sidebar-border px-4 py-3", mobileOpen ? "flex" : "hidden md:flex", writingPreview && desktopCollapsed && "md:justify-center md:px-2")} title={email}>
             <span className="grid size-8 shrink-0 place-items-center rounded-full bg-secondary text-xs font-bold">{email[0]?.toUpperCase()}</span>
-            <span className={cn("min-w-0", writingPreview && desktopCollapsed && "md:hidden")}><strong className="block text-xs">Personal space</strong><small className="block truncate text-[11px] text-muted-foreground">{email}</small></span>
+            <span className={cn("min-w-0", writingPreview && desktopCollapsed && "md:hidden")}><small className="block truncate text-xs text-muted-foreground">{email}</small></span>
           </div>
         </div>
       </aside>

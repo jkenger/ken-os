@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
   const verifier = request.cookies.get("ken_os_oauth_verifier")?.value;
   if (!code || !state || !storedState || state !== storedState || !verifier) {
     return NextResponse.json(
-      { error: "This sign-in link is no longer valid. Start again from /api/auth/google." },
+      { error: "Sign-in expired. Sign in again" },
       { status: 400 },
     );
   }
@@ -39,8 +39,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: tokenError?.error === "invalid_grant"
-          ? "This Google authorization code was already used or expired. Start again from /api/auth/google."
-          : "Google sign-in failed. Start again from /api/auth/google.",
+          ? "Sign-in expired. Sign in again"
+          : "Google sign-in failed. Sign in again",
       },
       { status: 400 },
     );
@@ -52,12 +52,12 @@ export async function GET(request: NextRequest) {
   };
   if (!tokens.access_token)
     return NextResponse.json(
-      { error: "Missing Google access token." },
+      { error: "Google didn't finish sign-in. Sign in again" },
       { status: 400 },
     );
   if (!tokens.scope?.split(" ").includes("https://www.googleapis.com/auth/drive.file")) {
     return NextResponse.json(
-      { error: "Google Drive file access was not granted." },
+      { error: "Drive access wasn't allowed. Sign in again and allow it" },
       { status: 403 },
     );
   }
@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
   );
   if (!userResponse.ok)
     return NextResponse.json(
-      { error: "Could not verify Google account." },
+      { error: "Couldn't verify your Google account. Sign in again" },
       { status: 400 },
     );
   const profile = (await userResponse.json()) as {
@@ -85,7 +85,7 @@ export async function GET(request: NextRequest) {
     profile.email?.trim().toLowerCase() !== ownerEmail()
   ) {
     return NextResponse.json(
-      { error: "This Google account does not match OWNER_EMAIL." },
+      { error: "This Google account doesn't have access" },
       { status: 403 },
     );
   }
@@ -111,7 +111,7 @@ export async function GET(request: NextRequest) {
       .from(googleConnections).where(eq(googleConnections.userId, profile.sub)).limit(1);
     if (!existing[0])
       return NextResponse.json(
-        { error: "Google did not grant offline access. Please sign in again." },
+        { error: "Google didn't keep you signed in. Sign in again" },
         { status: 400 },
       );
   }

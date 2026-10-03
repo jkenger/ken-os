@@ -264,13 +264,13 @@ export async function screenRowsFor(userId: string, chapterIds: string[]) {
 /** The Ken OS home's one-line card: direction and level, and whether today's practice is done. */
 export async function labSummary(userId: string): Promise<{ headline: string; detail: string } | null> {
   const view = await getProfileView(userId);
-  if (view.baseline.state !== "done") return { headline: view.baseline.state === "none" ? "Take your baseline to start your profile" : "Your baseline is in progress", detail: "Open the lab" };
+  if (view.baseline.state !== "done") return { headline: view.baseline.state === "none" ? "Baseline · Not started" : "Baseline · In progress", detail: "Open" };
   const chosen = view.roles.find((role) => role.roleId === view.direction);
   const { getDailySet } = await import("./daily");
   const daily = await getDailySet(userId);
   const level = chosen?.overall ? { junior: "junior", mid: "mid-level", senior: "senior" }[chosen.overall] : "not yet junior";
   return {
-    headline: chosen ? `${chosen.title}: ${level}` : "Pick a direction for your profile",
-    detail: daily?.done ? "Today's practice is done" : daily ? "Today's practice is waiting" : "Today's practice not started",
+    headline: chosen ? `${chosen.title}: ${level}` : "No direction yet",
+    detail: daily?.done ? "Today's practice · Done" : daily ? "Today's practice · Ready" : "Today's practice · Not started",
   };
 }
