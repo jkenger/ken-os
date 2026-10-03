@@ -1,6 +1,6 @@
 # App language
 
-Status: proposed, 3 Oct 2026. Decisions marked **Proposed** wait for the owner.
+Status: approved by the owner, 3 Oct 2026. Not yet implemented.
 
 ## Decision
 
@@ -86,8 +86,7 @@ Module names are proper names in title case and appear the same in the sidebar, 
 | Checkpoint | A later full test, compared with the baseline | |
 | Assessment | Baseline or checkpoint, when either fits | |
 | Intro | The short chat before the baseline | a short talk, the talk, intake |
-| Placement check | A quick check that lets a known topic be skipped | |
-| Screening | The two questions for a chapter with no lessons yet | screening questions, estimate (as a verb) |
+| Placement check | A quick check of what the owner already knows: one question per written topic, or two short questions for a chapter with no lessons yet | screening, screening questions, estimate (as a verb) |
 | Learn, Practice, Lab, Check | The four topic steps | Prove it with fresh questions |
 | Today's practice | The daily mixed set | daily practice, today's set, a short mixed set |
 | Review | A topic coming back after a gap | |
@@ -98,7 +97,7 @@ Module names are proper names in title case and appear the same in the sidebar, 
 
 Topic states stay as `statusWords` has them: Not started, Learning, Practicing, Proven, Needs another look. Answer grades stay as `labelWords`: Solid, Partly there, Rusty, Misconception, Gap.
 
-**Proposed:** the Researcher, Tutor and Assessor stop appearing by name. The screen says what is happening instead: "Writing lesson…", "Questions by a separate grader that hasn't seen the lesson". The Guide keeps its name because it talks to the owner directly.
+The Researcher, Tutor and Assessor stop appearing by name. The screen says what is happening instead: "Writing lesson…", "Questions by a separate grader that hasn't seen the lesson". The Guide keeps its name because it talks to the owner directly.
 
 ### Project Memory
 
@@ -111,7 +110,7 @@ Topic states stay as `statusWords` has them: Not started, Learning, Practicing, 
 | Handoff | The text copied for the next agent session | handoff brief |
 | Agent key | The scoped key an agent uses to read context and send drafts | capture key, scoped key |
 
-**Proposed:** the policy version leaves the screen.
+The policy version leaves the screen.
 
 ### Shared
 
@@ -121,7 +120,7 @@ Topic states stay as `statusWords` has them: Not started, Learning, Practicing, 
 | Couldn't | Could not, That didn't work, Request failed |
 | … (one character) | ... |
 
-**Proposed:** contractions throughout ("Couldn't", "Isn't"), matching the Lab.
+Contractions throughout ("Couldn't", "Isn't"), matching the Lab.
 
 ## Rewrite by screen
 
@@ -148,6 +147,7 @@ Order is by how far each screen is from the rule. Each row is the worst offender
 | Your shape from the baseline | Where you are |
 | Every question, answer and grade is saved, with the prompt versions and model… | Assessment history |
 | That didn't work | Couldn't save. Try again |
+| Assess this chapter / Each gets two short screening questions of its own… | Placement check |
 
 The Guide's chat messages stay as written.
 
@@ -250,10 +250,12 @@ Preview pages and content strings (lesson bodies, Guide messages, sample posts) 
 6. The automated check runs in `pnpm test` and passes.
 7. `pnpm check` and `pnpm build` pass.
 
-## Open decisions
+## Decisions
 
-- Helper names: drop Researcher, Tutor and Assessor from the screen (**Proposed**: yes, keep the Guide).
-- Contractions throughout (**Proposed**: yes).
-- Policy version off the Project Memory screen (**Proposed**: yes).
-- Screening and placement check: keep as two names, or merge into one since both mean "a quick check of what you already know"?
-- Module names "Design System" and "Writing Studio" in title case (**Proposed**: yes, as proper names).
+Made by the owner on 3 Oct 2026:
+
+- The Researcher, Tutor and Assessor no longer appear by name on screen. The Guide keeps its name.
+- Contractions throughout ("Couldn't", "Isn't").
+- The policy version leaves the Project Memory screen.
+- Screening and placement check merge into one name, **Placement check**, since both mean a quick check of what the owner already knows. Code identifiers keep their own names.
+- "Design System" and "Writing Studio" use title case as proper module names.
