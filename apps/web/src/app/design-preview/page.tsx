@@ -10,15 +10,18 @@ import { LabTopics } from "@/components/lab/lab-topics";
 import { TermsPage } from "@/components/terms/terms-page";
 import { assessorModes, findTopic, labsForTopic, placeOf, topicMap } from "@/features/engineering-lab/curriculum";
 import { nextStepFromView } from "@/features/engineering-lab/next-step";
-import { previewProfile, previewRun, previewToday, previewTopic } from "@/features/engineering-lab/preview";
+import { previewLearner, previewProfile, previewRun, previewToday, previewTopic } from "@/features/engineering-lab/preview";
+import { LabHomeExplore, type Direction } from "@/components/lab/explore/lab-home-explore";
+import { tracks, type Track } from "@/components/lab/explore/road-tracks";
+import { ProfileExplore, type ProfileDirection, type ProfileTab } from "@/components/lab/explore/profile-explore";
 import { LabAssessment } from "@/components/lab/assessment/lab-assessment";
 import { LabProfile } from "@/components/lab/profile/lab-profile";
 import { WritingStudioPreview } from "@/components/writing-studio-preview";
 import { LabUiPreview } from "@/components/lab-ui-preview/lab-ui-preview";
 
-export default async function DesignPreview({ searchParams }: { searchParams: Promise<{ view?: string; topic?: string; screen?: string; step?: string }> }) {
+export default async function DesignPreview({ searchParams }: { searchParams: Promise<{ view?: string; topic?: string; screen?: string; step?: string; d?: string; t?: string; tab?: string; pane?: string }> }) {
   if (process.env.NODE_ENV !== "development") notFound();
-  const { view, topic: topicParam, screen: screenParam, step: stepParam } = await searchParams;
+  const { view, topic: topicParam, screen: screenParam, step: stepParam, d: directionParam, t: trackParam, tab: tabParam, pane: paneParam } = await searchParams;
 
   if (view === "resume") {
     return <ResumeWorkspace email="preview@example.invalid" selection={null} file={null} error={null} previewUrl={null} canAsk={false} preview />;
@@ -32,6 +35,19 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
   if (view === "lab") {
     const today = previewToday();
     return <LabToday email="preview@example.invalid" today={today} next={today.plan ? nextStepFromView(today.plan, previewTopic(today.plan.topicId)) : null} profile={previewProfile(screenParam === "start" ? "none" : "done")} daily={null} />;
+  }
+  if (view === "lab-explore") {
+    const today = previewToday();
+    const direction: Direction = directionParam === "route" || directionParam === "skyline" ? directionParam : "report";
+    const next = today.plan ? nextStepFromView(today.plan, previewTopic(today.plan.topicId)) : null;
+    const track = (tracks.find((item) => item.id === trackParam)?.id ?? "rail") as Track;
+    return <LabHomeExplore direction={direction} track={track} data={{ profile: previewProfile(), today, next, states: previewLearner().states }} />;
+  }
+  if (view === "profile-explore") {
+    const direction: ProfileDirection = directionParam === "tabs" || directionParam === "compare" || directionParam === "workbench-app" ? directionParam : "workbench";
+    const pane = (["shape", "levels", "roles", "radar", "history", "definitions"].includes(paneParam ?? "") ? paneParam : "shape") as "shape";
+    const tab: ProfileTab = ["direction", "levels", "radar", "assessed", "definitions"].includes(tabParam ?? "") ? tabParam as ProfileTab : "direction";
+    return <ProfileExplore profile={previewProfile()} states={previewLearner().states} direction={direction} tab={tab} pane={pane} />;
   }
   if (view === "lab-profile") {
     return <LabProfile email="preview@example.invalid" view={previewProfile()} />;

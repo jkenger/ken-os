@@ -2,7 +2,7 @@ import { and, desc, eq, inArray, isNotNull, isNull } from "drizzle-orm";
 import { guideTurn } from "@ken-os/agents";
 import {
   addedChapterId, areaLevel, nextScreenQuestion, toPublicItem, chapterStates, computeProgress, isArea, isoWeek, measuredHoursPerTopic, roadmap, roleDistance,
-  type AddedChapter, type Area, type AreaLevel, type AttemptRecord, type ChapterScreen, type GuideMessage, type IntakeAnswers, type Label,
+  type AddedChapter, type Area, type AreaLevel, type AttemptRecord, type ChapterScreen, type ChapterState, type GuideMessage, type IntakeAnswers, type Label,
   type ModuleInfo, type PublicItem, type RoadmapStep, type RoleDistance, type Status, type TopicProgress,
 } from "@ken-os/domain";
 import { db } from "@/lib/db";
@@ -134,6 +134,8 @@ export interface ProfileView {
   intake: IntakeAnswers | null;
   direction: string | null;
   areas: AreaView[];
+  /** How deep each chapter goes now, for the level table. */
+  chapterStates: ChapterState[];
   roles: (RoleDistance & { title: string; summary: string })[];
   roadmap: RoadmapChapter[];
   pace: { weeklyHours: number; source: "hours" | "history"; hoursPerTopic: number | null };
@@ -214,6 +216,7 @@ export async function getProfileView(userId: string): Promise<ProfileView> {
     intake: profile?.intake ?? null,
     direction: profile?.direction ?? null,
     areas,
+    chapterStates: now,
     roles,
     roadmap: roadmapChapters,
     pace: { weeklyHours, source: hoursPerTopic ? "history" : "hours", hoursPerTopic },
