@@ -51,7 +51,7 @@ const moduleDetails: Record<Module, {
     title: "Engineering Lab",
     sections: [
       { label: "Today", href: "/lab", icon: Sun },
-      { label: "Topics", href: "/lab/topics", icon: ListTree },
+      { label: "Course", href: "/lab/topics", icon: ListTree },
     ],
   },
   design: {

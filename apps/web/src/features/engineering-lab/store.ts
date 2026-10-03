@@ -199,10 +199,17 @@ function fingerprint(prompt: string) {
   return prompt.replace(/\s+/g, " ").trim().slice(0, 100);
 }
 
-export async function generateAssessment(userId: string, topicId: string, kind: "assessment" | "review") {
+export type AssessmentKind = "assessment" | "review" | "placement";
+
+export async function generateAssessment(userId: string, topicId: string, kind: AssessmentKind) {
   const topic = requireTopic(topicId);
   const modes = assessorModes(topic);
   if (!modes.length) throw new LabInputError("This topic is proven entirely by its labs.", 409);
+  if (kind === "placement") {
+    // A placement check is for a topic you haven't started; once you're learning it, the normal check applies.
+    const progress = (await getAllProgress(userId)).find((item) => item.topicId === topicId)!;
+    if (progress.status !== "NOT_STARTED") throw new LabInputError("Placement checks are only for topics you haven't started.", 409);
+  }
   await assertBudget(userId);
   const [lessons, previous, packet] = await Promise.all([
     db().select({ snapshot: labLessons.snapshot }).from(labLessons).where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId))),

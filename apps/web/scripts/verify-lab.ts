@@ -113,6 +113,18 @@ async function main() {
       "a solid practice answer can't be submitted again",
     );
     console.log("ok - practice keeps the answer and why, allows retries, and locks once solid");
+
+    // Placement: answering a placement set marks the topic known, and a started topic can't get one.
+    await assert.rejects(store.generateAssessment(userId, practiceTopic, "placement"), (error: Error) => error instanceof store.LabInputError && error.status === 409);
+    const placementTopic = "js.call_stack";
+    const placementId = randomUUID();
+    await db().insert(labAssessments).values({ id: placementId, userId, topicId: placementTopic, kind: "placement", items: [{ mode: "predict", prompt: "What prints?", code: "console.log(1); console.log(2);", expectedOutput: ["1", "2"] }], promptVersion: "check", model: "none" });
+    await store.submitAnswer(userId, { assessmentId: placementId, itemIndex: 0, selfRating: 5, response: { lines: ["1", "2"] }, actualOutput: ["1", "2"] });
+    const placed = (await store.getAllProgress(userId)).find((item) => item.topicId === placementTopic)!;
+    assert.equal(placed.placement, "passed");
+    const [placementAttempt] = await db().select({ kind: labAttempts.kind }).from(labAttempts).where(eq(labAttempts.assessmentId, placementId));
+    assert.equal(placementAttempt.kind, "placement");
+    console.log("ok - a passed placement check marks the topic known; started topics can't take one");
   } finally {
     await db().delete(users).where(eq(users.id, userId));
     await closeDb();

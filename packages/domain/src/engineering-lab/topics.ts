@@ -1,13 +1,21 @@
 import { SOURCE_DOMAINS, type FreshnessClass, type ResearchTarget, type SourceGroup } from "./sources";
 import { LABELS, MODES, type Label, type Mode } from "./types";
 
-export const TRACKS = ["fullstack", "production", "ai"] as const;
+export const TRACKS = ["fullstack", "ai"] as const;
 export type Track = (typeof TRACKS)[number];
 
+export interface TrackInfo {
+  id: Track;
+  title: string;
+  summary: string;
+}
+
+/** A chapter of the course. `planned` names topics in the outline that aren't written yet. */
 export interface ModuleInfo {
   id: string;
   title: string;
   track: Track;
+  planned: string[];
 }
 
 export interface Topic {
@@ -26,6 +34,7 @@ export interface Topic {
 }
 
 export interface TopicMap {
+  tracks: TrackInfo[];
   modules: ModuleInfo[];
   topics: Topic[];
 }
@@ -67,12 +76,25 @@ function oneOf<T extends string>(value: unknown, options: readonly T[], where: s
 
 /** Validates the topic map: shapes, known ids, known labs, and no prerequisite loops. */
 export function parseTopicMap(raw: unknown, knownLabs: ReadonlyMap<string, readonly Mode[]>): TopicMap {
-  if (!raw || typeof raw !== "object") fail("topics.yaml", "expected modules and topics");
-  const input = raw as { modules?: unknown; topics?: unknown };
-  const modules = list(input.modules, "modules").map((value, index) => {
+  if (!raw || typeof raw !== "object") fail("topics.yaml", "expected tracks, modules and topics");
+  const input = raw as { tracks?: unknown; modules?: unknown; topics?: unknown };
+  const tracks = list(input.tracks, "tracks").map((value, index): TrackInfo => {
+    const item = value as Record<string, unknown>;
+    const where = `tracks[${index}]`;
+    return { id: oneOf(item.id, TRACKS, `${where}.id`), title: text(item.title, `${where}.title`), summary: text(item.summary, `${where}.summary`) };
+  });
+  if (new Set(tracks.map((track) => track.id)).size !== tracks.length) fail("tracks", "duplicate track id");
+  const modules = list(input.modules, "modules").map((value, index): ModuleInfo => {
     const item = value as Record<string, unknown>;
     const where = `modules[${index}]`;
-    return { id: text(item.id, `${where}.id`), title: text(item.title, `${where}.title`), track: oneOf(item.track, TRACKS, `${where}.track`) };
+    const track = oneOf(item.track, TRACKS, `${where}.track`);
+    if (!tracks.some((entry) => entry.id === track)) fail(where, `track ${track} is not listed under tracks`);
+    return {
+      id: text(item.id, `${where}.id`),
+      title: text(item.title, `${where}.title`),
+      track,
+      planned: list(item.planned, `${where}.planned`).map((title) => text(title, `${where}.planned`)),
+    };
   });
   const moduleIds = new Set(modules.map((item) => item.id));
   if (moduleIds.size !== modules.length) fail("modules", "duplicate module id");
@@ -124,7 +146,10 @@ export function parseTopicMap(raw: unknown, knownLabs: ReadonlyMap<string, reado
     state.set(id, "done");
   };
   for (const topic of topics) visit(topic.id, []);
-  return { modules, topics };
+  for (const module of modules) {
+    if (!module.planned.length && !topics.some((topic) => topic.module === module.id)) fail(module.id, "a chapter needs topics or planned topic names");
+  }
+  return { tracks, modules, topics };
 }
 
 export function parseBaseline(raw: unknown, map: TopicMap): Baseline {

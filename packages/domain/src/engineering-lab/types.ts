@@ -15,8 +15,9 @@ export type Status = (typeof STATUSES)[number];
  * lesson: practice inside a lesson.
  * lab: an authored lab run in the code box.
  * assessment / review: Assessor questions, the only kinds that ask for a confidence rating.
+ * placement: Assessor questions for a topic you may already know, asked before any lesson.
  */
-export const ATTEMPT_KINDS = ["baseline", "lesson", "lab", "assessment", "review"] as const;
+export const ATTEMPT_KINDS = ["baseline", "lesson", "lab", "assessment", "review", "placement"] as const;
 export type AttemptKind = (typeof ATTEMPT_KINDS)[number];
 
 export interface PredictItem {

@@ -6,7 +6,8 @@ import { ProjectMemoryPreview } from "@/components/project-memory-preview";
 import { DesignSystemWorkspace } from "@/components/design-system-workspace";
 import { LabToday } from "@/components/lab/lab-today";
 import { LabTopic } from "@/components/lab/lab-topic";
-import { findTopic, labsForTopic, placeOf } from "@/features/engineering-lab/curriculum";
+import { LabTopics } from "@/components/lab/lab-topics";
+import { assessorModes, findTopic, labsForTopic, placeOf, topicMap } from "@/features/engineering-lab/curriculum";
 import { previewToday, previewTopic } from "@/features/engineering-lab/preview";
 import { WritingStudioPreview } from "@/components/writing-studio-preview";
 import { LabUiPreview } from "@/components/lab-ui-preview/lab-ui-preview";
@@ -26,6 +27,10 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
   }
   if (view === "lab") {
     return <LabToday email="preview@example.invalid" today={previewToday()} />;
+  }
+  if (view === "lab-course") {
+    const assessable = topicMap.topics.filter((topic) => assessorModes(topic).length > 0).map((topic) => topic.id);
+    return <LabTopics email="preview@example.invalid" map={topicMap} progress={previewToday().progress} assessable={assessable} />;
   }
   if (view === "lab-topic") {
     const topic = findTopic(topicParam ?? "js.event_loop") ?? findTopic("js.event_loop")!;

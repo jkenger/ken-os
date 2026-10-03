@@ -2,21 +2,133 @@
 import type { Baseline, LabDefinition, TopicMap } from "@ken-os/domain";
 
 export const topicMap: TopicMap = {
+  "tracks": [
+    {
+      "id": "fullstack",
+      "title": "Full-stack",
+      "summary": "From the JavaScript runtime to running a service in production."
+    },
+    {
+      "id": "ai",
+      "title": "AI Engineering",
+      "summary": "Retrieval, structured outputs, agents and evals, built and measured."
+    }
+  ],
   "modules": [
     {
       "id": "m1-js-runtime",
       "title": "JavaScript runtime and async",
-      "track": "fullstack"
+      "track": "fullstack",
+      "planned": []
     },
     {
       "id": "m2-http-browser",
       "title": "HTTP and the browser",
-      "track": "fullstack"
+      "track": "fullstack",
+      "planned": []
     },
     {
       "id": "m3-db-concurrency",
       "title": "Database transactions, concurrency and indexes",
-      "track": "fullstack"
+      "track": "fullstack",
+      "planned": []
+    },
+    {
+      "id": "m4-react-api-edges",
+      "title": "React and API boundaries",
+      "track": "fullstack",
+      "planned": [
+        "React render model",
+        "Effects and synchronization",
+        "Runtime validation",
+        "Pagination"
+      ]
+    },
+    {
+      "id": "m5-testing-security",
+      "title": "Testing and web security",
+      "track": "fullstack",
+      "planned": [
+        "Testing strategy",
+        "Authorization in depth",
+        "XSS and web security"
+      ]
+    },
+    {
+      "id": "m6-production-reliability",
+      "title": "Production reliability",
+      "track": "fullstack",
+      "planned": [
+        "Background jobs",
+        "Retry and backoff",
+        "Timeouts",
+        "Partial failures",
+        "Graceful degradation"
+      ]
+    },
+    {
+      "id": "m7-observability",
+      "title": "Observability",
+      "track": "fullstack",
+      "planned": [
+        "Logs",
+        "Metrics",
+        "Traces"
+      ]
+    },
+    {
+      "id": "m8-architecture-scale",
+      "title": "Architecture at scale",
+      "track": "fullstack",
+      "planned": [
+        "Caching strategy",
+        "Scaling",
+        "Multi-tenancy",
+        "System evolution"
+      ]
+    },
+    {
+      "id": "a1-retrieval",
+      "title": "Retrieval",
+      "track": "ai",
+      "planned": [
+        "Semantic search",
+        "Retrieval evaluation",
+        "RAG",
+        "Advanced RAG",
+        "Reranking"
+      ]
+    },
+    {
+      "id": "a2-model-interfaces",
+      "title": "Model interfaces",
+      "track": "ai",
+      "planned": [
+        "Structured outputs",
+        "Tool calling",
+        "Context engineering"
+      ]
+    },
+    {
+      "id": "a3-agents",
+      "title": "Agents",
+      "track": "ai",
+      "planned": [
+        "Agent patterns",
+        "State and memory",
+        "MCP"
+      ]
+    },
+    {
+      "id": "a4-ai-production",
+      "title": "AI in production",
+      "track": "ai",
+      "planned": [
+        "Evals",
+        "AI observability",
+        "Cost and latency",
+        "Production reliability"
+      ]
     }
   ],
   "topics": [

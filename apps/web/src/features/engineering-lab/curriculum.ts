@@ -7,13 +7,12 @@ export function findTopic(topicId: string): Topic | undefined {
   return topicMap.topics.find((topic) => topic.id === topicId);
 }
 
-const trackTitles: Record<string, string> = { fullstack: "Full-stack", production: "Production", ai: "AI Engineering" };
-
 /** Where a topic sits in the course, for breadcrumbs: its track and its chapter's number within that track. */
 export function placeOf(topic: Topic) {
   const chapter = topicMap.modules.find((item) => item.id === topic.module)!;
   const inTrack = topicMap.modules.filter((item) => item.track === chapter.track);
-  return { track: trackTitles[chapter.track] ?? chapter.track, chapterNumber: inTrack.indexOf(chapter) + 1, chapterTitle: chapter.title };
+  const track = topicMap.tracks.find((item) => item.id === chapter.track);
+  return { track: track?.title ?? chapter.track, chapterNumber: inTrack.indexOf(chapter) + 1, chapterTitle: chapter.title };
 }
 
 export function labsForTopic(topicId: string) {

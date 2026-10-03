@@ -20,6 +20,8 @@ export interface TopicProgress {
   weaknesses: string[];
   lastAttemptAt: string | null;
   validatedAt: string | null;
+  /** Result of a placement check: passed when every placement answer was solid. Null if never taken. */
+  placement: "passed" | "failed" | null;
   reviewStage: number;
   nextReviewAt: string | null;
 }
@@ -38,8 +40,21 @@ const DAY = 24 * 60 * 60 * 1000;
 /** Only these attempts can prove a topic. Lesson practice and labs run after seeing the solution cannot. */
 export function countsAsProof(attempt: AttemptRecord) {
   if (attempt.voided) return false;
-  if (attempt.kind === "assessment" || attempt.kind === "review") return true;
+  if (attempt.kind === "assessment" || attempt.kind === "review" || attempt.kind === "placement") return true;
   return attempt.kind === "lab" && !attempt.solutionSeen;
+}
+
+/**
+ * Assessment says you know this topic: it is proven, or you passed its placement check. Known topics count as done
+ * for prerequisites and the Planner skips them. The baseline alone never makes a topic known.
+ */
+export function isKnown(progress: Pick<TopicProgress, "status" | "placement">) {
+  return progress.status === "VALIDATED" || progress.placement === "passed";
+}
+
+/** No one has assessed this topic yet: no baseline entry, no answers, no placement check. */
+export function isUnassessed(progress: Pick<TopicProgress, "status" | "placement" | "baselineLabel" | "lastAttemptAt">) {
+  return progress.baselineLabel === null && progress.placement === null && progress.lastAttemptAt === null && progress.status === "NOT_STARTED";
 }
 
 function addDays(date: Date, days: number) {
@@ -121,6 +136,9 @@ export function computeProgress(topic: Topic, attempts: AttemptRecord[], lessonS
     for (const item of attempt.misconceptions) if (!weaknesses.includes(item)) weaknesses.push(item);
   }
 
+  const placed = ordered.filter((attempt) => attempt.kind === "placement" && !attempt.voided);
+  const placement = !placed.length ? null : placed.every((attempt) => attempt.label === "solid") ? "passed" : "failed";
+
   const rated = ordered.filter((attempt) => !attempt.voided && attempt.selfRating !== null);
   const averageSelfRating = rated.length ? Math.round((rated.reduce((sum, attempt) => sum + attempt.selfRating!, 0) / rated.length) * 10) / 10 : null;
   const overconfident = rated.slice(-5).some((attempt) => attempt.selfRating! >= 4 && attempt.label === "misconception");
@@ -135,6 +153,7 @@ export function computeProgress(topic: Topic, attempts: AttemptRecord[], lessonS
       weaknesses: weaknesses.slice(-6),
       lastAttemptAt: lastAttemptAt?.toISOString() ?? null,
       validatedAt: validatedAt?.toISOString() ?? null,
+      placement,
       reviewStage,
       nextReviewAt: nextReviewAt?.toISOString() ?? null,
     },
