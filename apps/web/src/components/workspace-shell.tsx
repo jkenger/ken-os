@@ -5,6 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { Archive, BookMarked, BookOpenText, FileText, FlaskConical, Image, Library, Lightbulb, ListTree, Menu, PanelLeftClose, PanelLeftOpen, Palette, PenLine, Search, Sparkles, Sun, X } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import { TermLookup } from "@/components/terms/term-lookup";
+import { Toaster } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -298,6 +299,7 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
             {writingPreview ? headerActions : <div className="flex items-center gap-3"><ModuleSearch preview={preview} /><form action="/api/auth/signout" method="post"><Button variant="ghost" type="submit" className="text-xs">Sign out</Button></form></div>}
           </header>
           <main className="min-w-0" id="main-content">{termLookup ? <TermLookup module={detail.title}>{children}</TermLookup> : children}</main>
+          <Toaster />
         </div>
       </div>
     </div>

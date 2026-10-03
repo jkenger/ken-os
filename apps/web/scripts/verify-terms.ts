@@ -38,6 +38,14 @@ async function main() {
     await assert.rejects(store.lookupTerm(userId, { selection: "x".repeat(61), context: "", place: "" }), /up to 60/);
     console.log("ok - saved terms skip the AI; the daily limit and length limit hold");
 
+    // A lookup the browser stopped waiting for was still stored, so asking again reuses it: no AI call, no limit.
+    await db().insert(kenTermLookups).values({ id: randomUUID(), userId, model: "check", termKey: "event loop", answer: { term: "event loop", meaning: "The loop that runs tasks and microtasks.", source: null } });
+    const reused = await store.lookupTerm(userId, { selection: "Event Loop", context: "", place: "" });
+    assert.equal(reused.reused, true);
+    assert.equal(reused.saved, false);
+    assert.match(reused.meaning, /tasks and microtasks/, "the stored answer comes back even with today's limit used up");
+    console.log("ok - a finished lookup is reused for 30 days without an AI call");
+
     await store.deleteTerm(userId, skip.id);
     assert.equal((await store.listTerms(userId)).length, 1);
     await assert.rejects(store.deleteTerm(`${userId}-other`, first.id!), (error: Error) => error instanceof store.TermInputError && error.status === 404, "another user can't delete it");

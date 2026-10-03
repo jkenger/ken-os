@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, ChevronRight } from "lucide-react";
 import type { LabDefinition, Topic } from "@ken-os/domain";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/toaster";
 import { DisclosureSummary } from "@/components/ui/disclosure-summary";
 import { stepsForTopic, type StepId } from "@/features/engineering-lab/steps";
 import type { TopicView } from "@/features/engineering-lab/store";
@@ -54,7 +55,7 @@ function PracticeStep({ view, onDone, onNext, nextLabel, goLearn }: { view: Topi
       <div className="mt-5">
         {item.kind === "think" ? (
           <div>
-            <p className="text-lg leading-7">{item.prompt}</p>
+            <div className="[&_p]:text-lg [&_p]:leading-7"><Markdown text={item.prompt} /></div>
             <details className="group mt-4 rounded-xl border border-border p-4"><DisclosureSummary className="text-[15px] font-semibold">Show the answer</DisclosureSummary><div className="mt-3 pl-6"><Markdown text={item.answer} /></div></details>
           </div>
         ) : (
@@ -121,8 +122,8 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState<"" | "lesson" | "questions">("");
-  const [message, setMessage] = useState("");
-  const done = (text: string) => { setMessage(text); router.refresh(); };
+  const done = (text: string) => { toast({ tone: "success", title: text }); router.refresh(); };
+  const failed = (title: string, error: unknown) => toast({ tone: "error", title, description: error instanceof Error ? error.message : undefined });
   const { progress, lesson, assessment } = view;
   const openQuestions = assessment?.items.some((item) => !item.answered) ?? false;
   const { steps, suggested } = stepsForTopic(view, labs, topic.prove, skipLesson);
@@ -139,7 +140,6 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
 
   const go = (next: StepId) => {
     setStep(next);
-    setMessage("");
     const top = stepsTop.current;
     if (top && top.getBoundingClientRect().top < 0) top.scrollIntoView();
   };
@@ -150,16 +150,16 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
   };
 
   async function makeLesson() {
-    setBusy("lesson"); setMessage("");
+    setBusy("lesson");
     try { await post(`/api/lab/topics/${topic.id}/lesson`); done("Lesson saved."); }
-    catch (error) { setMessage(error instanceof Error ? error.message : "Could not write the lesson."); }
+    catch (error) { failed("Could not write the lesson", error); }
     finally { setBusy(""); }
   }
   async function makeQuestions() {
-    setBusy("questions"); setMessage("");
+    setBusy("questions");
     const kind = progress.status === "VALIDATED" || progress.status === "NEEDS_REVISIT" ? "review" : "assessment";
     try { await post(`/api/lab/topics/${topic.id}/assessment`, { kind }); done("New questions ready."); }
-    catch (error) { setMessage(error instanceof Error ? error.message : "Could not write questions."); }
+    catch (error) { failed("Could not write questions", error); }
     finally { setBusy(""); }
   }
 
@@ -180,7 +180,6 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
         <div ref={stepsTop} className="sticky top-0 z-10 scroll-mt-0">
           <StepBar steps={steps} active={step} suggested={suggested} onSelect={go} />
         </div>
-        {message && <p className="mx-5 mt-5 rounded-lg bg-muted px-4 py-3 text-sm sm:mx-8 lg:mx-10" role="status">{message}</p>}
         {justProven && (
           <div className="mx-5 mt-5 sm:mx-8 lg:mx-10">
             <ProvenBanner title={topic.title} nextReviewAt={progress.nextReviewAt} byCode={topic.prove.filter((mode) => progress.evidence[mode]?.by === "code").length} />

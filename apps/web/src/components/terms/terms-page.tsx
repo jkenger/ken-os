@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { BookOpen, ExternalLink, Search, Trash2 } from "lucide-react";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/toaster";
 import type { SavedTerm } from "@/features/terms/store";
 
 const eyebrow = "text-[11px] font-bold tracking-[0.15em] text-muted-foreground";
@@ -18,19 +19,19 @@ function saved(value: string) {
 export function TermsPage({ email, terms, preview = false }: { email: string; terms: SavedTerm[]; preview?: boolean }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const [problem, setProblem] = useState("");
   const [removing, setRemoving] = useState("");
   const shown = terms.filter((term) => `${term.term} ${term.meaning}`.toLowerCase().includes(query.trim().toLowerCase()));
 
   async function remove(term: SavedTerm) {
     if (!window.confirm(`Remove "${term.term}" from Terms?`)) return;
-    setRemoving(term.id); setProblem("");
+    setRemoving(term.id);
     try {
       const response = await fetch(`/api/terms/${term.id}`, { method: "DELETE" });
       if (!response.ok) throw new Error(((await response.json().catch(() => ({}))) as { error?: string }).error ?? "Could not remove it.");
+      toast({ tone: "success", title: `Removed "${term.term}" from Terms` });
       router.refresh();
     } catch (error) {
-      setProblem(error instanceof Error ? error.message : "Could not remove it.");
+      toast({ tone: "error", title: "Could not remove it", description: error instanceof Error ? error.message : undefined });
     } finally {
       setRemoving("");
     }
@@ -49,7 +50,6 @@ export function TermsPage({ email, terms, preview = false }: { email: string; te
             <input className="min-w-0 flex-1 bg-transparent text-sm outline-none" placeholder="Search your terms" aria-label="Search your terms" value={query} onChange={(event) => setQuery(event.target.value)} />
           </label>
         )}
-        {problem && <p className="mt-4 rounded-lg bg-muted px-4 py-3 text-sm" role="alert">{problem}</p>}
 
         {terms.length ? (
           <ul className="mt-6 divide-y divide-border border-y border-border">

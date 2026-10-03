@@ -1,6 +1,6 @@
 # Components — repeated surfaces and actions
 
-Version: 0.1.0-working.6 · working / not yet approved. Adapt anatomy to the target product rather than copying Ken OS content.
+Version: 0.1.0-working.7 · working / not yet approved. Adapt anatomy to the target product rather than copying Ken OS content.
 
 ## Component reuse
 
@@ -21,6 +21,10 @@ Use the same Card or a plain section for task surfaces. Give roomier task surfac
 ## Inputs
 
 Quiet boundary, clear label and obvious focus. Use 40–44px height, 14px text, warm border and visible focus ring; retain error and disabled states.
+
+## Notifications
+
+Call toast() after something finishes in the background or saves; keep errors next to the action that failed. One shared Toaster in the workspace shell: bottom right on desktop, full width on a phone, at most three, newest last. Success and info leave after six seconds, pausing while hovered or focused; errors stay until dismissed. Each has a title, an optional one-line description and at most one action (a button or a Ken OS link). Colour comes from the status tokens and is always paired with an icon and words.
 
 ## App shell
 

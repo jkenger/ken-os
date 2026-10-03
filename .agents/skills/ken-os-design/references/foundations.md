@@ -1,6 +1,6 @@
 # Foundations — Ken OS visual system
 
-Version: 0.1.0-working.6 · working / not yet approved. These are portable defaults, not a requirement to reproduce Ken OS.
+Version: 0.1.0-working.7 · working / not yet approved. These are portable defaults, not a requirement to reproduce Ken OS.
 
 ## Palette
 

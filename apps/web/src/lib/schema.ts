@@ -1,6 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import { boolean, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
-import type { AssessmentItem, AttemptKind, AttemptResponse, CodeRun, Grade, Label, LessonSnapshot, Mode, RubricResult, SourcePacket, Status, TopicProgress } from "@ken-os/domain";
+import type { AssessmentItem, AttemptKind, AttemptResponse, CodeRun, Grade, Label, LessonSnapshot, Mode, RubricResult, SourcePacket, Status, TermAnswer, TopicProgress } from "@ken-os/domain";
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -263,5 +263,11 @@ export const kenTermLookups = pgTable("ken_term_lookups", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   model: text("model").notNull(),
+  /** What was looked up, normalized, and the answer, so the same term is answered again without an AI call. */
+  termKey: text("term_key"),
+  answer: jsonb("answer").$type<TermAnswer>(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-}, (table) => [index("ken_term_lookups_user_idx").on(table.userId, table.createdAt)]);
+}, (table) => [
+  index("ken_term_lookups_user_idx").on(table.userId, table.createdAt),
+  index("ken_term_lookups_user_key_idx").on(table.userId, table.termKey, table.createdAt),
+]);
