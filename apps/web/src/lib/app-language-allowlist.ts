@@ -68,51 +68,6 @@ export const appLanguageAllowlist: { file: string; text: string }[] = [
 
 
 
-  { file: "components/memory-workspace.tsx", text: "A source-linked handoff from reviewed decisions and work receipts—not a transcript warehouse." },
-
-  { file: "components/memory-workspace.tsx", text: "Copy now—shown only once" },
-
-  { file: "components/memory-workspace.tsx", text: "Could not copy handoff." },
-
-  { file: "components/memory-workspace.tsx", text: "Could not copy key." },
-
-  { file: "components/memory-workspace.tsx", text: "Could not create key." },
-
-  { file: "components/memory-workspace.tsx", text: "Could not review item." },
-
-  { file: "components/memory-workspace.tsx", text: "Could not revoke key." },
-
-  { file: "components/memory-workspace.tsx", text: "Could not save correction." },
-
-  { file: "components/memory-workspace.tsx", text: "Could not save decision." },
-
-  { file: "components/memory-workspace.tsx", text: "Could not save receipt." },
-
-  { file: "components/memory-workspace.tsx", text: "New work receipt" },
-
-  { file: "components/memory-workspace.tsx", text: "No open items in approved receipts yet." },
-
-  { file: "components/memory-workspace.tsx", text: "No receipts waiting for review." },
-
-  { file: "components/memory-workspace.tsx", text: "Nothing approved yet. Capture a decision or receipt, then review its evidence below." },
-
-  { file: "components/memory-workspace.tsx", text: "Pick up where you left off." },
-
-  { file: "components/memory-workspace.tsx", text: "Proposed, not confirmed: {} decisions and {} receipts." },
-
-  { file: "components/memory-workspace.tsx", text: "Receipt" },
-
-  { file: "components/memory-workspace.tsx", text: "Receipt saved as proposed. Review it below before it enters the handoff." },
-
-  { file: "components/memory-workspace.tsx", text: "Record as work happens." },
-
-  { file: "components/memory-workspace.tsx", text: "Request failed." },
-
-  { file: "components/memory-workspace.tsx", text: "Save proposed receipt" },
-
-  { file: "components/memory-workspace.tsx", text: "Use a scoped key." },
-
-  { file: "components/memory-workspace.tsx", text: "Work receipts" },
 
 
 
@@ -136,8 +91,28 @@ export const appLanguageAllowlist: { file: string; text: string }[] = [
 
 
 
-  { file: "components/workspace-shell.tsx", text: "Receipts" },
 
 
-  { file: "features/project-memory/api.ts", text: "Could not complete the memory request." },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ];
