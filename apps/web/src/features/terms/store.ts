@@ -66,7 +66,7 @@ export async function lookupTerm(userId: string, input: { selection: string; con
   if (recent?.answer) return { ...recent.answer, saved: await isSaved(userId, termKey(recent.answer.term)), reused: true };
 
   if (await lookupsToday(userId) >= TERM_LOOKUP_LIMIT) throw new TermInputError(`Today's ${TERM_LOOKUP_LIMIT} lookups are used up. They reset at midnight UTC.`, 429);
-  if (!process.env.OPENAI_API_KEY) throw new TermInputError("Term lookup is not configured yet.", 503);
+  if (!process.env.OPENAI_API_KEY) throw new TermInputError("Term lookup isn't set up", 503);
   const { answer, model } = await explainTerm({ selection, context: input.context, place: input.place });
   await db().insert(kenTermLookups).values({ id: randomUUID(), userId, model, termKey: key, answer });
   return { ...answer, saved: await isSaved(userId, termKey(answer.term)), reused: false };
@@ -91,5 +91,5 @@ export async function listTerms(userId: string): Promise<SavedTerm[]> {
 
 export async function deleteTerm(userId: string, id: string) {
   const deleted = await db().delete(kenTerms).where(and(eq(kenTerms.userId, userId), eq(kenTerms.id, id))).returning({ id: kenTerms.id });
-  if (!deleted.length) throw new TermInputError("Term not found.", 404);
+  if (!deleted.length) throw new TermInputError("Term not found. Reload the page", 404);
 }
