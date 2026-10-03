@@ -10,11 +10,8 @@ export const appLanguageAllowlist: { file: string; text: string }[] = [
 
 
 
-  { file: "app/api/skills/[id]/export/route.ts", text: "Could not export this skill." },
 
-  { file: "app/api/skills/[id]/route.ts", text: "Could not update skill." },
 
-  { file: "app/api/skills/route.ts", text: "Could not save this skill." },
 
 
 
@@ -125,19 +122,12 @@ export const appLanguageAllowlist: { file: string; text: string }[] = [
 
 
 
-  { file: "components/skill-manager.tsx", text: "Could not copy. Download SKILL.md instead." },
 
-  { file: "components/skill-manager.tsx", text: "Could not update skill." },
 
-  { file: "components/skill-manager.tsx", text: "Enable for resume agent" },
 
-  { file: "components/skill-manager.tsx", text: "No skills yet." },
 
-  { file: "components/skill-manager.tsx", text: "Upload instructions." },
 
-  { file: "components/skills-workspace.tsx", text: "AGENT CAPABILITIES" },
 
-  { file: "components/skills-workspace.tsx", text: "Skills." },
 
   { file: "components/terms/term-lookup.tsx", text: "Saving..." },
 
