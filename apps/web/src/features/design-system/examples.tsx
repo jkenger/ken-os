@@ -35,8 +35,8 @@ export function ComponentExamples() {
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[11px] font-bold tracking-[0.15em] text-muted-foreground">
-              01 / ACTIONS
+            <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+              Actions
             </p>
             <h3
               className="mt-2 font-display text-lg font-semibold tracking-[-0.04em]"
@@ -45,12 +45,9 @@ export function ComponentExamples() {
               Buttons
             </h3>
           </div>
-          <span className="text-xs text-muted-foreground">
-            Shared primitive
-          </span>
         </div>
         <p className="mt-1 text-sm leading-5 text-muted-foreground">
-          One strong action, with quieter choices nearby.
+          One primary action, quieter secondary ones
         </p>
         <div className="mt-5 flex flex-wrap items-center gap-2">
           <Button
@@ -88,8 +85,8 @@ export function ComponentExamples() {
           role="status"
         >
           {actionDone
-            ? "The sample action completed. Select it again to reset."
-            : "Select the primary action to see its feedback state."}
+            ? "Done · select again to reset"
+            : "Select to see feedback"}
         </p>
       </section>
       <section
@@ -98,8 +95,8 @@ export function ComponentExamples() {
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[11px] font-bold tracking-[0.15em] text-muted-foreground">
-              02 / INPUT
+            <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+              Input
             </p>
             <h3
               className="mt-2 font-display text-lg font-semibold tracking-[-0.04em]"
@@ -108,12 +105,9 @@ export function ComponentExamples() {
               Field
             </h3>
           </div>
-          <span className="text-xs text-muted-foreground">
-            Shared primitive
-          </span>
         </div>
         <p className="mt-1 text-sm leading-5 text-muted-foreground">
-          Warm border, clear label and visible focus.
+          Warm border, clear label, visible focus
         </p>
         <label
           className="mt-5 block text-[13px] font-semibold"
@@ -178,8 +172,8 @@ export function ComponentExamples() {
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[11px] font-bold tracking-[0.15em] text-muted-foreground">
-              03 / REPEATED ITEM
+            <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+              Repeated item
             </p>
             <h3
               className="mt-2 font-display text-lg font-semibold tracking-[-0.04em]"
@@ -188,12 +182,9 @@ export function ComponentExamples() {
               Card
             </h3>
           </div>
-          <span className="text-xs text-muted-foreground">
-            Shared primitive
-          </span>
         </div>
         <p className="mt-1 text-sm leading-5 text-muted-foreground">
-          The stock shadcn Card surface and slots, at Ken OS's compact content density.
+          Compact card for lists
         </p>
         <Card className="mt-5 max-w-md">
           <CardHeader>
@@ -212,8 +203,8 @@ export function ComponentExamples() {
       >
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className="text-[11px] font-bold tracking-[0.15em] text-muted-foreground">
-              04 / TASK SURFACE
+            <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+              Task surface
             </p>
             <h3
               className="mt-2 font-display text-lg font-semibold tracking-[-0.04em]"
@@ -222,23 +213,15 @@ export function ComponentExamples() {
               Feature panel
             </h3>
           </div>
-          <span className="text-xs text-muted-foreground">
-            Shared primitive
-          </span>
         </div>
         <p className="mt-1 text-sm leading-5 text-muted-foreground">
-          The same default Card can contain a roomier task surface.
+          Same card, roomier spacing
         </p>
         <Card className="mt-5 max-w-md [--card-spacing:--spacing(6)]">
           <CardHeader>
             <CardTitle><h4>Review the source</h4></CardTitle>
             <CardDescription>Next action</CardDescription>
           </CardHeader>
-          <CardContent>
-            <p className="text-[15px] leading-6 text-muted-foreground">
-              A task surface can reuse Card without introducing a custom density variant.
-            </p>
-          </CardContent>
         </Card>
       </section>
       <section
@@ -247,8 +230,8 @@ export function ComponentExamples() {
       >
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-[11px] font-bold tracking-[0.15em] text-muted-foreground">
-              05 / SURFACE EXPLORATION
+            <p className="text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground">
+              Surface exploration
             </p>
             <h3
               className="mt-2 font-display text-lg font-semibold tracking-[-0.04em]"
@@ -262,8 +245,7 @@ export function ComponentExamples() {
           </span>
         </div>
         <p className="mt-1 max-w-[65ch] text-sm leading-5 text-muted-foreground">
-          A low-contrast ivory-to-stone gradient that adds depth without turning
-          the card into a dark accent.
+          Low-contrast ivory-to-stone gradient
         </p>
         <div className="mt-5 grid items-start gap-5 md:grid-cols-[minmax(0,440px)_minmax(0,1fr)] md:gap-8">
           <article className="min-h-[190px] rounded-xl border border-[#d6cfc7] bg-[linear-gradient(130deg,#fffdf9_0%,#f4f0e9_48%,#e9e4df_100%)] p-5 text-foreground shadow-[0_12px_28px_-22px_rgba(54,46,39,0.35)] sm:p-6">
@@ -273,7 +255,7 @@ export function ComponentExamples() {
                   Connect project sources
                 </h4>
                 <p className="mt-1 max-w-[27ch] text-sm leading-5 text-muted-foreground">
-                  More context in, better answers out.
+                  Git, docs and conversations
                 </p>
               </div>
               <button
@@ -322,7 +304,7 @@ export function ComponentExamples() {
                 className="mt-5 border-t border-[#d3ccc4] pt-4 text-[13px] leading-5 text-muted-foreground"
                 role="status"
               >
-                Visual preview only. Connections are not configured here.
+                Preview only · not connected
               </p>
             )}
           </article>
@@ -334,10 +316,6 @@ export function ComponentExamples() {
               Use on a single integration or agent invitation when the
               surrounding screen is quiet. Keep regular task panels and repeated
               cards flat for contrast.
-            </p>
-            <p className="mt-3">
-              We can promote the gradient to a named surface token after
-              reviewing it here.
             </p>
           </div>
         </div>

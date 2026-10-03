@@ -6,4 +6,6 @@ The current implementation uses Tailwind utilities, tailored shadcn Button and I
 
 The owner selected the soft-document primary button and Ken OS's light palette. Card surface styling is deferred: use shadcn's default Card and standard slots while retaining Ken OS's established typography and density (compact repeated items; roomier task panels). The earlier custom card surface is not part of the baseline. Project Memory must not have a separate `MemoryCard`. Do not copy Ken OS branding or sample module content into a new project merely because it uses the skill.
 
+The ambient light card (an ivory-to-stone gradient) is a surface exploration in the gallery, not a token. It can become a named surface token after the owner reviews it there.
+
 Components are shared by default across modules. Compose them with slots or variants; introduce a module-specific component only when it has genuinely distinct behavior, state, accessibility, or data responsibilities—not merely different text or a different destination.
