@@ -124,7 +124,7 @@ Contractions throughout ("Couldn't", "Isn't"), matching the Lab.
 
 ## Rewrite by screen
 
-Order is by how far each screen is from the rule. Each row is the worst offender, not the whole screen; the full rewrite happens in implementation.
+Order is by how far each screen is from the rule. Each row is the worst offender, not the whole screen. The complete file-by-file plan, split into PR-sized slices, is [app-language-rewrite.md](app-language-rewrite.md).
 
 ### 1. Engineering Lab Today (`components/lab/lab-today.tsx`)
 
