@@ -60,7 +60,7 @@ export function TermLookup({ module, children }: { module: string; children: Rea
       markSaved(key);
       toast({ tone: "success", title: `Saved "${answer.term}" to Terms`, action: { label: "Open Terms", href: "/terms" } });
     } catch (error) {
-      toast({ tone: "error", title: "Couldn't save the term", description: error instanceof Error ? error.message : undefined });
+      toast({ tone: "error", title: "Couldn't save. Try again", description: error instanceof Error ? error.message : undefined });
     }
   }, []);
 
@@ -75,7 +75,7 @@ export function TermLookup({ module, children }: { module: string; children: Rea
           action: finished.saved ? { label: "Open Terms", href: "/terms" } : { label: "Save to Terms", onClick: () => saveFromToast(finished.answer, finished.key, place) },
         });
       } else if (finished.state === "error") {
-        toast({ tone: "error", title: `Couldn't look up "${finished.text}"`, description: finished.message });
+        toast({ tone: "error", title: `Couldn't look up "${finished.text}". Try again`, description: finished.message });
       }
     });
     setWatching(key);
@@ -126,7 +126,7 @@ export function TermLookup({ module, children }: { module: string; children: Rea
       markSaved(job.key);
       toast({ tone: "success", title: `Saved "${job.answer.term}" to Terms`, action: { label: "Open Terms", href: "/terms" } });
     } catch (error) {
-      toast({ tone: "error", title: "Couldn't save the term", description: error instanceof Error ? error.message : undefined });
+      toast({ tone: "error", title: "Couldn't save. Try again", description: error instanceof Error ? error.message : undefined });
     } finally {
       setSaving(false);
     }
@@ -154,12 +154,12 @@ export function TermLookup({ module, children }: { module: string; children: Rea
           </div>
           {(!job || job.state === "loading") && (
             <div className="mt-2" role="status">
-              <p className="flex items-center gap-2 font-semibold"><LoaderCircle size={15} className="motion-safe:animate-spin" aria-hidden="true" />Looking it up on trusted sites</p>
+              <p className="flex items-center gap-2 font-semibold"><LoaderCircle size={15} className="motion-safe:animate-spin" aria-hidden="true" />Looking up…</p>
               <div className="mt-3 space-y-2" aria-hidden="true">
                 <div className="h-2.5 w-full rounded bg-muted motion-safe:animate-pulse" />
                 <div className="h-2.5 w-4/5 rounded bg-muted motion-safe:animate-pulse" />
               </div>
-              <p className="mt-3 text-muted-foreground">Usually about 5 seconds. You can close this: the lookup keeps going, and the answer pops up when it&apos;s ready.</p>
+              <p className="mt-3 text-muted-foreground">~5 s · keeps going if you close this</p>
             </div>
           )}
           {job?.state === "error" && <p className="mt-2" role="alert">{job.message}</p>}
@@ -168,10 +168,10 @@ export function TermLookup({ module, children }: { module: string; children: Rea
               <p className="mt-2 leading-5">{job.answer.meaning}</p>
               {job.answer.source
                 ? <a className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold underline-offset-4 hover:underline" href={job.answer.source.url} target="_blank" rel="noopener noreferrer">{job.answer.source.title}<ExternalLink size={12} aria-hidden="true" /></a>
-                : <p className="mt-3 text-xs text-muted-foreground">No trusted page found for this one.</p>}
+                : <p className="mt-3 text-xs text-muted-foreground">No trusted source found</p>}
               <div className="mt-4">
                 <Button type="button" size="sm" variant={job.saved ? "outline" : "default"} disabled={job.saved || saving} onClick={() => void save()}>
-                  {job.saved ? <><BookmarkCheck size={14} aria-hidden="true" />Saved to Terms</> : <><BookmarkPlus size={14} aria-hidden="true" />{saving ? "Saving..." : "Save to Terms"}</>}
+                  {job.saved ? <><BookmarkCheck size={14} aria-hidden="true" />Saved to Terms</> : <><BookmarkPlus size={14} aria-hidden="true" />{saving ? "Saving…" : "Save to Terms"}</>}
                 </Button>
               </div>
             </>
