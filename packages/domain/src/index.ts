@@ -20,3 +20,4 @@ export interface Artifact {
   trashed?: boolean;
 }
 export * from "./engineering-lab";
+export * from "./terms";

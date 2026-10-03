@@ -242,3 +242,26 @@ export const labProgressChanges = pgTable("lab_progress_changes", {
   reason: text("reason").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [index("lab_progress_changes_user_idx").on(table.userId, table.createdAt)]);
+
+// Ken OS-wide term lookup. A saved term is one per spelling (term_key); lookups are logged only to enforce the daily limit.
+export const kenTerms = pgTable("ken_terms", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  term: text("term").notNull(),
+  termKey: text("term_key").notNull(),
+  meaning: text("meaning").notNull(),
+  sourceTitle: text("source_title"),
+  sourceUrl: text("source_url"),
+  /** Where it was looked up, in words, such as "Engineering Lab · Event loop". */
+  foundIn: text("found_in").notNull(),
+  /** The Ken OS path it was found on, so the Terms page can link back. Always a same-site path. */
+  foundAt: text("found_at").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [uniqueIndex("ken_terms_user_key_unique").on(table.userId, table.termKey)]);
+
+export const kenTermLookups = pgTable("ken_term_lookups", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  model: text("model").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [index("ken_term_lookups_user_idx").on(table.userId, table.createdAt)]);
