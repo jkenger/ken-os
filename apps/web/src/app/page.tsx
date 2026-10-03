@@ -4,6 +4,7 @@ import { ResumeWorkspace } from "@/components/resume-workspace";
 import { getGoogleAccessToken } from "@/lib/google";
 import { getSelectedResume } from "@/lib/resume";
 import { getSession } from "@/lib/session";
+import { labSummary } from "@/features/engineering-lab/profile-store";
 import { ArrowUpRight, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -72,6 +73,7 @@ export default async function Home() {
         file?.mimeType === GOOGLE_DOC_MIME &&
         Boolean(process.env.OPENAI_API_KEY)
       }
+      labSummary={await labSummary(session.userId).catch(() => null)}
     />
   );
 }

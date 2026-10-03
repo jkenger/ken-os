@@ -10,7 +10,9 @@ import { LabTopics } from "@/components/lab/lab-topics";
 import { TermsPage } from "@/components/terms/terms-page";
 import { assessorModes, findTopic, labsForTopic, placeOf, topicMap } from "@/features/engineering-lab/curriculum";
 import { nextStepFromView } from "@/features/engineering-lab/next-step";
-import { previewToday, previewTopic } from "@/features/engineering-lab/preview";
+import { previewProfile, previewRun, previewToday, previewTopic } from "@/features/engineering-lab/preview";
+import { LabAssessment } from "@/components/lab/assessment/lab-assessment";
+import { LabProfile } from "@/components/lab/profile/lab-profile";
 import { WritingStudioPreview } from "@/components/writing-studio-preview";
 import { LabUiPreview } from "@/components/lab-ui-preview/lab-ui-preview";
 
@@ -29,7 +31,14 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
   }
   if (view === "lab") {
     const today = previewToday();
-    return <LabToday email="preview@example.invalid" today={today} next={today.plan ? nextStepFromView(today.plan, previewTopic(today.plan.topicId)) : null} />;
+    return <LabToday email="preview@example.invalid" today={today} next={today.plan ? nextStepFromView(today.plan, previewTopic(today.plan.topicId)) : null} profile={previewProfile(screenParam === "start" ? "none" : "done")} daily={null} />;
+  }
+  if (view === "lab-profile") {
+    return <LabProfile email="preview@example.invalid" view={previewProfile()} />;
+  }
+  if (view === "lab-assessment") {
+    const profile = previewProfile("in_progress");
+    return <LabAssessment email="preview@example.invalid" intake={screenParam === "intake" ? null : profile.intake} conversation={[]} run={screenParam === "intake" ? null : previewRun()} focus={null} baselineDone={false} />;
   }
   if (view === "terms") {
     const savedAt = new Date().toISOString();

@@ -2,20 +2,18 @@ import { randomUUID } from "node:crypto";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { gradeAnswer, researchTopic, TUTOR_PROMPT_VERSION, ASSESSOR_PROMPT_VERSION, writeAssessment, writeLesson } from "@ken-os/agents";
 import {
-  computeProgress, finalizeLesson, gradeLabRun, gradePrediction, isPacketUsable, planNext, researchTargetFor, toPublicItem,
-  type AssessmentItem, type AttemptKind, type AttemptRecord, type AttemptResponse, type CodeRun, type Grade, type LessonSnapshot,
+  baselineLabelOf, computeProgress, finalizeLesson, gradeLabRun, gradePrediction, isPacketUsable, isoWeek, planNext, researchTargetFor, toPublicItem,
+  type AssessmentItem, type AttemptKind, type AttemptRecord, type AttemptResponse, type BaselineEntry, type CodeRun, type Grade, type LessonSnapshot,
   type Mode, type PlanDecision, type PublicItem, type RubricResult, type SourcePacket, type TopicProgress,
 } from "@ken-os/domain";
 import { db } from "@/lib/db";
-import { labAssessments, labAttempts, labLessons, labProgress, labProgressChanges, labSolutionReveals, labSourcePackets } from "@/lib/schema";
+import { labAssessments, labAttempts, labLessons, labProgress, labProgressChanges, labRadarItems, labSolutionReveals, labSourcePackets } from "@/lib/schema";
 import { assessorModes, baseline, baselineAttempts, findLab, findTopic, labsForTopic, topicMap } from "./curriculum";
+import { LabInputError } from "./errors";
+import { assertRunTurn, completedBaseline, completeRunIfDone, topicIsClosedBook } from "./run-state";
 import { labSolutions } from "./generated/lab-solutions.generated";
 
-export class LabInputError extends Error {
-  constructor(message: string, readonly status = 400) {
-    super(message);
-  }
-}
+export { LabInputError };
 
 /** Lessons, packets and question sets the AI may create per UTC day. Keeps a runaway loop or a stuck button cheap. */
 export const DAILY_GENERATION_LIMIT = 20;
@@ -36,7 +34,38 @@ function requireTopic(topicId: string) {
 function toRecord(row: typeof labAttempts.$inferSelect): AttemptRecord {
   return {
     id: row.id, topicId: row.topicId, kind: row.kind, mode: row.mode, label: row.label, gradedBy: row.gradedBy,
-    voided: row.voided, selfRating: row.selfRating, misconceptions: row.misconceptions, solutionSeen: row.solutionSeen, createdAt: row.createdAt,
+    voided: row.voided, selfRating: row.selfRating, misconceptions: row.misconceptions, solutionSeen: row.solutionSeen,
+    assessmentId: row.assessmentId, createdAt: row.createdAt,
+  };
+}
+
+/**
+ * The retired 2026-10-01 summary, replayed as attempts, but only until the in-app baseline is finished. After that
+ * the baseline comes from your own answers. Design: docs/architecture/engineering-lab-profile.md, section 8.
+ */
+async function legacyBaseline(userId: string): Promise<AttemptRecord[]> {
+  return (await completedBaseline(userId)) ? [] : baselineAttempts();
+}
+
+/** When the baseline was taken, and which one: the in-app run, or the retired summary until the run is finished. */
+export async function baselineInfo(userId: string): Promise<{ on: string; source: "run" | "summary" }> {
+  const run = await completedBaseline(userId);
+  return run?.completedAt ? { on: run.completedAt.toISOString(), source: "run" } : { on: `${baseline.assessedOn}T12:00:00Z`, source: "summary" };
+}
+
+/** The baseline for one topic, in the shape the Tutor reads: from the in-app run once finished, else the old summary. */
+export async function baselineEntryFor(userId: string, topicId: string): Promise<BaselineEntry | null> {
+  if (!(await completedBaseline(userId))) return baseline.entries.find((entry) => entry.topicId === topicId) ?? null;
+  const rows = await db().select().from(labAttempts).where(and(eq(labAttempts.userId, userId), eq(labAttempts.topicId, topicId), eq(labAttempts.kind, "baseline")));
+  const label = baselineLabelOf(rows);
+  if (!label) return null;
+  const counted = rows.filter((row) => !row.voided).sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+  return {
+    topicId,
+    label,
+    mode: counted[0].mode,
+    notes: counted.map((row) => row.feedback).join(" "),
+    misconceptions: [...new Set(counted.flatMap((row) => row.misconceptions))],
   };
 }
 
@@ -50,7 +79,7 @@ export async function generationsToday(userId: string) {
   return (packets[0]?.n ?? 0) + (lessons[0]?.n ?? 0) + (assessments[0]?.n ?? 0);
 }
 
-async function assertBudget(userId: string, needed = 1) {
+export async function assertBudget(userId: string, needed = 1) {
   const used = await generationsToday(userId);
   if (used + needed > DAILY_GENERATION_LIMIT) {
     throw new LabInputError(`Today's limit of ${DAILY_GENERATION_LIMIT} AI generations is used up. It resets at midnight UTC.`, 429);
@@ -68,7 +97,7 @@ async function recompute(tx: Transaction, userId: string, topicId: string, cause
     .where(and(eq(labProgress.userId, userId), eq(labProgress.topicId, topicId))).for("update");
   const rows = await tx.select().from(labAttempts).where(and(eq(labAttempts.userId, userId), eq(labAttempts.topicId, topicId)));
   const [lesson] = await tx.select({ id: labLessons.id }).from(labLessons).where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId))).limit(1);
-  const { progress } = computeProgress(topic, [...baselineAttempts(), ...rows.map(toRecord)], Boolean(lesson));
+  const { progress } = computeProgress(topic, [...(await legacyBaseline(userId)), ...rows.map(toRecord)], Boolean(lesson));
   await tx.update(labProgress).set({ status: progress.status, progress, updatedAt: new Date() })
     .where(and(eq(labProgress.userId, userId), eq(labProgress.topicId, topicId)));
   if (current && current.status !== progress.status) {
@@ -91,11 +120,12 @@ function emptyProgress(topicId: string): TopicProgress {
  * proof mode) can never leave a stale status on screen. lab_progress only remembers the last status for the change log.
  */
 export async function getAllProgress(userId: string): Promise<TopicProgress[]> {
-  const [rows, lessons] = await Promise.all([
+  const [rows, lessons, legacy] = await Promise.all([
     db().select().from(labAttempts).where(eq(labAttempts.userId, userId)),
     db().selectDistinct({ topicId: labLessons.topicId }).from(labLessons).where(eq(labLessons.userId, userId)),
+    legacyBaseline(userId),
   ]);
-  const attempts = [...baselineAttempts(), ...rows.map(toRecord)];
+  const attempts = [...legacy, ...rows.map(toRecord)];
   const started = new Set(lessons.map((row) => row.topicId));
   return topicMap.topics.map((topic) => computeProgress(topic, attempts, started.has(topic.id)).progress);
 }
@@ -156,19 +186,38 @@ export async function savePacket(userId: string, packet: SourcePacket) {
   return inserted[0]?.id ?? null;
 }
 
-/** Researches the topic again only when its newest packet is past its refresh date. */
+/**
+ * Researches the topic again only when its newest packet is past its refresh date. For a proven topic, the Researcher
+ * also compares against the old packet, and changed facts flag the topic for re-checking on the radar.
+ */
 async function freshPacket(userId: string, topicId: string) {
   const existing = await latestPacket(userId, topicId);
   if (existing && existing.refreshAfter >= today()) return existing;
   await assertBudget(userId);
-  const packet = await researchTopic(researchTargetFor(requireTopic(topicId)));
+  const proven = existing ? (await getAllProgress(userId)).find((item) => item.topicId === topicId)?.status === "VALIDATED" : false;
+  const previousClaims = proven && existing ? existing.packet.claims.map((claim) => claim.statement) : [];
+  const packet = await researchTopic(researchTargetFor(requireTopic(topicId)), previousClaims);
   if (!isPacketUsable(packet)) throw new LabInputError("The Researcher found no usable official sources. Try again later.", 502);
   await savePacket(userId, packet);
+  if (proven && packet.changedSinceLast?.length) await flagRecheck(userId, topicId, packet);
   return (await latestPacket(userId, topicId))!;
+}
+
+/** A proven topic whose facts changed gets a re-check flag: the proof was earned against the old facts. */
+export async function flagRecheck(userId: string, topicId: string, packet: SourcePacket) {
+  const topic = requireTopic(topicId);
+  const chapter = topicMap.modules.find((module) => module.id === topic.module)!;
+  await db().insert(labRadarItems).values({
+    id: randomUUID(), userId, week: isoWeek(new Date()), area: chapter.area, tag: "recheck", topicId,
+    title: `Re-check ${topic.title}`,
+    reason: packet.changedSinceLast!.slice(0, 2).join(" "),
+    sourceUrl: packet.sources[0]?.url ?? null,
+  });
 }
 
 export async function generateLesson(userId: string, topicId: string) {
   const topic = requireTopic(topicId);
+  if (await topicIsClosedBook(userId, topicId)) throw new LabInputError("Your assessment is in progress, so lessons for its topics stay closed until you finish it.", 409);
   const packet = await freshPacket(userId, topicId);
   await assertBudget(userId);
   const progress = (await getAllProgress(userId)).find((item) => item.topicId === topicId)!;
@@ -177,7 +226,7 @@ export async function generateLesson(userId: string, topicId: string) {
   const { draft, model } = await writeLesson({
     topic,
     packet: packet.packet,
-    baseline: baseline.entries.find((entry) => entry.topicId === topicId) ?? null,
+    baseline: await baselineEntryFor(userId, topicId),
     openMisconceptions: progress.weaknesses,
     recentAttempts: recent.reverse(),
   });
@@ -255,6 +304,7 @@ export async function submitAnswer(userId: string, input: AnswerInput) {
   const [existing] = await db().select({ id: labAttempts.id }).from(labAttempts)
     .where(and(eq(labAttempts.assessmentId, assessment.id), eq(labAttempts.itemIndex, input.itemIndex))).limit(1);
   if (existing) throw new LabInputError("This question already has an answer.", 409);
+  await assertRunTurn(assessment, input.itemIndex);
 
   let grade: Grade;
   if (item.mode === "predict") {
@@ -274,7 +324,8 @@ export async function submitAnswer(userId: string, input: AnswerInput) {
       selfRating: input.selfRating, ...gradeFields(grade),
     });
     const progress = await recompute(tx, userId, assessment.topicId, attemptId);
-    return { attemptId, grade, status: progress.status };
+    const runFinished = assessment.runId ? await completeRunIfDone(tx, assessment.runId) : false;
+    return { attemptId, grade, status: progress.status, runFinished };
   });
 }
 
@@ -358,21 +409,28 @@ export interface TopicView {
   /** A validated topic whose next review date has arrived. */
   reviewDue: boolean;
   practiceResults: Record<number, { label: string; feedback: string; voided: boolean; answer: SavedAnswer }>;
+  /** When the baseline this topic's label comes from was taken. */
+  baseline: { on: string; source: "run" | "summary" };
+  /** An assessment that asks about this topic is in progress, so its lesson stays closed. */
+  closedBook: boolean;
 }
 
 export async function getTopicView(userId: string, topicId: string): Promise<TopicView> {
   requireTopic(topicId);
-  const [progress, lessons, packet, assessments, attempts, reveals, passes] = await Promise.all([
+  const [progress, lessons, packet, assessments, attempts, reveals, passes, baselineWhen, closedBook] = await Promise.all([
     getAllProgress(userId).then((all) => all.find((item) => item.topicId === topicId)!),
     db().select().from(labLessons).where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId))).orderBy(desc(labLessons.version)),
     latestPacket(userId, topicId),
-    db().select().from(labAssessments).where(and(eq(labAssessments.userId, userId), eq(labAssessments.topicId, topicId))).orderBy(desc(labAssessments.createdAt)).limit(1),
+    // Only the topic page's own question sets: run and daily-practice questions are answered where they were asked.
+    db().select().from(labAssessments).where(and(eq(labAssessments.userId, userId), eq(labAssessments.topicId, topicId), eq(labAssessments.origin, "topic"))).orderBy(desc(labAssessments.createdAt)).limit(1),
     db().select().from(labAttempts).where(and(eq(labAttempts.userId, userId), eq(labAttempts.topicId, topicId))).orderBy(desc(labAttempts.createdAt)).limit(60),
     db().select({ labId: labSolutionReveals.labId }).from(labSolutionReveals).where(eq(labSolutionReveals.userId, userId)),
     db().selectDistinct({ labId: labAttempts.labId }).from(labAttempts).where(and(
       eq(labAttempts.userId, userId), eq(labAttempts.topicId, topicId), eq(labAttempts.kind, "lab"),
       eq(labAttempts.label, "solid"), eq(labAttempts.solutionSeen, false), eq(labAttempts.voided, false),
     )),
+    baselineInfo(userId),
+    topicIsClosedBook(userId, topicId),
   ]);
   const lesson = lessons[0];
   const assessment = assessments[0];
@@ -415,5 +473,7 @@ export async function getTopicView(userId: string, topicId: string): Promise<Top
     passedLabs: passes.map((row) => row.labId).filter((id): id is string => Boolean(id)),
     reviewDue: progress.status === "VALIDATED" && Boolean(progress.nextReviewAt) && new Date(progress.nextReviewAt!) <= new Date(),
     practiceResults,
+    baseline: baselineWhen,
+    closedBook,
   };
 }

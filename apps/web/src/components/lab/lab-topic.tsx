@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, ChevronRight } from "lucide-react";
@@ -90,7 +91,7 @@ function Proof({ topic, view }: { topic: Topic; view: TopicView }) {
         })}
       </ul>
       <p className="mt-3 text-sm text-muted-foreground">
-        {progress.baselineLabel ? `Baseline on 1 Oct: ${labelWords[progress.baselineLabel]}. ` : "Not assessed in the baseline. "}
+        {progress.baselineLabel ? `Baseline on ${formatDate(view.baseline.on)}: ${labelWords[progress.baselineLabel]}. ` : "Not assessed in the baseline. "}
         {progress.confidence.averageSelfRating !== null ? `Average confidence ${progress.confidence.averageSelfRating} of 5. ` : ""}
         {progress.confidence.overconfident ? "You were sure about an answer that turned out to be a misconception. " : ""}
         {progress.nextReviewAt ? `Next review ${formatDate(progress.nextReviewAt)}.` : ""}
@@ -166,7 +167,7 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
   const lessonButton = <Button type="button" variant={lesson ? "outline" : "default"} disabled={busy !== ""} onClick={() => void makeLesson()}>{busy === "lesson" ? "Researching and writing, about a minute..." : lesson ? "Write a new version" : "Write the lesson"}</Button>;
 
   return (
-    <WorkspaceShell email={email} active="lab">
+    <WorkspaceShell email={email} active="lab" termLookup={!view.closedBook}>
       <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-[1100px] border-x border-border">
         <header className="px-5 pb-6 pt-8 sm:px-8 lg:px-10 lg:pt-10">
           <p className={cn(label, "flex flex-wrap items-center gap-1")}>{place.track.toUpperCase()}<ChevronRight size={12} aria-hidden="true" />CHAPTER {place.chapterNumber} · {place.chapterTitle.toUpperCase()}</p>
@@ -186,6 +187,14 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
           </div>
         )}
 
+        {view.closedBook ? (
+          <div className="px-5 py-8 sm:px-8 lg:px-10">
+            <Empty action={<Button asChild><Link href="/lab/assessment">Back to the assessment</Link></Button>}>
+              <p className="font-semibold">Closed while your assessment is open.</p>
+              <p className="mt-1 text-muted-foreground">This topic is part of the assessment you are taking, so its lesson, practice and labs stay closed until you finish. That keeps the result about what you know now.</p>
+            </Empty>
+          </div>
+        ) : (
         <div className="px-5 py-8 sm:px-8 lg:px-10">
           {step === "learn" && (
             lesson ? (
@@ -246,6 +255,7 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
             <div className="mt-8 space-y-6"><Proof topic={topic} view={view} /><History view={view} /></div>
           )}
         </div>
+        )}
       </div>
     </WorkspaceShell>
   );

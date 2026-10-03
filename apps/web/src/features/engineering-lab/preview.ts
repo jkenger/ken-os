@@ -1,5 +1,7 @@
-import { computeProgress, planNext } from "@ken-os/domain";
-import { baselineAttempts, topicMap } from "./curriculum";
+import { areaLevel, chapterStates, computeProgress, planNext, roadmap, roleDistance, type Label } from "@ken-os/domain";
+import { baselineAttempts, careers, topicMap } from "./curriculum";
+import type { RunView } from "./assessment-run";
+import type { ProfileView } from "./profile-store";
 import type { TodayView, TopicView } from "./store";
 
 // Sample data for the development-only design preview. Built from the real topic map and baseline; nothing is stored.
@@ -12,12 +14,14 @@ export function previewToday(): TodayView {
   };
 }
 
+const previewBaseline = { on: "2026-10-01T12:00:00Z", source: "summary" as const };
+
 export function previewTopic(topicId: string): TopicView {
   const topic = topicMap.topics.find((item) => item.id === topicId)!;
   const progress = computeProgress(topic, baselineAttempts(), true).progress;
   const mdn = "https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide";
   if (topicId !== "js.event_loop") {
-    return { progress, lessonCount: 0, lesson: null, sources: [], sourceCheckedAt: null, assessment: null, attempts: [], revealedLabs: [], passedLabs: [], reviewDue: false, practiceResults: {} };
+    return { progress, lessonCount: 0, lesson: null, sources: [], sourceCheckedAt: null, assessment: null, attempts: [], revealedLabs: [], passedLabs: [], reviewDue: false, practiceResults: {}, baseline: previewBaseline, closedBook: false };
   }
   return {
     progress,
@@ -66,5 +70,62 @@ export function previewTopic(topicId: string): TopicView {
     passedLabs: [],
     reviewDue: false,
     practiceResults: { 0: { label: "partial", feedback: "The code printed 3, 2, 1. You predicted 3, 1.", voided: false, answer: { lines: ["3", "1"], text: null, why: "The timer was queued first, so it runs first.", actual: ["3", "2", "1"] } } },
+    baseline: previewBaseline,
+    closedBook: false,
+  };
+}
+
+/**
+ * A sample profile for the design preview: a finished baseline that placed a few topics, screening answers for two
+ * unwritten chapters, and a chosen direction. Built with the real rules; nothing is stored.
+ */
+export function previewProfile(baselineState: ProfileView["baseline"]["state"] = "done"): ProfileView {
+  const placed = new Set(["js.call_stack", "js.promises", "db.transactions", "db.constraints", "db.indexes"]);
+  const progress = previewToday().progress.map((item) => placed.has(item.topicId) ? { ...item, placement: "passed" as const, baselineLabel: "solid" as const } : item);
+  const screens = [{ chapterId: "a2-model-interfaces", labels: ["solid", "solid"] as Label[] }, { chapterId: "a1-retrieval", labels: ["solid", "partial"] as Label[] }, { chapterId: "m4-react", labels: ["solid", "solid"] as Label[] }];
+  const states = chapterStates(topicMap, progress, screens);
+  const before = chapterStates(topicMap, previewToday().progress, []);
+  const role = careers.roles.find((item) => item.id === "fullstack-applied-ai")!;
+  const steps = roadmap(role, careers, states, topicMap, progress, 6);
+  return {
+    careers: { status: careers.status, approvedOn: careers.approvedOn, note: careers.note, definitions: careers.definitions, levels: careers.levels, sources: careers.sources },
+    baseline: { state: baselineState, runId: baselineState === "none" ? null : "preview-run", completedAt: baselineState === "done" ? "2026-10-04T12:00:00Z" : null },
+    checkpoint: { inProgressRunId: null, done: [] },
+    intake: { building: "My own web products", stack: "Next.js, Postgres", aiWork: "Embeddings and semantic search", weeklyHours: 6 },
+    direction: baselineState === "done" ? role.id : null,
+    areas: careers.areas.map((ladder) => ({ area: ladder.id, title: ladder.title, summary: ladder.summary, now: areaLevel(ladder, states), atBaseline: areaLevel(ladder, before), checkpoints: [] })),
+    roles: careers.roles.map((item) => ({ ...roleDistance(item, careers, states), title: item.title, summary: item.summary })),
+    roadmap: steps.map((step) => {
+      const module = topicMap.modules.find((item) => item.id === step.chapter)!;
+      return {
+        ...step, title: module.title, planned: module.planned, added: false,
+        topics: topicMap.topics.filter((topic) => topic.module === step.chapter).map((topic) => {
+          const item = progress.find((entry) => entry.topicId === topic.id)!;
+          return { topicId: topic.id, title: topic.title, status: item.status, known: item.placement === "passed" };
+        }),
+      };
+    }),
+    pace: { weeklyHours: 6, source: "hours", hoursPerTopic: null },
+    addedChapters: [],
+    conversation: [],
+    radar: { week: "2026-W40", checked: true, items: [{ id: "r1", tag: "experiment", title: "Structured outputs now support streaming partial objects", reason: "Lets a form fill in as the model answers instead of after.", sourceUrl: "https://platform.openai.com/docs", topicId: null, area: "ai" }] },
+  };
+}
+
+/** A sample run halfway through: one chapter done with results, the next one asking a prediction. */
+export function previewRun(): RunView {
+  return {
+    id: "preview-run", kind: "baseline", startedAt: "2026-10-04T09:00:00Z", completedAt: null, generations: 2, allowance: 19,
+    current: {
+      chapterId: "m2-http-browser", type: "topic", id: "preview-set", topicId: "web.cors", itemIndex: 0, position: 1, outOf: 8,
+      item: { mode: "explain", prompt: "A page on app.example calls api.example with fetch. The request reaches the server and the server logs it, but the page sees an error. What happened, and what was CORS protecting?", code: null },
+    },
+    chapters: topicMap.modules.map((module, index) => ({
+      chapterId: module.id, title: module.title, area: module.area, kind: topicMap.topics.some((topic) => topic.module === module.id) ? "topics" as const : "screen" as const,
+      status: index === 0 ? "done" as const : index === 1 ? "in_progress" as const : "not_started" as const,
+      skipped: [], unwritten: 0, answered: index === 0 ? 9 : 0,
+      topics: topicMap.topics.filter((topic) => topic.module === module.id).map((topic, position) => ({ topicId: topic.id, title: topic.title, done: index === 0, label: index === 0 ? (position % 3 === 0 ? "solid" as const : "partial" as const) : null })),
+      answers: index === 0 ? [{ label: "partial" as const, voided: false, feedback: "Right that microtasks run first; missed that the whole queue drains before the timer.", prompt: "What prints?", mode: "predict", answer: "A\nD\nB\nC", rubric: null, selfRating: 4 }] : [],
+    })),
   };
 }

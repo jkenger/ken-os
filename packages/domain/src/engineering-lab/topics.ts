@@ -4,6 +4,10 @@ import { LABELS, MODES, type Label, type Mode } from "./types";
 export const TRACKS = ["fullstack", "ai"] as const;
 export type Track = (typeof TRACKS)[number];
 
+/** The five areas a level is measured in. Every chapter belongs to one. */
+export const AREAS = ["foundations", "frontend", "backend", "production", "ai"] as const;
+export type Area = (typeof AREAS)[number];
+
 export interface TrackInfo {
   id: Track;
   title: string;
@@ -15,6 +19,7 @@ export interface ModuleInfo {
   id: string;
   title: string;
   track: Track;
+  area: Area;
   planned: string[];
 }
 
@@ -25,7 +30,7 @@ export interface Topic {
   requires: string[];
   freshness: FreshnessClass;
   sourceGroups: SourceGroup[];
-  /** The exact gap to repair, from the baseline. */
+  /** What the topic repairs: the wrong belief or missing piece it targets. */
   gap: string;
   depth: "working" | "deep";
   /** Proof modes that must all be solid before the topic counts as validated. */
@@ -93,6 +98,7 @@ export function parseTopicMap(raw: unknown, knownLabs: ReadonlyMap<string, reado
       id: text(item.id, `${where}.id`),
       title: text(item.title, `${where}.title`),
       track,
+      area: oneOf(item.area, AREAS, `${where}.area`),
       planned: list(item.planned, `${where}.planned`).map((title) => text(title, `${where}.planned`)),
     };
   });

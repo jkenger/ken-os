@@ -83,9 +83,23 @@ export function Explanation({ text }: { text?: string | null }) {
   return <div className="mt-3 rounded-lg bg-muted p-4"><p className="mb-1 text-sm font-semibold">Why it prints this</p><Markdown text={text} /></div>;
 }
 
-type AssessmentView = NonNullable<TopicView["assessment"]>;
+export type AssessmentView = NonNullable<TopicView["assessment"]>;
 
-export function Question({ assessment, index, onDone }: { assessment: AssessmentView; index: number; onDone: (message: string) => void }) {
+/** What a submitted answer carries, for callers that send it somewhere other than the topic's attempts route. */
+export interface AnswerPayload {
+  selfRating: number;
+  text?: string;
+  lines?: string[];
+  why?: string;
+  actualOutput?: string[];
+}
+
+export function Question({ assessment, index, onDone, heading, submitTo }: {
+  assessment: AssessmentView; index: number; onDone: (message: string) => void;
+  /** Replaces "Question 2 of 3", for example in an adaptive assessment where the total isn't fixed. */
+  heading?: string;
+  submitTo?: (payload: AnswerPayload) => Promise<unknown>;
+}) {
   const item = assessment.items[index];
   const [answer, setAnswer] = useState("");
   const [why, setWhy] = useState("");
@@ -97,6 +111,14 @@ export function Question({ assessment, index, onDone }: { assessment: Assessment
     if (!rating) { setProblem("Pick how sure you are first."); return; }
     setBusy(true); setProblem("");
     try {
+      if (submitTo) {
+        await submitTo(item.mode === "predict"
+          ? { selfRating: rating, lines: parsePredictedLines(answer), ...(why.trim() ? { why: why.trim() } : {}), actualOutput: await realOutput(item.code ?? "") }
+          : { selfRating: rating, text: answer });
+        setAnswer(""); setWhy(""); setRating(null);
+        onDone("Answer saved.");
+        return;
+      }
       const body = item.mode === "predict"
         ? { type: "answer", assessmentId: assessment.id, itemIndex: index, selfRating: rating, response: { lines: parsePredictedLines(answer), ...(why.trim() ? { why: why.trim() } : {}) }, actualOutput: await realOutput(item.code ?? "") }
         : { type: "answer", assessmentId: assessment.id, itemIndex: index, selfRating: rating, response: { text: answer } };
@@ -111,7 +133,7 @@ export function Question({ assessment, index, onDone }: { assessment: Assessment
 
   return (
     <article className="rounded-xl border border-border p-5">
-      <p className={label}>QUESTION {index + 1} OF {assessment.items.length} · {modeWords[item.mode].toUpperCase()}</p>
+      <p className={label}>{heading ?? `QUESTION ${index + 1} OF ${assessment.items.length}`} · {modeWords[item.mode].toUpperCase()}</p>
       <div className="mt-2"><Markdown text={item.prompt} /></div>
       {item.code && <div className="mt-3"><CodeBlock code={item.code} label={`Code for question ${index + 1}`} /></div>}
       {item.answered ? (

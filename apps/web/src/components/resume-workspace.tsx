@@ -41,6 +41,8 @@ interface Props {
   previewUrl: string | null;
   canAsk: boolean;
   preview?: boolean;
+  /** A one-line Engineering Lab summary that links into the lab. Absent when the lab has nothing to say yet. */
+  labSummary?: { headline: string; detail: string } | null;
 }
 
 const mimeNames: Record<string, string> = {
@@ -49,7 +51,7 @@ const mimeNames: Record<string, string> = {
   [DOCX_MIME]: "Word document",
 };
 
-export function ResumeWorkspace({ email, selection, file, error, previewUrl, canAsk, preview = false }: Props) {
+export function ResumeWorkspace({ email, selection, file, error, previewUrl, canAsk, preview = false, labSummary = null }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -152,6 +154,13 @@ export function ResumeWorkspace({ email, selection, file, error, previewUrl, can
           </div>
           <div className="hidden shrink-0 font-display text-3xl font-semibold sm:block">01 <span className="font-sans text-[10px] tracking-[0.14em] text-muted-foreground">/ MODULE</span></div>
         </div>
+
+        {labSummary && (
+          <a href="/lab" className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border px-5 py-4 hover:bg-muted/60">
+            <span><span className="block text-[11px] font-bold tracking-[0.14em] text-muted-foreground">ENGINEERING LAB</span><span className="mt-1 block text-[15px] font-semibold">{labSummary.headline}</span></span>
+            <span className="text-sm text-muted-foreground">{labSummary.detail}</span>
+          </a>
+        )}
 
         <div className="mb-3 flex items-center justify-between text-[11px] font-bold tracking-[0.14em] text-muted-foreground"><span>PRIMARY RESUME</span><span className="hidden sm:inline">GOOGLE DRIVE SOURCE</span></div>
         <section className="grid overflow-hidden rounded-xl border border-border bg-card shadow-sm lg:grid-cols-[minmax(320px,0.85fr)_minmax(0,1.15fr)]">
