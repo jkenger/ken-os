@@ -17,7 +17,7 @@ export function previewTopic(topicId: string): TopicView {
   const progress = computeProgress(topic, baselineAttempts(), true).progress;
   const mdn = "https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide";
   if (topicId !== "js.event_loop") {
-    return { progress, lessonCount: 0, lesson: null, sources: [], sourceCheckedAt: null, assessment: null, attempts: [], revealedLabs: [], practiceResults: {} };
+    return { progress, lessonCount: 0, lesson: null, sources: [], sourceCheckedAt: null, assessment: null, attempts: [], revealedLabs: [], passedLabs: [], reviewDue: false, practiceResults: {} };
   }
   return {
     progress,
@@ -50,6 +50,8 @@ export function previewTopic(topicId: string): TopicView {
     },
     attempts: [],
     revealedLabs: [],
+    passedLabs: [],
+    reviewDue: false,
     practiceResults: { 0: { label: "partial", feedback: "The code printed 3, 2, 1. You predicted 3, 1.", voided: false, answer: { lines: ["3", "1"], text: null, why: "The timer was queued first, so it runs first." } } },
   };
 }

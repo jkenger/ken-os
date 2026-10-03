@@ -344,18 +344,26 @@ export interface TopicView {
   } | null;
   attempts: { id: string; kind: string; mode: string; label: string; gradedBy: string; voided: boolean; feedback: string; createdAt: string }[];
   revealedLabs: string[];
+  /** Labs with a full pass that counts as proof: run without having seen the solution first. */
+  passedLabs: string[];
+  /** A validated topic whose next review date has arrived. */
+  reviewDue: boolean;
   practiceResults: Record<number, { label: string; feedback: string; voided: boolean; answer: SavedAnswer }>;
 }
 
 export async function getTopicView(userId: string, topicId: string): Promise<TopicView> {
   requireTopic(topicId);
-  const [progress, lessons, packet, assessments, attempts, reveals] = await Promise.all([
+  const [progress, lessons, packet, assessments, attempts, reveals, passes] = await Promise.all([
     getAllProgress(userId).then((all) => all.find((item) => item.topicId === topicId)!),
     db().select().from(labLessons).where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId))).orderBy(desc(labLessons.version)),
     latestPacket(userId, topicId),
     db().select().from(labAssessments).where(and(eq(labAssessments.userId, userId), eq(labAssessments.topicId, topicId))).orderBy(desc(labAssessments.createdAt)).limit(1),
     db().select().from(labAttempts).where(and(eq(labAttempts.userId, userId), eq(labAttempts.topicId, topicId))).orderBy(desc(labAttempts.createdAt)).limit(60),
     db().select({ labId: labSolutionReveals.labId }).from(labSolutionReveals).where(eq(labSolutionReveals.userId, userId)),
+    db().selectDistinct({ labId: labAttempts.labId }).from(labAttempts).where(and(
+      eq(labAttempts.userId, userId), eq(labAttempts.topicId, topicId), eq(labAttempts.kind, "lab"),
+      eq(labAttempts.label, "solid"), eq(labAttempts.solutionSeen, false), eq(labAttempts.voided, false),
+    )),
   ]);
   const lesson = lessons[0];
   const assessment = assessments[0];
@@ -390,6 +398,8 @@ export async function getTopicView(userId: string, topicId: string): Promise<Top
       voided: attempt.voided, feedback: attempt.feedback, createdAt: attempt.createdAt.toISOString(),
     })),
     revealedLabs: reveals.map((row) => row.labId),
+    passedLabs: passes.map((row) => row.labId).filter((id): id is string => Boolean(id)),
+    reviewDue: progress.status === "VALIDATED" && Boolean(progress.nextReviewAt) && new Date(progress.nextReviewAt!) <= new Date(),
     practiceResults,
   };
 }

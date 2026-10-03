@@ -6,7 +6,7 @@ import { ProjectMemoryPreview } from "@/components/project-memory-preview";
 import { DesignSystemWorkspace } from "@/components/design-system-workspace";
 import { LabToday } from "@/components/lab/lab-today";
 import { LabTopic } from "@/components/lab/lab-topic";
-import { findTopic, labsForTopic } from "@/features/engineering-lab/curriculum";
+import { findTopic, labsForTopic, placeOf } from "@/features/engineering-lab/curriculum";
 import { previewToday, previewTopic } from "@/features/engineering-lab/preview";
 import { WritingStudioPreview } from "@/components/writing-studio-preview";
 import { LabUiPreview } from "@/components/lab-ui-preview/lab-ui-preview";
@@ -29,7 +29,8 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
   }
   if (view === "lab-topic") {
     const topic = findTopic(topicParam ?? "js.event_loop") ?? findTopic("js.event_loop")!;
-    return <LabTopic email="preview@example.invalid" topic={topic} view={previewTopic(topic.id)} labs={labsForTopic(topic.id)} skipLesson={false} />;
+    const initialStep = (["learn", "practice", "lab", "check"] as const).find((item) => item === stepParam);
+    return <LabTopic email="preview@example.invalid" topic={topic} view={previewTopic(topic.id)} labs={labsForTopic(topic.id)} skipLesson={false} place={placeOf(topic)} initialStep={initialStep} />;
   }
   if (view === "lab-ui") {
     const screen = (["today", "course", "topic", "terms"] as const).find((item) => item === screenParam) ?? "today";
