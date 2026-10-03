@@ -52,4 +52,22 @@
   html { @apply scroll-smooth; }
   body { @apply bg-background font-sans text-foreground; }
   button, input, a, summary { @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring; }
+
+  /* Thin scrollbars: a 6px rounded thumb on a clear track, darker while dragged or hovered. */
+  :root { --scrollbar-thumb: color-mix(in oklab, var(--muted-foreground) 40%, var(--background)); }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track, ::-webkit-scrollbar-corner { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 9999px;
+    background: var(--scrollbar-thumb) padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover { background-color: var(--muted-foreground); }
+  ::-webkit-scrollbar-thumb:active { background-color: var(--foreground); }
+  ::-webkit-scrollbar-button { display: none; }
+
+  /* Firefox ignores the rules above; Chromium would drop them if these were set everywhere. */
+  @supports (-moz-appearance: none) {
+    * { scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb) transparent; }
+  }
 }
