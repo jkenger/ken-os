@@ -25,6 +25,6 @@ export async function memoryResponse<T>(operation: () => Promise<T>) {
     return NextResponse.json(await operation(), { headers: { "Cache-Control": "private, no-store" } });
   } catch (error) {
     if (error instanceof MemoryInputError) return NextResponse.json({ error: error.message }, { status: error.status });
-    return NextResponse.json({ error: "Could not complete the memory request." }, { status: 500 });
+    return NextResponse.json({ error: "Couldn't save. Try again" }, { status: 500 });
   }
 }

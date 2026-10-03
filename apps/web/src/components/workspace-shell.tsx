@@ -45,7 +45,7 @@ const moduleDetails: Record<Module, {
     sections: [
       { label: "Handoff brief", href: "/memory", icon: BookOpenText },
       { label: "Decisions", href: "/memory#decisions", icon: Library },
-      { label: "Receipts", href: "/memory#receipts", icon: FileText },
+      { label: "Work logs", href: "/memory#receipts", icon: FileText },
       { label: "Capture", href: "/memory#capture", icon: Sparkles },
       { label: "Policy", href: "/memory#policy", icon: FileText },
     ],
