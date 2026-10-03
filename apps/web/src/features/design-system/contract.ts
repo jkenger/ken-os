@@ -1,6 +1,6 @@
 export const designSystem = {
   name: "Ken OS visual system",
-  version: "0.1.0-working.7",
+  version: "0.1.0-working.8",
   status: "working",
   statusLabel: "Working · not yet approved",
   fonts: {
@@ -50,7 +50,7 @@ export const designSystem = {
     { name: "Feature panels", summary: "Use the same Card or a plain section for task surfaces.", details: "Give roomier task surfaces 24–28px spacing and 15–16px explanatory copy. Do not add a module-specific Card component merely for different content." },
     { name: "Inputs", summary: "Quiet boundary, clear label and obvious focus.", details: "Use 40–44px height, 14px text, warm border and visible focus ring; retain error and disabled states." },
     { name: "Notifications", summary: "Call toast() after something finishes in the background or saves; keep errors next to the action that failed.", details: "One shared Toaster in the workspace shell: bottom right on desktop, full width on a phone, at most three, newest last. Success and info leave after six seconds, pausing while hovered or focused; errors stay until dismissed. Each has a title, an optional one-line description and at most one action (a button or a Ken OS link). Colour comes from the status tokens and is always paired with an icon and words." },
-    { name: "App shell", summary: "Navigation is persistent only when there are real sibling destinations.", details: "A floating 264–280px desktop rail and separate inset main surface; mobile uses an accessible menu. Dividers reach the content frame while text stays padded." },
+    { name: "App shell", summary: "Navigation is persistent only when there are real sibling destinations.", details: "A flush 264–276px desktop rail and main area, both edge to edge, divided by one hairline; no inset cards, rounded frames or shadows on the shell, so it reads as an app. Their header strips share one height, so the lines meet. Mobile uses an accessible menu. Dividers reach the content frame while text stays padded." },
   ],
   decisions: [
     { title: "Warm monochrome, not green or blue", rationale: "A restrained light base gives content and work artifacts the emphasis.", rejected: "Green and blue accent-led directions", recorded: "2026-09-24" },
