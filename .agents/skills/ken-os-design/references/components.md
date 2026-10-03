@@ -1,6 +1,6 @@
 # Components — repeated surfaces and actions
 
-Version: 0.1.0-working.7 · working / not yet approved. Adapt anatomy to the target product rather than copying Ken OS content.
+Version: 0.1.0-working.8 · working / not yet approved. Adapt anatomy to the target product rather than copying Ken OS content.
 
 ## Component reuse
 
@@ -28,7 +28,7 @@ Call toast() after something finishes in the background or saves; keep errors ne
 
 ## App shell
 
-Navigation is persistent only when there are real sibling destinations. A floating 264–280px desktop rail and separate inset main surface; mobile uses an accessible menu. Dividers reach the content frame while text stays padded.
+Navigation is persistent only when there are real sibling destinations. A flush 264–276px desktop rail and main area, both edge to edge, divided by one hairline; no inset cards, rounded frames or shadows on the shell, so it reads as an app. Their header strips share one height, so the lines meet. Mobile uses an accessible menu. Dividers reach the content frame while text stays padded.
 
 ## Density check
 

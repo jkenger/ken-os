@@ -229,21 +229,21 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
   };
 
   return (
-    <div className="min-h-screen bg-[#f5f3ef] text-foreground md:flex">
-      <aside className={cn("h-[60px] md:sticky md:top-0 md:h-screen md:shrink-0 md:p-3", writingPreview && desktopCollapsed ? "md:w-[76px]" : "md:w-[280px] xl:w-[292px]")} aria-label="Workspace sidebar">
+    <div className="min-h-screen bg-background text-foreground md:flex">
+      <aside className={cn("h-[60px] border-b border-sidebar-border md:sticky md:top-0 md:h-screen md:shrink-0 md:border-b-0 md:border-r", writingPreview && desktopCollapsed ? "md:w-[64px]" : "md:w-[264px] xl:w-[276px]")} aria-label="Workspace sidebar">
         {mobileOpen && <button className="fixed inset-0 z-40 bg-foreground/50 md:hidden" type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)} />}
         <div
           ref={sidebarRef}
           className={cn(
-            "flex flex-col bg-sidebar text-sidebar-foreground md:h-[calc(100vh-24px)] md:rounded-xl md:border md:border-sidebar-border md:shadow-sm",
-            mobileOpen ? "fixed inset-y-3 left-3 z-50 w-[min(308px,calc(100vw-24px))] rounded-xl border border-sidebar-border shadow-2xl md:static md:w-auto" : "h-[60px] md:h-[calc(100vh-24px)]",
+            "flex flex-col bg-sidebar text-sidebar-foreground md:h-screen",
+            mobileOpen ? "fixed inset-y-3 left-3 z-50 w-[min(308px,calc(100vw-24px))] rounded-xl border border-sidebar-border shadow-2xl md:static md:w-auto md:rounded-none md:border-0 md:shadow-none" : "h-[60px] md:h-screen",
           )}
           role={mobileOpen ? "dialog" : undefined}
           aria-modal={mobileOpen ? "true" : undefined}
           aria-label={mobileOpen ? "Navigation menu" : undefined}
           onKeyDown={trapSidebarFocus}
         >
-          <div className={cn("flex h-[60px] shrink-0 items-center justify-between px-4 md:h-[70px] md:border-b md:border-sidebar-border", mobileOpen && "border-b border-sidebar-border", writingPreview && desktopCollapsed && "md:justify-center md:px-2")}>
+          <div className={cn("flex h-[60px] shrink-0 items-center justify-between px-4 md:h-16 md:border-b md:border-sidebar-border", mobileOpen && "border-b border-sidebar-border", writingPreview && desktopCollapsed && "md:justify-center md:px-2")}>
             <Link className="flex items-center gap-2.5 font-display text-xl font-bold tracking-[-0.055em]" href="/" aria-label="Ken OS home" onClick={() => setMobileOpen(false)}>
               <span className="grid size-9 place-items-center rounded-lg bg-primary text-xl text-primary-foreground">K</span>
               <span className={cn(writingPreview && desktopCollapsed && "md:hidden")}>ken<span className="text-muted-foreground">.os</span></span>
@@ -291,8 +291,8 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
         </div>
       </aside>
 
-      <div className="min-w-0 flex-1 md:p-3 md:pl-0">
-        <div className="min-h-[calc(100vh-60px)] bg-background md:min-h-[calc(100vh-24px)] md:rounded-xl md:border md:border-border md:shadow-sm">
+      <div className="min-w-0 flex-1">
+        <div className="min-h-[calc(100vh-60px)] bg-background md:min-h-screen">
           <header className={cn("flex h-16 items-center justify-between gap-4 border-b border-border px-5 sm:px-8", writingPreview && "sm:px-5")}>
             <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
               {writingPreview && <><button className="grid size-9 shrink-0 place-items-center rounded-lg border border-border hover:bg-muted md:hidden" type="button" aria-label="Open sidebar" aria-controls="workspace-sidebar-content" aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><Menu size={17} /></button><button className="hidden size-9 shrink-0 place-items-center rounded-lg border border-border hover:bg-muted md:grid" type="button" aria-label={desktopCollapsed ? "Expand sidebar" : "Collapse sidebar"} aria-controls="workspace-sidebar-content" aria-expanded={!desktopCollapsed} onClick={() => setDesktopCollapsed((value) => !value)}>{desktopCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</button></>}

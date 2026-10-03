@@ -1,6 +1,6 @@
 # Foundations — Ken OS visual system
 
-Version: 0.1.0-working.7 · working / not yet approved. These are portable defaults, not a requirement to reproduce Ken OS.
+Version: 0.1.0-working.8 · working / not yet approved. These are portable defaults, not a requirement to reproduce Ken OS.
 
 ## Palette
 
@@ -44,4 +44,4 @@ Long explanations can use 15–16px with a 22–24px line height. Avoid display 
 
 ## Composition
 
-Use an ivory canvas, precise hierarchy, whitespace, and thin full-width section dividers. Text stays padded inside the content frame. A floating desktop sidebar around 264–280px works only when the product has real sibling destinations; use an accessible mobile menu instead of squeezing the rail. Main content may be bounded near 1320px, with about 20px mobile, 32px medium, and 40px desktop horizontal padding. Keep one clear page title and reserve the filled primary action for the main task.
+Use an ivory canvas, precise hierarchy, whitespace, and thin full-width section dividers. Text stays padded inside the content frame. A flush desktop sidebar around 264–276px, divided from the main area by one hairline with no inset card or shadow, works only when the product has real sibling destinations; use an accessible mobile menu instead of squeezing the rail. Tool screens use the full width of the main area; reading pages may be bounded near 1320px, with about 20px mobile, 32px medium, and 40px desktop horizontal padding. Keep one clear page title and reserve the filled primary action for the main task.
