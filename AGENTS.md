@@ -7,7 +7,8 @@ Ken OS is the owner's private, hosted platform; each workflow is a module under 
 - `apps/web`: Next.js UI, API routes, Google OAuth, sessions, and database access.
 - `packages/domain`: shared artifact types and format rules.
 - `packages/drive`: Google Drive adapter.
-- `packages/agents`: the read-only resume assistant and the Engineering Lab Researcher.
+- `packages/agents`: the read-only resume assistant, the Engineering Lab Researcher, Tutor and Assessor, and the term lookup.
+- `apps/web/src/features/terms/` and `components/terms/`: Ken OS-wide term lookup (select text, press Explain or E) and the Terms page. Selected text is untrusted data; links must be on the Researcher's trusted sites. `pnpm --filter @ken-os/web test:db:terms` checks it against local Postgres.
 - `docs/product/brief.md`: platform-wide scope and acceptance criteria.
 - `docs/product/ai-engineering-learning-handoff.md`: source of truth for the Engineering Lab module. Preserve its baseline assessment; record decisions in `docs/architecture/engineering-lab.md` instead of editing it.
 - `apps/web/src/features/engineering-lab/`, `content/engineering-lab/` and `labs/`: Engineering Lab code, its topic map and baseline, and its labs. After editing the YAML or a lab, run `pnpm --filter @ken-os/web lab:generate`; never hand-edit the generated files. Never edit `baseline.yaml` to reflect progress. Saved source packets are never overwritten. Every lab starter must fail at least one test and every solution must pass; `pnpm test` checks both.
