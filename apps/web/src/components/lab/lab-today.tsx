@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, ExternalLink } from "lucide-react";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button, ButtonEndIcon } from "@/components/ui/button";
+import { DisclosureSummary } from "@/components/ui/disclosure-summary";
 import { Pill } from "@/components/ui/pill";
 import { findTopic, topicMap } from "@/features/engineering-lab/curriculum";
 import type { DailyView } from "@/features/engineering-lab/daily";
@@ -18,7 +19,7 @@ import { formatDate, levelWords, radarTagWords, statusWords, toneFor } from "./w
 // shape beside a Today panel, the road ahead as a rail, then roles, reviews and changes. Chosen on 2026-10-03.
 // Design: docs/architecture/engineering-lab-profile.md, section 5.
 
-const kindHeading = { review: "Review", continue: "Continue", prerequisite: "Fix a prerequisite first", new: "Start next" } as const;
+const kindHeading = { review: "Review", continue: "Continue", prerequisite: "Prerequisite first", new: "Up next" } as const;
 
 function chapterTitle(id: string, profile: ProfileView) {
   return topicMap.modules.find((module) => module.id === id)?.title ?? profile.addedChapters.find((chapter) => chapter.id === id)?.title ?? id;
@@ -28,14 +29,18 @@ function chapterTitle(id: string, profile: ProfileView) {
 function StartPanel({ profile }: { profile: ProfileView }) {
   const started = profile.baseline.state === "in_progress";
   return (
-    <Panel title={started ? "Your baseline is in progress" : "Start here"} className="border-foreground">
-      <ol className="max-w-[680px] space-y-2 text-sm leading-6">
-        <li><span className="font-semibold">1. A short talk, about 5 minutes.</span> What you build, what you use, and how many hours a week you have. It only steers where questions start.</li>
-        <li><span className="font-semibold">2. The assessment, closed-book.</span> Chapter by chapter, at most about 54 questions, and you can pause between chapters for as long as you like.</li>
-        <li><span className="font-semibold">3. Your profile.</span> Your level in each area, how far you are from each role, and the road to the direction you pick.</li>
-      </ol>
+    <Panel title={started ? "Baseline · In progress" : "Baseline · Not started"} className="border-foreground">
+      <p className="text-sm">Intro (~5 min), then up to ~54 questions. Pause between chapters</p>
+      <details className="group mt-2 max-w-[680px] text-sm">
+        <DisclosureSummary className="text-muted-foreground">How this works</DisclosureSummary>
+        <ol className="mt-2 space-y-1 pl-6 leading-6">
+          <li>1. Intro: what you build, what you use, hours a week</li>
+          <li>2. Assessment: closed-book, chapter by chapter</li>
+          <li>3. Profile: your level per area, distance to each role, roadmap</li>
+        </ol>
+      </details>
       <Button asChild className="mt-4">
-        <Link href="/lab/assessment">{started ? "Continue the baseline" : profile.intake ? "Start the assessment" : "Start the talk"}<ButtonEndIcon><ArrowRight size={15} /></ButtonEndIcon></Link>
+        <Link href="/lab/assessment">{started ? "Continue baseline" : profile.intake ? "Start baseline" : "Start intro"}<ButtonEndIcon><ArrowRight size={15} /></ButtonEndIcon></Link>
       </Button>
     </Panel>
   );
@@ -44,7 +49,7 @@ function StartPanel({ profile }: { profile: ProfileView }) {
 function ContinuePanel({ today, next }: { today: TodayView; next: NextStep | null }) {
   const plan = today.plan;
   const topic = plan ? findTopic(plan.topicId) : undefined;
-  if (!plan || !topic || !next) return <Panel title="All caught up"><p className="text-sm">Every written topic is known or proven, and nothing is due for review. New chapters come next.</p></Panel>;
+  if (!plan || !topic || !next) return <Panel title="All caught up"><p className="text-sm">Nothing due. New chapters coming</p></Panel>;
   const index = next.steps.findIndex((step) => step.id === next.suggested);
   const step = next.steps[index];
   return (
@@ -62,30 +67,30 @@ function TodayPanel({ today, next, daily, profile }: { today: TodayView; next: N
   const questions = daily?.items.filter((item) => item.type === "question") ?? [];
   const answered = questions.filter((item) => item.answered).length;
   const practice = !daily
-    ? "A short mixed set from what you've learned, about 15 minutes."
-    : daily.done ? "Done for today." : `${answered} of ${questions.length} answered${daily.items.some((item) => item.type === "lab") ? ", plus one hands-on fix" : ""}.`;
+    ? "~15 min"
+    : daily.done ? "Done" : `${answered} of ${questions.length} answered${daily.items.some((item) => item.type === "lab") ? " · 1 lab fix" : ""}`;
   const topic = today.plan ? findTopic(today.plan.topicId) : undefined;
   const step = next?.steps.find((item) => item.id === next.suggested);
   const radar = profile.radar.items[0];
-  const radarEmpty = !profile.direction ? "Starts once you pick a direction." : profile.radar.checked ? "Nothing flagged this week." : "This week's scan hasn't run yet.";
+  const radarEmpty = !profile.direction ? "Starts after you choose a direction" : profile.radar.checked ? "Nothing flagged" : "Not scanned this week";
   return (
     <Panel title="Today" bodyClassName="p-0">
       <div className="divide-y divide-border">
         <section className="p-4" aria-labelledby="practice-title">
           <h3 className="text-sm font-semibold" id="practice-title">Practice</h3>
-          <p className="mt-1 text-sm leading-5 text-muted-foreground">{practice}{daily?.warmUp ? " A warm-up, until your first topic is proven." : ""}</p>
+          <p className="mt-1 text-sm leading-5 text-muted-foreground">{practice}{daily?.warmUp ? " · Warm-up until your first topic is proven" : ""}</p>
           <Button asChild size="sm" variant={daily?.done ? "outline" : "default"} className="mt-3">
-            <Link href="/lab/practice">{!daily ? "Start practice" : daily.done ? "Review it" : "Continue practice"}</Link>
+            <Link href="/lab/practice">{!daily ? "Start practice" : daily.done ? "Review answers" : "Continue practice"}</Link>
           </Button>
         </section>
         <section className="p-4" aria-labelledby="continue-title">
           <h3 className="text-sm font-semibold" id="continue-title">{today.plan ? kindHeading[today.plan.kind] : "Continue"}</h3>
           {topic && step ? (
             <>
-              <p className="mt-1 text-sm leading-5"><span className="font-semibold">{topic.title}</span><span className="text-muted-foreground">, {step.label.toLowerCase()} step.</span></p>
+              <p className="mt-1 text-sm leading-5"><span className="font-semibold">{topic.title}</span><span className="text-muted-foreground"> · {step.label}</span></p>
               <Button asChild size="sm" variant="outline" className="mt-3"><Link href={`/lab/topics/${topic.id}?step=${next!.suggested}`}>{step.label}</Link></Button>
             </>
-          ) : <p className="mt-1 text-sm leading-5 text-muted-foreground">Every written topic is known or proven. New chapters come next.</p>}
+          ) : <p className="mt-1 text-sm leading-5 text-muted-foreground">Nothing due. New chapters coming</p>}
         </section>
         <section className="p-4" aria-labelledby="radar-title">
           <h3 className="text-sm font-semibold" id="radar-title">Radar</h3>
@@ -94,9 +99,9 @@ function TodayPanel({ today, next, daily, profile }: { today: TodayView; next: N
               <p className="mt-1 text-sm leading-5"><Pill tone={radar.tag === "recheck" ? "gap" : "neutral"} className="mr-1.5 align-middle">{radarTagWords[radar.tag]}</Pill>{radar.title}</p>
               <p className="mt-1 text-sm leading-5 text-muted-foreground">{radar.reason}</p>
               <div className="mt-2 flex flex-wrap gap-x-4 text-sm">
-                {radar.topicId ? <Link href={`/lab/topics/${radar.topicId}?step=check`} className="underline underline-offset-4">Re-check it</Link>
+                {radar.topicId ? <Link href={`/lab/topics/${radar.topicId}?step=check`} className="underline underline-offset-4">Re-check</Link>
                   : radar.sourceUrl && <a href={radar.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 underline underline-offset-4">Source<ExternalLink size={12} aria-hidden="true" /></a>}
-                <Link href="/lab/profile?pane=radar" className="text-muted-foreground underline-offset-4 hover:underline">All items</Link>
+                <Link href="/lab/profile?pane=radar" className="text-muted-foreground underline-offset-4 hover:underline">All</Link>
               </div>
             </>
           ) : <p className="mt-1 text-sm leading-5 text-muted-foreground">{radarEmpty}</p>}
@@ -116,27 +121,27 @@ function ProfileHome({ today, next, daily, profile }: { today: TodayView; next: 
     <>
       {profile.careers.status === "draft" && (
         <p className="mt-4 rounded-md border border-border px-4 py-2.5 text-sm">
-          The role and level definitions are a draft you haven&apos;t approved yet. <Link href="/lab/profile?pane=definitions" className="underline underline-offset-4">Read them</Link>
+          Role definitions · Draft <Link href="/lab/profile?pane=definitions" className="ml-2 underline underline-offset-4">Review</Link>
         </p>
       )}
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <Panel title="Your shape" meta={chosen ? `Red line: what ${chosen.title} needs` : "Each column is an area, junior to senior"}>
+        <Panel title="Where you are" meta={chosen ? `Red line: what ${chosen.title} needs` : "Each column is an area, junior to senior"}>
           <Skyline areas={profile.areas} targets={targets} compact />
         </Panel>
         <TodayPanel today={today} next={next} daily={daily} profile={profile} />
       </div>
 
-      <Panel className="mt-4" title="Road ahead" id="road-title"
-        meta={chosen && profile.roadmap.length ? `${profile.roadmap.length} stages, about ${weeks} weeks at ${profile.pace.weeklyHours} h a week${profile.pace.source === "history" ? ", paced from your history" : ""}` : undefined}>
+      <Panel className="mt-4" title="Roadmap" id="road-title"
+        meta={chosen && profile.roadmap.length ? `${profile.roadmap.length} stages · ~${weeks} weeks at ${profile.pace.weeklyHours} h/week${profile.pace.source === "history" ? " · paced from your history" : ""}` : undefined}>
         {chosen ? (
           profile.roadmap.length
             ? <RoadRail steps={profile.roadmap} weeklyHours={profile.pace.weeklyHours} />
-            : <p className="text-sm text-muted-foreground">Nothing left for {chosen.title}. Pick a further direction, or take a checkpoint.</p>
-        ) : <p className="text-sm text-muted-foreground">Pick a direction and the road draws the chapters it needs, in order, with a pace estimate. <Link href="/lab/profile" className="underline underline-offset-4">Talk it through</Link>.</p>}
+            : <p className="text-sm text-muted-foreground">Direction complete <Link href="/lab/profile?pane=roles" className="ml-2 underline underline-offset-4">Choose direction</Link> <Link href="/lab/assessment?new=1" className="ml-2 underline underline-offset-4">Start checkpoint</Link></p>
+        ) : <p className="text-sm text-muted-foreground"><span className="font-semibold text-foreground">No direction yet</span> · Choose one to see the chapters it needs <Link href="/lab/profile" className="ml-2 underline underline-offset-4">Ask the Guide</Link></p>}
       </Panel>
 
-      <Panel className="mt-4" title="How far from each role" meta={<Link href="/lab/profile?pane=roles" className="underline-offset-4 hover:underline">Compare and choose</Link>} bodyClassName="p-0">
+      <Panel className="mt-4" title="Roles" meta={<Link href="/lab/profile?pane=roles" className="underline-offset-4 hover:underline">Compare and choose</Link>} bodyClassName="p-0">
         <ul className="divide-y divide-border text-sm">
           {roles.map((role) => {
             const isChosen = role.roleId === profile.direction;
@@ -144,12 +149,12 @@ function ProfileHome({ today, next, daily, profile }: { today: TodayView; next: 
             return (
               <li key={role.roleId} className="grid gap-1 px-4 py-2.5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-baseline sm:gap-4">
                 <span className={cn(isChosen && "font-semibold")}>
-                  {role.title}{isChosen && <span className="ml-2 text-xs text-muted-foreground">your direction</span>}
+                  {role.title}{isChosen && <span className="ml-2 text-xs text-muted-foreground">Direction</span>}
                   <span className="block text-muted-foreground sm:inline sm:before:content-['_']">
-                    {levelWords(role.overall).toLowerCase()} now{shared ? `, shares ${shared} chapters with yours` : ""}{role.missing.length > 0 && role.missing.length <= 3 ? `, missing ${role.missing.map((item) => chapterTitle(item.chapter, profile)).join(", ")}` : ""}
+                    {levelWords(role.overall).toLowerCase()} now{shared ? ` · ${shared} shared with direction` : ""}{role.missing.length > 0 && role.missing.length <= 3 ? ` · missing ${role.missing.map((item) => chapterTitle(item.chapter, profile)).join(", ")}` : ""}
                   </span>
                 </span>
-                <span className="text-muted-foreground">{role.missing.length ? `${role.missing.length} chapters away` : "All there"}</span>
+                <span className="text-muted-foreground">{role.missing.length ? `${role.missing.length} chapters away` : "Ready"}</span>
               </li>
             );
           })}
@@ -170,14 +175,13 @@ export function LabToday({ email, today, next, profile, daily }: { email: string
     <WorkspaceShell email={email} active="lab">
       <div className="w-full px-5 py-6 sm:px-8">
         <TitleBar
-          kicker="Engineering Lab"
           title="Today"
           stats={<>
             {baselineDone && <Stat label="Direction" value={chosen?.title ?? "None yet"} />}
-            {baselineDone && chosen && <Stat label="Your level for it" value={levelWords(chosen.overall)} />}
-            <Stat label="Topics proven" value={`${proven} of ${topicMap.topics.length}`} />
+            {baselineDone && chosen && <Stat label="Level" value={levelWords(chosen.overall)} />}
+            <Stat label="Proven" value={`${proven} of ${topicMap.topics.length}`} />
           </>}
-          actions={baselineDone ? <Button asChild size="sm" variant="outline"><Link href="/lab/profile">{chosen ? "Change direction" : "Pick a direction"}</Link></Button> : undefined}
+          actions={baselineDone ? <Button asChild size="sm" variant="outline"><Link href="/lab/profile">Choose direction</Link></Button> : undefined}
         />
 
         {baselineDone ? <ProfileHome today={today} next={next} daily={daily} profile={profile} /> : (
@@ -203,10 +207,10 @@ export function LabToday({ email, today, next, profile, daily }: { email: string
                   );
                 })}
               </ul>
-            ) : <p className="text-sm text-muted-foreground">Nothing else due.</p>}
+            ) : <p className="text-sm text-muted-foreground">Nothing else due</p>}
           </Panel>
 
-          <Panel title="Open misconceptions">
+          <Panel title="Misconceptions">
             {weak.length ? (
               <ul className="space-y-3 text-sm">
                 {weak.map((item) => (
@@ -216,11 +220,11 @@ export function LabToday({ email, today, next, profile, daily }: { email: string
                   </li>
                 ))}
               </ul>
-            ) : <p className="text-sm text-muted-foreground">No open misconceptions.</p>}
+            ) : <p className="text-sm text-muted-foreground">None open</p>}
           </Panel>
         </div>
 
-        <Panel className="mt-4" title="Recent changes" meta={`AI use today: ${today.generationsUsed} of ${today.generationLimit}`} bodyClassName={today.recentChanges.length ? "p-0" : undefined}>
+        <Panel className="mt-4" title="Recent changes" meta={`AI uses today · ${today.generationsUsed} of ${today.generationLimit}`} bodyClassName={today.recentChanges.length ? "p-0" : undefined}>
           {today.recentChanges.length ? (
             <ul className="divide-y divide-border text-sm">
               {today.recentChanges.map((change, index) => (
@@ -230,7 +234,7 @@ export function LabToday({ email, today, next, profile, daily }: { email: string
                 </li>
               ))}
             </ul>
-          ) : <p className="text-sm text-muted-foreground">No progress changes yet. {profile.baseline.completedAt ? `Your baseline from ${formatDate(profile.baseline.completedAt)} is the starting point.` : "Your baseline will be the starting point."}</p>}
+          ) : <p className="text-sm text-muted-foreground">No changes yet · {profile.baseline.completedAt ? `Starting point: baseline, ${formatDate(profile.baseline.completedAt)}` : "Starting point: baseline"}</p>}
         </Panel>
       </div>
     </WorkspaceShell>

@@ -46,7 +46,7 @@ export function Skyline({ areas, targets, compact = false }: { areas: AreaView[]
         ))}
       </div>
       <figcaption id="skyline-caption" className="mt-4 text-sm text-muted-foreground">
-        Solid blocks are proven or placed. Hatched blocks rest on screening answers only.{hasTargets ? " The red line is your direction's target." : ""}
+        Solid: proven or placed · Hatched: estimate from placement check{hasTargets ? " · Red line: direction target" : ""}
         <span className="sr-only">
           {" "}{areas.map((area) => `${area.title}: ${levelWords(area.now.level)}${area.now.estimate ? " (estimate)" : ""}${targets[area.area] ? `, target ${levelWords(targets[area.area]!)}` : ""}.`).join(" ")}
         </span>

@@ -55,9 +55,7 @@ export const appLanguageAllowlist: { file: string; text: string }[] = [
 
   { file: "components/lab/assessment/lab-assessment.tsx", text: "Writing questions..." },
 
-  { file: "components/lab/explore/lab-home-explore.tsx", text: "{} stages to {}, about {} weeks." },
 
-  { file: "components/lab/explore/lab-home-explore.tsx", text: "Solid blocks are proven or placed. Hatched blocks rest on screening answers only. The red line is your direction's target." },
 
   { file: "components/lab/lab-topic.tsx", text: "Could not write questions" },
 
@@ -77,17 +75,11 @@ export const appLanguageAllowlist: { file: string; text: string }[] = [
 
   { file: "components/lab/practice/lab-practice.tsx", text: "Writing today's set..." },
 
-  { file: "components/lab/profile/guide-chat.tsx", text: "Sending..." },
 
-  { file: "components/lab/profile/guide-chat.tsx", text: "The Guide is thinking..." },
 
-  { file: "components/lab/profile/lab-profile.tsx", text: "None yet. When the Guide suggests a chapter your products need and you add it, it shows here unwritten, with two short screening questions of its own." },
 
-  { file: "components/lab/profile/lab-profile.tsx", text: "Scanning..." },
 
-  { file: "components/lab/profile/lab-profile.tsx", text: "Writing questions..." },
 
-  { file: "components/lab/profile/skyline.tsx", text: "Solid blocks are proven or placed. Hatched blocks rest on screening answers only." },
 
   { file: "components/lab/topic/answers.tsx", text: "Could not check." },
 
