@@ -18,14 +18,14 @@ export function Tag({ value, children }: { value: string; children: React.ReactN
 
 export function GradeTag({ label: grade, voided }: { label: string; voided: boolean }) {
   const solid = grade === "solid" && !voided;
-  return <Pill tone={toneFor(voided ? "voided" : grade)} icon={solid ? <Check size={12} aria-hidden="true" /> : undefined}>{voided ? "Thrown out" : labelWords[grade as keyof typeof labelWords] ?? grade}</Pill>;
+  return <Pill tone={toneFor(voided ? "voided" : grade)} icon={solid ? <Check size={12} aria-hidden="true" /> : undefined}>{voided ? "Discarded" : labelWords[grade as keyof typeof labelWords] ?? grade}</Pill>;
 }
 
 function Confidence({ value, onChange }: { value: number | null; onChange: (value: number) => void }) {
   return (
     <fieldset className="mt-4">
-      <legend className="text-sm font-semibold">How sure are you, before answering?</legend>
-      <p className="mt-1 text-sm text-muted-foreground">This doesn&apos;t change your grade. It flags answers you were sure about but got wrong, since those beliefs are the hardest to notice.</p>
+      <legend className="text-sm font-semibold">Confidence</legend>
+      <p className="mt-1 text-sm text-muted-foreground">Not graded. Flags sure-but-wrong answers</p>
       <div className="mt-2 flex flex-wrap gap-1.5">
         {[1, 2, 3, 4, 5].map((rating) => (
           <Button key={rating} type="button" size="sm" variant={value === rating ? "default" : "outline"} aria-pressed={value === rating} onClick={() => onChange(rating)}>
@@ -42,12 +42,12 @@ function PredictInputs({ lines, why, onLines, onWhy, tall }: { lines: string; wh
   return (
     <>
       <label className="mt-4 block">
-        <span className="mb-2 block text-sm font-semibold">What it prints, one line per log</span>
+        <span className="mb-2 block text-sm font-semibold">Predicted output · one line per log</span>
         <textarea className={cn(textarea, tall ? "min-h-[110px]" : "min-h-[80px]", "font-mono")} spellCheck={false} value={lines} onChange={(event) => onLines(event.target.value)} />
       </label>
       <label className="mt-3 block">
         <span className="block text-sm font-semibold">Why</span>
-        <span className="mb-2 block text-sm text-muted-foreground">Optional and not graded. Compare it with the explanation after you check.</span>
+        <span className="mb-2 block text-sm text-muted-foreground">Optional · not graded</span>
         <textarea className={cn(textarea, "min-h-[72px]")} value={why} onChange={(event) => onWhy(event.target.value)} />
       </label>
     </>
@@ -57,10 +57,10 @@ function PredictInputs({ lines, why, onLines, onWhy, tall }: { lines: string; wh
 export function YourAnswer({ answer, showLines = true }: { answer: SavedAnswer; showLines?: boolean }) {
   return (
     <div className="mt-3">
-      {(showLines && answer.lines) || answer.text ? <p className="font-semibold">Your answer</p> : null}
+      {(showLines && answer.lines) || answer.text ? <p className="font-semibold">Answer</p> : null}
       {showLines && answer.lines && <pre className="mt-1 whitespace-pre-wrap font-mono text-[13px] leading-5">{answer.lines.join("\n") || "(nothing)"}</pre>}
       {answer.text && <p className="mt-1 whitespace-pre-wrap leading-5">{answer.text}</p>}
-      {answer.why && <p className="mt-2 whitespace-pre-wrap leading-5"><span className="font-semibold">Your why: </span>{answer.why}</p>}
+      {answer.why && <p className="mt-2 whitespace-pre-wrap leading-5"><span className="font-semibold">Why: </span>{answer.why}</p>}
     </div>
   );
 }
@@ -72,7 +72,7 @@ function Graded({ answer, explanation, rubric }: { answer: SavedAnswer; explanat
     <>
       {predicted && answer.actual ? <PredictionDiff actual={answer.actual} predicted={predicted} /> : <YourAnswer answer={{ ...answer, why: null }} />}
       {rubric && <RubricChecklist items={rubric} />}
-      {answer.why && <p className="mt-3 whitespace-pre-wrap leading-5"><span className="font-semibold">Your why: </span>{answer.why}</p>}
+      {answer.why && <p className="mt-3 whitespace-pre-wrap leading-5"><span className="font-semibold">Why: </span>{answer.why}</p>}
       <Explanation text={explanation} />
     </>
   );
@@ -108,7 +108,7 @@ export function Question({ assessment, index, onDone, heading, submitTo }: {
   const [problem, setProblem] = useState("");
 
   async function submit() {
-    if (!rating) { setProblem("Pick how sure you are first."); return; }
+    if (!rating) { setProblem("Choose confidence first"); return; }
     setBusy(true); setProblem("");
     try {
       if (submitTo) {
@@ -116,16 +116,16 @@ export function Question({ assessment, index, onDone, heading, submitTo }: {
           ? { selfRating: rating, lines: parsePredictedLines(answer), ...(why.trim() ? { why: why.trim() } : {}), actualOutput: await realOutput(item.code ?? "") }
           : { selfRating: rating, text: answer });
         setAnswer(""); setWhy(""); setRating(null);
-        onDone("Answer saved.");
+        onDone("Answer saved");
         return;
       }
       const body = item.mode === "predict"
         ? { type: "answer", assessmentId: assessment.id, itemIndex: index, selfRating: rating, response: { lines: parsePredictedLines(answer), ...(why.trim() ? { why: why.trim() } : {}) }, actualOutput: await realOutput(item.code ?? "") }
         : { type: "answer", assessmentId: assessment.id, itemIndex: index, selfRating: rating, response: { text: answer } };
       await post("/api/lab/attempts", body);
-      onDone("Answer graded.");
+      onDone("Graded");
     } catch (error) {
-      setProblem(error instanceof Error ? error.message : "Could not submit.");
+      setProblem(error instanceof Error ? error.message : "Couldn't submit. Try again");
     } finally {
       setBusy(false);
     }
@@ -133,7 +133,7 @@ export function Question({ assessment, index, onDone, heading, submitTo }: {
 
   return (
     <article className="rounded-xl border border-border p-5">
-      <p className={label}>{heading ?? `QUESTION ${index + 1} OF ${assessment.items.length}`} · {modeWords[item.mode].toUpperCase()}</p>
+      <p className={label}>{heading ?? `Question ${index + 1} of ${assessment.items.length}`} · {modeWords[item.mode]}</p>
       <div className="mt-2"><Markdown text={item.prompt} /></div>
       {item.code && <div className="mt-3"><CodeBlock code={item.code} label={`Code for question ${index + 1}`} /></div>}
       {item.answered ? (
@@ -146,12 +146,12 @@ export function Question({ assessment, index, onDone, heading, submitTo }: {
           <Confidence value={rating} onChange={setRating} />
           {item.mode === "predict" ? <PredictInputs lines={answer} why={why} onLines={setAnswer} onWhy={setWhy} tall /> : (
             <label className="mt-4 block">
-              <span className="mb-2 block text-sm font-semibold">Your answer</span>
+              <span className="mb-2 block text-sm font-semibold">Answer</span>
               <textarea className={cn(textarea, "min-h-[130px]")} value={answer} onChange={(event) => setAnswer(event.target.value)} />
             </label>
           )}
           {problem && <p className="mt-3 rounded-lg bg-muted px-4 py-3 text-sm" role="alert">{problem}</p>}
-          <Button type="button" className="mt-3" disabled={busy || !answer.trim()} onClick={() => void submit()}>{busy ? "Grading..." : "Submit answer"}</Button>
+          <Button type="button" className="mt-3" disabled={busy || !answer.trim()} onClick={() => void submit()}>{busy ? "Grading…" : "Submit"}</Button>
         </>
       )}
     </article>
@@ -175,8 +175,8 @@ export function PracticePredict({ lessonId, index, item, result, onDone }: {
     try {
       await post("/api/lab/attempts", { type: "practice", lessonId, practiceIndex: index, lines: parsePredictedLines(answer), why, actualOutput: await realOutput(item.code) });
       setRetrying(false);
-      onDone("Practice checked.");
-    } catch (error) { setProblem(error instanceof Error ? error.message : "Could not check."); }
+      onDone("Checked");
+    } catch (error) { setProblem(error instanceof Error ? error.message : "Couldn't check. Try again"); }
     finally { setBusy(false); }
   }
   function tryAgain() {
@@ -200,7 +200,7 @@ export function PracticePredict({ lessonId, index, item, result, onDone }: {
           <PredictInputs lines={answer} why={why} onLines={setAnswer} onWhy={setWhy} tall />
           {problem && <p className="mt-2 text-sm" role="alert">{problem}</p>}
           <div className="mt-3 flex flex-wrap gap-2">
-            <Button type="button" disabled={busy || !answer.trim()} onClick={() => void check()}>{busy ? "Running..." : "Check by running it"}</Button>
+            <Button type="button" disabled={busy || !answer.trim()} onClick={() => void check()}>{busy ? "Running…" : "Run to check"}</Button>
             {retrying && <Button type="button" variant="ghost" disabled={busy} onClick={() => setRetrying(false)}>Cancel</Button>}
           </div>
         </>

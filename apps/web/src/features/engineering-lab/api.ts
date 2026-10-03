@@ -9,13 +9,13 @@ export async function labRoute(request: Request, handler: (session: Session) => 
   if (options.write && !hasValidOrigin(request)) return NextResponse.json({ error: messages.invalidOrigin }, { status: 403 });
   const session = await getSession();
   if (!session) return NextResponse.json({ error: messages.signedOut }, { status: 401 });
-  if (options.ai && !process.env.OPENAI_API_KEY) return NextResponse.json({ error: "The AI roles are not configured yet." }, { status: 503 });
+  if (options.ai && !process.env.OPENAI_API_KEY) return NextResponse.json({ error: "Engineering Lab AI isn't set up" }, { status: 503 });
   try {
     return NextResponse.json(await handler(session), { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     if (error instanceof LabInputError) return NextResponse.json({ error: error.message }, { status: error.status });
     console.error("engineering-lab route failed", error instanceof Error ? error.message : error);
-    return NextResponse.json({ error: options.ai ? "The AI step failed. Nothing was saved; try again." : "Something went wrong." }, { status: 502 });
+    return NextResponse.json({ error: options.ai ? "AI step failed. Nothing saved. Try again" : "Something went wrong. Try again" }, { status: 502 });
   }
 }
 

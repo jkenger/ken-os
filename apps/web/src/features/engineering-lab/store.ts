@@ -82,7 +82,7 @@ export async function generationsToday(userId: string) {
 export async function assertBudget(userId: string, needed = 1) {
   const used = await generationsToday(userId);
   if (used + needed > DAILY_GENERATION_LIMIT) {
-    throw new LabInputError(`Today's limit of ${DAILY_GENERATION_LIMIT} AI generations is used up. It resets at midnight UTC.`, 429);
+    throw new LabInputError(`Out of AI uses for today (${DAILY_GENERATION_LIMIT}). Resets at midnight UTC`, 429);
   }
 }
 
@@ -297,9 +297,9 @@ export interface AnswerInput {
 
 export async function submitAnswer(userId: string, input: AnswerInput) {
   const [assessment] = await db().select().from(labAssessments).where(and(eq(labAssessments.id, input.assessmentId), eq(labAssessments.userId, userId))).limit(1);
-  if (!assessment) throw new LabInputError("Question set not found.", 404);
+  if (!assessment) throw new LabInputError("Question set not found. Reload the page", 404);
   const item = assessment.items[input.itemIndex];
-  if (!item) throw new LabInputError("Question not found.", 404);
+  if (!item) throw new LabInputError("Question not found. Reload the page", 404);
   if (!Number.isInteger(input.selfRating) || input.selfRating < 1 || input.selfRating > 5) throw new LabInputError("Rate how sure you are from 1 to 5 before answering.");
   const [existing] = await db().select({ id: labAttempts.id }).from(labAttempts)
     .where(and(eq(labAttempts.assessmentId, assessment.id), eq(labAttempts.itemIndex, input.itemIndex))).limit(1);
@@ -313,7 +313,7 @@ export async function submitAnswer(userId: string, input: AnswerInput) {
   } else {
     const answer = input.response.text?.trim() ?? "";
     if (answer.length < 10) throw new LabInputError("Write at least a sentence.");
-    if (!process.env.OPENAI_API_KEY) throw new LabInputError("The grader is not configured yet.", 503);
+    if (!process.env.OPENAI_API_KEY) throw new LabInputError("Grader isn't set up", 503);
     grade = await gradeAnswer(requireTopic(assessment.topicId), item, answer);
   }
 
@@ -331,7 +331,7 @@ export async function submitAnswer(userId: string, input: AnswerInput) {
 
 export async function submitPractice(userId: string, input: { lessonId: string; practiceIndex: number; lines: string[]; why?: string; actualOutput: string[] }) {
   const [lesson] = await db().select().from(labLessons).where(and(eq(labLessons.id, input.lessonId), eq(labLessons.userId, userId))).limit(1);
-  if (!lesson) throw new LabInputError("Lesson not found.", 404);
+  if (!lesson) throw new LabInputError("Lesson not found. Reload the page", 404);
   const item = lesson.snapshot.practice[input.practiceIndex];
   if (!item || item.kind !== "predict") throw new LabInputError("Only predict practice is recorded.");
   // Once a practice prediction is right, more attempts only add duplicate history.

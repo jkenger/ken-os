@@ -43,7 +43,7 @@ export function chapterInfo(chapterId: string, added: AddedChapter[] = []) {
 
 async function ownedRun(userId: string, runId: string) {
   const [run] = await db().select().from(labAssessmentRuns).where(and(eq(labAssessmentRuns.id, runId), eq(labAssessmentRuns.userId, userId))).limit(1);
-  if (!run) throw new LabInputError("Assessment not found.", 404);
+  if (!run) throw new LabInputError("Assessment not found. Reload the page", 404);
   return run;
 }
 
@@ -138,7 +138,7 @@ export interface ScreenAnswerInput {
 /** Grades a screening answer. Screening never proves a topic; it only estimates the chapter's depth. */
 export async function submitScreenAnswer(userId: string, input: ScreenAnswerInput) {
   const [screen] = await db().select().from(labChapterScreens).where(and(eq(labChapterScreens.id, input.screenId), eq(labChapterScreens.userId, userId))).limit(1);
-  if (!screen) throw new LabInputError("Question not found.", 404);
+  if (!screen) throw new LabInputError("Question not found. Reload the page", 404);
   if (screen.answeredAt) throw new LabInputError("This question already has an answer.", 409);
   if (!Number.isInteger(input.selfRating) || input.selfRating < 1 || input.selfRating > 5) throw new LabInputError("Rate how sure you are from 1 to 5 before answering.");
   const answer = input.text.trim();
