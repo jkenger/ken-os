@@ -2,6 +2,7 @@ import { hasValidOrigin } from "@/lib/origin";
 import { memoryResponse, readMemoryJson } from "@/features/project-memory/api";
 import { MemoryInputError, parseDecisionDraft, parseReceiptDraft } from "@/features/project-memory/contract";
 import { authorizeMemoryCredential, getMemoryOverview, submitDecision, submitReceipt } from "@/features/project-memory/store";
+import { messages } from "@/lib/messages";
 
 export const runtime = "nodejs";
 
@@ -23,7 +24,7 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   return memoryResponse(async () => {
-    if (!hasValidOrigin(request)) throw new MemoryInputError("Invalid origin.", 403);
+    if (!hasValidOrigin(request)) throw new MemoryInputError(messages.invalidOrigin, 403);
     const userId = await authorizeMemoryCredential(request);
     const input = await readMemoryJson(request);
     if (!input || typeof input !== "object" || Array.isArray(input)) throw new MemoryInputError("Invalid draft.");

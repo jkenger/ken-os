@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 import { hasValidOrigin } from "@/lib/origin";
 import { getSession } from "@/lib/session";
 import { MemoryInputError } from "./contract";
+import { messages } from "@/lib/messages";
 
 export async function browserOwner(request: Request): Promise<string> {
-  if (!hasValidOrigin(request)) throw new MemoryInputError("Invalid origin.", 403);
+  if (!hasValidOrigin(request)) throw new MemoryInputError(messages.invalidOrigin, 403);
   const session = await getSession();
-  if (!session) throw new MemoryInputError("Sign in required.", 401);
+  if (!session) throw new MemoryInputError(messages.signedOut, 401);
   return session.userId;
 }
 
@@ -16,7 +17,7 @@ export async function readMemoryJson(request: Request): Promise<unknown> {
   const text = await request.text();
   if (text.length > 32_768) throw new MemoryInputError("Memory draft is too large.", 413);
   try { return JSON.parse(text) as unknown; }
-  catch { throw new MemoryInputError("Invalid JSON."); }
+  catch { throw new MemoryInputError(messages.invalidJson); }
 }
 
 export async function memoryResponse<T>(operation: () => Promise<T>) {

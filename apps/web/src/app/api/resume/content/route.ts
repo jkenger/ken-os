@@ -3,13 +3,14 @@ import { DriveError, getDriveFile, getResumeBytes } from "@ken-os/drive";
 import { getGoogleAccessToken } from "@/lib/google";
 import { getSelectedResume } from "@/lib/resume";
 import { getSession } from "@/lib/session";
+import { messages } from "@/lib/messages";
 
 export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   const session = await getSession();
   if (!session)
-    return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+    return NextResponse.json({ error: messages.signedOut }, { status: 401 });
   const selection = await getSelectedResume(session.userId);
   if (!selection)
     return NextResponse.json(

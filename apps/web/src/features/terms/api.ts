@@ -2,12 +2,13 @@ import { NextResponse } from "next/server";
 import { hasValidOrigin } from "@/lib/origin";
 import { getSession, type Session } from "@/lib/session";
 import { TermInputError } from "./store";
+import { messages } from "@/lib/messages";
 
 /** Owner session always, origin check on writes, plain errors out. Same guard as the Engineering Lab routes. */
 export async function termsRoute(request: Request, handler: (session: Session, body: Record<string, unknown>) => Promise<unknown>, options: { write: boolean }) {
-  if (options.write && !hasValidOrigin(request)) return NextResponse.json({ error: "Invalid origin." }, { status: 403 });
+  if (options.write && !hasValidOrigin(request)) return NextResponse.json({ error: messages.invalidOrigin }, { status: 403 });
   const session = await getSession();
-  if (!session) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+  if (!session) return NextResponse.json({ error: messages.signedOut }, { status: 401 });
   try {
     const body = request.method === "POST" ? await request.json().catch(() => null) : {};
     if (!body || typeof body !== "object" || Array.isArray(body)) throw new TermInputError("Expected a JSON object.");
