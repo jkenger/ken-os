@@ -10,9 +10,9 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
   const session = await getSession();
   if (!session) return NextResponse.json({ error: messages.signedOut }, { status: 401 });
   const { id } = await params;
-  if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: "Invalid skill ID." }, { status: 400 });
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: "Skill not found. Reload the page" }, { status: 400 });
   const skill = await getSkill(session.userId, id);
-  if (!skill) return NextResponse.json({ error: "Skill version not found." }, { status: 404 });
+  if (!skill) return NextResponse.json({ error: "Skill not found. Reload the page" }, { status: 404 });
 
   const format = new URL(request.url).searchParams.get("format") ?? "zip";
   if (format !== "zip" && format !== "md") {
@@ -33,6 +33,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       },
     });
   } catch {
-    return NextResponse.json({ error: "Could not export this skill." }, { status: 500 });
+    return NextResponse.json({ error: "Couldn't export. Try again" }, { status: 500 });
   }
 }

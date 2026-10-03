@@ -23,12 +23,12 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
       await navigator.clipboard.writeText(skill.files["SKILL.md"]);
       setCopyStatus({
         id: skill.id,
-        message: `Copied ${skill.name} v${skill.version} SKILL.md.`,
+        message: "Copied SKILL.md",
       });
     } catch {
       setCopyStatus({
         id: skill.id,
-        message: "Could not copy. Download SKILL.md instead.",
+        message: "Couldn't copy. Download SKILL.md instead",
       });
     }
   }
@@ -49,15 +49,15 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
         body: form,
       });
       const data = (await response.json()) as { error?: string; name?: string };
-      if (!response.ok) throw new Error(data.error ?? "Upload failed.");
+      if (!response.ok) throw new Error(data.error ?? "Upload failed. Try again");
       setMessage(
-        `${data.name ?? "Skill"} saved. Review it below before enabling.`,
+        `Added ${data.name ?? "skill"} · Off`,
       );
       setFile(null);
       input.value = "";
       router.refresh();
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : "Upload failed.");
+      setMessage(error instanceof Error ? error.message : "Upload failed. Try again");
     } finally {
       setBusy(false);
     }
@@ -77,14 +77,14 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
       );
       const data = (await response.json()) as { error?: string };
       if (!response.ok)
-        throw new Error(data.error ?? "Could not update skill.");
+        throw new Error(data.error ?? "Couldn't update. Try again");
       setMessage(
-        `${skill.name} v${skill.version} ${skill.enabled ? "disabled" : "enabled"}.`,
+        `${skill.name} v${skill.version} ${skill.enabled ? "off" : "on"}`,
       );
       router.refresh();
     } catch (error) {
       setMessage(
-        error instanceof Error ? error.message : "Could not update skill.",
+        error instanceof Error ? error.message : "Couldn't update. Try again",
       );
     } finally {
       setBusy(false);
@@ -95,12 +95,10 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
     <div className="grid items-start gap-6 xl:grid-cols-[minmax(300px,0.8fr)_minmax(400px,1.2fr)]">
       <section>
         <Card className="[--card-spacing:--spacing(6)]"><CardContent>
-        <p className="mb-3 text-[11px] font-bold tracking-[0.16em] text-muted-foreground">ADD A SKILL</p>
-        <h2 className="font-display text-2xl font-semibold tracking-[-0.04em]">Upload instructions.</h2>
+        <h2 className="font-display text-2xl font-semibold tracking-[-0.04em]">Add skill</h2>
         <p className="mt-3 text-base leading-6 text-muted-foreground">
-          Use a standalone <code>SKILL.md</code>, or a ZIP with{" "}
-          <code>SKILL.md</code> and Markdown files under{" "}
-          <code>references/</code>.
+          <code>SKILL.md</code>, or a ZIP with <code>SKILL.md</code> and{" "}
+          <code>references/*.md</code>
         </p>
         <form className="mt-7 grid gap-3" onSubmit={upload}>
           <label className="text-xs font-semibold" htmlFor="skill-bundle">Skill file</label>
@@ -113,13 +111,12 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
             onChange={(event) => setFile(event.target.files?.[0] ?? null)}
           />
           <Button className="h-10 justify-self-start px-4" type="submit" disabled={!file || busy}>
-            {busy ? "Working…" : "Upload skill"}
+            {busy ? "Working…" : "Add skill"}
           </Button>
         </form>
         <p className="mt-5 text-xs leading-5 text-muted-foreground">
-          Uploads are private and disabled by default. Do not include
-          credentials. Scripts, binary assets, and external tool permissions are
-          not supported.
+          Off until you turn it on. Markdown only: no scripts, binaries or
+          credentials
         </p>
         {message && (
           <p className="mt-4 rounded-lg bg-muted p-3 text-sm" role="status">
@@ -129,20 +126,20 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
         </CardContent></Card>
       </section>
       <section className="grid gap-4">
-        <div className="flex items-center justify-between text-[11px] font-bold tracking-[0.14em] text-muted-foreground">
-          <span>YOUR SKILLS</span>
-          <span>
-            {skills.length} VERSION{skills.length === 1 ? "" : "S"}
-          </span>
-        </div>
+        {skills.length > 0 && (
+          <p className="text-xs text-muted-foreground">
+            {skills.length} version{skills.length === 1 ? "" : "s"}
+          </p>
+        )}
         {skills.length === 0 ? (
           <Card className="[--card-spacing:--spacing(6)]"><CardContent>
-            <h2 className="font-display text-xl font-semibold tracking-[-0.04em]">No skills yet.</h2>
+            <h2 className="font-display text-xl font-semibold tracking-[-0.04em]">No skills yet</h2>
             <p className="mt-3 text-base leading-6 text-muted-foreground">
-              Upload a resume-related skill to guide the current assistant. The
-              hosted MVP skill can be uploaded to test the library, but it is
-              not relevant to resume questions.
+              Markdown instructions the resume assistant can follow
             </p>
+            <Button asChild variant="outline" className="mt-4 h-9 px-3">
+              <label htmlFor="skill-bundle" className="cursor-pointer">Add skill</label>
+            </Button>
           </CardContent></Card>
         ) : (
           skills.map((skill) => (
@@ -153,9 +150,9 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
                   <span className="truncate text-[11px] font-bold tracking-[0.1em] text-muted-foreground">{skill.slug} / v{skill.version}</span>
                 </div>
                 <span
-                  className={`shrink-0 rounded-md px-2 py-1 text-[10px] font-bold tracking-[0.1em] ${skill.enabled ? "bg-secondary text-foreground" : "bg-background text-muted-foreground"}`}
+                  className={`shrink-0 rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-[0.1em] ${skill.enabled ? "bg-secondary text-foreground" : "bg-background text-muted-foreground"}`}
                 >
-                  {skill.enabled ? "ENABLED" : "DISABLED"}
+                  {skill.enabled ? "On" : "Off"}
                 </span>
               </div>
               <h2 className="font-display text-base font-semibold leading-6 tracking-[-0.035em]">{skill.name}</h2>
@@ -167,12 +164,10 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
               </p>
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
                 <details className="group min-w-[min(100%,320px)]">
-                  <DisclosureSummary className="text-xs font-semibold">Review &amp; export</DisclosureSummary>
+                  <DisclosureSummary className="text-xs font-semibold">Files and export</DisclosureSummary>
                   <div className="mt-4 max-w-xl">
                     <p className="text-xs leading-5 text-muted-foreground">
-                      Exporting {skill.name} v{skill.version}. This is a copy of
-                      the stored source; it does not change which version is
-                      enabled.
+                      Doesn&apos;t change which version is on
                     </p>
                     <ul className="my-4 list-disc break-all pl-5 text-xs leading-6 text-muted-foreground">
                       {Object.keys(skill.files)
@@ -224,7 +219,7 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
                   disabled={busy}
                   onClick={() => void toggle(skill)}
                 >
-                  {skill.enabled ? "Disable" : "Enable for resume agent"}
+                  {skill.enabled ? "Turn off" : "Turn on"}
                 </Button>
               </div>
             </CardContent></Card>

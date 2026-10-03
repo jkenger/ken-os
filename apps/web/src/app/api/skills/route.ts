@@ -12,10 +12,10 @@ export async function POST(request: Request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: messages.signedOut }, { status: 401 });
   const contentLength = Number(request.headers.get("content-length") ?? 0);
-  if (contentLength > 600 * 1024) return NextResponse.json({ error: "Upload is too large." }, { status: 413 });
+  if (contentLength > 600 * 1024) return NextResponse.json({ error: "Upload failed. Max size is 512 KB" }, { status: 413 });
   const form = await request.formData().catch(() => null);
   const file = form?.get("bundle");
-  if (!(file instanceof File)) return NextResponse.json({ error: "Choose SKILL.md or a ZIP bundle." }, { status: 400 });
+  if (!(file instanceof File)) return NextResponse.json({ error: "Choose a SKILL.md or ZIP file" }, { status: 400 });
   try {
     const bundle = await parseSkillBundle(file.name, Buffer.from(await file.arrayBuffer()));
     const id = await saveSkill(session.userId, bundle);
@@ -24,6 +24,6 @@ export async function POST(request: Request) {
     if (error instanceof SkillBundleError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
-    return NextResponse.json({ error: "Could not save this skill." }, { status: 500 });
+    return NextResponse.json({ error: "Couldn't add this skill. Try again" }, { status: 500 });
   }
 }
