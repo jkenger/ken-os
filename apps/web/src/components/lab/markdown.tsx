@@ -1,4 +1,5 @@
 import { Fragment, type ReactNode } from "react";
+import { CodeEditor } from "@/components/ui/code-editor";
 
 // A deliberately small Markdown renderer for AI-written lesson text: paragraphs, lists, code blocks, inline code,
 // bold and italics. It builds React elements only, so model output can never inject HTML.
@@ -21,8 +22,8 @@ function inline(text: string, keyPrefix: string): ReactNode[] {
   return parts;
 }
 
-export function CodeBlock({ code }: { code: string }) {
-  return <pre className="overflow-x-auto rounded-lg border border-border bg-muted/60 p-4 font-mono text-[13px] leading-5"><code>{code.replace(/\n$/, "")}</code></pre>;
+export function CodeBlock({ code, label = "Code" }: { code: string; label?: string }) {
+  return <CodeEditor value={code.replace(/\n$/, "")} readOnly label={label} />;
 }
 
 export function Markdown({ text }: { text: string }) {

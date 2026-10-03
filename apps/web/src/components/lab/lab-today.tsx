@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button, ButtonEndIcon } from "@/components/ui/button";
+import { Pill } from "@/components/ui/pill";
 import { findTopic, topicMap } from "@/features/engineering-lab/curriculum";
 import type { TodayView } from "@/features/engineering-lab/store";
 import { cn } from "@/lib/utils";
@@ -20,7 +21,7 @@ export function LabHeader({ eyebrow, title, intro, aside }: { eyebrow: string; t
 }
 
 export function StatusTag({ value, children }: { value: string; children: React.ReactNode }) {
-  return <span className={cn("inline-flex h-6 shrink-0 items-center rounded-md px-2 text-xs font-semibold", toneFor(value))}>{children}</span>;
+  return <Pill tone={toneFor(value)}>{children}</Pill>;
 }
 
 export function LabToday({ email, today }: { email: string; today: TodayView }) {

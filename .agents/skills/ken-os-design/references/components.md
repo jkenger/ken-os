@@ -1,6 +1,6 @@
 # Components — repeated surfaces and actions
 
-Version: 0.1.0-working.5 · working / not yet approved. Adapt anatomy to the target product rather than copying Ken OS content.
+Version: 0.1.0-working.6 · working / not yet approved. Adapt anatomy to the target product rather than copying Ken OS content.
 
 ## Component reuse
 

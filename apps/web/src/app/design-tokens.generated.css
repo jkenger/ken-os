@@ -8,11 +8,17 @@
   --primary-foreground: #fffefb;
   --muted: #f4f1eb;
   --secondary: #edeae4;
-  --muted-foreground: #766f66;
+  --muted-foreground: #6e675e;
   --border: #ddd9d2;
   --input: #d5d0c8;
   --ring: #726a5e;
   --destructive: #bd3434;
+  --status-solid: #2d6a45;
+  --status-solid-surface: #e5efe7;
+  --status-partial: #7a5710;
+  --status-partial-surface: #f5ecd6;
+  --status-gap: #9a2f2b;
+  --status-gap-surface: #f6e2df;
   --card: var(--background);
   --card-foreground: var(--foreground);
   --popover: var(--background);

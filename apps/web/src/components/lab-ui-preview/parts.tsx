@@ -1,36 +1,15 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { BookmarkCheck, BookmarkPlus, Check, CircleDashed, ExternalLink, Minus, Plus, X } from "lucide-react";
-import { EditorState } from "@codemirror/state";
-import { EditorView, basicSetup } from "codemirror";
-import { javascript } from "@codemirror/lang-javascript";
 import { Button } from "@/components/ui/button";
+import { Pill, type PillTone as Tone } from "@/components/ui/pill";
 import { cn } from "@/lib/utils";
 import { lookup, savedTerms, type MockTerm } from "./mock-data";
 
-// Proposed lab tokens. Measured on the Ken OS background (#fffefb) and on their own tint: every pair is at least 5.4:1.
-// When this is built for real they move into features/design-system/contract.ts.
-export const labTokens = {
-  "--lab-solid": "#2d6a45", "--lab-solid-bg": "#e5efe7",
-  "--lab-partial": "#7a5710", "--lab-partial-bg": "#f5ecd6",
-  "--lab-gap": "#9a2f2b", "--lab-gap-bg": "#f6e2df",
-} as CSSProperties;
-
-export type Tone = "solid" | "partial" | "gap" | "neutral" | "quiet";
-
-const toneClass: Record<Tone, string> = {
-  solid: "bg-(--lab-solid-bg) text-(--lab-solid)",
-  partial: "bg-(--lab-partial-bg) text-(--lab-partial)",
-  gap: "bg-(--lab-gap-bg) text-(--lab-gap)",
-  neutral: "bg-muted text-foreground",
-  quiet: "border border-dashed border-input text-foreground",
-};
-
-/** A status label. Colour adds meaning but never carries it alone: the words and icon always say the same thing. */
-export function Pill({ tone, children, icon }: { tone: Tone; children: ReactNode; icon?: ReactNode }) {
-  return <span className={cn("inline-flex h-6 shrink-0 items-center gap-1 rounded-md px-2 text-xs font-semibold", toneClass[tone])}>{icon}{children}</span>;
-}
+// The status colours, Pill and CodeEditor are now shared Ken OS parts; the mockups reuse them.
+export { Pill, type PillTone as Tone } from "@/components/ui/pill";
+export { CodeEditor } from "@/components/ui/code-editor";
 
 export const eyebrow = "text-[11px] font-bold tracking-[0.15em] text-muted-foreground";
 
@@ -51,7 +30,7 @@ export function StepBar({ steps, active, suggested, onSelect }: { steps: Step[];
               <button type="button" onClick={() => onSelect(step.id)} aria-current={isActive ? "step" : undefined}
                 className={cn("flex h-full w-full items-start gap-3 border-b-2 px-4 py-3 text-left transition-colors hover:bg-muted/60", isActive ? "border-foreground" : "border-transparent")}>
                 <span className={cn("mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold",
-                  step.state === "done" ? "bg-(--lab-solid-bg) text-(--lab-solid)" : isActive ? "bg-primary text-primary-foreground" : "border border-input text-foreground")}>
+                  step.state === "done" ? "bg-status-solid-surface text-status-solid" : isActive ? "bg-primary text-primary-foreground" : "border border-input text-foreground")}>
                   {step.state === "done" ? <Check size={13} aria-label="Done" /> : index + 1}
                 </span>
                 <span className="min-w-0">
@@ -105,8 +84,8 @@ export function PredictionDiff({ actual, answer }: { actual: string[]; answer: s
       <p className="text-sm font-semibold">Real output against yours</p>
       <ol className="mt-2 overflow-hidden rounded-lg border border-border font-mono text-[13px] leading-6">
         {rows.map((row, index) => (
-          <li key={index} className={cn("flex items-center gap-3 px-3", row.kind === "missing" && "bg-(--lab-gap-bg)", row.kind === "extra" && "bg-(--lab-partial-bg)")}>
-            <span className="w-4 shrink-0" aria-hidden="true">{row.kind === "match" ? <Check size={13} className="text-(--lab-solid)" /> : row.kind === "missing" ? <Minus size={13} /> : <Plus size={13} />}</span>
+          <li key={index} className={cn("flex items-center gap-3 px-3", row.kind === "missing" && "bg-status-gap-surface", row.kind === "extra" && "bg-status-partial-surface")}>
+            <span className="w-4 shrink-0" aria-hidden="true">{row.kind === "match" ? <Check size={13} className="text-status-solid" /> : row.kind === "missing" ? <Minus size={13} /> : <Plus size={13} />}</span>
             <span className="flex-1">{row.text}</span>
             {row.kind !== "match" && <span className="font-sans text-xs font-semibold">{diffWords[row.kind][moved(row) ? "moved" : "alone"]}</span>}
           </li>
@@ -139,42 +118,6 @@ export function RubricChecklist({ items }: { items: { point: string; result: key
       </ul>
     </div>
   );
-}
-
-// ---------- Code editor ----------
-
-const kenTheme = EditorView.theme({
-  "&": { fontSize: "13px", backgroundColor: "var(--background)", color: "var(--foreground)" },
-  ".cm-content": { fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace", padding: "10px 0" },
-  ".cm-gutters": { backgroundColor: "var(--muted)", color: "var(--muted-foreground)", border: "none" },
-  ".cm-activeLine": { backgroundColor: "color-mix(in oklch, var(--muted), transparent 40%)" },
-  ".cm-activeLineGutter": { backgroundColor: "var(--secondary)", color: "var(--foreground)" },
-  "&.cm-focused": { outline: "none" },
-});
-
-/** CodeMirror 6, used for both writing and reading code so the two look the same. */
-export function CodeEditor({ value, readOnly = false, onChange, minHeight = 0, label }: { value: string; readOnly?: boolean; onChange?: (value: string) => void; minHeight?: number; label: string }) {
-  const host = useRef<HTMLDivElement>(null);
-  const change = useRef(onChange);
-  change.current = onChange;
-  useEffect(() => {
-    if (!host.current) return;
-    const view = new EditorView({
-      parent: host.current,
-      state: EditorState.create({
-        doc: value,
-        extensions: [
-          basicSetup, javascript(), kenTheme,
-          EditorView.contentAttributes.of({ "aria-label": label }),
-          EditorState.readOnly.of(readOnly), EditorView.editable.of(!readOnly),
-          EditorView.updateListener.of((update) => { if (update.docChanged) change.current?.(update.state.doc.toString()); }),
-        ],
-      }),
-    });
-    return () => view.destroy();
-    // The editor owns its text after mount; value is only the starting point.
-  }, [readOnly, label]);
-  return <div ref={host} className="overflow-hidden rounded-lg border border-border [&_.cm-editor]:h-full" style={{ minHeight }} />;
 }
 
 // ---------- Term lookup (Ken OS-wide; mocked here) ----------

@@ -1,6 +1,6 @@
 # Foundations — Ken OS visual system
 
-Version: 0.1.0-working.5 · working / not yet approved. These are portable defaults, not a requirement to reproduce Ken OS.
+Version: 0.1.0-working.6 · working / not yet approved. These are portable defaults, not a requirement to reproduce Ken OS.
 
 ## Palette
 
@@ -12,11 +12,17 @@ Version: 0.1.0-working.5 · working / not yet approved. These are portable defau
 | On primary | `#fffefb` | Text on the primary action |
 | Soft surface | `#f4f1eb` | Subtle section separation |
 | Secondary surface | `#edeae4` | Quiet controls and selected navigation |
-| Muted ink | `#766f66` | Supporting copy and metadata |
+| Muted ink | `#6e675e` | Supporting copy and metadata; at least 4.5:1 on every Ken OS surface |
 | Hairline | `#ddd9d2` | Section dividers and card outlines |
 | Input edge | `#d5d0c8` | Form-control boundary |
 | Focus | `#726a5e` | Visible keyboard focus |
 | Destructive | `#bd3434` | Destructive actions and error emphasis |
+| Solid status | `#2d6a45` | Text for solid, proven or passing; always paired with words |
+| Solid tint | `#e5efe7` | Background behind solid status text |
+| Partial status | `#7a5710` | Text for partly there, in progress or close |
+| Partial tint | `#f5ecd6` | Background behind partial status text |
+| Gap status | `#9a2f2b` | Text for gaps, misconceptions or failures |
+| Gap tint | `#f6e2df` | Background behind gap status text |
 
 Keep normal-size text readable; do not lower opacity just to seem understated.
 
