@@ -81,7 +81,7 @@ async function main() {
     assert.equal(view.assessment?.kind, "review", "the topic page shows the newest question set");
     assert.equal(view.assessment?.items[0].answered?.label, "partial", "a wrong value, not a wrong order");
     assert.ok(view.assessment?.items.every((item) => !("expectedOutput" in item) && !("rubric" in item)), "answers and rubrics never reach the browser");
-    assert.deepEqual(view.assessment?.items[0].answered?.answer, { lines: ["true", "true"], text: null, why: "Spread copies everything." }, "the learner's answer survives a reload");
+    assert.deepEqual(view.assessment?.items[0].answered?.answer, { lines: ["true", "true"], text: null, why: "Spread copies everything.", actual: ["false", "true"] }, "the learner's answer survives a reload");
     assert.match(view.assessment?.items[0].answered?.explanation ?? "", /nested reference/, "the explanation appears once answered");
     assert.equal(view.revealedLabs.includes("shallow-copy"), true);
     const plan = (await store.getToday(userId)).plan;
@@ -104,7 +104,7 @@ async function main() {
     const miss = await store.submitPractice(userId, { lessonId, practiceIndex: 0, lines: ["2"], why: "Timers run later.", actualOutput: ["2", "1"] });
     assert.equal(miss.grade.label, "partial");
     const missView = await store.getTopicView(userId, practiceTopic);
-    assert.deepEqual(missView.practiceResults[0].answer, { lines: ["2"], text: null, why: "Timers run later." }, "the practice answer survives a reload");
+    assert.deepEqual(missView.practiceResults[0].answer, { lines: ["2"], text: null, why: "Timers run later.", actual: ["2", "1"] }, "the practice answer survives a reload");
     const hit = await store.submitPractice(userId, { lessonId, practiceIndex: 0, lines: ["2", "1"], actualOutput: ["2", "1"] });
     assert.equal(hit.grade.label, "solid", "a wrong practice answer can be retried");
     await assert.rejects(

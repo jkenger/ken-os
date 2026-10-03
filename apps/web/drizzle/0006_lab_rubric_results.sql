@@ -1,0 +1,1 @@
+ALTER TABLE "lab_attempts" ADD COLUMN "rubric" jsonb;

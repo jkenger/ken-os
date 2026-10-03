@@ -43,6 +43,13 @@
       "when": 1790848389902,
       "tag": "0005_engineering_lab",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790995311309,
+      "tag": "0006_lab_rubric_results",
+      "breakpoints": true
     }
   ]
 }

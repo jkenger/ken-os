@@ -1,6 +1,6 @@
 import { relations, sql } from "drizzle-orm";
 import { boolean, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
-import type { AssessmentItem, AttemptKind, AttemptResponse, CodeRun, Grade, Label, LessonSnapshot, Mode, SourcePacket, Status, TopicProgress } from "@ken-os/domain";
+import type { AssessmentItem, AttemptKind, AttemptResponse, CodeRun, Grade, Label, LessonSnapshot, Mode, RubricResult, SourcePacket, Status, TopicProgress } from "@ken-os/domain";
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -208,6 +208,8 @@ export const labAttempts = pgTable("lab_attempts", {
   misconceptions: jsonb("misconceptions").$type<string[]>().notNull(),
   feedback: text("feedback").notNull(),
   run: jsonb("run").$type<CodeRun>(),
+  /** Per-point results for a written answer, from the grader. Null for code-checked attempts and older answers. */
+  rubric: jsonb("rubric").$type<RubricResult[]>(),
   solutionSeen: boolean("solution_seen").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [

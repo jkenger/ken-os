@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { RotateCcw } from "lucide-react";
-import { parsePredictedLines, type PracticePredict as PracticePredictItem } from "@ken-os/domain";
+import { Check, RotateCcw } from "lucide-react";
+import { parsePredictedLines, type PracticePredict as PracticePredictItem, type RubricResult } from "@ken-os/domain";
 import { Button } from "@/components/ui/button";
 import { Pill } from "@/components/ui/pill";
 import type { SavedAnswer, TopicView } from "@/features/engineering-lab/store";
@@ -10,13 +10,15 @@ import { cn } from "@/lib/utils";
 import { CodeBlock, Markdown } from "../markdown";
 import { label, labelWords, modeWords, toneFor } from "../words";
 import { post, realOutput, textarea } from "./client";
+import { PredictionDiff, RubricChecklist } from "./feedback";
 
 export function Tag({ value, children }: { value: string; children: React.ReactNode }) {
   return <Pill tone={toneFor(value)}>{children}</Pill>;
 }
 
 export function GradeTag({ label: grade, voided }: { label: string; voided: boolean }) {
-  return <Tag value={voided ? "voided" : grade}>{voided ? "Thrown out" : labelWords[grade as keyof typeof labelWords] ?? grade}</Tag>;
+  const solid = grade === "solid" && !voided;
+  return <Pill tone={toneFor(voided ? "voided" : grade)} icon={solid ? <Check size={12} aria-hidden="true" /> : undefined}>{voided ? "Thrown out" : labelWords[grade as keyof typeof labelWords] ?? grade}</Pill>;
 }
 
 function Confidence({ value, onChange }: { value: number | null; onChange: (value: number) => void }) {
@@ -63,6 +65,19 @@ export function YourAnswer({ answer, showLines = true }: { answer: SavedAnswer; 
   );
 }
 
+/** Everything shown after a graded answer: the diff or rubric, your why, and the explanation. */
+function Graded({ answer, explanation, rubric }: { answer: SavedAnswer; explanation?: string | null; rubric?: RubricResult[] | null }) {
+  const predicted = answer.lines;
+  return (
+    <>
+      {predicted && answer.actual ? <PredictionDiff actual={answer.actual} predicted={predicted} /> : <YourAnswer answer={{ ...answer, why: null }} />}
+      {rubric && <RubricChecklist items={rubric} />}
+      {answer.why && <p className="mt-3 whitespace-pre-wrap leading-5"><span className="font-semibold">Your why: </span>{answer.why}</p>}
+      <Explanation text={explanation} />
+    </>
+  );
+}
+
 export function Explanation({ text }: { text?: string | null }) {
   if (!text) return null;
   return <div className="mt-3 rounded-lg bg-muted p-4"><p className="mb-1 text-sm font-semibold">Why it prints this</p><Markdown text={text} /></div>;
@@ -70,7 +85,7 @@ export function Explanation({ text }: { text?: string | null }) {
 
 type AssessmentView = NonNullable<TopicView["assessment"]>;
 
-export function Question({ assessment, index, onDone, children }: { assessment: AssessmentView; index: number; onDone: (message: string) => void; children?: (answered: NonNullable<AssessmentView["items"][number]["answered"]>) => React.ReactNode }) {
+export function Question({ assessment, index, onDone }: { assessment: AssessmentView; index: number; onDone: (message: string) => void }) {
   const item = assessment.items[index];
   const [answer, setAnswer] = useState("");
   const [why, setWhy] = useState("");
@@ -102,7 +117,7 @@ export function Question({ assessment, index, onDone, children }: { assessment: 
       {item.answered ? (
         <div className="mt-4 border-t border-border pt-4 text-sm" role="status">
           <div className="flex flex-wrap items-center gap-3"><GradeTag label={item.answered.label} voided={item.answered.voided} /><p className="leading-5">{item.answered.feedback}</p></div>
-          {children ? children(item.answered) : <><YourAnswer answer={item.answered.answer} /><Explanation text={item.answered.explanation} /></>}
+          <Graded answer={item.answered.answer} explanation={item.answered.explanation} rubric={item.answered.rubric} />
         </div>
       ) : (
         <>
@@ -123,9 +138,8 @@ export function Question({ assessment, index, onDone, children }: { assessment: 
 
 export type PracticeResult = TopicView["practiceResults"][number];
 
-export function PracticePredict({ lessonId, index, item, result, onDone, children }: {
+export function PracticePredict({ lessonId, index, item, result, onDone }: {
   lessonId: string; index: number; item: PracticePredictItem; result?: PracticeResult; onDone: (message: string) => void;
-  children?: (result: PracticeResult) => React.ReactNode;
 }) {
   const [answer, setAnswer] = useState("");
   const [why, setWhy] = useState("");
@@ -156,7 +170,7 @@ export function PracticePredict({ lessonId, index, item, result, onDone, childre
       {result && !retrying ? (
         <div className="mt-5 rounded-xl border border-border p-5 text-sm" role="status">
           <div className="flex flex-wrap items-center gap-3"><GradeTag label={result.label} voided={result.voided} /><p className="leading-5">{result.feedback}</p></div>
-          {children ? children(result) : <><YourAnswer answer={result.answer} /><Explanation text={item.explanation} /></>}
+          <Graded answer={result.answer} explanation={item.explanation} />
           {!solid && <Button type="button" size="sm" variant="outline" className="mt-4" onClick={tryAgain}><RotateCcw size={14} aria-hidden="true" />Try again</Button>}
         </div>
       ) : (

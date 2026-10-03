@@ -4,7 +4,7 @@ import { gradeAnswer, researchTopic, TUTOR_PROMPT_VERSION, ASSESSOR_PROMPT_VERSI
 import {
   computeProgress, finalizeLesson, gradeLabRun, gradePrediction, isPacketUsable, planNext, researchTargetFor, toPublicItem,
   type AssessmentItem, type AttemptKind, type AttemptRecord, type AttemptResponse, type CodeRun, type Grade, type LessonSnapshot,
-  type Mode, type PlanDecision, type PublicItem, type SourcePacket, type TopicProgress,
+  type Mode, type PlanDecision, type PublicItem, type RubricResult, type SourcePacket, type TopicProgress,
 } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { labAssessments, labAttempts, labLessons, labProgress, labProgressChanges, labSolutionReveals, labSourcePackets } from "@/lib/schema";
@@ -227,7 +227,7 @@ async function insertAttempt(tx: Transaction, values: Omit<typeof labAttempts.$i
 }
 
 function gradeFields(grade: Grade) {
-  return { label: grade.label, gradedBy: grade.by, voided: grade.voided ?? false, misconceptions: grade.misconceptions, feedback: grade.feedback, run: grade.run ?? null };
+  return { label: grade.label, gradedBy: grade.by, voided: grade.voided ?? false, misconceptions: grade.misconceptions, feedback: grade.feedback, run: grade.run ?? null, rubric: grade.rubric ?? null };
 }
 
 export interface AnswerInput {
@@ -286,7 +286,7 @@ export async function submitPractice(userId: string, input: { lessonId: string; 
   return db().transaction(async (tx) => {
     const attemptId = await insertAttempt(tx, {
       userId, topicId: lesson.topicId, kind: "lesson", mode: "predict", lessonId: lesson.id, itemIndex: input.practiceIndex,
-      item: item as unknown as Record<string, unknown>, response: { lines: input.lines, ...(why ? { why } : {}) }, selfRating: null, ...gradeFields(grade),
+      item: item as unknown as Record<string, unknown>, response: { lines: input.lines, actual: input.actualOutput, ...(why ? { why } : {}) }, selfRating: null, ...gradeFields(grade),
     });
     const progress = await recompute(tx, userId, lesson.topicId, attemptId);
     return { grade, status: progress.status };
@@ -326,10 +326,12 @@ export interface SavedAnswer {
   lines: string[] | null;
   text: string | null;
   why: string | null;
+  /** What the code really printed, for a prediction. Lets the page show the line-by-line diff. */
+  actual: string[] | null;
 }
 
-function savedAnswer(response: AttemptResponse | null): SavedAnswer {
-  return { lines: response?.lines ?? null, text: response?.text ?? null, why: response?.why ?? null };
+function savedAnswer(response: AttemptResponse | null, fallbackActual: string[] | null = null): SavedAnswer {
+  return { lines: response?.lines ?? null, text: response?.text ?? null, why: response?.why ?? null, actual: response?.actual ?? (response?.lines ? fallbackActual : null) };
 }
 
 export interface TopicView {
@@ -340,7 +342,7 @@ export interface TopicView {
   sourceCheckedAt: string | null;
   assessment: {
     id: string; kind: string; createdAt: string;
-    items: (PublicItem & { answered: null | { label: string; feedback: string; voided: boolean; answer: SavedAnswer; explanation: string | null } })[];
+    items: (PublicItem & { answered: null | { label: string; feedback: string; voided: boolean; answer: SavedAnswer; explanation: string | null; rubric: RubricResult[] | null } })[];
   } | null;
   attempts: { id: string; kind: string; mode: string; label: string; gradedBy: string; voided: boolean; feedback: string; createdAt: string }[];
   revealedLabs: string[];
@@ -370,7 +372,12 @@ export async function getTopicView(userId: string, topicId: string): Promise<Top
   const lessonPacket = lesson ? (await db().select().from(labSourcePackets).where(eq(labSourcePackets.id, lesson.sourcePacketId)).limit(1))[0] : packet;
   const practiceResults: TopicView["practiceResults"] = {};
   for (const attempt of attempts) {
-    if (lesson && attempt.lessonId === lesson.id && attempt.itemIndex !== null) practiceResults[attempt.itemIndex] ??= { label: attempt.label, feedback: attempt.feedback, voided: attempt.voided, answer: savedAnswer(attempt.response) };
+    if (lesson && attempt.lessonId === lesson.id && attempt.itemIndex !== null) {
+      // Older practice answers didn't store the real output; a non-voided one matched the expected output, so that stands in.
+      const practiceItem = lesson.snapshot.practice[attempt.itemIndex];
+      const expected = practiceItem?.kind === "predict" && !attempt.voided ? practiceItem.expectedOutput : null;
+      practiceResults[attempt.itemIndex] ??= { label: attempt.label, feedback: attempt.feedback, voided: attempt.voided, answer: savedAnswer(attempt.response, expected) };
+    }
   }
   return {
     progress,
@@ -388,7 +395,7 @@ export async function getTopicView(userId: string, topicId: string): Promise<Top
           ...toPublicItem(item),
           answered: answer ? {
             label: answer.label, feedback: answer.feedback, voided: answer.voided, answer: savedAnswer(answer.response),
-            explanation: item.mode === "predict" ? item.explanation ?? null : null,
+            explanation: item.mode === "predict" ? item.explanation ?? null : null, rubric: answer.rubric ?? null,
           } : null,
         };
       }),

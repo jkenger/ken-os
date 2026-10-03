@@ -58,6 +58,8 @@ export interface AttemptResponse {
   lines?: string[];
   /** The learner's own reason for a prediction. Saved and shown back, never graded. */
   why?: string;
+  /** For predictions: what the code really printed in the learner's browser. */
+  actual?: string[];
 }
 
 export interface CodeRun {
@@ -74,6 +76,14 @@ export interface Grade {
   run?: CodeRun;
   /** True when the question itself was wrong (for example the Assessor's expected output disagreed with a real run). Never counts. */
   voided?: boolean;
+  /** For written answers: how the answer did on each rubric point, in rubric order. */
+  rubric?: RubricResult[];
+}
+
+export const RUBRIC_RESULTS = ["covered", "partly", "missed"] as const;
+export interface RubricResult {
+  point: string;
+  result: (typeof RUBRIC_RESULTS)[number];
 }
 
 export interface AttemptRecord {

@@ -15,6 +15,7 @@ import { GradeTag, PracticePredict, Question, Tag } from "./topic/answers";
 import { post } from "./topic/client";
 import { Lab, ProbeLab } from "./topic/labs";
 import { LessonReader } from "./topic/learn";
+import { ProvenBanner } from "./topic/feedback";
 import { StepBar } from "./topic/step-bar";
 import { formatDate, kindWords, label, labelWords, modeWords, statusWords } from "./words";
 
@@ -141,6 +142,8 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
   });
   const [step, setStep] = useState<StepId>(initialStep && steps.some((item) => item.id === initialStep) ? initialStep : suggested);
   const stepsTop = useRef<HTMLDivElement>(null);
+  // Shown for three days after the topic turns proven, then it's just the status.
+  const [justProven] = useState(() => progress.status === "VALIDATED" && Boolean(progress.validatedAt) && Date.now() - new Date(progress.validatedAt!).getTime() < 3 * 24 * 60 * 60 * 1000);
 
   useEffect(() => {
     const url = new URL(window.location.href);
@@ -192,6 +195,11 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
           <StepBar steps={steps} active={step} suggested={suggested} onSelect={go} />
         </div>
         {message && <p className="mx-5 mt-5 rounded-lg bg-muted px-4 py-3 text-sm sm:mx-8 lg:mx-10" role="status">{message}</p>}
+        {justProven && (
+          <div className="mx-5 mt-5 sm:mx-8 lg:mx-10">
+            <ProvenBanner title={topic.title} nextReviewAt={progress.nextReviewAt} byCode={topic.prove.filter((mode) => progress.evidence[mode]?.by === "code").length} />
+          </div>
+        )}
 
         <div className="px-5 py-8 sm:px-8 lg:px-10">
           {step === "learn" && (

@@ -45,13 +45,22 @@ export function previewTopic(topicId: string): TopicView {
       id: "preview-assessment", kind: "assessment", createdAt: new Date().toISOString(),
       items: [
         { mode: "predict", prompt: "What does this print, in order?", code: "Promise.resolve().then(() => console.log(\"x\"));\nsetTimeout(() => console.log(\"y\"));\nconsole.log(\"z\");", answered: null },
-        { mode: "explain", prompt: "Explain why a promise callback runs before a zero-delay timer.", code: null, answered: { label: "partial", feedback: "Right that promises are microtasks; you didn't say the queue drains fully before the next task.", voided: false, answer: { lines: null, text: "Promises are microtasks, so they run before timers.", why: null }, explanation: null } },
+        { mode: "explain", prompt: "Explain why a promise callback runs before a zero-delay timer.", code: null, answered: { label: "partial", feedback: "Right that promises are microtasks; you didn't say the queue drains fully before the next task.", voided: false, answer: { lines: null, text: "Promises are microtasks, so they run before timers.", why: null, actual: null }, explanation: null, rubric: [
+          { point: "Promise callbacks are queued as microtasks", result: "covered" },
+          { point: "The microtask queue drains completely when the stack empties", result: "missed" },
+          { point: "A timer callback runs as a separate, later task", result: "partly" },
+        ] } },
+        { mode: "predict", prompt: "What exact lines does this print, and in what order?", code: "function report(label, action) {\n  console.log(label + \" start\");\n  action();\n  console.log(label + \" end\");\n}\nsetTimeout(() => console.log(\"timer\"), 0);\nreport(\"outer\", () => {\n  report(\"inner\", () => console.log(\"body\"));\n});\nconsole.log(\"script end\");", answered: {
+          label: "partial", feedback: "The code printed outer start, inner start, body, inner end, outer end, script end, timer. You predicted outer start, body, outer end, script end, timer.", voided: false, rubric: null,
+          answer: { lines: ["outer start", "body", "outer end", "script end", "timer"], text: null, why: null, actual: ["outer start", "inner start", "body", "inner end", "outer end", "script end", "timer"] },
+          explanation: "`report` is synchronous, so the inner call runs completely inside the outer one. Only the timer waits for a new task.",
+        } },
       ],
     },
     attempts: [],
     revealedLabs: [],
     passedLabs: [],
     reviewDue: false,
-    practiceResults: { 0: { label: "partial", feedback: "The code printed 3, 2, 1. You predicted 3, 1.", voided: false, answer: { lines: ["3", "1"], text: null, why: "The timer was queued first, so it runs first." } } },
+    practiceResults: { 0: { label: "partial", feedback: "The code printed 3, 2, 1. You predicted 3, 1.", voided: false, answer: { lines: ["3", "1"], text: null, why: "The timer was queued first, so it runs first.", actual: ["3", "2", "1"] } } },
   };
 }
