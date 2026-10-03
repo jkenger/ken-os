@@ -109,7 +109,6 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
           <aside className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
             <p className="mb-5 text-[11px] font-bold tracking-[0.16em] text-muted-foreground">CURRENT MODULES</p>
             <div className="space-y-3 text-sm"><p>Resume hub</p><p>Agent skills</p></div>
-            <p className="mt-8 border-t border-border pt-5 text-xs leading-5 text-muted-foreground">Project Memory is not implemented yet.</p>
           </aside>
         </div>
       </div>
