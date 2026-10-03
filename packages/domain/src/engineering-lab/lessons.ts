@@ -24,8 +24,16 @@ export interface LessonSections {
   workedExample: { code: string; walkthrough: string };
 }
 
+/** An optional extra section under the core lesson: an edge case, what happens underneath, or a real bug. */
+export interface DeeperSection {
+  title: string;
+  body: string;
+}
+
 export interface LessonDraft {
   sections: LessonSections;
+  /** Optional, collapsed under the core lesson. Lessons written before tutor-v3 have none. */
+  deeper?: DeeperSection[];
   practice: PracticeItem[];
   citations: { claim: string; sourceUrl: string }[];
   noteSuggestions: string[];
@@ -57,5 +65,6 @@ export function finalizeLesson(
   });
   if (!citations.length) throw new Error("The lesson cited none of its sources.");
   const practice = draft.practice.filter((item) => item.prompt.trim() && (item.kind === "think" ? item.answer.trim() : item.code.trim())).slice(0, 6);
-  return { ...meta, ...draft, practice, citations, noteSuggestions: draft.noteSuggestions.slice(0, 6), rejected };
+  const deeper = (draft.deeper ?? []).filter((item) => item.title.trim() && item.body.trim()).slice(0, 4);
+  return { ...meta, ...draft, deeper, practice, citations, noteSuggestions: draft.noteSuggestions.slice(0, 6), rejected };
 }

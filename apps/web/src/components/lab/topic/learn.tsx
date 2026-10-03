@@ -3,6 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { ExternalLink } from "lucide-react";
 import type { TopicView } from "@/features/engineering-lab/store";
+import { DisclosureSummary } from "@/components/ui/disclosure-summary";
 import { cn } from "@/lib/utils";
 import { CodeBlock, Markdown } from "../markdown";
 import { label } from "../words";
@@ -21,6 +22,23 @@ export function LessonReader({ lesson, sources, sourceCheckedAt, footer }: { les
     { id: "model", title: "Mental model", body: <Markdown text={lesson.sections.mentalModel} />, tone: "panel" },
     { id: "example", title: "Worked example", body: <><CodeBlock code={lesson.sections.workedExample.code} label="Worked example" /><div className="mt-3"><Markdown text={lesson.sections.workedExample.walkthrough} /></div></> },
   ];
+  if (lesson.deeper?.length) {
+    sections.push({
+      id: "deeper", title: "Go deeper", body: (
+        <>
+          <p className="text-sm text-muted-foreground">Optional. Open what you&apos;re curious about.</p>
+          <div className="mt-3 divide-y divide-border border-y border-border">
+            {lesson.deeper.map((item) => (
+              <details key={item.title} className="group py-3">
+                <DisclosureSummary className="text-[15px] font-semibold">{item.title}</DisclosureSummary>
+                <div className="mt-2 pl-6"><Markdown text={item.body} /></div>
+              </details>
+            ))}
+          </div>
+        </>
+      ),
+    });
+  }
   if (lesson.noteSuggestions.length) {
     sections.push({ id: "notes", title: "For your notes", body: <><p className="text-sm text-muted-foreground">Write these up in Obsidian in your own words.</p><ul className="mt-2 list-disc pl-5 text-[15px]">{lesson.noteSuggestions.map((item) => <li key={item}>{item}</li>)}</ul></> });
   }

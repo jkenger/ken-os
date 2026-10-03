@@ -32,6 +32,10 @@ export function previewTopic(topicId: string): TopicView {
         mentalModel: "A task is a meeting; microtasks are the follow-ups you finish before the next meeting starts.",
         workedExample: { code: "console.log(\"A\");\nsetTimeout(() => console.log(\"B\"), 0);\nPromise.resolve().then(() => console.log(\"C\"));\nconsole.log(\"D\");", walkthrough: "A and D are synchronous. C is a microtask. B waits for a new task." },
       },
+      deeper: [
+        { title: "What counts as a task", body: "Timers, I/O callbacks, message events and user input each start a new task. Rendering happens between tasks, which is why a long microtask chain can freeze the page." },
+        { title: "Real bug: the spinner that never clears", body: "A loading flag set inside `setTimeout` and cleared in a `.then` can end up cleared before it is set. Keep both on the same queue." },
+      ],
       practice: [
         { kind: "predict", prompt: "What does this print?", code: "setTimeout(() => console.log(1));\nqueueMicrotask(() => console.log(2));\nconsole.log(3);", expectedOutput: ["3", "2", "1"], explanation: "`3` is synchronous, so it prints first. `queueMicrotask` runs as soon as the stack is empty, before the timer's task." },
         { kind: "think", prompt: "Why can a long synchronous loop freeze a page?", answer: "Nothing else, including rendering, runs until the stack is empty." },
