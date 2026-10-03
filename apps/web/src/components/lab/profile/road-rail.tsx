@@ -54,7 +54,7 @@ export function RoadRail({ steps, weeklyHours }: { steps: RoadmapChapter[]; week
                   <TimelineIndicator className={cn("size-3", index === 0 ? "border-foreground bg-foreground" : "border-foreground/40 bg-background")} />
                   <TimelineTitle className="font-display text-[15px] font-semibold leading-5">{step.title}</TimelineTitle>
                 </TimelineHeader>
-                <TimelineContent>to {depthWords[step.need].toLowerCase()}, about {step.hours} h{step.added ? ", a chapter you added" : ""}</TimelineContent>
+                <TimelineContent>to {depthWords[step.need].toLowerCase()} · ~{step.hours} h{step.added ? " · added by you" : ""}</TimelineContent>
               </TimelineItem>
             );
           })}
