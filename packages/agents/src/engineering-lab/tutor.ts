@@ -2,7 +2,7 @@ import { Agent, getDefaultModel, run } from "@openai/agents";
 import type { BaselineEntry, LessonDraft, SourcePacket, Topic } from "@ken-os/domain";
 import { z } from "zod";
 
-export const TUTOR_PROMPT_VERSION = "tutor-v3";
+export const TUTOR_PROMPT_VERSION = "tutor-v4";
 
 const draftSchema = z.object({
   sections: z.object({
@@ -36,7 +36,7 @@ Sections (Markdown allowed inside each):
 
 deeper: 2 to 4 optional sections the learner opens only if curious, each with a short title and 60 to 150 words (Markdown allowed). Cover what the core lesson skipped: an edge case, what happens underneath, or a real bug this causes in products. Build them only from the packet's claims, and don't repeat the core lesson.
 
-practice: 3 to 5 items. Use "predict" items with self-contained JavaScript that only prints with console.log; expectedOutput is the exact printed lines in order; explanation is 2 to 3 sentences on why it prints that, naming the rule, shown only after they answer. Use "think" items for short reasoning questions with a short answer. Practice is for learning, so it may resemble the worked example.
+practice: 3 to 5 items. Use "predict" items with self-contained JavaScript that only prints with console.log; expectedOutput is the exact printed lines in order; explanation is 2 to 3 sentences on why it prints that, naming the rule, shown only after they answer. Use "think" items for short reasoning questions with a short answer. Practice is for learning, so it may resemble the worked example. A prompt is one plain question; never put code in it, since code goes only in the code field.
 
 citations: tie each key claim in theory to a sourceUrl from the packet. Only use URLs that appear in the packet.
 noteSuggestions: 2 to 4 concept names for the learner's own notes.

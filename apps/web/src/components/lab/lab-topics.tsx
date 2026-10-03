@@ -7,6 +7,7 @@ import { Check, CircleDashed } from "lucide-react";
 import { isKnown, isUnassessed, type TopicMap, type TopicProgress, type Track } from "@ken-os/domain";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/toaster";
 import { Pill } from "@/components/ui/pill";
 import { cn } from "@/lib/utils";
 import { post } from "./topic/client";
@@ -39,7 +40,6 @@ export function LabTopics({ email, map, progress, assessable }: { email: string;
   const [trackId, setTrackId] = useState<Track>(map.tracks[0]?.id ?? "fullstack");
   const [gapsOnly, setGapsOnly] = useState(false);
   const [placing, setPlacing] = useState("");
-  const [problem, setProblem] = useState("");
   const byId = new Map(progress.map((item) => [item.topicId, item]));
   const track = map.tracks.find((item) => item.id === trackId)!;
   const chapters = map.modules.filter((module) => module.track === trackId).map((module) => {
@@ -61,12 +61,12 @@ export function LabTopics({ email, map, progress, assessable }: { email: string;
   const gaps = written.filter((row) => !knownHere(row.progress)).length;
 
   async function place(topicId: string) {
-    setPlacing(topicId); setProblem("");
+    setPlacing(topicId);
     try {
       await post(`/api/lab/topics/${topicId}/assessment`, { kind: "placement" });
       router.push(`/lab/topics/${topicId}?step=check`);
     } catch (error) {
-      setProblem(error instanceof Error ? error.message : "Could not write the placement check.");
+      toast({ tone: "error", title: "Could not write the placement check", description: error instanceof Error ? error.message : undefined });
       setPlacing("");
     }
   }
@@ -98,7 +98,6 @@ export function LabTopics({ email, map, progress, assessable }: { email: string;
           <p className="text-sm"><strong>{proven}</strong> of {total} proven{written.length ? <> · <strong>{gaps}</strong> gaps to close</> : null}</p>
         </div>
         {gapsOnly && <p className="mt-3 rounded-lg bg-muted px-4 py-3 text-sm">Showing only gaps: topics that the baseline, a placement check or a proof hasn&apos;t shown you know. Topics nobody has assessed yet stay, with a placement check.</p>}
-        {problem && <p className="mt-3 rounded-lg bg-muted px-4 py-3 text-sm" role="alert">{problem}</p>}
 
         <div className="mt-6 space-y-9">
           {chapters.map(({ module, rows }, chapterIndex) => {

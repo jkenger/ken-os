@@ -1,6 +1,6 @@
 export const designSystem = {
   name: "Ken OS visual system",
-  version: "0.1.0-working.6",
+  version: "0.1.0-working.7",
   status: "working",
   statusLabel: "Working · not yet approved",
   fonts: {
@@ -49,6 +49,7 @@ export const designSystem = {
     { name: "Cards", summary: "Use the stock shadcn Card surface and standard slots across modules; do not create module-named copies or nested cards.", details: "Keep the established Ken OS density and typography: 16px compact spacing, 16px semibold titles, 14px supporting text, 13px source metadata, and 8px between repeated cards. Compose CardHeader, CardTitle, CardDescription, CardAction, CardContent and CardFooter as needed. Status must be readable as text, not color alone. Custom surface styling remains an open decision." },
     { name: "Feature panels", summary: "Use the same Card or a plain section for task surfaces.", details: "Give roomier task surfaces 24–28px spacing and 15–16px explanatory copy. Do not add a module-specific Card component merely for different content." },
     { name: "Inputs", summary: "Quiet boundary, clear label and obvious focus.", details: "Use 40–44px height, 14px text, warm border and visible focus ring; retain error and disabled states." },
+    { name: "Notifications", summary: "Call toast() after something finishes in the background or saves; keep errors next to the action that failed.", details: "One shared Toaster in the workspace shell: bottom right on desktop, full width on a phone, at most three, newest last. Success and info leave after six seconds, pausing while hovered or focused; errors stay until dismissed. Each has a title, an optional one-line description and at most one action (a button or a Ken OS link). Colour comes from the status tokens and is always paired with an icon and words." },
     { name: "App shell", summary: "Navigation is persistent only when there are real sibling destinations.", details: "A floating 264–280px desktop rail and separate inset main surface; mobile uses an accessible menu. Dividers reach the content frame while text stays padded." },
   ],
   decisions: [

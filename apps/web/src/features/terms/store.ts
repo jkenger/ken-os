@@ -37,18 +37,39 @@ function fromRow(row: typeof kenTerms.$inferSelect): SavedTerm {
   };
 }
 
-/** Explains a selected term. A term already saved is answered from Terms, without an AI call. */
-export async function lookupTerm(userId: string, input: { selection: string; context: string; place: string }): Promise<TermAnswer & { saved: boolean }> {
+/** How long a looked-up answer is reused before the same term is looked up afresh. */
+export const LOOKUP_REUSE_DAYS = 30;
+
+async function isSaved(userId: string, key: string) {
+  const [row] = await db().select({ id: kenTerms.id }).from(kenTerms).where(and(eq(kenTerms.userId, userId), eq(kenTerms.termKey, key))).limit(1);
+  return Boolean(row);
+}
+
+/**
+ * Explains a selected term. A saved term comes from Terms, and a term looked up in the last 30 days reuses that answer;
+ * neither calls the AI or counts toward the daily limit. A fresh answer is stored as soon as it arrives, so it isn't
+ * lost if the browser closed the popover or left the page while waiting.
+ */
+export async function lookupTerm(userId: string, input: { selection: string; context: string; place: string }): Promise<TermAnswer & { saved: boolean; reused: boolean }> {
   const selection = input.selection.trim();
   if (!selection || selection.length > TERM_MAX_LENGTH) throw new TermInputError(`Select a word or short phrase, up to ${TERM_MAX_LENGTH} characters.`);
-  const [existing] = await db().select().from(kenTerms).where(and(eq(kenTerms.userId, userId), eq(kenTerms.termKey, termKey(selection)))).limit(1);
-  if (existing) return { ...fromRow(existing), saved: true };
+  const key = termKey(selection);
+  const [existing] = await db().select().from(kenTerms).where(and(eq(kenTerms.userId, userId), eq(kenTerms.termKey, key))).limit(1);
+  if (existing) {
+    const { term, meaning, source } = fromRow(existing);
+    return { term, meaning, source, saved: true, reused: true };
+  }
+  const since = new Date(Date.now() - LOOKUP_REUSE_DAYS * 24 * 60 * 60 * 1000);
+  const [recent] = await db().select({ answer: kenTermLookups.answer }).from(kenTermLookups)
+    .where(and(eq(kenTermLookups.userId, userId), eq(kenTermLookups.termKey, key), gte(kenTermLookups.createdAt, since)))
+    .orderBy(desc(kenTermLookups.createdAt)).limit(1);
+  if (recent?.answer) return { ...recent.answer, saved: await isSaved(userId, termKey(recent.answer.term)), reused: true };
+
   if (await lookupsToday(userId) >= TERM_LOOKUP_LIMIT) throw new TermInputError(`Today's ${TERM_LOOKUP_LIMIT} lookups are used up. They reset at midnight UTC.`, 429);
   if (!process.env.OPENAI_API_KEY) throw new TermInputError("Term lookup is not configured yet.", 503);
   const { answer, model } = await explainTerm({ selection, context: input.context, place: input.place });
-  await db().insert(kenTermLookups).values({ id: randomUUID(), userId, model });
-  const [savedAlready] = await db().select({ id: kenTerms.id }).from(kenTerms).where(and(eq(kenTerms.userId, userId), eq(kenTerms.termKey, termKey(answer.term)))).limit(1);
-  return { ...answer, saved: Boolean(savedAlready) };
+  await db().insert(kenTermLookups).values({ id: randomUUID(), userId, model, termKey: key, answer });
+  return { ...answer, saved: await isSaved(userId, termKey(answer.term)), reused: false };
 }
 
 /** Saves a term. The browser sends back what the lookup showed; it is checked again here, so a forged link can't be stored. */

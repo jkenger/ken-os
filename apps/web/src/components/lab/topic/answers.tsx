@@ -112,7 +112,7 @@ export function Question({ assessment, index, onDone }: { assessment: Assessment
   return (
     <article className="rounded-xl border border-border p-5">
       <p className={label}>QUESTION {index + 1} OF {assessment.items.length} · {modeWords[item.mode].toUpperCase()}</p>
-      <p className="mt-2 text-[15px] leading-6">{item.prompt}</p>
+      <div className="mt-2"><Markdown text={item.prompt} /></div>
       {item.code && <div className="mt-3"><CodeBlock code={item.code} label={`Code for question ${index + 1}`} /></div>}
       {item.answered ? (
         <div className="mt-4 border-t border-border pt-4 text-sm" role="status">
@@ -165,7 +165,7 @@ export function PracticePredict({ lessonId, index, item, result, onDone }: {
 
   return (
     <div>
-      <p className="text-lg leading-7">{item.prompt}</p>
+      <div className="[&_p]:text-lg [&_p]:leading-7"><Markdown text={item.prompt} /></div>
       <div className="mt-4"><CodeBlock code={item.code} label={`Code for practice ${index + 1}`} /></div>
       {result && !retrying ? (
         <div className="mt-5 rounded-xl border border-border p-5 text-sm" role="status">

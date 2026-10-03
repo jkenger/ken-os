@@ -168,3 +168,14 @@ Verified: `tsc`, `next build`, 80 unit tests, `test:db:lab` (8 checks) and `test
 - A roadmap graph. The Course outline answers "where am I in the whole course" for now; the graph stays in v1 section 8.
 - A dark theme for Ken OS.
 - Writing the content for the unwritten topics. The outline only names them.
+
+## After the first live test (2026-10-03)
+
+The owner tested term lookup on production. What changed:
+
+- **`E` was unreliable.** It re-read the page's selection at the moment the key was pressed, which can come back empty. It now acts on the selection the Explain button is showing, and listens at the window level.
+- **Hover state** on the Explain button, plus a tooltip naming the shortcut.
+- **Loading is visible:** a spinner, two placeholder lines, and "You can close this: the lookup keeps going".
+- **Lookups are background jobs.** A browser-side job store (`features/terms/lookup-jobs.ts`) keeps a lookup running when the popover closes or you move to another Ken OS page; if nothing is watching when it finishes, a notification shows the meaning with Save to Terms. The server stores every answer the moment it arrives (`ken_term_lookups.term_key` and `answer`, migration 0008), so the same term within 30 days is answered instantly, without an AI call or counting toward the limit, even after a reload. No server queue was needed, since a lookup takes seconds.
+- **App-wide notifications:** `components/ui/toaster.tsx` (`toast()` plus one `<Toaster />` in the workspace shell), recorded as a design-system component rule. The lab's inline "saved" messages, Course and Terms now use it; errors about a specific action stay next to that action.
+- **Code in question text:** a practice question showed raw ```` ```js ```` code. Question text now renders as Markdown, and the Tutor (`tutor-v4`) and Assessor (`assessor-v3`) are told to keep code out of it.

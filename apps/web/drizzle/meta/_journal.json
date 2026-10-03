@@ -57,6 +57,13 @@
       "when": 1790996264999,
       "tag": "0007_ken_terms",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1790998669287,
+      "tag": "0008_term_lookup_reuse",
+      "breakpoints": true
     }
   ]
 }
