@@ -43,6 +43,20 @@
       "when": 1790848389902,
       "tag": "0005_engineering_lab",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790995311309,
+      "tag": "0006_lab_rubric_results",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790996264999,
+      "tag": "0007_ken_terms",
+      "breakpoints": true
     }
   ]
 }

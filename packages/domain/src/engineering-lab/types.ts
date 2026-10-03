@@ -15,8 +15,9 @@ export type Status = (typeof STATUSES)[number];
  * lesson: practice inside a lesson.
  * lab: an authored lab run in the code box.
  * assessment / review: Assessor questions, the only kinds that ask for a confidence rating.
+ * placement: Assessor questions for a topic you may already know, asked before any lesson.
  */
-export const ATTEMPT_KINDS = ["baseline", "lesson", "lab", "assessment", "review"] as const;
+export const ATTEMPT_KINDS = ["baseline", "lesson", "lab", "assessment", "review", "placement"] as const;
 export type AttemptKind = (typeof ATTEMPT_KINDS)[number];
 
 export interface PredictItem {
@@ -58,6 +59,8 @@ export interface AttemptResponse {
   lines?: string[];
   /** The learner's own reason for a prediction. Saved and shown back, never graded. */
   why?: string;
+  /** For predictions: what the code really printed in the learner's browser. */
+  actual?: string[];
 }
 
 export interface CodeRun {
@@ -74,6 +77,14 @@ export interface Grade {
   run?: CodeRun;
   /** True when the question itself was wrong (for example the Assessor's expected output disagreed with a real run). Never counts. */
   voided?: boolean;
+  /** For written answers: how the answer did on each rubric point, in rubric order. */
+  rubric?: RubricResult[];
+}
+
+export const RUBRIC_RESULTS = ["covered", "partly", "missed"] as const;
+export interface RubricResult {
+  point: string;
+  result: (typeof RUBRIC_RESULTS)[number];
 }
 
 export interface AttemptRecord {

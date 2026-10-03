@@ -2,7 +2,7 @@
 
 Status: **proposed, awaiting owner review.** Nothing here is built. v0 is live ([as built](engineering-lab-v0.md#as-built-2026-10-01)), and [the handoff](../product/ai-engineering-learning-handoff.md) stays the module's source of truth.
 
-**Update 2026-10-02:** the polish this plan waits for is now defined in [engineering-lab-ui.md](engineering-lab-ui.md) and comes before the steps below. The full-course outline and placement checks from section 8 move up into that work; the roadmap graph stays here.
+**Update 2026-10-02:** the polish this plan waits for is now defined in [engineering-lab-ui.md](engineering-lab-ui.md) and comes before the steps below. The full-course outline and placement checks from section 8 move up into that work; the roadmap graph stays here. **Update 2026-10-03:** that polish is built, including the full outline and placement checks, so v1 starts at step 1 below.
 
 ## The short version
 

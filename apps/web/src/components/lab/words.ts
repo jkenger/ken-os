@@ -34,6 +34,7 @@ export const kindWords: Record<string, string> = {
   lab: "Lab",
   assessment: "Check",
   review: "Review",
+  placement: "Placement check",
 };
 
 export const label = "text-[11px] font-bold tracking-[0.15em] text-muted-foreground";

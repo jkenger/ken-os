@@ -6,7 +6,10 @@ import { ProjectMemoryPreview } from "@/components/project-memory-preview";
 import { DesignSystemWorkspace } from "@/components/design-system-workspace";
 import { LabToday } from "@/components/lab/lab-today";
 import { LabTopic } from "@/components/lab/lab-topic";
-import { findTopic, labsForTopic } from "@/features/engineering-lab/curriculum";
+import { LabTopics } from "@/components/lab/lab-topics";
+import { TermsPage } from "@/components/terms/terms-page";
+import { assessorModes, findTopic, labsForTopic, placeOf, topicMap } from "@/features/engineering-lab/curriculum";
+import { nextStepFromView } from "@/features/engineering-lab/next-step";
 import { previewToday, previewTopic } from "@/features/engineering-lab/preview";
 import { WritingStudioPreview } from "@/components/writing-studio-preview";
 import { LabUiPreview } from "@/components/lab-ui-preview/lab-ui-preview";
@@ -25,11 +28,24 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
     return <ProjectMemoryPreview />;
   }
   if (view === "lab") {
-    return <LabToday email="preview@example.invalid" today={previewToday()} />;
+    const today = previewToday();
+    return <LabToday email="preview@example.invalid" today={today} next={today.plan ? nextStepFromView(today.plan, previewTopic(today.plan.topicId)) : null} />;
+  }
+  if (view === "terms") {
+    const savedAt = new Date().toISOString();
+    return <TermsPage email="preview@example.invalid" preview terms={[
+      { id: "t1", term: "microtask", meaning: "A small job the runtime runs right after the current code finishes and before the next task, such as a promise callback.", source: { title: "MDN: Using microtasks", url: "https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide" }, foundIn: "Engineering Lab · Event loop, tasks and microtasks", foundAt: "/design-preview?view=lab-topic", savedAt },
+      { id: "t2", term: "idempotent", meaning: "Safe to repeat: doing it twice has the same effect as doing it once.", source: null, foundIn: "Engineering Lab · Idempotent create requests", foundAt: "/design-preview?view=lab-topic", savedAt },
+    ]} />;
+  }
+  if (view === "lab-course") {
+    const assessable = topicMap.topics.filter((topic) => assessorModes(topic).length > 0).map((topic) => topic.id);
+    return <LabTopics email="preview@example.invalid" map={topicMap} progress={previewToday().progress} assessable={assessable} />;
   }
   if (view === "lab-topic") {
     const topic = findTopic(topicParam ?? "js.event_loop") ?? findTopic("js.event_loop")!;
-    return <LabTopic email="preview@example.invalid" topic={topic} view={previewTopic(topic.id)} labs={labsForTopic(topic.id)} skipLesson={false} />;
+    const initialStep = (["learn", "practice", "lab", "check"] as const).find((item) => item === stepParam);
+    return <LabTopic email="preview@example.invalid" topic={topic} view={previewTopic(topic.id)} labs={labsForTopic(topic.id)} skipLesson={false} place={placeOf(topic)} initialStep={initialStep} />;
   }
   if (view === "lab-ui") {
     const screen = (["today", "course", "topic", "terms"] as const).find((item) => item === screenParam) ?? "today";

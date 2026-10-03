@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { computeProgress, gradeLabRun, gradePrediction, parsePredictedLines, parseTopicMap, planNext, type AttemptRecord, type Label, type Mode, type TopicProgress } from "@ken-os/domain";
+import { computeProgress, gradeLabRun, isKnown, gradePrediction, parsePredictedLines, parseTopicMap, planNext, type AttemptRecord, type Label, type Mode, type TopicProgress } from "@ken-os/domain";
 import { assessorModes, baselineAttempts, findTopic, labs, topicMap } from "./curriculum";
 
 let counter = 0;
@@ -110,9 +110,33 @@ test("the Assessor leaves lab-proven modes to the lab", () => {
 test("the topic map rejects loops and proof that never touches code", () => {
   const known = new Map(labs.map((lab) => [lab.id, lab.modes]));
   const base = { id: "js.a", title: "A", module: "m", freshness: "core_concept", sourceGroups: ["javascript"], gap: "x".repeat(30), prove: ["predict"] };
+  const tracks = [{ id: "fullstack", title: "Full-stack", summary: "Everything." }];
   const modules = [{ id: "m", title: "M", track: "fullstack" }];
-  assert.throws(() => parseTopicMap({ modules, topics: [{ ...base, requires: ["js.b"] }, { ...base, id: "js.b", requires: ["js.a"] }] }, known), /loop/);
-  assert.throws(() => parseTopicMap({ modules, topics: [{ ...base, prove: ["explain"] }] }, known), /code/);
+  assert.throws(() => parseTopicMap({ tracks, modules, topics: [{ ...base, requires: ["js.b"] }, { ...base, id: "js.b", requires: ["js.a"] }] }, known), /loop/);
+  assert.throws(() => parseTopicMap({ tracks, modules, topics: [{ ...base, prove: ["explain"] }] }, known), /code/);
+  assert.throws(() => parseTopicMap({ tracks: [], modules, topics: [] }, known), /not listed under tracks/);
+  assert.throws(() => parseTopicMap({ tracks, modules: [...modules, { id: "empty", title: "Empty", track: "fullstack" }], topics: [base] }, known), /needs topics or planned/);
+});
+
+test("the course outline covers section 24 with planned topics", () => {
+  assert.deepEqual(topicMap.tracks.map((track) => track.id), ["fullstack", "ai"]);
+  const count = (track: string) => topicMap.modules.filter((module) => module.track === track)
+    .reduce((sum, module) => sum + module.planned.length + topicMap.topics.filter((topic) => topic.module === module.id).length, 0);
+  assert.equal(count("ai"), 15, "the AI track lists all 15 section 24 topics");
+  assert.ok(count("fullstack") >= 32, "full-stack covers the repair and production lists");
+});
+
+test("passing a placement check makes a topic known: it unlocks what builds on it and the Planner skips it", () => {
+  // js.call_stack has no baseline entry, so a placement check is how it becomes known without a lesson.
+  const placed = [attempt("js.call_stack", "explain", "solid", { kind: "placement" }), attempt("js.call_stack", "predict", "solid", { kind: "placement" })];
+  const progress = progressFor(placed);
+  const callStack = progress.find((item) => item.topicId === "js.call_stack")!;
+  assert.equal(callStack.placement, "passed");
+  assert.ok(isKnown(callStack));
+  assert.notEqual(planNext({ map: topicMap, progress, latestLabel: {}, now })?.topicId, "js.call_stack");
+  const failed = progressFor([attempt("js.call_stack", "explain", "partial", { kind: "placement" })]).find((item) => item.topicId === "js.call_stack")!;
+  assert.equal(failed.placement, "failed");
+  assert.equal(isKnown(failed), false);
 });
 
 test("predictions are graded against the real run, and a wrong question is voided", () => {

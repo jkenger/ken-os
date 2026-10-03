@@ -1,0 +1,188 @@
+"use client";
+
+import { useState } from "react";
+import { Check, RotateCcw } from "lucide-react";
+import { parsePredictedLines, type PracticePredict as PracticePredictItem, type RubricResult } from "@ken-os/domain";
+import { Button } from "@/components/ui/button";
+import { Pill } from "@/components/ui/pill";
+import type { SavedAnswer, TopicView } from "@/features/engineering-lab/store";
+import { cn } from "@/lib/utils";
+import { CodeBlock, Markdown } from "../markdown";
+import { label, labelWords, modeWords, toneFor } from "../words";
+import { post, realOutput, textarea } from "./client";
+import { PredictionDiff, RubricChecklist } from "./feedback";
+
+export function Tag({ value, children }: { value: string; children: React.ReactNode }) {
+  return <Pill tone={toneFor(value)}>{children}</Pill>;
+}
+
+export function GradeTag({ label: grade, voided }: { label: string; voided: boolean }) {
+  const solid = grade === "solid" && !voided;
+  return <Pill tone={toneFor(voided ? "voided" : grade)} icon={solid ? <Check size={12} aria-hidden="true" /> : undefined}>{voided ? "Thrown out" : labelWords[grade as keyof typeof labelWords] ?? grade}</Pill>;
+}
+
+function Confidence({ value, onChange }: { value: number | null; onChange: (value: number) => void }) {
+  return (
+    <fieldset className="mt-4">
+      <legend className="text-sm font-semibold">How sure are you, before answering?</legend>
+      <p className="mt-1 text-sm text-muted-foreground">This doesn&apos;t change your grade. It flags answers you were sure about but got wrong, since those beliefs are the hardest to notice.</p>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {[1, 2, 3, 4, 5].map((rating) => (
+          <Button key={rating} type="button" size="sm" variant={value === rating ? "default" : "outline"} aria-pressed={value === rating} onClick={() => onChange(rating)}>
+            {rating}{rating === 1 ? " guessing" : rating === 5 ? " certain" : ""}
+          </Button>
+        ))}
+      </div>
+    </fieldset>
+  );
+}
+
+/** Two boxes for a prediction: the printed lines, which code checks, and the reason, which is only saved. */
+function PredictInputs({ lines, why, onLines, onWhy, tall }: { lines: string; why: string; onLines: (value: string) => void; onWhy: (value: string) => void; tall?: boolean }) {
+  return (
+    <>
+      <label className="mt-4 block">
+        <span className="mb-2 block text-sm font-semibold">What it prints, one line per log</span>
+        <textarea className={cn(textarea, tall ? "min-h-[110px]" : "min-h-[80px]", "font-mono")} spellCheck={false} value={lines} onChange={(event) => onLines(event.target.value)} />
+      </label>
+      <label className="mt-3 block">
+        <span className="block text-sm font-semibold">Why</span>
+        <span className="mb-2 block text-sm text-muted-foreground">Optional and not graded. Compare it with the explanation after you check.</span>
+        <textarea className={cn(textarea, "min-h-[72px]")} value={why} onChange={(event) => onWhy(event.target.value)} />
+      </label>
+    </>
+  );
+}
+
+export function YourAnswer({ answer, showLines = true }: { answer: SavedAnswer; showLines?: boolean }) {
+  return (
+    <div className="mt-3">
+      {(showLines && answer.lines) || answer.text ? <p className="font-semibold">Your answer</p> : null}
+      {showLines && answer.lines && <pre className="mt-1 whitespace-pre-wrap font-mono text-[13px] leading-5">{answer.lines.join("\n") || "(nothing)"}</pre>}
+      {answer.text && <p className="mt-1 whitespace-pre-wrap leading-5">{answer.text}</p>}
+      {answer.why && <p className="mt-2 whitespace-pre-wrap leading-5"><span className="font-semibold">Your why: </span>{answer.why}</p>}
+    </div>
+  );
+}
+
+/** Everything shown after a graded answer: the diff or rubric, your why, and the explanation. */
+function Graded({ answer, explanation, rubric }: { answer: SavedAnswer; explanation?: string | null; rubric?: RubricResult[] | null }) {
+  const predicted = answer.lines;
+  return (
+    <>
+      {predicted && answer.actual ? <PredictionDiff actual={answer.actual} predicted={predicted} /> : <YourAnswer answer={{ ...answer, why: null }} />}
+      {rubric && <RubricChecklist items={rubric} />}
+      {answer.why && <p className="mt-3 whitespace-pre-wrap leading-5"><span className="font-semibold">Your why: </span>{answer.why}</p>}
+      <Explanation text={explanation} />
+    </>
+  );
+}
+
+export function Explanation({ text }: { text?: string | null }) {
+  if (!text) return null;
+  return <div className="mt-3 rounded-lg bg-muted p-4"><p className="mb-1 text-sm font-semibold">Why it prints this</p><Markdown text={text} /></div>;
+}
+
+type AssessmentView = NonNullable<TopicView["assessment"]>;
+
+export function Question({ assessment, index, onDone }: { assessment: AssessmentView; index: number; onDone: (message: string) => void }) {
+  const item = assessment.items[index];
+  const [answer, setAnswer] = useState("");
+  const [why, setWhy] = useState("");
+  const [rating, setRating] = useState<number | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState("");
+
+  async function submit() {
+    if (!rating) { setProblem("Pick how sure you are first."); return; }
+    setBusy(true); setProblem("");
+    try {
+      const body = item.mode === "predict"
+        ? { type: "answer", assessmentId: assessment.id, itemIndex: index, selfRating: rating, response: { lines: parsePredictedLines(answer), ...(why.trim() ? { why: why.trim() } : {}) }, actualOutput: await realOutput(item.code ?? "") }
+        : { type: "answer", assessmentId: assessment.id, itemIndex: index, selfRating: rating, response: { text: answer } };
+      await post("/api/lab/attempts", body);
+      onDone("Answer graded.");
+    } catch (error) {
+      setProblem(error instanceof Error ? error.message : "Could not submit.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <article className="rounded-xl border border-border p-5">
+      <p className={label}>QUESTION {index + 1} OF {assessment.items.length} · {modeWords[item.mode].toUpperCase()}</p>
+      <p className="mt-2 text-[15px] leading-6">{item.prompt}</p>
+      {item.code && <div className="mt-3"><CodeBlock code={item.code} label={`Code for question ${index + 1}`} /></div>}
+      {item.answered ? (
+        <div className="mt-4 border-t border-border pt-4 text-sm" role="status">
+          <div className="flex flex-wrap items-center gap-3"><GradeTag label={item.answered.label} voided={item.answered.voided} /><p className="leading-5">{item.answered.feedback}</p></div>
+          <Graded answer={item.answered.answer} explanation={item.answered.explanation} rubric={item.answered.rubric} />
+        </div>
+      ) : (
+        <>
+          <Confidence value={rating} onChange={setRating} />
+          {item.mode === "predict" ? <PredictInputs lines={answer} why={why} onLines={setAnswer} onWhy={setWhy} tall /> : (
+            <label className="mt-4 block">
+              <span className="mb-2 block text-sm font-semibold">Your answer</span>
+              <textarea className={cn(textarea, "min-h-[130px]")} value={answer} onChange={(event) => setAnswer(event.target.value)} />
+            </label>
+          )}
+          {problem && <p className="mt-3 rounded-lg bg-muted px-4 py-3 text-sm" role="alert">{problem}</p>}
+          <Button type="button" className="mt-3" disabled={busy || !answer.trim()} onClick={() => void submit()}>{busy ? "Grading..." : "Submit answer"}</Button>
+        </>
+      )}
+    </article>
+  );
+}
+
+export type PracticeResult = TopicView["practiceResults"][number];
+
+export function PracticePredict({ lessonId, index, item, result, onDone }: {
+  lessonId: string; index: number; item: PracticePredictItem; result?: PracticeResult; onDone: (message: string) => void;
+}) {
+  const [answer, setAnswer] = useState("");
+  const [why, setWhy] = useState("");
+  const [retrying, setRetrying] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [problem, setProblem] = useState("");
+  const solid = result?.label === "solid" && !result.voided;
+
+  async function check() {
+    setBusy(true); setProblem("");
+    try {
+      await post("/api/lab/attempts", { type: "practice", lessonId, practiceIndex: index, lines: parsePredictedLines(answer), why, actualOutput: await realOutput(item.code) });
+      setRetrying(false);
+      onDone("Practice checked.");
+    } catch (error) { setProblem(error instanceof Error ? error.message : "Could not check."); }
+    finally { setBusy(false); }
+  }
+  function tryAgain() {
+    setAnswer(result?.answer.lines?.join("\n") ?? "");
+    setWhy(result?.answer.why ?? "");
+    setRetrying(true);
+  }
+
+  return (
+    <div>
+      <p className="text-lg leading-7">{item.prompt}</p>
+      <div className="mt-4"><CodeBlock code={item.code} label={`Code for practice ${index + 1}`} /></div>
+      {result && !retrying ? (
+        <div className="mt-5 rounded-xl border border-border p-5 text-sm" role="status">
+          <div className="flex flex-wrap items-center gap-3"><GradeTag label={result.label} voided={result.voided} /><p className="leading-5">{result.feedback}</p></div>
+          <Graded answer={result.answer} explanation={item.explanation} />
+          {!solid && <Button type="button" size="sm" variant="outline" className="mt-4" onClick={tryAgain}><RotateCcw size={14} aria-hidden="true" />Try again</Button>}
+        </div>
+      ) : (
+        <>
+          <PredictInputs lines={answer} why={why} onLines={setAnswer} onWhy={setWhy} tall />
+          {problem && <p className="mt-2 text-sm" role="alert">{problem}</p>}
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Button type="button" disabled={busy || !answer.trim()} onClick={() => void check()}>{busy ? "Running..." : "Check by running it"}</Button>
+            {retrying && <Button type="button" variant="ghost" disabled={busy} onClick={() => setRetrying(false)}>Cancel</Button>}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}

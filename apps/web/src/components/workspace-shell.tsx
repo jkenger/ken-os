@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Archive, BookOpenText, FileText, FlaskConical, Image, Library, Lightbulb, ListTree, Menu, PanelLeftClose, PanelLeftOpen, Palette, PenLine, Search, Sparkles, Sun, X } from "lucide-react";
+import { Archive, BookMarked, BookOpenText, FileText, FlaskConical, Image, Library, Lightbulb, ListTree, Menu, PanelLeftClose, PanelLeftOpen, Palette, PenLine, Search, Sparkles, Sun, X } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
+import { TermLookup } from "@/components/terms/term-lookup";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-type Module = "resume" | "skills" | "memory" | "design" | "lab" | "writing";
+type Module = "resume" | "skills" | "memory" | "design" | "lab" | "writing" | "terms";
 
 const modules = [
   { id: "resume" as const, label: "Resume hub", href: "/", icon: FileText },
@@ -15,6 +16,7 @@ const modules = [
   { id: "design" as const, label: "Design system", href: "/design-system", icon: Palette },
   { id: "memory" as const, label: "Project Memory", href: "/memory", icon: BookOpenText },
   { id: "lab" as const, label: "Engineering Lab", href: "/lab", icon: FlaskConical },
+  { id: "terms" as const, label: "Terms", href: "/terms", icon: BookMarked },
 ];
 const previewModules = [
   ...modules.map((module) => module.id === "design" ? { ...module, href: "/design-preview?view=design" } : module.id === "memory" ? { ...module, href: "/design-preview?view=memory" } : module),
@@ -51,7 +53,7 @@ const moduleDetails: Record<Module, {
     title: "Engineering Lab",
     sections: [
       { label: "Today", href: "/lab", icon: Sun },
-      { label: "Topics", href: "/lab/topics", icon: ListTree },
+      { label: "Course", href: "/lab/topics", icon: ListTree },
     ],
   },
   design: {
@@ -66,6 +68,7 @@ const moduleDetails: Record<Module, {
     ],
   },
   writing: { title: "Writing studio", sections: [] },
+  terms: { title: "Terms", sections: [{ label: "Saved terms", href: "/terms", icon: BookMarked }] },
 };
 
 const writingPreviewGroups = [
@@ -177,7 +180,7 @@ function ModuleSearch({ preview }: { preview: boolean }) {
   );
 }
 
-export function WorkspaceShell({ email, active, children, preview = false, headerActions, onPreviewAction }: { email: string; active: Module; children: ReactNode; preview?: boolean; headerActions?: ReactNode; onPreviewAction?: (label: string) => void }) {
+export function WorkspaceShell({ email, active, children, preview = false, headerActions, onPreviewAction, termLookup = true }: { email: string; active: Module; children: ReactNode; preview?: boolean; headerActions?: ReactNode; onPreviewAction?: (label: string) => void; termLookup?: boolean }) {
   const detail = moduleDetails[active];
   const pathname = usePathname();
   const [hash, setHash] = useState("");
@@ -294,7 +297,7 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
             </div>
             {writingPreview ? headerActions : <div className="flex items-center gap-3"><ModuleSearch preview={preview} /><form action="/api/auth/signout" method="post"><Button variant="ghost" type="submit" className="text-xs">Sign out</Button></form></div>}
           </header>
-          <main className="min-w-0" id="main-content">{children}</main>
+          <main className="min-w-0" id="main-content">{termLookup ? <TermLookup module={detail.title}>{children}</TermLookup> : children}</main>
         </div>
       </div>
     </div>

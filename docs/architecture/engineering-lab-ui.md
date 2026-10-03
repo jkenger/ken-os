@@ -1,6 +1,6 @@
 # Engineering Lab UI direction
 
-Status: **agreed with the owner on 2026-10-02, not built yet.** Clickable mockups run at `/design-preview?view=lab-ui` in development, with fake data and no AI calls. This is the "polish" the [v1 proposal](engineering-lab-v1.md) waits for, so it comes before the v1 features.
+Status: **built on 2026-10-03** (all seven steps; see "As built" at the end). Agreed with the owner on 2026-10-02. The original clickable mockups still run at `/design-preview?view=lab-ui` in development, with fake data and no AI calls. This is the "polish" the [v1 proposal](engineering-lab-v1.md) waits for, so it comes before the v1 features.
 
 ## The short version
 
@@ -129,7 +129,7 @@ The mockup versions live in `apps/web/src/components/lab-ui-preview/` and are th
 
 ## What the build needs beyond the UI
 
-- **Course outline in content:** `topics.yaml` gains tracks and chapters, plus outline-only entries for unwritten topics (id, title, chapter, no lesson or labs). `lab:generate` checks them like any other topic.
+- **Course outline in content:** `topics.yaml` gains tracks and chapters, plus the names of unwritten topics (built as a `planned` list per chapter; see "As built"). `lab:generate` checks them.
 - **Placement checks:** the Assessor's questions for a topic with no lesson first, recorded as kind `placement`. Passing marks the topic known. This was v1 section 8; it moves up.
 - **Tutor `tutor-v3`:** adds `deeper: { title, body }[]` to lessons. Older lessons simply have none.
 - **Grader:** returns `{ point, result }` for each rubric point alongside the label and feedback. The prompt version goes up.
@@ -139,14 +139,29 @@ The mockup versions live in `apps/web/src/components/lab-ui-preview/` and are th
 ## Build order
 
 1. **CodeEditor and Pill** in place of the text boxes and tags. *Check: every existing lab still runs, and contrast holds.* **Done 2026-10-03:** `components/ui/code-editor.tsx` and `components/ui/pill.tsx`; lab code, tests, solutions, questions and lesson code all use the editor.
-2. **The topic page as steps**, Learn as a reader, labs as a split screen. *Check: on a phone and a desktop, you can always tell which step you're on.*
-3. **Feedback:** the prediction diff, then the grader's rubric results and the checklist. *Check: the owner's "outer start, body" answer shows the two missing lines at a glance.*
-4. **Course outline,** "My gaps" and placement checks. *Check: the outline matches §24, and gap focus hides exactly the known topics.*
-5. **Today's Continue card.**
-6. **Term lookup and Terms**, shared across Ken OS. *Check: a lookup never leaves the page, and a saved term links back to where it was found.*
-7. **"Go deeper"** lesson sections (`tutor-v3`).
+2. **The topic page as steps**, Learn as a reader, labs as a split screen. *Check: on a phone and a desktop, you can always tell which step you're on.* **Done 2026-10-03:** step state comes from `features/engineering-lab/steps.ts`; the step is kept in `?step=`. On a phone the step bar drops the detail line so all four steps fit.
+3. **Feedback:** the prediction diff, then the grader's rubric results and the checklist. *Check: the owner's "outer start, body" answer shows the two missing lines at a glance.* **Done 2026-10-03:** `diffLines` in the domain package; `grader-v2` returns per-point results, stored in `lab_attempts.rubric` (migration 0006). It does.
+4. **Course outline,** "My gaps" and placement checks. *Check: the outline matches §24, and gap focus hides exactly the known topics.* **Done 2026-10-03:** the Topics page is now Course. See "As built" below for how the outline and placement differ from the plan.
+5. **Today's Continue card.** **Done 2026-10-03:** Today and the topic page share `stepsForTopic`, so the card and the step bar always agree.
+6. **Term lookup and Terms**, shared across Ken OS. *Check: a lookup never leaves the page, and a saved term links back to where it was found.* **Done 2026-10-03:** `features/terms`, `components/terms`, the `/terms` page, migration 0007.
+7. **"Go deeper"** lesson sections (`tutor-v3`). **Done 2026-10-03.**
 
 Then the v1 features, starting from its section 1 gate.
+
+## As built (2026-10-03)
+
+Where the build differs from the plan above, and why:
+
+| Plan | Built | Why |
+|---|---|---|
+| Outline-only topic entries with ids | Each chapter in `topics.yaml` has a `planned` list of topic names | An unwritten topic has nothing to validate yet; a full entry needs a gap, proof modes and sources. It gets one when it's written. |
+| Three tracks in the data (full-stack, production, ai) | Two: Full-stack and AI Engineering, with production engineering as Full-stack chapters | Matches the agreed two-track Course page. |
+| "Known" from the baseline counts for everything | A passed placement check or a proof makes a topic known: it unlocks what builds on it and the Planner skips it. A baseline "solid" shows as "Known · skip" on Course, but still gets the short check the Planner already gave it | The baseline is never proof of anything new (handoff §26). |
+| Lookups answer in about 2 seconds | About 6 seconds | Finding a real page on a trusted site needs one web search. A term already in Terms is answered instantly, without an AI call. |
+| Lookup limit unspecified | 40 lookups a day, separate from the 20 lesson and question generations | A reading-heavy day shouldn't block lessons. |
+| Mockups only in `lab-ui` | The term lookup also works in `design-preview` pages, where the server refuses it (no session, preview port) | So the popover can be checked in the browser. The `lab-ui` mockups keep their own canned version. |
+
+Verified: `tsc`, `next build`, 80 unit tests, `test:db:lab` (8 checks) and `test:db:terms` (3 checks) on local Postgres, live runs of the grader, the Tutor and a lookup, and every screen in the browser preview at desktop and phone width. Not yet verified signed in on production.
 
 ## Not part of this
 

@@ -1,4 +1,4 @@
-import type { TopicProgress } from "./mastery";
+import { isKnown, type TopicProgress } from "./mastery";
 import type { Topic, TopicMap } from "./topics";
 import type { Mode } from "./types";
 
@@ -24,12 +24,14 @@ export interface PlanInput {
 /**
  * Picks what to study next with plain rules, in this order:
  * due reviews, topics in progress (redirecting to a weak prerequisite after a misconception), then the next new topic
- * whose prerequisites are all validated.
+ * whose prerequisites are all known (proven, or passed in a placement check).
  */
 export function planNext({ map, progress, latestLabel, now }: PlanInput): PlanDecision | null {
   const byId = new Map(map.topics.map((topic) => [topic.id, topic]));
   const status = (id: string) => progress.find((item) => item.topicId === id)?.status ?? "NOT_STARTED";
   const entry = (id: string) => progress.find((item) => item.topicId === id);
+  // A topic you passed a placement check for counts as done here, like a proven one.
+  const known = (id: string) => { const item = entry(id); return item ? isKnown(item) : false; };
   const decide = (topic: Topic, kind: PlanDecision["kind"], reason: string): PlanDecision => ({
     topicId: topic.id,
     kind,
@@ -52,14 +54,14 @@ export function planNext({ map, progress, latestLabel, now }: PlanInput): PlanDe
       if (seen.has(id)) continue;
       seen.add(id);
       const required = byId.get(id)!;
-      if (status(id) === "VALIDATED") continue;
+      if (known(id)) continue;
       return weakPrerequisite(required, seen) ?? required;
     }
     return null;
   };
 
   const inProgress = map.topics
-    .filter((topic) => status(topic.id) === "LEARNING" || status(topic.id) === "PRACTICING")
+    .filter((topic) => (status(topic.id) === "LEARNING" || status(topic.id) === "PRACTICING") && !known(topic.id))
     .sort((a, b) => (entry(b.id)?.lastAttemptAt ?? "").localeCompare(entry(a.id)?.lastAttemptAt ?? ""))[0];
   if (inProgress) {
     if (latestLabel[inProgress.id] === "misconception") {
@@ -74,7 +76,7 @@ export function planNext({ map, progress, latestLabel, now }: PlanInput): PlanDe
   const moduleOrder = new Map(map.modules.map((module, index) => [module.id, index]));
   const next = [...map.topics]
     .sort((a, b) => moduleOrder.get(a.module)! - moduleOrder.get(b.module)!)
-    .find((topic) => status(topic.id) === "NOT_STARTED" && topic.requires.every((id) => status(id) === "VALIDATED"));
+    .find((topic) => status(topic.id) === "NOT_STARTED" && !known(topic.id) && topic.requires.every(known));
   if (!next) return null;
   const solid = entry(next.id)?.baselineLabel === "solid";
   return decide(next, "new", solid

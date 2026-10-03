@@ -439,7 +439,7 @@ export function LabUiPreview({ initialScreen, initialStep }: { initialScreen: Sc
   const place = screen === "topic" ? `${lesson.title} · ${step[0].toUpperCase()}${step.slice(1)}` : screens.find((item) => item.id === screen)!.label;
 
   return (
-    <WorkspaceShell email="preview@example.invalid" active="lab" preview>
+    <WorkspaceShell email="preview@example.invalid" active="lab" preview termLookup={false}>
       <div className="min-h-[calc(100vh-88px)] border-x border-border">
         <div className="flex flex-wrap items-center gap-2 border-b border-dashed border-input bg-muted/50 px-5 py-2.5 text-sm sm:px-8 lg:px-10">
           <span className="font-semibold">UI direction mockup</span>

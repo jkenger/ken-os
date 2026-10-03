@@ -2,7 +2,8 @@ import { Agent, run, tool } from "@openai/agents";
 import { z } from "zod";
 export { researchTopic } from "./engineering-lab/researcher";
 export { TUTOR_PROMPT_VERSION, writeLesson } from "./engineering-lab/tutor";
-export { ASSESSOR_PROMPT_VERSION, gradeAnswer, writeAssessment } from "./engineering-lab/assessor";
+export { ASSESSOR_PROMPT_VERSION, GRADER_PROMPT_VERSION, gradeAnswer, writeAssessment } from "./engineering-lab/assessor";
+export { explainTerm, TERM_PROMPT_VERSION } from "./terms/explain";
 
 export interface EnabledSkill {
   slug: string;

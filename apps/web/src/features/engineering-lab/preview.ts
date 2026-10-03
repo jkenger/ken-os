@@ -17,7 +17,7 @@ export function previewTopic(topicId: string): TopicView {
   const progress = computeProgress(topic, baselineAttempts(), true).progress;
   const mdn = "https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide";
   if (topicId !== "js.event_loop") {
-    return { progress, lessonCount: 0, lesson: null, sources: [], sourceCheckedAt: null, assessment: null, attempts: [], revealedLabs: [], practiceResults: {} };
+    return { progress, lessonCount: 0, lesson: null, sources: [], sourceCheckedAt: null, assessment: null, attempts: [], revealedLabs: [], passedLabs: [], reviewDue: false, practiceResults: {} };
   }
   return {
     progress,
@@ -32,6 +32,10 @@ export function previewTopic(topicId: string): TopicView {
         mentalModel: "A task is a meeting; microtasks are the follow-ups you finish before the next meeting starts.",
         workedExample: { code: "console.log(\"A\");\nsetTimeout(() => console.log(\"B\"), 0);\nPromise.resolve().then(() => console.log(\"C\"));\nconsole.log(\"D\");", walkthrough: "A and D are synchronous. C is a microtask. B waits for a new task." },
       },
+      deeper: [
+        { title: "What counts as a task", body: "Timers, I/O callbacks, message events and user input each start a new task. Rendering happens between tasks, which is why a long microtask chain can freeze the page." },
+        { title: "Real bug: the spinner that never clears", body: "A loading flag set inside `setTimeout` and cleared in a `.then` can end up cleared before it is set. Keep both on the same queue." },
+      ],
       practice: [
         { kind: "predict", prompt: "What does this print?", code: "setTimeout(() => console.log(1));\nqueueMicrotask(() => console.log(2));\nconsole.log(3);", expectedOutput: ["3", "2", "1"], explanation: "`3` is synchronous, so it prints first. `queueMicrotask` runs as soon as the stack is empty, before the timer's task." },
         { kind: "think", prompt: "Why can a long synchronous loop freeze a page?", answer: "Nothing else, including rendering, runs until the stack is empty." },
@@ -45,11 +49,22 @@ export function previewTopic(topicId: string): TopicView {
       id: "preview-assessment", kind: "assessment", createdAt: new Date().toISOString(),
       items: [
         { mode: "predict", prompt: "What does this print, in order?", code: "Promise.resolve().then(() => console.log(\"x\"));\nsetTimeout(() => console.log(\"y\"));\nconsole.log(\"z\");", answered: null },
-        { mode: "explain", prompt: "Explain why a promise callback runs before a zero-delay timer.", code: null, answered: { label: "partial", feedback: "Right that promises are microtasks; you didn't say the queue drains fully before the next task.", voided: false, answer: { lines: null, text: "Promises are microtasks, so they run before timers.", why: null }, explanation: null } },
+        { mode: "explain", prompt: "Explain why a promise callback runs before a zero-delay timer.", code: null, answered: { label: "partial", feedback: "Right that promises are microtasks; you didn't say the queue drains fully before the next task.", voided: false, answer: { lines: null, text: "Promises are microtasks, so they run before timers.", why: null, actual: null }, explanation: null, rubric: [
+          { point: "Promise callbacks are queued as microtasks", result: "covered" },
+          { point: "The microtask queue drains completely when the stack empties", result: "missed" },
+          { point: "A timer callback runs as a separate, later task", result: "partly" },
+        ] } },
+        { mode: "predict", prompt: "What exact lines does this print, and in what order?", code: "function report(label, action) {\n  console.log(label + \" start\");\n  action();\n  console.log(label + \" end\");\n}\nsetTimeout(() => console.log(\"timer\"), 0);\nreport(\"outer\", () => {\n  report(\"inner\", () => console.log(\"body\"));\n});\nconsole.log(\"script end\");", answered: {
+          label: "partial", feedback: "The code printed outer start, inner start, body, inner end, outer end, script end, timer. You predicted outer start, body, outer end, script end, timer.", voided: false, rubric: null,
+          answer: { lines: ["outer start", "body", "outer end", "script end", "timer"], text: null, why: null, actual: ["outer start", "inner start", "body", "inner end", "outer end", "script end", "timer"] },
+          explanation: "`report` is synchronous, so the inner call runs completely inside the outer one. Only the timer waits for a new task.",
+        } },
       ],
     },
     attempts: [],
     revealedLabs: [],
-    practiceResults: { 0: { label: "partial", feedback: "The code printed 3, 2, 1. You predicted 3, 1.", voided: false, answer: { lines: ["3", "1"], text: null, why: "The timer was queued first, so it runs first." } } },
+    passedLabs: [],
+    reviewDue: false,
+    practiceResults: { 0: { label: "partial", feedback: "The code printed 3, 2, 1. You predicted 3, 1.", voided: false, answer: { lines: ["3", "1"], text: null, why: "The timer was queued first, so it runs first.", actual: ["3", "2", "1"] } } },
   };
 }

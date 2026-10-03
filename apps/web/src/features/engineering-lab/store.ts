@@ -4,7 +4,7 @@ import { gradeAnswer, researchTopic, TUTOR_PROMPT_VERSION, ASSESSOR_PROMPT_VERSI
 import {
   computeProgress, finalizeLesson, gradeLabRun, gradePrediction, isPacketUsable, planNext, researchTargetFor, toPublicItem,
   type AssessmentItem, type AttemptKind, type AttemptRecord, type AttemptResponse, type CodeRun, type Grade, type LessonSnapshot,
-  type Mode, type PlanDecision, type PublicItem, type SourcePacket, type TopicProgress,
+  type Mode, type PlanDecision, type PublicItem, type RubricResult, type SourcePacket, type TopicProgress,
 } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { labAssessments, labAttempts, labLessons, labProgress, labProgressChanges, labSolutionReveals, labSourcePackets } from "@/lib/schema";
@@ -199,10 +199,17 @@ function fingerprint(prompt: string) {
   return prompt.replace(/\s+/g, " ").trim().slice(0, 100);
 }
 
-export async function generateAssessment(userId: string, topicId: string, kind: "assessment" | "review") {
+export type AssessmentKind = "assessment" | "review" | "placement";
+
+export async function generateAssessment(userId: string, topicId: string, kind: AssessmentKind) {
   const topic = requireTopic(topicId);
   const modes = assessorModes(topic);
   if (!modes.length) throw new LabInputError("This topic is proven entirely by its labs.", 409);
+  if (kind === "placement") {
+    // A placement check is for a topic you haven't started; once you're learning it, the normal check applies.
+    const progress = (await getAllProgress(userId)).find((item) => item.topicId === topicId)!;
+    if (progress.status !== "NOT_STARTED") throw new LabInputError("Placement checks are only for topics you haven't started.", 409);
+  }
   await assertBudget(userId);
   const [lessons, previous, packet] = await Promise.all([
     db().select({ snapshot: labLessons.snapshot }).from(labLessons).where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId))),
@@ -227,7 +234,7 @@ async function insertAttempt(tx: Transaction, values: Omit<typeof labAttempts.$i
 }
 
 function gradeFields(grade: Grade) {
-  return { label: grade.label, gradedBy: grade.by, voided: grade.voided ?? false, misconceptions: grade.misconceptions, feedback: grade.feedback, run: grade.run ?? null };
+  return { label: grade.label, gradedBy: grade.by, voided: grade.voided ?? false, misconceptions: grade.misconceptions, feedback: grade.feedback, run: grade.run ?? null, rubric: grade.rubric ?? null };
 }
 
 export interface AnswerInput {
@@ -286,7 +293,7 @@ export async function submitPractice(userId: string, input: { lessonId: string; 
   return db().transaction(async (tx) => {
     const attemptId = await insertAttempt(tx, {
       userId, topicId: lesson.topicId, kind: "lesson", mode: "predict", lessonId: lesson.id, itemIndex: input.practiceIndex,
-      item: item as unknown as Record<string, unknown>, response: { lines: input.lines, ...(why ? { why } : {}) }, selfRating: null, ...gradeFields(grade),
+      item: item as unknown as Record<string, unknown>, response: { lines: input.lines, actual: input.actualOutput, ...(why ? { why } : {}) }, selfRating: null, ...gradeFields(grade),
     });
     const progress = await recompute(tx, userId, lesson.topicId, attemptId);
     return { grade, status: progress.status };
@@ -326,10 +333,12 @@ export interface SavedAnswer {
   lines: string[] | null;
   text: string | null;
   why: string | null;
+  /** What the code really printed, for a prediction. Lets the page show the line-by-line diff. */
+  actual: string[] | null;
 }
 
-function savedAnswer(response: AttemptResponse | null): SavedAnswer {
-  return { lines: response?.lines ?? null, text: response?.text ?? null, why: response?.why ?? null };
+function savedAnswer(response: AttemptResponse | null, fallbackActual: string[] | null = null): SavedAnswer {
+  return { lines: response?.lines ?? null, text: response?.text ?? null, why: response?.why ?? null, actual: response?.actual ?? (response?.lines ? fallbackActual : null) };
 }
 
 export interface TopicView {
@@ -340,29 +349,42 @@ export interface TopicView {
   sourceCheckedAt: string | null;
   assessment: {
     id: string; kind: string; createdAt: string;
-    items: (PublicItem & { answered: null | { label: string; feedback: string; voided: boolean; answer: SavedAnswer; explanation: string | null } })[];
+    items: (PublicItem & { answered: null | { label: string; feedback: string; voided: boolean; answer: SavedAnswer; explanation: string | null; rubric: RubricResult[] | null } })[];
   } | null;
   attempts: { id: string; kind: string; mode: string; label: string; gradedBy: string; voided: boolean; feedback: string; createdAt: string }[];
   revealedLabs: string[];
+  /** Labs with a full pass that counts as proof: run without having seen the solution first. */
+  passedLabs: string[];
+  /** A validated topic whose next review date has arrived. */
+  reviewDue: boolean;
   practiceResults: Record<number, { label: string; feedback: string; voided: boolean; answer: SavedAnswer }>;
 }
 
 export async function getTopicView(userId: string, topicId: string): Promise<TopicView> {
   requireTopic(topicId);
-  const [progress, lessons, packet, assessments, attempts, reveals] = await Promise.all([
+  const [progress, lessons, packet, assessments, attempts, reveals, passes] = await Promise.all([
     getAllProgress(userId).then((all) => all.find((item) => item.topicId === topicId)!),
     db().select().from(labLessons).where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId))).orderBy(desc(labLessons.version)),
     latestPacket(userId, topicId),
     db().select().from(labAssessments).where(and(eq(labAssessments.userId, userId), eq(labAssessments.topicId, topicId))).orderBy(desc(labAssessments.createdAt)).limit(1),
     db().select().from(labAttempts).where(and(eq(labAttempts.userId, userId), eq(labAttempts.topicId, topicId))).orderBy(desc(labAttempts.createdAt)).limit(60),
     db().select({ labId: labSolutionReveals.labId }).from(labSolutionReveals).where(eq(labSolutionReveals.userId, userId)),
+    db().selectDistinct({ labId: labAttempts.labId }).from(labAttempts).where(and(
+      eq(labAttempts.userId, userId), eq(labAttempts.topicId, topicId), eq(labAttempts.kind, "lab"),
+      eq(labAttempts.label, "solid"), eq(labAttempts.solutionSeen, false), eq(labAttempts.voided, false),
+    )),
   ]);
   const lesson = lessons[0];
   const assessment = assessments[0];
   const lessonPacket = lesson ? (await db().select().from(labSourcePackets).where(eq(labSourcePackets.id, lesson.sourcePacketId)).limit(1))[0] : packet;
   const practiceResults: TopicView["practiceResults"] = {};
   for (const attempt of attempts) {
-    if (lesson && attempt.lessonId === lesson.id && attempt.itemIndex !== null) practiceResults[attempt.itemIndex] ??= { label: attempt.label, feedback: attempt.feedback, voided: attempt.voided, answer: savedAnswer(attempt.response) };
+    if (lesson && attempt.lessonId === lesson.id && attempt.itemIndex !== null) {
+      // Older practice answers didn't store the real output; a non-voided one matched the expected output, so that stands in.
+      const practiceItem = lesson.snapshot.practice[attempt.itemIndex];
+      const expected = practiceItem?.kind === "predict" && !attempt.voided ? practiceItem.expectedOutput : null;
+      practiceResults[attempt.itemIndex] ??= { label: attempt.label, feedback: attempt.feedback, voided: attempt.voided, answer: savedAnswer(attempt.response, expected) };
+    }
   }
   return {
     progress,
@@ -380,7 +402,7 @@ export async function getTopicView(userId: string, topicId: string): Promise<Top
           ...toPublicItem(item),
           answered: answer ? {
             label: answer.label, feedback: answer.feedback, voided: answer.voided, answer: savedAnswer(answer.response),
-            explanation: item.mode === "predict" ? item.explanation ?? null : null,
+            explanation: item.mode === "predict" ? item.explanation ?? null : null, rubric: answer.rubric ?? null,
           } : null,
         };
       }),
@@ -390,6 +412,8 @@ export async function getTopicView(userId: string, topicId: string): Promise<Top
       voided: attempt.voided, feedback: attempt.feedback, createdAt: attempt.createdAt.toISOString(),
     })),
     revealedLabs: reveals.map((row) => row.labId),
+    passedLabs: passes.map((row) => row.labId).filter((id): id is string => Boolean(id)),
+    reviewDue: progress.status === "VALIDATED" && Boolean(progress.nextReviewAt) && new Date(progress.nextReviewAt!) <= new Date(),
     practiceResults,
   };
 }

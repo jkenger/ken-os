@@ -15,6 +15,9 @@ Status: v0 is live on ken-os-web.vercel.app ([as-built notes](engineering-lab-v0
 - **No Vercel Sandbox in v0.** Race labs interleave concurrent calls between queries on PGlite, which reproduces lost updates, check-then-insert races and duplicate creates. A sandbox with real parallel connections is only needed for lock and isolation-level labs, which v0 doesn't have. (Found during the build, 2026-10-01.)
 - **A prediction's "why" is saved but not graded.** It has its own box, so it can't be mistaken for a printed line. After answering, the learner sees an explanation the Tutor or Assessor wrote with the question (`tutor-v2`, `assessor-v2`) and compares it themselves, so there's no extra AI call. Older lessons and questions have no explanation. (First live test, 2026-10-02.)
 - **A practice prediction locks once it's right.** Retrying after a wrong answer is still allowed. Assessment questions already allowed one answer each. (First live test, 2026-10-02.)
+- **The UI direction is built** as agreed in [engineering-lab-ui.md](engineering-lab-ui.md): topic steps, line-by-line and rubric feedback, the Course outline, Today's Continue card, Ken OS-wide term lookup and Go deeper sections. (2026-10-03.)
+- **"Known" means proven or placed.** A passed placement check (kind `placement`, Assessor questions before any lesson) or a proof makes a topic known: it satisfies prerequisites and the Planner skips it. The baseline alone never does; a baseline "solid" only shows as "Known · skip" on Course. (2026-10-03.)
+- **The course outline lives in `topics.yaml`:** two tracks, chapters, and a `planned` list of unwritten topic names per chapter, covering all of handoff §24. (2026-10-03.)
 
 ## Researcher
 
