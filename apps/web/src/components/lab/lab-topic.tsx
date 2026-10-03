@@ -34,8 +34,8 @@ function PracticeStep({ view, onDone, onNext, nextLabel, goLearn }: { view: Topi
   const items = lesson?.practice ?? [];
   const firstOpen = items.findIndex((item, index) => item.kind === "predict" && view.practiceResults[index]?.label !== "solid");
   const [index, setIndex] = useState(Math.max(0, firstOpen));
-  if (!lesson) return <Empty action={<Button type="button" onClick={goLearn}>Go to Learn</Button>}>Practice comes from the lesson. Write the lesson first.</Empty>;
-  if (!items.length) return <Empty action={<Button type="button" onClick={onNext}>{nextLabel}<ArrowRight aria-hidden="true" /></Button>}>This lesson has no practice.</Empty>;
+  if (!lesson) return <Empty action={<Button type="button" onClick={goLearn}>Go to Learn</Button>}>Write the lesson first</Empty>;
+  if (!items.length) return <Empty action={<Button type="button" onClick={onNext}>{nextLabel}<ArrowRight aria-hidden="true" /></Button>}>No practice in this lesson</Empty>;
   const item = items[index];
   const dotTone = (dot: number) => {
     const result = view.practiceResults[dot];
@@ -52,12 +52,12 @@ function PracticeStep({ view, onDone, onNext, nextLabel, goLearn }: { view: Topi
           {items.map((_, dot) => <button key={dot} type="button" aria-label={`Practice ${dot + 1}`} aria-current={dot === index ? "step" : undefined} onClick={() => setIndex(dot)} className={cn("h-1.5 w-7 rounded-full", dotTone(dot), dot === index && "ring-2 ring-foreground/30 ring-offset-2")} />)}
         </div>
       </div>
-      <p className="mt-2 text-sm text-muted-foreground">For learning. Predictions are checked by running the code; only the Check step and labs can prove the topic.</p>
+      <p className="mt-2 text-sm text-muted-foreground">Not graded · only Check and Lab prove a topic</p>
       <div className="mt-5">
         {item.kind === "think" ? (
           <div>
             <div className="[&_p]:text-lg [&_p]:leading-7"><Markdown text={item.prompt} /></div>
-            <details className="group mt-4 rounded-xl border border-border p-4"><DisclosureSummary className="text-[15px] font-semibold">Show the answer</DisclosureSummary><div className="mt-3 pl-6"><Markdown text={item.answer} /></div></details>
+            <details className="group mt-4 rounded-xl border border-border p-4"><DisclosureSummary className="text-[15px] font-semibold">Show answer</DisclosureSummary><div className="mt-3 pl-6"><Markdown text={item.answer} /></div></details>
           </div>
         ) : (
           <PracticePredict key={`${lesson.id}-${index}`} lessonId={lesson.id} index={index} item={item} result={view.practiceResults[index]} onDone={onDone} />
@@ -77,8 +77,7 @@ function Proof({ topic, view }: { topic: Topic; view: TopicView }) {
   const { progress } = view;
   return (
     <section aria-labelledby="proof-title" className="rounded-xl border border-border p-5">
-      <p className={label}>PROOF</p>
-      <h3 className="mt-1 font-display text-lg font-semibold tracking-[-0.02em]" id="proof-title">What&apos;s been shown so far</h3>
+      <h3 className="font-display text-lg font-semibold tracking-[-0.02em]" id="proof-title">Evidence</h3>
       <ul className="mt-3 grid gap-2 sm:grid-cols-2">
         {topic.prove.map((mode) => {
           const evidence = progress.evidence[mode];
@@ -91,10 +90,12 @@ function Proof({ topic, view }: { topic: Topic; view: TopicView }) {
         })}
       </ul>
       <p className="mt-3 text-sm text-muted-foreground">
-        {progress.baselineLabel ? `Baseline on ${formatDate(view.baseline.on)}: ${labelWords[progress.baselineLabel]}. ` : "Not assessed in the baseline. "}
-        {progress.confidence.averageSelfRating !== null ? `Average confidence ${progress.confidence.averageSelfRating} of 5. ` : ""}
-        {progress.confidence.overconfident ? "You were sure about an answer that turned out to be a misconception. " : ""}
-        {progress.nextReviewAt ? `Next review ${formatDate(progress.nextReviewAt)}.` : ""}
+        {[
+          progress.baselineLabel ? `Baseline · ${formatDate(view.baseline.on)} · ${labelWords[progress.baselineLabel]}` : "Baseline · not assessed",
+          progress.confidence.averageSelfRating !== null ? `Confidence · ${progress.confidence.averageSelfRating} of 5` : null,
+          progress.confidence.overconfident ? "Confident misconception" : null,
+          progress.nextReviewAt ? `Next review · ${formatDate(progress.nextReviewAt)}` : null,
+        ].filter(Boolean).map((line) => <span key={line} className="block">{line}</span>)}
       </p>
       {progress.weaknesses.length > 0 && <div className="mt-3"><p className="text-sm font-semibold">Still open</p><ul className="mt-1 list-disc space-y-0.5 pl-5 text-sm">{progress.weaknesses.map((item) => <li key={item}>{item}</li>)}</ul></div>}
     </section>
@@ -105,7 +106,7 @@ function History({ view }: { view: TopicView }) {
   if (!view.attempts.length) return null;
   return (
     <details className="group rounded-xl border border-border p-5">
-      <DisclosureSummary className="text-[15px] font-semibold">Every answer ({view.attempts.length})</DisclosureSummary>
+      <DisclosureSummary className="text-[15px] font-semibold">All answers ({view.attempts.length})</DisclosureSummary>
       <ol className="mt-3 divide-y divide-border border-y border-border text-sm">
         {view.attempts.map((attempt) => (
           <li key={attempt.id} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-start sm:justify-between">
@@ -123,7 +124,7 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState<"" | "lesson" | "questions">("");
-  const done = (text: string) => { toast({ tone: "success", title: text }); router.refresh(); };
+  const done = (text: string) => { if (text) toast({ tone: "success", title: text }); router.refresh(); };
   const failed = (title: string, error: unknown) => toast({ tone: "error", title, description: error instanceof Error ? error.message : undefined });
   const { progress, lesson, assessment } = view;
   const openQuestions = assessment?.items.some((item) => !item.answered) ?? false;
@@ -152,19 +153,19 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
 
   async function makeLesson() {
     setBusy("lesson");
-    try { await post(`/api/lab/topics/${topic.id}/lesson`); done("Lesson saved."); }
-    catch (error) { failed("Could not write the lesson", error); }
+    try { await post(`/api/lab/topics/${topic.id}/lesson`); done("Lesson saved"); }
+    catch (error) { failed("Couldn't write the lesson. Try again", error); }
     finally { setBusy(""); }
   }
   async function makeQuestions() {
     setBusy("questions");
     const kind = progress.status === "VALIDATED" || progress.status === "NEEDS_REVISIT" ? "review" : "assessment";
-    try { await post(`/api/lab/topics/${topic.id}/assessment`, { kind }); done("New questions ready."); }
-    catch (error) { failed("Could not write questions", error); }
+    try { await post(`/api/lab/topics/${topic.id}/assessment`, { kind }); done("Questions ready"); }
+    catch (error) { failed("Couldn't write questions. Try again", error); }
     finally { setBusy(""); }
   }
 
-  const lessonButton = <Button type="button" variant={lesson ? "outline" : "default"} disabled={busy !== ""} onClick={() => void makeLesson()}>{busy === "lesson" ? "Researching and writing, about a minute..." : lesson ? "Write a new version" : "Write the lesson"}</Button>;
+  const lessonButton = <Button type="button" variant={lesson ? "outline" : "default"} disabled={busy !== ""} onClick={() => void makeLesson()}>{busy === "lesson" ? "Writing lesson… ~1 min" : lesson ? "Rewrite lesson" : "Write lesson"}</Button>;
 
   return (
     <WorkspaceShell email={email} active="lab" termLookup={!view.closedBook}>
@@ -189,9 +190,9 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
 
         {view.closedBook ? (
           <div className="px-5 py-8 sm:px-8 lg:px-10">
-            <Empty action={<Button asChild><Link href="/lab/assessment">Back to the assessment</Link></Button>}>
-              <p className="font-semibold">Closed while your assessment is open.</p>
-              <p className="mt-1 text-muted-foreground">This topic is part of the assessment you are taking, so its lesson, practice and labs stay closed until you finish. That keeps the result about what you know now.</p>
+            <Empty action={<Button asChild><Link href="/lab/assessment">Back to assessment</Link></Button>}>
+              <p className="font-semibold">Locked during assessment</p>
+              <p className="mt-1 text-muted-foreground">Lesson, practice and labs open when it&apos;s done</p>
             </Empty>
           </div>
         ) : (
@@ -208,9 +209,9 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
               </>
             ) : (
               <Empty action={<div className="flex flex-wrap gap-2">{lessonButton}{skipLesson && <Button type="button" variant="outline" onClick={() => go(suggested)}>Skip to {steps.find((item) => item.id === suggested)?.label}</Button>}</div>}>
-                <p className="font-semibold">No lesson yet.</p>
-                <p className="mt-1 text-muted-foreground">The Researcher gathers trusted sources first, then the Tutor writes a lesson aimed at your gap. It takes about a minute.</p>
-                {skipLesson && <p className="mt-2">The baseline rated this solid, so you can skip it.</p>}
+                <p className="font-semibold">No lesson yet</p>
+                <p className="mt-1 text-muted-foreground">Written from trusted sources for your gap · ~1 min</p>
+                {skipLesson && <p className="mt-2">Baseline: Solid · safe to skip</p>}
               </Empty>
             )
           )}
@@ -224,9 +225,9 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
             <div className="space-y-6">
               <p className="max-w-[720px] text-sm text-muted-foreground">
                 {labs.every((lab) => lab.runner === "probe")
-                  ? "Your predictions are checked against real requests your browser makes now. Every answer right counts as proof."
-                  : "Code runs in your browser, cut off from your Ken OS session. A full pass counts as proof unless you looked at the solution first."}
-                {labs.some((lab) => lab.runner === "pglite") && " Database labs load a small Postgres (PGlite) into the page the first time, which takes a few seconds."}
+                  ? "Checked against real requests from your browser · all right proves the topic"
+                  : "Runs in your browser, isolated from Ken OS · a full pass proves the topic unless you opened the solution"}
+                {labs.some((lab) => lab.runner === "pglite") && <span className="block">First database lab takes a few seconds to load</span>}
               </p>
               {labs.map((lab) => lab.runner === "probe"
                 ? <ProbeLab key={lab.id} lab={lab} passed={view.passedLabs.includes(lab.id)} onDone={done} />
@@ -239,14 +240,14 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
             <div className="mx-auto max-w-[760px] space-y-6">
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
-                  <p className={label}>CHECK{assessment ? ` · ${kindWords[assessment.kind].toUpperCase()}` : ""}</p>
-                  <h2 className={cn(heading, "mt-1")}>Prove it with fresh questions</h2>
+                  {assessment && assessment.kind !== "assessment" && <p className={label}>{kindWords[assessment.kind]}</p>}
+                  <h2 className={cn(heading, assessment && assessment.kind !== "assessment" && "mt-1")}>Check</h2>
                 </div>
-                {!openQuestions && <Button type="button" disabled={busy !== ""} onClick={() => void makeQuestions()}>{busy === "questions" ? "Writing questions..." : assessment ? "Get new questions" : "Get questions"}</Button>}
+                {!openQuestions && <Button type="button" disabled={busy !== ""} onClick={() => void makeQuestions()}>{busy === "questions" ? "Writing questions…" : assessment ? "New questions" : "Get questions"}</Button>}
               </div>
-              <p className="text-sm text-muted-foreground">Written by a separate assessor that hasn&apos;t seen the lesson. Predictions are checked by running the code.</p>
+              <p className="text-sm text-muted-foreground">Questions from a separate grader that hasn&apos;t seen the lesson</p>
               {assessment?.items.map((_, index) => <Question key={`${assessment.id}-${index}`} assessment={assessment} index={index} onDone={done} />)}
-              {!assessment && <Empty>No questions yet. Get a set when you&apos;re ready; each question is graded as you answer it.</Empty>}
+              {!assessment && <Empty><p className="font-semibold">No questions yet</p><p className="mt-1 text-muted-foreground">Graded as you answer</p></Empty>}
               <Proof topic={topic} view={view} />
               <History view={view} />
             </div>

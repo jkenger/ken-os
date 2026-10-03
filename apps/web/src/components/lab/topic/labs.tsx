@@ -21,7 +21,7 @@ function Results({ results, passWord, failWord }: { results: TestResult[]; passW
     <div className="mt-4 rounded-xl border border-border p-4" role="status">
       <div className="flex flex-wrap items-center gap-3">
         <Tag value={passed === results.length ? "solid" : passed ? "partial" : "gap"}>{passed} of {results.length} passing</Tag>
-        <p className="text-sm">{passed === results.length ? "Every test passes." : passed ? "Close. Fix the failing ones below." : "Nothing passes yet."}</p>
+        <p className="text-sm">{passed === results.length ? "All tests pass" : passed ? `${results.length - passed} failing` : "All failing"}</p>
       </div>
       <ul className="mt-3 space-y-2 text-sm">
         {results.map((item) => <li key={item.name} className="flex gap-2"><Tag value={item.passed ? "solid" : "gap"}>{item.passed ? passWord : failWord}</Tag><span>{item.name}{item.error && <span className="block text-muted-foreground">{item.error}</span>}</span></li>)}
@@ -64,18 +64,18 @@ export function Lab({ lab, revealed, passed, onDone }: { lab: LabDefinition; rev
       const passedCount = outcome.results.filter((item) => item.passed).length;
       const output = outcome.results.map((item) => `${item.passed ? "PASS" : "FAIL"} ${item.name}${item.error ? `: ${item.error}` : ""}`).join("\n");
       const saved = await post<{ solutionSeen: boolean }>("/api/lab/attempts", { type: "lab", labId: lab.id, code, run: { passed: passedCount, failed: outcome.results.length - passedCount, output } });
-      onDone(saved.solutionSeen ? "Run saved. You've seen this lab's solution, so it no longer counts as proof." : "Run saved.");
+      onDone(saved.solutionSeen ? "Saved · doesn't count as proof (solution opened)" : "Saved");
     } catch (error) {
-      setProblem(error instanceof Error ? error.message : "Could not run the tests.");
+      setProblem(error instanceof Error ? error.message : "Couldn't run tests. Try again");
     } finally {
       setBusy(false);
     }
   }
 
   async function showSolution() {
-    if (!revealed && !window.confirm("After you see the solution, passing this lab won't count as proof. Show it?")) return;
-    try { setSolution((await post<{ solution: string }>(`/api/lab/labs/${lab.id}/solution`)).solution); onDone("Solution shown."); }
-    catch (error) { setProblem(error instanceof Error ? error.message : "Could not load the solution."); }
+    if (!revealed && !window.confirm("Show solution? Passing won't count as proof.")) return;
+    try { setSolution((await post<{ solution: string }>(`/api/lab/labs/${lab.id}/solution`)).solution); onDone(""); }
+    catch (error) { setProblem(error instanceof Error ? error.message : "Couldn't load the solution. Try again"); }
   }
 
   return (
@@ -98,17 +98,17 @@ export function Lab({ lab, revealed, passed, onDone }: { lab: LabDefinition; rev
           <div className="lg:sticky lg:top-28">
             <Markdown text={lab.readme} />
             <details className="group mt-4"><DisclosureSummary className="text-sm font-semibold">See the tests</DisclosureSummary><div className="mt-2"><CodeBlock code={lab.tests} label={`Tests for ${lab.title}`} /></div></details>
-            <Button type="button" variant="outline" size="sm" className="mt-4 lg:hidden" onClick={() => setTab("code")}>Go to the code</Button>
+            <Button type="button" variant="outline" size="sm" className="mt-4 lg:hidden" onClick={() => setTab("code")}>Back to code</Button>
           </div>
         </div>
         <div className={cn("min-w-0 p-5", tab !== "code" && "hidden lg:block")}>
           <p className="mb-2 text-sm font-semibold">Your code</p>
           <CodeEditor value={code} onChange={update} label={`Your code for ${lab.title}`} minHeight={260} />
-          <p className="mt-1.5 text-xs text-muted-foreground">Tab indents. Press Escape, then Tab, to move on from the editor.</p>
+          <p className="mt-1.5 text-xs text-muted-foreground">Tab indents · Esc then Tab to leave</p>
           <div className="mt-3 flex flex-wrap gap-2">
-            <Button type="button" onClick={() => void run()} disabled={busy}><Play size={15} aria-hidden="true" />{busy ? "Running..." : "Run tests"}</Button>
+            <Button type="button" onClick={() => void run()} disabled={busy}><Play size={15} aria-hidden="true" />{busy ? "Running…" : "Run tests"}</Button>
             <Button type="button" variant="outline" onClick={() => { update(lab.starter); setResults(null); }}><RotateCcw size={15} aria-hidden="true" />Reset to starter</Button>
-            <Button type="button" variant="ghost" onClick={() => void showSolution()}>{revealed ? "Show solution again" : "Show solution"}</Button>
+            <Button type="button" variant="ghost" onClick={() => void showSolution()}>Show solution</Button>
           </div>
           {problem && <p className="mt-3 rounded-lg bg-muted px-4 py-3 text-sm" role="alert">{problem}</p>}
           {results && <Results results={results} passWord="Pass" failWord="Fail" />}
@@ -131,15 +131,15 @@ export function ProbeLab({ lab, passed, onDone }: { lab: LabDefinition; passed: 
     setBusy(true); setProblem(""); setResults(null);
     try {
       const probe = PROBES[lab.probe!.id];
-      if (!probe) throw new Error("This check isn't available in this build.");
+      if (!probe) throw new Error("Check unavailable");
       const observed = await probe();
       const score = scoreProbe(questions, predicted, observed);
       setResults(score.results);
       const output = score.results.map((item) => `${item.passed ? "PASS" : "FAIL"} ${item.name}${item.error ? `: ${item.error}` : ""}`).join("\n");
       await post("/api/lab/attempts", { type: "lab", labId: lab.id, code: JSON.stringify(predicted), run: { passed: score.passed, failed: score.failed, output } });
-      onDone("Check saved.");
+      onDone("Saved");
     } catch (error) {
-      setProblem(error instanceof Error ? error.message : "The check could not run.");
+      setProblem(error instanceof Error ? error.message : "Couldn't run the check. Try again");
     } finally {
       setBusy(false);
     }
@@ -150,7 +150,7 @@ export function ProbeLab({ lab, passed, onDone }: { lab: LabDefinition; passed: 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="font-display text-lg font-semibold tracking-[-0.03em]">{lab.title}</h3>
-          <p className={cn(label, "mt-1")}>PREDICT, THEN CHECK</p>
+          <p className={cn(label, "mt-1")}>Predict, then check</p>
         </div>
         {passed && <Tag value="solid">Passed</Tag>}
       </div>
@@ -170,7 +170,7 @@ export function ProbeLab({ lab, passed, onDone }: { lab: LabDefinition; passed: 
           </li>
         ))}
       </ol>
-      <Button type="button" className="mt-5" disabled={busy || !ready} onClick={() => void check()}><Play size={15} aria-hidden="true" />{busy ? "Running real requests..." : ready ? "Run the check" : "Answer every question first"}</Button>
+      <Button type="button" className="mt-5" disabled={busy || !ready} onClick={() => void check()}><Play size={15} aria-hidden="true" />{busy ? "Running…" : ready ? "Run check" : "Answer all first"}</Button>
       {problem && <p className="mt-3 rounded-lg bg-muted px-4 py-3 text-sm" role="alert">{problem}</p>}
       {results && <Results results={results} passWord="Right" failWord="Wrong" />}
     </article>

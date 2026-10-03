@@ -26,7 +26,7 @@ export function LessonReader({ lesson, sources, sourceCheckedAt, footer }: { les
     sections.push({
       id: "deeper", title: "Go deeper", body: (
         <>
-          <p className="text-sm text-muted-foreground">Optional. Open what you&apos;re curious about.</p>
+          <p className="text-sm text-muted-foreground">Optional</p>
           <div className="mt-3 divide-y divide-border border-y border-border">
             {lesson.deeper.map((item) => (
               <details key={item.title} className="group py-3">
@@ -40,7 +40,7 @@ export function LessonReader({ lesson, sources, sourceCheckedAt, footer }: { les
     });
   }
   if (lesson.noteSuggestions.length) {
-    sections.push({ id: "notes", title: "For your notes", body: <><p className="text-sm text-muted-foreground">Write these up in Obsidian in your own words.</p><ul className="mt-2 list-disc pl-5 text-[15px]">{lesson.noteSuggestions.map((item) => <li key={item}>{item}</li>)}</ul></> });
+    sections.push({ id: "notes", title: "For your notes", body: <><p className="text-sm text-muted-foreground">Write up in Obsidian, in your own words</p><ul className="mt-2 list-disc pl-5 text-[15px]">{lesson.noteSuggestions.map((item) => <li key={item}>{item}</li>)}</ul></> });
   }
   const httpsSources = sources.filter((source) => source.url.startsWith("https://"));
   if (httpsSources.length) {
@@ -74,7 +74,7 @@ export function LessonReader({ lesson, sources, sourceCheckedAt, footer }: { les
     <div className="grid gap-10 lg:grid-cols-[190px_minmax(0,1fr)]">
       <nav aria-label="Lesson outline" className="hidden lg:block">
         <div className="sticky top-28">
-          <p className={label}>ON THIS PAGE</p>
+          <p className={label}>On this page</p>
           <ol className="mt-3 space-y-2 border-l border-border text-sm">
             {sections.map((section) => (
               <li key={section.id}>
