@@ -37,23 +37,14 @@ export const appLanguageAllowlist: { file: string; text: string }[] = [
 
   { file: "components/design-system-workspace.tsx", text: "Why it looks this way." },
 
-  { file: "components/lab/assessment/lab-assessment.tsx", text: "Could not save." },
 
-  { file: "components/lab/assessment/lab-assessment.tsx", text: "Could not start." },
 
-  { file: "components/lab/assessment/lab-assessment.tsx", text: "Could not write the questions." },
 
-  { file: "components/lab/assessment/lab-assessment.tsx", text: "No lessons yet, so two short screening questions estimate how deep you go." },
 
-  { file: "components/lab/assessment/lab-assessment.tsx", text: "Ready when you are." },
 
-  { file: "components/lab/assessment/lab-assessment.tsx", text: "Saving..." },
 
-  { file: "components/lab/assessment/lab-assessment.tsx", text: "Starting..." },
 
-  { file: "components/lab/assessment/lab-assessment.tsx", text: "The assessment goes chapter by chapter, in course order. Written topics get one question, and a follow-up only where it helps. Chapters with no lessons yet get two short screening questions. Topics you've already proven are skipped." },
 
-  { file: "components/lab/assessment/lab-assessment.tsx", text: "Writing questions..." },
 
 
 
