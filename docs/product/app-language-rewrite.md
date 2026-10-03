@@ -1,6 +1,6 @@
 # App language rewrite plan
 
-Status: ready for implementation, 3 Oct 2026. Written for a separate implementation session.
+Status: implemented 3 Oct 2026, in nine slice PRs and a final cleanup. Written for a separate implementation session.
 
 This plan applies [app-language.md](app-language.md) to every live screen. That file owns the rule and the word list; this file lists every change, file by file, and the order to ship them in. Read `app-language.md` first.
 
