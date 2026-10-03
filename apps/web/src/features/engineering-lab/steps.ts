@@ -77,3 +77,43 @@ export function topicSteps(input: StepInput): { steps: StepState[]; suggested: S
 export function stepPosition(steps: StepState[], id: StepId) {
   return { number: steps.findIndex((step) => step.id === id) + 1, total: steps.length };
 }
+
+/** The step input for a topic, from the same data the topic page shows. Shared by the topic page and Today. */
+export function stepsForTopic(view: StepView, labs: { id: string; modes: readonly string[] }[], prove: readonly string[], skipLesson: boolean) {
+  const { lesson, assessment } = view;
+  const assessorWrites = prove.some((mode) => !labs.some((lab) => lab.modes.includes(mode)));
+  const answered = assessment?.items.filter((item) => item.answered && !item.answered.voided) ?? [];
+  return topicSteps({
+    status: view.progress.status,
+    reviewDue: view.reviewDue,
+    hasLesson: Boolean(lesson),
+    skipLesson,
+    practice: {
+      predicts: lesson?.practice.filter((item) => item.kind === "predict").length ?? 0,
+      solid: lesson?.practice.filter((item, index) => item.kind === "predict" && view.practiceResults[index]?.label === "solid").length ?? 0,
+    },
+    labs: { total: labs.length, passed: labs.filter((lab) => view.passedLabs.includes(lab.id)).length },
+    check: assessorWrites ? {
+      total: assessment?.items.length ?? 0,
+      answered: assessment?.items.filter((item) => item.answered).length ?? 0,
+      solid: answered.filter((item) => item.answered!.label === "solid").length,
+    } : null,
+  });
+}
+
+/** The parts of a topic view that decide its steps. */
+export interface StepView {
+  progress: { status: Status };
+  reviewDue: boolean;
+  lesson: { practice: { kind: string }[] } | null;
+  practiceResults: Record<number, { label: string } | undefined>;
+  passedLabs: string[];
+  assessment: { items: { answered: null | { label: string; voided: boolean } }[] } | null;
+}
+
+/** The step Today points at for the planned topic, worked out the same way as on the topic page. */
+export interface NextStep {
+  steps: StepState[];
+  suggested: StepId;
+  place: { track: string; chapterNumber: number; chapterTitle: string };
+}

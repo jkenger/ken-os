@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { stepPosition, topicSteps, type StepInput } from "./steps";
+import { stepPosition, stepsForTopic, topicSteps, type StepInput } from "./steps";
 
 const base: StepInput = {
   status: "NOT_STARTED", reviewDue: false, hasLesson: false, skipLesson: false,
@@ -43,4 +43,19 @@ test("Check is done only when every answer in the set is solid", () => {
   assert.equal(partly.steps[3].done, false);
   assert.equal(partly.steps[3].detail, "1 of 2 solid");
   assert.equal(partly.suggested, "check");
+});
+
+test("the shared builder reads steps from a topic view the same way for Today and the topic page", () => {
+  const view = {
+    progress: { status: "LEARNING" as const }, reviewDue: false,
+    lesson: { practice: [{ kind: "predict" }, { kind: "think" }, { kind: "predict" }] },
+    practiceResults: { 0: { label: "solid" } }, passedLabs: [],
+    assessment: { items: [{ answered: { label: "solid", voided: false } }, { answered: null }] },
+  };
+  const { steps, suggested } = stepsForTopic(view, [{ id: "lab-a", modes: ["debug"] }], ["predict", "explain", "debug"], false);
+  assert.equal(suggested, "practice");
+  assert.equal(steps.find((step) => step.id === "practice")?.detail, "1 of 2 right");
+  assert.equal(steps.find((step) => step.id === "check")?.detail, "1 of 2 answered");
+  const labOnly = stepsForTopic(view, [{ id: "lab-a", modes: ["predict", "explain"] }], ["predict", "explain"], false);
+  assert.equal(labOnly.steps.some((step) => step.id === "check"), false, "no Check step when labs prove every mode");
 });

@@ -7,7 +7,7 @@ import type { LabDefinition, Topic } from "@ken-os/domain";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button } from "@/components/ui/button";
 import { DisclosureSummary } from "@/components/ui/disclosure-summary";
-import { topicSteps, type StepId } from "@/features/engineering-lab/steps";
+import { stepsForTopic, type StepId } from "@/features/engineering-lab/steps";
 import type { TopicView } from "@/features/engineering-lab/store";
 import { cn } from "@/lib/utils";
 import { Markdown } from "./markdown";
@@ -125,21 +125,7 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
   const done = (text: string) => { setMessage(text); router.refresh(); };
   const { progress, lesson, assessment } = view;
   const openQuestions = assessment?.items.some((item) => !item.answered) ?? false;
-  const assessorWrites = topic.prove.some((mode) => !labs.some((lab) => lab.modes.includes(mode)));
-  const answered = assessment?.items.filter((item) => item.answered && !item.answered.voided) ?? [];
-
-  const { steps, suggested } = topicSteps({
-    status: progress.status,
-    reviewDue: view.reviewDue,
-    hasLesson: Boolean(lesson),
-    skipLesson,
-    practice: {
-      predicts: lesson?.practice.filter((item) => item.kind === "predict").length ?? 0,
-      solid: lesson?.practice.filter((item, index) => item.kind === "predict" && view.practiceResults[index]?.label === "solid").length ?? 0,
-    },
-    labs: { total: labs.length, passed: labs.filter((lab) => view.passedLabs.includes(lab.id)).length },
-    check: assessorWrites ? { total: assessment?.items.length ?? 0, answered: assessment?.items.filter((item) => item.answered).length ?? 0, solid: answered.filter((item) => item.answered!.label === "solid").length } : null,
-  });
+  const { steps, suggested } = stepsForTopic(view, labs, topic.prove, skipLesson);
   const [step, setStep] = useState<StepId>(initialStep && steps.some((item) => item.id === initialStep) ? initialStep : suggested);
   const stepsTop = useRef<HTMLDivElement>(null);
   // Shown for three days after the topic turns proven, then it's just the status.
