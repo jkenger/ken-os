@@ -1,6 +1,6 @@
 export const designSystem = {
   name: "Ken OS visual system",
-  version: "0.1.0-working.5",
+  version: "0.1.0-working.6",
   status: "working",
   statusLabel: "Working · not yet approved",
   fonts: {
@@ -15,11 +15,17 @@ export const designSystem = {
     { variable: "primary-foreground", value: "#fffefb", label: "On primary", use: "Text on the primary action" },
     { variable: "muted", value: "#f4f1eb", label: "Soft surface", use: "Subtle section separation" },
     { variable: "secondary", value: "#edeae4", label: "Secondary surface", use: "Quiet controls and selected navigation" },
-    { variable: "muted-foreground", value: "#766f66", label: "Muted ink", use: "Supporting copy and metadata" },
+    { variable: "muted-foreground", value: "#6e675e", label: "Muted ink", use: "Supporting copy and metadata; at least 4.5:1 on every Ken OS surface" },
     { variable: "border", value: "#ddd9d2", label: "Hairline", use: "Section dividers and card outlines" },
     { variable: "input", value: "#d5d0c8", label: "Input edge", use: "Form-control boundary" },
     { variable: "ring", value: "#726a5e", label: "Focus", use: "Visible keyboard focus" },
     { variable: "destructive", value: "#bd3434", label: "Destructive", use: "Destructive actions and error emphasis" },
+    { variable: "status-solid", value: "#2d6a45", label: "Solid status", use: "Text for solid, proven or passing; always paired with words" },
+    { variable: "status-solid-surface", value: "#e5efe7", label: "Solid tint", use: "Background behind solid status text" },
+    { variable: "status-partial", value: "#7a5710", label: "Partial status", use: "Text for partly there, in progress or close" },
+    { variable: "status-partial-surface", value: "#f5ecd6", label: "Partial tint", use: "Background behind partial status text" },
+    { variable: "status-gap", value: "#9a2f2b", label: "Gap status", use: "Text for gaps, misconceptions or failures" },
+    { variable: "status-gap-surface", value: "#f6e2df", label: "Gap tint", use: "Background behind gap status text" },
   ],
   typeScale: [
     { role: "Page title", desktop: "48px", mobile: "36px", note: "Manrope, bold, tight tracking" },
@@ -48,6 +54,7 @@ export const designSystem = {
   decisions: [
     { title: "Warm monochrome, not green or blue", rationale: "A restrained light base gives content and work artifacts the emphasis.", rejected: "Green and blue accent-led directions", recorded: "2026-09-24" },
     { title: "Card styling deferred", rationale: "Use shadcn's default Card while the owner considers a more distinctive shared card treatment.", rejected: "Premature custom compact/feature Card variants", recorded: "2026-09-24" },
+    { title: "Three status colours, for meaning only", rationale: "Solid, partial and gap need to read at a glance in learning feedback. Each text colour is at least 5.4:1 on its tint and on the canvas, and always comes with words.", rejected: "Grey-only status tags; colour as decoration", recorded: "2026-10-03" },
     { title: "One working system", rationale: "A single coherent baseline is easier to apply and evaluate before adding presets.", rejected: "Multiple themes in the first release", recorded: "2026-09-24" },
   ],
 } as const;

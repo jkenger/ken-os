@@ -5,7 +5,7 @@ description: Apply the owner's working Ken OS-derived visual baseline to a perso
 
 # Ken OS design baseline
 
-Version: 0.1.0-working.5. Status: **working / not yet approved**. This is an optional visual preset, not a project scaffold. The user's explicit choices and the target project's existing design system take precedence.
+Version: 0.1.0-working.6. Status: **working / not yet approved**. This is an optional visual preset, not a project scaffold. The user's explicit choices and the target project's existing design system take precedence.
 
 ## Apply it
 

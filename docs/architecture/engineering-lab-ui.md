@@ -100,16 +100,16 @@ Defaults the owner accepted without a separate question: term lookups get their 
 
 **Ken OS stays the base.** Manrope headings, Source Sans 3 body text, the warm monochrome tokens, the same radii and spacing. Nothing here is a framework default.
 
-**New tokens, for meaning only.** These will move into `features/design-system/contract.ts` when built:
+**New tokens, for meaning only.** They live in `features/design-system/contract.ts` (added in step 1), with Tailwind names such as `bg-status-solid-surface` and `text-status-solid`:
 
-| Token | Text | Tint | Text on tint | Text on page |
+| Token | Text | Tint (`-surface`) | Text on tint | Text on page |
 |---|---|---|---|---|
-| `--lab-solid` | `#2d6a45` | `#e5efe7` | 5.47:1 | 6.39:1 |
-| `--lab-partial` | `#7a5710` | `#f5ecd6` | 5.58:1 | 6.51:1 |
-| `--lab-gap` | `#9a2f2b` | `#f6e2df` | 5.99:1 | 7.40:1 |
+| `--status-solid` | `#2d6a45` | `#e5efe7` | 5.47:1 | 6.39:1 |
+| `--status-partial` | `#7a5710` | `#f5ecd6` | 5.58:1 | 6.51:1 |
+| `--status-gap` | `#9a2f2b` | `#f6e2df` | 5.99:1 | 7.40:1 |
 
 - **Colour never works alone.** Every status also has words, and "Proven" and "Not assessed yet" have an icon.
-- **Known contrast problem in the current theme:** `--muted-foreground` (`#766f66`) on `--muted` (`#f4f1eb`) is **4.40:1**, below 4.5:1. The mockups avoid that pairing; the real build should either darken the muted text or never put muted text on a muted surface.
+- **Muted text fixed in step 1:** `--muted-foreground` was `#766f66`, only 4.40:1 on `--muted`. It is now `#6e675e`: 5.53:1 on the page, 4.95:1 on `--muted` and 4.65:1 on `--secondary`.
 - **Ken OS has no dark theme yet.** When it gets one, these tokens need dark values measured separately.
 - **Motion only where it explains something:** the step bar's underline, the "My gaps" switch, collapsible sections. No fade-in on scroll.
 
@@ -138,7 +138,7 @@ The mockup versions live in `apps/web/src/components/lab-ui-preview/` and are th
 
 ## Build order
 
-1. **CodeEditor and Pill** in place of the text boxes and tags. *Check: every existing lab still runs, and contrast holds.*
+1. **CodeEditor and Pill** in place of the text boxes and tags. *Check: every existing lab still runs, and contrast holds.* **Done 2026-10-03:** `components/ui/code-editor.tsx` and `components/ui/pill.tsx`; lab code, tests, solutions, questions and lesson code all use the editor.
 2. **The topic page as steps**, Learn as a reader, labs as a split screen. *Check: on a phone and a desktop, you can always tell which step you're on.*
 3. **Feedback:** the prediction diff, then the grader's rubric results and the checklist. *Check: the owner's "outer start, body" answer shows the two missing lines at a glance.*
 4. **Course outline,** "My gaps" and placement checks. *Check: the outline matches §24, and gap focus hides exactly the known topics.*

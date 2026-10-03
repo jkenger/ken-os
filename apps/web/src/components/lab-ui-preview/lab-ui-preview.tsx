@@ -8,7 +8,7 @@ import { DisclosureSummary } from "@/components/ui/disclosure-summary";
 import { Markdown } from "@/components/lab/markdown";
 import { cn } from "@/lib/utils";
 import { check, isGap, lab, lesson, practice, statusText, tracks, type MockStatus, type MockTopic } from "./mock-data";
-import { CodeEditor, eyebrow, labTokens, Pill, PredictionDiff, RubricChecklist, StepBar, TermLookup, UntestedIcon, useTerms, type Step, type StepId, type Tone } from "./parts";
+import { CodeEditor, eyebrow, Pill, PredictionDiff, RubricChecklist, StepBar, TermLookup, UntestedIcon, useTerms, type Step, type StepId, type Tone } from "./parts";
 
 export type Screen = "today" | "course" | "topic" | "terms";
 
@@ -44,7 +44,7 @@ function Today({ go }: { go: (screen: Screen, step?: StepId) => void }) {
         <h2 className="mt-3 font-display text-3xl font-semibold tracking-[-0.05em]">Event loop, tasks and microtasks</h2>
         <p className="mt-2 text-[15px] text-muted-foreground">Step 2 of 4 · Practice · 1 of 2 predictions done</p>
         <div className="mt-5 grid grid-cols-4 gap-1.5" aria-hidden="true">
-          {["done", "current", "todo", "todo"].map((state, index) => <span key={index} className={cn("h-1.5 rounded-full", state === "done" ? "bg-(--lab-solid)" : state === "current" ? "bg-foreground" : "bg-border")} />)}
+          {["done", "current", "todo", "todo"].map((state, index) => <span key={index} className={cn("h-1.5 rounded-full", state === "done" ? "bg-status-solid" : state === "current" ? "bg-foreground" : "bg-border")} />)}
         </div>
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <Button type="button" size="lg" onClick={() => go("topic", "practice")}>Continue practice<ArrowRight aria-hidden="true" /></Button>
@@ -144,7 +144,7 @@ function Course({ go }: { go: (screen: Screen, step?: StepId) => void }) {
                 </div>
                 <div className="w-40 text-right text-sm">
                   {written ? <>{done} of {chapter.topics.length} known or proven</> : <span className="text-muted-foreground">Not written yet</span>}
-                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-border" aria-hidden="true"><div className="h-full bg-(--lab-solid)" style={{ width: `${(done / chapter.topics.length) * 100}%` }} /></div>
+                  <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-border" aria-hidden="true"><div className="h-full bg-status-solid" style={{ width: `${(done / chapter.topics.length) * 100}%` }} /></div>
                 </div>
               </div>
               {shown.length > 0 && <ol className="divide-y divide-border">{shown.map((topic) => <TopicRow key={topic.id} topic={topic} number={`${chapterIndex + 1}.${chapter.topics.indexOf(topic) + 1}`} go={go} />)}</ol>}
@@ -189,7 +189,7 @@ function LearnStep({ next }: { next: () => void }) {
         <p className="rounded-lg bg-muted px-4 py-3 text-sm">Select any word you don&apos;t know, such as <strong>call stack</strong> or <strong>task</strong>, then press <strong>Explain</strong>.</p>
         <section id="lesson-0"><h3 className="mb-2 font-display text-lg font-semibold">Why it matters</h3><Markdown text={lesson.whyItMatters} /></section>
         <section id="lesson-1"><h3 className="mb-2 font-display text-lg font-semibold">What you already know</h3><Markdown text={lesson.whatYouKnow} /></section>
-        <section id="lesson-2" className="border-l-2 border-(--lab-gap) pl-4"><h3 className="mb-2 font-display text-lg font-semibold">The gap</h3><Markdown text={lesson.theGap} /></section>
+        <section id="lesson-2" className="border-l-2 border-status-gap pl-4"><h3 className="mb-2 font-display text-lg font-semibold">The gap</h3><Markdown text={lesson.theGap} /></section>
         <section id="lesson-3"><h3 className="mb-2 font-display text-lg font-semibold">The theory</h3><Markdown text={lesson.theory.map((line, index) => `${index + 1}. ${line}`).join("\n")} /></section>
         <section id="lesson-4" className="rounded-xl bg-muted p-5"><h3 className="mb-2 font-display text-lg font-semibold">Mental model</h3><Markdown text={lesson.mentalModel} /></section>
         <section id="lesson-5"><h3 className="mb-3 font-display text-lg font-semibold">Worked example</h3><CodeEditor value={lesson.workedExample} readOnly label="Worked example" /><div className="mt-3"><Markdown text={lesson.walkthrough} /></div></section>
@@ -228,7 +228,7 @@ function PracticeStep({ next }: { next: () => void }) {
     <div className="mx-auto max-w-[720px]">
       <div className="flex items-center justify-between gap-3">
         <p className={eyebrow}>PREDICTION {index + 1} OF {practice.length}</p>
-        <div className="flex gap-1.5" aria-hidden="true">{practice.map((_, dot) => <span key={dot} className={cn("h-1.5 w-8 rounded-full", dot < index ? "bg-(--lab-solid)" : dot === index ? "bg-foreground" : "bg-border")} />)}</div>
+        <div className="flex gap-1.5" aria-hidden="true">{practice.map((_, dot) => <span key={dot} className={cn("h-1.5 w-8 rounded-full", dot < index ? "bg-status-solid" : dot === index ? "bg-foreground" : "bg-border")} />)}</div>
       </div>
       <p className="mt-3 text-lg leading-7">{item.prompt}</p>
       <div className="mt-4"><CodeEditor key={index} value={item.code} readOnly label="Code to predict" /></div>
@@ -314,7 +314,7 @@ function CheckStep() {
   return (
     <div className="mx-auto max-w-[720px] space-y-6">
       {proven && (
-        <div className="rounded-xl bg-(--lab-solid-bg) p-6 text-(--lab-solid)" role="status">
+        <div className="rounded-xl bg-status-solid-surface p-6 text-status-solid" role="status">
           <p className="flex items-center gap-2 text-sm font-bold tracking-[0.12em]"><Sparkles size={16} aria-hidden="true" />TOPIC PROVEN</p>
           <p className="mt-2 font-display text-2xl font-semibold tracking-[-0.04em] text-foreground">Event loop, tasks and microtasks</p>
           <p className="mt-1 text-sm text-foreground">Every part shown, two of them by running code. First review on Oct 5.</p>
@@ -440,7 +440,7 @@ export function LabUiPreview({ initialScreen, initialStep }: { initialScreen: Sc
 
   return (
     <WorkspaceShell email="preview@example.invalid" active="lab" preview>
-      <div style={labTokens} className="min-h-[calc(100vh-88px)] border-x border-border">
+      <div className="min-h-[calc(100vh-88px)] border-x border-border">
         <div className="flex flex-wrap items-center gap-2 border-b border-dashed border-input bg-muted/50 px-5 py-2.5 text-sm sm:px-8 lg:px-10">
           <span className="font-semibold">UI direction mockup</span>
           <span className="text-muted-foreground">·</span>

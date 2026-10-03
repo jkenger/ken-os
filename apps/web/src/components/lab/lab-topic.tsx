@@ -1,12 +1,14 @@
 "use client";
 
-import { useEffect, useState, type KeyboardEvent } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ExternalLink, Play, RotateCcw } from "lucide-react";
 import { parsePredictedLines, scoreProbe, type LabDefinition, type PracticePredict as PracticePredictItem, type Topic } from "@ken-os/domain";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button } from "@/components/ui/button";
+import { CodeEditor } from "@/components/ui/code-editor";
 import { DisclosureSummary } from "@/components/ui/disclosure-summary";
+import { Pill } from "@/components/ui/pill";
 import type { SavedAnswer, TopicView } from "@/features/engineering-lab/store";
 import { buildLabScript, buildPredictScript, PGLITE_URL, type TestResult } from "@/features/engineering-lab/runner/harness";
 import { PROBES } from "@/features/engineering-lab/runner/probes";
@@ -16,7 +18,6 @@ import { CodeBlock, Markdown } from "./markdown";
 import { formatDate, kindWords, label, labelWords, modeWords, statusWords, toneFor } from "./words";
 
 const textarea = "w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm leading-5 outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
-const codeArea = cn(textarea, "min-h-[220px] font-mono text-[13px] leading-5");
 const section = "scroll-mt-24 border-b border-border px-5 py-7 sm:px-8 lg:px-10";
 const heading = "mt-2 font-display text-2xl font-semibold tracking-[-0.05em]";
 
@@ -35,16 +36,7 @@ async function realOutput(code: string) {
 }
 
 function Tag({ value, children }: { value: string; children: React.ReactNode }) {
-  return <span className={cn("inline-flex h-6 shrink-0 items-center rounded-md px-2 text-xs font-semibold", toneFor(value))}>{children}</span>;
-}
-
-function insertTab(event: KeyboardEvent<HTMLTextAreaElement>, set: (value: string) => void) {
-  if (event.key !== "Tab" || event.shiftKey) return;
-  event.preventDefault();
-  const target = event.currentTarget;
-  const { selectionStart, selectionEnd, value } = target;
-  set(`${value.slice(0, selectionStart)}  ${value.slice(selectionEnd)}`);
-  requestAnimationFrame(() => target.setSelectionRange(selectionStart + 2, selectionStart + 2));
+  return <Pill tone={toneFor(value)}>{children}</Pill>;
 }
 
 function Lab({ lab, revealed, onDone }: { lab: LabDefinition; revealed: boolean; onDone: (message: string) => void }) {
@@ -100,10 +92,11 @@ function Lab({ lab, revealed, onDone }: { lab: LabDefinition; revealed: boolean;
         <span className={label}>{lab.modes.map((mode) => modeWords[mode]).join(" · ").toUpperCase()}</span>
       </div>
       <div className="mt-3"><Markdown text={lab.readme} /></div>
-      <label className="mt-5 block">
-        <span className="mb-2 block text-sm font-semibold">Your code</span>
-        <textarea className={codeArea} spellCheck={false} value={code} onChange={(event) => update(event.target.value)} onKeyDown={(event) => insertTab(event, update)} aria-describedby={`${lab.id}-tests`} />
-      </label>
+      <div className="mt-5">
+        <p className="mb-2 text-sm font-semibold">Your code</p>
+        <CodeEditor value={code} onChange={update} label={`Your code for ${lab.title}`} minHeight={220} />
+        <p className="mt-1.5 text-xs text-muted-foreground">Tab indents. Press Escape, then Tab, to move on from the editor.</p>
+      </div>
       <div className="mt-3 flex flex-wrap gap-2">
         <Button type="button" onClick={() => void run()} disabled={busy}><Play size={15} aria-hidden="true" />{busy ? "Running..." : "Run tests"}</Button>
         <Button type="button" variant="outline" onClick={() => { update(lab.starter); setResults(null); }}><RotateCcw size={15} aria-hidden="true" />Reset to starter</Button>
@@ -115,8 +108,8 @@ function Lab({ lab, revealed, onDone }: { lab: LabDefinition; revealed: boolean;
           {results.map((item) => <li key={item.name} className="flex gap-2"><Tag value={item.passed ? "solid" : "gap"}>{item.passed ? "Pass" : "Fail"}</Tag><span>{item.name}{item.error && <span className="block text-muted-foreground">{item.error}</span>}</span></li>)}
         </ul>
       )}
-      <details className="group mt-4" id={`${lab.id}-tests`}><DisclosureSummary className="text-xs font-semibold">See the tests</DisclosureSummary><div className="mt-2"><CodeBlock code={lab.tests} /></div></details>
-      {solution && <div className="mt-4"><p className="mb-2 text-sm font-semibold">Solution</p><CodeBlock code={solution} /></div>}
+      <details className="group mt-4" id={`${lab.id}-tests`}><DisclosureSummary className="text-xs font-semibold">See the tests</DisclosureSummary><div className="mt-2"><CodeBlock code={lab.tests} label={`Tests for ${lab.title}`} /></div></details>
+      {solution && <div className="mt-4"><p className="mb-2 text-sm font-semibold">Solution</p><CodeBlock code={solution} label={`Solution for ${lab.title}`} /></div>}
     </article>
   );
 }
@@ -259,10 +252,10 @@ function Question({ assessment, index, onDone }: { assessment: AssessmentView; i
     <article className="mt-5 rounded-xl border border-border p-5">
       <p className={label}>QUESTION {index + 1} · {modeWords[item.mode].toUpperCase()}</p>
       <p className="mt-2 text-[15px] leading-6">{item.prompt}</p>
-      {item.code && <div className="mt-3"><CodeBlock code={item.code} /></div>}
+      {item.code && <div className="mt-3"><CodeBlock code={item.code} label={`Code for question ${index + 1}`} /></div>}
       {item.answered ? (
         <div className="mt-4 rounded-lg bg-muted/60 p-4 text-sm" role="status">
-          <Tag value={item.answered.voided ? "partial" : item.answered.label}>{item.answered.voided ? "Thrown out" : labelWords[item.answered.label as keyof typeof labelWords]}</Tag>
+          <Tag value={item.answered.voided ? "voided" : item.answered.label}>{item.answered.voided ? "Thrown out" : labelWords[item.answered.label as keyof typeof labelWords]}</Tag>
           <p className="mt-2 leading-5">{item.answered.feedback}</p>
           <YourAnswer answer={item.answered.answer} />
           <Explanation text={item.answered.explanation} />
@@ -312,10 +305,10 @@ function PracticePredict({ lessonId, index, item, result, onDone }: { lessonId: 
   return (
     <div className="mt-4 rounded-xl border border-border p-4">
       <p className="text-[15px] leading-6">{item.prompt}</p>
-      <div className="mt-3"><CodeBlock code={item.code} /></div>
+      <div className="mt-3"><CodeBlock code={item.code} label={`Code for practice ${index + 1}`} /></div>
       {result && !retrying ? (
         <div className="mt-3 rounded-lg bg-muted/60 p-4 text-sm" role="status">
-          <Tag value={result.voided ? "partial" : result.label}>{result.voided ? "Thrown out" : labelWords[result.label as keyof typeof labelWords]}</Tag>
+          <Tag value={result.voided ? "voided" : result.label}>{result.voided ? "Thrown out" : labelWords[result.label as keyof typeof labelWords]}</Tag>
           <p className="mt-2 leading-5">{result.feedback}</p>
           <YourAnswer answer={result.answer} />
           <Explanation text={item.explanation} />
@@ -402,7 +395,7 @@ export function LabTopic({ email, topic, view, labs, skipLesson }: { email: stri
               {([["Why it matters", lesson.sections.whyItMatters], ["What you already know", lesson.sections.whatYouKnow], ["The gap", lesson.sections.theGap], ["The theory", lesson.sections.theory], ["Mental model", lesson.sections.mentalModel]] as const).map(([title, text]) => (
                 <div key={title}><h3 className="mb-2 font-semibold">{title}</h3><Markdown text={text} /></div>
               ))}
-              <div><h3 className="mb-2 font-semibold">Worked example</h3><CodeBlock code={lesson.sections.workedExample.code} /><div className="mt-3"><Markdown text={lesson.sections.workedExample.walkthrough} /></div></div>
+              <div><h3 className="mb-2 font-semibold">Worked example</h3><CodeBlock code={lesson.sections.workedExample.code} label="Worked example" /><div className="mt-3"><Markdown text={lesson.sections.workedExample.walkthrough} /></div></div>
               <div>
                 <h3 className="font-semibold">Practice</h3>
                 <p className="text-sm text-muted-foreground">For learning. Predictions are checked by running the code; they help, but only the check below can prove the topic.</p>
@@ -463,7 +456,7 @@ export function LabTopic({ email, topic, view, labs, skipLesson }: { email: stri
               {view.attempts.map((attempt) => (
                 <li key={attempt.id} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="min-w-0"><p className="font-semibold">{kindWords[attempt.kind]} · {modeWords[attempt.mode]}</p><p className="text-muted-foreground">{attempt.feedback}</p></div>
-                  <div className="flex shrink-0 items-center gap-2"><Tag value={attempt.voided ? "partial" : attempt.label}>{attempt.voided ? "Thrown out" : labelWords[attempt.label as keyof typeof labelWords]}</Tag><span className="text-muted-foreground">{formatDate(attempt.createdAt)}</span></div>
+                  <div className="flex shrink-0 items-center gap-2"><Tag value={attempt.voided ? "voided" : attempt.label}>{attempt.voided ? "Thrown out" : labelWords[attempt.label as keyof typeof labelWords]}</Tag><span className="text-muted-foreground">{formatDate(attempt.createdAt)}</span></div>
                 </li>
               ))}
             </ol>

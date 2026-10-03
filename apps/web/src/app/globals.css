@@ -24,6 +24,12 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-status-solid: var(--status-solid);
+  --color-status-solid-surface: var(--status-solid-surface);
+  --color-status-partial: var(--status-partial);
+  --color-status-partial-surface: var(--status-partial-surface);
+  --color-status-gap: var(--status-gap);
+  --color-status-gap-surface: var(--status-gap-surface);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);

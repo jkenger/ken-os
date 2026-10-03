@@ -1,4 +1,5 @@
 import type { Label, Status } from "@ken-os/domain";
+import type { PillTone } from "@/components/ui/pill";
 
 // Screen wording for codes. The UI says what a person would say, not the internal status names.
 
@@ -37,11 +38,12 @@ export const kindWords: Record<string, string> = {
 
 export const label = "text-[11px] font-bold tracking-[0.15em] text-muted-foreground";
 
-/** Strong text for solid and proven, muted for everything else. Meaning never depends on color alone. */
-export function toneFor(value: string) {
-  if (value === "solid" || value === "VALIDATED") return "bg-primary text-primary-foreground";
-  if (value === "misconception" || value === "gap" || value === "NEEDS_REVISIT") return "border border-foreground/60 text-foreground";
-  return "bg-muted text-foreground";
+/** Which status colour a grade or status gets. The Pill always shows the words too, so meaning never depends on colour. */
+export function toneFor(value: string): PillTone {
+  if (value === "solid" || value === "VALIDATED") return "solid";
+  if (value === "partial" || value === "rusty" || value === "LEARNING" || value === "PRACTICING") return "partial";
+  if (value === "misconception" || value === "gap" || value === "NEEDS_REVISIT") return "gap";
+  return "neutral";
 }
 
 export function formatDate(value: string) {
