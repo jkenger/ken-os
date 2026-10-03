@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import type { GuideMessage, IntakeAnswers } from "@ken-os/domain";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { post, textarea } from "../topic/client";
-import { label } from "../words";
 
 export interface GuideProposals {
   intake: IntakeAnswers | null;
@@ -17,11 +16,15 @@ export interface GuideProposals {
  * A conversation with the Guide. Its replies can carry proposals (an intake, a direction, a new chapter); the parent
  * shows them as things to confirm. Nothing is decided by the conversation itself.
  */
-export function GuideChat({ phase, history, onProposals, opener }: {
+export function GuideChat({ phase, history, onProposals, opener, subtitle = "Uses your real numbers. Suggests; you confirm.", footer, className }: {
   phase: "intake" | "direction";
   history: GuideMessage[];
   onProposals: (proposals: GuideProposals) => void;
   opener: string;
+  subtitle?: string;
+  /** Suggestions to confirm, shown above the message box. */
+  footer?: ReactNode;
+  className?: string;
 }) {
   const [messages, setMessages] = useState<GuideMessage[]>(history.slice(-12));
   const [draft, setDraft] = useState("");
@@ -48,30 +51,37 @@ export function GuideChat({ phase, history, onProposals, opener }: {
     }
   }
 
+  // A pane: header, messages that scroll, then suggestions and the message box pinned at the bottom.
   return (
-    <section className="rounded-xl border border-border p-5" aria-label="Conversation with the Guide">
-      <p className={label}>THE GUIDE</p>
-      <div className="mt-3 max-h-[420px] space-y-3 overflow-y-auto" aria-live="polite">
-        <p className="max-w-[560px] rounded-lg bg-muted px-4 py-3 text-sm leading-6">{opener}</p>
+    <section className={cn("flex min-h-[420px] flex-col rounded-lg border border-border", className)} aria-labelledby="guide-title">
+      <div className="border-b border-border px-4 py-3">
+        <h2 className="text-sm font-semibold" id="guide-title">Guide</h2>
+        <p className="text-xs text-muted-foreground">{subtitle}</p>
+      </div>
+      <div className="min-h-0 flex-1 space-y-2.5 overflow-y-auto p-4" aria-live="polite">
+        <p className="max-w-[92%] rounded-md bg-muted px-3 py-2 text-sm leading-5">{opener}</p>
         {messages.map((message, index) => (
-          <p key={index} className={cn("max-w-[560px] whitespace-pre-wrap rounded-lg px-4 py-3 text-sm leading-6", message.role === "owner" ? "ml-auto border border-border" : "bg-muted")}>
+          <p key={index} className={cn("max-w-[92%] whitespace-pre-wrap rounded-md px-3 py-2 text-sm leading-5", message.role === "owner" ? "ml-auto border border-border" : "bg-muted")}>
             <span className="sr-only">{message.role === "owner" ? "You: " : "Guide: "}</span>{message.text}
           </p>
         ))}
         {busy && <p className="text-sm text-muted-foreground">The Guide is thinking...</p>}
       </div>
-      <label className="mt-4 block">
-        <span className="sr-only">Your message</span>
-        <textarea
-          className={cn(textarea, "min-h-[80px]")} value={draft} onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={(event) => { if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) void send(); }}
-          placeholder="Write as you would say it."
-        />
-      </label>
-      {problem && <p className="mt-2 rounded-lg bg-muted px-4 py-3 text-sm" role="alert">{problem}</p>}
-      <div className="mt-2 flex items-center justify-between gap-3">
-        <p className="text-xs text-muted-foreground">Ctrl+Enter sends. Each reply uses one of today&apos;s AI generations.</p>
-        <Button type="button" disabled={busy || !draft.trim()} onClick={() => void send()}>{busy ? "Sending..." : "Send"}</Button>
+      {footer && <div className="space-y-2 border-t border-border p-3">{footer}</div>}
+      <div className="border-t border-border p-3">
+        <label className="block">
+          <span className="sr-only">Message the Guide</span>
+          <textarea
+            className={cn(textarea, "min-h-[64px]")} value={draft} onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(event) => { if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) void send(); }}
+            placeholder="Message the Guide"
+          />
+        </label>
+        {problem && <p className="mt-2 rounded-md bg-muted px-3 py-2 text-sm" role="alert">{problem}</p>}
+        <div className="mt-2 flex items-center justify-between gap-3">
+          <p className="text-xs text-muted-foreground">Ctrl+Enter sends. Uses one of today&apos;s AI generations.</p>
+          <Button type="button" size="sm" disabled={busy || !draft.trim()} onClick={() => void send()}>{busy ? "Sending..." : "Send"}</Button>
+        </div>
       </div>
     </section>
   );

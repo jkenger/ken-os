@@ -79,11 +79,16 @@ export function previewTopic(topicId: string): TopicView {
  * A sample profile for the design preview: a finished baseline that placed a few topics, screening answers for two
  * unwritten chapters, and a chosen direction. Built with the real rules; nothing is stored.
  */
-export function previewProfile(baselineState: ProfileView["baseline"]["state"] = "done"): ProfileView {
+/** The sample learner behind previewProfile: a few placed topics and three screened chapters. */
+export function previewLearner() {
   const placed = new Set(["js.call_stack", "js.promises", "db.transactions", "db.constraints", "db.indexes"]);
   const progress = previewToday().progress.map((item) => placed.has(item.topicId) ? { ...item, placement: "passed" as const, baselineLabel: "solid" as const } : item);
   const screens = [{ chapterId: "a2-model-interfaces", labels: ["solid", "solid"] as Label[] }, { chapterId: "a1-retrieval", labels: ["solid", "partial"] as Label[] }, { chapterId: "m4-react", labels: ["solid", "solid"] as Label[] }];
-  const states = chapterStates(topicMap, progress, screens);
+  return { progress, states: chapterStates(topicMap, progress, screens) };
+}
+
+export function previewProfile(baselineState: ProfileView["baseline"]["state"] = "done"): ProfileView {
+  const { progress, states } = previewLearner();
   const before = chapterStates(topicMap, previewToday().progress, []);
   const role = careers.roles.find((item) => item.id === "fullstack-applied-ai")!;
   const steps = roadmap(role, careers, states, topicMap, progress, 6);
@@ -94,6 +99,7 @@ export function previewProfile(baselineState: ProfileView["baseline"]["state"] =
     intake: { building: "My own web products", stack: "Next.js, Postgres", aiWork: "Embeddings and semantic search", weeklyHours: 6 },
     direction: baselineState === "done" ? role.id : null,
     areas: careers.areas.map((ladder) => ({ area: ladder.id, title: ladder.title, summary: ladder.summary, now: areaLevel(ladder, states), atBaseline: areaLevel(ladder, before), checkpoints: [] })),
+    chapterStates: states,
     roles: careers.roles.map((item) => ({ ...roleDistance(item, careers, states), title: item.title, summary: item.summary })),
     roadmap: steps.map((step) => {
       const module = topicMap.modules.find((item) => item.id === step.chapter)!;
