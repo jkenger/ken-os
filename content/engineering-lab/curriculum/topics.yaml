@@ -66,7 +66,6 @@ modules:
     title: Agents
     track: ai
     area: ai
-    planned: [Agent patterns, State and memory, MCP]
   - id: a4-ai-production
     title: AI in production
     track: ai
@@ -705,3 +704,45 @@ topics:
     depth: working
     prove: [explain, implement]
     labs: [context-budget]
+
+  - id: ai.agent_patterns
+    title: Agent patterns
+    module: a3-agents
+    requires: [ai.tool_calling]
+    freshness: ai_ecosystem
+    sourceGroups: [ai]
+    gap: >-
+      Needs: workflows (code picks the steps) versus agents (the model picks them); routing, chaining and
+      evaluator loops; keeping consequential decisions in code; confidence thresholds and handing off to a person; and
+      choosing the least autonomy that does the job.
+    depth: deep
+    prove: [explain, implement]
+    labs: [support-workflow]
+
+  - id: ai.agent_memory
+    title: State and memory
+    module: a3-agents
+    requires: [ai.context_engineering]
+    freshness: ai_ecosystem
+    sourceGroups: [ai]
+    gap: >-
+      Needs: short-term memory as the conversation; rolling summaries when it outgrows the window; pinned facts that
+      must not blur; long-term memory stored outside the chat and read back; and letting the user see and delete what's
+      remembered.
+    depth: working
+    prove: [explain, implement]
+    labs: [chat-memory]
+
+  - id: ai.mcp
+    title: MCP
+    module: a3-agents
+    requires: [ai.tool_calling]
+    freshness: ai_ecosystem
+    sourceGroups: [ai]
+    gap: >-
+      Needs: what the Model Context Protocol standardizes; JSON-RPC requests, responses and notifications; initialize,
+      tools/list and tools/call; protocol errors versus tool errors the model can read; and what to check before
+      connecting a third-party server.
+    depth: working
+    prove: [explain, implement]
+    labs: [mcp-server]

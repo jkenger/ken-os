@@ -1,0 +1,6 @@
+id: support-workflow
+title: Let code decide what the model may do
+topics: [ai.agent_patterns]
+modes: [implement]
+runner: browser
+timeoutMs: 2000

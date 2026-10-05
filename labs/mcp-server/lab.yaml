@@ -1,0 +1,6 @@
+id: mcp-server
+title: Serve tools over the Model Context Protocol
+topics: [ai.mcp]
+modes: [implement]
+runner: browser
+timeoutMs: 2000
