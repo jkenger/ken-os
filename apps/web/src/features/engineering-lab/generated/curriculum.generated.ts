@@ -662,9 +662,9 @@ export const baseline: Baseline = {
 };
 
 export const careers: Careers = {
-  "status": "draft",
-  "approvedOn": null,
-  "note": "Drafted on 2026-10-03 by Claude Code, not yet by the in-app Researcher. Level summaries follow the public Dropbox engineering career framework (IC1 to IC3). The chapter lists per level are a judgement mapping those summaries onto this course, and the AI area has no published ladder behind it yet. Check every row before approving.",
+  "status": "approved",
+  "approvedOn": "2026-10-05",
+  "note": "Drafted on 2026-10-03 by Claude Code and approved by the owner on 2026-10-05, open to revision. Level summaries follow the public Dropbox engineering career framework (IC1 to IC3). The chapter lists per level are a judgement mapping those summaries onto this course, and the AI area has no published ladder behind it yet.",
   "definitions": {
     "developer": "Builds features well. Owns a feature from data to UI to deploy, and relies on someone else, or on luck, for how it behaves once real users and failures arrive.",
     "engineer": "Owns a system, not only its features: how it fails, how it scales, what it costs and the decisions other people build on. In this lab the line is \"can build it\" versus \"can run it\"."

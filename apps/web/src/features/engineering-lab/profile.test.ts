@@ -30,7 +30,8 @@ const placed = (ids: string[]) => ids.flatMap((id) => {
 
 test("the roles file parses against the topic map and covers every area once", () => {
   assert.equal(careers.areas.length, 5);
-  assert.equal(careers.status, "draft", "nothing is approved until the owner says so");
+  assert.equal(careers.status, "approved", "the owner approved the roles on 2026-10-05");
+  assert.ok(careers.approvedOn, "an approved file carries its approval date");
   assert.ok(careers.roles.some((role) => role.id === "fullstack-applied-ai"));
   assert.throws(() => parseCareers({ ...careers, areas: careers.areas.slice(1) }, topicMap), /exactly once/);
   const wrongArea = { ...careers, areas: careers.areas.map((area) => area.id === "frontend" ? { ...area, levels: { ...area.levels, junior: [{ chapter: "m1-js-runtime", depth: "aware" }] } } : area) };

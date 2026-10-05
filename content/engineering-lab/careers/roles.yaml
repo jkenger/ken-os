@@ -4,15 +4,16 @@
 # topics). Each level lists only what it adds; the levels below it still count. A role sets the level it needs in
 # each area it cares about. After editing, run `pnpm --filter @ken-os/web lab:generate`.
 #
-# Status stays `draft` until the owner has read it and agrees. Approving means setting `status: approved` and
-# `approvedOn`, in a reviewed commit.
+# Approved by the owner on 2026-10-05 and expected to change as goals and the course grow. Edit it in a reviewed
+# commit: keep `status: approved` and move `approvedOn` to the date of the change. Levels are recomputed from the
+# current file, so an edit can move a level up or down without any new answers.
 
-status: draft
-approvedOn: null
+status: approved
+approvedOn: "2026-10-05"
 note: >-
-  Drafted on 2026-10-03 by Claude Code, not yet by the in-app Researcher. Level summaries follow the public Dropbox
-  engineering career framework (IC1 to IC3). The chapter lists per level are a judgement mapping those summaries onto
-  this course, and the AI area has no published ladder behind it yet. Check every row before approving.
+  Drafted on 2026-10-03 by Claude Code and approved by the owner on 2026-10-05, open to revision. Level summaries
+  follow the public Dropbox engineering career framework (IC1 to IC3). The chapter lists per level are a judgement
+  mapping those summaries onto this course, and the AI area has no published ladder behind it yet.
 
 definitions:
   developer: >-
