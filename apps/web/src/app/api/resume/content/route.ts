@@ -14,7 +14,7 @@ export async function GET(request: Request) {
   const selection = await getSelectedResume(session.userId);
   if (!selection)
     return NextResponse.json(
-      { error: "Select a resume first." },
+      { error: "Choose a resume first" },
       { status: 404 },
     );
   try {
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
     const file = await getDriveFile(selection.fileId, accessToken);
     if (file.trashed)
       return NextResponse.json(
-        { error: "The selected file is in the trash." },
+        { error: "In Drive trash. Choose another file" },
         { status: 404 },
       );
     const content = await getResumeBytes(file, accessToken);
@@ -43,7 +43,7 @@ export async function GET(request: Request) {
         error:
           error instanceof Error
             ? error.message
-            : "Could not load resume content.",
+            : "Couldn't load your resume. Try again",
       },
       { status },
     );

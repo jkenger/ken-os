@@ -5,15 +5,10 @@
  * Entries are a blank line apart so slices that delete neighbouring entries merge without conflicts.
  */
 export const appLanguageAllowlist: { file: string; text: string }[] = [
-  { file: "app/api/auth/google/callback/route.ts", text: "Could not verify Google account." },
 
-  { file: "app/api/auth/google/callback/route.ts", text: "This Google account does not match OWNER_EMAIL." },
 
-  { file: "app/api/resume/content/route.ts", text: "Could not load resume content." },
 
-  { file: "app/api/resume/route.ts", text: "Could not refresh resume." },
 
-  { file: "app/api/resume/route.ts", text: "Could not select resume." },
 
   { file: "app/api/skills/[id]/export/route.ts", text: "Could not export this skill." },
 
@@ -21,11 +16,8 @@ export const appLanguageAllowlist: { file: string; text: string }[] = [
 
   { file: "app/api/skills/route.ts", text: "Could not save this skill." },
 
-  { file: "app/page.tsx", text: "A home for the things you keep coming back to." },
 
-  { file: "app/page.tsx", text: "Could not reach Google Drive." },
 
-  { file: "app/page.tsx", text: "Your latest work, ready when you are." },
 
   { file: "components/design-system-workspace.tsx", text: "Agent skills" },
 
@@ -159,21 +151,13 @@ export const appLanguageAllowlist: { file: string; text: string }[] = [
 
   { file: "components/memory-workspace.tsx", text: "Work receipts" },
 
-  { file: "components/resume-workspace.tsx", text: "Ask about your resume." },
 
-  { file: "components/resume-workspace.tsx", text: "Could not answer." },
 
-  { file: "components/resume-workspace.tsx", text: "Could not connect to Google Drive." },
 
-  { file: "components/resume-workspace.tsx", text: "Could not open Google Picker." },
 
-  { file: "components/resume-workspace.tsx", text: "Could not select file." },
 
-  { file: "components/resume-workspace.tsx", text: "One selected file. Always current." },
 
-  { file: "components/resume-workspace.tsx", text: "Resume hub" },
 
-  { file: "components/resume-workspace.tsx", text: "Resume hub." },
 
   { file: "components/skill-manager.tsx", text: "Could not copy. Download SKILL.md instead." },
 
@@ -197,15 +181,11 @@ export const appLanguageAllowlist: { file: string; text: string }[] = [
 
   { file: "components/terms/terms-page.tsx", text: "Words you looked up." },
 
-  { file: "components/workspace-shell.tsx", text: "Agent skills" },
 
-  { file: "components/workspace-shell.tsx", text: "Find a module..." },
 
-  { file: "components/workspace-shell.tsx", text: "Jump to a module..." },
 
   { file: "components/workspace-shell.tsx", text: "Receipts" },
 
-  { file: "components/workspace-shell.tsx", text: "Resume hub" },
 
   { file: "features/project-memory/api.ts", text: "Could not complete the memory request." },
 ];

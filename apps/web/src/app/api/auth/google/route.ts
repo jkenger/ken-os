@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export async function GET() {
   if (!ownerEmailIsConfigured()) {
     return NextResponse.json(
-      { error: "Set OWNER_EMAIL in apps/web/.env to your Google account email, then restart the dev server." },
+      { error: process.env.NODE_ENV === "development" ? "Set OWNER_EMAIL in apps/web/.env to your Google account email, then restart the dev server." : "Sign-in isn't set up" },
       { status: 503 },
     );
   }

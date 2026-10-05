@@ -22,7 +22,7 @@ export async function GET() {
     return NextResponse.json({ selection, file }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     const status = error instanceof DriveError ? error.status : 502;
-    return NextResponse.json({ selection, file: null, error: error instanceof Error ? error.message : "Could not refresh resume." }, { status });
+    return NextResponse.json({ selection, file: null, error: error instanceof Error ? error.message : "Couldn't refresh your resume. Try again" }, { status });
   }
 }
 
@@ -33,12 +33,12 @@ export async function POST(request: Request) {
   const input = await request.json().catch(() => null) as { fileId?: unknown } | null;
   const fileId = input?.fileId;
   if (typeof fileId !== "string" || !/^[A-Za-z0-9_-]{5,256}$/.test(fileId)) {
-    return NextResponse.json({ error: "Invalid Drive file ID." }, { status: 400 });
+    return NextResponse.json({ error: "Couldn't open that file. Choose it again" }, { status: 400 });
   }
   try {
     const file = await getDriveFile(fileId, await getGoogleAccessToken(session.userId));
-    if (file.trashed) return NextResponse.json({ error: "That file is in the trash." }, { status: 400 });
-    if (!isResumeMimeType(file.mimeType)) return NextResponse.json({ error: "Select a Google Doc, PDF, or DOCX file." }, { status: 400 });
+    if (file.trashed) return NextResponse.json({ error: "In Drive trash. Choose another file" }, { status: 400 });
+    if (!isResumeMimeType(file.mimeType)) return NextResponse.json({ error: "Choose a Google Doc, PDF or Word file" }, { status: 400 });
     await db().insert(artifactSelections).values({
       userId: session.userId,
       purpose: "primary_resume",
@@ -58,6 +58,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ file });
   } catch (error) {
     const status = error instanceof DriveError ? error.status : 502;
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Could not select resume." }, { status });
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Couldn't save your choice. Try again" }, { status });
   }
 }

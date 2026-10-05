@@ -32,7 +32,7 @@ export function encryptToken(value: string): string {
 function decryptToken(value: string): string {
   const [encodedIv, encodedTag, encodedCiphertext] = value.split(".");
   if (!encodedIv || !encodedTag || !encodedCiphertext)
-    throw new Error("Invalid stored token.");
+    throw new Error("Google sign-in is broken. Reconnect Google");
   const decipher = createDecipheriv(
     "aes-256-gcm",
     key(),
@@ -48,7 +48,7 @@ function decryptToken(value: string): string {
 export async function getGoogleAccessToken(userId: string): Promise<string> {
   const rows = await db().select({ encryptedRefreshToken: googleConnections.encryptedRefreshToken })
     .from(googleConnections).where(eq(googleConnections.userId, userId)).limit(1);
-  if (!rows[0]) throw new Error("Google Drive is not connected.");
+  if (!rows[0]) throw new Error("Google Drive isn't connected. Reconnect Google");
   const response = await fetch(TOKEN_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -61,9 +61,9 @@ export async function getGoogleAccessToken(userId: string): Promise<string> {
     cache: "no-store",
   });
   if (!response.ok)
-    throw new Error("Google authorization expired. Please sign in again.");
+    throw new Error("Google sign-in expired. Reconnect Google");
   const payload = (await response.json()) as { access_token?: string };
   if (!payload.access_token)
-    throw new Error("Google did not return an access token.");
+    throw new Error("Google didn't respond. Reconnect Google");
   return payload.access_token;
 }
