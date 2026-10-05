@@ -1,24 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { appLanguageAllowlist } from "./app-language-allowlist";
 import { collectCopy, findViolations } from "./app-language-scan";
 
-const key = (entry: { file: string; text: string }) => `${entry.file}: ${JSON.stringify(entry.text)}`;
-
 test("screen copy follows the app language rule", () => {
-  const violations = findViolations();
-  const allowed = new Set(appLanguageAllowlist.map(key));
-  const found = new Set(violations.map(key));
-
-  const added = violations.filter((violation) => !allowed.has(key(violation)));
   assert.deepEqual(
-    added.map((violation) => `${key(violation)} (${violation.rules.join(", ")})`),
+    findViolations().map((violation) => `${violation.file}: ${JSON.stringify(violation.text)} (${violation.rules.join(", ")})`),
     [],
-    "New app language violations. Rewrite them per docs/product/app-language.md; don't add them to the allowlist.",
+    "App language violations. Rewrite them per docs/product/app-language.md.",
   );
-
-  const stale = appLanguageAllowlist.filter((entry) => !found.has(key(entry)));
-  assert.deepEqual(stale.map(key), [], "Fixed entries are still in app-language-allowlist.ts. Delete them.");
 });
 
 test("the scan reads screen text and skips code values", () => {

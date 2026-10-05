@@ -1,6 +1,6 @@
 # App language
 
-Status: approved by the owner, 3 Oct 2026. Not yet implemented.
+Status: approved by the owner, 3 Oct 2026. Implemented 3 Oct 2026; `apps/web/src/lib/app-language.test.ts` enforces it.
 
 ## Decision
 
