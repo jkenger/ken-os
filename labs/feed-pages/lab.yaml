@@ -1,0 +1,6 @@
+id: feed-pages
+title: Page through a feed that keeps growing
+topics: [api.pagination]
+modes: [implement]
+runner: pglite
+timeoutMs: 30000

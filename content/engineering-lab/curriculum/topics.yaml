@@ -39,7 +39,6 @@ modules:
     title: API boundaries
     track: fullstack
     area: backend
-    planned: [Runtime validation, Pagination]
   - id: m5-testing-security
     title: Testing and web security
     track: fullstack
@@ -326,3 +325,34 @@ topics:
     depth: working
     prove: [explain, implement]
     labs: [idempotent-payment]
+
+  - id: api.runtime_validation
+    title: Runtime validation at trust boundaries
+    module: m4-api-boundaries
+    requires: []
+    freshness: framework
+    sourceGroups: [typescript, javascript, web]
+    gap: >-
+      Knows incoming data should be validated, but mixes validation with unrelated checks such as whether a record
+      exists or who may change it. Needs: TypeScript types are erased at runtime, so every trust boundary (request
+      bodies, query strings, environment, third-party responses) needs a runtime check; parsing into a new typed value
+      instead of checking and passing the input through; dropping unknown fields so extra ones like isAdmin never reach
+      the database; and reporting every error with its field.
+    depth: working
+    prove: [explain, implement]
+    labs: [order-input]
+
+  - id: api.pagination
+    title: Offset and cursor pagination
+    module: m4-api-boundaries
+    requires: [db.indexes]
+    freshness: core_concept
+    sourceGroups: [database, web]
+    gap: >-
+      Knows pages exist but can't explain how offset and cursor paging differ. Needs: an offset recounts from the top,
+      so rows shift when new ones arrive and deep pages read every skipped row; a cursor continues after the last row
+      seen; a unique tiebreaker such as id in both the order and the cursor; an index that matches the order; and an
+      opaque cursor the client only hands back.
+    depth: deep
+    prove: [explain, implement]
+    labs: [feed-pages]

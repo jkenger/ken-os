@@ -51,10 +51,7 @@ export const topicMap: TopicMap = {
       "title": "API boundaries",
       "track": "fullstack",
       "area": "backend",
-      "planned": [
-        "Runtime validation",
-        "Pagination"
-      ]
+      "planned": []
     },
     {
       "id": "m5-testing-security",
@@ -521,6 +518,49 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "idempotent-payment"
+      ]
+    },
+    {
+      "id": "api.runtime_validation",
+      "title": "Runtime validation at trust boundaries",
+      "module": "m4-api-boundaries",
+      "requires": [],
+      "freshness": "framework",
+      "sourceGroups": [
+        "typescript",
+        "javascript",
+        "web"
+      ],
+      "gap": "Knows incoming data should be validated, but mixes validation with unrelated checks such as whether a record exists or who may change it. Needs: TypeScript types are erased at runtime, so every trust boundary (request bodies, query strings, environment, third-party responses) needs a runtime check; parsing into a new typed value instead of checking and passing the input through; dropping unknown fields so extra ones like isAdmin never reach the database; and reporting every error with its field.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "order-input"
+      ]
+    },
+    {
+      "id": "api.pagination",
+      "title": "Offset and cursor pagination",
+      "module": "m4-api-boundaries",
+      "requires": [
+        "db.indexes"
+      ],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "database",
+        "web"
+      ],
+      "gap": "Knows pages exist but can't explain how offset and cursor paging differ. Needs: an offset recounts from the top, so rows shift when new ones arrive and deep pages read every skipped row; a cursor continues after the last row seen; a unique tiebreaker such as id in both the order and the cursor; an index that matches the order; and an opaque cursor the client only hands back.",
+      "depth": "deep",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "feed-pages"
       ]
     }
   ]
@@ -1226,6 +1266,23 @@ export const labs: LabDefinition[] = [
     "probe": null
   },
   {
+    "id": "feed-pages",
+    "title": "Page through a feed that keeps growing",
+    "topics": [
+      "api.pagination"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "pglite",
+    "timeoutMs": 30000,
+    "readme": "`listPosts(db, { cursor, limit })` returns one page of a feed, newest first: `{ items, nextCursor }`. The client\npasses `nextCursor` back to get the next page, and `nextCursor` is `null` on the last page. The client never reads\nthe cursor; it only hands it back.\n\nIt works with `OFFSET` today, and two things go wrong:\n\n- New posts arrive while someone is reading. When the client asks for page 2, every post has moved down, so page 2\n  starts with posts they already saw.\n- Deep pages are slow. To return 20 rows at offset 5,000, Postgres reads and throws away the first 5,000.\n\nRewrite `listPosts` so a page continues exactly after the last item the client saw, and reads only about one page of\nrows however deep it is. Several posts share the same `created_at`, so the order is newest first, then by `id`\ndescending, and the cursor needs both. An index on `(created_at desc, id desc)` already exists.\n\nRun this to see how many rows a deep page reads before you change anything:\n\n```js\nconst { rows } = await db.query(\"explain (analyze) select * from posts order by created_at desc, id desc limit 20 offset 5000\");\nconsole.log(rows.map((row) => row[\"QUERY PLAN\"]).join(\"\\n\"));\n```",
+    "starter": "async function listPosts(db, { cursor = null, limit = 20 } = {}) {\n  const offset = cursor ? Number(cursor) : 0;\n  const { rows } = await db.query(\n    \"select id, title, created_at from posts order by created_at desc, id desc limit $1 offset $2\",\n    [limit + 1, offset],\n  );\n  const items = rows.slice(0, limit);\n  return { items, nextCursor: rows.length > limit ? String(offset + limit) : null };\n}\n",
+    "tests": "const ids = (items) => items.map((item) => item.id);\n\nasync function walk(source, limit, between) {\n  const seen = [];\n  let cursor = null;\n  for (let page = 0; page < 1000; page += 1) {\n    const result = await listPosts(source, { cursor, limit });\n    seen.push(...result.items);\n    if (page === 0 && between) await between();\n    if (!result.nextCursor) return seen;\n    cursor = result.nextCursor;\n  }\n  throw new Error(\"Paging never ended: nextCursor is never null\");\n}\n\ntest(\"pages are newest first, then by id, with a null cursor at the end\", async () => {\n  const first = await listPosts(db, { limit: 10 });\n  assert.equal(first.items.length, 10);\n  assert.ok(first.nextCursor, \"the first page needs a nextCursor\");\n  for (let index = 1; index < first.items.length; index += 1) {\n    const [a, b] = [first.items[index - 1], first.items[index]];\n    const ta = new Date(a.created_at).getTime(), tb = new Date(b.created_at).getTime();\n    assert.ok(ta > tb || (ta === tb && a.id > b.id), \"order must be created_at desc, then id desc\");\n  }\n  const all = await walk(db, 500);\n  assert.equal(all.length, 6000);\n  assert.equal(new Set(ids(all)).size, 6000, \"every post appears exactly once\");\n});\n\ntest(\"ties on created_at don't drop or repeat posts at a page boundary\", async () => {\n  const all = await walk(db, 10);\n  assert.equal(new Set(ids(all)).size, 6000);\n  assert.equal(all.length, 6000);\n});\n\ntest(\"new posts arriving mid-read don't push old posts onto the next page\", async () => {\n  const before = (await db.query(\"select count(*)::int as n from posts\")).rows[0].n;\n  const seen = await walk(db, 25, async () => {\n    await db.query(\"insert into posts (title, created_at) select 'Fresh ' || n, timestamptz '2027-01-01' + (n || ' seconds')::interval from generate_series(1, 7) as n\");\n  });\n  const counts = new Map();\n  for (const id of ids(seen)) counts.set(id, (counts.get(id) ?? 0) + 1);\n  const repeated = [...counts].filter(([, count]) => count > 1).map(([id]) => id);\n  assert.deepEqual(repeated, [], `posts shown twice: ${repeated.slice(0, 5).join(\", \")}`);\n  assert.equal(seen.length, before, \"a reader who started before the new posts sees each older post once, and only those\");\n});\n\ntest(\"a deep page reads about one page of rows, not everything before it\", async () => {\n  const queries = [];\n  const spy = { query: (sql, params) => { queries.push({ sql, params }); return db.query(sql, params); } };\n  let cursor = null;\n  for (let page = 0; page < 50; page += 1) cursor = (await listPosts(spy, { cursor, limit: 100 })).nextCursor;\n  const last = queries.at(-1);\n  const { rows } = await db.query(`explain (analyze, format json) ${last.sql}`, last.params);\n  const nodes = [];\n  const visit = (node) => { nodes.push(node); (node.Plans ?? []).forEach(visit); };\n  visit(rows[0][\"QUERY PLAN\"][0].Plan);\n  const scanned = Math.max(...nodes.filter((node) => /Scan/.test(node[\"Node Type\"])).map((node) => node[\"Actual Rows\"] + (node[\"Rows Removed by Filter\"] ?? 0)));\n  assert.ok(scanned <= 150, `Page 50 read ${scanned} rows from posts to return 100.`);\n});\n",
+    "setup": "create table posts (\n  id serial primary key,\n  title text not null,\n  created_at timestamptz not null\n);\n-- 6,000 posts, three per minute, so posts share timestamps and a page boundary can fall inside a tie.\ninsert into posts (title, created_at)\nselect 'Post ' || n, timestamptz '2026-06-01' + ((n / 3) || ' minutes')::interval\nfrom generate_series(1, 6000) as n;\ncreate index posts_created_id_idx on posts (created_at desc, id desc);\nanalyze posts;\n",
+    "probe": null
+  },
+  {
     "id": "idempotent-payment",
     "title": "Charge once, however many times the request arrives",
     "topics": [
@@ -1259,6 +1316,23 @@ export const labs: LabDefinition[] = [
     "starter": "async function migrate(db) {\n  // Schema changes go here.\n}\n\nasync function recentOrders(db, userId) {\n  const { rows } = await db.query(\n    \"select * from order_history where user_id = $1 order by created_at desc limit 20\",\n    [userId],\n  );\n  return rows;\n}\n",
     "tests": "function planNodes(plan) {\n  const nodes = [];\n  const walk = (node) => { nodes.push(node); (node.Plans ?? []).forEach(walk); };\n  walk(plan);\n  return nodes;\n}\n\nasync function explain(sql) {\n  const { rows } = await db.query(`explain (analyze, buffers, format json) ${sql}`);\n  return { root: rows[0][\"QUERY PLAN\"][0].Plan, nodes: planNodes(rows[0][\"QUERY PLAN\"][0].Plan) };\n}\n\nasync function firstColumn(indexName) {\n  const { rows } = await db.query(\n    `select a.attname from pg_index i\n       join pg_class c on c.oid = i.indexrelid\n       join pg_attribute a on a.attrelid = i.indrelid and a.attnum = i.indkey[0]\n     where c.relname = $1`,\n    [indexName],\n  );\n  return rows[0]?.attname;\n}\n\nconst query = (userId) => `select * from order_history where user_id = ${userId} order by created_at desc limit 20`;\n\ntest(\"migrate runs\", async () => {\n  await migrate(db);\n});\n\ntest(\"recentOrders returns the newest orders for that user\", async () => {\n  const rows = await recentOrders(db, 42);\n  assert.equal(rows.length, 20);\n  assert.ok(rows.every((row) => row.user_id === 42));\n  const times = rows.map((row) => new Date(row.created_at).getTime());\n  assert.deepEqual(times, [...times].sort((a, b) => b - a), \"rows must be newest first\");\n  assert.equal((await recentOrders(db, 9999)).length, 3);\n});\n\ntest(\"the plan uses an index that starts with user_id\", async () => {\n  const { nodes } = await explain(query(9999));\n  const scan = nodes.find((node) => node[\"Index Name\"]);\n  assert.ok(scan, `No index is used: ${nodes.map((node) => node[\"Node Type\"]).join(\" > \")}`);\n  const leading = await firstColumn(scan[\"Index Name\"]);\n  assert.equal(leading, \"user_id\", `The plan uses ${scan[\"Index Name\"]}, which is sorted by ${leading} first, so one user's rows are spread through the whole index.`);\n});\n\ntest(\"the plan needs no separate sort and reads only a few pages\", async () => {\n  const { root, nodes } = await explain(query(9999));\n  const types = nodes.map((node) => node[\"Node Type\"]);\n  assert.ok(!types.includes(\"Sort\"), `The plan still sorts: ${types.join(\" > \")}`);\n  const pages = (root[\"Shared Hit Blocks\"] ?? 0) + (root[\"Shared Read Blocks\"] ?? 0);\n  assert.ok(pages < 20, `The query touched ${pages} pages for 3 rows.`);\n});\n",
     "setup": "create table order_history (\n  id serial primary key,\n  user_id int not null,\n  status text not null,\n  total int not null,\n  created_at timestamptz not null\n);\ninsert into order_history (user_id, status, total, created_at)\nselect (n % 600) + 1, case when n % 7 = 0 then 'refunded' else 'paid' end, (n * 37) % 9000, timestamptz '2026-01-01' + (n || ' minutes')::interval\nfrom generate_series(1, 60000) as n;\n-- A customer with only three orders, all from last year: the slow case for the existing index.\ninsert into order_history (user_id, status, total, created_at) values\n  (9999, 'paid', 1200, timestamptz '2025-03-02'), (9999, 'paid', 800, timestamptz '2025-06-14'), (9999, 'refunded', 450, timestamptz '2025-09-30');\ncreate index order_history_created_user_idx on order_history (created_at, user_id);\nanalyze order_history;\n",
+    "probe": null
+  },
+  {
+    "id": "order-input",
+    "title": "Parse the order request instead of trusting it",
+    "topics": [
+      "api.runtime_validation"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "`parseOrder(body)` receives the JSON body of a \"create order\" request. A TypeScript type on the handler would not\nhelp here: types are erased before the code runs, and the body came from someone else's computer.\n\nMake `parseOrder` return `{ ok: true, value }` or `{ ok: false, errors }`:\n\n- `value` has exactly `email`, `sku`, `quantity` and `note`, and nothing else from the body.\n- `email`: a string with text on both sides of an `@`. Trim it and lower-case it.\n- `sku`: a string like `ABC-1234` (three capital letters, a dash, four digits).\n- `quantity`: a whole number from 1 to 100. The string `\"3\"` is not a number.\n- `note`: optional. A string of at most 200 characters, or `null` when it's missing.\n- `errors` lists every problem at once, each as `{ path, message }`, where `path` is the field name, or `\"body\"`\n  when the body isn't an object.\n\nThen explain why a `price` or `isAdmin` field in the body must never reach the database, even if the type says it\nisn't there.",
+    "starter": "function parseOrder(body) {\n  if (!body.email || !body.email.includes(\"@\")) {\n    return { ok: false, errors: [{ path: \"email\", message: \"Enter an email address\" }] };\n  }\n  const quantity = Number(body.quantity);\n  if (quantity < 1 || quantity > 100) {\n    return { ok: false, errors: [{ path: \"quantity\", message: \"Quantity must be 1 to 100\" }] };\n  }\n  return { ok: true, value: { ...body, quantity } };\n}\n",
+    "tests": "const valid = { email: \"  Ken@Example.com \", sku: \"ABC-1234\", quantity: 3, note: \"Gift wrap\" };\nconst paths = (result) => (result.errors ?? []).map((error) => error.path).sort();\n\ntest(\"a valid order parses into exactly the four fields\", () => {\n  const result = parseOrder(valid);\n  assert.equal(result.ok, true);\n  assert.deepEqual(result.value, { email: \"ken@example.com\", sku: \"ABC-1234\", quantity: 3, note: \"Gift wrap\" });\n});\n\ntest(\"fields the order doesn't define never pass through\", () => {\n  const result = parseOrder({ ...valid, price: 0, isAdmin: true, userId: 1 });\n  assert.equal(result.ok, true);\n  assert.deepEqual(Object.keys(result.value).sort(), [\"email\", \"note\", \"quantity\", \"sku\"], \"price, isAdmin and userId must be dropped\");\n});\n\ntest(\"a missing note becomes null\", () => {\n  const { note, ...rest } = valid;\n  const result = parseOrder(rest);\n  assert.equal(result.ok, true);\n  assert.equal(result.value.note, null);\n});\n\ntest(\"quantity must already be a whole number from 1 to 100\", () => {\n  for (const quantity of [\"3\", 2.5, 0, 101, null, true]) {\n    const result = parseOrder({ ...valid, quantity });\n    assert.equal(result.ok, false, `quantity ${JSON.stringify(quantity)} should be rejected`);\n    assert.deepEqual(paths(result), [\"quantity\"]);\n  }\n});\n\ntest(\"every problem is reported at once, each with its field\", () => {\n  const result = parseOrder({ email: \"not-an-email\", sku: \"abc1234\", quantity: \"lots\", note: \"x\".repeat(201) });\n  assert.equal(result.ok, false);\n  assert.deepEqual(paths(result), [\"email\", \"note\", \"quantity\", \"sku\"]);\n  assert.ok(result.errors.every((error) => typeof error.message === \"string\" && error.message.length > 0));\n});\n\ntest(\"a body that isn't an object is rejected, not crashed on\", () => {\n  for (const body of [null, [], \"order\", 42, undefined]) {\n    const result = parseOrder(body);\n    assert.equal(result.ok, false, `${JSON.stringify(body)} should be rejected`);\n    assert.deepEqual(paths(result), [\"body\"]);\n  }\n});\n\ntest(\"a non-string email or sku is an error, not a crash\", () => {\n  const result = parseOrder({ ...valid, email: { address: \"a@b.c\" }, sku: 1234 });\n  assert.equal(result.ok, false);\n  assert.deepEqual(paths(result), [\"email\", \"sku\"]);\n});\n",
+    "setup": "",
     "probe": null
   },
   {
