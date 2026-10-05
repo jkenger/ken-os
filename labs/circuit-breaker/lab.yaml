@@ -1,0 +1,6 @@
+id: circuit-breaker
+title: Stop calling a service that's down
+topics: [rel.graceful_degradation]
+modes: [implement]
+runner: browser
+timeoutMs: 2000

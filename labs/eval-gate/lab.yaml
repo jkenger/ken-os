@@ -1,0 +1,6 @@
+id: eval-gate
+title: Block a prompt change that makes answers worse
+topics: [ai.evals]
+modes: [implement]
+runner: browser
+timeoutMs: 3000

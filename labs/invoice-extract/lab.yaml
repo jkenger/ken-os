@@ -1,0 +1,6 @@
+id: invoice-extract
+title: Get valid JSON out of a model, or fail clearly
+topics: [ai.structured_outputs]
+modes: [implement]
+runner: browser
+timeoutMs: 2000

@@ -1,0 +1,6 @@
+id: trace-context
+title: Follow one request across services
+topics: [obs.traces]
+modes: [implement]
+runner: browser
+timeoutMs: 2000

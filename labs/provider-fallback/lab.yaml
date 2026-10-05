@@ -1,0 +1,6 @@
+id: provider-fallback
+title: Fall back across model providers safely
+topics: [ai.production_reliability]
+modes: [implement]
+runner: browser
+timeoutMs: 3000

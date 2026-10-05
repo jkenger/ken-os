@@ -1,0 +1,6 @@
+id: retry-policy
+title: Retry like a good neighbour
+topics: [rel.retry_backoff]
+modes: [implement]
+runner: browser
+timeoutMs: 2000

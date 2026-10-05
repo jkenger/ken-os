@@ -1,0 +1,6 @@
+id: job-queue
+title: A job queue that never runs a job twice
+topics: [rel.background_jobs]
+modes: [implement]
+runner: pglite
+timeoutMs: 20000

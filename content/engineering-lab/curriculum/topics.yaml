@@ -34,7 +34,6 @@ modules:
     title: React
     track: fullstack
     area: frontend
-    planned: [React render model, Effects and synchronization]
   - id: m4-api-boundaries
     title: API boundaries
     track: fullstack
@@ -47,37 +46,30 @@ modules:
     title: Production reliability
     track: fullstack
     area: production
-    planned: [Background jobs, Retry and backoff, Timeouts, Partial failures, Graceful degradation]
   - id: m7-observability
     title: Observability
     track: fullstack
     area: production
-    planned: [Logs, Metrics, Traces]
   - id: m8-architecture-scale
     title: Architecture at scale
     track: fullstack
     area: production
-    planned: [Caching strategy, Scaling, Multi-tenancy, System evolution]
   - id: a1-retrieval
     title: Retrieval
     track: ai
     area: ai
-    planned: [Semantic search, Retrieval evaluation, RAG, Advanced RAG, Reranking]
   - id: a2-model-interfaces
     title: Model interfaces
     track: ai
     area: ai
-    planned: [Structured outputs, Tool calling, Context engineering]
   - id: a3-agents
     title: Agents
     track: ai
     area: ai
-    planned: [Agent patterns, State and memory, MCP]
   - id: a4-ai-production
     title: AI in production
     track: ai
     area: ai
-    planned: [Evals, AI observability, Cost and latency, Production reliability]
 
 topics:
   - id: js.call_stack
@@ -401,3 +393,410 @@ topics:
     depth: deep
     prove: [explain, implement]
     labs: [team-docs]
+
+  - id: react.render_model
+    title: How React renders, and why references matter
+    module: m4-react
+    requires: [js.references_mutation]
+    freshness: framework
+    sourceGroups: [react]
+    gap: >-
+      Knows state, props and context can trigger a render and mentions the virtual DOM, but render, reconciliation and
+      commit are hazy. Needs: what render, reconcile and commit each do; that React compares references, so state
+      updates build new objects along the changed path and reuse the rest; why mutating state can mean nothing
+      re-renders; and when memo helps and when it doesn't.
+    depth: working
+    prove: [explain, implement]
+    labs: [todo-updates]
+
+  - id: react.effects
+    title: Effects and synchronization
+    module: m4-react
+    requires: [react.render_model, js.closures]
+    freshness: framework
+    sourceGroups: [react]
+    gap: >-
+      Expects an effect with [] to re-run when props change and links dependencies to infinite loops. Needs: an effect
+      keeps something outside React in step with the current render; every value it reads belongs in its dependencies;
+      cleanup undoes the setup and runs before the next run and on unmount; stale closures and races in effects; and
+      when no effect is needed at all, because the value can be computed during render.
+    depth: deep
+    prove: [explain, implement]
+    labs: [chat-connection]
+
+  - id: rel.background_jobs
+    title: Background jobs and queues
+    module: m6-production-reliability
+    requires: [db.atomic_updates]
+    freshness: core_concept
+    sourceGroups: [database, operations]
+    gap: >-
+      Slow work moves to a queue, but claiming jobs safely is the hard part. Needs: claiming a job atomically so two
+      workers never take the same one (FOR UPDATE SKIP LOCKED); leases so a crashed worker's job is picked up again;
+      backoff and a dead state for jobs that keep failing; and why every job must be safe to run twice.
+    depth: working
+    prove: [explain, implement]
+    labs: [job-queue]
+
+  - id: rel.retry_backoff
+    title: Retry with backoff and jitter
+    module: m6-production-reliability
+    requires: [api.idempotency_basics]
+    freshness: core_concept
+    sourceGroups: [operations, web]
+    gap: >-
+      No confident model of retries. Needs: which failures are worth retrying and which never succeed; exponential
+      backoff with a cap; jitter so clients don't retry in lockstep; honouring Retry-After; a retry budget; and why a
+      retried request must be idempotent.
+    depth: working
+    prove: [explain, implement]
+    labs: [retry-policy]
+
+  - id: rel.timeouts
+    title: Timeouts and cancellation
+    module: m6-production-reliability
+    requires: [js.promises]
+    freshness: core_concept
+    sourceGroups: [javascript, web, operations]
+    gap: >-
+      Needs: every call to another service gets a timeout chosen from how long it normally takes; a timeout must also
+      cancel the work (AbortSignal), or the work keeps holding connections; clearing timers after success; and deadlines
+      that shrink as a request passes through several services.
+    depth: working
+    prove: [explain, implement]
+    labs: [request-timeout]
+
+  - id: rel.partial_failures
+    title: Partial failures and compensation
+    module: m6-production-reliability
+    requires: [db.transactions]
+    freshness: core_concept
+    sourceGroups: [operations, database]
+    gap: >-
+      Knows a database transaction rolls back together, but not what to do when steps span services that can't share
+      one. Needs: sagas, where each completed step registers how to undo itself and a failure runs the undo steps newest
+      first; undo steps that are safe to repeat; and surfacing an undo that fails for a person to resolve.
+    depth: deep
+    prove: [explain, implement]
+    labs: [order-saga]
+
+  - id: rel.graceful_degradation
+    title: Graceful degradation and circuit breakers
+    module: m6-production-reliability
+    requires: [rel.timeouts]
+    freshness: core_concept
+    sourceGroups: [operations]
+    gap: >-
+      Needs: keeping the core of a page working when a dependency fails; circuit breakers that fail fast after repeated
+      failures and test recovery with one trial call; fallbacks such as cached or popular content; and what the user
+      should see while a feature is degraded.
+    depth: working
+    prove: [explain, implement]
+    labs: [circuit-breaker]
+
+  - id: obs.logs
+    title: Structured logs
+    module: m7-observability
+    requires: []
+    freshness: core_concept
+    sourceGroups: [operations]
+    gap: >-
+      Knows logs should hold errors and request context and avoid sensitive data. Needs: one JSON object per event with
+      consistent field names; request, trace and user ids carried through a child logger; operation, status and
+      duration; redacting secrets by key at any depth; and serializing errors so the stack survives.
+    depth: working
+    prove: [explain, implement]
+    labs: [structured-logs]
+
+  - id: obs.metrics
+    title: Metrics, percentiles and histograms
+    module: m7-observability
+    requires: []
+    freshness: core_concept
+    sourceGroups: [operations]
+    gap: >-
+      Needs: why averages hide the slow requests users feel; p50, p95 and p99; error rate counting only server errors;
+      counters, gauges and histograms; and why cumulative histogram buckets can be combined across servers while
+      averages and percentiles can't.
+    depth: working
+    prove: [explain, implement]
+    labs: [latency-summary]
+
+  - id: obs.traces
+    title: Traces and context propagation
+    module: m7-observability
+    requires: [obs.logs]
+    freshness: web_platform
+    sourceGroups: [operations, web]
+    gap: >-
+      Needs: traces as a tree of spans sharing one trace id; passing context between services with the W3C traceparent
+      header; strict header validation that starts a new trace instead of failing; child spans for work inside a
+      service; and a trace id in every log line to join logs and traces.
+    depth: working
+    prove: [explain, implement]
+    labs: [trace-context]
+
+  - id: arch.caching
+    title: Caching strategy
+    module: m8-architecture-scale
+    requires: [web.http_caching]
+    freshness: core_concept
+    sourceGroups: [web, operations]
+    gap: >-
+      Needs: deciding what may be stale and for how long; read-through caching with a TTL; preventing stampedes by
+      sharing one load per key; never caching failures; invalidation on write and the race with a load already running;
+      and why, across several servers, the TTL is the real guarantee.
+    depth: working
+    prove: [explain, implement]
+    labs: [read-through-cache]
+
+  - id: arch.scaling
+    title: Scaling, concurrency limits and load shedding
+    module: m8-architecture-scale
+    requires: [rel.timeouts]
+    freshness: core_concept
+    sourceGroups: [operations]
+    gap: >-
+      Needs: stateless services that scale out; finding the real bottleneck, often the database; limiting concurrency to
+      what a resource can handle; bounded queues that refuse work early instead of turning overload into timeouts; and
+      sizing a shared limit for many servers.
+    depth: working
+    prove: [explain, implement]
+    labs: [load-shedding]
+
+  - id: arch.multi_tenancy
+    title: Multi-tenancy and tenant isolation
+    module: m8-architecture-scale
+    requires: [sec.resource_authorization]
+    freshness: core_concept
+    sourceGroups: [database, operations]
+    gap: >-
+      Needs: shared-database, shared-schema and separate-database tenancy and their trade-offs; tenant ids in every
+      key, composite foreign keys and per-tenant unique constraints so the database refuses cross-tenant data;
+      row-level security as a second guard; and noisy neighbours.
+    depth: deep
+    prove: [explain, implement]
+    labs: [tenant-keys]
+
+  - id: arch.evolution
+    title: System evolution and zero-downtime migrations
+    module: m8-architecture-scale
+    requires: [db.constraints]
+    freshness: core_concept
+    sourceGroups: [database]
+    gap: >-
+      Needs: old and new code running against one database during a deploy; expand and contract migrations (add,
+      backfill, sync, switch, remove); adding a required column safely; backward-compatible API changes; and why a
+      one-step rename breaks a zero-downtime deploy.
+    depth: working
+    prove: [explain, implement]
+    labs: [expand-contract]
+
+  - id: ai.semantic_search
+    title: Semantic search with embeddings
+    module: a1-retrieval
+    requires: []
+    freshness: ai_ecosystem
+    sourceGroups: [ai, database]
+    gap: >-
+      Has started on embeddings, vectors and approximate nearest neighbours. Needs: embeddings as directions of meaning;
+      cosine similarity rather than raw dot products; filtering before ranking; a minimum score so search can return
+      nothing; storage and indexes such as HNSW; and where keyword search beats embeddings.
+    depth: working
+    prove: [explain, implement]
+    labs: [vector-search]
+
+  - id: ai.retrieval_eval
+    title: Retrieval evaluation
+    module: a1-retrieval
+    requires: [ai.semantic_search]
+    freshness: ai_ecosystem
+    sourceGroups: [ai]
+    gap: >-
+      Needs: a labeled set of questions and the documents that answer them; recall@k, precision@k and MRR; which matters
+      most when a model reads the top few chunks; per-question results so regressions show; and evaluating retrieval
+      separately from answer quality.
+    depth: working
+    prove: [explain, implement]
+    labs: [retrieval-metrics]
+
+  - id: ai.rag
+    title: Retrieval-augmented generation
+    module: a1-retrieval
+    requires: [ai.semantic_search]
+    freshness: ai_ecosystem
+    sourceGroups: [ai]
+    gap: >-
+      Needs: chunking documents; building a prompt from the best chunks within a token budget; labeling sources so the
+      answer can cite them; instructions to stay grounded and admit gaps; checking citations afterwards; and why
+      grounding reduces but can't prevent invented answers.
+    depth: working
+    prove: [explain, implement]
+    labs: [rag-prompt]
+
+  - id: ai.advanced_rag
+    title: Advanced RAG and hybrid search
+    module: a1-retrieval
+    requires: [ai.rag, ai.retrieval_eval]
+    freshness: ai_ecosystem
+    sourceGroups: [ai, database]
+    gap: >-
+      Needs: hybrid search combining keyword and vector results; reciprocal rank fusion instead of adding incomparable
+      scores; diversifying results across documents; query rewriting and its cost; and measuring each change with
+      retrieval metrics.
+    depth: deep
+    prove: [explain, implement]
+    labs: [rank-fusion]
+
+  - id: ai.reranking
+    title: Reranking
+    module: a1-retrieval
+    requires: [ai.retrieval_eval]
+    freshness: ai_ecosystem
+    sourceGroups: [ai]
+    gap: >-
+      Needs: two-stage retrieval, where a cheap search makes a shortlist and a slower model reorders it; batching
+      reranker calls; choosing the shortlist size from recall; stable ordering on ties; and the latency and cost
+      trade-off.
+    depth: working
+    prove: [explain, implement]
+    labs: [rerank-budget]
+
+  - id: ai.structured_outputs
+    title: Structured outputs
+    module: a2-model-interfaces
+    requires: [api.runtime_validation]
+    freshness: ai_ecosystem
+    sourceGroups: [ai, typescript]
+    gap: >-
+      Needs: asking a model for an exact shape; reading replies leniently (fences, surrounding text) and validating
+      strictly; one repair attempt that shows the model its errors; failing clearly after that; and what provider
+      structured-output modes guarantee (the shape) and don't (correct values).
+    depth: working
+    prove: [explain, implement]
+    labs: [invoice-extract]
+
+  - id: ai.tool_calling
+    title: Tool calling
+    module: a2-model-interfaces
+    requires: [ai.structured_outputs]
+    freshness: ai_ecosystem
+    sourceGroups: [ai]
+    gap: >-
+      Needs: the tool-calling loop, where the model proposes calls and your code runs them and returns results; matching
+      results to call ids; treating arguments as untrusted input; reporting the model's mistakes back as tool results; a
+      step limit; and approval for tools that spend money or change data.
+    depth: working
+    prove: [explain, implement]
+    labs: [tool-loop]
+
+  - id: ai.context_engineering
+    title: Context engineering
+    module: a2-model-interfaces
+    requires: [ai.rag]
+    freshness: ai_ecosystem
+    sourceGroups: [ai]
+    gap: >-
+      Needs: the context window as a budget; what must always stay (instructions, the question); a deliberate order for
+      dropping the rest; placing instructions and the question where they're read reliably; marking retrieved text as
+      data to resist prompt injection; and summarizing long histories.
+    depth: working
+    prove: [explain, implement]
+    labs: [context-budget]
+
+  - id: ai.agent_patterns
+    title: Agent patterns
+    module: a3-agents
+    requires: [ai.tool_calling]
+    freshness: ai_ecosystem
+    sourceGroups: [ai]
+    gap: >-
+      Needs: workflows (code picks the steps) versus agents (the model picks them); routing, chaining and
+      evaluator loops; keeping consequential decisions in code; confidence thresholds and handing off to a person; and
+      choosing the least autonomy that does the job.
+    depth: deep
+    prove: [explain, implement]
+    labs: [support-workflow]
+
+  - id: ai.agent_memory
+    title: State and memory
+    module: a3-agents
+    requires: [ai.context_engineering]
+    freshness: ai_ecosystem
+    sourceGroups: [ai]
+    gap: >-
+      Needs: short-term memory as the conversation; rolling summaries when it outgrows the window; pinned facts that
+      must not blur; long-term memory stored outside the chat and read back; and letting the user see and delete what's
+      remembered.
+    depth: working
+    prove: [explain, implement]
+    labs: [chat-memory]
+
+  - id: ai.mcp
+    title: MCP
+    module: a3-agents
+    requires: [ai.tool_calling]
+    freshness: ai_ecosystem
+    sourceGroups: [ai]
+    gap: >-
+      Needs: what the Model Context Protocol standardizes; JSON-RPC requests, responses and notifications; initialize,
+      tools/list and tools/call; protocol errors versus tool errors the model can read; and what to check before
+      connecting a third-party server.
+    depth: working
+    prove: [explain, implement]
+    labs: [mcp-server]
+
+  - id: ai.evals
+    title: Evals
+    module: a4-ai-production
+    requires: [ai.retrieval_eval, test.strategy]
+    freshness: ai_ecosystem
+    sourceGroups: [ai, testing]
+    gap: >-
+      Needs: labeled cases drawn from real traffic and past failures; grading with code where possible and with a
+      checked model grader where not; pass rates per tag; naming the exact cases that regressed; and running a small set
+      on every prompt or model change.
+    depth: deep
+    prove: [explain, implement]
+    labs: [eval-gate]
+
+  - id: ai.observability
+    title: AI observability
+    module: a4-ai-production
+    requires: [obs.traces, ai.tool_calling]
+    freshness: ai_ecosystem
+    sourceGroups: [ai, operations]
+    gap: >-
+      Needs: tracing model and tool calls as spans; recording model, tokens, latency and prompt version; cost per run
+      and per model; wall-clock time with parallel steps; keeping personal data out of traces; and sampling at volume.
+    depth: working
+    prove: [explain, implement]
+    labs: [llm-trace]
+
+  - id: ai.cost_latency
+    title: Cost and latency
+    module: a4-ai-production
+    requires: [ai.observability, arch.caching]
+    freshness: ai_ecosystem
+    sourceGroups: [ai]
+    gap: >-
+      Needs: routing easy requests to a small model and escalating when unsure; caching answers; a spending budget that
+      degrades instead of failing; shorter prompts, provider prompt caching, streaming for a fast first word, and batch
+      APIs for work nobody waits on.
+    depth: working
+    prove: [explain, implement]
+    labs: [smart-routing]
+
+  - id: ai.production_reliability
+    title: Production reliability for AI
+    module: a4-ai-production
+    requires: [rel.timeouts, rel.retry_backoff]
+    freshness: ai_ecosystem
+    sourceGroups: [ai, operations]
+    gap: >-
+      Needs: deadlines on model calls; which failures justify trying another provider (timeouts, rate limits, server
+      errors, empty output) and which don't (bad requests, safety refusals); recording which provider answered; and
+      checking a fallback with evals before trusting it.
+    depth: working
+    prove: [explain, implement]
+    labs: [provider-fallback]

@@ -1,0 +1,6 @@
+id: request-timeout
+title: Give up on time, and stop the work too
+topics: [rel.timeouts]
+modes: [implement]
+runner: browser
+timeoutMs: 3000

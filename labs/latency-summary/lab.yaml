@@ -1,0 +1,6 @@
+id: latency-summary
+title: Report latency the way users feel it
+topics: [obs.metrics]
+modes: [implement]
+runner: browser
+timeoutMs: 2000

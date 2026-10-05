@@ -1,0 +1,6 @@
+id: tenant-keys
+title: Make cross-tenant data impossible to store
+topics: [arch.multi_tenancy]
+modes: [implement]
+runner: pglite
+timeoutMs: 20000

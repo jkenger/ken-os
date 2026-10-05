@@ -92,6 +92,8 @@ A role is a set of areas and chapters, each with a target depth, at a target lev
 
 Nine chapters aren't written yet, so their areas rest on screening answers only (section 4). Those levels are shown as **estimates**, drawn dashed or lighter, until written topics in the area are proven or placed. Estimates firm up on their own as chapters get written and you take their placement checks.
 
+**Update, 2026-10-05:** every course chapter is now written, so a new baseline has no screened chapters and no estimates from them. Estimates now come only from chapters you add (section 3).
+
 ## 3. The conversation
 
 Choosing a direction is a conversation, not a form. It happens in two parts, with the same agent:
@@ -117,6 +119,8 @@ The assessment measures every area, because you haven't chosen a direction yet w
 |---|---|---|
 | The 18 written topics | Adaptive, one or two questions each | Real evidence: grades topics, can make them Known |
 | The 9 unwritten chapters | Two screening questions each: one on the basics, one applied | Estimates only: ranks chapters, never proves a topic |
+
+Since 2026-10-05 every course chapter is written, so the second row applies only to chapters you add.
 
 Topics already proven or placed before the assessment are **skipped**. A proof is stronger evidence than a screening question, and an off-day answer shouldn't put it at risk. The baseline lists them as "proven before the baseline".
 

@@ -1,0 +1,6 @@
+id: chat-memory
+title: Keep a long chat's memory within budget
+topics: [ai.agent_memory]
+modes: [implement]
+runner: browser
+timeoutMs: 2000

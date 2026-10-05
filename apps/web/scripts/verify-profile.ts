@@ -77,21 +77,13 @@ async function main() {
       const second = await store.submitAnswer(userId, { assessmentId, itemIndex: 1, selfRating: 4, response: { lines: topicId === "js.closures" ? ["7"] : ["2"] }, actualOutput: ["2"] });
       finished = second.runFinished;
     }
-    assert.equal(finished, false, "screening chapters are still open");
     const loopNext = await state.nextRunItem(db(), { id: loopSet, items: [predict(1), predict(2)] });
     assert.equal(loopNext, null, "two answers is the most a topic gets");
-
-    // Stand-in for the grader on screening answers: the AI chapters do well, the rest less so.
-    const screens = await db().select().from(labChapterScreens).where(eq(labChapterScreens.setId, run.id));
-    for (const screen of screens) {
-      const label = screen.chapterId.startsWith("a") ? "solid" : "partial";
-      await db().update(labChapterScreens).set({ response: { text: "An answer." }, selfRating: 3, label, misconceptions: [], feedback: "Checked.", answeredAt: new Date() })
-        .where(eq(labChapterScreens.id, screen.id));
-    }
-    const done = await db().transaction((tx) => state.completeRunIfDone(tx, run.id));
-    assert.equal(done, true, "the run finishes once every chapter is done");
+    // Every chapter is written, so the baseline has no screening chapters: the last topic answer finishes the run.
+    assert.equal(run.plan.chapters.some((chapter) => chapter.kind !== "topics"), false);
+    assert.equal(finished, true, "the run finishes once every topic is answered");
     assert.ok(await state.completedBaseline(userId));
-    console.log("ok - adaptive answers, screening answers, and the run finishes when every chapter is done");
+    console.log("ok - adaptive answers, and the run finishes when every chapter is done");
 
     const progress = await store.getAllProgress(userId);
     const of = (id: string) => progress.find((item) => item.topicId === id)!;
@@ -118,11 +110,10 @@ async function main() {
     const foundations = profile.areas.find((area) => area.area === "foundations")!;
     assert.ok(foundations.atBaseline, "levels at the baseline are kept for comparison");
     const ai = profile.areas.find((area) => area.area === "ai")!;
-    assert.equal(ai.now.estimate, true, "the AI area rests on screening, so it's an estimate");
-    assert.equal(ai.now.level, "mid", "solid screening on every AI chapter reaches mid, as an estimate");
+    assert.equal(ai.now.estimate, false, "the AI chapters are written and answered topic by topic, so it isn't an estimate");
     assert.ok(profile.roadmap.length > 0 && profile.roadmap[0].forLevel === "junior");
     assert.ok(profile.roles.every((role) => role.missing.length >= 0));
-    console.log(`ok - profile: foundations ${foundations.now.level ?? "not yet junior"}, AI ${ai.now.level} (estimate), roadmap of ${profile.roadmap.length} chapters`);
+    console.log(`ok - profile: foundations ${foundations.now.level ?? "not yet junior"}, AI ${ai.now.level ?? "not yet junior"}, roadmap of ${profile.roadmap.length} chapters`);
 
     const added = await profiles.addChapter(userId, { title: "Payments", area: "backend", reason: "My products take payments." });
     await assert.rejects(profiles.addChapter(userId, { title: "Payments", area: "backend", reason: "Again." }), /already/);
