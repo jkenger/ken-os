@@ -250,7 +250,7 @@ All four slices are built on the `feat/engineering-lab-profile` branch. Checked 
 
 **Waiting on the owner:**
 
-1. **Approve `content/engineering-lab/careers/roles.yaml`.** It is marked `draft`, and the profile says so on every page. Approving means setting `status: approved` and `approvedOn` in a reviewed commit.
+1. **Done 2026-10-05: approved `content/engineering-lab/careers/roles.yaml`,** expected to change along the way. Edits go through a reviewed commit that moves `approvedOn`.
 2. **Take the baseline** at `/lab/assessment`. When it finishes, the app stops reading `baseline.yaml` on its own. Section 8's cleanup (deleting the file, rewriting topic gaps, editing the handoff and `AGENTS.md`) is then a follow-up change.
 
 **Where it differs from the plan above:**
