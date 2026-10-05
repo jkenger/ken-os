@@ -70,7 +70,6 @@ modules:
     title: AI in production
     track: ai
     area: ai
-    planned: [Evals, AI observability, Cost and latency, Production reliability]
 
 topics:
   - id: js.call_stack
@@ -746,3 +745,58 @@ topics:
     depth: working
     prove: [explain, implement]
     labs: [mcp-server]
+
+  - id: ai.evals
+    title: Evals
+    module: a4-ai-production
+    requires: [ai.retrieval_eval, test.strategy]
+    freshness: ai_ecosystem
+    sourceGroups: [ai, testing]
+    gap: >-
+      Needs: labeled cases drawn from real traffic and past failures; grading with code where possible and with a
+      checked model grader where not; pass rates per tag; naming the exact cases that regressed; and running a small set
+      on every prompt or model change.
+    depth: deep
+    prove: [explain, implement]
+    labs: [eval-gate]
+
+  - id: ai.observability
+    title: AI observability
+    module: a4-ai-production
+    requires: [obs.traces, ai.tool_calling]
+    freshness: ai_ecosystem
+    sourceGroups: [ai, operations]
+    gap: >-
+      Needs: tracing model and tool calls as spans; recording model, tokens, latency and prompt version; cost per run
+      and per model; wall-clock time with parallel steps; keeping personal data out of traces; and sampling at volume.
+    depth: working
+    prove: [explain, implement]
+    labs: [llm-trace]
+
+  - id: ai.cost_latency
+    title: Cost and latency
+    module: a4-ai-production
+    requires: [ai.observability, arch.caching]
+    freshness: ai_ecosystem
+    sourceGroups: [ai]
+    gap: >-
+      Needs: routing easy requests to a small model and escalating when unsure; caching answers; a spending budget that
+      degrades instead of failing; shorter prompts, provider prompt caching, streaming for a fast first word, and batch
+      APIs for work nobody waits on.
+    depth: working
+    prove: [explain, implement]
+    labs: [smart-routing]
+
+  - id: ai.production_reliability
+    title: Production reliability for AI
+    module: a4-ai-production
+    requires: [rel.timeouts, rel.retry_backoff]
+    freshness: ai_ecosystem
+    sourceGroups: [ai, operations]
+    gap: >-
+      Needs: deadlines on model calls; which failures justify trying another provider (timeouts, rate limits, server
+      errors, empty output) and which don't (bad requests, safety refusals); recording which provider answered; and
+      checking a fallback with evals before trusting it.
+    depth: working
+    prove: [explain, implement]
+    labs: [provider-fallback]

@@ -104,12 +104,7 @@ export const topicMap: TopicMap = {
       "title": "AI in production",
       "track": "ai",
       "area": "ai",
-      "planned": [
-        "Evals",
-        "AI observability",
-        "Cost and latency",
-        "Production reliability"
-      ]
+      "planned": []
     }
   ],
   "topics": [
@@ -1122,6 +1117,97 @@ export const topicMap: TopicMap = {
       "labs": [
         "mcp-server"
       ]
+    },
+    {
+      "id": "ai.evals",
+      "title": "Evals",
+      "module": "a4-ai-production",
+      "requires": [
+        "ai.retrieval_eval",
+        "test.strategy"
+      ],
+      "freshness": "ai_ecosystem",
+      "sourceGroups": [
+        "ai",
+        "testing"
+      ],
+      "gap": "Needs: labeled cases drawn from real traffic and past failures; grading with code where possible and with a checked model grader where not; pass rates per tag; naming the exact cases that regressed; and running a small set on every prompt or model change.",
+      "depth": "deep",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "eval-gate"
+      ]
+    },
+    {
+      "id": "ai.observability",
+      "title": "AI observability",
+      "module": "a4-ai-production",
+      "requires": [
+        "obs.traces",
+        "ai.tool_calling"
+      ],
+      "freshness": "ai_ecosystem",
+      "sourceGroups": [
+        "ai",
+        "operations"
+      ],
+      "gap": "Needs: tracing model and tool calls as spans; recording model, tokens, latency and prompt version; cost per run and per model; wall-clock time with parallel steps; keeping personal data out of traces; and sampling at volume.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "llm-trace"
+      ]
+    },
+    {
+      "id": "ai.cost_latency",
+      "title": "Cost and latency",
+      "module": "a4-ai-production",
+      "requires": [
+        "ai.observability",
+        "arch.caching"
+      ],
+      "freshness": "ai_ecosystem",
+      "sourceGroups": [
+        "ai"
+      ],
+      "gap": "Needs: routing easy requests to a small model and escalating when unsure; caching answers; a spending budget that degrades instead of failing; shorter prompts, provider prompt caching, streaming for a fast first word, and batch APIs for work nobody waits on.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "smart-routing"
+      ]
+    },
+    {
+      "id": "ai.production_reliability",
+      "title": "Production reliability for AI",
+      "module": "a4-ai-production",
+      "requires": [
+        "rel.timeouts",
+        "rel.retry_backoff"
+      ],
+      "freshness": "ai_ecosystem",
+      "sourceGroups": [
+        "ai",
+        "operations"
+      ],
+      "gap": "Needs: deadlines on model calls; which failures justify trying another provider (timeouts, rate limits, server errors, empty output) and which don't (bad requests, safety refusals); recording which provider answered; and checking a fallback with evals before trusting it.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "provider-fallback"
+      ]
     }
   ]
 };
@@ -1910,6 +1996,23 @@ export const labs: LabDefinition[] = [
     "probe": null
   },
   {
+    "id": "eval-gate",
+    "title": "Block a prompt change that makes answers worse",
+    "topics": [
+      "ai.evals"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 3000,
+    "readme": "Someone rewrote the support prompt. It reads better, but did the answers get better? An eval runs both versions over\nthe same labeled cases and compares. The starter crashes when one case errors, reports only one overall number, and\nlets a change through when a whole category of questions got worse.\n\n- `await runEval(cases, generate, grade)`: `cases` are `{ id, input, expected, tags }`. Return one\n  `{ id, tags, pass, output }` per case, where `pass` is `grade(output, expected)`. A `generate` that throws is a failed\n  case with `error` set, not a crash.\n- `report(results)`: `{ total, passed, passRate, byTag }`, where `byTag[tag]` is `{ total, passed, passRate }`.\n- `gate(baseline, candidate, { maxDrop })` compares two result lists. Return `{ ok, passRateChange, regressions,\n  tagDrops }`:\n  - `regressions`: ids that passed before and fail now.\n  - `tagDrops`: tags whose pass rate fell by more than `maxDrop`.\n  - `ok` only when the overall rate fell by no more than `maxDrop` and no tag did.\n\nThen explain where the cases come from, when to grade with code versus a model, and why a small eval set run often\nbeats a big one run rarely.",
+    "starter": "async function runEval(cases, generate, grade) {\n  const results = [];\n  for (const item of cases) {\n    const output = await generate(item.input);\n    results.push({ id: item.id, tags: item.tags, pass: grade(output, item.expected), output });\n  }\n  return results;\n}\n\nfunction report(results) {\n  const passed = results.filter((result) => result.pass).length;\n  return { total: results.length, passed, passRate: passed / results.length, byTag: {} };\n}\n\nfunction gate(baseline, candidate, { maxDrop }) {\n  const passRateChange = report(candidate).passRate - report(baseline).passRate;\n  return { ok: passRateChange >= -maxDrop, passRateChange, regressions: [], tagDrops: [] };\n}\n",
+    "tests": "const cases = [\n  { id: \"r1\", input: \"Can I return shoes after 20 days?\", expected: \"yes\", tags: [\"returns\"] },\n  { id: \"r2\", input: \"Can I return a sale item?\", expected: \"no\", tags: [\"returns\"] },\n  { id: \"s1\", input: \"Do you ship to Canada?\", expected: \"yes\", tags: [\"shipping\"] },\n  { id: \"s2\", input: \"Is shipping free over $50?\", expected: \"yes\", tags: [\"shipping\"] },\n  { id: \"s3\", input: \"Do you ship on Sundays?\", expected: \"no\", tags: [\"shipping\"] },\n  { id: \"b1\", input: \"Can I pay with PayPal?\", expected: \"yes\", tags: [\"billing\"] },\n];\nconst grade = (output, expected) => output.trim().toLowerCase().startsWith(expected);\nconst answers = (table) => async (input) => {\n  const item = cases.find((entry) => entry.input === input);\n  const answer = table[item.id];\n  if (answer instanceof Error) throw answer;\n  return answer;\n};\nconst oldPrompt = answers({ r1: \"Yes, within 30 days.\", r2: \"No, sale items are final.\", s1: \"Yes.\", s2: \"Yes.\", s3: \"Yes, every day.\", b1: \"Yes.\" });\nconst newPrompt = answers({ r1: \"Yes, within 30 days.\", r2: \"No.\", s1: \"No, US only.\", s2: \"No.\", s3: \"No.\", b1: new Error(\"model timed out\") });\n\ntest(\"a case that throws is a failure, not a crash\", async () => {\n  const results = await runEval(cases, newPrompt, grade);\n  assert.equal(results.length, 6);\n  const billing = results.find((result) => result.id === \"b1\");\n  assert.equal(billing.pass, false);\n  assert.ok(String(billing.error).includes(\"timed out\"));\n});\n\ntest(\"the report breaks the pass rate down by tag\", async () => {\n  const summary = report(await runEval(cases, oldPrompt, grade));\n  assert.equal(summary.total, 6);\n  assert.equal(summary.passed, 5);\n  assert.deepEqual(summary.byTag.returns, { total: 2, passed: 2, passRate: 1 });\n  assert.deepEqual(summary.byTag.shipping, { total: 3, passed: 2, passRate: 2 / 3 });\n});\n\ntest(\"the gate names regressions and blocks a category that got worse\", async () => {\n  const baseline = await runEval(cases, oldPrompt, grade);\n  const candidate = await runEval(cases, newPrompt, grade);\n  const verdict = gate(baseline, candidate, { maxDrop: 0.2 });\n  assert.equal(verdict.ok, false);\n  assert.deepEqual([...verdict.regressions].sort(), [\"b1\", \"s1\", \"s2\"]);\n  assert.ok(verdict.tagDrops.includes(\"shipping\") && verdict.tagDrops.includes(\"billing\"));\n  assert.ok(!verdict.tagDrops.includes(\"returns\"));\n});\n\ntest(\"a small overall drop can still hide a broken category\", async () => {\n  const many = [...cases, ...Array.from({ length: 20 }, (_, index) => ({ id: `g${index}`, input: `general ${index}`, expected: \"yes\", tags: [\"general\"] }))];\n  const all = (fail) => async (input) => (fail.some((word) => input.includes(word)) ? \"no\" : (cases.find((entry) => entry.input === input)?.expected ?? \"yes\"));\n  const baseline = await runEval(many, all([]), grade);\n  const candidate = await runEval(many, all([\"PayPal\"]), grade);\n  const verdict = gate(baseline, candidate, { maxDrop: 0.1 });\n  assert.ok(verdict.passRateChange > -0.1, \"the overall drop is small\");\n  assert.equal(verdict.ok, false, \"but billing went from 100% to 0%\");\n  assert.deepEqual(verdict.tagDrops, [\"billing\"]);\n});\n\ntest(\"an equal or better run passes\", async () => {\n  const baseline = await runEval(cases, oldPrompt, grade);\n  const verdict = gate(baseline, baseline, { maxDrop: 0 });\n  assert.deepEqual(verdict, { ok: true, passRateChange: 0, regressions: [], tagDrops: [] });\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
     "id": "event-loop-order",
     "title": "Fix the save that runs before validation",
     "topics": [
@@ -2030,6 +2133,23 @@ export const labs: LabDefinition[] = [
     "probe": null
   },
   {
+    "id": "llm-trace",
+    "title": "Turn an agent run's trace into cost and timing",
+    "topics": [
+      "ai.observability"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 3000,
+    "readme": "An agent run is recorded as spans: one for the whole run, one per model call, one per tool call. Each span is\n`{ id, parentId, kind, name, start, end }` (times in milliseconds). Model spans (`kind: \"llm\"`) also have `model`,\n`inputTokens` and `outputTokens`; a failed span has `error`.\n\n`summarizeRun(spans, prices)` answers \"what did this run cost, and where did the time go?\". `prices[model]` is\n`{ input, output }` in US dollars per million tokens. Return:\n\n- `durationMs`: wall-clock time, from the earliest start to the latest end. Tools that ran in parallel overlap, so\n  adding their durations is wrong.\n- `tokens`: `{ input, output }` across model calls.\n- `costUsd`: total cost, rounded to 6 decimal places.\n- `byModel[model]`: `{ calls, inputTokens, outputTokens, costUsd }`.\n- `slowest`: `{ name, durationMs }` of the slowest span that isn't the run itself.\n- `failedTools`: names of tool spans with an `error`.\n- `unpriced`: models with no price. Count their tokens but not a cost, so one missing price doesn't turn the total\n  into `NaN`.\n\nThen explain what to record on a model span, what not to record (personal data in prompts), and how sampling helps.",
+    "starter": "function summarizeRun(spans, prices) {\n  const llm = spans.filter((span) => span.kind === \"llm\");\n  const input = llm.reduce((sum, span) => sum + span.inputTokens, 0);\n  const output = llm.reduce((sum, span) => sum + span.outputTokens, 0);\n  const costUsd = llm.reduce((sum, span) => sum + (span.inputTokens * prices[span.model].input + span.outputTokens * prices[span.model].output) / 1e6, 0);\n  const steps = spans.filter((span) => span.kind !== \"run\");\n  const durationMs = steps.reduce((sum, span) => sum + (span.end - span.start), 0);\n  return { durationMs, tokens: { input, output }, costUsd, byModel: {}, slowest: null, failedTools: [], unpriced: [] };\n}\n",
+    "tests": "const prices = { \"big-model\": { input: 3, output: 15 }, \"small-model\": { input: 0.25, output: 1.25 } };\nconst spans = [\n  { id: \"run\", parentId: null, kind: \"run\", name: \"answer_question\", start: 0, end: 4200 },\n  { id: \"a\", parentId: \"run\", kind: \"llm\", name: \"plan\", model: \"big-model\", inputTokens: 2000, outputTokens: 300, start: 0, end: 1500 },\n  { id: \"b\", parentId: \"run\", kind: \"tool\", name: \"search_docs\", start: 1500, end: 2700 },\n  { id: \"c\", parentId: \"run\", kind: \"tool\", name: \"get_order\", start: 1500, end: 2100, error: \"timeout\" },\n  { id: \"d\", parentId: \"run\", kind: \"llm\", name: \"answer\", model: \"small-model\", inputTokens: 6000, outputTokens: 400, start: 2700, end: 4200 },\n];\n\ntest(\"duration is wall-clock time, not the sum of overlapping steps\", () => {\n  assert.equal(summarizeRun(spans, prices).durationMs, 4200);\n});\n\ntest(\"tokens and cost add up per model and overall\", () => {\n  const summary = summarizeRun(spans, prices);\n  assert.deepEqual(summary.tokens, { input: 8000, output: 700 });\n  assert.deepEqual(summary.byModel[\"big-model\"], { calls: 1, inputTokens: 2000, outputTokens: 300, costUsd: 0.0105 });\n  assert.deepEqual(summary.byModel[\"small-model\"], { calls: 1, inputTokens: 6000, outputTokens: 400, costUsd: 0.002 });\n  assert.equal(summary.costUsd, 0.0125);\n});\n\ntest(\"the slowest step and failed tools are named\", () => {\n  const summary = summarizeRun(spans, prices);\n  assert.equal(summary.slowest.durationMs, 1500);\n  assert.ok([\"plan\", \"answer\"].includes(summary.slowest.name));\n  assert.deepEqual(summary.failedTools, [\"get_order\"]);\n});\n\ntest(\"a model with no price is listed instead of turning the cost into NaN\", () => {\n  const withNew = [...spans, { id: \"e\", parentId: \"run\", kind: \"llm\", name: \"check\", model: \"new-model\", inputTokens: 100, outputTokens: 10, start: 4200, end: 4300 }];\n  const summary = summarizeRun(withNew, prices);\n  assert.equal(summary.costUsd, 0.0125);\n  assert.deepEqual(summary.unpriced, [\"new-model\"]);\n  assert.equal(summary.tokens.input, 8100);\n  assert.equal(summary.durationMs, 4300);\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
     "id": "load-shedding",
     "title": "Say no early instead of falling over",
     "topics": [
@@ -2113,6 +2233,23 @@ export const labs: LabDefinition[] = [
     "readme": "Placing an order touches three services that don't share a database, so one transaction can't cover them:\n\n1. `services.inventory.reserve(order.items)` returns a reservation id.\n2. `services.payments.charge(order.total)` returns a charge id.\n3. `services.shipping.create(order.address)` returns a shipment id.\n\nAny step can fail after the earlier ones succeeded. The starter just reports the failure, leaving stock reserved and\nthe card charged for an order that will never ship. Write `placeOrder(services, order)` so that:\n\n- On success it returns `{ ok: true, reservationId, chargeId, shipmentId }`.\n- When a step fails, it undoes the steps that already succeeded, newest first: `payments.refund(chargeId)`, then\n  `inventory.release(reservationId)`. It returns `{ ok: false, failedAt, error, compensationErrors }`, where\n  `failedAt` is `\"inventory\"`, `\"payments\"` or `\"shipping\"` and `error` is the failure's message.\n- If an undo step fails too, it keeps going with the rest and lists the message in `compensationErrors`; the\n  original failure stays the one reported.\n\nThen explain why each undo step must be safe to run twice, and what a person should see when an undo fails.",
     "starter": "async function placeOrder(services, order) {\n  try {\n    const reservationId = await services.inventory.reserve(order.items);\n    const chargeId = await services.payments.charge(order.total);\n    const shipmentId = await services.shipping.create(order.address);\n    return { ok: true, reservationId, chargeId, shipmentId };\n  } catch (error) {\n    return { ok: false, failedAt: \"unknown\", error: error.message, compensationErrors: [] };\n  }\n}\n",
     "tests": "// Fake services that record every call. `failing` names the calls that throw.\nfunction fakeServices(failing = []) {\n  const log = [];\n  const step = (name, result) => async (arg) => {\n    log.push(name);\n    if (failing.includes(name)) throw new Error(`${name} failed`);\n    return result;\n  };\n  return {\n    log,\n    services: {\n      inventory: { reserve: step(\"reserve\", \"res_1\"), release: step(\"release\", true) },\n      payments: { charge: step(\"charge\", \"ch_1\"), refund: step(\"refund\", true) },\n      shipping: { create: step(\"ship\", \"sh_1\") },\n    },\n  };\n}\nconst order = { items: [{ sku: \"ABC-1234\", quantity: 1 }], total: 2500, address: \"1 Main St\" };\n\ntest(\"a successful order returns every id and undoes nothing\", async () => {\n  const { log, services } = fakeServices();\n  assert.deepEqual(await placeOrder(services, order), { ok: true, reservationId: \"res_1\", chargeId: \"ch_1\", shipmentId: \"sh_1\" });\n  assert.deepEqual(log, [\"reserve\", \"charge\", \"ship\"]);\n});\n\ntest(\"a failed charge releases the stock\", async () => {\n  const { log, services } = fakeServices([\"charge\"]);\n  const result = await placeOrder(services, order);\n  assert.equal(result.ok, false);\n  assert.equal(result.failedAt, \"payments\");\n  assert.equal(result.error, \"charge failed\");\n  assert.deepEqual(log, [\"reserve\", \"charge\", \"release\"]);\n});\n\ntest(\"a failed shipment refunds, then releases, newest first\", async () => {\n  const { log, services } = fakeServices([\"ship\"]);\n  const result = await placeOrder(services, order);\n  assert.equal(result.failedAt, \"shipping\");\n  assert.deepEqual(log, [\"reserve\", \"charge\", \"ship\", \"refund\", \"release\"]);\n});\n\ntest(\"a failed reservation has nothing to undo\", async () => {\n  const { log, services } = fakeServices([\"reserve\"]);\n  const result = await placeOrder(services, order);\n  assert.equal(result.failedAt, \"inventory\");\n  assert.deepEqual(log, [\"reserve\"]);\n});\n\ntest(\"a failed undo doesn't stop the others or hide the real failure\", async () => {\n  const { log, services } = fakeServices([\"ship\", \"refund\"]);\n  const result = await placeOrder(services, order);\n  assert.equal(result.failedAt, \"shipping\");\n  assert.equal(result.error, \"ship failed\");\n  assert.deepEqual(result.compensationErrors, [\"refund failed\"]);\n  assert.deepEqual(log, [\"reserve\", \"charge\", \"ship\", \"refund\", \"release\"], \"the release still runs after the refund fails\");\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
+    "id": "provider-fallback",
+    "title": "Fall back across model providers safely",
+    "topics": [
+      "ai.production_reliability"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 3000,
+    "readme": "Model providers have outages, rate limits and slow days. The starter calls the first provider and fails with it.\n\n`generate(providers, prompt, { timeoutMs })` tries providers in order. Each provider is `{ name, call }`, where\n`call(prompt, { signal })` resolves to `{ text, finishReason }` or throws an error that may have a `status`.\n\n- Move to the next provider when a call takes longer than `timeoutMs` (abort it through `signal`), fails with status\n  `429` or `500` and up, fails with no status (a network error), or returns empty text.\n- Don't move on when the request itself is the problem: a `400` is thrown straight away, since every provider would\n  reject it. A `finishReason` of `content_filter` is returned as `{ ok: false, reason: \"content_filter\", provider }`\n  rather than shopped around until some provider allows it.\n- On success, return `{ ok: true, text, provider, attempts }`, where `attempts` lists `{ provider, outcome }` for each\n  try (`\"timeout\"`, `\"status 503\"`, `\"empty\"`, `\"network\"`, `\"ok\"`).\n- When every provider fails, throw an error named `AllProvidersFailed` with the `attempts` attached.\n\nThen explain why outputs can differ between providers, and what to check before adding one as a fallback.",
+    "starter": "async function generate(providers, prompt, { timeoutMs }) {\n  const [first] = providers;\n  const reply = await first.call(prompt, {});\n  return { ok: true, text: reply.text, provider: first.name, attempts: [{ provider: first.name, outcome: \"ok\" }] };\n}\n",
+    "tests": "const failWith = (status, message = `HTTP ${status}`) => async () => { const error = new Error(message); if (status) error.status = status; throw error; };\nconst answer = (text, finishReason = \"stop\") => async () => ({ text, finishReason });\nfunction slow(log) {\n  return (prompt, { signal } = {}) => new Promise((resolve) => {\n    const timer = setTimeout(() => resolve({ text: \"too late\", finishReason: \"stop\" }), 400);\n    signal?.addEventListener(\"abort\", () => { clearTimeout(timer); log.push(\"aborted\"); });\n  });\n}\n\ntest(\"falls back past rate limits, outages, network errors and empty replies\", async () => {\n  const result = await generate([\n    { name: \"alpha\", call: failWith(429) },\n    { name: \"beta\", call: failWith(503) },\n    { name: \"gamma\", call: failWith(undefined, \"fetch failed\") },\n    { name: \"delta\", call: answer(\"   \") },\n    { name: \"epsilon\", call: answer(\"Hello!\") },\n  ], \"Say hello\", { timeoutMs: 100 });\n  assert.equal(result.ok, true);\n  assert.equal(result.text, \"Hello!\");\n  assert.equal(result.provider, \"epsilon\");\n  assert.deepEqual(result.attempts.map((attempt) => attempt.outcome), [\"status 429\", \"status 503\", \"network\", \"empty\", \"ok\"]);\n});\n\ntest(\"a slow provider is cut off and aborted\", async () => {\n  const log = [];\n  const started = Date.now();\n  const result = await generate([{ name: \"alpha\", call: slow(log) }, { name: \"beta\", call: answer(\"Fast answer\") }], \"Hi\", { timeoutMs: 50 });\n  assert.equal(result.provider, \"beta\");\n  assert.equal(result.attempts[0].outcome, \"timeout\");\n  assert.ok(Date.now() - started < 300, \"it should not wait for the slow provider\");\n  assert.deepEqual(log, [\"aborted\"]);\n});\n\ntest(\"a bad request is not retried elsewhere\", async () => {\n  let betaCalled = false;\n  await assert.rejects(generate([\n    { name: \"alpha\", call: failWith(400, \"prompt is too long\") },\n    { name: \"beta\", call: async () => { betaCalled = true; return { text: \"x\", finishReason: \"stop\" }; } },\n  ], \"Hi\", { timeoutMs: 100 }));\n  assert.equal(betaCalled, false);\n});\n\ntest(\"a content filter refusal is returned, not shopped around\", async () => {\n  let betaCalled = false;\n  const result = await generate([\n    { name: \"alpha\", call: answer(\"\", \"content_filter\") },\n    { name: \"beta\", call: async () => { betaCalled = true; return { text: \"x\", finishReason: \"stop\" }; } },\n  ], \"Hi\", { timeoutMs: 100 });\n  assert.deepEqual(result, { ok: false, reason: \"content_filter\", provider: \"alpha\" });\n  assert.equal(betaCalled, false);\n});\n\ntest(\"when every provider fails, the error lists each attempt\", async () => {\n  let error = null;\n  try {\n    await generate([{ name: \"alpha\", call: failWith(500) }, { name: \"beta\", call: failWith(429) }], \"Hi\", { timeoutMs: 100 });\n  } catch (caught) { error = caught; }\n  assert.ok(error);\n  assert.equal(error.name, \"AllProvidersFailed\");\n  assert.deepEqual(error.attempts.map((attempt) => attempt.provider), [\"alpha\", \"beta\"]);\n});\n",
     "setup": "",
     "probe": null
   },
@@ -2334,6 +2471,23 @@ export const labs: LabDefinition[] = [
     "readme": "Both functions are meant to return an updated copy and leave their input untouched. Both change the input.\n\n- `withTheme(settings, theme)` returns the settings with `display.theme` replaced.\n- `addTag(post, tag)` returns the post with `tag` added to `tags`.\n\nFix them so the original objects never change. Don't use `structuredClone` on the whole object; copy only\nwhat you change. Then explain why `{ ...settings }` wasn't enough.",
     "starter": "function withTheme(settings, theme) {\n  const copy = { ...settings };\n  copy.display.theme = theme;\n  return copy;\n}\n\nfunction addTag(post, tag) {\n  post.tags.push(tag);\n  return post;\n}\n",
     "tests": "test(\"withTheme leaves the original settings alone\", () => {\n  const settings = { language: \"en\", display: { theme: \"light\", fontSize: 14 } };\n  const updated = withTheme(settings, \"dark\");\n  assert.equal(updated.display.theme, \"dark\");\n  assert.equal(updated.display.fontSize, 14);\n  assert.equal(settings.display.theme, \"light\");\n  assert.ok(updated.display !== settings.display, \"the nested display object must be a new object\");\n});\n\ntest(\"addTag returns a new post and keeps the old tags\", () => {\n  const post = { title: \"Hello\", tags: [\"intro\"] };\n  const updated = addTag(post, \"news\");\n  assert.deepEqual(updated.tags, [\"intro\", \"news\"]);\n  assert.deepEqual(post.tags, [\"intro\"]);\n  assert.ok(updated !== post, \"addTag must return a new post object\");\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
+    "id": "smart-routing",
+    "title": "Spend the big model only where it's needed",
+    "topics": [
+      "ai.cost_latency"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 3000,
+    "readme": "The starter sends every question to the large model. It's slow and expensive, and most questions don't need it.\n\n`createAnswerer({ small, large, costOf, dailyBudgetUsd })` returns `{ answer, spent }`:\n\n- `small(question)` and `large(question)` return `{ text, confident }` (`large` is always confident).\n- `costOf(modelName, reply)` returns what that reply cost in US dollars.\n- `await answer(question)` returns `{ text, model, costUsd }`:\n  1. Repeated questions come from a cache, with `model: \"cache\"` and `costUsd: 0`. Treat `\"  What are your HOURS? \"`\n     and `\"what are your hours?\"` as the same question.\n  2. Otherwise ask `small`. If it's confident, use it.\n  3. If not, ask `large`, unless today's spend has reached `dailyBudgetUsd`. Then return the small answer with\n     `degraded: true`.\n  4. Cache only confident answers; `costUsd` is everything spent on this question.\n- `spent()` returns the total spent so far.\n\nThen explain the other levers on cost and latency: shorter prompts, prompt caching, streaming, and batching.",
+    "starter": "function createAnswerer({ small, large, costOf, dailyBudgetUsd }) {\n  let total = 0;\n  return {\n    async answer(question) {\n      const reply = await large(question);\n      const costUsd = costOf(\"large\", reply);\n      total += costUsd;\n      return { text: reply.text, model: \"large\", costUsd };\n    },\n    spent: () => total,\n  };\n}\n",
+    "tests": "function setup(dailyBudgetUsd = 1) {\n  const calls = [];\n  const small = async (question) => {\n    calls.push([\"small\", question]);\n    return /refund|contract/i.test(question) ? { text: \"Not sure.\", confident: false } : { text: `Small: ${question.trim()}`, confident: true };\n  };\n  const large = async (question) => {\n    calls.push([\"large\", question]);\n    return { text: `Large: ${question.trim()}`, confident: true };\n  };\n  const costOf = (model) => (model === \"large\" ? 0.4 : 0.01);\n  return { calls, answerer: createAnswerer({ small, large, costOf, dailyBudgetUsd }) };\n}\n\ntest(\"an easy question stays on the small model\", async () => {\n  const { calls, answerer } = setup();\n  const result = await answerer.answer(\"What are your hours?\");\n  assert.deepEqual(result, { text: \"Small: What are your hours?\", model: \"small\", costUsd: 0.01 });\n  assert.deepEqual(calls.map(([model]) => model), [\"small\"]);\n});\n\ntest(\"an unsure small answer escalates, and the cost includes both calls\", async () => {\n  const { answerer } = setup();\n  const result = await answerer.answer(\"Can I get a refund on a custom order?\");\n  assert.equal(result.model, \"large\");\n  assert.equal(Math.round(result.costUsd * 100), 41);\n  assert.equal(Math.round(answerer.spent() * 100), 41);\n});\n\ntest(\"repeated questions come from the cache, however they're typed\", async () => {\n  const { calls, answerer } = setup();\n  await answerer.answer(\"What are your hours?\");\n  const again = await answerer.answer(\"  What are your HOURS? \");\n  assert.deepEqual(again, { text: \"Small: What are your hours?\", model: \"cache\", costUsd: 0 });\n  assert.equal(calls.length, 1);\n});\n\ntest(\"once the budget is spent, unsure answers degrade instead of escalating\", async () => {\n  const { calls, answerer } = setup(0.4);\n  await answerer.answer(\"Can I get a refund on a custom order?\");\n  const result = await answerer.answer(\"Can you review this contract clause?\");\n  assert.equal(result.model, \"small\");\n  assert.equal(result.degraded, true);\n  assert.equal(calls.filter(([model]) => model === \"large\").length, 1);\n  const retry = await answerer.answer(\"Can you review this contract clause?\");\n  assert.ok(retry.model !== \"cache\", \"an unsure answer is not cached\");\n});\n",
     "setup": "",
     "probe": null
   },
