@@ -3,13 +3,14 @@ import { hasValidOrigin } from "@/lib/origin";
 import { parseSkillBundle, SkillBundleError } from "@/lib/skill-bundle";
 import { saveSkill } from "@/lib/skills";
 import { getSession } from "@/lib/session";
+import { messages } from "@/lib/messages";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  if (!hasValidOrigin(request)) return NextResponse.json({ error: "Invalid origin." }, { status: 403 });
+  if (!hasValidOrigin(request)) return NextResponse.json({ error: messages.invalidOrigin }, { status: 403 });
   const session = await getSession();
-  if (!session) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+  if (!session) return NextResponse.json({ error: messages.signedOut }, { status: 401 });
   const contentLength = Number(request.headers.get("content-length") ?? 0);
   if (contentLength > 600 * 1024) return NextResponse.json({ error: "Upload is too large." }, { status: 413 });
   const form = await request.formData().catch(() => null);

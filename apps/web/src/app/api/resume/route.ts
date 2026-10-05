@@ -8,12 +8,13 @@ import { hasValidOrigin } from "@/lib/origin";
 import { getSelectedResume } from "@/lib/resume";
 import { getSession } from "@/lib/session";
 import { artifactSelections } from "@/lib/schema";
+import { messages } from "@/lib/messages";
 
 export const runtime = "nodejs";
 
 export async function GET() {
   const session = await getSession();
-  if (!session) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+  if (!session) return NextResponse.json({ error: messages.signedOut }, { status: 401 });
   const selection = await getSelectedResume(session.userId);
   if (!selection) return NextResponse.json({ selection: null });
   try {
@@ -26,9 +27,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  if (!hasValidOrigin(request)) return NextResponse.json({ error: "Invalid origin." }, { status: 403 });
+  if (!hasValidOrigin(request)) return NextResponse.json({ error: messages.invalidOrigin }, { status: 403 });
   const session = await getSession();
-  if (!session) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+  if (!session) return NextResponse.json({ error: messages.signedOut }, { status: 401 });
   const input = await request.json().catch(() => null) as { fileId?: unknown } | null;
   const fileId = input?.fileId;
   if (typeof fileId !== "string" || !/^[A-Za-z0-9_-]{5,256}$/.test(fileId)) {

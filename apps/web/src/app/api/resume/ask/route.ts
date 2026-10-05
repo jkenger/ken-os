@@ -7,13 +7,14 @@ import { hasValidOrigin } from "@/lib/origin";
 import { getSelectedResume } from "@/lib/resume";
 import { getSession } from "@/lib/session";
 import { getEnabledSkills } from "@/lib/skills";
+import { messages } from "@/lib/messages";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
-  if (!hasValidOrigin(request)) return NextResponse.json({ error: "Invalid origin." }, { status: 403 });
+  if (!hasValidOrigin(request)) return NextResponse.json({ error: messages.invalidOrigin }, { status: 403 });
   const session = await getSession();
-  if (!session) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
+  if (!session) return NextResponse.json({ error: messages.signedOut }, { status: 401 });
   const selection = await getSelectedResume(session.userId);
   if (!selection) return NextResponse.json({ error: "Select a resume first." }, { status: 404 });
   if (selection.mimeType !== GOOGLE_DOC_MIME) {
