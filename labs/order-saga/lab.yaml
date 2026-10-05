@@ -1,0 +1,6 @@
+id: order-saga
+title: Undo the steps that already happened
+topics: [rel.partial_failures]
+modes: [implement]
+runner: browser
+timeoutMs: 2000

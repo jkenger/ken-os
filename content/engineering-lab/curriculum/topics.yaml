@@ -46,7 +46,6 @@ modules:
     title: Production reliability
     track: fullstack
     area: production
-    planned: [Background jobs, Retry and backoff, Timeouts, Partial failures, Graceful degradation]
   - id: m7-observability
     title: Observability
     track: fullstack
@@ -430,3 +429,73 @@ topics:
     depth: deep
     prove: [explain, implement]
     labs: [chat-connection]
+
+  - id: rel.background_jobs
+    title: Background jobs and queues
+    module: m6-production-reliability
+    requires: [db.atomic_updates]
+    freshness: core_concept
+    sourceGroups: [database, operations]
+    gap: >-
+      Slow work moves to a queue, but claiming jobs safely is the hard part. Needs: claiming a job atomically so two
+      workers never take the same one (FOR UPDATE SKIP LOCKED); leases so a crashed worker's job is picked up again;
+      backoff and a dead state for jobs that keep failing; and why every job must be safe to run twice.
+    depth: working
+    prove: [explain, implement]
+    labs: [job-queue]
+
+  - id: rel.retry_backoff
+    title: Retry with backoff and jitter
+    module: m6-production-reliability
+    requires: [api.idempotency_basics]
+    freshness: core_concept
+    sourceGroups: [operations, web]
+    gap: >-
+      No confident model of retries. Needs: which failures are worth retrying and which never succeed; exponential
+      backoff with a cap; jitter so clients don't retry in lockstep; honouring Retry-After; a retry budget; and why a
+      retried request must be idempotent.
+    depth: working
+    prove: [explain, implement]
+    labs: [retry-policy]
+
+  - id: rel.timeouts
+    title: Timeouts and cancellation
+    module: m6-production-reliability
+    requires: [js.promises]
+    freshness: core_concept
+    sourceGroups: [javascript, web, operations]
+    gap: >-
+      Needs: every call to another service gets a timeout chosen from how long it normally takes; a timeout must also
+      cancel the work (AbortSignal), or the work keeps holding connections; clearing timers after success; and deadlines
+      that shrink as a request passes through several services.
+    depth: working
+    prove: [explain, implement]
+    labs: [request-timeout]
+
+  - id: rel.partial_failures
+    title: Partial failures and compensation
+    module: m6-production-reliability
+    requires: [db.transactions]
+    freshness: core_concept
+    sourceGroups: [operations, database]
+    gap: >-
+      Knows a database transaction rolls back together, but not what to do when steps span services that can't share
+      one. Needs: sagas, where each completed step registers how to undo itself and a failure runs the undo steps newest
+      first; undo steps that are safe to repeat; and surfacing an undo that fails for a person to resolve.
+    depth: deep
+    prove: [explain, implement]
+    labs: [order-saga]
+
+  - id: rel.graceful_degradation
+    title: Graceful degradation and circuit breakers
+    module: m6-production-reliability
+    requires: [rel.timeouts]
+    freshness: core_concept
+    sourceGroups: [operations]
+    gap: >-
+      Needs: keeping the core of a page working when a dependency fails; circuit breakers that fail fast after repeated
+      failures and test recovery with one trial call; fallbacks such as cached or popular content; and what the user
+      should see while a feature is degraded.
+    depth: working
+    prove: [explain, implement]
+    labs: [circuit-breaker]

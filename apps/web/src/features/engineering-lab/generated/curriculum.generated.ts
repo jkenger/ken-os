@@ -62,13 +62,7 @@ export const topicMap: TopicMap = {
       "title": "Production reliability",
       "track": "fullstack",
       "area": "production",
-      "planned": [
-        "Background jobs",
-        "Retry and backoff",
-        "Timeouts",
-        "Partial failures",
-        "Graceful degradation"
-      ]
+      "planned": []
     },
     {
       "id": "m7-observability",
@@ -662,6 +656,116 @@ export const topicMap: TopicMap = {
       "labs": [
         "chat-connection"
       ]
+    },
+    {
+      "id": "rel.background_jobs",
+      "title": "Background jobs and queues",
+      "module": "m6-production-reliability",
+      "requires": [
+        "db.atomic_updates"
+      ],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "database",
+        "operations"
+      ],
+      "gap": "Slow work moves to a queue, but claiming jobs safely is the hard part. Needs: claiming a job atomically so two workers never take the same one (FOR UPDATE SKIP LOCKED); leases so a crashed worker's job is picked up again; backoff and a dead state for jobs that keep failing; and why every job must be safe to run twice.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "job-queue"
+      ]
+    },
+    {
+      "id": "rel.retry_backoff",
+      "title": "Retry with backoff and jitter",
+      "module": "m6-production-reliability",
+      "requires": [
+        "api.idempotency_basics"
+      ],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "operations",
+        "web"
+      ],
+      "gap": "No confident model of retries. Needs: which failures are worth retrying and which never succeed; exponential backoff with a cap; jitter so clients don't retry in lockstep; honouring Retry-After; a retry budget; and why a retried request must be idempotent.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "retry-policy"
+      ]
+    },
+    {
+      "id": "rel.timeouts",
+      "title": "Timeouts and cancellation",
+      "module": "m6-production-reliability",
+      "requires": [
+        "js.promises"
+      ],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "javascript",
+        "web",
+        "operations"
+      ],
+      "gap": "Needs: every call to another service gets a timeout chosen from how long it normally takes; a timeout must also cancel the work (AbortSignal), or the work keeps holding connections; clearing timers after success; and deadlines that shrink as a request passes through several services.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "request-timeout"
+      ]
+    },
+    {
+      "id": "rel.partial_failures",
+      "title": "Partial failures and compensation",
+      "module": "m6-production-reliability",
+      "requires": [
+        "db.transactions"
+      ],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "operations",
+        "database"
+      ],
+      "gap": "Knows a database transaction rolls back together, but not what to do when steps span services that can't share one. Needs: sagas, where each completed step registers how to undo itself and a failure runs the undo steps newest first; undo steps that are safe to repeat; and surfacing an undo that fails for a person to resolve.",
+      "depth": "deep",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "order-saga"
+      ]
+    },
+    {
+      "id": "rel.graceful_degradation",
+      "title": "Graceful degradation and circuit breakers",
+      "module": "m6-production-reliability",
+      "requires": [
+        "rel.timeouts"
+      ],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "operations"
+      ],
+      "gap": "Needs: keeping the core of a page working when a dependency fails; circuit breakers that fail fast after repeated failures and test recovery with one trial call; fallbacks such as cached or popular content; and what the user should see while a feature is degraded.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "circuit-breaker"
+      ]
     }
   ]
 };
@@ -1172,6 +1276,23 @@ export const labs: LabDefinition[] = [
     "probe": null
   },
   {
+    "id": "circuit-breaker",
+    "title": "Stop calling a service that's down",
+    "topics": [
+      "rel.graceful_degradation"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "The recommendations service is down. Every product page still calls it, waits, fails, and shows an error, while the\npile of waiting calls makes the service slower to come back. Write a circuit breaker.\n\n`createBreaker(fn, { failureThreshold = 3, cooldownMs = 10000, now })` returns `{ call(...args), state() }`:\n\n- **Closed** (normal): `call` runs `fn`. A success resets the failure count. After `failureThreshold` failures in a\n  row, the breaker opens.\n- **Open**: `call` throws at once, without running `fn`, with an error whose `name` is `BreakerOpenError`.\n- **Half-open**: once `cooldownMs` has passed since it opened, the next `call` is let through as a trial. If it\n  succeeds the breaker closes; if it fails the breaker opens again for another cooldown.\n- `state()` returns `\"closed\"`, `\"open\"` or `\"half-open\"`.\n\nUse `now()` for the time; the tests move a fake clock. Then write `recommendationsFor(breaker, userId, popular)`, which\nreturns the breaker's result, or the `popular` list whenever the call fails, so the page still shows something.\n\nThen explain what users should see while the breaker is open, and why failing fast helps the failing service recover.",
+    "starter": "function createBreaker(fn, { failureThreshold = 3, cooldownMs = 10000, now = Date.now } = {}) {\n  return {\n    call: (...args) => fn(...args),\n    state: () => \"closed\",\n  };\n}\n\nasync function recommendationsFor(breaker, userId, popular) {\n  return breaker.call(userId);\n}\n",
+    "tests": "function fakeService() {\n  const service = { up: false, calls: 0 };\n  service.fn = async (userId) => {\n    service.calls += 1;\n    if (!service.up) throw new Error(\"service unavailable\");\n    return [`picked for ${userId}`];\n  };\n  return service;\n}\nfunction clock() { let time = 1000; return { now: () => time, advance: (ms) => { time += ms; } }; }\nconst attempt = async (breaker) => { try { return await breaker.call(\"u1\"); } catch (error) { return error; } };\n\ntest(\"it opens after the threshold and then fails fast\", async () => {\n  const service = fakeService();\n  const time = clock();\n  const breaker = createBreaker(service.fn, { failureThreshold: 3, cooldownMs: 10000, now: time.now });\n  for (let i = 0; i < 3; i += 1) await attempt(breaker);\n  assert.equal(breaker.state(), \"open\");\n  assert.equal(service.calls, 3);\n  const error = await attempt(breaker);\n  assert.equal(error.name, \"BreakerOpenError\");\n  assert.equal(service.calls, 3, \"an open breaker must not call the service\");\n});\n\ntest(\"a success resets the count of failures\", async () => {\n  const service = fakeService();\n  const breaker = createBreaker(service.fn, { failureThreshold: 3, now: clock().now });\n  await attempt(breaker); await attempt(breaker);\n  service.up = true; await attempt(breaker);\n  service.up = false; await attempt(breaker); await attempt(breaker);\n  assert.equal(breaker.state(), \"closed\", \"only failures in a row count\");\n});\n\ntest(\"after the cooldown one trial call decides\", async () => {\n  const service = fakeService();\n  const time = clock();\n  const breaker = createBreaker(service.fn, { failureThreshold: 2, cooldownMs: 5000, now: time.now });\n  await attempt(breaker); await attempt(breaker);\n  time.advance(4999);\n  assert.equal((await attempt(breaker)).name, \"BreakerOpenError\", \"still cooling down\");\n  time.advance(1);\n  assert.equal(breaker.state(), \"half-open\");\n  await attempt(breaker);\n  assert.equal(service.calls, 3, \"one trial call went through\");\n  assert.equal(breaker.state(), \"open\", \"the trial failed, so it opens again\");\n  time.advance(5000);\n  service.up = true;\n  assert.deepEqual(await attempt(breaker), [\"picked for u1\"]);\n  assert.equal(breaker.state(), \"closed\");\n});\n\ntest(\"the page falls back to popular items instead of an error\", async () => {\n  const service = fakeService();\n  const breaker = createBreaker(service.fn, { failureThreshold: 1, now: clock().now });\n  const popular = [\"bestseller\"];\n  assert.deepEqual(await recommendationsFor(breaker, \"u1\", popular), popular);\n  assert.deepEqual(await recommendationsFor(breaker, \"u1\", popular), popular, \"also while the breaker is open\");\n  assert.equal(service.calls, 1);\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
     "id": "closure-loop",
     "title": "Fix the handlers that all see the last value",
     "topics": [
@@ -1451,6 +1572,23 @@ export const labs: LabDefinition[] = [
     "probe": null
   },
   {
+    "id": "job-queue",
+    "title": "A job queue that never runs a job twice",
+    "topics": [
+      "rel.background_jobs"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "pglite",
+    "timeoutMs": 20000,
+    "readme": "Slow work, like sending email or resizing images, goes into a `jobs` table and workers pick it up. Several workers run\nat once. Write the four queue functions so that:\n\n- `enqueue(db, type, payload)` adds a pending job and returns it.\n- `claimNext(db, workerId)` takes the oldest pending job whose `run_after` has passed, marks it `running`, records\n  `locked_by` and `locked_at`, adds one to `attempts`, and returns it, or `null` when there's nothing to do. Two\n  workers must never get the same job. A job still `running` 30 seconds after `locked_at` belongs to a worker that\n  died: it can be claimed again.\n- `complete(db, jobId, workerId)` marks it `done`, but only if that worker still holds it. Return whether it did.\n- `fail(db, jobId, workerId, message)` records the error. Under 3 attempts it goes back to `pending` with `run_after`\n  pushed out by 2 to the power of `attempts` seconds. At 3 attempts it becomes `dead`, for someone to look at.\n\nThe starter reads the next job, then updates it, in two steps. Five workers asking at once all read the same job.\n\nThen explain why jobs need to be safe to run twice anyway, and what the 30-second lease trades off.",
+    "starter": "async function enqueue(db, type, payload) {\n  const { rows } = await db.query(\"insert into jobs (type, payload) values ($1, $2) returning *\", [type, payload]);\n  return rows[0];\n}\n\nasync function claimNext(db, workerId) {\n  const { rows } = await db.query(\"select * from jobs where status = 'pending' order by id limit 1\");\n  if (!rows.length) return null;\n  const { rows: claimed } = await db.query(\n    \"update jobs set status = 'running', locked_by = $2, locked_at = now(), attempts = attempts + 1 where id = $1 returning *\",\n    [rows[0].id, workerId],\n  );\n  return claimed[0];\n}\n\nasync function complete(db, jobId, workerId) {\n  await db.query(\"update jobs set status = 'done' where id = $1\", [jobId]);\n  return true;\n}\n\nasync function fail(db, jobId, workerId, message) {\n  await db.query(\"update jobs set status = 'pending', last_error = $2 where id = $1\", [jobId, message]);\n}\n",
+    "tests": "const job = async (id) => (await db.query(\"select * from jobs where id = $1\", [id])).rows[0];\nconst reset = () => db.query(\"delete from jobs\");\n\ntest(\"five workers asking at once share three jobs without overlap\", async () => {\n  await reset();\n  for (const n of [1, 2, 3]) await enqueue(db, \"email\", { n });\n  const claims = await Promise.all([\"w1\", \"w2\", \"w3\", \"w4\", \"w5\"].map((worker) => claimNext(db, worker)));\n  const got = claims.filter(Boolean);\n  assert.equal(got.length, 3, \"three workers get a job and two get null\");\n  assert.equal(new Set(got.map((item) => item.id)).size, 3, \"no job is handed to two workers\");\n  assert.ok(got.every((item) => item.status === \"running\" && item.attempts === 1));\n});\n\ntest(\"a job that isn't due yet waits\", async () => {\n  await reset();\n  const later = await enqueue(db, \"email\", {});\n  await db.query(\"update jobs set run_after = now() + interval '1 hour' where id = $1\", [later.id]);\n  assert.equal(await claimNext(db, \"w1\"), null);\n});\n\ntest(\"a failure backs off, and the third failure is dead\", async () => {\n  await reset();\n  const created = await enqueue(db, \"resize\", {});\n  await claimNext(db, \"w1\");\n  await fail(db, created.id, \"w1\", \"timeout\");\n  const once = await job(created.id);\n  assert.equal(once.status, \"pending\");\n  assert.equal(once.last_error, \"timeout\");\n  const { rows } = await db.query(\"select run_after > now() + interval '1 second' as later from jobs where id = $1\", [created.id]);\n  assert.ok(rows[0].later, \"a failed job waits before running again\");\n  for (const n of [2, 3]) {\n    await db.query(\"update jobs set run_after = now() where id = $1\", [created.id]);\n    await claimNext(db, \"w1\");\n    await fail(db, created.id, \"w1\", `timeout ${n}`);\n  }\n  const dead = await job(created.id);\n  assert.equal(dead.attempts, 3);\n  assert.equal(dead.status, \"dead\");\n});\n\ntest(\"a job held by a worker that died can be claimed again\", async () => {\n  await reset();\n  const created = await enqueue(db, \"email\", {});\n  await claimNext(db, \"w1\");\n  assert.equal(await claimNext(db, \"w2\"), null, \"while w1's lease is fresh, nobody else takes it\");\n  await db.query(\"update jobs set locked_at = now() - interval '1 minute' where id = $1\", [created.id]);\n  const taken = await claimNext(db, \"w2\");\n  assert.equal(taken?.id, created.id);\n  assert.equal(taken.locked_by, \"w2\");\n});\n\ntest(\"only the worker holding a job can complete it\", async () => {\n  const [held] = (await db.query(\"select * from jobs where locked_by = 'w2'\")).rows;\n  assert.equal(await complete(db, held.id, \"w1\"), false, \"w1 lost the job when its lease ran out\");\n  assert.equal((await job(held.id)).status, \"running\");\n  assert.equal(await complete(db, held.id, \"w2\"), true);\n  assert.equal((await job(held.id)).status, \"done\");\n});\n",
+    "setup": "create table jobs (\n  id serial primary key,\n  type text not null,\n  payload jsonb not null default '{}',\n  status text not null default 'pending' check (status in ('pending', 'running', 'done', 'dead')),\n  attempts int not null default 0,\n  run_after timestamptz not null default now(),\n  locked_by text,\n  locked_at timestamptz,\n  last_error text\n);\n",
+    "probe": null
+  },
+  {
     "id": "order-history-index",
     "title": "Fix the index that's in the wrong order",
     "topics": [
@@ -1483,6 +1621,23 @@ export const labs: LabDefinition[] = [
     "readme": "`parseOrder(body)` receives the JSON body of a \"create order\" request. A TypeScript type on the handler would not\nhelp here: types are erased before the code runs, and the body came from someone else's computer.\n\nMake `parseOrder` return `{ ok: true, value }` or `{ ok: false, errors }`:\n\n- `value` has exactly `email`, `sku`, `quantity` and `note`, and nothing else from the body.\n- `email`: a string with text on both sides of an `@`. Trim it and lower-case it.\n- `sku`: a string like `ABC-1234` (three capital letters, a dash, four digits).\n- `quantity`: a whole number from 1 to 100. The string `\"3\"` is not a number.\n- `note`: optional. A string of at most 200 characters, or `null` when it's missing.\n- `errors` lists every problem at once, each as `{ path, message }`, where `path` is the field name, or `\"body\"`\n  when the body isn't an object.\n\nThen explain why a `price` or `isAdmin` field in the body must never reach the database, even if the type says it\nisn't there.",
     "starter": "function parseOrder(body) {\n  if (!body.email || !body.email.includes(\"@\")) {\n    return { ok: false, errors: [{ path: \"email\", message: \"Enter an email address\" }] };\n  }\n  const quantity = Number(body.quantity);\n  if (quantity < 1 || quantity > 100) {\n    return { ok: false, errors: [{ path: \"quantity\", message: \"Quantity must be 1 to 100\" }] };\n  }\n  return { ok: true, value: { ...body, quantity } };\n}\n",
     "tests": "const valid = { email: \"  Ken@Example.com \", sku: \"ABC-1234\", quantity: 3, note: \"Gift wrap\" };\nconst paths = (result) => (result.errors ?? []).map((error) => error.path).sort();\n\ntest(\"a valid order parses into exactly the four fields\", () => {\n  const result = parseOrder(valid);\n  assert.equal(result.ok, true);\n  assert.deepEqual(result.value, { email: \"ken@example.com\", sku: \"ABC-1234\", quantity: 3, note: \"Gift wrap\" });\n});\n\ntest(\"fields the order doesn't define never pass through\", () => {\n  const result = parseOrder({ ...valid, price: 0, isAdmin: true, userId: 1 });\n  assert.equal(result.ok, true);\n  assert.deepEqual(Object.keys(result.value).sort(), [\"email\", \"note\", \"quantity\", \"sku\"], \"price, isAdmin and userId must be dropped\");\n});\n\ntest(\"a missing note becomes null\", () => {\n  const { note, ...rest } = valid;\n  const result = parseOrder(rest);\n  assert.equal(result.ok, true);\n  assert.equal(result.value.note, null);\n});\n\ntest(\"quantity must already be a whole number from 1 to 100\", () => {\n  for (const quantity of [\"3\", 2.5, 0, 101, null, true]) {\n    const result = parseOrder({ ...valid, quantity });\n    assert.equal(result.ok, false, `quantity ${JSON.stringify(quantity)} should be rejected`);\n    assert.deepEqual(paths(result), [\"quantity\"]);\n  }\n});\n\ntest(\"every problem is reported at once, each with its field\", () => {\n  const result = parseOrder({ email: \"not-an-email\", sku: \"abc1234\", quantity: \"lots\", note: \"x\".repeat(201) });\n  assert.equal(result.ok, false);\n  assert.deepEqual(paths(result), [\"email\", \"note\", \"quantity\", \"sku\"]);\n  assert.ok(result.errors.every((error) => typeof error.message === \"string\" && error.message.length > 0));\n});\n\ntest(\"a body that isn't an object is rejected, not crashed on\", () => {\n  for (const body of [null, [], \"order\", 42, undefined]) {\n    const result = parseOrder(body);\n    assert.equal(result.ok, false, `${JSON.stringify(body)} should be rejected`);\n    assert.deepEqual(paths(result), [\"body\"]);\n  }\n});\n\ntest(\"a non-string email or sku is an error, not a crash\", () => {\n  const result = parseOrder({ ...valid, email: { address: \"a@b.c\" }, sku: 1234 });\n  assert.equal(result.ok, false);\n  assert.deepEqual(paths(result), [\"email\", \"sku\"]);\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
+    "id": "order-saga",
+    "title": "Undo the steps that already happened",
+    "topics": [
+      "rel.partial_failures"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "Placing an order touches three services that don't share a database, so one transaction can't cover them:\n\n1. `services.inventory.reserve(order.items)` returns a reservation id.\n2. `services.payments.charge(order.total)` returns a charge id.\n3. `services.shipping.create(order.address)` returns a shipment id.\n\nAny step can fail after the earlier ones succeeded. The starter just reports the failure, leaving stock reserved and\nthe card charged for an order that will never ship. Write `placeOrder(services, order)` so that:\n\n- On success it returns `{ ok: true, reservationId, chargeId, shipmentId }`.\n- When a step fails, it undoes the steps that already succeeded, newest first: `payments.refund(chargeId)`, then\n  `inventory.release(reservationId)`. It returns `{ ok: false, failedAt, error, compensationErrors }`, where\n  `failedAt` is `\"inventory\"`, `\"payments\"` or `\"shipping\"` and `error` is the failure's message.\n- If an undo step fails too, it keeps going with the rest and lists the message in `compensationErrors`; the\n  original failure stays the one reported.\n\nThen explain why each undo step must be safe to run twice, and what a person should see when an undo fails.",
+    "starter": "async function placeOrder(services, order) {\n  try {\n    const reservationId = await services.inventory.reserve(order.items);\n    const chargeId = await services.payments.charge(order.total);\n    const shipmentId = await services.shipping.create(order.address);\n    return { ok: true, reservationId, chargeId, shipmentId };\n  } catch (error) {\n    return { ok: false, failedAt: \"unknown\", error: error.message, compensationErrors: [] };\n  }\n}\n",
+    "tests": "// Fake services that record every call. `failing` names the calls that throw.\nfunction fakeServices(failing = []) {\n  const log = [];\n  const step = (name, result) => async (arg) => {\n    log.push(name);\n    if (failing.includes(name)) throw new Error(`${name} failed`);\n    return result;\n  };\n  return {\n    log,\n    services: {\n      inventory: { reserve: step(\"reserve\", \"res_1\"), release: step(\"release\", true) },\n      payments: { charge: step(\"charge\", \"ch_1\"), refund: step(\"refund\", true) },\n      shipping: { create: step(\"ship\", \"sh_1\") },\n    },\n  };\n}\nconst order = { items: [{ sku: \"ABC-1234\", quantity: 1 }], total: 2500, address: \"1 Main St\" };\n\ntest(\"a successful order returns every id and undoes nothing\", async () => {\n  const { log, services } = fakeServices();\n  assert.deepEqual(await placeOrder(services, order), { ok: true, reservationId: \"res_1\", chargeId: \"ch_1\", shipmentId: \"sh_1\" });\n  assert.deepEqual(log, [\"reserve\", \"charge\", \"ship\"]);\n});\n\ntest(\"a failed charge releases the stock\", async () => {\n  const { log, services } = fakeServices([\"charge\"]);\n  const result = await placeOrder(services, order);\n  assert.equal(result.ok, false);\n  assert.equal(result.failedAt, \"payments\");\n  assert.equal(result.error, \"charge failed\");\n  assert.deepEqual(log, [\"reserve\", \"charge\", \"release\"]);\n});\n\ntest(\"a failed shipment refunds, then releases, newest first\", async () => {\n  const { log, services } = fakeServices([\"ship\"]);\n  const result = await placeOrder(services, order);\n  assert.equal(result.failedAt, \"shipping\");\n  assert.deepEqual(log, [\"reserve\", \"charge\", \"ship\", \"refund\", \"release\"]);\n});\n\ntest(\"a failed reservation has nothing to undo\", async () => {\n  const { log, services } = fakeServices([\"reserve\"]);\n  const result = await placeOrder(services, order);\n  assert.equal(result.failedAt, \"inventory\");\n  assert.deepEqual(log, [\"reserve\"]);\n});\n\ntest(\"a failed undo doesn't stop the others or hide the real failure\", async () => {\n  const { log, services } = fakeServices([\"ship\", \"refund\"]);\n  const result = await placeOrder(services, order);\n  assert.equal(result.failedAt, \"shipping\");\n  assert.equal(result.error, \"ship failed\");\n  assert.deepEqual(result.compensationErrors, [\"refund failed\"]);\n  assert.deepEqual(log, [\"reserve\", \"charge\", \"ship\", \"refund\", \"release\"], \"the release still runs after the refund fails\");\n});\n",
     "setup": "",
     "probe": null
   },
@@ -1553,6 +1708,40 @@ export const labs: LabDefinition[] = [
         }
       ]
     }
+  },
+  {
+    "id": "request-timeout",
+    "title": "Give up on time, and stop the work too",
+    "topics": [
+      "rel.timeouts"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 3000,
+    "readme": "`withTimeout(task, ms)` runs `task(signal)` and gives up after `ms` milliseconds. `task` is any async work that accepts\nan `AbortSignal`, the way `fetch(url, { signal })` does.\n\nThe starter races the task against a timer. The caller does get an error on time, but the work carries on in the\nbackground, holding a connection or a database slot, and the timer keeps running after a fast success. Make it:\n\n- Reject with an error whose `name` is `TimeoutError` when `ms` passes first.\n- Abort the signal at that moment, so the task can stop its work.\n- Resolve with the task's value when it finishes first, and clear the timer then.\n- Pass the task's own errors through unchanged.\n\nThen explain why every call to another service needs a timeout, how to pick one, and why a timeout without\ncancellation only moves the problem.",
+    "starter": "function withTimeout(task, ms) {\n  const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error(\"timeout\")), ms));\n  return Promise.race([task(undefined), timeout]);\n}\n",
+    "tests": "// A task that takes `ms` to finish, stops early when its signal aborts, and records what happened.\nfunction slowTask(ms, value = \"done\") {\n  const seen = { signal: null, stoppedEarly: false, finished: false };\n  const task = (signal) => new Promise((resolve, reject) => {\n    seen.signal = signal;\n    const timer = setTimeout(() => { seen.finished = true; resolve(value); }, ms);\n    if (signal) signal.addEventListener(\"abort\", () => { clearTimeout(timer); seen.stoppedEarly = true; reject(new Error(\"aborted\")); });\n  });\n  return { seen, task };\n}\n\ntest(\"a fast task resolves with its value\", async () => {\n  const { task } = slowTask(10, 42);\n  assert.equal(await withTimeout(task, 200), 42);\n});\n\ntest(\"a slow task times out on time with a TimeoutError\", async () => {\n  const { task } = slowTask(400);\n  const started = Date.now();\n  let error = null;\n  try { await withTimeout(task, 30); } catch (caught) { error = caught; }\n  assert.ok(error, \"it should reject\");\n  assert.equal(error.name, \"TimeoutError\");\n  assert.ok(Date.now() - started < 250, \"it should give up close to 30 ms, not wait for the task\");\n});\n\ntest(\"timing out stops the work, not just the wait\", async () => {\n  const { seen, task } = slowTask(300);\n  try { await withTimeout(task, 20); } catch { /* expected */ }\n  assert.ok(seen.signal, \"the task must receive a signal\");\n  assert.equal(seen.signal.aborted, true, \"the signal must be aborted when time runs out\");\n  assert.equal(seen.stoppedEarly, true);\n  await wait(320);\n  assert.equal(seen.finished, false, \"the work must not carry on in the background\");\n});\n\ntest(\"the task's own errors pass through unchanged\", async () => {\n  const failure = new Error(\"card declined\");\n  let error = null;\n  try { await withTimeout(async () => { throw failure; }, 100); } catch (caught) { error = caught; }\n  assert.equal(error, failure);\n});\n\ntest(\"after a fast success the signal is never aborted\", async () => {\n  const { seen, task } = slowTask(5);\n  await withTimeout(task, 40);\n  await wait(60);\n  assert.equal(seen.signal && seen.signal.aborted, false, \"a timer left running would abort a finished task\");\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
+    "id": "retry-policy",
+    "title": "Retry like a good neighbour",
+    "topics": [
+      "rel.retry_backoff"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "`retry(fn, options)` calls `fn(attempt)` (attempt 0 is the first try) and tries again when it fails. The starter\nretries every error after the same fixed pause. When a provider is overloaded, every client retrying in step makes it\nworse, and retrying a bad request can never succeed. Make it:\n\n- Retry only errors worth retrying: `status` 408, 429, 500, 502, 503 or 504, or `code` `ECONNRESET` or `ETIMEDOUT`.\n  Anything else is thrown at once.\n- Wait longer each time, with full jitter: a random time between 0 and `min(maxMs, baseMs * 2 ** attempt)`, using\n  `random()`, so clients spread out.\n- Honour `retryAfterMs` on the error when the server sent one; wait exactly that instead.\n- Stop after `retries` retries and throw the last error.\n\nOptions: `retries` (default 3), `baseMs` (100), `maxMs` (2000), `sleep(ms)` and `random()`. The tests pass a fake\n`sleep` and `random`, so nothing really waits. Then explain why retries need idempotency, and why jitter matters\nmore than the exact formula.",
+    "starter": "async function retry(fn, { retries = 3, baseMs = 100, maxMs = 2000, sleep, random = Math.random } = {}) {\n  let attempt = 0;\n  while (true) {\n    try {\n      return await fn(attempt);\n    } catch (error) {\n      if (attempt >= retries) throw error;\n      await sleep(baseMs);\n      attempt += 1;\n    }\n  }\n}\n",
+    "tests": "function failing(errors, value = \"ok\") {\n  const calls = [];\n  return {\n    calls,\n    fn: async (attempt) => {\n      calls.push(attempt);\n      if (calls.length <= errors.length) throw errors[calls.length - 1];\n      return value;\n    },\n  };\n}\nconst httpError = (status, extra = {}) => Object.assign(new Error(`HTTP ${status}`), { status }, extra);\nconst recorder = () => { const delays = []; return { delays, sleep: async (ms) => { delays.push(ms); } }; };\n\ntest(\"succeeds after transient failures, waiting longer each time\", async () => {\n  const { calls, fn } = failing([httpError(503), httpError(503)]);\n  const { delays, sleep } = recorder();\n  assert.equal(await retry(fn, { sleep, random: () => 1 }), \"ok\");\n  assert.deepEqual(calls, [0, 1, 2]);\n  assert.deepEqual(delays, [100, 200], \"the wait doubles: 100, then 200\");\n});\n\ntest(\"the wait is capped at maxMs\", async () => {\n  const { fn } = failing(Array.from({ length: 6 }, () => httpError(500)));\n  const { delays, sleep } = recorder();\n  await retry(fn, { retries: 6, sleep, random: () => 1 });\n  assert.deepEqual(delays, [100, 200, 400, 800, 1600, 2000]);\n});\n\ntest(\"jitter spreads the wait across the window\", async () => {\n  const { fn } = failing([httpError(429), httpError(429)]);\n  const { delays, sleep } = recorder();\n  await retry(fn, { sleep, random: () => 0.5 });\n  assert.deepEqual(delays, [50, 100]);\n});\n\ntest(\"a request that can never succeed isn't retried\", async () => {\n  for (const status of [400, 401, 403, 404, 422]) {\n    const { calls, fn } = failing([httpError(status)]);\n    const { sleep } = recorder();\n    await assert.rejects(() => retry(fn, { sleep, random: () => 1 }));\n    assert.equal(calls.length, 1, `a ${status} must not be retried`);\n  }\n});\n\ntest(\"network resets are retried\", async () => {\n  const reset = Object.assign(new Error(\"socket hang up\"), { code: \"ECONNRESET\" });\n  const { calls, fn } = failing([reset]);\n  const { sleep } = recorder();\n  await retry(fn, { sleep, random: () => 1 });\n  assert.equal(calls.length, 2);\n});\n\ntest(\"Retry-After from the server wins\", async () => {\n  const { fn } = failing([httpError(429, { retryAfterMs: 1500 })]);\n  const { delays, sleep } = recorder();\n  await retry(fn, { sleep, random: () => 1 });\n  assert.deepEqual(delays, [1500]);\n});\n\ntest(\"gives up after the last retry with the last error\", async () => {\n  const errors = [httpError(503), httpError(502), httpError(504), httpError(500)];\n  const { calls, fn } = failing(errors);\n  const { sleep } = recorder();\n  let thrown = null;\n  try { await retry(fn, { retries: 3, sleep, random: () => 1 }); } catch (error) { thrown = error; }\n  assert.equal(calls.length, 4);\n  assert.equal(thrown && thrown.status, 500, \"the error from the final try is the one thrown\");\n});\n",
+    "setup": "",
+    "probe": null
   },
   {
     "id": "search-race",
