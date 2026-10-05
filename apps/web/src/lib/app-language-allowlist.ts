@@ -129,13 +129,9 @@ export const appLanguageAllowlist: { file: string; text: string }[] = [
 
 
 
-  { file: "components/terms/term-lookup.tsx", text: "Saving..." },
 
-  { file: "components/terms/terms-page.tsx", text: "Could not remove it" },
 
-  { file: "components/terms/terms-page.tsx", text: "Could not remove it." },
 
-  { file: "components/terms/terms-page.tsx", text: "Words you looked up." },
 
 
 

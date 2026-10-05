@@ -17,7 +17,7 @@ const listeners = new Map<string, Set<(job: LookupJob) => void>>();
 async function send<T>(path: string, body: unknown): Promise<T> {
   const response = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const result = await response.json().catch(() => ({})) as T & { error?: string };
-  if (!response.ok) throw new Error(result.error ?? "The lookup failed.");
+  if (!response.ok) throw new Error(result.error ?? "Lookup failed. Try again");
   return result;
 }
 
@@ -53,7 +53,7 @@ export function startLookup(input: { selection: string; context: string; place: 
       const { saved, ...answer } = result;
       update({ key, text: input.selection, state: "done", answer, saved });
     })
-    .catch((error: unknown) => update({ key, text: input.selection, state: "error", message: error instanceof Error ? error.message : "The lookup failed." }))
+    .catch((error: unknown) => update({ key, text: input.selection, state: "error", message: error instanceof Error ? error.message : "Lookup failed. Try again" }))
     .finally(() => {
       const job = jobs.get(key)!;
       if (!hasListeners(key)) onFinishedUnwatched(job);

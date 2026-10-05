@@ -16,7 +16,7 @@ export async function termsRoute(request: Request, handler: (session: Session, b
   } catch (error) {
     if (error instanceof TermInputError) return NextResponse.json({ error: error.message }, { status: error.status });
     console.error("terms route failed", error instanceof Error ? error.message : error);
-    return NextResponse.json({ error: "The lookup failed. Try again." }, { status: 502 });
+    return NextResponse.json({ error: "Lookup failed. Try again" }, { status: 502 });
   }
 }
 
