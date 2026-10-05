@@ -103,7 +103,9 @@ test("planning a run skips known topics and screens unwritten chapters", () => {
   const runtime = plan.chapters.find((chapter) => chapter.chapterId === "m1-js-runtime");
   assert.ok(runtime?.kind === "topics" && runtime.skipped.includes("js.call_stack") && !runtime.topicIds.includes("js.call_stack"));
   assert.equal(plan.chapters.find((chapter) => chapter.chapterId === "a1-retrieval")?.kind, "screen");
-  assert.equal(plan.chapters.filter((chapter) => chapter.kind === "screen").length, 10);
+  const unwritten = topicMap.modules.filter((module) => !topicMap.topics.some((topic) => topic.module === module.id)).length;
+  assert.equal(plan.chapters.filter((chapter) => chapter.kind === "screen").length, unwritten, "every chapter without written topics gets a placement check");
+  assert.equal(plan.chapters.find((chapter) => chapter.chapterId === "m4-api-boundaries")?.kind, "topics", "API boundaries now has written topics");
 });
 
 test("chapter depth: build needs the working topics known, run needs all; screening tops out at build", () => {
