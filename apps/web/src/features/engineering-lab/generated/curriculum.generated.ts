@@ -41,10 +41,7 @@ export const topicMap: TopicMap = {
       "title": "React",
       "track": "fullstack",
       "area": "frontend",
-      "planned": [
-        "React render model",
-        "Effects and synchronization"
-      ]
+      "planned": []
     },
     {
       "id": "m4-api-boundaries",
@@ -622,6 +619,49 @@ export const topicMap: TopicMap = {
       "labs": [
         "team-docs"
       ]
+    },
+    {
+      "id": "react.render_model",
+      "title": "How React renders, and why references matter",
+      "module": "m4-react",
+      "requires": [
+        "js.references_mutation"
+      ],
+      "freshness": "framework",
+      "sourceGroups": [
+        "react"
+      ],
+      "gap": "Knows state, props and context can trigger a render and mentions the virtual DOM, but render, reconciliation and commit are hazy. Needs: what render, reconcile and commit each do; that React compares references, so state updates build new objects along the changed path and reuse the rest; why mutating state can mean nothing re-renders; and when memo helps and when it doesn't.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "todo-updates"
+      ]
+    },
+    {
+      "id": "react.effects",
+      "title": "Effects and synchronization",
+      "module": "m4-react",
+      "requires": [
+        "react.render_model",
+        "js.closures"
+      ],
+      "freshness": "framework",
+      "sourceGroups": [
+        "react"
+      ],
+      "gap": "Expects an effect with [] to re-run when props change and links dependencies to infinite loops. Needs: an effect keeps something outside React in step with the current render; every value it reads belongs in its dependencies; cleanup undoes the setup and runs before the next run and on unmount; stale closures and races in effects; and when no effect is needed at all, because the value can be computed during render.",
+      "depth": "deep",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "chat-connection"
+      ]
     }
   ]
 };
@@ -1115,6 +1155,23 @@ export const labs: LabDefinition[] = [
     }
   },
   {
+    "id": "chat-connection",
+    "title": "Keep a connection in sync with an effect",
+    "topics": [
+      "react.effects"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "`ChatRoom({ roomId, serverUrl }, { useEffect })` is a component that must stay connected to the chat room it shows.\n`createConnection(serverUrl, roomId)` returns an object with `connect()` and `disconnect()`.\n\nThe tests run it in a small stand-in for React with React's `useEffect` rules: after each render, an effect runs again\nonly if one of its dependencies changed (`Object.is`), the previous run's cleanup runs first, and every cleanup runs\nwhen the component unmounts.\n\nThe starter connects once with an empty dependency list and never disconnects. Switch rooms and it stays in the old\none; leave the page and the connection stays open. Fix it so that:\n\n- Mounting connects to the room.\n- Re-rendering with the same room and server does nothing.\n- Changing the room or the server disconnects from the old one, then connects to the new one.\n- Unmounting disconnects.\n\nThen explain why an effect is synchronization with something outside React rather than \"run once on mount\", and how\n`[]`, no array, and `[roomId, serverUrl]` differ.",
+    "starter": "function ChatRoom({ roomId, serverUrl }, { useEffect }) {\n  useEffect(() => {\n    const connection = createConnection(serverUrl, roomId);\n    connection.connect();\n  }, []);\n}\n",
+    "tests": "let events = [];\nfunction createConnection(serverUrl, roomId) {\n  return {\n    connect() { events.push(`connect ${roomId} @ ${serverUrl}`); },\n    disconnect() { events.push(`disconnect ${roomId} @ ${serverUrl}`); },\n  };\n}\n\n// A stand-in for React's useEffect: run after render when a dependency changed, clean up the previous run first,\n// and clean up everything on unmount.\nfunction mount(Component, props) {\n  let slots = [];\n  let index = 0;\n  let pending = [];\n  function useEffect(setup, deps) {\n    const slot = index++;\n    const previous = slots[slot];\n    const changed = !previous || !deps || !previous.deps || deps.length !== previous.deps.length\n      || deps.some((dep, i) => !Object.is(dep, previous.deps[i]));\n    if (!changed) return;\n    pending.push(() => {\n      if (previous && previous.cleanup) previous.cleanup();\n      const cleanup = setup();\n      slots[slot] = { deps, cleanup: typeof cleanup === \"function\" ? cleanup : null };\n    });\n  }\n  function render(nextProps) {\n    index = 0;\n    pending = [];\n    Component(nextProps, { useEffect });\n    pending.forEach((run) => run());\n  }\n  render(props);\n  return {\n    rerender: render,\n    unmount() { slots.forEach((slot) => slot && slot.cleanup && slot.cleanup()); slots = []; },\n  };\n}\n\nconst general = { roomId: \"general\", serverUrl: \"https://a.chat\" };\n\ntest(\"mounting connects to the room\", () => {\n  events = [];\n  mount(ChatRoom, general);\n  assert.deepEqual(events, [\"connect general @ https://a.chat\"]);\n});\n\ntest(\"re-rendering with the same room does nothing\", () => {\n  events = [];\n  const room = mount(ChatRoom, general);\n  room.rerender({ ...general });\n  room.rerender({ ...general });\n  assert.deepEqual(events, [\"connect general @ https://a.chat\"]);\n});\n\ntest(\"changing the room leaves the old one, then joins the new one\", () => {\n  events = [];\n  const room = mount(ChatRoom, general);\n  room.rerender({ ...general, roomId: \"music\" });\n  assert.deepEqual(events, [\"connect general @ https://a.chat\", \"disconnect general @ https://a.chat\", \"connect music @ https://a.chat\"]);\n});\n\ntest(\"changing the server reconnects too\", () => {\n  events = [];\n  const room = mount(ChatRoom, general);\n  room.rerender({ ...general, serverUrl: \"https://b.chat\" });\n  assert.deepEqual(events.slice(1), [\"disconnect general @ https://a.chat\", \"connect general @ https://b.chat\"]);\n});\n\ntest(\"unmounting disconnects\", () => {\n  events = [];\n  const room = mount(ChatRoom, general);\n  room.rerender({ ...general, roomId: \"music\" });\n  events = [];\n  room.unmount();\n  assert.deepEqual(events, [\"disconnect music @ https://a.chat\"]);\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
     "id": "closure-loop",
     "title": "Fix the handlers that all see the last value",
     "topics": [
@@ -1565,6 +1622,23 @@ export const labs: LabDefinition[] = [
     "starter": "async function getDocument(db, actor, docId) {\n  if (!actor) throw new Error(\"Please sign in\");\n  const { rows } = await db.query(\"select * from documents where id = $1\", [docId]);\n  return rows[0] ?? null;\n}\n\nasync function listDocuments(db, actor, orgId) {\n  if (!actor) throw new Error(\"Please sign in\");\n  const { rows } = await db.query(\"select * from documents where org_id = $1 order by id\", [orgId]);\n  return rows;\n}\n\nasync function updateDocument(db, actor, docId, changes) {\n  const doc = await getDocument(db, actor, docId);\n  if (!doc) return null;\n  const { rows } = await db.query(\n    \"update documents set title = $1, body = $2 where id = $3 returning *\",\n    [changes.title, changes.body, docId],\n  );\n  return rows[0];\n}\n",
     "tests": "const ana = { userId: 1 }, ben = { userId: 2 }, cy = { userId: 3 }, dee = { userId: 4 };\nconst titleOf = async (id) => (await db.query(\"select title from documents where id = $1\", [id])).rows[0].title;\n\ntest(\"members read their organisation's documents\", async () => {\n  assert.equal((await getDocument(db, ana, 1))?.title, \"Roadmap\");\n  assert.equal((await getDocument(db, ben, 2))?.title, \"Pricing\", \"viewers can read\");\n  assert.equal((await getDocument(db, cy, 3))?.title, \"Plans\");\n});\n\ntest(\"an outsider gets null, exactly as for a document that doesn't exist\", async () => {\n  assert.equal(await getDocument(db, cy, 1), null, \"Cy is in Globex, not Acme\");\n  assert.equal(await getDocument(db, dee, 1), null, \"Dee isn't in any organisation\");\n  assert.equal(await getDocument(db, ana, 3), null);\n  assert.equal(await getDocument(db, ana, 999), null);\n});\n\ntest(\"listing is limited to members\", async () => {\n  assert.deepEqual((await listDocuments(db, ana, 1)).map((doc) => doc.title), [\"Roadmap\", \"Pricing\"]);\n  assert.deepEqual(await listDocuments(db, cy, 1), []);\n  assert.deepEqual(await listDocuments(db, dee, 2), []);\n});\n\ntest(\"a viewer can't edit\", async () => {\n  await assert.rejects(() => updateDocument(db, ben, 1, { title: \"Hacked\", body: \"x\" }), /forbidden/i);\n  assert.equal(await titleOf(1), \"Roadmap\");\n});\n\ntest(\"an editor can edit; an outsider can't, and can't tell the document exists\", async () => {\n  const updated = await updateDocument(db, ana, 1, { title: \"Roadmap v2\", body: \"Ship the beta in June\" });\n  assert.equal(updated?.title, \"Roadmap v2\");\n  assert.equal(await updateDocument(db, cy, 2, { title: \"Hacked\", body: \"x\" }), null);\n  assert.equal(await titleOf(2), \"Pricing\");\n  assert.equal(await updateDocument(db, dee, 999, { title: \"x\", body: \"x\" }), null);\n});\n\ntest(\"signed-out callers are turned away\", async () => {\n  await assert.rejects(() => getDocument(db, null, 1), /sign in/i);\n  await assert.rejects(() => listDocuments(db, null, 1), /sign in/i);\n  await assert.rejects(() => updateDocument(db, null, 1, { title: \"x\", body: \"x\" }), /sign in/i);\n});\n\ntest(\"removing a member takes effect at once\", async () => {\n  await db.query(\"delete from memberships where user_id = 1 and org_id = 1\");\n  assert.equal(await getDocument(db, ana, 1), null);\n  assert.deepEqual(await listDocuments(db, ana, 1), []);\n  assert.equal(await updateDocument(db, ana, 1, { title: \"Late edit\", body: \"x\" }), null);\n  assert.equal(await titleOf(1), \"Roadmap v2\");\n});\n",
     "setup": "create table users (id int primary key, name text not null);\ncreate table orgs (id int primary key, name text not null);\ncreate table memberships (\n  user_id int not null references users,\n  org_id int not null references orgs,\n  role text not null check (role in ('viewer', 'editor', 'admin')),\n  primary key (user_id, org_id)\n);\ncreate table documents (\n  id serial primary key,\n  org_id int not null references orgs,\n  title text not null,\n  body text not null\n);\ninsert into users (id, name) values (1, 'Ana'), (2, 'Ben'), (3, 'Cy'), (4, 'Dee');\ninsert into orgs (id, name) values (1, 'Acme'), (2, 'Globex');\ninsert into memberships (user_id, org_id, role) values (1, 1, 'editor'), (2, 1, 'viewer'), (3, 2, 'admin');\ninsert into documents (org_id, title, body) values\n  (1, 'Roadmap', 'Ship the beta in May'),\n  (1, 'Pricing', 'Three tiers'),\n  (2, 'Plans', 'Expand to Europe');\n",
+    "probe": null
+  },
+  {
+    "id": "todo-updates",
+    "title": "Update state so React sees the change",
+    "topics": [
+      "react.render_model"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "A todo list keeps its state as `{ todos: [{ id, text, done }], nextId }`. The tests run your update functions inside a\nsmall stand-in for React that behaves the way React does:\n\n- After an update, the app re-renders only if the new state is a different object (`Object.is`), the way\n  `setState` bails out on the same value.\n- Each row is memoized, like `React.memo`: it re-renders only when its todo object is a different object.\n\nWrite three update functions. Each returns the next state and never changes the one it was given:\n\n- `addTodo(state, text)` adds `{ id: state.nextId, text, done: false }` at the end and increases `nextId`.\n- `toggleTodo(state, id)` flips `done` on that todo.\n- `renameTodo(state, id, text)` changes that todo's `text`.\n\nTodos you don't change must stay the very same objects, so their rows don't re-render. When the id doesn't exist,\nreturn the state you were given, so nothing re-renders.\n\nThen explain what happens between your update and the screen changing: render, reconciliation, commit, and why\nmutating the old state means React may never notice.",
+    "starter": "function addTodo(state, text) {\n  state.todos.push({ id: state.nextId, text, done: false });\n  state.nextId += 1;\n  return state;\n}\n\nfunction toggleTodo(state, id) {\n  const todo = state.todos.find((item) => item.id === id);\n  if (todo) todo.done = !todo.done;\n  return state;\n}\n\nfunction renameTodo(state, id, text) {\n  const todo = state.todos.find((item) => item.id === id);\n  if (todo) todo.text = text;\n  return state;\n}\n",
+    "tests": "// A stand-in for React: re-render when the state object changes, and re-render a memoized row when its todo changes.\nfunction createApp(initial) {\n  let state = initial;\n  let renders = 0;\n  const rowRenders = new Map();\n  const lastSeen = new Map();\n  function render() {\n    renders += 1;\n    for (const todo of state.todos) {\n      if (lastSeen.get(todo.id) !== todo) {\n        rowRenders.set(todo.id, (rowRenders.get(todo.id) ?? 0) + 1);\n        lastSeen.set(todo.id, todo);\n      }\n    }\n  }\n  render();\n  return {\n    update(fn, ...args) {\n      const next = fn(state, ...args);\n      if (!Object.is(next, state)) { state = next; render(); }\n    },\n    get state() { return state; },\n    get renders() { return renders; },\n    rowRenders,\n  };\n}\n\nfunction deepFreeze(value) {\n  if (value && typeof value === \"object\") { Object.values(value).forEach(deepFreeze); Object.freeze(value); }\n  return value;\n}\n\nconst start = () => deepFreeze({ todos: [{ id: 1, text: \"Buy milk\", done: false }, { id: 2, text: \"Write tests\", done: true }], nextId: 3 });\n\ntest(\"adding a todo re-renders the app and only the new row\", () => {\n  const app = createApp(start());\n  app.update(addTodo, \"Call Ana\");\n  assert.equal(app.renders, 2, \"the app should re-render once\");\n  assert.deepEqual(app.state.todos.map((todo) => todo.text), [\"Buy milk\", \"Write tests\", \"Call Ana\"]);\n  assert.equal(app.state.nextId, 4);\n  assert.deepEqual([...app.rowRenders.values()], [1, 1, 1], \"only the new row renders; the old rows stay as they were\");\n});\n\ntest(\"toggling re-renders exactly that row\", () => {\n  const app = createApp(start());\n  app.update(toggleTodo, 1);\n  assert.equal(app.renders, 2);\n  assert.equal(app.state.todos[0].done, true);\n  assert.equal(app.rowRenders.get(1), 2, \"the toggled row re-renders\");\n  assert.equal(app.rowRenders.get(2), 1, \"the other row keeps its object, so it doesn't\");\n  app.update(toggleTodo, 1);\n  assert.equal(app.state.todos[0].done, false);\n});\n\ntest(\"renaming re-renders exactly that row\", () => {\n  const app = createApp(start());\n  app.update(renameTodo, 2, \"Write more tests\");\n  assert.equal(app.state.todos[1].text, \"Write more tests\");\n  assert.equal(app.rowRenders.get(2), 2);\n  assert.equal(app.rowRenders.get(1), 1);\n});\n\ntest(\"the old state is never changed\", () => {\n  const before = start();\n  const app = createApp(before);\n  app.update(addTodo, \"x\");\n  app.update(toggleTodo, 2);\n  assert.equal(before.todos.length, 2);\n  assert.equal(before.todos[1].done, true);\n  assert.equal(before.nextId, 3);\n});\n\ntest(\"an unknown id changes nothing and renders nothing\", () => {\n  const app = createApp(start());\n  app.update(toggleTodo, 99);\n  app.update(renameTodo, 99, \"nope\");\n  assert.equal(app.renders, 1);\n});\n",
+    "setup": "",
     "probe": null
   },
   {

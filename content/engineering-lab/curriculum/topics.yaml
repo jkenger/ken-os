@@ -34,7 +34,6 @@ modules:
     title: React
     track: fullstack
     area: frontend
-    planned: [React render model, Effects and synchronization]
   - id: m4-api-boundaries
     title: API boundaries
     track: fullstack
@@ -401,3 +400,33 @@ topics:
     depth: deep
     prove: [explain, implement]
     labs: [team-docs]
+
+  - id: react.render_model
+    title: How React renders, and why references matter
+    module: m4-react
+    requires: [js.references_mutation]
+    freshness: framework
+    sourceGroups: [react]
+    gap: >-
+      Knows state, props and context can trigger a render and mentions the virtual DOM, but render, reconciliation and
+      commit are hazy. Needs: what render, reconcile and commit each do; that React compares references, so state
+      updates build new objects along the changed path and reuse the rest; why mutating state can mean nothing
+      re-renders; and when memo helps and when it doesn't.
+    depth: working
+    prove: [explain, implement]
+    labs: [todo-updates]
+
+  - id: react.effects
+    title: Effects and synchronization
+    module: m4-react
+    requires: [react.render_model, js.closures]
+    freshness: framework
+    sourceGroups: [react]
+    gap: >-
+      Expects an effect with [] to re-run when props change and links dependencies to infinite loops. Needs: an effect
+      keeps something outside React in step with the current render; every value it reads belongs in its dependencies;
+      cleanup undoes the setup and runs before the next run and on unmount; stale closures and races in effects; and
+      when no effect is needed at all, because the value can be computed during render.
+    depth: deep
+    prove: [explain, implement]
+    labs: [chat-connection]

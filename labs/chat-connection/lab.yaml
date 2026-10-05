@@ -1,0 +1,6 @@
+id: chat-connection
+title: Keep a connection in sync with an effect
+topics: [react.effects]
+modes: [implement]
+runner: browser
+timeoutMs: 2000
