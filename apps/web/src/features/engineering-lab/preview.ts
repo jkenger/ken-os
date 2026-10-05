@@ -1,6 +1,7 @@
 import { areaLevel, chapterStates, computeProgress, planNext, roadmap, roleDistance, type Label } from "@ken-os/domain";
 import { baselineAttempts, careers, topicMap } from "./curriculum";
 import type { RunView } from "./assessment-run";
+import type { DailyView } from "./daily";
 import type { ProfileView } from "./profile-store";
 import type { TodayView, TopicView } from "./store";
 
@@ -133,5 +134,25 @@ export function previewRun(): RunView {
       topics: topicMap.topics.filter((topic) => topic.module === module.id).map((topic, position) => ({ topicId: topic.id, title: topic.title, done: index === 0, label: index === 0 ? (position % 3 === 0 ? "solid" as const : "partial" as const) : null })),
       answers: index === 0 ? [{ label: "partial" as const, voided: false, feedback: "Right that microtasks run first; missed that the whole queue drains before the timer.", prompt: "What prints?", mode: "predict", answer: "A\nD\nB\nC", rubric: null, selfRating: 4 }] : [],
     })),
+  };
+}
+
+/** A sample day of practice: one answered prediction, one open explanation, and a lab fix. Nothing is stored. */
+export function previewDaily(): DailyView {
+  return {
+    day: "2026-10-05", warmUp: false, done: false,
+    items: [
+      {
+        type: "question", topicId: "js.call_stack", topicTitle: "The call stack and run to completion", assessmentId: "preview-a", itemIndex: 0, labId: null, labTitle: null, passedToday: false,
+        item: { mode: "predict", prompt: "What does this print?", code: "console.log(1);\nsetTimeout(() => console.log(2));\nconsole.log(3);" },
+        answered: { label: "solid", feedback: "Right lines, right order.", voided: false, answer: { lines: ["1", "3", "2"], text: null, why: null, actual: ["1", "3", "2"] }, explanation: "Synchronous logs run first; the timer callback waits for a new task.", rubric: null },
+      },
+      { type: "lab", topicId: "js.references_mutation", topicTitle: "References, equality and shallow copies", assessmentId: null, itemIndex: null, item: null, labId: "shallow-copy", labTitle: "Fix the shared settings object", answered: null, passedToday: false },
+      {
+        type: "question", topicId: "db.transactions", topicTitle: "Transactions and all-or-nothing writes", assessmentId: "preview-b", itemIndex: 0, labId: null, labTitle: null, passedToday: false,
+        item: { mode: "explain", prompt: "An order saves its line items, then charging the card fails. What should happen to the line items, and how do you make sure it does?", code: null },
+        answered: null,
+      },
+    ],
   };
 }

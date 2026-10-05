@@ -10,7 +10,8 @@ import { LabTopics } from "@/components/lab/lab-topics";
 import { TermsPage } from "@/components/terms/terms-page";
 import { assessorModes, findTopic, labsForTopic, placeOf, topicMap } from "@/features/engineering-lab/curriculum";
 import { nextStepFromView } from "@/features/engineering-lab/next-step";
-import { previewLearner, previewProfile, previewRun, previewToday, previewTopic } from "@/features/engineering-lab/preview";
+import { previewDaily, previewLearner, previewProfile, previewRun, previewToday, previewTopic } from "@/features/engineering-lab/preview";
+import { LabPractice } from "@/components/lab/practice/lab-practice";
 import { LabHomeExplore, type Direction } from "@/components/lab/explore/lab-home-explore";
 import { tracks, type Track } from "@/components/lab/explore/road-tracks";
 import { ProfileExplore, type ProfileDirection, type ProfileTab } from "@/components/lab/explore/profile-explore";
@@ -51,6 +52,9 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
   }
   if (view === "lab-profile") {
     return <LabProfile email="preview@example.invalid" view={previewProfile()} />;
+  }
+  if (view === "lab-practice") {
+    return <LabPractice email="preview@example.invalid" daily={screenParam === "start" ? null : previewDaily()} />;
   }
   if (view === "lab-assessment") {
     const profile = previewProfile("in_progress");
