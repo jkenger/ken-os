@@ -18,7 +18,7 @@ export function LevelTable({ profile, targets }: { profile: ProfileView; targets
     <div className="overflow-x-auto">
       <table className="w-full min-w-[680px] border-collapse text-left text-sm">
         <caption className="mb-3 text-left text-sm text-muted-foreground">
-          A tick means that chapter is deep enough. Shaded levels are reached{Object.keys(targets).length ? "; your direction's target is outlined" : ""}.
+          Tick: deep enough · Shaded: reached{Object.keys(targets).length ? " · Outlined: direction target" : ""}
         </caption>
         <thead>
           <tr className="border-b border-foreground">

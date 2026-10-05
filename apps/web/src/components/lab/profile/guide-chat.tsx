@@ -16,7 +16,7 @@ export interface GuideProposals {
  * A conversation with the Guide. Its replies can carry proposals (an intake, a direction, a new chapter); the parent
  * shows them as things to confirm. Nothing is decided by the conversation itself.
  */
-export function GuideChat({ phase, history, onProposals, opener, subtitle = "Uses your real numbers. Suggests; you confirm.", footer, className }: {
+export function GuideChat({ phase, history, onProposals, opener, subtitle = "The Guide suggests; you confirm every change", footer, className }: {
   phase: "intake" | "direction";
   history: GuideMessage[];
   onProposals: (proposals: GuideProposals) => void;
@@ -43,7 +43,7 @@ export function GuideChat({ phase, history, onProposals, opener, subtitle = "Use
       setMessages((current) => [...current, { role: "guide", text: result.reply, at: new Date().toISOString() }]);
       onProposals({ intake: result.intake, direction: result.direction, addChapters: result.addChapters });
     } catch (error) {
-      setProblem(error instanceof Error ? error.message : "The Guide could not answer.");
+      setProblem(error instanceof Error ? error.message : "Guide couldn't answer. Try again");
       setMessages((current) => current.filter((message) => message !== mine));
       setDraft(text);
     } finally {
@@ -65,12 +65,12 @@ export function GuideChat({ phase, history, onProposals, opener, subtitle = "Use
             <span className="sr-only">{message.role === "owner" ? "You: " : "Guide: "}</span>{message.text}
           </p>
         ))}
-        {busy && <p className="text-sm text-muted-foreground">The Guide is thinking...</p>}
+        {busy && <p className="text-sm text-muted-foreground">Thinking…</p>}
       </div>
       {footer && <div className="space-y-2 border-t border-border p-3">{footer}</div>}
       <div className="border-t border-border p-3">
         <label className="block">
-          <span className="sr-only">Message the Guide</span>
+          <span className="sr-only">Message</span>
           <textarea
             className={cn(textarea, "min-h-[64px]")} value={draft} onChange={(event) => setDraft(event.target.value)}
             onKeyDown={(event) => { if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) void send(); }}
@@ -79,8 +79,8 @@ export function GuideChat({ phase, history, onProposals, opener, subtitle = "Use
         </label>
         {problem && <p className="mt-2 rounded-md bg-muted px-3 py-2 text-sm" role="alert">{problem}</p>}
         <div className="mt-2 flex items-center justify-between gap-3">
-          <p className="text-xs text-muted-foreground">Ctrl+Enter sends. Uses one of today&apos;s AI generations.</p>
-          <Button type="button" size="sm" disabled={busy || !draft.trim()} onClick={() => void send()}>{busy ? "Sending..." : "Send"}</Button>
+          <p className="text-xs text-muted-foreground">Ctrl+Enter to send · 1 AI use per reply</p>
+          <Button type="button" size="sm" disabled={busy || !draft.trim()} onClick={() => void send()}>{busy ? "Sending…" : "Send"}</Button>
         </div>
       </div>
     </section>

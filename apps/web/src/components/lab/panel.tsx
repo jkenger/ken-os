@@ -4,11 +4,11 @@ import { cn } from "@/lib/utils";
 // The lab's tight, bordered layout: a compact title bar per page, and content in bordered panels with a small header
 // strip. Chosen on 2026-10-03 so the lab reads as a tool rather than a page. Shared by the home and the profile.
 
-export function TitleBar({ kicker, title, stats, actions }: { kicker: string; title: string; stats?: ReactNode; actions?: ReactNode }) {
+export function TitleBar({ kicker, title, stats, actions }: { kicker?: string; title: string; stats?: ReactNode; actions?: ReactNode }) {
   return (
     <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b border-border pb-4">
       <div className="min-w-0">
-        <p className="text-xs text-muted-foreground">{kicker}</p>
+        {kicker && <p className="text-xs text-muted-foreground">{kicker}</p>}
         <h1 className="font-display text-2xl font-semibold tracking-[-0.03em]">{title}</h1>
       </div>
       {(stats || actions) && (

@@ -12,6 +12,7 @@ const excluded = [
   /^components\/ui\//,
   /^app\/design-preview\//,
   /^components\/lab-ui-preview\//,
+  /^components\/lab\/explore\//,
   /^components\/writing-studio-preview\.tsx$/,
   /^components\/project-memory-preview\.tsx$/,
   /^features\/engineering-lab\/preview\.ts$/,
