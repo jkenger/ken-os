@@ -252,7 +252,7 @@ export async function runInProgress(userId: string) {
 export async function dismissRadarItem(userId: string, id: string) {
   const updated = await db().update(labRadarItems).set({ dismissedAt: new Date() })
     .where(and(eq(labRadarItems.id, id), eq(labRadarItems.userId, userId))).returning({ id: labRadarItems.id });
-  if (!updated.length) throw new LabInputError("Radar item not found.", 404);
+  if (!updated.length) throw new LabInputError("Radar item not found. Reload the page", 404);
   return { dismissed: true };
 }
 

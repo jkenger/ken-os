@@ -48,23 +48,6 @@ export const appLanguageAllowlist: { file: string; text: string }[] = [
 
 
 
-  { file: "components/lab/lab-topic.tsx", text: "Could not write questions" },
-
-  { file: "components/lab/lab-topic.tsx", text: "Could not write the lesson" },
-
-  { file: "components/lab/lab-topic.tsx", text: "Researching and writing, about a minute..." },
-
-  { file: "components/lab/lab-topic.tsx", text: "Writing questions..." },
-
-  { file: "components/lab/lab-topics.tsx", text: "Could not write the placement check" },
-
-  { file: "components/lab/lab-topics.tsx", text: "The whole course, in order." },
-
-  { file: "components/lab/lab-topics.tsx", text: "Writing questions..." },
-
-  { file: "components/lab/practice/lab-practice.tsx", text: "Could not write today's set." },
-
-  { file: "components/lab/practice/lab-practice.tsx", text: "Writing today's set..." },
 
 
 
@@ -72,21 +55,21 @@ export const appLanguageAllowlist: { file: string; text: string }[] = [
 
 
 
-  { file: "components/lab/topic/answers.tsx", text: "Could not check." },
 
-  { file: "components/lab/topic/answers.tsx", text: "Could not submit." },
 
-  { file: "components/lab/topic/answers.tsx", text: "Grading..." },
 
-  { file: "components/lab/topic/answers.tsx", text: "Running..." },
 
-  { file: "components/lab/topic/labs.tsx", text: "Could not load the solution." },
 
-  { file: "components/lab/topic/labs.tsx", text: "Could not run the tests." },
 
-  { file: "components/lab/topic/labs.tsx", text: "Running real requests..." },
 
-  { file: "components/lab/topic/labs.tsx", text: "Running..." },
+
+
+
+
+
+
+
+
 
   { file: "components/memory-workspace.tsx", text: "A source-linked handoff from reviewed decisions and work receipts—not a transcript warehouse." },
 

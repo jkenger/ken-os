@@ -25,9 +25,9 @@ function knownHere(progress: TopicProgress) {
 function StatusFor({ row }: { row: Extract<Row, { kind: "written" }> }) {
   const { progress } = row;
   if (progress.status === "VALIDATED") return <Pill tone="solid" icon={<Check size={12} aria-hidden="true" />}>Proven</Pill>;
-  if (knownHere(progress) && progress.status === "NOT_STARTED") return <Pill tone="neutral">Known · skip</Pill>;
-  if (isUnassessed(progress)) return <Pill tone="quiet" icon={<CircleDashed size={12} aria-hidden="true" />}>Not assessed yet</Pill>;
-  if (row.locked) return <Pill tone="neutral">Waiting on prerequisites</Pill>;
+  if (knownHere(progress) && progress.status === "NOT_STARTED") return <Pill tone="neutral">Known</Pill>;
+  if (isUnassessed(progress)) return <Pill tone="quiet" icon={<CircleDashed size={12} aria-hidden="true" />}>Not assessed</Pill>;
+  if (row.locked) return <Pill tone="neutral">Needs prerequisites</Pill>;
   return <Pill tone={toneFor(progress.status)}>{statusWords[progress.status]}</Pill>;
 }
 
@@ -66,7 +66,7 @@ export function LabTopics({ email, map, progress, assessable }: { email: string;
       await post(`/api/lab/topics/${topicId}/assessment`, { kind: "placement" });
       router.push(`/lab/topics/${topicId}?step=check`);
     } catch (error) {
-      toast({ tone: "error", title: "Could not write the placement check", description: error instanceof Error ? error.message : undefined });
+      toast({ tone: "error", title: "Couldn't write the placement check. Try again", description: error instanceof Error ? error.message : undefined });
       setPlacing("");
     }
   }
@@ -74,8 +74,7 @@ export function LabTopics({ email, map, progress, assessable }: { email: string;
   return (
     <WorkspaceShell email={email} active="lab">
       <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-[1100px] border-x border-border px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-        <p className={label}>ENGINEERING LAB · COURSE</p>
-        <h1 className="mt-3 font-display text-4xl font-bold leading-[1.08] tracking-[-0.065em] sm:text-5xl">The whole course, in order.</h1>
+        <h1 className="font-display text-4xl font-bold leading-[1.08] tracking-[-0.065em] sm:text-5xl">Course</h1>
 
         <div className="mt-8 flex flex-wrap items-end justify-between gap-4 border-b border-border">
           <div role="tablist" aria-label="Tracks" className="flex gap-1">
@@ -85,7 +84,7 @@ export function LabTopics({ email, map, progress, assessable }: { email: string;
             ))}
           </div>
           <div className="mb-2 flex items-center gap-3 text-sm font-semibold">
-            <span id="gaps-label">My gaps only</span>
+            <span id="gaps-label">Gaps only</span>
             <button type="button" role="switch" aria-checked={gapsOnly} aria-labelledby="gaps-label" onClick={() => setGapsOnly(!gapsOnly)}
               className={cn("relative h-6 w-11 rounded-full transition-colors", gapsOnly ? "bg-primary" : "bg-input")}>
               <span className={cn("absolute top-0.5 size-5 rounded-full bg-background shadow transition-transform", gapsOnly ? "translate-x-[22px]" : "translate-x-0.5")} />
@@ -97,7 +96,7 @@ export function LabTopics({ email, map, progress, assessable }: { email: string;
           <p className="max-w-[560px] text-[15px] text-muted-foreground">{track.summary}</p>
           <p className="text-sm"><strong>{proven}</strong> of {total} proven{written.length ? <> · <strong>{gaps}</strong> gaps to close</> : null}</p>
         </div>
-        {gapsOnly && <p className="mt-3 rounded-lg bg-muted px-4 py-3 text-sm">Showing only gaps: topics that the baseline, a placement check or a proof hasn&apos;t shown you know. Topics nobody has assessed yet stay, with a placement check.</p>}
+        {gapsOnly && <p className="mt-3 rounded-lg bg-muted px-4 py-3 text-sm">Topics not yet shown as known, including unassessed ones</p>}
 
         <div className="mt-6 space-y-9">
           {chapters.map(({ module, rows }, chapterIndex) => {
@@ -137,7 +136,7 @@ export function LabTopics({ email, map, progress, assessable }: { email: string;
                           <span className="flex flex-wrap items-center gap-2">
                             {isUnassessed(row.progress) && row.assessable && (
                               <Button type="button" size="sm" variant="outline" disabled={placing !== ""} onClick={() => void place(row.id)}>
-                                {placing === row.id ? "Writing questions..." : "Placement check"}
+                                {placing === row.id ? "Writing questions…" : "Placement check"}
                               </Button>
                             )}
                             <StatusFor row={row} />
@@ -149,7 +148,7 @@ export function LabTopics({ email, map, progress, assessable }: { email: string;
                 )}
                 {gapsOnly && (
                   !writtenRows.length ? <p className="py-3 text-sm text-muted-foreground">{plannedCount} topics planned, not written yet.</p>
-                    : !shown.length ? <p className="py-3 text-sm text-muted-foreground">No gaps here: everything written is known or proven.</p>
+                    : !shown.length ? <p className="py-3 text-sm text-muted-foreground">No gaps</p>
                       : plannedCount ? <p className="pb-1 pt-2 text-sm text-muted-foreground">Plus {plannedCount} not written yet.</p> : null
                 )}
               </section>

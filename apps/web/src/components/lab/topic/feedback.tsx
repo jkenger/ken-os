@@ -18,7 +18,7 @@ export function PredictionDiff({ actual, predicted }: { actual: string[]; predic
   const summary = [moved && `${moved} in the wrong place`, missing && `${missing} missing`, extra && `${extra} that never printed`].filter(Boolean).join(", ");
   return (
     <div className="mt-4">
-      <p className="text-sm font-semibold">Real output against yours</p>
+      <p className="text-sm font-semibold">Actual vs. predicted</p>
       <ol className="mt-2 overflow-hidden rounded-lg border border-border font-mono text-[13px] leading-6">
         {rows.map((row, index) => (
           <li key={index} className={cn("flex items-center gap-3 px-3", row.kind === "missing" && "bg-status-gap-surface", row.kind === "extra" && "bg-status-partial-surface")}>
@@ -27,9 +27,9 @@ export function PredictionDiff({ actual, predicted }: { actual: string[]; predic
             {row.kind !== "match" && <span className="shrink-0 font-sans text-xs font-semibold">{diffWords[row.kind][row.moved ? "moved" : "alone"]}</span>}
           </li>
         ))}
-        {!rows.length && <li className="px-3 font-sans text-sm">The code printed nothing, and you predicted nothing.</li>}
+        {!rows.length && <li className="px-3 font-sans text-sm">No output, as predicted</li>}
       </ol>
-      <p className="mt-2 text-sm text-muted-foreground">{summary ? `Lines: ${summary}.` : "Every line, in order."}</p>
+      <p className="mt-2 text-sm text-muted-foreground">{summary ? `Lines: ${summary}` : "All lines, in order"}</p>
     </div>
   );
 }
@@ -62,11 +62,10 @@ export function RubricChecklist({ items }: { items: RubricResult[] }) {
 export function ProvenBanner({ title, nextReviewAt, byCode }: { title: string; nextReviewAt: string | null; byCode: number }) {
   return (
     <div className="rounded-xl bg-status-solid-surface p-6" role="status">
-      <p className="flex items-center gap-2 text-xs font-bold tracking-[0.14em] text-status-solid"><Sparkles size={15} aria-hidden="true" />TOPIC PROVEN</p>
+      <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-status-solid"><Sparkles size={15} aria-hidden="true" />Topic proven</p>
       <p className="mt-2 font-display text-2xl font-semibold tracking-[-0.04em]">{title}</p>
       <p className="mt-1 text-sm">
-        Every part shown{byCode ? `, ${byCode === 1 ? "one" : byCode} of them by running code` : ""}.
-        {nextReviewAt ? ` First review ${formatDate(nextReviewAt)}, to make sure it stays.` : ""}
+        All parts shown{byCode ? ` · ${byCode} by code` : ""}{nextReviewAt ? ` · first review ${formatDate(nextReviewAt)}` : ""}
       </p>
     </div>
   );
