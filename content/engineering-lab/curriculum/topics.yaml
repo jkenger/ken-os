@@ -50,7 +50,6 @@ modules:
     title: Observability
     track: fullstack
     area: production
-    planned: [Logs, Metrics, Traces]
   - id: m8-architecture-scale
     title: Architecture at scale
     track: fullstack
@@ -499,3 +498,45 @@ topics:
     depth: working
     prove: [explain, implement]
     labs: [circuit-breaker]
+
+  - id: obs.logs
+    title: Structured logs
+    module: m7-observability
+    requires: []
+    freshness: core_concept
+    sourceGroups: [operations]
+    gap: >-
+      Knows logs should hold errors and request context and avoid sensitive data. Needs: one JSON object per event with
+      consistent field names; request, trace and user ids carried through a child logger; operation, status and
+      duration; redacting secrets by key at any depth; and serializing errors so the stack survives.
+    depth: working
+    prove: [explain, implement]
+    labs: [structured-logs]
+
+  - id: obs.metrics
+    title: Metrics, percentiles and histograms
+    module: m7-observability
+    requires: []
+    freshness: core_concept
+    sourceGroups: [operations]
+    gap: >-
+      Needs: why averages hide the slow requests users feel; p50, p95 and p99; error rate counting only server errors;
+      counters, gauges and histograms; and why cumulative histogram buckets can be combined across servers while
+      averages and percentiles can't.
+    depth: working
+    prove: [explain, implement]
+    labs: [latency-summary]
+
+  - id: obs.traces
+    title: Traces and context propagation
+    module: m7-observability
+    requires: [obs.logs]
+    freshness: web_platform
+    sourceGroups: [operations, web]
+    gap: >-
+      Needs: traces as a tree of spans sharing one trace id; passing context between services with the W3C traceparent
+      header; strict header validation that starts a new trace instead of failing; child spans for work inside a
+      service; and a trace id in every log line to join logs and traces.
+    depth: working
+    prove: [explain, implement]
+    labs: [trace-context]

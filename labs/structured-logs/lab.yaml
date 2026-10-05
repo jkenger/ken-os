@@ -1,0 +1,6 @@
+id: structured-logs
+title: Logs a machine can search
+topics: [obs.logs]
+modes: [implement]
+runner: browser
+timeoutMs: 2000

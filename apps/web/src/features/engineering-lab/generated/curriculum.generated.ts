@@ -69,11 +69,7 @@ export const topicMap: TopicMap = {
       "title": "Observability",
       "track": "fullstack",
       "area": "production",
-      "planned": [
-        "Logs",
-        "Metrics",
-        "Traces"
-      ]
+      "planned": []
     },
     {
       "id": "m8-architecture-scale",
@@ -765,6 +761,66 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "circuit-breaker"
+      ]
+    },
+    {
+      "id": "obs.logs",
+      "title": "Structured logs",
+      "module": "m7-observability",
+      "requires": [],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "operations"
+      ],
+      "gap": "Knows logs should hold errors and request context and avoid sensitive data. Needs: one JSON object per event with consistent field names; request, trace and user ids carried through a child logger; operation, status and duration; redacting secrets by key at any depth; and serializing errors so the stack survives.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "structured-logs"
+      ]
+    },
+    {
+      "id": "obs.metrics",
+      "title": "Metrics, percentiles and histograms",
+      "module": "m7-observability",
+      "requires": [],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "operations"
+      ],
+      "gap": "Needs: why averages hide the slow requests users feel; p50, p95 and p99; error rate counting only server errors; counters, gauges and histograms; and why cumulative histogram buckets can be combined across servers while averages and percentiles can't.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "latency-summary"
+      ]
+    },
+    {
+      "id": "obs.traces",
+      "title": "Traces and context propagation",
+      "module": "m7-observability",
+      "requires": [
+        "obs.logs"
+      ],
+      "freshness": "web_platform",
+      "sourceGroups": [
+        "operations",
+        "web"
+      ],
+      "gap": "Needs: traces as a tree of spans sharing one trace id; passing context between services with the W3C traceparent header; strict header validation that starts a new trace instead of failing; child spans for work inside a service; and a trace id in every log line to join logs and traces.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "trace-context"
       ]
     }
   ]
@@ -1589,6 +1645,23 @@ export const labs: LabDefinition[] = [
     "probe": null
   },
   {
+    "id": "latency-summary",
+    "title": "Report latency the way users feel it",
+    "topics": [
+      "obs.metrics"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "The dashboard says checkout averages 180 ms, while support says checkout is slow. Both are true: most requests are\nfast and some are very slow, and an average hides the slow ones. Write two functions over a list of requests, each\n`{ ms, status }`:\n\n`summarize(requests)` returns `{ count, errorRate, p50, p95, p99, max }`:\n\n- Percentiles use the nearest-rank method: sort the durations, and pN is the value at position `ceil(N / 100 * count)`,\n  counting from 1. So p50 of `[10, 20, 30, 40]` is 20.\n- `errorRate` is the share of requests with a status of 500 or above, from 0 to 1.\n- With no requests, every number is 0.\n\n`bucketCounts(durations, bounds)` returns cumulative buckets, the way Prometheus histograms store them: for each bound\nin order, `{ le: bound, count }` counting durations at or below it, then `{ le: \"+Inf\", count }` for all of them.\n\nThen explain why a histogram, rather than a stored average, lets you compute percentiles across many servers.",
+    "starter": "function summarize(requests) {\n  const count = requests.length;\n  const average = count ? requests.reduce((sum, request) => sum + request.ms, 0) / count : 0;\n  const errors = requests.filter((request) => request.status !== 200).length;\n  return { count, errorRate: count ? errors / count : 0, p50: average, p95: average, p99: average, max: average };\n}\n\nfunction bucketCounts(durations, bounds) {\n  return bounds.map((bound) => ({ le: bound, count: durations.filter((ms) => ms === bound).length }));\n}\n",
+    "tests": "// 95 fast requests and 5 very slow ones: the average looks fine, the tail doesn't.\nconst traffic = [\n  ...Array.from({ length: 95 }, (_, i) => ({ ms: 50 + i, status: 200 })),\n  { ms: 2400, status: 200 }, { ms: 3100, status: 504 }, { ms: 2800, status: 200 }, { ms: 4000, status: 503 }, { ms: 2900, status: 200 },\n];\n\ntest(\"percentiles use the nearest rank\", () => {\n  const summary = summarize([{ ms: 40, status: 200 }, { ms: 10, status: 200 }, { ms: 30, status: 200 }, { ms: 20, status: 200 }]);\n  assert.equal(summary.count, 4);\n  assert.equal(summary.p50, 20);\n  assert.equal(summary.p95, 40);\n  assert.equal(summary.max, 40);\n});\n\ntest(\"the tail shows up even when the average looks fine\", () => {\n  const summary = summarize(traffic);\n  assert.equal(summary.p50, 99);\n  assert.equal(summary.p95, 144);\n  assert.equal(summary.p99, 3100);\n  assert.equal(summary.max, 4000);\n});\n\ntest(\"only server errors count toward the error rate\", () => {\n  const summary = summarize([\n    { ms: 10, status: 200 }, { ms: 10, status: 201 }, { ms: 10, status: 404 }, { ms: 10, status: 500 }, { ms: 10, status: 503 },\n  ]);\n  assert.equal(summary.errorRate, 0.4, \"a 404 is the client's mistake; a 201 is a success\");\n});\n\ntest(\"no requests means zeros, not NaN\", () => {\n  assert.deepEqual(summarize([]), { count: 0, errorRate: 0, p50: 0, p95: 0, p99: 0, max: 0 });\n});\n\ntest(\"buckets are cumulative and end with +Inf\", () => {\n  assert.deepEqual(bucketCounts([20, 80, 120, 250, 900, 3000], [100, 250, 1000]), [\n    { le: 100, count: 2 }, { le: 250, count: 4 }, { le: 1000, count: 5 }, { le: \"+Inf\", count: 6 },\n  ]);\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
     "id": "order-history-index",
     "title": "Fix the index that's in the wrong order",
     "topics": [
@@ -1797,6 +1870,23 @@ export const labs: LabDefinition[] = [
     "probe": null
   },
   {
+    "id": "structured-logs",
+    "title": "Logs a machine can search",
+    "topics": [
+      "obs.logs"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "At 2 a.m. you need every log line for one request, and none of them should hold a password. The starter writes lines\nlike `ERROR Payment failed {\"orderId\":7}`, which you can read but can't filter, and which print whatever they're given.\n\nWrite `createLogger({ write, now, fields })`. It returns `info`, `warn` and `error`, each `(message, extra)`, plus\n`child(fields)`. Every call writes exactly one line, a JSON object, through `write(line)`, with:\n\n- `time` from `now()` as an ISO string, `level`, and `msg`.\n- The logger's `fields`, then `extra`, merged in. `child(fields)` returns a logger that adds its fields to every line,\n  so a request handler can add `requestId` once.\n- Secrets replaced by `\"[redacted]\"` at any depth, including inside arrays: any key named `password`, `token`,\n  `secret`, `authorization`, `cookie`, `apiKey` or `card`, in any letter case.\n- An `Error` in `extra.error` written as `{ name, message, stack }`. As it is, it would turn into `{}`.\n\nThen explain which fields every line in a service should carry, and why logging the request body is risky.",
+    "starter": "function createLogger({ write, now, fields = {} }) {\n  const log = (level) => (message, extra = {}) => write(`${level.toUpperCase()} ${message} ${JSON.stringify({ ...fields, ...extra })}`);\n  return {\n    info: log(\"info\"),\n    warn: log(\"warn\"),\n    error: log(\"error\"),\n    child: (more) => createLogger({ write, now, fields: { ...fields, ...more } }),\n  };\n}\n",
+    "tests": "function setup(fields) {\n  const lines = [];\n  const logger = createLogger({ write: (line) => lines.push(line), now: () => new Date(\"2026-10-05T09:30:00.000Z\"), fields });\n  const parsed = () => lines.map((line) => {\n    try { return JSON.parse(line); } catch { throw new Error(`Not a JSON line: ${line}`); }\n  });\n  return { lines, logger, parsed };\n}\n\ntest(\"each call writes one JSON line with time, level and message\", () => {\n  const { lines, logger, parsed } = setup({ service: \"checkout\" });\n  logger.info(\"Order placed\", { orderId: 7, totalCents: 2500 });\n  assert.equal(lines.length, 1);\n  assert.ok(!lines[0].includes(\"\\n\"), \"one event, one line\");\n  assert.deepEqual(parsed()[0], { time: \"2026-10-05T09:30:00.000Z\", level: \"info\", msg: \"Order placed\", service: \"checkout\", orderId: 7, totalCents: 2500 });\n});\n\ntest(\"a child logger adds its fields to every line\", () => {\n  const { logger, parsed } = setup({ service: \"checkout\" });\n  const request = logger.child({ requestId: \"req-123\" });\n  request.warn(\"Slow payment\", { ms: 2400 });\n  request.child({ userId: 9 }).info(\"Done\");\n  const [first, second] = parsed();\n  assert.equal(first.requestId, \"req-123\");\n  assert.equal(first.level, \"warn\");\n  assert.equal(second.requestId, \"req-123\");\n  assert.equal(second.userId, 9);\n  assert.equal(second.service, \"checkout\");\n});\n\ntest(\"secrets are redacted at any depth\", () => {\n  const { lines, logger, parsed } = setup({});\n  logger.info(\"Login\", {\n    user: { email: \"ana@example.com\", Password: \"hunter2\" },\n    headers: { Authorization: \"Bearer abc\", cookie: \"sid=1\" },\n    attempts: [{ token: \"t-1\", ok: false }],\n    apiKey: \"sk-123\",\n    card: \"4242 4242 4242 4242\",\n  });\n  const line = parsed()[0];\n  assert.equal(line.user.email, \"ana@example.com\");\n  assert.equal(line.user.Password, \"[redacted]\");\n  assert.equal(line.headers.Authorization, \"[redacted]\");\n  assert.equal(line.headers.cookie, \"[redacted]\");\n  assert.equal(line.attempts[0].token, \"[redacted]\");\n  assert.equal(line.apiKey, \"[redacted]\");\n  assert.equal(line.card, \"[redacted]\");\n  for (const secret of [\"hunter2\", \"Bearer abc\", \"sid=1\", \"t-1\", \"sk-123\", \"4242\"]) {\n    assert.ok(!lines[0].includes(secret), `\"${secret}\" must never reach the log`);\n  }\n});\n\ntest(\"errors keep their name, message and stack\", () => {\n  const { logger, parsed } = setup({});\n  const failure = new TypeError(\"card is undefined\");\n  logger.error(\"Payment failed\", { orderId: 7, error: failure });\n  const line = parsed()[0];\n  assert.equal(line.level, \"error\");\n  assert.equal(line.error.name, \"TypeError\");\n  assert.equal(line.error.message, \"card is undefined\");\n  assert.ok(typeof line.error.stack === \"string\" && line.error.stack.length > 0);\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
     "id": "team-docs",
     "title": "Check membership, not just sign-in",
     "topics": [
@@ -1827,6 +1917,23 @@ export const labs: LabDefinition[] = [
     "readme": "A todo list keeps its state as `{ todos: [{ id, text, done }], nextId }`. The tests run your update functions inside a\nsmall stand-in for React that behaves the way React does:\n\n- After an update, the app re-renders only if the new state is a different object (`Object.is`), the way\n  `setState` bails out on the same value.\n- Each row is memoized, like `React.memo`: it re-renders only when its todo object is a different object.\n\nWrite three update functions. Each returns the next state and never changes the one it was given:\n\n- `addTodo(state, text)` adds `{ id: state.nextId, text, done: false }` at the end and increases `nextId`.\n- `toggleTodo(state, id)` flips `done` on that todo.\n- `renameTodo(state, id, text)` changes that todo's `text`.\n\nTodos you don't change must stay the very same objects, so their rows don't re-render. When the id doesn't exist,\nreturn the state you were given, so nothing re-renders.\n\nThen explain what happens between your update and the screen changing: render, reconciliation, commit, and why\nmutating the old state means React may never notice.",
     "starter": "function addTodo(state, text) {\n  state.todos.push({ id: state.nextId, text, done: false });\n  state.nextId += 1;\n  return state;\n}\n\nfunction toggleTodo(state, id) {\n  const todo = state.todos.find((item) => item.id === id);\n  if (todo) todo.done = !todo.done;\n  return state;\n}\n\nfunction renameTodo(state, id, text) {\n  const todo = state.todos.find((item) => item.id === id);\n  if (todo) todo.text = text;\n  return state;\n}\n",
     "tests": "// A stand-in for React: re-render when the state object changes, and re-render a memoized row when its todo changes.\nfunction createApp(initial) {\n  let state = initial;\n  let renders = 0;\n  const rowRenders = new Map();\n  const lastSeen = new Map();\n  function render() {\n    renders += 1;\n    for (const todo of state.todos) {\n      if (lastSeen.get(todo.id) !== todo) {\n        rowRenders.set(todo.id, (rowRenders.get(todo.id) ?? 0) + 1);\n        lastSeen.set(todo.id, todo);\n      }\n    }\n  }\n  render();\n  return {\n    update(fn, ...args) {\n      const next = fn(state, ...args);\n      if (!Object.is(next, state)) { state = next; render(); }\n    },\n    get state() { return state; },\n    get renders() { return renders; },\n    rowRenders,\n  };\n}\n\nfunction deepFreeze(value) {\n  if (value && typeof value === \"object\") { Object.values(value).forEach(deepFreeze); Object.freeze(value); }\n  return value;\n}\n\nconst start = () => deepFreeze({ todos: [{ id: 1, text: \"Buy milk\", done: false }, { id: 2, text: \"Write tests\", done: true }], nextId: 3 });\n\ntest(\"adding a todo re-renders the app and only the new row\", () => {\n  const app = createApp(start());\n  app.update(addTodo, \"Call Ana\");\n  assert.equal(app.renders, 2, \"the app should re-render once\");\n  assert.deepEqual(app.state.todos.map((todo) => todo.text), [\"Buy milk\", \"Write tests\", \"Call Ana\"]);\n  assert.equal(app.state.nextId, 4);\n  assert.deepEqual([...app.rowRenders.values()], [1, 1, 1], \"only the new row renders; the old rows stay as they were\");\n});\n\ntest(\"toggling re-renders exactly that row\", () => {\n  const app = createApp(start());\n  app.update(toggleTodo, 1);\n  assert.equal(app.renders, 2);\n  assert.equal(app.state.todos[0].done, true);\n  assert.equal(app.rowRenders.get(1), 2, \"the toggled row re-renders\");\n  assert.equal(app.rowRenders.get(2), 1, \"the other row keeps its object, so it doesn't\");\n  app.update(toggleTodo, 1);\n  assert.equal(app.state.todos[0].done, false);\n});\n\ntest(\"renaming re-renders exactly that row\", () => {\n  const app = createApp(start());\n  app.update(renameTodo, 2, \"Write more tests\");\n  assert.equal(app.state.todos[1].text, \"Write more tests\");\n  assert.equal(app.rowRenders.get(2), 2);\n  assert.equal(app.rowRenders.get(1), 1);\n});\n\ntest(\"the old state is never changed\", () => {\n  const before = start();\n  const app = createApp(before);\n  app.update(addTodo, \"x\");\n  app.update(toggleTodo, 2);\n  assert.equal(before.todos.length, 2);\n  assert.equal(before.todos[1].done, true);\n  assert.equal(before.nextId, 3);\n});\n\ntest(\"an unknown id changes nothing and renders nothing\", () => {\n  const app = createApp(start());\n  app.update(toggleTodo, 99);\n  app.update(renameTodo, 99, \"nope\");\n  assert.equal(app.renders, 1);\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
+    "id": "trace-context",
+    "title": "Follow one request across services",
+    "topics": [
+      "obs.traces"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "A checkout request goes from the web app to the orders service to the payments service. To see it as one trace, each\nservice must pass the trace on in a `traceparent` header (the W3C Trace Context format):\n\n```\n00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01\nversion-trace id (32 hex)----------span id (16 hex)-flags\n```\n\nThe starter starts a new trace in every service, so the three halves never connect. Write, using `ids.traceId()` and\n`ids.spanId()` for new ids:\n\n- `extract(header)` returns `{ traceId, parentSpanId }` from a valid header, or `null`. A valid header has version\n  `00`, a 32-character and a 16-character lower-case hex id, neither all zeros, and two hex flag characters.\n- `startSpan(headers, ids)` continues the trace from `headers.traceparent` when it's valid: the same `traceId`, a new\n  `spanId`, and `parentSpanId` set to the caller's span. Otherwise it starts a new trace with `parentSpanId: null`.\n- `childSpan(span, ids)` returns a span inside the same trace, whose parent is `span`.\n- `inject(span)` returns the header to send downstream: `00-<traceId>-<spanId>-01`.\n\nThen explain how a trace id in every log line connects logs and traces, and why a bad header starts a new trace\ninstead of failing the request.",
+    "starter": "function extract(header) {\n  const [version, traceId, spanId] = String(header).split(\"-\");\n  return { traceId, parentSpanId: spanId };\n}\n\nfunction startSpan(headers, ids) {\n  return { traceId: ids.traceId(), spanId: ids.spanId(), parentSpanId: null };\n}\n\nfunction childSpan(span, ids) {\n  return { traceId: ids.traceId(), spanId: ids.spanId(), parentSpanId: null };\n}\n\nfunction inject(span) {\n  return `${span.traceId}-${span.spanId}`;\n}\n",
+    "tests": "function counterIds() {\n  let traces = 0, spans = 0;\n  return {\n    traceId: () => (++traces).toString(16).padStart(32, \"a\"),\n    spanId: () => (++spans).toString(16).padStart(16, \"b\"),\n  };\n}\nconst valid = \"00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01\";\n\ntest(\"a valid header is read\", () => {\n  assert.deepEqual(extract(valid), { traceId: \"4bf92f3577b34da6a3ce929d0e0e4736\", parentSpanId: \"00f067aa0ba902b7\" });\n});\n\ntest(\"invalid headers are rejected\", () => {\n  const bad = [\n    \"\", \"nonsense\", \"01-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01\",\n    \"00-4BF92F3577B34DA6A3CE929D0E0E4736-00f067aa0ba902b7-01\", \"00-4bf92f35-00f067aa0ba902b7-01\",\n    \"00-00000000000000000000000000000000-00f067aa0ba902b7-01\", \"00-4bf92f3577b34da6a3ce929d0e0e4736-0000000000000000-01\",\n    \"00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7\", undefined,\n  ];\n  for (const header of bad) assert.equal(extract(header), null, `${JSON.stringify(header)} should be rejected`);\n});\n\ntest(\"a service continues the caller's trace\", () => {\n  const span = startSpan({ traceparent: valid }, counterIds());\n  assert.equal(span.traceId, \"4bf92f3577b34da6a3ce929d0e0e4736\");\n  assert.equal(span.parentSpanId, \"00f067aa0ba902b7\");\n  assert.ok(/^[0-9a-f]{16}$/.test(span.spanId) && span.spanId !== \"00f067aa0ba902b7\", \"a new span id for this service\");\n});\n\ntest(\"no header, or a bad one, starts a new trace\", () => {\n  const ids = counterIds();\n  const fresh = startSpan({}, ids);\n  assert.equal(fresh.parentSpanId, null);\n  assert.ok(/^[0-9a-f]{32}$/.test(fresh.traceId));\n  const recovered = startSpan({ traceparent: \"garbage\" }, ids);\n  assert.equal(recovered.parentSpanId, null);\n});\n\ntest(\"three services end up in one trace\", () => {\n  const ids = counterIds();\n  const web = startSpan({}, ids);\n  const query = childSpan(web, ids);\n  const orders = startSpan({ traceparent: inject(web) }, ids);\n  const payments = startSpan({ traceparent: inject(orders) }, ids);\n  assert.ok(/^00-[0-9a-f]{32}-[0-9a-f]{16}-01$/.test(inject(web)), `inject wrote ${inject(web)}`);\n  assert.equal(query.traceId, web.traceId);\n  assert.equal(query.parentSpanId, web.spanId);\n  assert.equal(orders.traceId, web.traceId);\n  assert.equal(orders.parentSpanId, web.spanId);\n  assert.equal(payments.traceId, web.traceId);\n  assert.equal(payments.parentSpanId, orders.spanId);\n  assert.equal(new Set([web.spanId, query.spanId, orders.spanId, payments.spanId]).size, 4);\n});\n",
     "setup": "",
     "probe": null
   },
