@@ -1,0 +1,6 @@
+id: tool-loop
+title: Run the tool-calling loop safely
+topics: [ai.tool_calling]
+modes: [implement]
+runner: browser
+timeoutMs: 2000

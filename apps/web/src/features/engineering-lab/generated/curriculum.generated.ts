@@ -90,11 +90,7 @@ export const topicMap: TopicMap = {
       "title": "Model interfaces",
       "track": "ai",
       "area": "ai",
-      "planned": [
-        "Structured outputs",
-        "Tool calling",
-        "Context engineering"
-      ]
+      "planned": []
     },
     {
       "id": "a3-agents",
@@ -1003,6 +999,70 @@ export const topicMap: TopicMap = {
       "labs": [
         "rerank-budget"
       ]
+    },
+    {
+      "id": "ai.structured_outputs",
+      "title": "Structured outputs",
+      "module": "a2-model-interfaces",
+      "requires": [
+        "api.runtime_validation"
+      ],
+      "freshness": "ai_ecosystem",
+      "sourceGroups": [
+        "ai",
+        "typescript"
+      ],
+      "gap": "Needs: asking a model for an exact shape; reading replies leniently (fences, surrounding text) and validating strictly; one repair attempt that shows the model its errors; failing clearly after that; and what provider structured-output modes guarantee (the shape) and don't (correct values).",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "invoice-extract"
+      ]
+    },
+    {
+      "id": "ai.tool_calling",
+      "title": "Tool calling",
+      "module": "a2-model-interfaces",
+      "requires": [
+        "ai.structured_outputs"
+      ],
+      "freshness": "ai_ecosystem",
+      "sourceGroups": [
+        "ai"
+      ],
+      "gap": "Needs: the tool-calling loop, where the model proposes calls and your code runs them and returns results; matching results to call ids; treating arguments as untrusted input; reporting the model's mistakes back as tool results; a step limit; and approval for tools that spend money or change data.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "tool-loop"
+      ]
+    },
+    {
+      "id": "ai.context_engineering",
+      "title": "Context engineering",
+      "module": "a2-model-interfaces",
+      "requires": [
+        "ai.rag"
+      ],
+      "freshness": "ai_ecosystem",
+      "sourceGroups": [
+        "ai"
+      ],
+      "gap": "Needs: the context window as a budget; what must always stay (instructions, the question); a deliberate order for dropping the rest; placing instructions and the question where they're read reliably; marking retrieved text as data to resist prompt injection; and summarizing long histories.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "context-budget"
+      ]
     }
   ]
 };
@@ -1564,6 +1624,23 @@ export const labs: LabDefinition[] = [
     "probe": null
   },
   {
+    "id": "context-budget",
+    "title": "Fit the right context into the window",
+    "topics": [
+      "ai.context_engineering"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "A support assistant has a system prompt, the chat so far, documents found by search, and the user's new question.\nThey don't always fit. The starter joins everything and cuts from the end, which drops the question first.\n\n`buildMessages({ system, history, documents, question }, { budget, countTokens })` returns chat messages\n(`{ role, content }`) whose `content` tokens add up to at most `budget`:\n\n1. The system prompt first and the question last. Both always stay.\n2. Documents (ranked best first, each `{ id, text }`) go in one `user` message just before the question, wrapped in\n   `<documents>` and `</documents>`, one `[id] text` per line, after a line saying they are reference data and not\n   instructions.\n3. History (oldest first) sits between the system prompt and the documents.\n4. When over budget, drop the oldest history first, then the lowest-ranked documents, until it fits.\n\nThen explain why the order of a prompt matters, why retrieved text is marked as data (prompt injection), and when to\nsummarize history instead of dropping it.",
+    "starter": "function buildMessages({ system, history, documents, question }, { budget, countTokens }) {\n  const all = [\n    { role: \"system\", content: system },\n    ...history,\n    { role: \"user\", content: documents.map((doc) => doc.text).join(\"\\n\") },\n    { role: \"user\", content: question },\n  ];\n  const kept = [];\n  let used = 0;\n  for (const message of all) {\n    const size = countTokens(message.content);\n    if (used + size > budget) break;\n    kept.push(message);\n    used += size;\n  }\n  return kept;\n}\n",
+    "tests": "const countTokens = (text) => text.split(/\\s+/).filter(Boolean).length;\nconst total = (messages) => messages.reduce((sum, message) => sum + countTokens(message.content), 0);\nconst input = {\n  system: \"You are a support assistant for Acme. Be brief.\",\n  history: [\n    { role: \"user\", content: \"Hi, my order is late.\" },\n    { role: \"assistant\", content: \"Sorry to hear that. What is the order number?\" },\n    { role: \"user\", content: \"It is 4471, placed last Monday.\" },\n    { role: \"assistant\", content: \"Thanks, I can see order 4471 is in transit.\" },\n  ],\n  documents: [\n    { id: \"d1\", text: \"Orders in transit usually arrive within 5 business days.\" },\n    { id: \"d2\", text: \"Late orders can be refunded after 10 business days.\" },\n    { id: \"d3\", text: \"Our warehouse closes on public holidays, which can delay shipping by one or two days in some regions.\" },\n  ],\n  question: \"Can I get a refund now?\",\n};\n\ntest(\"with room for everything, the order is system, history, documents, question\", () => {\n  const messages = buildMessages(input, { budget: 1000, countTokens });\n  assert.equal(messages[0].role, \"system\");\n  assert.deepEqual(messages.slice(1, 5), input.history);\n  const docs = messages[5].content;\n  assert.ok(docs.includes(\"<documents>\") && docs.includes(\"</documents>\"));\n  assert.ok(docs.includes(\"[d1] Orders in transit\") && docs.includes(\"[d3] Our warehouse\"));\n  assert.ok(/not instructions/i.test(docs), \"say the documents are reference data, not instructions\");\n  assert.deepEqual(messages[messages.length - 1], { role: \"user\", content: \"Can I get a refund now?\" });\n});\n\ntest(\"over budget, the oldest history goes first and the question always stays\", () => {\n  const roomy = total(buildMessages(input, { budget: 1000, countTokens }));\n  const messages = buildMessages(input, { budget: roomy - 10, countTokens });\n  assert.ok(total(messages) <= roomy - 10);\n  assert.equal(messages[messages.length - 1].content, \"Can I get a refund now?\");\n  assert.equal(messages[0].role, \"system\");\n  assert.ok(!messages.some((message) => message.content === \"Hi, my order is late.\"), \"the oldest turn is dropped first\");\n  assert.ok(messages.some((message) => message.content.includes(\"[d3]\")), \"documents are kept while history can still go\");\n});\n\ntest(\"when history is gone, the lowest-ranked documents go next\", () => {\n  const messages = buildMessages(input, { budget: 45, countTokens });\n  assert.ok(total(messages) <= 45, `${total(messages)} tokens is over the 45 budget`);\n  assert.equal(messages[0].role, \"system\");\n  assert.equal(messages[messages.length - 1].content, \"Can I get a refund now?\");\n  const docs = messages.find((message) => message.content.includes(\"<documents>\"));\n  assert.ok(docs && docs.content.includes(\"[d1]\"), \"the best document stays\");\n  assert.ok(!docs.content.includes(\"[d3]\"), \"the lowest-ranked document goes first\");\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
     "id": "cookie-rules",
     "title": "Which cookies go where",
     "topics": [
@@ -1823,6 +1900,23 @@ export const labs: LabDefinition[] = [
     "starter": "async function migrate(db) {\n  // Schema changes go here.\n}\n\nasync function createPayment(db, { idempotencyKey, amount }) {\n  const { rows } = await db.query(\n    \"insert into payments (idempotency_key, amount) values ($1, $2) returning id, amount\",\n    [idempotencyKey, amount],\n  );\n  return rows[0];\n}\n",
     "tests": "async function paymentsFor(key) {\n  return (await db.query(\"select count(*)::int as n from payments where idempotency_key = $1\", [key])).rows[0].n;\n}\n\ntest(\"migrate runs\", async () => {\n  await migrate(db);\n});\n\ntest(\"five simultaneous retries create one payment\", async () => {\n  const results = await Promise.all(Array.from({ length: 5 }, () => createPayment(db, { idempotencyKey: \"pay-1\", amount: 2500 })));\n  assert.equal(await paymentsFor(\"pay-1\"), 1);\n  assert.equal(new Set(results.map((payment) => payment.id)).size, 1, \"every retry must return the same payment\");\n});\n\ntest(\"a later retry returns the original payment\", async () => {\n  const first = (await db.query(\"select id from payments where idempotency_key = 'pay-1'\")).rows[0];\n  const again = await createPayment(db, { idempotencyKey: \"pay-1\", amount: 2500 });\n  assert.equal(again.id, first.id);\n});\n\ntest(\"a different key is a different payment\", async () => {\n  await createPayment(db, { idempotencyKey: \"pay-2\", amount: 900 });\n  assert.equal(await paymentsFor(\"pay-2\"), 1);\n});\n\ntest(\"reusing a key with a different amount rejects\", async () => {\n  await assert.rejects(() => createPayment(db, { idempotencyKey: \"pay-1\", amount: 9999 }));\n  assert.equal(await paymentsFor(\"pay-1\"), 1);\n});\n",
     "setup": "create table payments (\n  id serial primary key,\n  idempotency_key text not null,\n  amount int not null,\n  created_at timestamptz not null default now()\n);\n",
+    "probe": null
+  },
+  {
+    "id": "invoice-extract",
+    "title": "Get valid JSON out of a model, or fail clearly",
+    "topics": [
+      "ai.structured_outputs"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "`extractInvoice(callModel, text)` asks a model to pull fields out of an invoice email. `callModel(messages)` sends\nchat messages (`{ role, content }`) and returns the reply as a string. The tests use a scripted fake model.\n\nThe starter calls `JSON.parse` on the reply and returns whatever comes back. Real replies arrive wrapped in a code\nfence or a sentence, with a total written as `\"$1,200\"`, or with a field missing. Make it:\n\n- Ask for exactly `{ vendor, total, currency, date }` in the first message.\n- Read the reply leniently: take the JSON object out of a ```json fence or surrounding text.\n- Check it strictly: `vendor` is a non-empty string, `total` a number of at least 0, `currency` three capital letters,\n  `date` in `YYYY-MM-DD` form.\n- When the reply is unusable, call the model **once more**, adding its reply and a message listing what was wrong.\n- Return `{ ok: true, value, attempts }` with only the four fields, or `{ ok: false, errors, attempts }` after the\n  second failure.\n\nThen explain what a provider's structured-output mode guarantees, what it doesn't (the values can still be wrong), and\nwhy validation stays in your code either way.",
+    "starter": "async function extractInvoice(callModel, text) {\n  const reply = await callModel([{ role: \"user\", content: `Extract the invoice details as JSON:\\n${text}` }]);\n  return { ok: true, value: JSON.parse(reply), attempts: 1 };\n}\n",
+    "tests": "// A fake model that answers from a script and records what it was sent.\nfunction scripted(replies) {\n  const sent = [];\n  const callModel = async (messages) => {\n    sent.push(messages.map((message) => ({ ...message })));\n    if (!replies.length) throw new Error(\"the model was called more times than expected\");\n    return replies.shift();\n  };\n  return { sent, callModel };\n}\nconst email = \"Invoice from Acme Corp, 1,200.50 USD, dated 3 Oct 2026.\";\nconst good = { vendor: \"Acme Corp\", total: 1200.5, currency: \"USD\", date: \"2026-10-03\" };\n\ntest(\"a fenced reply with extra text is read, and extra fields dropped\", async () => {\n  const { callModel } = scripted([`Sure! Here it is:\\n\\`\\`\\`json\\n${JSON.stringify({ ...good, notes: \"paid\" })}\\n\\`\\`\\`\\nAnything else?`]);\n  const result = await extractInvoice(callModel, email);\n  assert.deepEqual(result, { ok: true, value: good, attempts: 1 });\n});\n\ntest(\"the request names the fields\", async () => {\n  const { sent, callModel } = scripted([JSON.stringify(good)]);\n  await extractInvoice(callModel, email);\n  const first = sent[0].map((message) => message.content).join(\"\\n\");\n  for (const field of [\"vendor\", \"total\", \"currency\", \"date\"]) assert.ok(first.includes(field), `the prompt should ask for ${field}`);\n  assert.ok(first.includes(email), \"the prompt includes the email\");\n});\n\ntest(\"a bad reply gets one repair attempt that explains what was wrong\", async () => {\n  const bad = JSON.stringify({ vendor: \"Acme Corp\", total: \"$1,200.50\", currency: \"usd\", date: \"Oct 3\" });\n  const { sent, callModel } = scripted([bad, JSON.stringify(good)]);\n  const result = await extractInvoice(callModel, email);\n  assert.deepEqual(result, { ok: true, value: good, attempts: 2 });\n  const retry = sent[1];\n  assert.ok(retry.length > sent[0].length, \"the second call keeps the conversation and adds to it\");\n  assert.equal(retry[retry.length - 2].role, \"assistant\", \"the model's bad reply is included\");\n  const feedback = retry[retry.length - 1].content;\n  for (const field of [\"total\", \"currency\", \"date\"]) assert.ok(feedback.includes(field), `the feedback should mention ${field}`);\n});\n\ntest(\"two bad replies fail clearly instead of throwing\", async () => {\n  const { callModel } = scripted([\"I couldn't find an invoice.\", JSON.stringify({ vendor: \"\", total: -5, currency: \"US\", date: \"2026-13-45x\" })]);\n  const result = await extractInvoice(callModel, email);\n  assert.equal(result.ok, false);\n  assert.equal(result.attempts, 2);\n  assert.ok(Array.isArray(result.errors) && result.errors.length >= 3, \"list what was wrong with the last reply\");\n});\n\ntest(\"a missing field counts as invalid\", async () => {\n  const { callModel } = scripted([JSON.stringify({ vendor: \"Acme Corp\", total: 10, currency: \"USD\" }), JSON.stringify(good)]);\n  const result = await extractInvoice(callModel, email);\n  assert.equal(result.attempts, 2);\n  assert.equal(result.ok, true);\n});\n",
+    "setup": "",
     "probe": null
   },
   {
@@ -2234,6 +2328,23 @@ export const labs: LabDefinition[] = [
     "readme": "A todo list keeps its state as `{ todos: [{ id, text, done }], nextId }`. The tests run your update functions inside a\nsmall stand-in for React that behaves the way React does:\n\n- After an update, the app re-renders only if the new state is a different object (`Object.is`), the way\n  `setState` bails out on the same value.\n- Each row is memoized, like `React.memo`: it re-renders only when its todo object is a different object.\n\nWrite three update functions. Each returns the next state and never changes the one it was given:\n\n- `addTodo(state, text)` adds `{ id: state.nextId, text, done: false }` at the end and increases `nextId`.\n- `toggleTodo(state, id)` flips `done` on that todo.\n- `renameTodo(state, id, text)` changes that todo's `text`.\n\nTodos you don't change must stay the very same objects, so their rows don't re-render. When the id doesn't exist,\nreturn the state you were given, so nothing re-renders.\n\nThen explain what happens between your update and the screen changing: render, reconciliation, commit, and why\nmutating the old state means React may never notice.",
     "starter": "function addTodo(state, text) {\n  state.todos.push({ id: state.nextId, text, done: false });\n  state.nextId += 1;\n  return state;\n}\n\nfunction toggleTodo(state, id) {\n  const todo = state.todos.find((item) => item.id === id);\n  if (todo) todo.done = !todo.done;\n  return state;\n}\n\nfunction renameTodo(state, id, text) {\n  const todo = state.todos.find((item) => item.id === id);\n  if (todo) todo.text = text;\n  return state;\n}\n",
     "tests": "// A stand-in for React: re-render when the state object changes, and re-render a memoized row when its todo changes.\nfunction createApp(initial) {\n  let state = initial;\n  let renders = 0;\n  const rowRenders = new Map();\n  const lastSeen = new Map();\n  function render() {\n    renders += 1;\n    for (const todo of state.todos) {\n      if (lastSeen.get(todo.id) !== todo) {\n        rowRenders.set(todo.id, (rowRenders.get(todo.id) ?? 0) + 1);\n        lastSeen.set(todo.id, todo);\n      }\n    }\n  }\n  render();\n  return {\n    update(fn, ...args) {\n      const next = fn(state, ...args);\n      if (!Object.is(next, state)) { state = next; render(); }\n    },\n    get state() { return state; },\n    get renders() { return renders; },\n    rowRenders,\n  };\n}\n\nfunction deepFreeze(value) {\n  if (value && typeof value === \"object\") { Object.values(value).forEach(deepFreeze); Object.freeze(value); }\n  return value;\n}\n\nconst start = () => deepFreeze({ todos: [{ id: 1, text: \"Buy milk\", done: false }, { id: 2, text: \"Write tests\", done: true }], nextId: 3 });\n\ntest(\"adding a todo re-renders the app and only the new row\", () => {\n  const app = createApp(start());\n  app.update(addTodo, \"Call Ana\");\n  assert.equal(app.renders, 2, \"the app should re-render once\");\n  assert.deepEqual(app.state.todos.map((todo) => todo.text), [\"Buy milk\", \"Write tests\", \"Call Ana\"]);\n  assert.equal(app.state.nextId, 4);\n  assert.deepEqual([...app.rowRenders.values()], [1, 1, 1], \"only the new row renders; the old rows stay as they were\");\n});\n\ntest(\"toggling re-renders exactly that row\", () => {\n  const app = createApp(start());\n  app.update(toggleTodo, 1);\n  assert.equal(app.renders, 2);\n  assert.equal(app.state.todos[0].done, true);\n  assert.equal(app.rowRenders.get(1), 2, \"the toggled row re-renders\");\n  assert.equal(app.rowRenders.get(2), 1, \"the other row keeps its object, so it doesn't\");\n  app.update(toggleTodo, 1);\n  assert.equal(app.state.todos[0].done, false);\n});\n\ntest(\"renaming re-renders exactly that row\", () => {\n  const app = createApp(start());\n  app.update(renameTodo, 2, \"Write more tests\");\n  assert.equal(app.state.todos[1].text, \"Write more tests\");\n  assert.equal(app.rowRenders.get(2), 2);\n  assert.equal(app.rowRenders.get(1), 1);\n});\n\ntest(\"the old state is never changed\", () => {\n  const before = start();\n  const app = createApp(before);\n  app.update(addTodo, \"x\");\n  app.update(toggleTodo, 2);\n  assert.equal(before.todos.length, 2);\n  assert.equal(before.todos[1].done, true);\n  assert.equal(before.nextId, 3);\n});\n\ntest(\"an unknown id changes nothing and renders nothing\", () => {\n  const app = createApp(start());\n  app.update(toggleTodo, 99);\n  app.update(renameTodo, 99, \"nope\");\n  assert.equal(app.renders, 1);\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
+    "id": "tool-loop",
+    "title": "Run the tool-calling loop safely",
+    "topics": [
+      "ai.tool_calling"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "With tool calling, the model doesn't run anything itself: it replies with the tools it wants called and their\narguments, your code runs them, sends the results back, and the model continues. `runTools(callModel, tools,\nmessages, { maxSteps = 5 })` runs that loop:\n\n- `callModel(messages)` returns either `{ content }` (the final answer) or `{ toolCalls: [{ id, name, arguments }] }`,\n  where `arguments` is a JSON **string** written by the model.\n- `tools` maps a name to an async function taking the parsed arguments.\n- For each tool call, add the model's turn as `{ role: \"assistant\", toolCalls }`, then one\n  `{ role: \"tool\", toolCallId, content }` per call, with the result as a JSON string, and call the model again.\n- Don't crash on the model's mistakes; tell it instead. Arguments that aren't valid JSON, an unknown tool, or a tool\n  that throws each become a tool message `{\"error\": \"...\"}` it can react to.\n- Return `{ answer, steps }`, where `steps` counts model calls. Past `maxSteps` model calls, throw an error whose `name`\n  is `StepLimitError`, so a confused model can't loop forever.\n\nThe starter runs only the first tool call and never loops. Then explain why tool arguments are untrusted input and\nwhich tools need a person to approve them.",
+    "starter": "async function runTools(callModel, tools, messages, { maxSteps = 5 } = {}) {\n  const reply = await callModel(messages);\n  if (reply.content !== undefined) return { answer: reply.content, steps: 1 };\n  const call = reply.toolCalls[0];\n  const result = await tools[call.name](JSON.parse(call.arguments));\n  return { answer: JSON.stringify(result), steps: 1 };\n}\n",
+    "tests": "function scripted(replies) {\n  const sent = [];\n  const callModel = async (messages) => {\n    sent.push(messages.map((message) => ({ ...message })));\n    if (!replies.length) return { toolCalls: [{ id: \"again\", name: \"get_weather\", arguments: \"{\\\"city\\\":\\\"Manila\\\"}\" }] };\n    return replies.shift();\n  };\n  return { sent, callModel };\n}\nconst tools = {\n  get_weather: async ({ city }) => ({ city, tempC: 31 }),\n  get_time: async ({ zone }) => ({ zone, time: \"14:05\" }),\n  broken: async () => { throw new Error(\"database is down\"); },\n};\nconst ask = [{ role: \"user\", content: \"Weather and time in Manila?\" }];\n\ntest(\"runs every tool call, sends results back, and returns the final answer\", async () => {\n  const { sent, callModel } = scripted([\n    { toolCalls: [{ id: \"c1\", name: \"get_weather\", arguments: \"{\\\"city\\\":\\\"Manila\\\"}\" }, { id: \"c2\", name: \"get_time\", arguments: \"{\\\"zone\\\":\\\"Asia/Manila\\\"}\" }] },\n    { content: \"31°C and 14:05 in Manila.\" },\n  ]);\n  const result = await runTools(callModel, tools, ask);\n  assert.deepEqual(result, { answer: \"31°C and 14:05 in Manila.\", steps: 2 });\n  const second = sent[1];\n  assert.equal(second[1].role, \"assistant\");\n  assert.equal(second[1].toolCalls.length, 2);\n  assert.deepEqual(second.slice(2).map((message) => [message.role, message.toolCallId]), [[\"tool\", \"c1\"], [\"tool\", \"c2\"]]);\n  assert.deepEqual(JSON.parse(second[2].content), { city: \"Manila\", tempC: 31 });\n});\n\ntest(\"the model's mistakes become tool results, not crashes\", async () => {\n  const { sent, callModel } = scripted([\n    { toolCalls: [\n      { id: \"c1\", name: \"get_weather\", arguments: \"{city: Manila}\" },\n      { id: \"c2\", name: \"launch_rockets\", arguments: \"{}\" },\n      { id: \"c3\", name: \"broken\", arguments: \"{}\" },\n    ] },\n    { content: \"Sorry, I couldn't get that.\" },\n  ]);\n  const result = await runTools(callModel, tools, ask);\n  assert.equal(result.answer, \"Sorry, I couldn't get that.\");\n  const results = sent[1].filter((message) => message.role === \"tool\").map((message) => JSON.parse(message.content));\n  assert.equal(results.length, 3);\n  assert.ok(results.every((item) => typeof item.error === \"string\" && item.error.length > 0), \"each failure is reported as { error }\");\n});\n\ntest(\"a model that keeps calling tools is stopped\", async () => {\n  const { callModel } = scripted([]);\n  let error = null;\n  try { await runTools(callModel, tools, ask, { maxSteps: 3 }); } catch (caught) { error = caught; }\n  assert.ok(error, \"it should stop\");\n  assert.equal(error.name, \"StepLimitError\");\n});\n\ntest(\"the caller's messages aren't changed\", async () => {\n  const { callModel } = scripted([{ toolCalls: [{ id: \"c1\", name: \"get_time\", arguments: \"{\\\"zone\\\":\\\"UTC\\\"}\" }] }, { content: \"14:05\" }]);\n  const original = [{ role: \"user\", content: \"Time?\" }];\n  await runTools(callModel, tools, original);\n  assert.equal(original.length, 1);\n});\n",
     "setup": "",
     "probe": null
   },

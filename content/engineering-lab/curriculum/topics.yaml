@@ -62,7 +62,6 @@ modules:
     title: Model interfaces
     track: ai
     area: ai
-    planned: [Structured outputs, Tool calling, Context engineering]
   - id: a3-agents
     title: Agents
     track: ai
@@ -664,3 +663,45 @@ topics:
     depth: working
     prove: [explain, implement]
     labs: [rerank-budget]
+
+  - id: ai.structured_outputs
+    title: Structured outputs
+    module: a2-model-interfaces
+    requires: [api.runtime_validation]
+    freshness: ai_ecosystem
+    sourceGroups: [ai, typescript]
+    gap: >-
+      Needs: asking a model for an exact shape; reading replies leniently (fences, surrounding text) and validating
+      strictly; one repair attempt that shows the model its errors; failing clearly after that; and what provider
+      structured-output modes guarantee (the shape) and don't (correct values).
+    depth: working
+    prove: [explain, implement]
+    labs: [invoice-extract]
+
+  - id: ai.tool_calling
+    title: Tool calling
+    module: a2-model-interfaces
+    requires: [ai.structured_outputs]
+    freshness: ai_ecosystem
+    sourceGroups: [ai]
+    gap: >-
+      Needs: the tool-calling loop, where the model proposes calls and your code runs them and returns results; matching
+      results to call ids; treating arguments as untrusted input; reporting the model's mistakes back as tool results; a
+      step limit; and approval for tools that spend money or change data.
+    depth: working
+    prove: [explain, implement]
+    labs: [tool-loop]
+
+  - id: ai.context_engineering
+    title: Context engineering
+    module: a2-model-interfaces
+    requires: [ai.rag]
+    freshness: ai_ecosystem
+    sourceGroups: [ai]
+    gap: >-
+      Needs: the context window as a budget; what must always stay (instructions, the question); a deliberate order for
+      dropping the rest; placing instructions and the question where they're read reliably; marking retrieved text as
+      data to resist prompt injection; and summarizing long histories.
+    depth: working
+    prove: [explain, implement]
+    labs: [context-budget]
