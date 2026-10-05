@@ -1,4 +1,4 @@
-# Components — repeated surfaces and actions
+# Components: repeated surfaces and actions
 
 Version: 0.1.0-working.8 · working / not yet approved. Adapt anatomy to the target product rather than copying Ken OS content.
 
