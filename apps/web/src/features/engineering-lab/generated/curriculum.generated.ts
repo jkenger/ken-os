@@ -83,13 +83,7 @@ export const topicMap: TopicMap = {
       "title": "Retrieval",
       "track": "ai",
       "area": "ai",
-      "planned": [
-        "Semantic search",
-        "Retrieval evaluation",
-        "RAG",
-        "Advanced RAG",
-        "Reranking"
-      ]
+      "planned": []
     },
     {
       "id": "a2-model-interfaces",
@@ -902,6 +896,112 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "expand-contract"
+      ]
+    },
+    {
+      "id": "ai.semantic_search",
+      "title": "Semantic search with embeddings",
+      "module": "a1-retrieval",
+      "requires": [],
+      "freshness": "ai_ecosystem",
+      "sourceGroups": [
+        "ai",
+        "database"
+      ],
+      "gap": "Has started on embeddings, vectors and approximate nearest neighbours. Needs: embeddings as directions of meaning; cosine similarity rather than raw dot products; filtering before ranking; a minimum score so search can return nothing; storage and indexes such as HNSW; and where keyword search beats embeddings.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "vector-search"
+      ]
+    },
+    {
+      "id": "ai.retrieval_eval",
+      "title": "Retrieval evaluation",
+      "module": "a1-retrieval",
+      "requires": [
+        "ai.semantic_search"
+      ],
+      "freshness": "ai_ecosystem",
+      "sourceGroups": [
+        "ai"
+      ],
+      "gap": "Needs: a labeled set of questions and the documents that answer them; recall@k, precision@k and MRR; which matters most when a model reads the top few chunks; per-question results so regressions show; and evaluating retrieval separately from answer quality.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "retrieval-metrics"
+      ]
+    },
+    {
+      "id": "ai.rag",
+      "title": "Retrieval-augmented generation",
+      "module": "a1-retrieval",
+      "requires": [
+        "ai.semantic_search"
+      ],
+      "freshness": "ai_ecosystem",
+      "sourceGroups": [
+        "ai"
+      ],
+      "gap": "Needs: chunking documents; building a prompt from the best chunks within a token budget; labeling sources so the answer can cite them; instructions to stay grounded and admit gaps; checking citations afterwards; and why grounding reduces but can't prevent invented answers.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "rag-prompt"
+      ]
+    },
+    {
+      "id": "ai.advanced_rag",
+      "title": "Advanced RAG and hybrid search",
+      "module": "a1-retrieval",
+      "requires": [
+        "ai.rag",
+        "ai.retrieval_eval"
+      ],
+      "freshness": "ai_ecosystem",
+      "sourceGroups": [
+        "ai",
+        "database"
+      ],
+      "gap": "Needs: hybrid search combining keyword and vector results; reciprocal rank fusion instead of adding incomparable scores; diversifying results across documents; query rewriting and its cost; and measuring each change with retrieval metrics.",
+      "depth": "deep",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "rank-fusion"
+      ]
+    },
+    {
+      "id": "ai.reranking",
+      "title": "Reranking",
+      "module": "a1-retrieval",
+      "requires": [
+        "ai.retrieval_eval"
+      ],
+      "freshness": "ai_ecosystem",
+      "sourceGroups": [
+        "ai"
+      ],
+      "gap": "Needs: two-stage retrieval, where a cheap search makes a shortlist and a slower model reorders it; batching reranker calls; choosing the shortlist size from recall; stable ordering on ties; and the latency and cost trade-off.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "rerank-budget"
       ]
     }
   ]
@@ -1830,6 +1930,40 @@ export const labs: LabDefinition[] = [
     "probe": null
   },
   {
+    "id": "rag-prompt",
+    "title": "Build a grounded prompt within budget",
+    "topics": [
+      "ai.rag"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "Retrieval found chunks for a question; now build the prompt the model will answer from. The starter pastes every\nchunk in, ignores the model's limit, and asks for an answer without saying where it must come from.\n\n`buildPrompt(question, chunks, { maxTokens, countTokens })` takes chunks ranked best first, each `{ id, text }`, and\nreturns `{ prompt, used }`:\n\n- Add chunks in rank order while the whole prompt stays within `maxTokens` (measure with `countTokens(text)`). Skip a\n  chunk that would overflow and try the next, smaller one.\n- Skip a chunk whose text is the same as one already added.\n- Label each chunk in the prompt as `[id] text`, one per line, so the answer can cite it.\n- Tell the model to answer only from these sources, to cite them as `[id]`, and to reply `I don't know` when the\n  sources don't contain the answer.\n- Put the question last. `used` lists the ids of the chunks included, in order.\n\nAlso write `checkCitations(answer, used)`, returning `{ cited, unknown }`: the ids cited as `[id]` in the answer, and\nany that weren't among the sources. Then explain why grounding instructions reduce made-up answers but can't prevent\nthem, and what you'd show users as sources.",
+    "starter": "function buildPrompt(question, chunks, { maxTokens, countTokens }) {\n  const context = chunks.map((chunk) => chunk.text).join(\"\\n\");\n  return { prompt: `${context}\\n\\nQuestion: ${question}`, used: chunks.map((chunk) => chunk.id) };\n}\n\nfunction checkCitations(answer, used) {\n  return { cited: [], unknown: [] };\n}\n",
+    "tests": "const countTokens = (text) => text.split(/\\s+/).filter(Boolean).length;\nconst chunks = [\n  { id: \"c1\", text: \"Refunds are issued within 5 business days of approval.\" },\n  { id: \"c2\", text: \"Refunds are issued within 5 business days of approval.\" },\n  { id: \"c3\", text: \"Orders over 200 dollars need a manager's approval before a refund is issued, which can take up to three extra business days depending on the region and the payment method used.\" },\n  { id: \"c4\", text: \"Store credit never expires.\" },\n];\n\ntest(\"chunks are labeled and the question comes last\", () => {\n  const { prompt, used } = buildPrompt(\"How long do refunds take?\", chunks, { maxTokens: 500, countTokens });\n  assert.ok(prompt.includes(\"[c1] Refunds are issued within 5 business days\"), \"each chunk is labeled [id] text\");\n  assert.ok(prompt.trimEnd().endsWith(\"How long do refunds take?\"), \"the question is the last thing the model reads\");\n  assert.deepEqual(used, [\"c1\", \"c3\", \"c4\"], \"the duplicate c2 is skipped\");\n});\n\ntest(\"the model is told to stay grounded and admit gaps\", () => {\n  const { prompt } = buildPrompt(\"Anything?\", chunks, { maxTokens: 500, countTokens });\n  assert.ok(/only/i.test(prompt) && /source/i.test(prompt), \"answer only from the sources\");\n  assert.ok(prompt.includes(\"I don't know\"), \"say I don't know when the sources don't cover it\");\n  assert.ok(prompt.includes(\"[id]\") || /cite/i.test(prompt), \"cite sources by id\");\n});\n\ntest(\"the prompt stays within budget, skipping a chunk too big to fit\", () => {\n  const { prompt, used } = buildPrompt(\"How long do refunds take?\", chunks, { maxTokens: 60, countTokens });\n  assert.ok(countTokens(prompt) <= 60, `the prompt is ${countTokens(prompt)} tokens, over the 60 budget`);\n  assert.deepEqual(used, [\"c1\", \"c4\"], \"c3 doesn't fit, but the smaller c4 after it does\");\n});\n\ntest(\"citations are checked against the sources used\", () => {\n  assert.deepEqual(checkCitations(\"Within 5 days [c1]. Credit never expires [c4].\", [\"c1\", \"c4\"]), { cited: [\"c1\", \"c4\"], unknown: [] });\n  assert.deepEqual(checkCitations(\"It takes a week [c9].\", [\"c1\"]), { cited: [\"c9\"], unknown: [\"c9\"] });\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
+    "id": "rank-fusion",
+    "title": "Combine keyword and vector search fairly",
+    "topics": [
+      "ai.advanced_rag"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "Vector search misses exact terms like error codes; keyword search misses paraphrases. Hybrid search runs both and\ncombines them. Their scores can't be added: a keyword score of 12.4 and a cosine of 0.81 are on different scales. Rank\npositions can be combined, though.\n\nWrite `fuse(rankings, { k = 60, limit = 5 })`. `rankings` is a list of ranked id lists, one per search. Using\n**reciprocal rank fusion**, each id scores the sum of `1 / (k + rank)` over the lists it appears in, with rank 1 for\nfirst place. Return up to `limit` results as `{ id, score }`, best first, ties broken by id.\n\nMany results are chunks of the same article, shaped `\"article#chunk\"`. Also write `bestPerArticle(results)`, which\nkeeps only the best-scoring chunk of each article, in order, so one long article can't fill every slot.\n\nThe starter appends the vector results after the keyword ones. Then explain when query rewriting helps (several\nphrasings searched and fused) and what it costs.",
+    "starter": "function fuse(rankings, { k = 60, limit = 5 } = {}) {\n  const seen = [];\n  for (const ranking of rankings) for (const id of ranking) if (!seen.includes(id)) seen.push(id);\n  return seen.slice(0, limit).map((id, index) => ({ id, score: 1 / (index + 1) }));\n}\n\nfunction bestPerArticle(results) {\n  return results;\n}\n",
+    "tests": "const close = (actual, expected, label) => assert.ok(Math.abs(actual - expected) < 1e-12, `${label}: expected ${expected}, got ${actual}`);\n\ntest(\"an id found by both searches beats one found by a single search\", () => {\n  const keyword = [\"err-504#1\", \"timeouts#2\", \"billing#1\"];\n  const vector = [\"timeouts#2\", \"retries#1\", \"err-504#1\"];\n  const ids = fuse([keyword, vector], { k: 60, limit: 5 }).map((result) => result.id);\n  assert.deepEqual(ids.slice(0, 2).sort(), [\"err-504#1\", \"timeouts#2\"], \"ids in both lists come first\");\n  assert.deepEqual(ids, [\"timeouts#2\", \"err-504#1\", \"retries#1\", \"billing#1\"]);\n});\n\ntest(\"scores follow 1 / (k + rank)\", () => {\n  const results = fuse([[\"a\", \"b\"], [\"b\", \"c\"]], { k: 60 });\n  const score = Object.fromEntries(results.map((result) => [result.id, result.score]));\n  close(score.b, 1 / 62 + 1 / 61, \"b is 2nd in one list and 1st in the other\");\n  close(score.a, 1 / 61, \"a is 1st in one list\");\n  close(score.c, 1 / 62, \"c is 2nd in one list\");\n});\n\ntest(\"limit and ties\", () => {\n  const results = fuse([[\"z\", \"y\"], [\"y\", \"z\"]], { k: 60, limit: 1 });\n  assert.deepEqual(results.map((result) => result.id), [\"y\"], \"y and z tie, so the id breaks it\");\n});\n\ntest(\"one article can't fill every slot\", () => {\n  const results = [\n    { id: \"guide#3\", score: 0.05 }, { id: \"guide#1\", score: 0.04 }, { id: \"faq#2\", score: 0.03 }, { id: \"guide#7\", score: 0.02 }, { id: \"blog#1\", score: 0.01 },\n  ];\n  assert.deepEqual(bestPerArticle(results).map((result) => result.id), [\"guide#3\", \"faq#2\", \"blog#1\"]);\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
     "id": "read-through-cache",
     "title": "A cache that doesn't stampede or go stale",
     "topics": [
@@ -1928,6 +2062,40 @@ export const labs: LabDefinition[] = [
     "readme": "`withTimeout(task, ms)` runs `task(signal)` and gives up after `ms` milliseconds. `task` is any async work that accepts\nan `AbortSignal`, the way `fetch(url, { signal })` does.\n\nThe starter races the task against a timer. The caller does get an error on time, but the work carries on in the\nbackground, holding a connection or a database slot, and the timer keeps running after a fast success. Make it:\n\n- Reject with an error whose `name` is `TimeoutError` when `ms` passes first.\n- Abort the signal at that moment, so the task can stop its work.\n- Resolve with the task's value when it finishes first, and clear the timer then.\n- Pass the task's own errors through unchanged.\n\nThen explain why every call to another service needs a timeout, how to pick one, and why a timeout without\ncancellation only moves the problem.",
     "starter": "function withTimeout(task, ms) {\n  const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error(\"timeout\")), ms));\n  return Promise.race([task(undefined), timeout]);\n}\n",
     "tests": "// A task that takes `ms` to finish, stops early when its signal aborts, and records what happened.\nfunction slowTask(ms, value = \"done\") {\n  const seen = { signal: null, stoppedEarly: false, finished: false };\n  const task = (signal) => new Promise((resolve, reject) => {\n    seen.signal = signal;\n    const timer = setTimeout(() => { seen.finished = true; resolve(value); }, ms);\n    if (signal) signal.addEventListener(\"abort\", () => { clearTimeout(timer); seen.stoppedEarly = true; reject(new Error(\"aborted\")); });\n  });\n  return { seen, task };\n}\n\ntest(\"a fast task resolves with its value\", async () => {\n  const { task } = slowTask(10, 42);\n  assert.equal(await withTimeout(task, 200), 42);\n});\n\ntest(\"a slow task times out on time with a TimeoutError\", async () => {\n  const { task } = slowTask(400);\n  const started = Date.now();\n  let error = null;\n  try { await withTimeout(task, 30); } catch (caught) { error = caught; }\n  assert.ok(error, \"it should reject\");\n  assert.equal(error.name, \"TimeoutError\");\n  assert.ok(Date.now() - started < 250, \"it should give up close to 30 ms, not wait for the task\");\n});\n\ntest(\"timing out stops the work, not just the wait\", async () => {\n  const { seen, task } = slowTask(300);\n  try { await withTimeout(task, 20); } catch { /* expected */ }\n  assert.ok(seen.signal, \"the task must receive a signal\");\n  assert.equal(seen.signal.aborted, true, \"the signal must be aborted when time runs out\");\n  assert.equal(seen.stoppedEarly, true);\n  await wait(320);\n  assert.equal(seen.finished, false, \"the work must not carry on in the background\");\n});\n\ntest(\"the task's own errors pass through unchanged\", async () => {\n  const failure = new Error(\"card declined\");\n  let error = null;\n  try { await withTimeout(async () => { throw failure; }, 100); } catch (caught) { error = caught; }\n  assert.equal(error, failure);\n});\n\ntest(\"after a fast success the signal is never aborted\", async () => {\n  const { seen, task } = slowTask(5);\n  await withTimeout(task, 40);\n  await wait(60);\n  assert.equal(seen.signal && seen.signal.aborted, false, \"a timer left running would abort a finished task\");\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
+    "id": "rerank-budget",
+    "title": "Rerank the shortlist, not the whole catalogue",
+    "topics": [
+      "ai.reranking"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "First-stage search is fast but rough. A reranker reads the question and a candidate together and scores how well it\nanswers, much more accurately and much more slowly. So rerank a shortlist, not everything.\n\n`rerank(query, candidates, scorer, { shortlist = 20, batchSize = 8, keep = 5 })`:\n\n- `candidates` come from first-stage search, best first, each `{ id, text }`.\n- Score only the first `shortlist` candidates, by calling `await scorer(query, batch)` with batches of at most\n  `batchSize` candidates. It returns one score per candidate in the batch, in order.\n- Return the best `keep` as `{ id, score }`, highest score first. When scores tie, the earlier first-stage rank wins.\n\nThe starter scores every candidate one call at a time. Then explain the latency and cost trade-off between shortlist\nsize and quality, and how you'd choose `shortlist` with your retrieval metrics.",
+    "starter": "async function rerank(query, candidates, scorer, { shortlist = 20, batchSize = 8, keep = 5 } = {}) {\n  const scored = [];\n  for (const candidate of candidates) {\n    const [score] = await scorer(query, [candidate]);\n    scored.push({ id: candidate.id, score });\n  }\n  return scored.sort((a, b) => b.score - a.score).slice(0, keep);\n}\n",
+    "tests": "// 50 candidates; the fake reranker prefers ids whose number ends in 7, then ties everything else at 0.1.\nconst candidates = Array.from({ length: 50 }, (_, i) => ({ id: `doc-${i + 1}`, text: `text ${i + 1}` }));\nfunction fakeScorer() {\n  const calls = [];\n  const scorer = async (query, batch) => {\n    calls.push(batch.map((candidate) => candidate.id));\n    return batch.map((candidate) => (candidate.id.endsWith(\"7\") ? 0.9 - Number(candidate.id.slice(4)) / 1000 : 0.1));\n  };\n  return { calls, scorer };\n}\n\ntest(\"only the shortlist is scored, in batches\", async () => {\n  const { calls, scorer } = fakeScorer();\n  await rerank(\"q\", candidates, scorer, { shortlist: 20, batchSize: 8, keep: 5 });\n  assert.equal(calls.length, 3, \"20 candidates in batches of 8 is 3 calls\");\n  assert.ok(calls.every((batch) => batch.length <= 8));\n  assert.deepEqual(calls.flat(), candidates.slice(0, 20).map((candidate) => candidate.id), \"candidates past the shortlist are never scored\");\n});\n\ntest(\"results are reordered by the reranker's scores\", async () => {\n  const { scorer } = fakeScorer();\n  const results = await rerank(\"q\", candidates, scorer, { shortlist: 20, batchSize: 8, keep: 3 });\n  assert.deepEqual(results.map((result) => result.id), [\"doc-7\", \"doc-17\", \"doc-1\"]);\n  assert.ok(Math.abs(results[0].score - 0.893) < 1e-9);\n});\n\ntest(\"ties keep the first-stage order\", async () => {\n  const { scorer } = fakeScorer();\n  const results = await rerank(\"q\", candidates, scorer, { shortlist: 6, batchSize: 4, keep: 4 });\n  assert.deepEqual(results.map((result) => result.id), [\"doc-1\", \"doc-2\", \"doc-3\", \"doc-4\"]);\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
+    "id": "retrieval-metrics",
+    "title": "Measure whether retrieval finds the right documents",
+    "topics": [
+      "ai.retrieval_eval"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "You changed how documents are chunked. Did search get better? Eyeballing a few queries won't tell you. You have a\nlabeled set: for each test question, the document ids a good search should find.\n\n`evaluate(results, relevant, k)` takes `results` (question id → ranked doc ids from your search) and `relevant`\n(question id → the correct doc ids), and returns `{ recallAtK, precisionAtK, mrr, perQuery }`:\n\n- **Recall@k**: of the relevant docs, the share found in the top `k`.\n- **Precision@k**: of the top `k` results, the share that are relevant. Divide by `k`, even when fewer came back.\n- **MRR**: one over the position of the first relevant result (1 for first place, 0.5 for second), or 0 if none.\n- Each is averaged over the questions. A question with no relevant docs is left out; it can't be scored.\n- `perQuery` maps each scored question id to its own `{ recall, precision, reciprocalRank }`.\n\nThe starter only checks whether the first result is relevant, and reports that for all three. Then explain which\nmetric matters most for RAG, where the model reads the top few chunks, and why per-question results matter.",
+    "starter": "function evaluate(results, relevant, k) {\n  const questions = Object.keys(results);\n  const hits = questions.filter((id) => (relevant[id] || []).includes(results[id][0])).length;\n  const rate = questions.length ? hits / questions.length : 0;\n  return { recallAtK: rate, precisionAtK: rate, mrr: rate, perQuery: {} };\n}\n",
+    "tests": "const close = (actual, expected, label) => assert.ok(Math.abs(actual - expected) < 1e-9, `${label}: expected ${expected}, got ${actual}`);\n\nconst results = {\n  q1: [\"a\", \"b\", \"c\", \"d\"],\n  q2: [\"x\", \"y\", \"z\"],\n  q3: [\"m\", \"n\"],\n  q4: [\"p\", \"q\", \"r\"],\n};\nconst relevant = {\n  q1: [\"a\", \"c\"],\n  q2: [\"z\", \"w\"],\n  q3: [\"o\"],\n  q4: [],\n};\n\ntest(\"each question gets its own scores\", () => {\n  const { perQuery } = evaluate(results, relevant, 3);\n  close(perQuery.q1.recall, 1, \"q1 recall@3 (a and c both in the top 3)\");\n  close(perQuery.q1.precision, 2 / 3, \"q1 precision@3\");\n  close(perQuery.q1.reciprocalRank, 1, \"q1 MRR (a is first)\");\n  close(perQuery.q2.recall, 0.5, \"q2 recall@3 (z found, w missed)\");\n  close(perQuery.q2.reciprocalRank, 1 / 3, \"q2 MRR (first relevant is third)\");\n  close(perQuery.q3.precision, 0, \"q3 precision@3 (nothing relevant)\");\n  close(perQuery.q3.reciprocalRank, 0, \"q3 MRR\");\n});\n\ntest(\"averages leave out questions with nothing relevant\", () => {\n  const report = evaluate(results, relevant, 3);\n  assert.equal(\"q4\" in report.perQuery, false);\n  close(report.recallAtK, (1 + 0.5 + 0) / 3, \"recall@3\");\n  close(report.precisionAtK, (2 / 3 + 1 / 3 + 0) / 3, \"precision@3\");\n  close(report.mrr, (1 + 1 / 3 + 0) / 3, \"MRR\");\n});\n\ntest(\"precision divides by k even when fewer results came back\", () => {\n  const { perQuery } = evaluate({ q: [\"a\"] }, { q: [\"a\"] }, 5);\n  close(perQuery.q.precision, 0.2, \"one relevant result in a top 5 is 0.2\");\n});\n\ntest(\"only the top k count\", () => {\n  const { perQuery } = evaluate({ q: [\"x\", \"y\", \"a\"] }, { q: [\"a\"] }, 2);\n  close(perQuery.q.recall, 0, \"a at position 3 doesn't count for recall@2\");\n  close(perQuery.q.reciprocalRank, 0, \"nor for MRR within the top 2\");\n});\n",
     "setup": "",
     "probe": null
   },
@@ -2118,6 +2286,23 @@ export const labs: LabDefinition[] = [
     "starter": "async function migrate(db) {\n  // Schema changes go here.\n}\n\nasync function signUp(db, email) {\n  const existing = await db.query(\"select id from members where email = $1\", [email]);\n  if (existing.rows.length) return { ok: false, reason: \"taken\" };\n  const { rows } = await db.query(\"insert into members (email) values ($1) returning id\", [email]);\n  return { ok: true, id: rows[0].id };\n}\n",
     "tests": "async function memberCount() {\n  return (await db.query(\"select count(*)::int as n from members\")).rows[0].n;\n}\n\ntest(\"migrate runs\", async () => {\n  await migrate(db);\n});\n\ntest(\"four simultaneous sign-ups with one email create one account\", async () => {\n  const results = await Promise.all(Array.from({ length: 4 }, () => signUp(db, \"ana@example.com\")));\n  assert.equal(results.filter((result) => result.ok).length, 1);\n  assert.equal(await memberCount(), 1);\n  assert.ok(results.filter((result) => !result.ok).every((result) => result.reason === \"taken\"));\n});\n\ntest(\"capitals don't make a second account\", async () => {\n  const result = await signUp(db, \"Ana@Example.com\");\n  assert.deepEqual(result, { ok: false, reason: \"taken\" });\n  assert.equal(await memberCount(), 1);\n});\n\ntest(\"a different email still works\", async () => {\n  const result = await signUp(db, \"ben@example.com\");\n  assert.equal(result.ok, true);\n  assert.equal(await memberCount(), 2);\n});\n",
     "setup": "create table members (\n  id serial primary key,\n  email text not null,\n  created_at timestamptz not null default now()\n);\n",
+    "probe": null
+  },
+  {
+    "id": "vector-search",
+    "title": "Rank documents by meaning, not size",
+    "topics": [
+      "ai.semantic_search"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "Each help article has an embedding: a vector where articles with similar meaning point in similar directions. A\nquestion is embedded the same way, and search returns the closest articles. The vectors here are tiny, made-up\n3-number versions so you can reason about them; real ones have hundreds of numbers.\n\n`search(query, docs, { k, filter, minScore })` takes a query vector and docs shaped `{ id, vector, meta }`, and returns\nthe top `k` as `{ id, score }`, best first:\n\n- Score by **cosine similarity**: the dot product divided by both vectors' lengths, so only direction counts. The\n  starter uses the raw dot product, so a long vector wins whatever it points at.\n- `filter` is an object like `{ lang: \"en\" }`; only docs whose `meta` matches every key are considered, and\n  filtering happens before ranking, so you still get `k` results when enough match.\n- Drop results scoring below `minScore` (default 0).\n- Break ties by `id`, so results are stable.\n\nThen explain why an embedding search can return something confidently wrong, and when keyword search does better.",
+    "starter": "function search(query, docs, { k = 3, filter = {}, minScore = 0 } = {}) {\n  const dot = (a, b) => a.reduce((sum, value, i) => sum + value * b[i], 0);\n  return docs\n    .map((doc) => ({ id: doc.id, score: dot(query, doc.vector) }))\n    .sort((a, b) => b.score - a.score)\n    .slice(0, k);\n}\n",
+    "tests": "const docs = [\n  { id: \"reset-password\", vector: [0.9, 0.1, 0.0], meta: { lang: \"en\" } },\n  { id: \"billing-long\", vector: [3.0, 3.0, 0.0], meta: { lang: \"en\" } },\n  { id: \"refunds\", vector: [0.1, 0.9, 0.1], meta: { lang: \"en\" } },\n  { id: \"reset-password-es\", vector: [0.88, 0.12, 0.0], meta: { lang: \"es\" } },\n  { id: \"shipping\", vector: [0.0, 0.1, 0.9], meta: { lang: \"en\" } },\n];\nconst ids = (results) => results.map((result) => result.id);\n\ntest(\"cosine similarity ranks by direction, not length\", () => {\n  const results = search([1, 0, 0], docs, { k: 2, filter: { lang: \"en\" } });\n  assert.equal(results[0].id, \"reset-password\", \"the long billing vector must not win just because it's long\");\n  assert.ok(Math.abs(results[0].score - 0.9939) < 0.001, `cosine of reset-password should be about 0.994, got ${results[0].score}`);\n});\n\ntest(\"scores stay between -1 and 1\", () => {\n  for (const result of search([2, 2, 2], docs, { k: 5 })) assert.ok(result.score <= 1.0000001 && result.score >= -1.0000001);\n});\n\ntest(\"the filter applies before ranking\", () => {\n  assert.deepEqual(ids(search([1, 0, 0], docs, { k: 1, filter: { lang: \"es\" } })), [\"reset-password-es\"]);\n  assert.equal(search([0, 0, 1], docs, { k: 3, filter: { lang: \"en\" } }).length, 3, \"still k results when enough docs match\");\n});\n\ntest(\"weak matches are dropped\", () => {\n  const results = search([0, 0, 1], docs, { k: 5, filter: { lang: \"en\" }, minScore: 0.5 });\n  assert.deepEqual(ids(results), [\"shipping\"]);\n});\n\ntest(\"ties are broken by id\", () => {\n  const twins = [{ id: \"b\", vector: [1, 0], meta: {} }, { id: \"a\", vector: [2, 0], meta: {} }];\n  assert.deepEqual(ids(search([1, 0], twins, { k: 2 })), [\"a\", \"b\"]);\n});\n",
+    "setup": "",
     "probe": null
   }
 ];

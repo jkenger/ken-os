@@ -1,0 +1,6 @@
+id: retrieval-metrics
+title: Measure whether retrieval finds the right documents
+topics: [ai.retrieval_eval]
+modes: [implement]
+runner: browser
+timeoutMs: 2000

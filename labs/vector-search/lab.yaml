@@ -1,0 +1,6 @@
+id: vector-search
+title: Rank documents by meaning, not size
+topics: [ai.semantic_search]
+modes: [implement]
+runner: browser
+timeoutMs: 2000

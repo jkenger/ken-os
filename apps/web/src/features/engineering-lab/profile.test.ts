@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   areaLevel, chapterStates, computeProgress, isoWeek, measuredHoursPerTopic, nextScreenQuestion, nextTopicQuestion, parseCareers, planRun,
-  roadmap, roleDistance, type AttemptRecord, type Label, type Mode, type TopicProgress,
+  roadmap, roleDistance, type AttemptRecord, type Label, type ModuleInfo, type Mode, type TopicProgress,
 } from "@ken-os/domain";
 import { careers, findTopic, runModes, topicMap } from "./curriculum";
 import { pickDailyTopics } from "./daily";
@@ -22,6 +22,9 @@ function answer(topicId: string, mode: Mode, label: Label, overrides: Partial<At
 function progressFor(attempts: AttemptRecord[]): TopicProgress[] {
   return topicMap.topics.map((topic) => computeProgress(topic, attempts, false).progress);
 }
+
+// A chapter the owner added through the Guide: no written topics, so only placement checks can estimate it.
+const payments: ModuleInfo = { id: "added-payments", title: "Payments", track: "fullstack", area: "backend", planned: [] };
 
 const placed = (ids: string[]) => ids.flatMap((id) => {
   const topic = findTopic(id)!;
@@ -99,23 +102,26 @@ test("screening asks its two questions in order", () => {
 });
 
 test("planning a run skips known topics and screens unwritten chapters", () => {
-  const plan = planRun(topicMap, progressFor(placed(["js.call_stack"])));
+  const plan = planRun(topicMap, progressFor(placed(["js.call_stack"])), [payments]);
   const runtime = plan.chapters.find((chapter) => chapter.chapterId === "m1-js-runtime");
   assert.ok(runtime?.kind === "topics" && runtime.skipped.includes("js.call_stack") && !runtime.topicIds.includes("js.call_stack"));
-  assert.equal(plan.chapters.find((chapter) => chapter.chapterId === "a1-retrieval")?.kind, "screen");
+  assert.equal(plan.chapters.find((chapter) => chapter.chapterId === "added-payments")?.kind, "screen", "an added chapter gets a placement check");
   const unwritten = topicMap.modules.filter((module) => !topicMap.topics.some((topic) => topic.module === module.id)).length;
-  assert.equal(plan.chapters.filter((chapter) => chapter.kind === "screen").length, unwritten, "every chapter without written topics gets a placement check");
+  assert.equal(plan.chapters.filter((chapter) => chapter.kind === "screen").length, unwritten + 1, "every chapter without written topics gets a placement check");
   assert.equal(plan.chapters.find((chapter) => chapter.chapterId === "m4-api-boundaries")?.kind, "topics", "API boundaries now has written topics");
 });
 
 test("chapter depth: build needs the working topics known, run needs all; screening tops out at build", () => {
   const db = topicMap.topics.filter((topic) => topic.module === "m3-db-concurrency");
   const working = db.filter((topic) => topic.depth === "working").map((topic) => topic.id);
-  const states = chapterStates(topicMap, progressFor(placed(working)), [{ chapterId: "a1-retrieval", labels: ["solid", "solid"] }, { chapterId: "a2-model-interfaces", labels: ["partial", "gap"] }]);
+  const states = chapterStates(topicMap, progressFor(placed(working)), [{ chapterId: "added-payments", labels: ["solid", "solid"] }], [payments]);
   assert.equal(states.find((state) => state.chapterId === "m3-db-concurrency")?.depth, "build");
-  assert.equal(states.find((state) => state.chapterId === "a1-retrieval")?.depth, "build");
-  assert.equal(states.find((state) => state.chapterId === "a1-retrieval")?.estimate, true);
-  assert.equal(states.find((state) => state.chapterId === "a2-model-interfaces")?.depth, "none");
+  assert.equal(states.find((state) => state.chapterId === "added-payments")?.depth, "build");
+  assert.equal(states.find((state) => state.chapterId === "added-payments")?.estimate, true);
+  const weak = chapterStates(topicMap, progressFor([]), [{ chapterId: "added-payments", labels: ["partial", "gap"] }], [payments]);
+  assert.equal(weak.find((state) => state.chapterId === "added-payments")?.depth, "none");
+  const screenedWritten = chapterStates(topicMap, progressFor([]), [{ chapterId: "m3-db-concurrency", labels: ["solid", "solid"] }]);
+  assert.equal(screenedWritten.find((state) => state.chapterId === "m3-db-concurrency")?.depth, "none", "a written chapter ignores placement estimates");
   const all = chapterStates(topicMap, progressFor(placed(db.map((topic) => topic.id))), []);
   assert.equal(all.find((state) => state.chapterId === "m3-db-concurrency")?.depth, "run");
 });
@@ -133,10 +139,16 @@ test("levels are per area, need every chapter of the level, and say how far the 
 });
 
 test("a level resting on screening answers is marked as an estimate", () => {
-  const ai = careers.areas.find((area) => area.id === "ai")!;
-  const level = areaLevel(ai, chapterStates(topicMap, progressFor([]), [{ chapterId: "a2-model-interfaces", labels: ["solid", "solid"] }, { chapterId: "a1-retrieval", labels: ["solid", "partial"] }]));
+  // A ladder whose junior step is the added chapter and whose mid step is a written chapter nobody has proven.
+  const ladder = { id: "backend" as const, title: "Backend", summary: "", levels: {
+    junior: [{ chapter: "added-payments", depth: "build" as const }],
+    mid: [{ chapter: "m3-db-concurrency", depth: "build" as const }],
+    senior: [],
+  } };
+  const level = areaLevel(ladder, chapterStates(topicMap, progressFor([]), [{ chapterId: "added-payments", labels: ["solid", "solid"] }], [payments]));
   assert.equal(level.level, "junior");
   assert.equal(level.estimate, true);
+  assert.equal(level.next?.level, "mid");
 });
 
 test("a role's overall level is capped by its weakest area", () => {

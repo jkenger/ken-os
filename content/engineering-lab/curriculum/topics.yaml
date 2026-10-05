@@ -58,7 +58,6 @@ modules:
     title: Retrieval
     track: ai
     area: ai
-    planned: [Semantic search, Retrieval evaluation, RAG, Advanced RAG, Reranking]
   - id: a2-model-interfaces
     title: Model interfaces
     track: ai
@@ -595,3 +594,73 @@ topics:
     depth: working
     prove: [explain, implement]
     labs: [expand-contract]
+
+  - id: ai.semantic_search
+    title: Semantic search with embeddings
+    module: a1-retrieval
+    requires: []
+    freshness: ai_ecosystem
+    sourceGroups: [ai, database]
+    gap: >-
+      Has started on embeddings, vectors and approximate nearest neighbours. Needs: embeddings as directions of meaning;
+      cosine similarity rather than raw dot products; filtering before ranking; a minimum score so search can return
+      nothing; storage and indexes such as HNSW; and where keyword search beats embeddings.
+    depth: working
+    prove: [explain, implement]
+    labs: [vector-search]
+
+  - id: ai.retrieval_eval
+    title: Retrieval evaluation
+    module: a1-retrieval
+    requires: [ai.semantic_search]
+    freshness: ai_ecosystem
+    sourceGroups: [ai]
+    gap: >-
+      Needs: a labeled set of questions and the documents that answer them; recall@k, precision@k and MRR; which matters
+      most when a model reads the top few chunks; per-question results so regressions show; and evaluating retrieval
+      separately from answer quality.
+    depth: working
+    prove: [explain, implement]
+    labs: [retrieval-metrics]
+
+  - id: ai.rag
+    title: Retrieval-augmented generation
+    module: a1-retrieval
+    requires: [ai.semantic_search]
+    freshness: ai_ecosystem
+    sourceGroups: [ai]
+    gap: >-
+      Needs: chunking documents; building a prompt from the best chunks within a token budget; labeling sources so the
+      answer can cite them; instructions to stay grounded and admit gaps; checking citations afterwards; and why
+      grounding reduces but can't prevent invented answers.
+    depth: working
+    prove: [explain, implement]
+    labs: [rag-prompt]
+
+  - id: ai.advanced_rag
+    title: Advanced RAG and hybrid search
+    module: a1-retrieval
+    requires: [ai.rag, ai.retrieval_eval]
+    freshness: ai_ecosystem
+    sourceGroups: [ai, database]
+    gap: >-
+      Needs: hybrid search combining keyword and vector results; reciprocal rank fusion instead of adding incomparable
+      scores; diversifying results across documents; query rewriting and its cost; and measuring each change with
+      retrieval metrics.
+    depth: deep
+    prove: [explain, implement]
+    labs: [rank-fusion]
+
+  - id: ai.reranking
+    title: Reranking
+    module: a1-retrieval
+    requires: [ai.retrieval_eval]
+    freshness: ai_ecosystem
+    sourceGroups: [ai]
+    gap: >-
+      Needs: two-stage retrieval, where a cheap search makes a shortlist and a slower model reorders it; batching
+      reranker calls; choosing the shortlist size from recall; stable ordering on ties; and the latency and cost
+      trade-off.
+    depth: working
+    prove: [explain, implement]
+    labs: [rerank-budget]

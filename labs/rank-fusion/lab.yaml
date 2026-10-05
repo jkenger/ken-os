@@ -1,0 +1,6 @@
+id: rank-fusion
+title: Combine keyword and vector search fairly
+topics: [ai.advanced_rag]
+modes: [implement]
+runner: browser
+timeoutMs: 2000
