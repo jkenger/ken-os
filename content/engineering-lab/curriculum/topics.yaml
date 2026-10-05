@@ -54,7 +54,6 @@ modules:
     title: Architecture at scale
     track: fullstack
     area: production
-    planned: [Caching strategy, Scaling, Multi-tenancy, System evolution]
   - id: a1-retrieval
     title: Retrieval
     track: ai
@@ -540,3 +539,59 @@ topics:
     depth: working
     prove: [explain, implement]
     labs: [trace-context]
+
+  - id: arch.caching
+    title: Caching strategy
+    module: m8-architecture-scale
+    requires: [web.http_caching]
+    freshness: core_concept
+    sourceGroups: [web, operations]
+    gap: >-
+      Needs: deciding what may be stale and for how long; read-through caching with a TTL; preventing stampedes by
+      sharing one load per key; never caching failures; invalidation on write and the race with a load already running;
+      and why, across several servers, the TTL is the real guarantee.
+    depth: working
+    prove: [explain, implement]
+    labs: [read-through-cache]
+
+  - id: arch.scaling
+    title: Scaling, concurrency limits and load shedding
+    module: m8-architecture-scale
+    requires: [rel.timeouts]
+    freshness: core_concept
+    sourceGroups: [operations]
+    gap: >-
+      Needs: stateless services that scale out; finding the real bottleneck, often the database; limiting concurrency to
+      what a resource can handle; bounded queues that refuse work early instead of turning overload into timeouts; and
+      sizing a shared limit for many servers.
+    depth: working
+    prove: [explain, implement]
+    labs: [load-shedding]
+
+  - id: arch.multi_tenancy
+    title: Multi-tenancy and tenant isolation
+    module: m8-architecture-scale
+    requires: [sec.resource_authorization]
+    freshness: core_concept
+    sourceGroups: [database, operations]
+    gap: >-
+      Needs: shared-database, shared-schema and separate-database tenancy and their trade-offs; tenant ids in every
+      key, composite foreign keys and per-tenant unique constraints so the database refuses cross-tenant data;
+      row-level security as a second guard; and noisy neighbours.
+    depth: deep
+    prove: [explain, implement]
+    labs: [tenant-keys]
+
+  - id: arch.evolution
+    title: System evolution and zero-downtime migrations
+    module: m8-architecture-scale
+    requires: [db.constraints]
+    freshness: core_concept
+    sourceGroups: [database]
+    gap: >-
+      Needs: old and new code running against one database during a deploy; expand and contract migrations (add,
+      backfill, sync, switch, remove); adding a required column safely; backward-compatible API changes; and why a
+      one-step rename breaks a zero-downtime deploy.
+    depth: working
+    prove: [explain, implement]
+    labs: [expand-contract]

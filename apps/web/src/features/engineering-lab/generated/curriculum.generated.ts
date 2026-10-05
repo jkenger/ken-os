@@ -76,12 +76,7 @@ export const topicMap: TopicMap = {
       "title": "Architecture at scale",
       "track": "fullstack",
       "area": "production",
-      "planned": [
-        "Caching strategy",
-        "Scaling",
-        "Multi-tenancy",
-        "System evolution"
-      ]
+      "planned": []
     },
     {
       "id": "a1-retrieval",
@@ -821,6 +816,92 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "trace-context"
+      ]
+    },
+    {
+      "id": "arch.caching",
+      "title": "Caching strategy",
+      "module": "m8-architecture-scale",
+      "requires": [
+        "web.http_caching"
+      ],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "web",
+        "operations"
+      ],
+      "gap": "Needs: deciding what may be stale and for how long; read-through caching with a TTL; preventing stampedes by sharing one load per key; never caching failures; invalidation on write and the race with a load already running; and why, across several servers, the TTL is the real guarantee.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "read-through-cache"
+      ]
+    },
+    {
+      "id": "arch.scaling",
+      "title": "Scaling, concurrency limits and load shedding",
+      "module": "m8-architecture-scale",
+      "requires": [
+        "rel.timeouts"
+      ],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "operations"
+      ],
+      "gap": "Needs: stateless services that scale out; finding the real bottleneck, often the database; limiting concurrency to what a resource can handle; bounded queues that refuse work early instead of turning overload into timeouts; and sizing a shared limit for many servers.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "load-shedding"
+      ]
+    },
+    {
+      "id": "arch.multi_tenancy",
+      "title": "Multi-tenancy and tenant isolation",
+      "module": "m8-architecture-scale",
+      "requires": [
+        "sec.resource_authorization"
+      ],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "database",
+        "operations"
+      ],
+      "gap": "Needs: shared-database, shared-schema and separate-database tenancy and their trade-offs; tenant ids in every key, composite foreign keys and per-tenant unique constraints so the database refuses cross-tenant data; row-level security as a second guard; and noisy neighbours.",
+      "depth": "deep",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "tenant-keys"
+      ]
+    },
+    {
+      "id": "arch.evolution",
+      "title": "System evolution and zero-downtime migrations",
+      "module": "m8-architecture-scale",
+      "requires": [
+        "db.constraints"
+      ],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "database"
+      ],
+      "gap": "Needs: old and new code running against one database during a deploy; expand and contract migrations (add, backfill, sync, switch, remove); adding a required column safely; backward-compatible API changes; and why a one-step rename breaks a zero-downtime deploy.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "expand-contract"
       ]
     }
   ]
@@ -1594,6 +1675,23 @@ export const labs: LabDefinition[] = [
     "probe": null
   },
   {
+    "id": "expand-contract",
+    "title": "Rename a column while the old code still runs",
+    "topics": [
+      "arch.evolution"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "pglite",
+    "timeoutMs": 20000,
+    "readme": "`users.fullname` should become `users.display_name`. During a deploy, the old version of the app (which reads and\nwrites `fullname`) and the new one (which uses `display_name`) run side by side for a while. The starter renames the\ncolumn in one step, and every request still on the old version fails until the deploy finishes.\n\nDo it in two steps that are each safe while both versions run:\n\n- `expand(db)`: add `display_name`, copy the existing names into it, and keep the two columns in step for every\n  insert and update, from either version, with a trigger.\n- `contract(db)`, run once no old version is left: remove the trigger and `fullname`, and make `display_name`\n  required.\n\nAlso write `createUser(db, name)` and `renameUser(db, id, name)` for the new version: they use only `display_name`.\n\nThe old version's code is in the tests (`oldCreateUser`, `oldRename`). Then explain the order of steps for adding a\nrequired column, and why \"rename in one migration\" breaks a zero-downtime deploy.",
+    "starter": "async function expand(db) {\n  await db.exec(\"alter table users rename column fullname to display_name\");\n}\n\nasync function contract(db) {\n  // Nothing left to do.\n}\n\nasync function createUser(db, name) {\n  const { rows } = await db.query(\"insert into users (display_name) values ($1) returning *\", [name]);\n  return rows[0];\n}\n\nasync function renameUser(db, id, name) {\n  await db.query(\"update users set display_name = $2 where id = $1\", [id, name]);\n}\n",
+    "tests": "// The old version of the app, still running during the deploy.\nasync function oldCreateUser(db, name) {\n  const { rows } = await db.query(\"insert into users (fullname) values ($1) returning id\", [name]);\n  return rows[0].id;\n}\nasync function oldRename(db, id, name) {\n  await db.query(\"update users set fullname = $2 where id = $1\", [id, name]);\n}\nconst row = async (id) => (await db.query(\"select * from users where id = $1\", [id])).rows[0];\n\ntest(\"expand copies the existing names\", async () => {\n  await expand(db);\n  assert.equal((await row(1)).display_name, \"Ana Reyes\");\n  assert.equal((await row(2)).display_name, \"Ben Cruz\");\n});\n\ntest(\"the old version keeps working, and the new column follows it\", async () => {\n  const id = await oldCreateUser(db, \"Cy Tan\");\n  assert.equal((await row(id)).display_name, \"Cy Tan\");\n  await oldRename(db, 1, \"Ana R.\");\n  assert.equal((await row(1)).display_name, \"Ana R.\");\n});\n\ntest(\"the new version works, and the old column follows it\", async () => {\n  const created = await createUser(db, \"Dee Lim\");\n  assert.equal((await row(created.id)).fullname, \"Dee Lim\", \"the old version reads fullname, so it must be filled\");\n  await renameUser(db, 2, \"Ben C.\");\n  assert.equal((await row(2)).fullname, \"Ben C.\");\n});\n\ntest(\"contract removes the old column and makes the new one required\", async () => {\n  await contract(db);\n  const { rows } = await db.query(\"select column_name, is_nullable from information_schema.columns where table_name = 'users' order by column_name\");\n  assert.deepEqual(rows.map((item) => item.column_name), [\"display_name\", \"id\"]);\n  assert.equal(rows.find((item) => item.column_name === \"display_name\").is_nullable, \"NO\");\n  const created = await createUser(db, \"Eli Go\");\n  assert.equal((await row(created.id)).display_name, \"Eli Go\");\n});\n",
+    "setup": "create table users (\n  id serial primary key,\n  fullname text not null\n);\ninsert into users (fullname) values ('Ana Reyes'), ('Ben Cruz');\n",
+    "probe": null
+  },
+  {
     "id": "feed-pages",
     "title": "Page through a feed that keeps growing",
     "topics": [
@@ -1662,6 +1760,23 @@ export const labs: LabDefinition[] = [
     "probe": null
   },
   {
+    "id": "load-shedding",
+    "title": "Say no early instead of falling over",
+    "topics": [
+      "arch.scaling"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "Report exports are heavy: each holds a database connection and a lot of memory. On a busy morning the starter runs\nevery export at once, the server runs out of connections, and every export fails, including the ones it could have\nfinished.\n\nWrite `createLimiter({ maxConcurrent, maxQueue })`, returning `{ run(task), active(), waiting() }`:\n\n- `run(task)` starts `task()` at once when fewer than `maxConcurrent` are running, and returns its result.\n- Otherwise the task waits in a queue, first in, first out, and starts when a running one finishes.\n- When `maxQueue` tasks are already waiting, `run` rejects at once with an error whose `name` is `OverloadedError`,\n  so the client can retry later instead of waiting for nothing.\n- A task that fails still frees its place, and its error reaches its own caller.\n- `active()` and `waiting()` return the current counts.\n\nThen explain why a bounded queue that turns work away beats an unbounded one, and how this changes when the service\nruns on several servers.",
+    "starter": "function createLimiter({ maxConcurrent, maxQueue }) {\n  let running = 0;\n  return {\n    async run(task) {\n      running += 1;\n      try { return await task(); } finally { running -= 1; }\n    },\n    active: () => running,\n    waiting: () => 0,\n  };\n}\n",
+    "tests": "// Tasks we finish by hand, recording how many run at the same time.\nfunction harness() {\n  const state = { running: 0, peak: 0, started: [], finishers: new Map() };\n  state.task = (name) => () => new Promise((resolve, reject) => {\n    state.running += 1;\n    state.peak = Math.max(state.peak, state.running);\n    state.started.push(name);\n    state.finishers.set(name, {\n      ok: () => { state.running -= 1; resolve(name); },\n      fail: () => { state.running -= 1; reject(new Error(`${name} failed`)); },\n    });\n  });\n  return state;\n}\nconst tick = () => new Promise((resolve) => setTimeout(resolve, 0));\n\ntest(\"no more than maxConcurrent run at once, and the rest start in order\", async () => {\n  const h = harness();\n  const limiter = createLimiter({ maxConcurrent: 2, maxQueue: 10 });\n  const results = [\"a\", \"b\", \"c\", \"d\"].map((name) => limiter.run(h.task(name)));\n  await tick();\n  assert.deepEqual(h.started, [\"a\", \"b\"]);\n  assert.equal(limiter.active(), 2);\n  assert.equal(limiter.waiting(), 2);\n  h.finishers.get(\"a\").ok(); await tick();\n  assert.deepEqual(h.started, [\"a\", \"b\", \"c\"]);\n  h.finishers.get(\"b\").ok(); h.finishers.get(\"c\").ok(); await tick();\n  h.finishers.get(\"d\").ok();\n  assert.deepEqual(await Promise.all(results), [\"a\", \"b\", \"c\", \"d\"]);\n  assert.equal(h.peak, 2);\n});\n\ntest(\"a full queue turns work away at once\", async () => {\n  const h = harness();\n  const limiter = createLimiter({ maxConcurrent: 1, maxQueue: 1 });\n  limiter.run(h.task(\"a\"));\n  limiter.run(h.task(\"b\"));\n  let error = null;\n  limiter.run(h.task(\"c\")).catch((caught) => { error = caught; });\n  await tick();\n  assert.ok(error, \"the third task should be refused at once, not queued or started\");\n  assert.equal(error.name, \"OverloadedError\");\n  await tick();\n  assert.deepEqual(h.started, [\"a\"], \"the refused task never starts\");\n});\n\ntest(\"a failing task frees its place and reports to its own caller\", async () => {\n  const h = harness();\n  const limiter = createLimiter({ maxConcurrent: 1, maxQueue: 5 });\n  const first = limiter.run(h.task(\"a\"));\n  const second = limiter.run(h.task(\"b\"));\n  await tick();\n  h.finishers.get(\"a\").fail();\n  await assert.rejects(first);\n  await tick();\n  assert.deepEqual(h.started, [\"a\", \"b\"], \"the next task starts after a failure too\");\n  h.finishers.get(\"b\").ok();\n  assert.equal(await second, \"b\");\n  assert.equal(limiter.active(), 0);\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
     "id": "order-history-index",
     "title": "Fix the index that's in the wrong order",
     "topics": [
@@ -1711,6 +1826,23 @@ export const labs: LabDefinition[] = [
     "readme": "Placing an order touches three services that don't share a database, so one transaction can't cover them:\n\n1. `services.inventory.reserve(order.items)` returns a reservation id.\n2. `services.payments.charge(order.total)` returns a charge id.\n3. `services.shipping.create(order.address)` returns a shipment id.\n\nAny step can fail after the earlier ones succeeded. The starter just reports the failure, leaving stock reserved and\nthe card charged for an order that will never ship. Write `placeOrder(services, order)` so that:\n\n- On success it returns `{ ok: true, reservationId, chargeId, shipmentId }`.\n- When a step fails, it undoes the steps that already succeeded, newest first: `payments.refund(chargeId)`, then\n  `inventory.release(reservationId)`. It returns `{ ok: false, failedAt, error, compensationErrors }`, where\n  `failedAt` is `\"inventory\"`, `\"payments\"` or `\"shipping\"` and `error` is the failure's message.\n- If an undo step fails too, it keeps going with the rest and lists the message in `compensationErrors`; the\n  original failure stays the one reported.\n\nThen explain why each undo step must be safe to run twice, and what a person should see when an undo fails.",
     "starter": "async function placeOrder(services, order) {\n  try {\n    const reservationId = await services.inventory.reserve(order.items);\n    const chargeId = await services.payments.charge(order.total);\n    const shipmentId = await services.shipping.create(order.address);\n    return { ok: true, reservationId, chargeId, shipmentId };\n  } catch (error) {\n    return { ok: false, failedAt: \"unknown\", error: error.message, compensationErrors: [] };\n  }\n}\n",
     "tests": "// Fake services that record every call. `failing` names the calls that throw.\nfunction fakeServices(failing = []) {\n  const log = [];\n  const step = (name, result) => async (arg) => {\n    log.push(name);\n    if (failing.includes(name)) throw new Error(`${name} failed`);\n    return result;\n  };\n  return {\n    log,\n    services: {\n      inventory: { reserve: step(\"reserve\", \"res_1\"), release: step(\"release\", true) },\n      payments: { charge: step(\"charge\", \"ch_1\"), refund: step(\"refund\", true) },\n      shipping: { create: step(\"ship\", \"sh_1\") },\n    },\n  };\n}\nconst order = { items: [{ sku: \"ABC-1234\", quantity: 1 }], total: 2500, address: \"1 Main St\" };\n\ntest(\"a successful order returns every id and undoes nothing\", async () => {\n  const { log, services } = fakeServices();\n  assert.deepEqual(await placeOrder(services, order), { ok: true, reservationId: \"res_1\", chargeId: \"ch_1\", shipmentId: \"sh_1\" });\n  assert.deepEqual(log, [\"reserve\", \"charge\", \"ship\"]);\n});\n\ntest(\"a failed charge releases the stock\", async () => {\n  const { log, services } = fakeServices([\"charge\"]);\n  const result = await placeOrder(services, order);\n  assert.equal(result.ok, false);\n  assert.equal(result.failedAt, \"payments\");\n  assert.equal(result.error, \"charge failed\");\n  assert.deepEqual(log, [\"reserve\", \"charge\", \"release\"]);\n});\n\ntest(\"a failed shipment refunds, then releases, newest first\", async () => {\n  const { log, services } = fakeServices([\"ship\"]);\n  const result = await placeOrder(services, order);\n  assert.equal(result.failedAt, \"shipping\");\n  assert.deepEqual(log, [\"reserve\", \"charge\", \"ship\", \"refund\", \"release\"]);\n});\n\ntest(\"a failed reservation has nothing to undo\", async () => {\n  const { log, services } = fakeServices([\"reserve\"]);\n  const result = await placeOrder(services, order);\n  assert.equal(result.failedAt, \"inventory\");\n  assert.deepEqual(log, [\"reserve\"]);\n});\n\ntest(\"a failed undo doesn't stop the others or hide the real failure\", async () => {\n  const { log, services } = fakeServices([\"ship\", \"refund\"]);\n  const result = await placeOrder(services, order);\n  assert.equal(result.failedAt, \"shipping\");\n  assert.equal(result.error, \"ship failed\");\n  assert.deepEqual(result.compensationErrors, [\"refund failed\"]);\n  assert.deepEqual(log, [\"reserve\", \"charge\", \"ship\", \"refund\", \"release\"], \"the release still runs after the refund fails\");\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
+    "id": "read-through-cache",
+    "title": "A cache that doesn't stampede or go stale",
+    "topics": [
+      "arch.caching"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "Product pages read prices from a slow pricing service, so you put a cache in front of it. The starter keeps values\nforever, and when a popular key is missing, a hundred requests at once each call the service (a stampede).\n\nWrite `createCache({ load, ttlMs, now })`, returning `{ get(key), invalidate(key) }`:\n\n- `get` returns the cached value while it's younger than `ttlMs` (by `now()`), without calling `load`.\n- On a miss it calls `load(key)` once, however many callers are waiting for that key at the same moment; they all get\n  the same result.\n- A failed load isn't cached: the next `get` tries again.\n- `invalidate(key)` drops the value after a write. If a load for that key was already running, its result is\n  stale and must not be cached.\n\nThen explain how you'd pick the TTL for prices versus a product description, and what invalidation can and can't\npromise when there are several servers.",
+    "starter": "function createCache({ load, ttlMs, now }) {\n  const values = new Map();\n  return {\n    async get(key) {\n      if (values.has(key)) return values.get(key);\n      const value = await load(key);\n      values.set(key, value);\n      return value;\n    },\n    invalidate(key) {\n      values.delete(key);\n    },\n  };\n}\n",
+    "tests": "// A pricing service whose answers we control, one pending call at a time.\nfunction pricingService() {\n  const service = { calls: 0, pending: [], price: 100 };\n  service.load = (key) => {\n    service.calls += 1;\n    return new Promise((resolve, reject) => service.pending.push({ key, resolve, reject, price: service.price }));\n  };\n  service.finish = () => { const call = service.pending.shift(); call.resolve(call.price); };\n  service.fail = () => service.pending.shift().reject(new Error(\"pricing unavailable\"));\n  return service;\n}\nfunction clock() { let time = 0; return { now: () => time, advance: (ms) => { time += ms; } }; }\nconst settle = () => new Promise((resolve) => setTimeout(resolve, 0));\n\ntest(\"a fresh value is served without calling the service\", async () => {\n  const service = pricingService();\n  const time = clock();\n  const cache = createCache({ load: service.load, ttlMs: 1000, now: time.now });\n  const first = cache.get(\"sku-1\"); await settle(); service.finish();\n  assert.equal(await first, 100);\n  time.advance(999);\n  assert.equal(await cache.get(\"sku-1\"), 100);\n  assert.equal(service.calls, 1);\n});\n\ntest(\"an expired value is loaded again\", async () => {\n  const service = pricingService();\n  const time = clock();\n  const cache = createCache({ load: service.load, ttlMs: 1000, now: time.now });\n  const first = cache.get(\"sku-1\"); await settle(); service.finish(); await first;\n  time.advance(1000);\n  service.price = 120;\n  const second = cache.get(\"sku-1\"); await settle();\n  assert.equal(service.calls, 2, \"a value as old as the TTL is stale\");\n  service.finish();\n  assert.equal(await second, 120);\n});\n\ntest(\"a hundred callers on a cold key cause one load\", async () => {\n  const service = pricingService();\n  const cache = createCache({ load: service.load, ttlMs: 1000, now: clock().now });\n  const waiting = Array.from({ length: 100 }, () => cache.get(\"hot\"));\n  await settle();\n  assert.equal(service.calls, 1, \"callers waiting on the same key share one load\");\n  service.finish();\n  const results = await Promise.all(waiting);\n  assert.ok(results.every((price) => price === 100));\n});\n\ntest(\"a failed load isn't cached\", async () => {\n  const service = pricingService();\n  const cache = createCache({ load: service.load, ttlMs: 1000, now: clock().now });\n  const first = cache.get(\"sku-1\"); await settle(); service.fail();\n  await assert.rejects(first);\n  const second = cache.get(\"sku-1\"); await settle();\n  assert.equal(service.calls, 2, \"the next caller tries again\");\n  service.finish();\n  assert.equal(await second, 100);\n});\n\ntest(\"invalidating during a load stops that stale result from being cached\", async () => {\n  const service = pricingService();\n  const cache = createCache({ load: service.load, ttlMs: 60000, now: clock().now });\n  const reading = cache.get(\"sku-1\"); await settle();\n  service.price = 150;\n  cache.invalidate(\"sku-1\");\n  service.pending[0].price = 100;\n  service.finish();\n  await reading;\n  const fresh = cache.get(\"sku-1\"); await settle();\n  assert.equal(service.calls, 2, \"the value loaded before the write must not be served after it\");\n  service.finish();\n  assert.equal(await fresh, 150);\n});\n",
     "setup": "",
     "probe": null
   },
@@ -1901,6 +2033,23 @@ export const labs: LabDefinition[] = [
     "starter": "async function getDocument(db, actor, docId) {\n  if (!actor) throw new Error(\"Please sign in\");\n  const { rows } = await db.query(\"select * from documents where id = $1\", [docId]);\n  return rows[0] ?? null;\n}\n\nasync function listDocuments(db, actor, orgId) {\n  if (!actor) throw new Error(\"Please sign in\");\n  const { rows } = await db.query(\"select * from documents where org_id = $1 order by id\", [orgId]);\n  return rows;\n}\n\nasync function updateDocument(db, actor, docId, changes) {\n  const doc = await getDocument(db, actor, docId);\n  if (!doc) return null;\n  const { rows } = await db.query(\n    \"update documents set title = $1, body = $2 where id = $3 returning *\",\n    [changes.title, changes.body, docId],\n  );\n  return rows[0];\n}\n",
     "tests": "const ana = { userId: 1 }, ben = { userId: 2 }, cy = { userId: 3 }, dee = { userId: 4 };\nconst titleOf = async (id) => (await db.query(\"select title from documents where id = $1\", [id])).rows[0].title;\n\ntest(\"members read their organisation's documents\", async () => {\n  assert.equal((await getDocument(db, ana, 1))?.title, \"Roadmap\");\n  assert.equal((await getDocument(db, ben, 2))?.title, \"Pricing\", \"viewers can read\");\n  assert.equal((await getDocument(db, cy, 3))?.title, \"Plans\");\n});\n\ntest(\"an outsider gets null, exactly as for a document that doesn't exist\", async () => {\n  assert.equal(await getDocument(db, cy, 1), null, \"Cy is in Globex, not Acme\");\n  assert.equal(await getDocument(db, dee, 1), null, \"Dee isn't in any organisation\");\n  assert.equal(await getDocument(db, ana, 3), null);\n  assert.equal(await getDocument(db, ana, 999), null);\n});\n\ntest(\"listing is limited to members\", async () => {\n  assert.deepEqual((await listDocuments(db, ana, 1)).map((doc) => doc.title), [\"Roadmap\", \"Pricing\"]);\n  assert.deepEqual(await listDocuments(db, cy, 1), []);\n  assert.deepEqual(await listDocuments(db, dee, 2), []);\n});\n\ntest(\"a viewer can't edit\", async () => {\n  await assert.rejects(() => updateDocument(db, ben, 1, { title: \"Hacked\", body: \"x\" }), /forbidden/i);\n  assert.equal(await titleOf(1), \"Roadmap\");\n});\n\ntest(\"an editor can edit; an outsider can't, and can't tell the document exists\", async () => {\n  const updated = await updateDocument(db, ana, 1, { title: \"Roadmap v2\", body: \"Ship the beta in June\" });\n  assert.equal(updated?.title, \"Roadmap v2\");\n  assert.equal(await updateDocument(db, cy, 2, { title: \"Hacked\", body: \"x\" }), null);\n  assert.equal(await titleOf(2), \"Pricing\");\n  assert.equal(await updateDocument(db, dee, 999, { title: \"x\", body: \"x\" }), null);\n});\n\ntest(\"signed-out callers are turned away\", async () => {\n  await assert.rejects(() => getDocument(db, null, 1), /sign in/i);\n  await assert.rejects(() => listDocuments(db, null, 1), /sign in/i);\n  await assert.rejects(() => updateDocument(db, null, 1, { title: \"x\", body: \"x\" }), /sign in/i);\n});\n\ntest(\"removing a member takes effect at once\", async () => {\n  await db.query(\"delete from memberships where user_id = 1 and org_id = 1\");\n  assert.equal(await getDocument(db, ana, 1), null);\n  assert.deepEqual(await listDocuments(db, ana, 1), []);\n  assert.equal(await updateDocument(db, ana, 1, { title: \"Late edit\", body: \"x\" }), null);\n  assert.equal(await titleOf(1), \"Roadmap v2\");\n});\n",
     "setup": "create table users (id int primary key, name text not null);\ncreate table orgs (id int primary key, name text not null);\ncreate table memberships (\n  user_id int not null references users,\n  org_id int not null references orgs,\n  role text not null check (role in ('viewer', 'editor', 'admin')),\n  primary key (user_id, org_id)\n);\ncreate table documents (\n  id serial primary key,\n  org_id int not null references orgs,\n  title text not null,\n  body text not null\n);\ninsert into users (id, name) values (1, 'Ana'), (2, 'Ben'), (3, 'Cy'), (4, 'Dee');\ninsert into orgs (id, name) values (1, 'Acme'), (2, 'Globex');\ninsert into memberships (user_id, org_id, role) values (1, 1, 'editor'), (2, 1, 'viewer'), (3, 2, 'admin');\ninsert into documents (org_id, title, body) values\n  (1, 'Roadmap', 'Ship the beta in May'),\n  (1, 'Pricing', 'Three tiers'),\n  (2, 'Plans', 'Expand to Europe');\n",
+    "probe": null
+  },
+  {
+    "id": "tenant-keys",
+    "title": "Make cross-tenant data impossible to store",
+    "topics": [
+      "arch.multi_tenancy"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "pglite",
+    "timeoutMs": 20000,
+    "readme": "An invoicing app serves many companies (tenants) from one database. Every customer and invoice row has a\n`tenant_id`, but the schema doesn't enforce it, so two bugs are possible:\n\n- An invoice for tenant 1 can point at a customer who belongs to tenant 2. One wrong id in the API, and a company sees\n  another company's customer on its invoice.\n- Invoice numbers are unique across the whole database, so a second company can't have its own `INV-1`.\n\nWrite `migrate(db)` so the database itself makes both impossible, whatever the application code does:\n\n- An invoice's customer must belong to the same tenant as the invoice. A composite foreign key on\n  `(tenant_id, customer_id)` does this; it needs a matching unique key on `customers (tenant_id, id)`.\n- Invoice numbers are unique per tenant, not globally.\n\nThe existing constraints are named `invoices_customer_fk` and `invoices_number_key`. Then explain why this belongs in\nthe schema even when every query already filters by tenant, and when a separate database per tenant is worth it.",
+    "starter": "async function migrate(db) {\n  // Schema changes go here.\n}\n",
+    "tests": "const insertInvoice = (tenantId, customerId, number) =>\n  db.query(\"insert into invoices (tenant_id, customer_id, number) values ($1, $2, $3)\", [tenantId, customerId, number]);\n\ntest(\"migrate runs and keeps the existing invoice\", async () => {\n  await migrate(db);\n  const { rows } = await db.query(\"select number from invoices\");\n  assert.deepEqual(rows.map((row) => row.number), [\"INV-1\"]);\n});\n\ntest(\"an invoice can't point at another tenant's customer\", async () => {\n  await assert.rejects(() => insertInvoice(1, 2, \"INV-2\"), \"tenant 1's invoice must not reference tenant 2's customer\");\n});\n\ntest(\"an invoice for its own tenant's customer is fine\", async () => {\n  await insertInvoice(1, 1, \"INV-2\");\n  await insertInvoice(2, 2, \"INV-9\");\n});\n\ntest(\"each tenant numbers its own invoices\", async () => {\n  await insertInvoice(2, 2, \"INV-1\");\n  await assert.rejects(() => insertInvoice(1, 1, \"INV-1\"), \"a duplicate number within one tenant must still be rejected\");\n});\n",
+    "setup": "create table tenants (id int primary key, name text not null);\ncreate table customers (\n  id serial primary key,\n  tenant_id int not null references tenants,\n  name text not null\n);\ncreate table invoices (\n  id serial primary key,\n  tenant_id int not null references tenants,\n  customer_id int not null,\n  number text not null,\n  constraint invoices_customer_fk foreign key (customer_id) references customers (id),\n  constraint invoices_number_key unique (number)\n);\ninsert into tenants (id, name) values (1, 'Acme'), (2, 'Globex');\ninsert into customers (tenant_id, name) values (1, 'Acme customer'), (2, 'Globex customer');\ninsert into invoices (tenant_id, customer_id, number) values (1, 1, 'INV-1');\n",
     "probe": null
   },
   {

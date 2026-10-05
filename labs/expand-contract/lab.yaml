@@ -1,0 +1,6 @@
+id: expand-contract
+title: Rename a column while the old code still runs
+topics: [arch.evolution]
+modes: [implement]
+runner: pglite
+timeoutMs: 20000

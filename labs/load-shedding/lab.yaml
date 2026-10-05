@@ -1,0 +1,6 @@
+id: load-shedding
+title: Say no early instead of falling over
+topics: [arch.scaling]
+modes: [implement]
+runner: browser
+timeoutMs: 2000
