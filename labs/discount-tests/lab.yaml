@@ -1,0 +1,6 @@
+id: discount-tests
+title: Write tests that catch the bugs
+topics: [test.strategy]
+modes: [implement]
+runner: browser
+timeoutMs: 3000

@@ -43,7 +43,6 @@ modules:
     title: Testing and web security
     track: fullstack
     area: production
-    planned: [Testing strategy, Authorization in depth, XSS and web security]
   - id: m6-production-reliability
     title: Production reliability
     track: fullstack
@@ -356,3 +355,49 @@ topics:
     depth: deep
     prove: [explain, implement]
     labs: [feed-pages]
+
+  - id: test.strategy
+    title: Testing strategy and tests that catch bugs
+    module: m5-testing-security
+    requires: []
+    freshness: framework
+    sourceGroups: [testing, javascript]
+    gap: >-
+      Can name unit, integration and end-to-end tests but not say what each is for, and isn't sure when to use a real
+      database, a fake or a mock. Needs: a test earns its place by failing when the code is wrong; bugs hide at edges,
+      so cases sit at each rule's boundary; fast unit tests for logic, integration tests against a real database for
+      queries and constraints, a few end-to-end tests for the paths users take; and mocks only at boundaries you don't
+      own.
+    depth: working
+    prove: [explain, implement]
+    labs: [discount-tests]
+
+  - id: sec.xss
+    title: XSS and output encoding
+    module: m5-testing-security
+    requires: []
+    freshness: web_platform
+    sourceGroups: [web, operations, react]
+    gap: >-
+      Little working model of cross-site scripting. Needs: how text from one user becomes code in another user's
+      browser; encoding on output for the context (HTML text, attributes, URLs); why a javascript: link is dangerous
+      even when escaped; what React escapes by default and what dangerouslySetInnerHTML turns off; and a Content
+      Security Policy as a second line of defence.
+    depth: working
+    prove: [explain, implement]
+    labs: [comment-render]
+
+  - id: sec.resource_authorization
+    title: Resource authorization, ownership and tenant scope
+    module: m5-testing-security
+    requires: [db.constraints]
+    freshness: core_concept
+    sourceGroups: [operations, database, web]
+    gap: >-
+      Knows that signing in isn't enough, but reaches for checking who the user is rather than whether they belong to
+      the resource's organisation with a role that allows the action. Needs: authentication versus authorization;
+      checking membership and role on every read and write, in the same query; answering outsiders as "not found" so
+      ids can't be probed; and tenant scope that a client can't change.
+    depth: deep
+    prove: [explain, implement]
+    labs: [team-docs]

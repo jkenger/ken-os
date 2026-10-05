@@ -23,6 +23,7 @@ export const SOURCE_DOMAINS = {
   ai: ["platform.openai.com", "developers.openai.com", "docs.anthropic.com", "docs.claude.com", "modelcontextprotocol.io", "ai-sdk.dev"],
   operations: ["opentelemetry.io", "owasp.org", "sre.google"],
   typescript: ["www.typescriptlang.org", "zod.dev"],
+  testing: ["vitest.dev", "playwright.dev", "testing-library.com", "nodejs.org"],
 } as const satisfies Record<string, readonly string[]>;
 export type SourceGroup = keyof typeof SOURCE_DOMAINS;
 
