@@ -58,11 +58,7 @@ export const topicMap: TopicMap = {
       "title": "Testing and web security",
       "track": "fullstack",
       "area": "production",
-      "planned": [
-        "Testing strategy",
-        "Authorization in depth",
-        "XSS and web security"
-      ]
+      "planned": []
     },
     {
       "id": "m6-production-reliability",
@@ -561,6 +557,70 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "feed-pages"
+      ]
+    },
+    {
+      "id": "test.strategy",
+      "title": "Testing strategy and tests that catch bugs",
+      "module": "m5-testing-security",
+      "requires": [],
+      "freshness": "framework",
+      "sourceGroups": [
+        "testing",
+        "javascript"
+      ],
+      "gap": "Can name unit, integration and end-to-end tests but not say what each is for, and isn't sure when to use a real database, a fake or a mock. Needs: a test earns its place by failing when the code is wrong; bugs hide at edges, so cases sit at each rule's boundary; fast unit tests for logic, integration tests against a real database for queries and constraints, a few end-to-end tests for the paths users take; and mocks only at boundaries you don't own.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "discount-tests"
+      ]
+    },
+    {
+      "id": "sec.xss",
+      "title": "XSS and output encoding",
+      "module": "m5-testing-security",
+      "requires": [],
+      "freshness": "web_platform",
+      "sourceGroups": [
+        "web",
+        "operations",
+        "react"
+      ],
+      "gap": "Little working model of cross-site scripting. Needs: how text from one user becomes code in another user's browser; encoding on output for the context (HTML text, attributes, URLs); why a javascript: link is dangerous even when escaped; what React escapes by default and what dangerouslySetInnerHTML turns off; and a Content Security Policy as a second line of defence.",
+      "depth": "working",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "comment-render"
+      ]
+    },
+    {
+      "id": "sec.resource_authorization",
+      "title": "Resource authorization, ownership and tenant scope",
+      "module": "m5-testing-security",
+      "requires": [
+        "db.constraints"
+      ],
+      "freshness": "core_concept",
+      "sourceGroups": [
+        "operations",
+        "database",
+        "web"
+      ],
+      "gap": "Knows that signing in isn't enough, but reaches for checking who the user is rather than whether they belong to the resource's organisation with a role that allows the action. Needs: authentication versus authorization; checking membership and role on every read and write, in the same query; answering outsiders as \"not found\" so ids can't be probed; and tenant scope that a client can't change.",
+      "depth": "deep",
+      "prove": [
+        "explain",
+        "implement"
+      ],
+      "labs": [
+        "team-docs"
       ]
     }
   ]
@@ -1072,6 +1132,23 @@ export const labs: LabDefinition[] = [
     "probe": null
   },
   {
+    "id": "comment-render",
+    "title": "Render a comment without running it",
+    "topics": [
+      "sec.xss"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 2000,
+    "readme": "`renderComment(comment)` returns the HTML for one comment on a public page. Everything in `comment` was typed by a\nstranger: `author`, `text`, and an optional `website` link.\n\nThe HTML it should return:\n\n```html\n<article class=\"comment\"><a href=\"https://example.com\" rel=\"nofollow noopener noreferrer\">Ana</a><p>Nice post</p></article>\n```\n\nWhen there's no usable website, the author is plain text instead of a link: `<span>Ana</span>`.\n\nThe starter pastes the strings straight into the template, so a comment like `<img src=x onerror=...>` runs code in\nevery reader's browser. Fix it:\n\n- Escape every piece of text you put into HTML: `&`, `<`, `>`, `\"` and `'`.\n- Only link to `http:` and `https:` addresses. A `javascript:` link runs code when clicked; show the author as plain\n  text instead.\n- Keep the attribute values in double quotes, escaped too.\n\nThen explain why React's `{comment.text}` is safe by default, what `dangerouslySetInnerHTML` changes, and where a\nContent Security Policy fits in as a second line of defence.",
+    "starter": "function renderComment(comment) {\n  const author = comment.website\n    ? `<a href=\"${comment.website}\" rel=\"nofollow noopener noreferrer\">${comment.author}</a>`\n    : `<span>${comment.author}</span>`;\n  return `<article class=\"comment\">${author}<p>${comment.text}</p></article>`;\n}\n",
+    "tests": "test(\"a plain comment renders as expected\", () => {\n  assert.equal(\n    renderComment({ author: \"Ana\", text: \"Nice post\", website: \"https://example.com\" }),\n    '<article class=\"comment\"><a href=\"https://example.com\" rel=\"nofollow noopener noreferrer\">Ana</a><p>Nice post</p></article>',\n  );\n  assert.equal(renderComment({ author: \"Ana\", text: \"Hi\" }), '<article class=\"comment\"><span>Ana</span><p>Hi</p></article>');\n});\n\ntest(\"markup in the text is shown, not run\", () => {\n  const html = renderComment({ author: \"Ana\", text: '<img src=x onerror=\"alert(1)\"><script>steal()</script>' });\n  assert.ok(!html.includes(\"<img\"), \"an <img> tag from the text must not reach the page\");\n  assert.ok(!html.includes(\"<script\"), \"a <script> tag from the text must not reach the page\");\n  assert.ok(html.includes(\"&lt;script&gt;steal()&lt;/script&gt;\"), \"the text should still be visible, escaped\");\n});\n\ntest(\"every special character is escaped, ampersand first\", () => {\n  const html = renderComment({ author: \"Tom & Jerry\", text: `5 > 3 & \"quotes\" and 'single'` });\n  assert.ok(html.includes(\"<span>Tom &amp; Jerry</span>\"));\n  assert.ok(html.includes(\"<p>5 &gt; 3 &amp; &quot;quotes&quot; and &#39;single&#39;</p>\"));\n  assert.ok(!html.includes(\"&amp;amp;\"), \"escape each character once\");\n});\n\ntest(\"an author name can't break out of the link\", () => {\n  const html = renderComment({ author: '\"><script>x()</script>', text: \"hi\", website: \"https://example.com\" });\n  assert.ok(!html.includes(\"<script\"), \"the author's name must be escaped inside the link too\");\n});\n\ntest(\"a website can't break out of its attribute\", () => {\n  const html = renderComment({ author: \"Ana\", text: \"hi\", website: 'https://example.com\" onmouseover=\"steal()' });\n  assert.ok(!/onmouseover=\"/.test(html), \"a quote in the address must not end the href attribute\");\n});\n\ntest(\"only http and https addresses become links\", () => {\n  for (const website of [\"javascript:alert(1)\", \" JavaScript:alert(1)\", \"data:text/html,<script>x()</script>\", \"vbscript:x\"]) {\n    const html = renderComment({ author: \"Ana\", text: \"hi\", website });\n    assert.ok(!html.includes(\"<a \"), `${website} must not become a link`);\n    assert.ok(html.includes(\"<span>Ana</span>\"));\n  }\n  assert.ok(renderComment({ author: \"Ana\", text: \"hi\", website: \"http://example.com\" }).includes('href=\"http://example.com\"'));\n});\n",
+    "setup": "",
+    "probe": null
+  },
+  {
     "id": "cookie-rules",
     "title": "Which cookies go where",
     "topics": [
@@ -1229,6 +1306,23 @@ export const labs: LabDefinition[] = [
         }
       ]
     }
+  },
+  {
+    "id": "discount-tests",
+    "title": "Write tests that catch the bugs",
+    "topics": [
+      "test.strategy"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "browser",
+    "timeoutMs": 3000,
+    "readme": "This time you write the tests. `priceAfterDiscount(subtotal, code)` is already written and correct. Its rules, with\nall amounts in cents:\n\n- `SAVE10` takes 10% off, rounded down to the cent, but only when the subtotal is at least 5000.\n- `FLAT500` takes 500 off, but never below 0.\n- Codes ignore case and surrounding spaces, so ` save10 ` works.\n- Any other code, or no code, leaves the price unchanged.\n\nFill in `discountCases()` with cases, each `{ subtotal, code, expected }`. The lab runs your cases against the real\nfunction, where every case must pass, and against five broken copies, each with one realistic bug. A copy counts as\ncaught when at least one of your cases fails on it. Catch all five.\n\nDon't read the broken copies first. Look at the rules and ask where a bug would hide: the edges of each rule, and the\ninputs a hurried developer forgets. Then explain why one happy-path test per rule wasn't enough, and which of these\ncases you'd still want as an end-to-end test.",
+    "starter": "function discountCases() {\n  return [\n    { subtotal: 10000, code: \"SAVE10\", expected: 9000 },\n    { subtotal: 2000, code: \"FLAT500\", expected: 1500 },\n  ];\n}\n",
+    "tests": "function normalize(code) {\n  return typeof code === \"string\" ? code.trim().toUpperCase() : \"\";\n}\n\n// The real function.\nfunction real(subtotal, code) {\n  const key = normalize(code);\n  if (key === \"SAVE10\" && subtotal >= 5000) return subtotal - Math.floor(subtotal / 10);\n  if (key === \"FLAT500\") return Math.max(0, subtotal - 500);\n  return subtotal;\n}\n\n// Five broken copies, one realistic bug each.\nconst mutants = {\n  \"SAVE10 only above 5000, not at 5000\": (subtotal, code) => {\n    const key = normalize(code);\n    if (key === \"SAVE10\" && subtotal > 5000) return subtotal - Math.floor(subtotal / 10);\n    if (key === \"FLAT500\") return Math.max(0, subtotal - 500);\n    return subtotal;\n  },\n  \"FLAT500 can go below zero\": (subtotal, code) => {\n    const key = normalize(code);\n    if (key === \"SAVE10\" && subtotal >= 5000) return subtotal - Math.floor(subtotal / 10);\n    if (key === \"FLAT500\") return subtotal - 500;\n    return subtotal;\n  },\n  \"codes are case sensitive and untrimmed\": (subtotal, code) => {\n    if (code === \"SAVE10\" && subtotal >= 5000) return subtotal - Math.floor(subtotal / 10);\n    if (code === \"FLAT500\") return Math.max(0, subtotal - 500);\n    return subtotal;\n  },\n  \"10% is rounded to the nearest cent, not down\": (subtotal, code) => {\n    const key = normalize(code);\n    if (key === \"SAVE10\" && subtotal >= 5000) return subtotal - Math.round(subtotal / 10);\n    if (key === \"FLAT500\") return Math.max(0, subtotal - 500);\n    return subtotal;\n  },\n  \"an unknown code takes 10% off anyway\": (subtotal, code) => {\n    const key = normalize(code);\n    if (key === \"FLAT500\") return Math.max(0, subtotal - 500);\n    if (key && subtotal >= 5000) return subtotal - Math.floor(subtotal / 10);\n    return subtotal;\n  },\n};\n\nconst cases = () => {\n  const list = discountCases();\n  assert.ok(Array.isArray(list) && list.length > 0, \"discountCases() must return a list of cases\");\n  return list;\n};\n\ntest(\"every case passes against the real function\", () => {\n  for (const item of cases()) {\n    assert.equal(real(item.subtotal, item.code), item.expected,\n      `Your case { subtotal: ${item.subtotal}, code: ${JSON.stringify(item.code)} } expects ${item.expected}, but the rules give ${real(item.subtotal, item.code)}.`);\n  }\n});\n\nfor (const [bug, broken] of Object.entries(mutants)) {\n  test(`catches the bug: ${bug}`, () => {\n    const caught = cases().some((item) => broken(item.subtotal, item.code) !== item.expected);\n    assert.ok(caught, `None of your cases fails when ${bug}.`);\n  });\n}\n",
+    "setup": "",
+    "probe": null
   },
   {
     "id": "email-lookup",
@@ -1454,6 +1548,23 @@ export const labs: LabDefinition[] = [
     "starter": "async function buyOne(db, productId) {\n  const { rows } = await db.query(\"select stock from products where id = $1\", [productId]);\n  if (rows[0].stock < 1) return false;\n  await db.query(\"update products set stock = $1 where id = $2\", [rows[0].stock - 1, productId]);\n  await db.query(\"insert into orders (product_id) values ($1)\", [productId]);\n  return true;\n}\n",
     "tests": "async function stockOf(productId) {\n  return (await db.query(\"select stock from products where id = $1\", [productId])).rows[0].stock;\n}\n\nasync function ordersFor(productId) {\n  return (await db.query(\"select count(*)::int as n from orders where product_id = $1\", [productId])).rows[0].n;\n}\n\ntest(\"five buyers, three in stock: exactly three orders\", async () => {\n  const results = await Promise.all(Array.from({ length: 5 }, () => buyOne(db, 1)));\n  assert.equal(results.filter(Boolean).length, 3, \"three buyers should succeed\");\n  assert.equal(await ordersFor(1), 3);\n  assert.equal(await stockOf(1), 0);\n});\n\ntest(\"stock never goes below zero\", async () => {\n  await Promise.all(Array.from({ length: 6 }, () => buyOne(db, 2)));\n  assert.equal(await stockOf(2), 0);\n  assert.equal(await ordersFor(2), 2);\n});\n\ntest(\"a sold-out product returns false\", async () => {\n  assert.equal(await buyOne(db, 1), false);\n});\n",
     "setup": "create table products (\n  id int primary key,\n  name text not null,\n  stock int not null\n);\ninsert into products values (1, 'Desk lamp', 3), (2, 'Notebook', 2);\n\ncreate table orders (\n  id serial primary key,\n  product_id int not null references products (id),\n  created_at timestamptz not null default now()\n);\n",
+    "probe": null
+  },
+  {
+    "id": "team-docs",
+    "title": "Check membership, not just sign-in",
+    "topics": [
+      "sec.resource_authorization"
+    ],
+    "modes": [
+      "implement"
+    ],
+    "runner": "pglite",
+    "timeoutMs": 20000,
+    "readme": "A team app keeps documents per organisation. People join organisations as a `viewer`, `editor` or `admin`:\n\n| User | Acme (org 1) | Globex (org 2) |\n|---|---|---|\n| Ana (1) | editor | |\n| Ben (2) | viewer | |\n| Cy (3) | | admin |\n| Dee (4) | | |\n\nAcme has documents 1 and 2; Globex has document 3. `actor` is the signed-in user, `{ userId }`, or `null`.\n\nThe starter only checks that someone is signed in. Anyone can read any document by guessing its id, list any\norganisation's documents, and a viewer can edit. Fix the three functions:\n\n- `getDocument(db, actor, docId)`: the document, or `null` when it doesn't exist or the actor isn't a member of its\n  organisation. Both cases must look the same, so an outsider can't learn which ids exist.\n- `listDocuments(db, actor, orgId)`: that organisation's documents in id order, or `[]` for a non-member.\n- `updateDocument(db, actor, docId, { title, body })`: editors and admins may change title and body. A viewer gets an\n  error whose message includes `forbidden`. A non-member gets `null`, as if the document didn't exist.\n\nAll three throw an error mentioning `sign in` when `actor` is `null`. Check membership in the database on every call,\nso a removed member loses access at once.\n\nThen explain the difference between who someone is (authentication) and what they may touch (authorization), and why\nthe membership check belongs in the same query as the read or write.",
+    "starter": "async function getDocument(db, actor, docId) {\n  if (!actor) throw new Error(\"Please sign in\");\n  const { rows } = await db.query(\"select * from documents where id = $1\", [docId]);\n  return rows[0] ?? null;\n}\n\nasync function listDocuments(db, actor, orgId) {\n  if (!actor) throw new Error(\"Please sign in\");\n  const { rows } = await db.query(\"select * from documents where org_id = $1 order by id\", [orgId]);\n  return rows;\n}\n\nasync function updateDocument(db, actor, docId, changes) {\n  const doc = await getDocument(db, actor, docId);\n  if (!doc) return null;\n  const { rows } = await db.query(\n    \"update documents set title = $1, body = $2 where id = $3 returning *\",\n    [changes.title, changes.body, docId],\n  );\n  return rows[0];\n}\n",
+    "tests": "const ana = { userId: 1 }, ben = { userId: 2 }, cy = { userId: 3 }, dee = { userId: 4 };\nconst titleOf = async (id) => (await db.query(\"select title from documents where id = $1\", [id])).rows[0].title;\n\ntest(\"members read their organisation's documents\", async () => {\n  assert.equal((await getDocument(db, ana, 1))?.title, \"Roadmap\");\n  assert.equal((await getDocument(db, ben, 2))?.title, \"Pricing\", \"viewers can read\");\n  assert.equal((await getDocument(db, cy, 3))?.title, \"Plans\");\n});\n\ntest(\"an outsider gets null, exactly as for a document that doesn't exist\", async () => {\n  assert.equal(await getDocument(db, cy, 1), null, \"Cy is in Globex, not Acme\");\n  assert.equal(await getDocument(db, dee, 1), null, \"Dee isn't in any organisation\");\n  assert.equal(await getDocument(db, ana, 3), null);\n  assert.equal(await getDocument(db, ana, 999), null);\n});\n\ntest(\"listing is limited to members\", async () => {\n  assert.deepEqual((await listDocuments(db, ana, 1)).map((doc) => doc.title), [\"Roadmap\", \"Pricing\"]);\n  assert.deepEqual(await listDocuments(db, cy, 1), []);\n  assert.deepEqual(await listDocuments(db, dee, 2), []);\n});\n\ntest(\"a viewer can't edit\", async () => {\n  await assert.rejects(() => updateDocument(db, ben, 1, { title: \"Hacked\", body: \"x\" }), /forbidden/i);\n  assert.equal(await titleOf(1), \"Roadmap\");\n});\n\ntest(\"an editor can edit; an outsider can't, and can't tell the document exists\", async () => {\n  const updated = await updateDocument(db, ana, 1, { title: \"Roadmap v2\", body: \"Ship the beta in June\" });\n  assert.equal(updated?.title, \"Roadmap v2\");\n  assert.equal(await updateDocument(db, cy, 2, { title: \"Hacked\", body: \"x\" }), null);\n  assert.equal(await titleOf(2), \"Pricing\");\n  assert.equal(await updateDocument(db, dee, 999, { title: \"x\", body: \"x\" }), null);\n});\n\ntest(\"signed-out callers are turned away\", async () => {\n  await assert.rejects(() => getDocument(db, null, 1), /sign in/i);\n  await assert.rejects(() => listDocuments(db, null, 1), /sign in/i);\n  await assert.rejects(() => updateDocument(db, null, 1, { title: \"x\", body: \"x\" }), /sign in/i);\n});\n\ntest(\"removing a member takes effect at once\", async () => {\n  await db.query(\"delete from memberships where user_id = 1 and org_id = 1\");\n  assert.equal(await getDocument(db, ana, 1), null);\n  assert.deepEqual(await listDocuments(db, ana, 1), []);\n  assert.equal(await updateDocument(db, ana, 1, { title: \"Late edit\", body: \"x\" }), null);\n  assert.equal(await titleOf(1), \"Roadmap v2\");\n});\n",
+    "setup": "create table users (id int primary key, name text not null);\ncreate table orgs (id int primary key, name text not null);\ncreate table memberships (\n  user_id int not null references users,\n  org_id int not null references orgs,\n  role text not null check (role in ('viewer', 'editor', 'admin')),\n  primary key (user_id, org_id)\n);\ncreate table documents (\n  id serial primary key,\n  org_id int not null references orgs,\n  title text not null,\n  body text not null\n);\ninsert into users (id, name) values (1, 'Ana'), (2, 'Ben'), (3, 'Cy'), (4, 'Dee');\ninsert into orgs (id, name) values (1, 'Acme'), (2, 'Globex');\ninsert into memberships (user_id, org_id, role) values (1, 1, 'editor'), (2, 1, 'viewer'), (3, 2, 'admin');\ninsert into documents (org_id, title, body) values\n  (1, 'Roadmap', 'Ship the beta in May'),\n  (1, 'Pricing', 'Three tiers'),\n  (2, 'Plans', 'Expand to Europe');\n",
     "probe": null
   },
   {

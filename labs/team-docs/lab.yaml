@@ -1,0 +1,6 @@
+id: team-docs
+title: Check membership, not just sign-in
+topics: [sec.resource_authorization]
+modes: [implement]
+runner: pglite
+timeoutMs: 20000
