@@ -15,9 +15,9 @@ export async function DELETE(request: Request) {
   return memoryResponse(async () => {
     const userId = await browserOwner(request);
     const input = await readMemoryJson(request);
-    if (!input || typeof input !== "object" || Array.isArray(input)) throw new MemoryInputError("Invalid revoke request.");
+    if (!input || typeof input !== "object" || Array.isArray(input)) throw new MemoryInputError("Couldn't revoke. Reload the page");
     const { id } = input as Record<string, unknown>;
-    if (typeof id !== "string" || !/^[a-f0-9-]{36}$/.test(id)) throw new MemoryInputError("Invalid key ID.");
+    if (typeof id !== "string" || !/^[a-f0-9-]{36}$/.test(id)) throw new MemoryInputError("Couldn't revoke. Reload the page");
     await revokeMemoryCredential(userId, id);
     return { revoked: true };
   });
