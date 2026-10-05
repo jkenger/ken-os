@@ -16,10 +16,12 @@ import { GuideChat, type GuideProposals } from "../profile/guide-chat";
 import { Question, type AnswerPayload, type AssessmentView } from "../topic/answers";
 import { post, textarea } from "../topic/client";
 import { RubricChecklist } from "../topic/feedback";
+import { Panel, Stat, TitleBar } from "../panel";
 import { label, labelWords, modeWords, toneFor } from "../words";
 
 // The baseline assessment and its retakes. Design: docs/architecture/engineering-lab-profile.md, sections 3 and 4.
-// Closed-book: this page turns off term lookup, and grades stay hidden until a chapter is done.
+// Closed-book: this page turns off term lookup, and grades stay hidden until a chapter is done. Laid out in the lab's
+// tight bordered layout (panel.tsx): a title bar, then bordered panels at full width.
 
 const emptyIntake: IntakeAnswers = { building: "", stack: "", aiWork: "", weeklyHours: 5 };
 
@@ -48,10 +50,9 @@ function IntakeCard({ proposal, onSaved }: { proposal: IntakeAnswers | null; onS
   }
 
   return (
-    <section className="rounded-xl border border-border p-5" aria-labelledby="intake-title">
-      <p className={label} id="intake-title">From your intro</p>
-      <p className="mt-2 text-sm text-muted-foreground">Edit anything. Steers where questions start; never graded</p>
-      <div className="mt-4 space-y-3">
+    <Panel title="From your intro" meta="Steers where questions start; never graded">
+      <p className="text-sm text-muted-foreground">Edit anything</p>
+      <div className="mt-3 space-y-3">
         {field("building", "What you build", "e.g. my own web products, a SaaS for clinics")}
         {field("stack", "What you use day to day", "Languages, frameworks, databases, hosting")}
         {field("aiWork", "AI work you've already started", "Even partly: embeddings, RAG, agents, evals")}
@@ -62,18 +63,18 @@ function IntakeCard({ proposal, onSaved }: { proposal: IntakeAnswers | null; onS
       </div>
       {problem && <p className="mt-3 rounded-lg bg-muted px-4 py-3 text-sm" role="alert">{problem}</p>}
       <Button type="button" className="mt-4" disabled={busy || !values.building.trim() || !values.stack.trim() || !values.aiWork.trim()} onClick={() => void save()}>{busy ? "Saving…" : "Save and continue"}</Button>
-    </section>
+    </Panel>
   );
 }
 
 function ChapterList({ run, focus }: { run: RunView; focus: string | null }) {
   return (
-    <ol className="space-y-1.5">
+    <ol className="divide-y divide-border">
       {run.chapters.map((chapter, index) => (
         <li key={chapter.chapterId}>
           <Link
             href={`/lab/assessment?run=${run.id}&chapter=${chapter.chapterId}`}
-            className={cn("flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-sm hover:bg-muted/60", focus === chapter.chapterId ? "border-foreground" : "border-border")}
+            className={cn("flex items-center justify-between gap-3 px-4 py-2.5 text-sm hover:bg-muted/60", focus === chapter.chapterId && "bg-muted font-semibold")}
             aria-current={focus === chapter.chapterId ? "step" : undefined}
           >
             <span><span className="text-muted-foreground">{index + 1}.</span> {chapter.title}</span>
@@ -89,15 +90,14 @@ function ChapterList({ run, focus }: { run: RunView; focus: string | null }) {
 
 function ChapterResults({ chapter }: { chapter: RunChapterView }) {
   return (
-    <section className="rounded-xl border border-border p-5" aria-labelledby={`results-${chapter.chapterId}`}>
-      <p className={label} id={`results-${chapter.chapterId}`}>{chapter.title} · Results</p>
+    <Panel title={`${chapter.title} · Results`} id={`results-${chapter.chapterId}`}>
       {chapter.kind === "topics" && (
-        <ul className="mt-3 space-y-1.5 text-sm">
+        <ul className="space-y-1.5 text-sm">
           {chapter.topics.map((topic) => <li key={topic.topicId} className="flex flex-wrap items-center gap-2"><span className="font-semibold">{topic.title}</span>{topic.label && <Pill tone={toneFor(topic.label)}>{labelWords[topic.label]}</Pill>}{topic.label === "solid" && <span className="text-muted-foreground">Placed · can skip</span>}</li>)}
           {chapter.skipped.length > 0 && <li className="text-muted-foreground">Skipped as known: {chapter.skipped.length} topic{chapter.skipped.length === 1 ? "" : "s"}</li>}
         </ul>
       )}
-      {chapter.kind === "screen" && <p className="mt-2 text-sm text-muted-foreground">No lessons yet · estimate only, never proves a topic</p>}
+      {chapter.kind === "screen" && <p className="text-sm text-muted-foreground">No lessons yet · estimate only, never proves a topic</p>}
       <details className="mt-3">
         <summary className="cursor-pointer text-sm font-semibold">All answers</summary>
         <ul className="mt-3 space-y-4">
@@ -112,7 +112,7 @@ function ChapterResults({ chapter }: { chapter: RunChapterView }) {
           ))}
         </ul>
       </details>
-    </section>
+    </Panel>
   );
 }
 
@@ -180,16 +180,24 @@ export function LabAssessment({ email, intake, conversation, run, focus, baselin
 
   const kind = run?.kind ?? (baselineDone ? "checkpoint" : "baseline");
   const state = !run ? (intake ? "Not started" : "Intro") : run.completedAt ? null : "Closed-book · one chapter at a time";
+  const chaptersDone = run ? run.chapters.filter((chapter) => chapter.status === "done").length : 0;
 
   return (
     <WorkspaceShell email={email} active="lab" termLookup={false}>
-      <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-[1100px] border-x border-border px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-        <h1 className="font-display text-4xl font-bold leading-[1.08] tracking-[-0.065em] sm:text-5xl">{kind === "baseline" ? "Baseline" : "Checkpoint"}</h1>
-        {state && <p className="mt-2 text-sm text-muted-foreground">{state}</p>}
-        {problem && <p className="mt-6 rounded-lg bg-muted px-4 py-3 text-sm" role="alert">{problem}</p>}
+      <div className="w-full px-5 py-6 sm:px-8">
+        <TitleBar
+          kicker={state ?? undefined}
+          title={kind === "baseline" ? "Baseline" : "Checkpoint"}
+          stats={run ? <>
+            <Stat label="Chapters" value={`${chaptersDone} of ${run.chapters.length}`} />
+            <Stat label="AI uses" value={`${run.generations} of ${run.allowance}`} />
+            {run.completedAt && <Stat label="Finished" value={new Date(run.completedAt).toLocaleDateString("en", { month: "short", day: "numeric" })} />}
+          </> : undefined}
+        />
+        {problem && <p className="mt-4 rounded-md border border-border px-4 py-2.5 text-sm" role="alert">{problem}</p>}
 
         {!run && !intake && (
-          <div className="mt-8 grid gap-6 lg:grid-cols-2">
+          <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
             <GuideChat
               phase="intake" history={conversation}
               opener="Hi. Before the questions, tell me what you build, what you use day to day, what AI work you've already started, and how many hours a week you can give this. A few sentences is plenty."
@@ -200,7 +208,7 @@ export function LabAssessment({ email, intake, conversation, run, focus, baselin
         )}
 
         {!run && intake && (
-          <section className="mt-8 max-w-[720px] rounded-xl border border-foreground p-6">
+          <Panel className="mt-4 max-w-[760px] border-foreground" title={`${kind === "baseline" ? "Baseline" : "Checkpoint"} · Not started`}>
             <details className="group" open={!baselineDone}>
               <DisclosureSummary className="text-sm font-semibold">How this works</DisclosureSummary>
               <ul className="mt-3 list-disc space-y-1 pl-11 text-sm text-muted-foreground">
@@ -213,45 +221,44 @@ export function LabAssessment({ email, intake, conversation, run, focus, baselin
                 <li>Pause between chapters</li>
               </ul>
             </details>
-            <Button size="lg" className="mt-5" disabled={busy === "start"} onClick={() => void start(baselineDone ? "checkpoint" : "baseline")}>
+            <Button className="mt-4" disabled={busy === "start"} onClick={() => void start(baselineDone ? "checkpoint" : "baseline")}>
               {busy === "start" ? "Starting…" : baselineDone ? "Start checkpoint" : "Start baseline"}<ButtonEndIcon><ArrowRight size={15} /></ButtonEndIcon>
             </Button>
-          </section>
+          </Panel>
         )}
 
         {run && (
-          <div className="mt-8 grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-            <nav aria-label="Chapters" className="order-2 lg:order-none">
-              <p className={cn(label, "mb-3")}>{run.chapters.filter((chapter) => chapter.status === "done").length} of {run.chapters.length} chapters done</p>
-              <ChapterList run={run} focus={focusChapter?.chapterId ?? null} />
-              <p className="mt-3 text-xs text-muted-foreground">AI uses: {run.generations} of {run.allowance}</p>
+          <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-[300px_minmax(0,1fr)] lg:items-start">
+            <nav aria-label="Chapters" className="order-2 lg:sticky lg:top-6 lg:order-none">
+              <Panel title="Chapters" meta={`${chaptersDone} of ${run.chapters.length} done`} bodyClassName="p-0">
+                <ChapterList run={run} focus={focusChapter?.chapterId ?? null} />
+              </Panel>
             </nav>
-            <div className="min-w-0 space-y-4">
+            <div className="min-w-0 max-w-[880px] space-y-4">
               {run.completedAt && (
-                <section className="rounded-xl border border-foreground p-6">
-                  <p className="text-[15px] leading-6">Finished {new Date(run.completedAt).toLocaleDateString("en", { month: "long", day: "numeric" })} · {run.kind === "baseline" ? "Baseline · never changes" : "Shown next to the baseline"}</p>
-                  <div className="mt-4 flex flex-wrap gap-2">
+                <Panel title={`Finished ${new Date(run.completedAt).toLocaleDateString("en", { month: "long", day: "numeric" })}`} className="border-foreground">
+                  <p className="text-sm">{run.kind === "baseline" ? "Baseline · never changes" : "Shown next to the baseline"}</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
                     <Button asChild><Link href="/lab/profile">Open profile</Link></Button>
                     {run.kind === "baseline" && <Button asChild variant="outline"><Link href="/lab/profile?pane=roles">Choose direction</Link></Button>}
                   </div>
-                </section>
+                </Panel>
               )}
               {!run.completedAt && focusChapter && focusChapter.status !== "done" && (
                 run.current && run.current.chapterId === focusChapter.chapterId
                   ? <CurrentQuestion run={run} onAnswered={answered} />
                   : (
-                    <section className="rounded-xl border border-border p-6">
-                      <p className={label}>{focusChapter.title}</p>
-                      <p className="mt-2 text-[15px] leading-6">
+                    <Panel title={focusChapter.title}>
+                      <p className="text-sm leading-6">
                         {focusChapter.kind === "topics"
                           ? `${focusChapter.topics.length} topic${focusChapter.topics.length === 1 ? "" : "s"}${focusChapter.skipped.length ? ` · ${focusChapter.skipped.length} skipped as known` : ""}`
                           : "No lessons yet · placement check, 2 questions"}
                         {focusChapter.unwritten > 0 && focusChapter.status === "in_progress" ? ` · ${focusChapter.unwritten} topic${focusChapter.unwritten === 1 ? "" : "s"} need${focusChapter.unwritten === 1 ? "s" : ""} questions` : ""}
                       </p>
-                      <Button className="mt-4" disabled={Boolean(busy)} onClick={() => void prepare(focusChapter.chapterId)}>
+                      <Button className="mt-3" disabled={Boolean(busy)} onClick={() => void prepare(focusChapter.chapterId)}>
                         {busy === focusChapter.chapterId ? "Writing questions…" : focusChapter.unwritten > 0 && focusChapter.status === "in_progress" ? "Write questions" : "Start chapter"}
                       </Button>
-                    </section>
+                    </Panel>
                   )
               )}
               {run.chapters.filter((chapter) => chapter.status === "done" && (run.completedAt || chapter.chapterId === focusChapter?.chapterId || chapter.chapterId === focus)).map((chapter) => <ChapterResults key={chapter.chapterId} chapter={chapter} />)}

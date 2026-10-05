@@ -132,7 +132,7 @@ export function Question({ assessment, index, onDone, heading, submitTo }: {
   }
 
   return (
-    <article className="rounded-xl border border-border p-5">
+    <article className="rounded-lg border border-border p-5">
       <p className={label}>{heading ?? `Question ${index + 1} of ${assessment.items.length}`} · {modeWords[item.mode]}</p>
       <div className="mt-2"><Markdown text={item.prompt} /></div>
       {item.code && <div className="mt-3"><CodeBlock code={item.code} label={`Code for question ${index + 1}`} /></div>}
