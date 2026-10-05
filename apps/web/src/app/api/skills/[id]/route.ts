@@ -11,13 +11,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const session = await getSession();
   if (!session) return NextResponse.json({ error: messages.signedOut }, { status: 401 });
   const { id } = await params;
-  if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: "Invalid skill ID." }, { status: 400 });
+  if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: "Skill not found. Reload the page" }, { status: 400 });
   const input = await request.json().catch(() => null) as { enabled?: unknown } | null;
   if (typeof input?.enabled !== "boolean") return NextResponse.json({ error: "Expected enabled: true or false." }, { status: 400 });
   try {
     await setSkillEnabled(session.userId, id, input.enabled);
     return NextResponse.json({ enabled: input.enabled });
   } catch (error) {
-    return NextResponse.json({ error: error instanceof Error ? error.message : "Could not update skill." }, { status: 400 });
+    return NextResponse.json({ error: error instanceof Error ? error.message : "Couldn't update. Try again" }, { status: 400 });
   }
 }
