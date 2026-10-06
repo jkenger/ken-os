@@ -8,7 +8,7 @@ import {
 } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { labAssessments, labAttempts, labLessons, labProgress, labProgressChanges, labRadarItems, labSolutionReveals, labSourcePackets } from "@/lib/schema";
-import { assessorModes, baseline, baselineAttempts, findLab, findTopic, labsForTopic, topicMap } from "./curriculum";
+import { assessorModes, findLab, findTopic, labsForTopic, topicMap } from "./curriculum";
 import { LabInputError } from "./errors";
 import { assertRunTurn, completedBaseline, completeRunIfDone, topicIsClosedBook } from "./run-state";
 import { labSolutions } from "./generated/lab-solutions.generated";
@@ -40,23 +40,18 @@ export function toRecord(row: typeof labAttempts.$inferSelect): AttemptRecord {
   };
 }
 
-/**
- * The retired 2026-10-01 summary, replayed as attempts, but only until the in-app baseline is finished. After that
- * the baseline comes from your own answers. Design: docs/architecture/engineering-lab-profile.md, section 8.
- */
-async function legacyBaseline(userId: string): Promise<AttemptRecord[]> {
-  return (await completedBaseline(userId)) ? [] : baselineAttempts();
-}
+// The 2026-10-01 summary was retired on 2026-10-06 (engineering-lab-profile.md section 8). The baseline is the in-app
+// run only; before it's finished there is none.
 
-/** When the baseline was taken, and which one: the in-app run, or the retired summary until the run is finished. */
-export async function baselineInfo(userId: string): Promise<{ on: string; source: "run" | "summary" }> {
+/** When the in-app baseline finished, or null before it has. */
+export async function baselineInfo(userId: string): Promise<{ on: string | null }> {
   const run = await completedBaseline(userId);
-  return run?.completedAt ? { on: run.completedAt.toISOString(), source: "run" } : { on: `${baseline.assessedOn}T12:00:00Z`, source: "summary" };
+  return { on: run?.completedAt?.toISOString() ?? null };
 }
 
-/** The baseline for one topic, in the shape the Tutor reads: from the in-app run once finished, else the old summary. */
+/** The in-app baseline's result for one topic, in the shape the Tutor reads. Null before the baseline is finished. */
 export async function baselineEntryFor(userId: string, topicId: string): Promise<BaselineEntry | null> {
-  if (!(await completedBaseline(userId))) return baseline.entries.find((entry) => entry.topicId === topicId) ?? null;
+  if (!(await completedBaseline(userId))) return null;
   const rows = await db().select().from(labAttempts).where(and(eq(labAttempts.userId, userId), eq(labAttempts.topicId, topicId), eq(labAttempts.kind, "baseline")));
   const label = baselineLabelOf(rows);
   if (!label) return null;
@@ -98,7 +93,7 @@ async function recompute(tx: Transaction, userId: string, topicId: string, cause
     .where(and(eq(labProgress.userId, userId), eq(labProgress.topicId, topicId))).for("update");
   const rows = await tx.select().from(labAttempts).where(and(eq(labAttempts.userId, userId), eq(labAttempts.topicId, topicId)));
   const [lesson] = await tx.select({ id: labLessons.id }).from(labLessons).where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId))).limit(1);
-  const { progress } = computeProgress(topic, [...(await legacyBaseline(userId)), ...rows.map(toRecord)], Boolean(lesson));
+  const { progress } = computeProgress(topic, rows.map(toRecord), Boolean(lesson));
   await tx.update(labProgress).set({ status: progress.status, progress, updatedAt: new Date() })
     .where(and(eq(labProgress.userId, userId), eq(labProgress.topicId, topicId)));
   if (current && current.status !== progress.status) {
@@ -113,7 +108,7 @@ async function recompute(tx: Transaction, userId: string, topicId: string, cause
 
 function emptyProgress(topicId: string): TopicProgress {
   const topic = requireTopic(topicId);
-  return computeProgress(topic, baselineAttempts(), false).progress;
+  return computeProgress(topic, [], false).progress;
 }
 
 /**
@@ -121,12 +116,11 @@ function emptyProgress(topicId: string): TopicProgress {
  * proof mode) can never leave a stale status on screen. lab_progress only remembers the last status for the change log.
  */
 export async function getAllProgress(userId: string): Promise<TopicProgress[]> {
-  const [rows, lessons, legacy] = await Promise.all([
+  const [rows, lessons] = await Promise.all([
     db().select().from(labAttempts).where(eq(labAttempts.userId, userId)),
     db().selectDistinct({ topicId: labLessons.topicId }).from(labLessons).where(eq(labLessons.userId, userId)),
-    legacyBaseline(userId),
   ]);
-  const attempts = [...legacy, ...rows.map(toRecord)];
+  const attempts = rows.map(toRecord);
   const started = new Set(lessons.map((row) => row.topicId));
   return topicMap.topics.map((topic) => computeProgress(topic, attempts, started.has(topic.id)).progress);
 }
@@ -414,8 +408,8 @@ export interface TopicView {
   /** A validated topic whose next review date has arrived. */
   reviewDue: boolean;
   practiceResults: Record<number, { label: string; feedback: string; voided: boolean; answer: SavedAnswer }>;
-  /** When the baseline this topic's label comes from was taken. */
-  baseline: { on: string; source: "run" | "summary" };
+  /** When the in-app baseline finished, or null before it has. */
+  baseline: { on: string | null };
   /** An assessment that asks about this topic is in progress, so its lesson stays closed. */
   closedBook: boolean;
 }

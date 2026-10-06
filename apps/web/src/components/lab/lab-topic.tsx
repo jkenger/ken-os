@@ -94,7 +94,7 @@ function Proof({ topic, view }: { topic: Topic; view: TopicView }) {
       </ul>
       <p className="mt-3 text-sm text-muted-foreground">
         {[
-          progress.baselineLabel ? `Baseline · ${formatDate(view.baseline.on)} · ${labelWords[progress.baselineLabel]}` : "Baseline · not assessed",
+          progress.baselineLabel && view.baseline.on ? `Baseline · ${formatDate(view.baseline.on)} · ${labelWords[progress.baselineLabel]}` : view.baseline.on ? "Baseline · not asked" : "Baseline · not taken",
           progress.confidence.averageSelfRating !== null ? `Confidence · ${progress.confidence.averageSelfRating} of 5` : null,
           progress.confidence.overconfident ? "Confident misconception" : null,
           progress.nextReviewAt ? `Next review · ${formatDate(progress.nextReviewAt)}` : null,

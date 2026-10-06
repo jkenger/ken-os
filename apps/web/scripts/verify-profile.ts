@@ -24,10 +24,11 @@ async function main() {
   try {
     const before = await profiles.getProfileView(userId);
     assert.equal(before.baseline.state, "none");
-    assert.equal((await store.getAllProgress(userId)).find((item) => item.topicId === "js.event_loop")?.baselineLabel, "misconception", "the old summary stands in until the run is done");
+    assert.equal((await store.getAllProgress(userId)).find((item) => item.topicId === "js.event_loop")?.baselineLabel, null, "the 1 Oct summary is retired: no baseline label before the run");
+    assert.equal((await store.baselineEntryFor(userId, "js.event_loop")), null, "and nothing for the Tutor yet");
     await assert.rejects(profiles.chooseDirection(userId, "fullstack-developer"), /after your baseline/);
     await profiles.saveIntake(userId, profiles.validIntake({ building: "My own products", stack: "Next.js and Postgres", aiWork: "Embeddings", weeklyHours: 6 }));
-    console.log("ok - fresh profile: no baseline, old summary stands in, intake saved, direction waits");
+    console.log("ok - fresh profile: no baseline and no 1 Oct summary, intake saved, direction waits");
 
     const started = await runs.startRun(userId, "baseline");
     const again = await runs.startRun(userId, "baseline");
@@ -92,12 +93,12 @@ async function main() {
     const of = (id: string) => progress.find((item) => item.topicId === id)!;
     assert.equal(of("js.call_stack").placement, "passed", "two solid answers place a topic");
     assert.equal(of("js.call_stack").baselineLabel, "solid");
-    assert.notEqual(of("js.event_loop").baselineLabel, "misconception", "the old summary is gone; the label comes from the run");
+    assert.ok(of("js.event_loop").baselineLabel, "the label comes from the run");
     assert.equal(of("js.closures").placement, "failed");
     assert.equal((await store.baselineEntryFor(userId, "js.call_stack"))?.label, "solid", "the Tutor reads the run's result");
     assert.equal((await store.getTopicView(userId, "js.event_loop")).closedBook, false, "lessons open again");
-    assert.equal((await store.baselineInfo(userId)).source, "run");
-    console.log("ok - the in-app baseline replaces the old summary everywhere: labels, placement, Tutor input, topic pages");
+    assert.ok((await store.baselineInfo(userId)).on, "the topic page shows when the baseline finished");
+    console.log("ok - the in-app baseline is the only baseline: labels, placement, Tutor input, topic pages");
 
     const view = await runs.getRunView(userId, run.id);
     assert.ok(view.completedAt);

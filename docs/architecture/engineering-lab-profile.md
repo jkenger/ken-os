@@ -211,6 +211,8 @@ Radar items stay out of the graded set. Trying a new model is exploring, not rec
 
 ## 8. Retiring the 1 Oct baseline
 
+**Done 2026-10-06, before the in-app baseline, at the owner's request** (the order below put it after). `baseline.yaml`, its parser and the generated copy are deleted; the topic gaps say what each topic teaches; the handoff's sections 2 to 4 are a pointer; the `AGENTS.md` rules are updated. Real answers stay. Until the in-app baseline is finished there is no baseline at all: no baseline labels, nothing for the Tutor to quote, and the Planner starts from the course order.
+
 The owner chose to retire it fully. It happens in slice 1, after the first in-app run is complete, never before:
 
 1. Delete `content/engineering-lab/learner/baseline.yaml`, `parseBaseline`, `baselineAttempts` and the generated baseline, and regenerate with `lab:generate`.

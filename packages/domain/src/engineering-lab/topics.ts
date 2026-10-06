@@ -63,11 +63,6 @@ export interface BaselineEntry {
   misconceptions: string[];
 }
 
-export interface Baseline {
-  assessedOn: string;
-  entries: BaselineEntry[];
-}
-
 const FRESHNESS: FreshnessClass[] = ["core_concept", "web_platform", "framework", "ai_ecosystem"];
 
 function fail(where: string, message: string): never {
@@ -203,28 +198,6 @@ export function attachPoints(map: TopicMap, raw: unknown): { map: TopicMap; stat
     return { ...topic, points };
   });
   return { map: { ...map, topics }, status, reviewedOn };
-}
-
-export function parseBaseline(raw: unknown, map: TopicMap): Baseline {
-  const input = raw as { assessedOn?: unknown; entries?: unknown };
-  const assessedOn = text(input?.assessedOn, "baseline.assessedOn");
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(assessedOn)) fail("baseline.assessedOn", "expected YYYY-MM-DD");
-  const ids = new Set(map.topics.map((topic) => topic.id));
-  const entries = list(input.entries, "baseline.entries").map((value, index): BaselineEntry => {
-    const item = value as Record<string, unknown>;
-    const where = `baseline.entries[${index}]`;
-    const topicId = text(item.topicId, `${where}.topicId`);
-    if (!ids.has(topicId)) fail(where, `unknown topic ${topicId}`);
-    return {
-      topicId,
-      label: oneOf(item.label, LABELS, `${where}.label`),
-      mode: oneOf(item.mode ?? "explain", MODES, `${where}.mode`),
-      notes: text(item.notes, `${where}.notes`),
-      misconceptions: list(item.misconceptions, `${where}.misconceptions`).map((value) => text(value, `${where}.misconceptions`)),
-    };
-  });
-  if (new Set(entries.map((entry) => entry.topicId)).size !== entries.length) fail("baseline", "one entry per topic");
-  return { assessedOn, entries };
 }
 
 export function researchTargetFor(topic: Topic): ResearchTarget {

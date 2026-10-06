@@ -1,7 +1,7 @@
-import type { AttemptRecord, Mode, Topic } from "@ken-os/domain";
-import { baseline, careers, labs, topicMap } from "./generated/curriculum.generated";
+import type { Mode, Topic } from "@ken-os/domain";
+import { careers, labs, topicMap } from "./generated/curriculum.generated";
 
-export { baseline, careers, labs, topicMap };
+export { careers, labs, topicMap };
 
 export function findChapter(chapterId: string) {
   return topicMap.modules.find((module) => module.id === chapterId);
@@ -45,20 +45,3 @@ export function runModes(topic: Topic): Mode[] {
   return modes.length === 1 ? [modes[0], modes[0]] : modes;
 }
 
-/** The retired 2026-10-01 summary as attempts, so before and after come from the same history. Never proof of anything. */
-export function baselineAttempts(): AttemptRecord[] {
-  const at = new Date(`${baseline.assessedOn}T00:00:00Z`);
-  return baseline.entries.map((entry) => ({
-    id: `baseline:${entry.topicId}`,
-    topicId: entry.topicId,
-    kind: "baseline",
-    mode: entry.mode,
-    label: entry.label,
-    gradedBy: "baseline",
-    voided: false,
-    selfRating: null,
-    misconceptions: entry.misconceptions,
-    solutionSeen: false,
-    createdAt: at,
-  }));
-}
