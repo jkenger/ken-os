@@ -1,6 +1,6 @@
 # Engineering Lab decisions
 
-Status: v0 is live on ken-os-web.vercel.app ([as-built notes](engineering-lab-v0.md#as-built-2026-10-01)). The UI direction is agreed in [engineering-lab-ui.md](engineering-lab-ui.md) and comes first; the next version is proposed in [engineering-lab-v1.md](engineering-lab-v1.md). A career profile and an in-app baseline that replaces the 1 Oct one are built as described in [engineering-lab-profile.md](engineering-lab-profile.md), waiting on the owner to take the baseline. The roles were approved on 2026-10-05 and are expected to change along the way.
+Status: v0 is live on ken-os-web.vercel.app ([as-built notes](engineering-lab-v0.md#as-built-2026-10-01)). The UI direction is agreed in [engineering-lab-ui.md](engineering-lab-ui.md) and comes first; the next version, [engineering-lab-v1.md](engineering-lab-v1.md), is partly built: the full course, daily practice and the roadmap are done; the gate, knowledge debt and chapter checkpoints are not (2026-10-06). A career profile and an in-app baseline that replaces the 1 Oct one are built as described in [engineering-lab-profile.md](engineering-lab-profile.md), waiting on the owner to take the baseline. The roles were approved on 2026-10-05 and are expected to change along the way.
 
 [The handoff](../product/ai-engineering-learning-handoff.md) is the module's source of truth. This file records decisions made while building it, so the handoff and its baseline assessment stay unchanged.
 
