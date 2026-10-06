@@ -14,6 +14,56 @@ export const topicMap: TopicMap = {
       "summary": "Retrieval, structured outputs, agents and evals, built and measured."
     }
   ],
+  "books": [
+    {
+      "id": "web-foundations",
+      "title": "Web foundations",
+      "summary": "How JavaScript runs and how the browser talks to servers.",
+      "chapters": [
+        "m1-js-runtime",
+        "m2-http-browser"
+      ]
+    },
+    {
+      "id": "react-foundations",
+      "title": "React foundations",
+      "summary": "How React renders, and keeping effects in sync.",
+      "chapters": [
+        "m4-react"
+      ]
+    },
+    {
+      "id": "backend-data",
+      "title": "Backend and data",
+      "summary": "API boundaries, transactions, concurrency and indexes.",
+      "chapters": [
+        "m4-api-boundaries",
+        "m3-db-concurrency"
+      ]
+    },
+    {
+      "id": "production-engineering",
+      "title": "Production engineering",
+      "summary": "Testing, security, reliability, observability and scale.",
+      "chapters": [
+        "m5-testing-security",
+        "m6-production-reliability",
+        "m7-observability",
+        "m8-architecture-scale"
+      ]
+    },
+    {
+      "id": "ai-engineering",
+      "title": "AI engineering",
+      "summary": "Retrieval, model interfaces, agents, and running AI in production.",
+      "chapters": [
+        "a1-retrieval",
+        "a2-model-interfaces",
+        "a3-agents",
+        "a4-ai-production"
+      ]
+    }
+  ],
   "modules": [
     {
       "id": "m1-js-runtime",
@@ -123,7 +173,13 @@ export const topicMap: TopicMap = {
         "predict",
         "explain"
       ],
-      "labs": []
+      "labs": [],
+      "points": [
+        "The call stack holds the frames of functions currently running; a call pushes a frame and a return pops it",
+        "A function runs to completion; nothing else on the thread runs until the stack is empty",
+        "A long synchronous task blocks timers, promise callbacks, input handling and rendering until it finishes",
+        "Splitting heavy work into smaller tasks or moving it to a worker keeps the page responsive"
+      ]
     },
     {
       "id": "js.event_loop",
@@ -145,6 +201,13 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "event-loop-order"
+      ],
+      "points": [
+        "Synchronous code runs first, then the whole microtask queue drains, then the next task runs",
+        "Promise reactions and queueMicrotask callbacks are microtasks; setTimeout and setInterval callbacks are tasks",
+        "setTimeout with 0 ms still waits for the current task and all queued microtasks",
+        "Microtasks queued while draining also run before the next task, so an endless microtask chain starves tasks",
+        "Browsers may render between tasks, never in the middle of a task or the microtask drain"
       ]
     },
     {
@@ -164,7 +227,14 @@ export const topicMap: TopicMap = {
         "predict",
         "explain"
       ],
-      "labs": []
+      "labs": [],
+      "points": [
+        "A then or catch callback always runs asynchronously as a microtask, even on an already settled promise",
+        "Code after await resumes in a later microtask; code before the first await runs synchronously",
+        "An async function always returns a promise; returning a value fulfils it and throwing rejects it",
+        "Promise.all rejects on the first rejection; Promise.allSettled waits for every result",
+        "An unhandled rejection is not caught by a surrounding try/catch unless the promise is awaited inside it"
+      ]
     },
     {
       "id": "js.closures",
@@ -186,6 +256,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "closure-loop"
+      ],
+      "points": [
+        "A closure keeps access to the variables of the scope where the function was created, not copies of their values",
+        "var is function-scoped, so callbacks created in a loop share one variable; let creates a new binding per iteration",
+        "Each call to a factory function creates fresh variables, so separate closures keep separate state",
+        "Captured variables stay alive as long as a function that uses them is reachable"
       ]
     },
     {
@@ -206,6 +282,13 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "shallow-copy"
+      ],
+      "points": [
+        "Objects and arrays are held by reference; assigning one copies the reference, not the contents",
+        "Strict equality on objects compares identity, so two objects with the same contents are not equal",
+        "Spread and Object.assign make shallow copies; nested objects are still shared",
+        "Mutating a shared object is visible through every reference to it; an immutable update returns new objects along the changed path",
+        "structuredClone makes a deep copy of plain data, but not of functions or class behaviour"
       ]
     },
     {
@@ -229,6 +312,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "search-race"
+      ],
+      "points": [
+        "Two requests can resolve in any order, so a slow older response can overwrite a newer one",
+        "Guard results with a request identity or a latest-request check before applying them",
+        "AbortController cancels an in-flight fetch and makes it reject with an AbortError that must be handled",
+        "Debouncing reduces how many requests start but does not fix out-of-order responses on its own"
       ]
     },
     {
@@ -248,6 +337,13 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "request-anatomy"
+      ],
+      "points": [
+        "A request goes through DNS lookup, a TCP connection and a TLS handshake before the HTTP request is sent",
+        "HTTPS encrypts the request and response and authenticates the server through its certificate",
+        "Status codes group outcomes; 2xx success, 3xx redirect, 4xx client error, 5xx server error",
+        "Methods carry meaning; GET and HEAD are safe, and PUT and DELETE are idempotent while POST is not",
+        "Connection reuse and HTTP/2 multiplexing reduce the cost of many requests to one origin"
       ]
     },
     {
@@ -269,6 +365,13 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "cookie-rules"
+      ],
+      "points": [
+        "The server sets cookies with Set-Cookie and the browser sends matching cookies on later requests",
+        "HttpOnly keeps a cookie away from JavaScript; Secure sends it only over HTTPS",
+        "SameSite controls cross-site sending; Lax blocks most cross-site subrequests while allowing top-level navigation",
+        "A session cookie should hold an opaque identifier, with the session data kept on the server",
+        "Changing state through a cookie-authenticated request needs CSRF protection, such as SameSite or an origin check"
       ]
     },
     {
@@ -290,6 +393,13 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "cors-rules"
+      ],
+      "points": [
+        "The same-origin policy stops a page reading responses from another origin; CORS lets a server allow it",
+        "Without the right Access-Control-Allow-Origin, the request may still reach the server but the browser hides the response",
+        "Non-simple requests trigger a preflight OPTIONS request that the server must answer",
+        "Sending cookies cross-origin needs credentials mode and an explicit allowed origin, never a wildcard",
+        "CORS protects users' browsers, not the server; it is not authentication or access control"
       ]
     },
     {
@@ -311,6 +421,13 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "cache-rules"
+      ],
+      "points": [
+        "Cache-Control max-age sets how long a response is fresh without asking the server",
+        "ETag or Last-Modified let the browser revalidate and get a 304 Not Modified instead of the full body",
+        "no-cache means revalidate before use; no-store means never keep a copy",
+        "private keeps a response out of shared caches; responses with personal data must not be cached as public",
+        "Fingerprinted file names allow long cache lifetimes because a changed file gets a new URL"
       ]
     },
     {
@@ -330,6 +447,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "transfer-rollback"
+      ],
+      "points": [
+        "A transaction groups writes so they all commit or none do",
+        "If any step fails, roll back so no partial change is left behind",
+        "Keep transactions short and never wait on a network call to another service inside one",
+        "Isolation decides what concurrent transactions see; the default read committed still allows some anomalies"
       ]
     },
     {
@@ -351,6 +474,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "unique-signup"
+      ],
+      "points": [
+        "Unique, foreign key, check and not-null constraints make the database enforce rules every writer must follow",
+        "A check in application code alone can be raced by two requests; a constraint cannot",
+        "Handle a constraint violation as an expected outcome and return a clear error",
+        "A unique constraint is the simplest guard against duplicate records"
       ]
     },
     {
@@ -372,6 +501,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "stock-race"
+      ],
+      "points": [
+        "Read, modify in code, then write lets two requests overwrite each other's change",
+        "Fix it with an atomic update in SQL, a row lock with SELECT FOR UPDATE, or a version check",
+        "Optimistic concurrency writes only if the version is unchanged and retries or reports a conflict otherwise",
+        "The race is invisible in single-user testing; it needs concurrent requests to show up"
       ]
     },
     {
@@ -393,6 +528,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "stock-race"
+      ],
+      "points": [
+        "An update like SET stock = stock - 1 WHERE stock > 0 checks and changes in one statement",
+        "The number of affected rows tells you whether the conditional write happened",
+        "INSERT ... ON CONFLICT handles create-or-update without a separate read first",
+        "Atomic statements avoid holding locks across application code"
       ]
     },
     {
@@ -412,6 +553,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "email-lookup"
+      ],
+      "points": [
+        "An index is a separate structure, usually a B-tree, that finds rows without scanning the whole table",
+        "Postgres uses an index when it expects it to be cheaper than a sequential scan, based on statistics",
+        "Indexes speed up reads but cost storage and slow down every write",
+        "Wrapping an indexed column in a function or a mismatched type can stop the index being used"
       ]
     },
     {
@@ -433,6 +580,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "order-history-index"
+      ],
+      "points": [
+        "A composite index on (a, b) serves filters on a, or on a and b, but not on b alone",
+        "Put equality columns first and the range or sort column after them",
+        "An index whose order matches ORDER BY can return rows already sorted, which helps with LIMIT",
+        "A covering index can answer a query from the index alone"
       ]
     },
     {
@@ -454,6 +607,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "order-history-index"
+      ],
+      "points": [
+        "EXPLAIN shows the planned steps; EXPLAIN ANALYZE runs the query and shows real times and row counts",
+        "A large gap between estimated and actual rows points to stale or missing statistics",
+        "Sequential scans are fine on small tables; on large ones a missing index is often the cause",
+        "Read the plan from the innermost node out and look for the step that dominates the time"
       ]
     },
     {
@@ -477,6 +636,13 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "idempotent-payment"
+      ],
+      "points": [
+        "A retried create request can make a duplicate unless the server can recognise it",
+        "The client sends an idempotency key, and the server stores it with the first result",
+        "A repeat with the same key returns the stored result instead of acting again",
+        "A unique constraint on the key makes concurrent repeats safe",
+        "A repeat with the same key but a different body should be rejected"
       ]
     },
     {
@@ -498,6 +664,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "order-input"
+      ],
+      "points": [
+        "Types do not exist at runtime, so every request body, query and header is untrusted until validated",
+        "Validate at the trust boundary with a schema and reject invalid input with a clear 400-level error",
+        "Parse into known types, and drop or reject unknown fields rather than passing them through",
+        "Validate data from third-party APIs and model outputs, not only from users"
       ]
     },
     {
@@ -520,6 +692,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "feed-pages"
+      ],
+      "points": [
+        "Offset pagination is simple but slows down at high offsets and can skip or repeat rows when data changes",
+        "Cursor pagination continues from the last seen sort key and stays stable while rows are inserted",
+        "A cursor needs a unique, ordered sort key, often a timestamp plus an id to break ties",
+        "Cap the page size on the server and return how to fetch the next page"
       ]
     },
     {
@@ -540,6 +718,13 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "discount-tests"
+      ],
+      "points": [
+        "A good test fails when the behaviour it protects breaks, and passes otherwise",
+        "Test behaviour through the public interface, not private implementation details",
+        "Unit tests are fast and narrow; integration tests check real boundaries such as the database",
+        "Cover edge cases and failure paths, not only the happy path",
+        "Flaky tests usually come from timing, shared state or the network, and hide real failures"
       ]
     },
     {
@@ -561,6 +746,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "comment-render"
+      ],
+      "points": [
+        "XSS happens when untrusted text is inserted into a page as HTML or script",
+        "Encode output for its context; text, attributes, URLs and scripts each need different encoding",
+        "Frameworks escape text by default; APIs like dangerouslySetInnerHTML bypass that and need sanitising",
+        "A Content Security Policy limits the damage if an injection slips through"
       ]
     },
     {
@@ -584,6 +775,13 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "team-docs"
+      ],
+      "points": [
+        "Authentication says who the user is; authorization decides what they may access",
+        "Check ownership or tenant on every request on the server, never trust an id from the client",
+        "Scope queries by owner or tenant so another user's ids return nothing",
+        "Returning 404 instead of 403 avoids confirming that someone else's resource exists",
+        "A missing check on one endpoint exposes data even when the UI hides the link"
       ]
     },
     {
@@ -605,6 +803,13 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "todo-updates"
+      ],
+      "points": [
+        "A component re-renders when its state changes or its parent re-renders",
+        "Rendering calls the component function; React then updates the DOM only where the result changed",
+        "New object, array or function references on each render make props look changed and can trigger effects",
+        "State updates are applied on the next render, so reading state right after setting it gives the old value",
+        "Keys tell React which list items are the same across renders; index keys break on reordering"
       ]
     },
     {
@@ -627,6 +832,13 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "chat-connection"
+      ],
+      "points": [
+        "An effect synchronises a component with something outside React, such as a subscription or a request",
+        "The dependency array must list every reactive value the effect uses",
+        "Cleanup runs before the next effect and on unmount, and should cancel what the effect started",
+        "Values derived from props or state belong in render, not in an effect that sets state",
+        "A fetch in an effect must ignore or abort stale responses when dependencies change"
       ]
     },
     {
@@ -649,6 +861,13 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "job-queue"
+      ],
+      "points": [
+        "Slow or failure-prone work moves out of the request into a queue processed by workers",
+        "Jobs must be idempotent because they can run more than once",
+        "Failed jobs retry with backoff and land in a dead-letter queue after too many attempts",
+        "Workers claiming jobs from a table use locking, such as FOR UPDATE SKIP LOCKED, to avoid double processing",
+        "Enqueue jobs in the same transaction as the data change, or through an outbox, so neither is lost"
       ]
     },
     {
@@ -671,6 +890,13 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "retry-policy"
+      ],
+      "points": [
+        "Retry only failures that may succeed later, such as timeouts, 429s and 5xx, never validation errors",
+        "Exponential backoff spaces attempts out; a cap and a maximum attempt count keep waits bounded",
+        "Jitter spreads retries so many clients don't retry at the same moment",
+        "Respect Retry-After when the server sends it",
+        "A retried write must be idempotent, or the retry can duplicate it"
       ]
     },
     {
@@ -694,6 +920,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "request-timeout"
+      ],
+      "points": [
+        "Every call to another service needs a timeout, or one slow dependency ties up your capacity",
+        "A timeout means the outcome is unknown; the other side may have completed the work",
+        "AbortSignal.timeout or a deadline cancels the call and frees its resources",
+        "Nested timeouts should shrink down the call chain, so the caller's deadline is respected"
       ]
     },
     {
@@ -716,6 +948,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "order-saga"
+      ],
+      "points": [
+        "In a multi-step operation some steps can succeed while others fail",
+        "Decide which steps are required and which can be retried or done later",
+        "Compensating actions undo completed steps when a later step fails",
+        "A saga or outbox records progress so the operation can resume or compensate after a crash"
       ]
     },
     {
@@ -737,6 +975,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "circuit-breaker"
+      ],
+      "points": [
+        "When a non-essential dependency fails, serve a reduced experience instead of an error",
+        "A circuit breaker stops calling a failing dependency for a cooldown, then lets a trial call through",
+        "Fallbacks such as cached or default data must be clearly safe to show",
+        "Decide per feature whether to fail open or fail closed; security checks fail closed"
       ]
     },
     {
@@ -756,6 +1000,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "structured-logs"
+      ],
+      "points": [
+        "Structured logs are key-value records that can be searched and filtered, not free text",
+        "Each entry carries a request or trace id, the operation, its outcome and its duration",
+        "Never log secrets or personal data; log a safe identifier instead",
+        "Log levels separate routine events from errors that need attention"
       ]
     },
     {
@@ -775,6 +1025,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "latency-summary"
+      ],
+      "points": [
+        "Metrics are numeric measurements aggregated over time, such as request rate, error rate and latency",
+        "Averages hide slow requests; percentiles such as p95 and p99 show the tail",
+        "Histograms record a distribution so percentiles can be computed across many instances",
+        "Labels with unbounded values, such as user ids, explode metric cardinality"
       ]
     },
     {
@@ -797,6 +1053,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "trace-context"
+      ],
+      "points": [
+        "A trace follows one request across services as a tree of timed spans",
+        "Context propagation passes the trace id between services, for example in the W3C traceparent header",
+        "Traces show which hop is slow; logs explain what happened; metrics show how often",
+        "Sampling keeps tracing affordable but can drop the rare slow request"
       ]
     },
     {
@@ -819,6 +1081,13 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "read-through-cache"
+      ],
+      "points": [
+        "A cache trades freshness for speed, so decide how stale each kind of data may be",
+        "Cache-aside reads from the cache, falls back to the source and fills the cache",
+        "Invalidate or expire entries when the source changes; a TTL bounds staleness",
+        "Many requests missing the cache at once can overload the source; request coalescing or locking prevents it",
+        "Never share cached personal data across users"
       ]
     },
     {
@@ -840,6 +1109,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "load-shedding"
+      ],
+      "points": [
+        "Stateless services scale horizontally by adding instances behind a load balancer",
+        "The database is often the bottleneck; connection pools and limits protect it",
+        "Concurrency limits and queues stop overload from cascading",
+        "Load shedding rejects some requests early so the rest still succeed"
       ]
     },
     {
@@ -862,6 +1137,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "tenant-keys"
+      ],
+      "points": [
+        "Every row belongs to a tenant, and every query is scoped to the current tenant",
+        "Row-level security or a mandatory tenant filter guards against a forgotten where clause",
+        "Shared tables are cheap; separate schemas or databases isolate more at higher cost",
+        "One tenant's heavy load should not starve others; limits apply per tenant"
       ]
     },
     {
@@ -883,6 +1164,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "expand-contract"
+      ],
+      "points": [
+        "Zero-downtime changes go expand then contract; add the new shape, migrate, then remove the old one",
+        "Each deploy must work with both the old and the new schema while the migration runs",
+        "Backfills run in batches so they don't lock tables or overload the database",
+        "Feature flags separate deploying code from releasing it"
       ]
     },
     {
@@ -903,6 +1190,13 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "vector-search"
+      ],
+      "points": [
+        "An embedding turns text into a vector so similar meanings land near each other",
+        "Search embeds the query with the same model and ranks stored chunks by similarity, often cosine",
+        "Approximate indexes such as HNSW trade a little accuracy for much faster search",
+        "High similarity is not relevance; filters and evaluation are still needed",
+        "Changing the embedding model means re-embedding the stored corpus"
       ]
     },
     {
@@ -924,6 +1218,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "retrieval-metrics"
+      ],
+      "points": [
+        "Retrieval is evaluated against questions with known relevant passages",
+        "Recall@k measures how many relevant passages appear in the top k results",
+        "Change one thing at a time, such as chunk size or k, and measure again",
+        "Evaluate retrieval separately from answer quality so failures can be traced to the right step"
       ]
     },
     {
@@ -945,6 +1245,13 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "rag-prompt"
+      ],
+      "points": [
+        "RAG retrieves relevant passages and gives them to the model as context for its answer",
+        "Chunking decides what can be retrieved; chunks that are too small lose context, too large dilute it",
+        "Instruct the model to answer from the context and say when the context doesn't contain the answer",
+        "Cite sources so answers can be checked",
+        "Most bad RAG answers come from bad retrieval, not the model"
       ]
     },
     {
@@ -968,6 +1275,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "rank-fusion"
+      ],
+      "points": [
+        "Hybrid search combines keyword search such as BM25 with vector search to catch exact terms and meaning",
+        "Query rewriting or expansion improves retrieval for short or vague questions",
+        "Metadata filters narrow the search to the right documents before ranking",
+        "Fusing ranked lists, for example with reciprocal rank fusion, merges results from several retrievers"
       ]
     },
     {
@@ -989,6 +1302,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "rerank-budget"
+      ],
+      "points": [
+        "A reranker scores each retrieved passage against the query more precisely than the first-stage search",
+        "Retrieve a larger candidate set cheaply, then rerank and keep the best few",
+        "Cross-encoder rerankers read query and passage together, which is slower but more accurate",
+        "Reranking adds latency and cost, so measure whether it improves the evaluation"
       ]
     },
     {
@@ -1011,6 +1330,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "invoice-extract"
+      ],
+      "points": [
+        "Structured outputs constrain the model to return data that matches a schema",
+        "Validate the result in code anyway, and handle refusals and failures",
+        "Keep schemas small and fields clearly described so the model fills them correctly",
+        "Have a fallback path when the output is missing or invalid, rather than crashing"
       ]
     },
     {
@@ -1032,6 +1357,13 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "tool-loop"
+      ],
+      "points": [
+        "The model proposes a tool call with arguments; your code decides whether to run it and returns the result",
+        "Validate tool arguments like any untrusted input before acting on them",
+        "Tools that change data need permission checks and often a human confirmation",
+        "Clear tool names and descriptions decide whether the model picks the right tool",
+        "Limit the number of tool-call rounds so a loop can't run forever"
       ]
     },
     {
@@ -1053,6 +1385,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "context-budget"
+      ],
+      "points": [
+        "The context window is a budget; what goes in decides what the model can use",
+        "Put instructions, relevant data and the task in a clear structure, and leave out noise",
+        "Long conversations need summarising or trimming to stay within limits and on task",
+        "Untrusted content in the context can carry prompt injection, so treat it as data, not instructions"
       ]
     },
     {
@@ -1074,6 +1412,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "support-workflow"
+      ],
+      "points": [
+        "An agent loops; it decides an action, calls a tool, observes the result and decides again",
+        "Use a fixed workflow when the steps are known; use an agent only when the path must be decided at run time",
+        "Stop conditions, step limits and budgets keep an agent from running away",
+        "Every agent action is logged so a run can be inspected afterwards"
       ]
     },
     {
@@ -1095,6 +1439,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "chat-memory"
+      ],
+      "points": [
+        "The model remembers nothing between calls; memory is whatever the app stores and passes back",
+        "Short-term memory is the conversation so far; long-term memory is stored facts retrieved when relevant",
+        "Write to memory deliberately, and let the user see and correct what is stored",
+        "Memory can carry stale or injected content into later runs, so treat it as untrusted"
       ]
     },
     {
@@ -1116,6 +1466,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "mcp-server"
+      ],
+      "points": [
+        "MCP is a protocol that lets an AI application connect to tools and data through standard servers",
+        "A server exposes tools, resources and prompts; the client decides what the model may use",
+        "Each server runs with the permissions it is given, so least privilege matters",
+        "Tool descriptions and results from a server are untrusted input to the model"
       ]
     },
     {
@@ -1139,6 +1495,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "eval-gate"
+      ],
+      "points": [
+        "An eval is a fixed set of inputs with expected qualities, run on every change to a prompt or model",
+        "Score with exact checks where possible, and with rubrics or model graders where judgement is needed",
+        "A model grader needs its own checks against human labels before it is trusted",
+        "Track eval results over time so a change that helps one case and hurts others is caught"
       ]
     },
     {
@@ -1162,6 +1524,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "llm-trace"
+      ],
+      "points": [
+        "Log each model call with its inputs, outputs, model, prompt version, tokens and latency",
+        "Trace multi-step runs so a bad answer can be traced to the step that caused it",
+        "Collect user feedback and failure cases to grow the eval set",
+        "Redact personal data before storing prompts and outputs"
       ]
     },
     {
@@ -1184,6 +1552,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "smart-routing"
+      ],
+      "points": [
+        "Cost and latency grow with tokens in and out, so trim context and limit output length",
+        "Smaller models handle simple steps; route only hard cases to larger ones",
+        "Caching repeated prompts or results avoids paying twice",
+        "Streaming shows output sooner but does not reduce total time or cost"
       ]
     },
     {
@@ -1207,6 +1581,12 @@ export const topicMap: TopicMap = {
       ],
       "labs": [
         "provider-fallback"
+      ],
+      "points": [
+        "Model APIs fail and rate-limit, so calls need timeouts, retries with backoff and fallbacks",
+        "Validate every output before acting on it, because the model can return wrong or malformed results",
+        "Set budgets and limits per user and per run to contain cost",
+        "Pin model versions and re-run evals before switching models"
       ]
     }
   ]
@@ -1632,6 +2012,8 @@ export const careers: Careers = {
     }
   ]
 };
+
+export const pointsReview = {"status":"draft","reviewedOn":null} as const;
 
 export const labs: LabDefinition[] = [
   {

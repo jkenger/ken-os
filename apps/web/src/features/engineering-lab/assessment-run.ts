@@ -91,13 +91,13 @@ export async function prepareChapter(userId: string, runId: string, chapterId: s
   const hint = intakeHint(profile?.intake);
 
   // Two chapter questions: the whole of an unwritten chapter, or stage 1 of a two-stage written one.
-  const writeScreens = async (planned: string[]) => {
+  const writeScreens = async (planned: string[], topics?: { title: string; points: string[] }[]) => {
     const existing = await db().select({ id: labChapterScreens.id }).from(labChapterScreens)
       .where(and(eq(labChapterScreens.setId, run.id), eq(labChapterScreens.chapterId, chapterId)));
     if (existing.length >= SCREEN_QUESTIONS) return null;
     const info = chapterInfo(chapterId, profile?.addedChapters)!;
     await bumpGenerations(run.id);
-    const { items, model } = await writeChapterScreen({ ...info, planned, hint });
+    const { items, model } = await writeChapterScreen({ ...info, planned, ...(topics ? { topics } : {}), hint });
     await db().insert(labChapterScreens).values(items.map((item, itemIndex) => ({
       id: randomUUID(), userId, setId: run.id, runId: run.id, chapterId, itemIndex, item, promptVersion: SCREENER_PROMPT_VERSION, model,
     }))).onConflictDoNothing();
@@ -108,7 +108,10 @@ export async function prepareChapter(userId: string, runId: string, chapterId: s
 
   if (chapter.screenFirst) {
     // Stage 1 covers the chapter's written topics; topic questions are written only if it doesn't clear the chapter.
-    const stage1 = await writeScreens(chapter.topicIds.map((topicId) => findTopic(topicId)?.title ?? topicId));
+    const stage1 = await writeScreens([], chapter.topicIds.map((topicId) => {
+      const topic = findTopic(topicId)!;
+      return { title: topic.title, points: topic.points };
+    }));
     if (stage1) return stage1;
     if ((await chapterStage(db(), run.id, chapterId)) !== "drill") return { written: 0 };
   }

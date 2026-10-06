@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { IconArrowRight, IconCheck, IconChevronDown, IconChevronRight, IconCircle, IconCircleDashed, IconSearch } from "@tabler/icons-react";
@@ -47,14 +47,18 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
   const needle = query.trim().toLowerCase();
   const options = path ? scopes : scopes.filter(([id]) => id !== "path");
 
-  const chapters = map.modules.map((module, index) => {
-    const track = map.tracks.find((item) => item.id === module.track);
+  // Chapters in book order (engineering-assessment-v2.md, A6); a chapter outside every book keeps its course order.
+  const inBooks = map.books.flatMap((book) => book.chapters);
+  const ordered = [...inBooks.map((id) => map.modules.find((module) => module.id === id)!).filter(Boolean), ...map.modules.filter((module) => !inBooks.includes(module.id))];
+  const chapters = ordered.map((module, index) => {
+    const book = map.books.find((item) => item.chapters.includes(module.id));
+    const track = book ? { title: book.title } : map.tracks.find((item) => item.id === module.track);
     const topics = map.topics.filter((topic) => topic.module === module.id).map((topic) => {
       const item = byId.get(topic.id)!;
       const locked = item.status === "NOT_STARTED" && topic.requires.some((id) => !isKnown(byId.get(id)!));
       return { topic, item, locked, status: statusOf(item, locked) };
     });
-    return { module, number: index + 1, track: track?.title ?? "", topics };
+    return { module, number: index + 1, track: track?.title ?? "", bookId: book?.id ?? null, topics };
   }).filter(({ module, topics, track }) => {
     if (scope === "path" && path && !path.includes(module.id)) return false;
     if (scope === "gaps" && topics.every(({ item }) => knownHere(item)) && module.planned.length === 0) return false;
@@ -96,12 +100,20 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
 
         <div className="mx-[5px] grid grid-cols-1 gap-[18px] md:mx-3.5 md:grid-cols-[2fr_1fr] md:gap-5 lg:grid-cols-[minmax(0,2.4fr)_minmax(230px,1fr)] lg:gap-8">
           <section className="min-w-0">
-            {chapters.map(({ module, number, track, topics }) => {
+            {chapters.map(({ module, number, track, bookId, topics }, position) => {
+              const book = bookId && chapters[position - 1]?.bookId !== bookId ? map.books.find((item) => item.id === bookId) : null;
               const done = topics.filter(({ item }) => item.status === "VALIDATED").length;
               const known = topics.filter(({ item }) => knownHere(item)).length;
               const rows = scope === "gaps" ? topics.filter(({ item }) => !knownHere(item)) : topics;
               return (
-                <details key={module.id} className={cn(panel, "group mb-3")} open={Boolean(needle) || module.id === openChapter}>
+                <Fragment key={module.id}>
+                {book && (
+                  <div className={cn("mb-3.5", position > 0 && "mt-8")}>
+                    <h2 className="text-lg font-bold tracking-[-0.3px]">{book.title}</h2>
+                    <p className="mt-0.5 text-[13px] text-muted-foreground">{book.summary}</p>
+                  </div>
+                )}
+                <details className={cn(panel, "group mb-3")} open={Boolean(needle) || module.id === openChapter}>
                   <summary className="flex cursor-pointer list-none items-center gap-[9px] px-[15px] py-[17px] md:gap-5 md:px-5 md:py-[19px] [&::-webkit-details-marker]:hidden">
                     <div className="min-w-0 flex-1">
                       <small className="text-[11px] text-muted-foreground">{track} · Chapter {number}</small>
@@ -132,6 +144,7 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
                     </div>
                   ))}
                 </details>
+                </Fragment>
               );
             })}
             {chapters.length === 0 && (
