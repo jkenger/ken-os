@@ -1,10 +1,26 @@
 # Engineering Lab v1 (proposal)
 
-Status: **proposed, awaiting owner review.** Nothing here is built. v0 is live ([as built](engineering-lab-v0.md#as-built-2026-10-01)), and [the handoff](../product/ai-engineering-learning-handoff.md) stays the module's source of truth.
+Status (2026-10-06): **partly built.** The course content, daily practice, placement checks and a roadmap are built and merged. The gate, knowledge debt and module checkpoints are not. The table below says which is which; the sections after it are the original proposal, each with a status line. v0 is live ([as built](engineering-lab-v0.md#as-built-2026-10-01)), and [the handoff](../product/ai-engineering-learning-handoff.md) stays the module's source of truth.
 
 **Update 2026-10-02:** the polish this plan waits for is now defined in [engineering-lab-ui.md](engineering-lab-ui.md) and comes before the steps below. The full-course outline and placement checks from section 8 move up into that work; the roadmap graph stays here. **Update 2026-10-03:** that polish is built, including the full outline and placement checks, so v1 starts at step 1 below.
 
-## The short version
+## Where v1 stands (2026-10-06)
+
+| Part | Status | Where it went |
+|---|---|---|
+| 1. The gate: grade disputes, `/lab/health`, the review | **Not built.** The review waits on the owner taking the in-app baseline | |
+| 2. Knowledge debt | **Not built** | |
+| 3. Production reliability | **Built**, as five topics | Chapter `m6-production-reliability` |
+| 4. Observability | **Built**, as three topics | Chapter `m7-observability` |
+| 5. AI track, first module | **Built, and the whole AI track after it** | Chapters `a1-retrieval` to `a4-ai-production` |
+| 6. Module checkpoints (one mixed scenario per module) | **Not built.** "Checkpoint" now means a retake of the whole assessment instead | [engineering-lab-profile.md](engineering-lab-profile.md) |
+| 7. Smaller changes | **Not built**, apart from note suggestions shown in lessons | |
+| 8. Roadmap and full course | **Built**, the roadmap as a rail on the lab home rather than a graph page | [engineering-lab-profile.md](engineering-lab-profile.md) |
+| 9. Daily practice | **Built** | `daily.ts`, `/lab/practice` |
+
+The order changed from the plan below. The owner asked for a career profile and an in-app baseline on 2026-10-03, and for the whole course to be written on 2026-10-05, so the content and profile work went ahead of the gate. The gate's purpose still stands: once the baseline is taken, a few weeks of real use should show whether the loop works before knowledge debt or checkpoints are built.
+
+## The short version (original proposal)
 
 - **v1 starts with a gate, not a feature.** The handoff (§23) says to judge whether the learning loop works after the first three modules, and only then expand. v1 therefore opens with two to three weeks of real use and a short review built on numbers the app already records.
 - **The headline feature is knowledge debt** (§18): flag the concepts that AI-written code puts in your projects before you've proven you understand them. It runs locally, so no client or work code ever leaves your machine.
@@ -16,6 +32,8 @@ Status: **proposed, awaiting owner review.** Nothing here is built. v0 is live (
 - **After polish: a roadmap graph and a full course** (section 8). A visual map of the road ahead with a pace estimate, and a topic map that covers full-stack and AI engineering from top to bottom, not only your current gaps.
 
 ## 1. The gate: is v0 working?
+
+**Status: not built.** Neither grade disputes nor `/lab/health` exist. The review needs real use, which starts when the owner takes the in-app baseline.
 
 **Use v0 first.** Work through Module 1, and at least one topic each from Modules 2 and 3, before building any of v1.
 
@@ -37,6 +55,8 @@ The handoff asks five questions. v0 already records most of what answers them:
 **Decision rule:** if the review shows the loop doesn't help (for example, topics get "proven" without the knowledge holding at review), fix that first and push the rest of v1 back.
 
 ## 2. Knowledge debt from your code
+
+**Status: not built.** No command, table or Today list yet. It's the largest unbuilt part of v1.
 
 **What it does.** You point it at a range of commits in any of your repositories. It lists the engineering concepts that code relies on and shows each one's status in the lab:
 
@@ -64,6 +84,8 @@ Anything not proven joins a "knowledge debt" list on Today. It never blocks your
 
 ## 3. Module 4: production reliability
 
+**Status: built** (2026-10-05) as chapter `m6-production-reliability`, with five topics instead of the eight below: `rel.background_jobs` (lab `job-queue`, which uses `FOR UPDATE SKIP LOCKED` in PGlite), `rel.retry_backoff` (`retry-policy`), `rel.timeouts` (`request-timeout`), `rel.partial_failures` (`order-saga`) and `rel.graceful_degradation` (`circuit-breaker`). Idempotent retries were already covered by `api.idempotency_basics`; the outbox and retry storms became parts of these labs' explanations rather than topics. No fake clock was added: the labs use short real waits with the harness's `wait(ms)`.
+
 Baseline gaps: retries, timeouts, idempotency (beyond the basics), background jobs, partial failures and graceful degradation were all gap or partial (§3.3).
 
 | Topic | Lab idea | Runner |
@@ -81,6 +103,8 @@ Retries and timeouts need a fake clock so tests run in milliseconds. The harness
 
 ## 4. Module 5: observability
 
+**Status: built** (2026-10-05) as chapter `m7-observability`: `obs.logs` (lab `structured-logs`), `obs.metrics` (`latency-summary`) and `obs.traces` (`trace-context`, W3C `traceparent`). The incident-from-logs probe and the three-view checkpoint were not built.
+
 Baseline: couldn't tell logs, metrics and traces apart; logging instincts were partial (§3.3).
 
 - **`obs.structured_logs`:** rewrite string logs into structured ones with a request id, operation, status, duration and a safe user id; tests check the fields.
@@ -93,6 +117,8 @@ All labs use generated, deterministic data in the browser. No real observability
 
 ## 5. AI engineering track, first module
 
+**Status: built, along with the rest of the AI track** (2026-10-05). Retrieval (`ai.semantic_search`, `ai.retrieval_eval`, `ai.rag`, `ai.advanced_rag`, `ai.reranking`), Model interfaces (`ai.structured_outputs`, `ai.tool_calling`, `ai.context_engineering`), Agents (`ai.agent_patterns`, `ai.agent_memory`, `ai.mcp`) and AI in production (`ai.evals`, `ai.observability`, `ai.cost_latency`, `ai.production_reliability`). Every lab uses scripted fake models, so a lab run makes no AI calls. The daily AI budget is still 20; it hasn't needed raising.
+
 The handoff's sequence (§17) starts at semantic search, which you've begun. v1 covers the next two steps and stops there:
 
 - **`ai.retrieval_eval`:** a fixed corpus with known relevant passages for each question. You compute Recall@K for a baseline, change one thing (chunk size, top-k, query rewrite), measure again and explain the difference. Embeddings for the fixed corpus are computed once, stored in the repo and checked by tests, so a lab run makes no AI calls.
@@ -104,6 +130,8 @@ The handoff's sequence (§17) starts at semantic search, which you've begun. v1 
 
 ## 6. Checkpoints
 
+**Status: not built.** No chapter has a mixed end-of-chapter scenario. The word "checkpoint" is now used for retaking the whole assessment after the baseline ([engineering-lab-profile.md](engineering-lab-profile.md)); a per-chapter scenario would need another name.
+
 At the end of each module there's one mixed scenario, like §16's broken checkout. For Module 3, for example: overselling, duplicate charges and a slow order history, all in one small app.
 
 - It runs as one PGlite lab with several test groups.
@@ -111,6 +139,8 @@ At the end of each module there's one mixed scenario, like §16's broken checkou
 - A passed checkpoint is shown on Today but doesn't change any topic's status. It measures whether the pieces work together, not each piece again.
 
 ## 7. Smaller changes
+
+**Status: mostly not built.** Lessons show "For your notes" suggestions, but there's no copy-to-Obsidian button. Lock and isolation labs on Neon branches, server-side probe re-scoring, and pinning or self-hosting PGlite (still loaded from jsDelivr in `runner/harness.ts`) are all open.
 
 - **Review sessions** are now part of daily practice (section 9).
 - **Obsidian export** (§21). At the end of a lesson, "copy note scaffold" copies a Markdown stub with the topic, its sources and the note suggestions. You still write the note yourself.
@@ -121,6 +151,8 @@ At the end of each module there's one mixed scenario, like §16's broken checkou
   - Check the probes in Firefox and Safari.
 
 ## 8. After polish: a roadmap graph and a full course
+
+**Status: built**, in a different shape. The roadmap is a rail of chapter stages on the lab home, with a pace estimate, not a `/lab/roadmap` graph page (design chosen 2026-10-03, see [engineering-lab-profile.md](engineering-lab-profile.md)). The full course is written: 52 topics in 13 chapters across two tracks, 48 labs, and placement checks for topics you already know (2026-10-05).
 
 The owner asked for both on 2026-10-01, to come once the current build is polished and improved. They come after steps 1 to 9 below, not alongside them.
 
@@ -149,6 +181,8 @@ Grow the topic map from "your gaps" to the whole of §24: about 46 topics across
 **The real work is content, not code:** writing the prerequisite links, the gap or goal for each topic, and labs for about 30 more topics. That should be done a track at a time and reviewed like code, in the repo.
 
 ## 9. Daily practice
+
+**Status: built** as described below, with its own page at `/lab/practice` and the `lab_daily_sets` table. It pauses while an assessment is running.
 
 The owner asked for this on 2026-10-01. Every day there's a short, hands-on set of practice that keeps what you've learned fresh, so proven topics don't quietly fade.
 
@@ -189,6 +223,8 @@ Items mix topics instead of grouping them, because switching between topics is w
 
 ## Implementation order
 
+Status (2026-10-06): steps 3, 5, 6, 7, 10 and 11 are built; steps 1, 2, 4, 8 and 9 are not.
+
 Each step ends with something you can use or check.
 
 1. **Gate tooling:** grade disputes and `/lab/health`. *Check: numbers match a hand count on your real data.*
@@ -205,6 +241,8 @@ Each step ends with something you can use or check.
 
 ## Not in v1
 
+Several of these were later done anyway: the full §24 map, and agent patterns, MCP, memory and evals (all written 2026-10-05). The rest still stands.
+
 - More than one learner, public pages, or sharing.
 - Gamification: streaks, points, badges.
 - The full §24 map during the main v1 work. Steps 1 to 9 add 14 topics; the rest comes with the full course (section 8), after polish.
@@ -213,6 +251,8 @@ Each step ends with something you can use or check.
 - Any change that lets the app edit the curriculum by itself.
 
 ## Questions for review
+
+Questions 1 and 3 were overtaken: Modules 4 and 5 and the whole AI track are written, and knowledge debt is next in line if the gate review supports it. Questions 2 and 4 are still open.
 
 1. **Order:** knowledge debt before Modules 4 and 5, or the other way round? Knowledge debt is the differentiator; the modules are where the most baseline gaps are.
 2. **Which repositories** should knowledge debt be allowed to read? Ken OS only at first, or any repository you choose each time?
