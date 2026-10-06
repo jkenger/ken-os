@@ -18,8 +18,10 @@ test("every written topic carries 4 to 6 assessment points", () => {
   }
 });
 
-test("points stay draft until the owner reviews them", () => {
-  assert.ok(pointsReview.status === "draft" || pointsReview.reviewedOn, "approved points carry a review date");
+test("approved points carry a review date", () => {
+  // Widened on purpose: the generated value is a literal, and the rule must hold whichever status it has.
+  const review: { status: string; reviewedOn: string | null } = pointsReview;
+  assert.ok(review.status !== "approved" || review.reviewedOn, "approved points carry a review date");
 });
 
 test("attachPoints rejects unknown topics and the wrong number of points", () => {
