@@ -18,6 +18,7 @@ import { post, textarea } from "../topic/client";
 import { RubricChecklist } from "../topic/feedback";
 import { Panel, Stat, TitleBar } from "../panel";
 import { label, labelWords, modeWords, toneFor } from "../words";
+import { engineering } from "@/features/engineering-lab/routes";
 
 // The baseline assessment and its retakes. Design: docs/architecture/engineering-lab-profile.md, sections 3 and 4.
 // Closed-book: this page turns off term lookup, and grades stay hidden until a chapter is done. Laid out in the lab's
@@ -73,7 +74,7 @@ function ChapterList({ run, focus }: { run: RunView; focus: string | null }) {
       {run.chapters.map((chapter, index) => (
         <li key={chapter.chapterId}>
           <Link
-            href={`/lab/assessment?run=${run.id}&chapter=${chapter.chapterId}`}
+            href={engineering.assessment({ run: run.id, chapter: chapter.chapterId })}
             className={cn("flex items-center justify-between gap-3 px-4 py-2.5 text-sm hover:bg-muted/60", focus === chapter.chapterId && "bg-muted font-semibold")}
             aria-current={focus === chapter.chapterId ? "step" : undefined}
           >
@@ -157,7 +158,7 @@ export function LabAssessment({ email, intake, conversation, run, focus, baselin
     setBusy("start"); setProblem("");
     try {
       const result = await post<{ id: string }>("/api/lab/runs", { kind });
-      router.push(`/lab/assessment?run=${result.id}`);
+      router.push(engineering.assessment({ run: result.id }));
       router.refresh();
     } catch (error) { setProblem(error instanceof Error ? error.message : "Couldn't start. Try again"); }
     finally { setBusy(""); }
@@ -183,7 +184,7 @@ export function LabAssessment({ email, intake, conversation, run, focus, baselin
   const chaptersDone = run ? run.chapters.filter((chapter) => chapter.status === "done").length : 0;
 
   return (
-    <WorkspaceShell email={email} active="lab" termLookup={false}>
+    <WorkspaceShell email={email} active="lab" tab="profile" termLookup={false}>
       <div className="w-full px-5 py-6 sm:px-8">
         <TitleBar
           kicker={state ?? undefined}
@@ -239,8 +240,8 @@ export function LabAssessment({ email, intake, conversation, run, focus, baselin
                 <Panel title={`Finished ${new Date(run.completedAt).toLocaleDateString("en", { month: "long", day: "numeric" })}`} className="border-foreground">
                   <p className="text-sm">{run.kind === "baseline" ? "Baseline · never changes" : "Shown next to the baseline"}</p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    <Button asChild><Link href="/lab/profile">Open profile</Link></Button>
-                    {run.kind === "baseline" && <Button asChild variant="outline"><Link href="/lab/profile?pane=roles">Choose direction</Link></Button>}
+                    <Button asChild><Link href={engineering.profile}>Open profile</Link></Button>
+                    {run.kind === "baseline" && <Button asChild variant="outline"><Link href={engineering.direction("roles")}>Choose direction</Link></Button>}
                   </div>
                 </Panel>
               )}

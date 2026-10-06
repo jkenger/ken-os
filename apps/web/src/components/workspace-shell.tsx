@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Archive, BookMarked, ClipboardCheck, UserRound, BookOpenText, FileText, FlaskConical, Image, Library, Lightbulb, ListTree, Menu, PanelLeftClose, PanelLeftOpen, Palette, PenLine, Search, Sparkles, Sun, X } from "lucide-react";
+import { Archive, BookMarked, UserRound, BookOpenText, FileText, FlaskConical, Image, LayoutDashboard, Library, Lightbulb, ListTree, Menu, PanelLeftClose, PanelLeftOpen, Palette, PenLine, Repeat, Search, Sparkles, X } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import { TermLookup } from "@/components/terms/term-lookup";
 import { Toaster } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
+import { engineering, engineeringTabs, tabForPath, type EngineeringTab } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
 
 type Module = "resume" | "skills" | "memory" | "design" | "lab" | "writing" | "terms";
@@ -16,7 +17,7 @@ const modules = [
   { id: "skills" as const, label: "Skills", href: "/skills", icon: Sparkles },
   { id: "design" as const, label: "Design System", href: "/design-system", icon: Palette },
   { id: "memory" as const, label: "Project Memory", href: "/memory", icon: BookOpenText },
-  { id: "lab" as const, label: "Engineering Lab", href: "/lab", icon: FlaskConical },
+  { id: "lab" as const, label: "Engineering", href: engineering.overview, icon: FlaskConical },
   { id: "terms" as const, label: "Terms", href: "/terms", icon: BookMarked },
 ];
 const previewModules = [
@@ -51,12 +52,12 @@ const moduleDetails: Record<Module, {
     ],
   },
   lab: {
-    title: "Engineering Lab",
+    title: "Engineering",
     sections: [
-      { label: "Today", href: "/lab", icon: Sun },
-      { label: "Course", href: "/lab/topics", icon: ListTree },
-      { label: "Profile", href: "/lab/profile", icon: UserRound },
-      { label: "Assessment", href: "/lab/assessment", icon: ClipboardCheck },
+      { label: "Overview", href: engineering.overview, icon: LayoutDashboard },
+      { label: "Profile", href: engineering.profile, icon: UserRound },
+      { label: "Learn", href: engineering.learn, icon: ListTree },
+      { label: "Practice", href: engineering.practice, icon: Repeat },
     ],
   },
   design: {
@@ -183,9 +184,25 @@ function ModuleSearch({ preview }: { preview: boolean }) {
   );
 }
 
-export function WorkspaceShell({ email, active, children, preview = false, headerActions, onPreviewAction, termLookup = true }: { email: string; active: Module; children: ReactNode; preview?: boolean; headerActions?: ReactNode; onPreviewAction?: (label: string) => void; termLookup?: boolean }) {
+/** On a phone the sidebar folds into Menu, so Engineering's four tabs stay reachable in a sticky bar. */
+function EngineeringTabs({ current }: { current: EngineeringTab }) {
+  return (
+    <nav className="sticky top-0 z-30 flex border-b border-border bg-background md:hidden" aria-label="Engineering">
+      {engineeringTabs.map((item) => (
+        <Link key={item.id} href={item.href} aria-current={item.id === current ? "page" : undefined}
+          className={cn("-mb-px flex h-11 flex-1 items-center justify-center border-b-2 text-[13px] font-semibold", item.id === current ? "border-foreground text-foreground" : "border-transparent text-muted-foreground")}>
+          {item.label}
+        </Link>
+      ))}
+    </nav>
+  );
+}
+
+export function WorkspaceShell({ email, active, children, preview = false, headerActions, onPreviewAction, termLookup = true, tab }: { email: string; active: Module; children: ReactNode; preview?: boolean; headerActions?: ReactNode; onPreviewAction?: (label: string) => void; termLookup?: boolean; tab?: EngineeringTab }) {
   const detail = moduleDetails[active];
   const pathname = usePathname();
+  // Engineering's nested pages (a topic, the assessment, evidence) belong to one of its four tabs.
+  const engineeringTab = active === "lab" ? tab ?? tabForPath(pathname) : null;
   const [hash, setHash] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
@@ -276,7 +293,7 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
                 {(preview && active === "memory" ? previewMemorySections : detail.sections).map(({ label, href: originalHref, icon: Icon }, index) => {
                   const href = preview && active === "memory" ? originalHref.replace("/memory", "/design-preview?view=memory") : originalHref;
                   const resolvedHref = preview && active === "design" ? href.replace("/design-system", "/design-preview?view=design") : href;
-                  const selected = preview && (active === "memory" || active === "design")
+                  const selected = engineeringTab ? tabForPath(resolvedHref) === engineeringTab : preview && (active === "memory" || active === "design")
                     ? (index === 0 ? !hash : resolvedHref.endsWith(hash) && Boolean(hash))
                     : resolvedHref === pathname + hash || (index === 0 && ((pathname === resolvedHref && !hash) || preview));
                   return <Link key={href} className={cn(sidebarLink, selected ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground")} href={resolvedHref} aria-current={selected ? "location" : undefined} onClick={() => setMobileOpen(false)}><Icon size={17} strokeWidth={1.8} aria-hidden="true" />{label}</Link>;
@@ -300,6 +317,7 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
             </div>
             {writingPreview ? headerActions : <div className="flex items-center gap-3"><ModuleSearch preview={preview} /><form action="/api/auth/signout" method="post"><Button variant="ghost" type="submit" className="text-xs">Sign out</Button></form></div>}
           </header>
+          {engineeringTab && <EngineeringTabs current={engineeringTab} />}
           <main className="min-w-0" id="main-content">{termLookup ? <TermLookup module={detail.title}>{children}</TermLookup> : children}</main>
           <Toaster />
         </div>

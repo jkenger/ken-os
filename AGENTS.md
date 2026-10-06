@@ -1,6 +1,6 @@
 # Ken OS repository guidance
 
-Ken OS is the owner's private, hosted platform; each workflow is a module under it. The first shipped module is a canonical resume selected from Google Drive. Engineering Lab, an adaptive learning system, is in progress. Do not relate this project to Haven.
+Ken OS is the owner's private, hosted platform; each workflow is a module under it. The first shipped module is a canonical resume selected from Google Drive. Engineering (formerly Engineering Lab; code, tables and `/api/lab` keep the `engineering-lab` and `lab` names), an adaptive learning system, is in progress. Do not relate this project to Haven.
 
 ## Where things live
 
@@ -12,6 +12,7 @@ Ken OS is the owner's private, hosted platform; each workflow is a module under 
 - `docs/product/brief.md`: platform-wide scope and acceptance criteria.
 - `docs/product/ai-engineering-learning-handoff.md`: source of truth for the Engineering Lab module. Preserve its baseline assessment; record decisions in `docs/architecture/engineering-lab.md` instead of editing it.
 - `apps/web/src/features/engineering-lab/`, `content/engineering-lab/` and `labs/`: Engineering Lab code, its topic map, roles and baseline, and its labs. The career profile and in-app baseline are described in `docs/architecture/engineering-lab-profile.md`; `pnpm --filter @ken-os/web test:db:profile` checks them against local Postgres. `content/engineering-lab/careers/roles.yaml` is approved (5 Oct 2026) and expected to change; edit it in a reviewed commit and move `approvedOn`. After editing the YAML or a lab, run `pnpm --filter @ken-os/web lab:generate`; never hand-edit the generated files. Never edit `baseline.yaml` to reflect progress. Saved source packets are never overwritten. Every lab starter must fail at least one test and every solution must pass; `pnpm test` checks both.
+- `apps/web/src/app/engineering/` and `components/engineering/`: the module's four pages (Overview, Profile, Learn, Practice), from the 2026-10-06 redesign. Build page links with `features/engineering-lab/routes.ts`, never hardcoded paths. The old `/lab` pages are temporary redirects; keep them until the owner decides to make them permanent. Decisions and open questions are in `docs/architecture/engineering-redesign.md`; `pnpm --filter @ken-os/web test:db:engineering` checks the evidence and Profile read paths against local Postgres.
 - `docs/architecture/overview.md`: current system boundaries.
 - `docs/architecture/starter-standard.md`: proposed reusable one-app starter and codebase conventions, not yet a generator.
 - `docs/architecture/hosting.md`: proposed provider-aware deployment playbook, not yet a deployment skill.

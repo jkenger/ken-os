@@ -4,6 +4,7 @@ import type { RunView } from "./assessment-run";
 import type { DailyView } from "./daily";
 import type { ProfileView } from "./profile-store";
 import type { TodayView, TopicView } from "./store";
+import type { EvidenceLink, EvidenceView } from "./evidence";
 
 // Sample data for the development-only design preview. Built from the real topic map and baseline; nothing is stored.
 
@@ -101,6 +102,8 @@ export function previewProfile(baselineState: ProfileView["baseline"]["state"] =
     direction: baselineState === "done" ? role.id : null,
     areas: careers.areas.map((ladder) => ({ area: ladder.id, title: ladder.title, summary: ladder.summary, now: areaLevel(ladder, states), atBaseline: areaLevel(ladder, before), checkpoints: [] })),
     chapterStates: states,
+    baselineChapterStates: baselineState === "done" ? before : null,
+    progress,
     roles: careers.roles.map((item) => ({ ...roleDistance(item, careers, states), title: item.title, summary: item.summary })),
     roadmap: steps.map((step) => {
       const module = topicMap.modules.find((item) => item.id === step.chapter)!;
@@ -155,4 +158,22 @@ export function previewDaily(): DailyView {
       },
     ],
   };
+}
+
+/** A sample graded prediction and the recent-evidence list, for the Profile and evidence previews. */
+export function previewEvidence(): { view: EvidenceView; recent: EvidenceLink[] } {
+  const view: EvidenceView = {
+    id: "preview-attempt", topicId: "js.event_loop", topicTitle: "Event loop, tasks and microtasks", kind: "baseline", mode: "predict", role: "placement",
+    at: "2026-10-04T12:00:00Z", selfRating: 4,
+    result: { label: "partial", gradedBy: "code", feedback: "Right lines, wrong order: the microtask runs before the timeout.", misconceptions: ["Timers run before promise callbacks"], rubric: null, run: null, solutionSeen: false },
+    question: { prompt: "What does this print, in order?", code: "setTimeout(() => console.log(\"timeout\"));\nPromise.resolve().then(() => console.log(\"micro\"));\nconsole.log(\"sync\");", expectedOutput: ["sync", "micro", "timeout"], rubric: null, labTitle: null },
+    response: { lines: ["sync", "timeout", "micro"], why: "Timers were queued first.", actual: ["sync", "micro", "timeout"] },
+    source: { promptVersion: "assessor-v3", model: "preview-model", origin: "run", runId: "preview-run", runKind: "baseline" },
+  };
+  const recent: EvidenceLink[] = [
+    { id: "preview-attempt", topicId: "js.event_loop", topicTitle: "Event loop, tasks and microtasks", kind: "baseline", label: "partial", role: "placement", at: "2026-10-04T12:00:00Z" },
+    { id: "preview-2", topicId: "db.transactions", topicTitle: "Transactions", kind: "baseline", label: "solid", role: "placement", at: "2026-10-04T11:40:00Z" },
+    { id: "preview-3", topicId: "js.promises", topicTitle: "Promises", kind: "baseline", label: "solid", role: "placement", at: "2026-10-04T11:20:00Z" },
+  ];
+  return { view, recent };
 }

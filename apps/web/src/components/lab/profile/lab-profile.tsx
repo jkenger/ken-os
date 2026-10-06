@@ -19,6 +19,7 @@ import { Stat, TitleBar } from "../panel";
 import { GuideChat, type GuideProposals } from "./guide-chat";
 import { LevelTable } from "./level-table";
 import { Skyline } from "./skyline";
+import { engineering } from "@/features/engineering-lab/routes";
 
 // The profile page as a tool: a compact title bar, the Guide in a pane on the left, and the detail in a tabbed pane
 // on the right; both panes scroll on their own. Chosen on 2026-10-03 from the design exploration ("Workbench, app
@@ -63,7 +64,7 @@ function AddedChapterScreen({ chapter }: { chapter: ProfileView["addedChapters"]
   return <Question key={next.id} assessment={view} index={next.itemIndex} heading={`${chapter.title} · Question ${next.itemIndex + 1} of 2`} submitTo={submitTo} onDone={() => router.refresh()} />;
 }
 
-export function LabProfile({ email, view, initialPane }: { email: string; view: ProfileView; initialPane?: ProfilePane }) {
+export function LabProfile({ email, view, initialPane, closedBook = false }: { email: string; view: ProfileView; initialPane?: ProfilePane; closedBook?: boolean }) {
   const { busy, run } = useAction();
   const [proposals, setProposals] = useState<GuideProposals>({ intake: null, direction: null, addChapters: [] });
   const [pane, setPane] = useState<ProfilePane>(initialPane ?? "shape");
@@ -112,10 +113,10 @@ export function LabProfile({ email, view, initialPane }: { email: string; view: 
   const hasSuggestions = Boolean(proposedRole && proposedRole.roleId !== view.direction) || proposals.addChapters.length > 0;
 
   return (
-    <WorkspaceShell email={email} active="lab">
+    <WorkspaceShell email={email} active="lab" tab="profile" termLookup={!closedBook}>
       <div className="w-full px-5 py-6 sm:px-8">
         <TitleBar
-          title="Profile"
+          title="Direction"
           stats={baselineDone ? <>
             <Stat label="Direction" value={chosen ? chosen.title : "No direction yet"} />
             {chosen && <Stat label="Level" value={levelWords(chosen.overall)} />}
@@ -123,14 +124,14 @@ export function LabProfile({ email, view, initialPane }: { email: string; view: 
             <Stat label="Baseline" value={view.baseline.completedAt ? formatDay(view.baseline.completedAt) : "Not started"} />
           </> : undefined}
           actions={baselineDone ? (view.checkpoint.inProgressRunId
-            ? <Button asChild size="sm" variant="outline"><Link href={`/lab/assessment?run=${view.checkpoint.inProgressRunId}`}>Continue checkpoint</Link></Button>
-            : <Button asChild size="sm" variant="outline"><Link href="/lab/assessment?new=1">Start checkpoint</Link></Button>) : undefined}
+            ? <Button asChild size="sm" variant="outline"><Link href={engineering.assessment({ run: view.checkpoint.inProgressRunId })}>Continue checkpoint</Link></Button>
+            : <Button asChild size="sm" variant="outline"><Link href={engineering.assessment({ new: true })}>Start checkpoint</Link></Button>) : undefined}
         />
 
         {!baselineDone ? (
           <div className="mt-4 rounded-lg border border-border p-5 text-sm">
             <p className="font-semibold">Available after the baseline</p>
-            <Button asChild size="sm" className="mt-3"><Link href="/lab/assessment">{view.baseline.state === "in_progress" ? "Continue baseline" : "Start baseline"}</Link></Button>
+            <Button asChild size="sm" className="mt-3"><Link href={engineering.assessment()}>{view.baseline.state === "in_progress" ? "Continue baseline" : "Start baseline"}</Link></Button>
           </div>
         ) : (
           <div className="mt-4 grid grid-cols-1 gap-4 lg:h-[calc(100vh-232px)] lg:min-h-[540px] lg:grid-cols-[320px_minmax(0,1fr)]">
@@ -234,7 +235,7 @@ export function LabProfile({ email, view, initialPane }: { email: string; view: 
                             <div className="min-w-0">
                               <p className="flex flex-wrap items-center gap-2 text-sm font-semibold"><Pill tone={item.tag === "recheck" ? "gap" : "neutral"}>{radarTagWords[item.tag]}</Pill>{item.title}</p>
                               <p className="mt-1 text-sm text-muted-foreground">{item.reason}</p>
-                              {item.topicId ? <Link href={`/lab/topics/${item.topicId}?step=check`} className="text-sm underline underline-offset-4">Re-check</Link>
+                              {item.topicId ? <Link href={engineering.topic(item.topicId, "check")} className="text-sm underline underline-offset-4">Re-check</Link>
                                 : item.sourceUrl && <a href={item.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 text-sm underline underline-offset-4">Source<ExternalLink size={12} aria-hidden="true" /></a>}
                             </div>
                             <Button size="icon" variant="ghost" aria-label={`Dismiss ${item.title}`} onClick={() => void run(item.id, () => post("/api/lab/profile", { action: "dismissRadar", id: item.id }))}><X size={15} aria-hidden="true" /></Button>
@@ -251,13 +252,13 @@ export function LabProfile({ email, view, initialPane }: { email: string; view: 
                     <ul className="mt-3 divide-y divide-border border-y border-border text-sm">
                       {view.baseline.runId && (
                         <li className="flex justify-between gap-3 py-3">
-                          <Link href={`/lab/assessment?run=${view.baseline.runId}`} className="font-semibold underline underline-offset-4">Baseline</Link>
+                          <Link href={view.baseline.completedAt ? engineering.results(view.baseline.runId) : engineering.assessment({ run: view.baseline.runId })} className="font-semibold underline underline-offset-4">Baseline</Link>
                           <span className="text-muted-foreground">{view.baseline.completedAt ? `Finished ${formatDay(view.baseline.completedAt)}` : "In progress"}</span>
                         </li>
                       )}
                       {view.checkpoint.done.map((item) => (
                         <li key={item.id} className="flex justify-between gap-3 py-3">
-                          <Link href={`/lab/assessment?run=${item.id}`} className="font-semibold underline underline-offset-4">Checkpoint</Link>
+                          <Link href={engineering.results(item.id)} className="font-semibold underline underline-offset-4">Checkpoint</Link>
                           <span className="text-muted-foreground">Finished {formatDay(item.completedAt)}</span>
                         </li>
                       ))}

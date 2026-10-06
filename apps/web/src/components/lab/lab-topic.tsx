@@ -20,6 +20,7 @@ import { LessonReader } from "./topic/learn";
 import { ProvenBanner } from "./topic/feedback";
 import { StepBar } from "./topic/step-bar";
 import { formatDate, kindWords, label, labelWords, modeWords, statusWords } from "./words";
+import { engineering } from "@/features/engineering-lab/routes";
 
 export interface TopicPlace { track: string; chapterNumber: number; chapterTitle: string }
 
@@ -168,7 +169,7 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
   const lessonButton = <Button type="button" variant={lesson ? "outline" : "default"} disabled={busy !== ""} onClick={() => void makeLesson()}>{busy === "lesson" ? "Writing lesson… ~1 min" : lesson ? "Rewrite lesson" : "Write lesson"}</Button>;
 
   return (
-    <WorkspaceShell email={email} active="lab" termLookup={!view.closedBook}>
+    <WorkspaceShell email={email} active="lab" tab="learn" termLookup={!view.closedBook}>
       <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-[1100px] border-x border-border">
         <header className="px-5 pb-6 pt-8 sm:px-8 lg:px-10 lg:pt-10">
           <p className={cn(label, "flex flex-wrap items-center gap-1")}>{place.track.toUpperCase()}<ChevronRight size={12} aria-hidden="true" />CHAPTER {place.chapterNumber} · {place.chapterTitle.toUpperCase()}</p>
@@ -190,7 +191,7 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
 
         {view.closedBook ? (
           <div className="px-5 py-8 sm:px-8 lg:px-10">
-            <Empty action={<Button asChild><Link href="/lab/assessment">Back to assessment</Link></Button>}>
+            <Empty action={<Button asChild><Link href={engineering.assessment()}>Back to assessment</Link></Button>}>
               <p className="font-semibold">Locked during assessment</p>
               <p className="mt-1 text-muted-foreground">Lesson, practice and labs open when it&apos;s done</p>
             </Empty>

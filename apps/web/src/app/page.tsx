@@ -20,14 +20,14 @@ export default async function Home() {
             <div className="flex items-center gap-3 font-display text-xl font-bold tracking-[-0.05em]"><span className="grid size-9 place-items-center rounded-lg bg-primary text-primary-foreground">K</span>ken.os</div>
             <div className="my-auto max-w-xl py-24">
               <h1 className="font-display text-5xl font-semibold leading-[1.05] tracking-[-0.06em] sm:text-6xl">A home for the things you keep coming back to</h1>
-              <p className="mt-6 max-w-lg text-base leading-7 text-muted-foreground">Your resume, Engineering Lab and the tools around them, in one private workspace.</p>
+              <p className="mt-6 max-w-lg text-base leading-7 text-muted-foreground">Your resume, Engineering and the tools around them, in one private workspace.</p>
               <Button asChild size="lg" className="mt-8 h-11 px-5"><a href="/api/auth/google">Continue with Google <ArrowUpRight size={16} /></a></Button>
               <p className="mt-4 text-xs text-muted-foreground">Owner only</p>
             </div>
           </div>
           <div className="flex flex-col justify-center gap-10 bg-primary p-8 text-primary-foreground sm:p-12 lg:m-3 lg:rounded-xl">
             <div><FileText size={34} strokeWidth={1.3} className="mb-6 text-primary-foreground/70" aria-hidden="true" /><h2 className="font-display text-4xl font-medium tracking-[-0.05em] sm:text-5xl">Resume</h2><p className="mt-3 text-sm text-primary-foreground/60">Google Drive · Connected</p></div>
-            <div><FlaskConical size={34} strokeWidth={1.3} className="mb-6 text-primary-foreground/70" aria-hidden="true" /><h2 className="font-display text-4xl font-medium tracking-[-0.05em] sm:text-5xl">Engineering Lab</h2><p className="mt-3 text-sm text-primary-foreground/60">Today&apos;s practice · ~15 min</p></div>
+            <div><FlaskConical size={34} strokeWidth={1.3} className="mb-6 text-primary-foreground/70" aria-hidden="true" /><h2 className="font-display text-4xl font-medium tracking-[-0.05em] sm:text-5xl">Engineering</h2><p className="mt-3 text-sm text-primary-foreground/60">Today&apos;s practice · ~15 min</p></div>
           </div>
         </div>
       </main>

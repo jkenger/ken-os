@@ -31,7 +31,7 @@ function requireTopic(topicId: string) {
   return topic;
 }
 
-function toRecord(row: typeof labAttempts.$inferSelect): AttemptRecord {
+export function toRecord(row: typeof labAttempts.$inferSelect): AttemptRecord {
   return {
     id: row.id, topicId: row.topicId, kind: row.kind, mode: row.mode, label: row.label, gradedBy: row.gradedBy,
     voided: row.voided, selfRating: row.selfRating, misconceptions: row.misconceptions, solutionSeen: row.solutionSeen,

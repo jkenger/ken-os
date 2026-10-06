@@ -8,9 +8,13 @@ import { LabToday } from "@/components/lab/lab-today";
 import { LabTopic } from "@/components/lab/lab-topic";
 import { LabTopics } from "@/components/lab/lab-topics";
 import { TermsPage } from "@/components/terms/terms-page";
-import { assessorModes, findTopic, labsForTopic, placeOf, topicMap } from "@/features/engineering-lab/curriculum";
+import { EngineeringEvidence } from "@/components/engineering/evidence";
+import { EngineeringOverview } from "@/components/engineering/overview";
+import { EngineeringProfile } from "@/components/engineering/profile";
+import { capabilityRows, nextRequirement, pathChapters } from "@/features/engineering-lab/capabilities";
+import { assessorModes, careers, findTopic, labsForTopic, placeOf, topicMap } from "@/features/engineering-lab/curriculum";
 import { nextStepFromView } from "@/features/engineering-lab/next-step";
-import { previewDaily, previewLearner, previewProfile, previewRun, previewToday, previewTopic } from "@/features/engineering-lab/preview";
+import { previewDaily, previewEvidence, previewLearner, previewProfile, previewRun, previewToday, previewTopic } from "@/features/engineering-lab/preview";
 import { LabPractice } from "@/components/lab/practice/lab-practice";
 import { LabHomeExplore, type Direction } from "@/components/lab/explore/lab-home-explore";
 import { tracks, type Track } from "@/components/lab/explore/road-tracks";
@@ -66,6 +70,27 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
       { id: "t1", term: "microtask", meaning: "A small job the runtime runs right after the current code finishes and before the next task, such as a promise callback.", source: { title: "MDN: Using microtasks", url: "https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide" }, foundIn: "Engineering Lab · Event loop, tasks and microtasks", foundAt: "/design-preview?view=lab-topic", savedAt },
       { id: "t2", term: "idempotent", meaning: "Safe to repeat: doing it twice has the same effect as doing it once.", source: null, foundIn: "Engineering Lab · Idempotent create requests", foundAt: "/design-preview?view=lab-topic", savedAt },
     ]} />;
+  }
+  if (view === "engineering") {
+    const today = previewToday();
+    const profile = previewProfile(screenParam === "start" ? "none" : "done");
+    const rows = capabilityRows({ careers, map: topicMap, progress: profile.progress, states: profile.chapterStates, roleId: profile.direction });
+    return <EngineeringOverview email="preview@example.invalid" today={today} next={today.plan ? nextStepFromView(today.plan, previewTopic(today.plan.topicId)) : null} profile={profile} daily={screenParam === "start" ? null : previewDaily()} nextRequirement={nextRequirement(rows, profile.direction)} />;
+  }
+  if (view === "engineering-profile") {
+    const profile = previewProfile(screenParam === "start" ? "none" : "done");
+    const nodirection = screenParam === "nodirection";
+    const roleId = nodirection ? null : profile.direction;
+    const rows = capabilityRows({ careers, map: topicMap, progress: profile.progress, states: profile.chapterStates, baselineStates: profile.baselineChapterStates, roleId });
+    return <EngineeringProfile email="preview@example.invalid" view={{ ...profile, direction: roleId }} rows={rows} next={nextRequirement(rows, roleId)} evidence={previewEvidence().recent} />;
+  }
+  if (view === "engineering-evidence") {
+    const { view: evidence } = previewEvidence();
+    return <EngineeringEvidence email="preview@example.invalid" view={screenParam === "withheld" ? { ...evidence, result: null, question: { ...evidence.question, expectedOutput: null } } : evidence} />;
+  }
+  if (view === "engineering-learn") {
+    const assessable = topicMap.topics.filter((topic) => assessorModes(topic).length > 0).map((topic) => topic.id);
+    return <LabTopics email="preview@example.invalid" map={topicMap} progress={previewLearner().progress} assessable={assessable} path={pathChapters(careers, "fullstack-applied-ai")} />;
   }
   if (view === "lab-course") {
     const assessable = topicMap.topics.filter((topic) => assessorModes(topic).length > 0).map((topic) => topic.id);

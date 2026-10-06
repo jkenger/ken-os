@@ -153,8 +153,8 @@ export function ResumeWorkspace({ email, selection, file, error, previewUrl, can
         </div>
 
         {labSummary && (
-          <a href="/lab" className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border px-5 py-4 hover:bg-muted/60">
-            <span><span className="block text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Engineering Lab</span><span className="mt-1 block text-[15px] font-semibold">{labSummary.headline}</span></span>
+          <a href="/engineering" className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border px-5 py-4 hover:bg-muted/60">
+            <span><span className="block text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Engineering</span><span className="mt-1 block text-[15px] font-semibold">{labSummary.headline}</span></span>
             <span className="text-sm text-muted-foreground">{labSummary.detail}</span>
           </a>
         )}

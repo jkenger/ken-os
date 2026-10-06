@@ -12,6 +12,7 @@ import { Pill } from "@/components/ui/pill";
 import { cn } from "@/lib/utils";
 import { post } from "./topic/client";
 import { label, statusWords, toneFor } from "./words";
+import { engineering } from "@/features/engineering-lab/routes";
 
 type Row =
   | { kind: "written"; id: string; title: string; progress: TopicProgress; locked: boolean; assessable: boolean }
@@ -35,13 +36,20 @@ function StatusFor({ row }: { row: Extract<Row, { kind: "written" }> }) {
  * The whole course as a table of contents: tracks, then chapters, then topics, including ones not written yet.
  * "My gaps only" hides what assessment says you already know; topics nobody has assessed stay, with a placement check.
  */
-export function LabTopics({ email, map, progress, assessable }: { email: string; map: TopicMap; progress: TopicProgress[]; assessable: string[] }) {
+export function LabTopics({ email, map, progress, assessable, path = null, closedBook = false }: {
+  email: string; map: TopicMap; progress: TopicProgress[]; assessable: string[];
+  /** Chapters the chosen direction needs, for "My path". Null without a direction. */
+  path?: string[] | null;
+  closedBook?: boolean;
+}) {
   const router = useRouter();
   const [trackId, setTrackId] = useState<Track>(map.tracks[0]?.id ?? "fullstack");
   const [gapsOnly, setGapsOnly] = useState(false);
+  const [scope, setScope] = useState<"path" | "all">(path ? "path" : "all");
   const [placing, setPlacing] = useState("");
   const byId = new Map(progress.map((item) => [item.topicId, item]));
   const track = map.tracks.find((item) => item.id === trackId)!;
+  const onPath = (moduleId: string) => scope === "all" || !path || path.includes(moduleId);
   const chapters = map.modules.filter((module) => module.track === trackId).map((module) => {
     const rows: Row[] = [
       ...map.topics.filter((topic) => topic.module === module.id).map((topic): Row => {
@@ -64,7 +72,7 @@ export function LabTopics({ email, map, progress, assessable }: { email: string;
     setPlacing(topicId);
     try {
       await post(`/api/lab/topics/${topicId}/assessment`, { kind: "placement" });
-      router.push(`/lab/topics/${topicId}?step=check`);
+      router.push(engineering.topic(topicId, "check"));
     } catch (error) {
       toast({ tone: "error", title: "Couldn't write the placement check. Try again", description: error instanceof Error ? error.message : undefined });
       setPlacing("");
@@ -72,9 +80,19 @@ export function LabTopics({ email, map, progress, assessable }: { email: string;
   }
 
   return (
-    <WorkspaceShell email={email} active="lab">
+    <WorkspaceShell email={email} active="lab" tab="learn" termLookup={!closedBook}>
       <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-[1100px] border-x border-border px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-        <h1 className="font-display text-4xl font-bold leading-[1.08] tracking-[-0.065em] sm:text-5xl">Course</h1>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <h1 className="font-display text-4xl font-bold leading-[1.08] tracking-[-0.065em] sm:text-5xl">Learn</h1>
+          {path && (
+            <div className="flex rounded-lg border border-border p-0.5 text-sm font-semibold" role="group" aria-label="Chapters shown">
+              {([["path", "My path"], ["all", "All"]] as const).map(([id, name]) => (
+                <button key={id} type="button" aria-pressed={scope === id} onClick={() => setScope(id)}
+                  className={cn("rounded-md px-3 py-1.5", scope === id ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground")}>{name}</button>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="mt-8 flex flex-wrap items-end justify-between gap-4 border-b border-border">
           <div role="tablist" aria-label="Tracks" className="flex gap-1">
@@ -99,7 +117,11 @@ export function LabTopics({ email, map, progress, assessable }: { email: string;
         {gapsOnly && <p className="mt-3 rounded-lg bg-muted px-4 py-3 text-sm">Topics not yet shown as known, including unassessed ones</p>}
 
         <div className="mt-6 space-y-9">
+          {!chapters.some(({ module }) => onPath(module.id)) && (
+            <p className="py-3 text-sm text-muted-foreground">No chapters on your path in this track <button type="button" className="ml-2 underline underline-offset-4" onClick={() => setScope("all")}>Show all</button></p>
+          )}
           {chapters.map(({ module, rows }, chapterIndex) => {
+            if (!onPath(module.id)) return null;
             const writtenRows = rows.filter((row) => row.kind === "written");
             const done = writtenRows.filter((row) => row.kind === "written" && knownHere(row.progress)).length;
             const shown = gapsOnly ? rows.filter((row) => row.kind === "written" && !knownHere(row.progress)) : rows;
@@ -132,7 +154,7 @@ export function LabTopics({ email, map, progress, assessable }: { email: string;
                       return (
                         <li key={row.id} className="flex flex-wrap items-center gap-x-4 gap-y-2 py-3">
                           <span className="w-9 shrink-0 font-mono text-xs text-muted-foreground">{number}</span>
-                          <Link href={`/lab/topics/${row.id}`} className="min-w-0 flex-1 text-[15px] font-semibold underline-offset-4 hover:underline">{row.title}</Link>
+                          <Link href={engineering.topic(row.id)} className="min-w-0 flex-1 text-[15px] font-semibold underline-offset-4 hover:underline">{row.title}</Link>
                           <span className="flex flex-wrap items-center gap-2">
                             {isUnassessed(row.progress) && row.assessable && (
                               <Button type="button" size="sm" variant="outline" disabled={placing !== ""} onClick={() => void place(row.id)}>

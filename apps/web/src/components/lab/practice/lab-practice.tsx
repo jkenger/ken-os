@@ -14,6 +14,7 @@ import { Panel, Stat, TitleBar } from "../panel";
 import { Question, type AssessmentView } from "../topic/answers";
 import { post } from "../topic/client";
 import { labelWords, toneFor } from "../words";
+import { engineering } from "@/features/engineering-lab/routes";
 
 // Today's practice. Design: docs/architecture/engineering-lab-v1.md section 9. Laid out in the lab's tight bordered
 // layout (panel.tsx): the items in a reading-width column, with a panel listing them and where each stands.
@@ -39,7 +40,7 @@ function ItemState({ entry }: { entry: DailyItemView }) {
   return <Pill tone={toneFor(entry.answered.label)}>{labelWords[entry.answered.label as keyof typeof labelWords] ?? entry.answered.label}</Pill>;
 }
 
-export function LabPractice({ email, daily }: { email: string; daily: DailyView | null }) {
+export function LabPractice({ email, daily, closedBook = false }: { email: string; daily: DailyView | null; closedBook?: boolean }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState("");
@@ -54,7 +55,7 @@ export function LabPractice({ email, daily }: { email: string; daily: DailyView 
   }
 
   return (
-    <WorkspaceShell email={email} active="lab">
+    <WorkspaceShell email={email} active="lab" tab="practice" termLookup={!closedBook}>
       <div className="w-full px-5 py-6 sm:px-8">
         <TitleBar
           title="Today's practice"
@@ -62,7 +63,7 @@ export function LabPractice({ email, daily }: { email: string; daily: DailyView 
             <Stat label="State" value={daily?.done ? "Done" : daily ? `${answered} of ${questions.length} answered` : "Not started"} />
             <Stat label="Time" value="~15 min" />
           </>}
-          actions={<Button asChild size="sm" variant="outline"><Link href="/lab">Back to Today</Link></Button>}
+          actions={<Button asChild size="sm" variant="outline"><Link href={engineering.overview}>Overview</Link></Button>}
         />
         {problem && <p className="mt-4 rounded-md border border-border px-4 py-2.5 text-sm" role="alert">{problem}</p>}
 
@@ -80,7 +81,7 @@ export function LabPractice({ email, daily }: { email: string; daily: DailyView 
                   <p className="text-[15px] font-semibold">{entry.labTitle}</p>
                   <p className="mt-1 text-sm text-muted-foreground">From the starter code, without the solution</p>
                   <div className="mt-3 flex flex-wrap items-center gap-3">
-                    <Button asChild variant="outline"><Link href={`/lab/topics/${entry.topicId}?step=lab`}>Open lab</Link></Button>
+                    <Button asChild variant="outline"><Link href={engineering.topic(entry.topicId, "lab")}>Open lab</Link></Button>
                     {entry.passedToday && <Pill tone="solid" icon={<Check size={12} aria-hidden="true" />}>Passed today</Pill>}
                   </div>
                 </Panel>
