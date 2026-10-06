@@ -46,7 +46,7 @@ export function RadarDialog({ profile }: { profile: ProfileView }) {
                     {item.topicId ? <Button asChild variant="text"><Link href={engineering.topic(item.topicId, "check")}>Re-check</Link></Button>
                       : item.sourceUrl && <Button asChild variant="text"><a href={item.sourceUrl} target="_blank" rel="noreferrer">Source<IconExternalLink size={14} aria-hidden="true" /></a></Button>}
                   </div>
-                  <button type="button" aria-label={`Dismiss ${item.title}`} className="rounded-md p-1 hover:bg-muted" disabled={Boolean(busy)} onClick={() => void act(item.id, () => post("/api/lab/profile", { action: "dismissRadar", id: item.id }))}><IconX size={16} aria-hidden="true" /></button>
+                  <Button variant="ghost" size="icon-sm" type="button" aria-label={`Dismiss ${item.title}`} disabled={Boolean(busy)} onClick={() => void act(item.id, () => post("/api/lab/profile", { action: "dismissRadar", id: item.id }))}><IconX size={16} aria-hidden="true" /></Button>
                 </li>
               ))}
             </ul>

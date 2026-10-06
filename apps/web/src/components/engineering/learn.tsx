@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 import { PageHeading, panel } from "./kit";
 import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 // Learn, one to one with the selected 2026-10-06 prototype: My path / Gaps / All topics, search, chapters as cards
 // that open into topic rows, and the Planner's next topic beside them. Statuses are the existing progress rules.
@@ -87,12 +88,11 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
         <PageHeading title="Learn" />
 
         <div className="mx-[5px] mb-5 block justify-between gap-5 md:mx-3.5 md:mb-[25px] md:flex">
-          <div className="mb-3.5 flex w-fit gap-1 rounded-md bg-secondary p-1 md:mb-0" role="group" aria-label="Topics shown">
+          <ToggleGroup type="single" spacing={1} value={scope} onValueChange={(next) => { if (next) setScope(next as Scope); }} aria-label="Topics shown" className="mb-3.5 rounded-md bg-secondary p-1 md:mb-0">
             {options.map(([id, name]) => (
-              <button key={id} type="button" aria-pressed={scope === id} onClick={() => setScope(id)}
-                className={cn("rounded-full px-3.5 py-2 text-[13px]", scope === id ? "bg-card text-foreground shadow-tab" : "text-muted-foreground hover:text-foreground")}>{name}</button>
+              <ToggleGroupItem key={id} value={id} className="h-auto rounded-full px-3.5 py-2 text-[13px] font-normal text-muted-foreground hover:bg-transparent hover:text-foreground data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-tab">{name}</ToggleGroupItem>
             ))}
-          </div>
+          </ToggleGroup>
           <InputGroup className="h-11 rounded-full md:w-80">
             <InputGroupAddon><IconSearch size={18} aria-hidden="true" /></InputGroupAddon>
             <InputGroupInput aria-label="Search topics" placeholder="Search topics or chapters" value={query} onChange={(event) => setQuery(event.target.value)} />
@@ -130,9 +130,9 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
                           : <IconCircle size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />}
                       <Link href={engineering.topic(topic.id)} className="min-w-0 flex-1 text-xs font-medium hover:text-primary md:text-[13px]">{topic.title}</Link>
                       {isUnassessed(item) && assessable.includes(topic.id) && (
-                        <button type="button" disabled={placing !== ""} onClick={() => void place(topic.id)} className="shrink-0 text-[11px] text-primary hover:underline underline-offset-4 disabled:opacity-50">
+                        <Button variant="link" size="xs" type="button" disabled={placing !== ""} onClick={() => void place(topic.id)} className="h-auto shrink-0 px-0 text-[11px] font-normal">
                           {placing === topic.id ? "Writing questions…" : "Placement check"}
-                        </button>
+                        </Button>
                       )}
                       <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">{status}</span>
                       <Link href={engineering.topic(topic.id)} aria-label={`Open ${topic.title}`} className="shrink-0 text-quiet"><IconChevronRight size={18} aria-hidden="true" /></Link>

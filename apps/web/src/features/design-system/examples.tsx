@@ -259,9 +259,11 @@ export function ComponentExamples() {
                   Git, docs and conversations
                 </p>
               </div>
-              <button
+              <Button
                 type="button"
-                className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg border border-[#d3ccc4] bg-white/55 text-foreground transition-colors hover:bg-white/85"
+                variant="outline"
+                size="icon"
+                className="rounded-lg"
                 aria-label={
                   sourcesOpen
                     ? "Hide connection preview"
@@ -275,7 +277,7 @@ export function ComponentExamples() {
                 ) : (
                   <Plus size={16} aria-hidden="true" />
                 )}
-              </button>
+              </Button>
             </div>
             <div
               className="mt-7 flex items-center -space-x-1"

@@ -1,3 +1,4 @@
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { depthAtLeast, LEVELS, levelRank, type ChapterState, type Level } from "@ken-os/domain";
@@ -158,27 +159,27 @@ function Report({ data }: { data: ExploreData }) {
         <h2 className="font-display text-2xl font-semibold tracking-[-0.03em]" id="matrix-title">What each level needs</h2>
         <p className="mt-1 text-sm text-muted-foreground">A tick means that chapter is deep enough. Your direction&apos;s target is outlined.</p>
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[720px] border-collapse text-left text-sm">
-            <thead>
-              <tr className="border-b border-foreground">
-                <th scope="col" className="w-[180px] py-2 pr-4 font-semibold">Area</th>
-                {LEVELS.map((level) => <th key={level} scope="col" className="py-2 pr-4 font-semibold">{levelWords(level)}</th>)}
-              </tr>
-            </thead>
-            <tbody>
+          <Table className="w-full min-w-[720px] border-collapse text-left text-sm">
+            <TableHeader>
+              <TableRow className="border-b border-foreground">
+                <TableHead scope="col" className="pl-0 w-[180px] py-2 pr-4 font-semibold">Area</TableHead>
+                {LEVELS.map((level) => <TableHead key={level} scope="col" className="pl-0 py-2 pr-4 font-semibold">{levelWords(level)}</TableHead>)}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
               {careers.areas.map((ladder) => {
                 const area = profile.areas.find((item) => item.area === ladder.id)!;
                 return (
-                  <tr key={ladder.id} className="border-b border-border align-top">
-                    <th scope="row" className="py-3 pr-4 font-normal">
+                  <TableRow key={ladder.id} className="border-b border-border align-top">
+                    <TableHead scope="row" className="pl-0 py-3 pr-4 font-normal">
                       <span className="block font-semibold">{ladder.title}</span>
                       <span className="text-muted-foreground">{levelWords(area.now.level)}{area.now.estimate ? ", estimate" : ""}</span>
-                    </th>
+                    </TableHead>
                     {LEVELS.map((level) => {
                       const reached = levelRank(area.now.level) >= levelRank(level);
                       const isTarget = targets[ladder.id] === level;
                       return (
-                        <td key={level} className="py-2 pr-2">
+                        <TableCell key={level} className="pl-0 py-2 pr-2">
                           <div className={cn("rounded-md p-2", reached && "bg-status-solid-surface", isTarget && "outline-2 outline-foreground")}>
                             <ul className="space-y-1">
                               {ladder.levels[level].map((requirement) => {
@@ -192,14 +193,14 @@ function Report({ data }: { data: ExploreData }) {
                               })}
                             </ul>
                           </div>
-                        </td>
+                        </TableCell>
                       );
                     })}
-                  </tr>
+                  </TableRow>
                 );
               })}
-            </tbody>
-          </table>
+            </TableBody>
+          </Table>
         </div>
       </section>
 

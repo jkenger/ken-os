@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { LEVELS, levelRank, type Level } from "@ken-os/domain";
+import { Badge as ShadcnBadge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 // Ken OS page building blocks in the Studio look chosen on 2026-10-06: round controls, raised white panels on the
@@ -14,8 +15,9 @@ export const textButton = "inline-flex items-center gap-2 text-[13px] font-semib
 export const panel = "rounded-xl bg-card shadow-panel";
 export const eyebrow = "mb-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground";
 
+/** The page-heading badge: shadcn's Badge in the secondary look. */
 export function Badge({ children, className }: { children: ReactNode; className?: string }) {
-  return <span className={cn("inline-flex items-center rounded-full bg-secondary px-2.5 py-[5px] align-middle font-sans text-xs font-semibold leading-[1.2] tracking-normal text-quiet", className)}>{children}</span>;
+  return <ShadcnBadge variant="secondary" className={cn("h-auto px-2.5 py-[5px] align-middle font-sans font-semibold leading-[1.2] tracking-normal", className)}>{children}</ShadcnBadge>;
 }
 
 export function Back({ href, children }: { href: string; children: ReactNode }) {

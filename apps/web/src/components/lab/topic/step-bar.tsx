@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "@/components/ui/button";
 import { IconCheck } from "@tabler/icons-react";
 import type { StepId, StepState } from "@/features/engineering-lab/steps";
 import { cn } from "@/lib/utils";
@@ -18,15 +19,15 @@ export function StepBar({ steps, active, suggested, onSelect }: { steps: StepSta
           const detail = step.id === suggested && !isActive && !step.done ? "Suggested next" : step.detail;
           return (
             <li key={step.id} className="shrink-0">
-              <button type="button" onClick={() => onSelect(step.id)} aria-current={isActive ? "step" : undefined} title={detail}
-                className={cn("-mb-px flex items-center gap-2.5 border-b-2 px-1 pb-[17px] pt-3 text-[13px] transition-colors md:text-sm", isActive ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground")}>
+              <Button variant="ghost" type="button" onClick={() => onSelect(step.id)} aria-current={isActive ? "step" : undefined} title={detail}
+                className={cn("-mb-px h-auto gap-2.5 rounded-none border-0 border-b-2 px-1 pb-[17px] pt-3 text-[13px] font-normal hover:bg-transparent md:text-sm", isActive ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground")}>
                 <span className={cn("grid size-[23px] place-items-center rounded-full border text-[11px]", step.done ? "border-status-solid bg-status-solid-surface text-status-solid" : isActive ? "border-primary" : "border-input")}>
                   {step.done ? <IconCheck size={13} aria-hidden="true" /> : index + 1}
                 </span>
                 {step.label}
                 {step.id === suggested && !isActive && !step.done && <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />}
                 <span className="sr-only">: {detail}</span>
-              </button>
+              </Button>
             </li>
           );
         })}

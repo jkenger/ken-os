@@ -12,6 +12,8 @@ import { CodeEditor, eyebrow, Pill, PredictionDiff, RubricChecklist, StepBar, Te
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 
 export type Screen = "today" | "course" | "topic" | "terms";
 
@@ -58,10 +60,10 @@ function Today({ go }: { go: (screen: Screen, step?: StepId) => void }) {
       <div className="mt-6 grid gap-4 md:grid-cols-2">
         <section className="rounded-xl border border-border p-5" aria-labelledby="due">
           <p className={eyebrow} id="due">REVIEWS DUE · 1</p>
-          <button type="button" className="mt-3 flex w-full items-center justify-between gap-3 rounded-lg border border-border px-4 py-3 text-left hover:bg-muted/60" onClick={() => go("topic", "check")}>
+          <Button variant="outline" type="button" className="mt-3 h-auto w-full justify-between gap-3 whitespace-normal rounded-lg border-border px-4 py-3 text-left font-normal hover:bg-muted/60" onClick={() => go("topic", "check")}>
             <span><span className="block text-sm font-semibold">From URL to response, including HTTPS</span><span className="text-sm text-muted-foreground">You missed a review on Oct 1</span></span>
             <StatusPill status="revisit" />
-          </button>
+          </Button>
         </section>
         <section className="rounded-xl border border-dashed border-input p-5" aria-labelledby="daily">
           <p className={eyebrow} id="daily">DAILY PRACTICE · COMES WITH V1</p>
@@ -89,7 +91,7 @@ function TopicRow({ topic, number, go }: { topic: MockTopic; number: string; go:
       <span className="w-8 shrink-0 font-mono text-xs text-muted-foreground">{number}</span>
       {unwritten
         ? <span className="min-w-0 flex-1 text-[15px] text-muted-foreground">{topic.title}</span>
-        : <button type="button" className="min-w-0 flex-1 text-left text-[15px] font-semibold underline-offset-4 hover:underline" onClick={() => go("topic", "learn")}>{topic.title}</button>}
+        : <Button variant="link" type="button" className="h-auto min-w-0 flex-1 justify-start px-0 text-left text-[15px] font-semibold text-foreground" onClick={() => go("topic", "learn")}>{topic.title}</Button>}
       <span className="flex items-center gap-2">
         {topic.status === "untested" && <Button type="button" size="sm" variant="outline">Placement check · 3 questions</Button>}
         <StatusPill status={topic.status} />
@@ -112,18 +114,14 @@ function Course({ go }: { go: (screen: Screen, step?: StepId) => void }) {
       <h1 className={cn(title, "mt-3")}>The whole course, in order.</h1>
 
       <div className="mt-8 flex flex-wrap items-end justify-between gap-4 border-b border-border">
-        <div role="tablist" aria-label="Tracks" className="flex gap-1">
-          {tracks.map((item) => (
-            <button key={item.id} type="button" role="tab" aria-selected={item.id === trackId} onClick={() => setTrackId(item.id)}
-              className={cn("-mb-px border-b-2 px-4 py-3 text-sm font-semibold", item.id === trackId ? "border-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}>{item.title}</button>
-          ))}
-        </div>
+        <Tabs value={trackId} onValueChange={(next) => setTrackId(next as typeof trackId)}>
+          <TabsList variant="line" aria-label="Tracks" className="gap-1 group-data-horizontal/tabs:h-auto">
+            {tracks.map((item) => <TabsTrigger key={item.id} value={item.id} className="flex-none px-4 py-3 font-semibold">{item.title}</TabsTrigger>)}
+          </TabsList>
+        </Tabs>
         <Label className="mb-2 flex cursor-pointer items-center gap-3 text-sm font-semibold">
           My gaps only
-          <button type="button" role="switch" aria-checked={gapsOnly} onClick={() => setGapsOnly(!gapsOnly)}
-            className={cn("relative h-6 w-11 rounded-full transition-colors", gapsOnly ? "bg-primary" : "bg-input")}>
-            <span className={cn("absolute top-0.5 size-5 rounded-full bg-background shadow transition-transform", gapsOnly ? "translate-x-[22px]" : "translate-x-0.5")} />
-          </button>
+          <Switch checked={gapsOnly} onCheckedChange={setGapsOnly} />
         </Label>
       </div>
 
@@ -299,9 +297,11 @@ function LabStep({ next }: { next: () => void }) {
   return (
     <div>
       <h3 className={heading}>{lab.title}</h3>
-      <div role="tablist" aria-label="Lab panels" className="mt-4 flex gap-1 border-b border-border lg:hidden">
-        {(["brief", "code"] as const).map((id) => <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)} className={cn("-mb-px border-b-2 px-4 py-2.5 text-sm font-semibold", tab === id ? "border-foreground" : "border-transparent text-muted-foreground")}>{id === "brief" ? "Instructions" : "Code"}</button>)}
-      </div>
+      <Tabs value={tab} onValueChange={(next) => setTab(next as typeof tab)} className="mt-4 border-b border-border lg:hidden">
+        <TabsList variant="line" aria-label="Lab panels" className="gap-1 group-data-horizontal/tabs:h-auto">
+          {(["brief", "code"] as const).map((id) => <TabsTrigger key={id} value={id} className="flex-none px-4 py-2.5 font-semibold">{id === "brief" ? "Instructions" : "Code"}</TabsTrigger>)}
+        </TabsList>
+      </Tabs>
       <div className="mt-5 lg:hidden">{tab === "brief" ? brief : code}</div>
       <div className="mt-5 hidden gap-8 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <div className="lg:sticky lg:top-24 lg:self-start">{brief}</div>

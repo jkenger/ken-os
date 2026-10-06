@@ -13,6 +13,7 @@ import { post, realOutput, textarea } from "./client";
 import { PredictionDiff, RubricChecklist } from "./feedback";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 export function Tag({ value, children }: { value: string; children: React.ReactNode }) {
   return <Pill tone={toneFor(value)}>{children}</Pill>;
@@ -28,14 +29,14 @@ function Confidence({ value, onChange }: { value: number | null; onChange: (valu
     <fieldset className="my-[25px]">
       <legend className="mb-1 text-[13px] font-semibold">How sure are you?</legend>
       <p className="mb-[11px] text-xs text-muted-foreground">Not graded. Flags sure-but-wrong answers</p>
-      <div className="flex w-[270px] max-w-full gap-2.5">
+      <ToggleGroup type="single" spacing={2.5} variant="outline" aria-label="How sure are you?" className="w-[270px] max-w-full"
+        value={value ? String(value) : ""} onValueChange={(next) => { if (next) onChange(Number(next)); }}>
         {[1, 2, 3, 4, 5].map((rating) => (
-          <button key={rating} type="button" aria-pressed={value === rating} onClick={() => onChange(rating)}
-            className={cn("h-10 w-[45px] rounded-lg border bg-card text-sm", value === rating ? "border-primary bg-secondary text-foreground" : "border-input hover:bg-accent")}>
+          <ToggleGroupItem key={rating} value={String(rating)} className="h-10 w-[45px] border-input bg-card text-sm font-normal hover:bg-accent data-[state=on]:border-primary data-[state=on]:bg-secondary data-[state=on]:text-foreground">
             {rating}
-          </button>
+          </ToggleGroupItem>
         ))}
-      </div>
+      </ToggleGroup>
       <small className="mt-2 flex w-[270px] max-w-full justify-between text-[11px] text-muted-foreground"><span>1 · Guessing</span><span>5 · Very sure</span></small>
     </fieldset>
   );

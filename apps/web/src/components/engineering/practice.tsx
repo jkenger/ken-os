@@ -142,11 +142,11 @@ function Notes({ items, index, onPick }: { items: DailyItemView[]; index: number
         <ol className="mt-2">
           {items.map((entry, position) => (
             <li key={position}>
-              <button type="button" onClick={() => onPick?.(position)} aria-current={position === index ? "step" : undefined}
-                className={cn("flex w-full items-center gap-3 border-b border-border py-[13px] text-left text-[13px]", position === index && "font-semibold text-foreground")}>
+              <Button variant="ghost" type="button" onClick={() => onPick?.(position)} aria-current={position === index ? "step" : undefined}
+                className={cn("h-auto w-full justify-start gap-3 rounded-none border-b border-border px-0 py-[13px] text-left text-[13px] font-normal hover:bg-transparent", position === index && "font-semibold text-foreground")}>
                 {isDone(entry) ? <IconCheck size={18} className="shrink-0 text-status-solid" aria-label="Done" /> : position === index ? <IconCircleDot size={18} className="shrink-0" aria-label="Current" /> : <IconCircle size={18} className="shrink-0" aria-hidden="true" />}
                 <span className="min-w-0 flex-1 truncate">{entry.type === "lab" ? `Lab fix · ${entry.topicTitle}` : entry.topicTitle}</span>
-              </button>
+              </Button>
             </li>
           ))}
         </ol>

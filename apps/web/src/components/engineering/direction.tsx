@@ -135,7 +135,7 @@ export function EngineeringDirection({ email, view, closedBook = false }: { emai
                 <p className="mt-1 text-muted-foreground">{chapter.reason}</p>
                 <div className="mt-3 flex gap-3">
                   <Button variant="outline" type="button" disabled={busy !== ""} onClick={() => void act(chapter.title, () => post("/api/lab/profile", { action: "addChapter", chapter }), "Added · Not written yet", () => setSuggested((current) => current.filter((item) => item.title !== chapter.title)))}>Add chapter</Button>
-                  <button type="button" className="text-[13px] text-muted-foreground hover:text-foreground" onClick={() => setSuggested((current) => current.filter((item) => item.title !== chapter.title))}>Dismiss</button>
+                  <Button variant="ghost" size="sm" type="button" className="text-[13px] font-normal text-muted-foreground" onClick={() => setSuggested((current) => current.filter((item) => item.title !== chapter.title))}>Dismiss</Button>
                 </div>
               </div>
             ))}

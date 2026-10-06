@@ -27,8 +27,8 @@ export function StepBar({ steps, active, suggested, onSelect }: { steps: Step[];
           const isActive = step.id === active;
           return (
             <li key={step.id} className="min-w-[132px] flex-1">
-              <button type="button" onClick={() => onSelect(step.id)} aria-current={isActive ? "step" : undefined}
-                className={cn("flex h-full w-full items-start gap-3 border-b-2 px-4 py-3 text-left transition-colors hover:bg-muted/60", isActive ? "border-foreground" : "border-transparent")}>
+              <Button variant="ghost" type="button" onClick={() => onSelect(step.id)} aria-current={isActive ? "step" : undefined}
+                className={cn("h-full w-full items-start justify-start gap-3 whitespace-normal rounded-none border-0 border-b-2 px-4 py-3 text-left font-normal hover:bg-muted/60", isActive ? "border-foreground" : "border-transparent")}>
                 <span className={cn("mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold",
                   step.state === "done" ? "bg-status-solid-surface text-status-solid" : isActive ? "bg-primary text-primary-foreground" : "border border-input text-foreground")}>
                   {step.state === "done" ? <Check size={13} aria-label="Done" /> : index + 1}
@@ -37,7 +37,7 @@ export function StepBar({ steps, active, suggested, onSelect }: { steps: Step[];
                   <span className="block text-sm font-semibold">{step.label}</span>
                   <span className="block truncate text-xs text-muted-foreground">{step.id === suggested && !isActive ? "Suggested next" : step.detail}</span>
                 </span>
-              </button>
+              </Button>
             </li>
           );
         })}
@@ -181,17 +181,17 @@ export function TermLookup({ place, children }: { place: string; children: React
     <Terms.Provider value={{ terms, save, place }}>
       <div ref={root}>{children}</div>
       {pending && !pending.open && (
-        <button type="button" data-lookup className="fixed z-40 inline-flex h-8 items-center gap-1.5 rounded-lg bg-primary px-3 text-xs font-semibold text-primary-foreground shadow-lg"
+        <Button type="button" size="sm" data-lookup className="fixed z-40 h-8 gap-1.5 rounded-lg px-3 text-xs font-semibold shadow-lg"
           style={{ left: Math.max(16, pending.x - 44), top: pending.y + 8 }} onClick={() => setPending({ ...pending, open: true })}>
           Explain <kbd className="rounded border border-primary-foreground/40 px-1 text-[10px]">E</kbd>
-        </button>
+        </Button>
       )}
       {pending?.open && answer && (
         <div data-lookup role="dialog" aria-label={`Meaning of ${answer.term}`} className="fixed z-40 w-[320px] max-w-[calc(100vw-32px)] rounded-xl border border-border bg-popover p-4 text-sm shadow-2xl"
           style={{ left, top: Math.min(pending.y + 8, window.innerHeight - 260) }}>
           <div className="flex items-start justify-between gap-2">
             <p className="font-display text-base font-semibold tracking-[-0.02em]">{answer.term}</p>
-            <button type="button" className="rounded-md p-1 hover:bg-muted" aria-label="Close" onClick={() => setPending(null)}><X size={15} /></button>
+            <Button type="button" variant="ghost" size="icon-xs" aria-label="Close" onClick={() => setPending(null)}><X size={15} /></Button>
           </div>
           <p className="mt-2 leading-5">{answer.meaning}</p>
           <a className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold underline-offset-4 hover:underline" href={answer.source.url} target="_blank" rel="noopener noreferrer">{answer.source.title}<ExternalLink size={12} aria-hidden="true" /></a>
