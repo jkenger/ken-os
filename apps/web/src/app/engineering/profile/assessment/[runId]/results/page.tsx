@@ -1,5 +1,5 @@
 import { notFound, redirect } from "next/navigation";
-import { LabAssessment } from "@/components/lab/assessment/lab-assessment";
+import { EngineeringAssessment } from "@/components/engineering/assessment";
 import { getRunView } from "@/features/engineering-lab/assessment-run";
 import { getProfileRow } from "@/features/engineering-lab/profile-store";
 import { completedBaseline } from "@/features/engineering-lab/run-state";
@@ -16,5 +16,5 @@ export default async function ResultsPage({ params }: { params: Promise<{ runId:
   const [run, profile, baselineRun] = await Promise.all([getRunView(session.userId, runId).catch(() => null), getProfileRow(session.userId), completedBaseline(session.userId)]);
   if (!run) notFound();
   if (!run.completedAt) redirect(engineering.assessment({ run: run.id }));
-  return <LabAssessment email={session.email} intake={profile?.intake ?? null} conversation={(profile?.conversation ?? []).slice(-12)} run={run} focus={null} baselineDone={Boolean(baselineRun)} />;
+  return <EngineeringAssessment email={session.email} intake={profile?.intake ?? null} run={run} baselineDone={Boolean(baselineRun)} />;
 }

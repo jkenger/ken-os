@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { LabAssessment } from "@/components/lab/assessment/lab-assessment";
+import { EngineeringAssessment } from "@/components/engineering/assessment";
 import { getRunView, latestRun } from "@/features/engineering-lab/assessment-run";
 import { getProfileRow } from "@/features/engineering-lab/profile-store";
 import { activeRun, completedBaseline } from "@/features/engineering-lab/run-state";
@@ -16,13 +16,6 @@ export default async function AssessmentPage({ searchParams }: { searchParams: P
   const runId = runParam ?? open?.id ?? (fresh ? null : (await latestRun(session.userId))?.id ?? null);
   const run = runId ? await getRunView(session.userId, runId, chapter).catch(() => null) : null;
   return (
-    <LabAssessment
-      email={session.email}
-      intake={profile?.intake ?? null}
-      conversation={(profile?.conversation ?? []).slice(-12)}
-      run={run}
-      focus={chapter ?? null}
-      baselineDone={Boolean(baselineRun)}
-    />
+    <EngineeringAssessment email={session.email} intake={profile?.intake ?? null} run={run} baselineDone={Boolean(baselineRun)} />
   );
 }
