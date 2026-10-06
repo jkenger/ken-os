@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400..800&family=Source+Sans+3:wght@400..700&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -59,6 +59,7 @@
   * { @apply border-border; }
   html { @apply scroll-smooth; }
   body { @apply bg-background font-sans text-foreground; font-synthesis: none; }
+  h1, h2, h3 { @apply font-display; }
   button, input, a, summary { @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring; }
 
   /* Thin scrollbars: a 6px rounded thumb on a clear track, darker while dragged or hovered. */

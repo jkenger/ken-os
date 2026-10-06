@@ -20,7 +20,7 @@ export function StepBar({ steps, active, suggested, onSelect }: { steps: StepSta
             <li key={step.id} className="shrink-0">
               <button type="button" onClick={() => onSelect(step.id)} aria-current={isActive ? "step" : undefined} title={detail}
                 className={cn("-mb-px flex items-center gap-2.5 border-b-2 px-1 pb-[17px] pt-3 text-[13px] transition-colors md:text-sm", isActive ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground")}>
-                <span className={cn("grid size-[23px] place-items-center rounded-full border text-[11px]", step.done ? "border-status-solid bg-status-solid-surface text-status-solid" : isActive ? "border-primary" : "border-[#d3dbe9]")}>
+                <span className={cn("grid size-[23px] place-items-center rounded-full border text-[11px]", step.done ? "border-status-solid bg-status-solid-surface text-status-solid" : isActive ? "border-primary" : "border-input")}>
                   {step.done ? <IconCheck size={13} aria-hidden="true" /> : index + 1}
                 </span>
                 {step.label}

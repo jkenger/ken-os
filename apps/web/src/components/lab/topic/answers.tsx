@@ -29,7 +29,7 @@ function Confidence({ value, onChange }: { value: number | null; onChange: (valu
       <div className="flex w-[270px] max-w-full gap-2.5">
         {[1, 2, 3, 4, 5].map((rating) => (
           <button key={rating} type="button" aria-pressed={value === rating} onClick={() => onChange(rating)}
-            className={cn("h-10 w-[45px] rounded-[5px] border bg-card text-sm", value === rating ? "border-primary bg-[#eaf0ff] text-[#163fcf]" : "border-[#ccd5e3] hover:bg-accent")}>
+            className={cn("h-10 w-[45px] rounded-[5px] border bg-card text-sm", value === rating ? "border-primary bg-secondary text-foreground" : "border-input hover:bg-accent")}>
             {rating}
           </button>
         ))}

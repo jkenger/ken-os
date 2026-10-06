@@ -9,7 +9,7 @@ export function TitleBar({ kicker = "Engineering", title, stats, actions }: { ki
   return (
     <header className="mb-[25px] flex flex-wrap items-start justify-between gap-x-8 gap-y-4 md:mb-8">
       <div className="min-w-0">
-        <p className="mb-[9px] text-[11px] font-medium uppercase tracking-[0.06em] text-[#586579]">{kicker}</p>
+        <p className="mb-[9px] text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">{kicker}</p>
         <h1 className="text-[28px] font-[750] leading-[1.25] tracking-[-0.8px] md:text-[30px] xl:text-[36px] xl:tracking-[-1.3px]">{title}</h1>
       </div>
       {(stats || actions) && (
@@ -38,7 +38,7 @@ export function Panel({ title, meta, id, children, className, bodyClassName }: {
   return (
     <section aria-labelledby={headingId} className={cn("min-w-0 rounded-[5px] border border-border bg-card", className)}>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 rounded-t-[5px] border-b border-border bg-table-head px-[18px] py-3">
-        <h2 className="text-xs font-semibold text-[#566178]" id={headingId}>{title}</h2>
+        <h2 className="text-xs font-semibold text-quiet" id={headingId}>{title}</h2>
         {meta && <div className="text-xs text-muted-foreground">{meta}</div>}
       </div>
       <div className={cn("p-[18px]", bodyClassName)}>{children}</div>

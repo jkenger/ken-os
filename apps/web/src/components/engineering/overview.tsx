@@ -16,7 +16,7 @@ import { Badge, eyebrow, PageHeading, panel, primaryButton, secondaryButton, Sec
 // "From your projects" (knowledge debt) is deferred until real use validates the loop, as the handoff says.
 
 const kindEyebrow = { review: "Review", continue: "Continue", prerequisite: "Prerequisite first", new: "Up next" } as const;
-const row = "flex w-full flex-wrap items-center gap-3 border-t border-border py-[17px] text-left text-xs hover:bg-[#f6f9fe] md:flex-nowrap md:gap-[22px] md:text-[13px]";
+const row = "flex w-full flex-wrap items-center gap-3 border-t border-border py-[17px] text-left text-xs hover:bg-row-hover md:flex-nowrap md:gap-[22px] md:text-[13px]";
 
 function NextAction({ today, next, profile }: { today: TodayView; next: NextStep | null; profile: ProfileView }) {
   const shell = cn(panel, "p-[23px] md:p-7");

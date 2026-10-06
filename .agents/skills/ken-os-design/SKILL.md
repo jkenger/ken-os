@@ -1,11 +1,11 @@
 ---
 name: ken-os-design
-description: Apply the owner's working Ken OS-derived visual baseline to a personal web app when requested. Covers the shell, Inter typography, cool-grey panels, rails and the indigo primary action; not for unrelated UI work.
+description: Apply the owner's working Ken OS-derived visual baseline to a personal web app when requested. Covers the shell, Manrope and Source Sans 3 typography, warm monochrome panels, rails and the charcoal primary action; not for unrelated UI work.
 ---
 
 # Ken OS design baseline
 
-Version: 0.2.0-working.1. Status: **working / not yet approved**. This is an optional visual preset, not a project scaffold. The user's explicit choices and the target project's existing design system take precedence.
+Version: 0.3.0-working.1. Status: **working / not yet approved**. This is an optional visual preset, not a project scaffold. The user's explicit choices and the target project's existing design system take precedence.
 
 ## Apply it
 
@@ -16,4 +16,4 @@ Version: 0.2.0-working.1. Status: **working / not yet approved**. This is an opt
 
 ## Boundaries
 
-The light, cool palette with one indigo action colour is intentional. Panels are white with a hairline and 5px radius. Do not add gradients, glass effects, second accent colours, decorative corner brackets, cut edges, heavy shadows or tagline paragraphs without a new owner decision. Do not copy Ken OS branding, module names, sample data, or navigation into another product. Do not install globally, alter unrelated dependencies, deploy, or publish solely because this skill is invoked.
+The light, warm monochrome palette is intentional; colour is used only for meaning (status). Panels are separated by a hairline with a 5px radius. Do not add gradients, glass effects, accent colours, decorative corner brackets, cut edges, heavy shadows or tagline paragraphs without a new owner decision. Do not copy Ken OS branding, module names, sample data, or navigation into another product. Do not install globally, alter unrelated dependencies, deploy, or publish solely because this skill is invoked.
