@@ -98,6 +98,15 @@ Notes:
 - **Where it differs from the prototype on purpose:** no tagline paragraphs under titles (app-language rule); "Proof coverage" is a count of requirements met, never a percentage; the prototype's illustrative levels, demo grading, Blob worker, localStorage and "From your projects" are not copied; the prototype's rail labels (#748096, 3.9:1) use the muted colour (4.9:1); search and Sign out stay in the header.
 - **The Skyline home (`lab-today.tsx`) is no longer routed.** It stays for the `design-preview?view=lab` mockup and is deleted with other redundant UI once the redirects are permanent (proposal §13, phase F).
 
+**Task flows, 2026-10-06 (second pass).** The prototype's end-to-end flow now drives every task screen, on the real engine:
+
+- **Establish profile** (`components/engineering/assessment.tsx`): an intro form (what you build, what you use, AI work so far, weekly hours; never graded), then the assessment one question at a time in a question panel beside a progress column, with Save & exit, the chapter position, a progress track and a How this works dialog. Each chapter starts with a Start chapter step that writes its questions. After each answer: Saved, graded with the chapter, then Next question. Then results with counts, an evidence dialog per chapter, and Choose your direction.
+- **Direction** (`direction.tsx`): the prototype's form: target role, what it needs per area, Save direction; pace beside it. The Guide, definitions and added chapters open from here; the old tabbed workbench is no longer routed.
+- **Practice** (`practice.tsx`): one review at a time beside a Mixed review column, real grades and feedback after each, then a summary.
+- **Overview** opens the radar in a dialog; **topics** have the prototype's header with an Evidence & sources dialog.
+- Shared pieces are in `flow.tsx`: flow layout, notes column, session heading, progress track, success view, question panel, feedback block and an accessible dialog (focus moves in, Escape closes, focus returns).
+- The prototype's intro asks for a target role; Ken OS keeps direction after the baseline because levels come from it, so the intro does not ask.
+
 Checks run:
 
 - `pnpm test`: 183 pass (169 before, plus 7 projection, 4 route, 1 practice-proof and 2 owner-day tests). Includes the app-language scan of the new screens.

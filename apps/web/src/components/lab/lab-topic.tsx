@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, ChevronRight } from "lucide-react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import type { LabDefinition, Topic } from "@ken-os/domain";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,8 @@ import { ProvenBanner } from "./topic/feedback";
 import { StepBar } from "./topic/step-bar";
 import { formatDate, kindWords, label, labelWords, modeWords, statusWords } from "./words";
 import { engineering } from "@/features/engineering-lab/routes";
+import { Back, Badge } from "@/components/engineering/kit";
+import { TopicEvidenceDialog } from "@/components/engineering/topic-evidence";
 
 export interface TopicPlace { track: string; chapterNumber: number; chapterTitle: string }
 
@@ -170,34 +172,37 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
 
   return (
     <WorkspaceShell email={email} active="lab" tab="learn" termLookup={!view.closedBook}>
-      <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-[1100px] border-x border-border">
-        <header className="px-5 pb-6 pt-8 sm:px-8 lg:px-10 lg:pt-10">
-          <p className={cn(label, "flex flex-wrap items-center gap-1")}>{place.track.toUpperCase()}<ChevronRight size={12} aria-hidden="true" />CHAPTER {place.chapterNumber} · {place.chapterTitle.toUpperCase()}</p>
-          <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
-            <h1 className="max-w-[820px] text-[28px] font-[750] leading-[1.25] tracking-[-0.8px] md:text-[30px] xl:text-[36px] xl:tracking-[-1.3px]">{topic.title}</h1>
-            <Tag value={progress.status}>{statusWords[progress.status]}</Tag>
+      <div className="mx-auto w-full max-w-[1500px] px-3 pb-9 pt-6 md:px-5 md:pt-[30px] min-[1500px]:pt-9">
+        <Back href={engineering.learn}>Learning path</Back>
+        <header className="mx-[5px] mb-[25px] block items-start justify-between gap-[22px] md:mx-3.5 md:mb-8 md:flex">
+          <div className="min-w-0">
+            <p className="mb-[9px] text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">{place.track} · Chapter {place.chapterNumber} · {place.chapterTitle}</p>
+            <h1 className="max-w-[900px] text-[28px] font-[750] leading-[1.25] tracking-[-0.8px] md:text-[30px] xl:text-[36px] xl:tracking-[-1.3px]">
+              {topic.title}<Badge className="mt-2.5 table md:ml-2 md:mt-0 md:inline-flex">{progress.status === "NOT_STARTED" && progress.placement === "passed" ? "Known" : statusWords[progress.status]}</Badge>
+            </h1>
+            <p className="mt-[9px] max-w-[760px] text-[15px] leading-[1.55] text-muted-foreground">{topic.gap}</p>
           </div>
-          <p className="mt-3 max-w-[720px] text-[15px] leading-6 text-muted-foreground">{topic.gap}</p>
+          <div className="mt-3 shrink-0 md:mt-1"><TopicEvidenceDialog prove={topic.prove} sources={view.sources} attempts={view.attempts} /></div>
         </header>
 
-        <div ref={stepsTop} className="sticky top-0 z-10 scroll-mt-0">
+        <div ref={stepsTop} className="sticky top-0 z-10 mx-[5px] scroll-mt-0 md:mx-3.5">
           <StepBar steps={steps} active={step} suggested={suggested} onSelect={go} />
         </div>
         {justProven && (
-          <div className="mx-5 mt-5 sm:mx-8 lg:mx-10">
+          <div className="mx-[5px] mt-5 md:mx-3.5">
             <ProvenBanner title={topic.title} nextReviewAt={progress.nextReviewAt} byCode={topic.prove.filter((mode) => progress.evidence[mode]?.by === "code").length} />
           </div>
         )}
 
         {view.closedBook ? (
-          <div className="px-5 py-8 sm:px-8 lg:px-10">
+          <div className="mx-[5px] py-8 md:mx-3.5">
             <Empty action={<Button asChild><Link href={engineering.assessment()}>Back to assessment</Link></Button>}>
               <p className="font-semibold">Locked during assessment</p>
               <p className="mt-1 text-muted-foreground">Lesson, practice and labs open when it&apos;s done</p>
             </Empty>
           </div>
         ) : (
-        <div className="px-5 py-8 sm:px-8 lg:px-10">
+        <div className="mx-[5px] py-8 md:mx-3.5">
           {step === "learn" && (
             lesson ? (
               <>

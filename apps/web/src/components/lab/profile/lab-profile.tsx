@@ -53,7 +53,7 @@ function formatDay(value: string) {
   return new Date(value).toLocaleDateString("en", { month: "short", day: "numeric" });
 }
 
-function AddedChapterScreen({ chapter }: { chapter: ProfileView["addedChapters"][number] }) {
+export function AddedChapterScreen({ chapter }: { chapter: ProfileView["addedChapters"][number] }) {
   const router = useRouter();
   const next = chapter.next!;
   const view: AssessmentView = {

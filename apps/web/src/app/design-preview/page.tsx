@@ -7,6 +7,9 @@ import { DesignSystemWorkspace } from "@/components/design-system-workspace";
 import { LabToday } from "@/components/lab/lab-today";
 import { LabTopic } from "@/components/lab/lab-topic";
 import { EngineeringLearn } from "@/components/engineering/learn";
+import { EngineeringAssessment } from "@/components/engineering/assessment";
+import { EngineeringDirection } from "@/components/engineering/direction";
+import { EngineeringPractice } from "@/components/engineering/practice";
 import { TermsPage } from "@/components/terms/terms-page";
 import { EngineeringEvidence } from "@/components/engineering/evidence";
 import { EngineeringOverview } from "@/components/engineering/overview";
@@ -59,6 +62,22 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
   }
   if (view === "lab-practice") {
     return <LabPractice email="preview@example.invalid" daily={screenParam === "start" ? null : previewDaily()} />;
+  }
+  if (view === "engineering-assessment") {
+    // screen: intro (no intake), session (default), chapter (next chapter needs questions), results (finished run)
+    const profile = previewProfile("in_progress");
+    const run = previewRun();
+    const chapterStart = { ...run, current: null };
+    const finished = { ...run, completedAt: "2026-10-06T12:00:00Z", current: null, chapters: run.chapters.map((chapter) => ({ ...chapter, status: "done" as const })) };
+    return <EngineeringAssessment email="preview@example.invalid" intake={screenParam === "intro" ? null : profile.intake} baselineDone={false}
+      run={screenParam === "intro" ? null : screenParam === "chapter" ? chapterStart : screenParam === "results" ? finished : run} />;
+  }
+  if (view === "engineering-direction") {
+    return <EngineeringDirection email="preview@example.invalid" view={previewProfile(screenParam === "start" ? "none" : "done")} />;
+  }
+  if (view === "engineering-practice") {
+    const daily = previewDaily();
+    return <EngineeringPractice email="preview@example.invalid" daily={screenParam === "start" ? null : screenParam === "done" ? { ...daily, done: true, items: daily.items.map((item) => item.type === "lab" ? { ...item, passedToday: true } : item.answered ? item : { ...item, answered: { label: "solid", feedback: "Right lines, right order.", voided: false, answer: { lines: null, text: "Sample", why: null, actual: null }, explanation: null, rubric: null } }) } : daily} />;
   }
   if (view === "lab-assessment") {
     const profile = previewProfile("in_progress");

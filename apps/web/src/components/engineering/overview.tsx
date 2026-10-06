@@ -9,6 +9,7 @@ import { engineering } from "@/features/engineering-lab/routes";
 import type { NextStep } from "@/features/engineering-lab/steps";
 import type { TodayView } from "@/features/engineering-lab/store";
 import { cn } from "@/lib/utils";
+import { RadarDialog } from "./radar";
 import { Badge, eyebrow, PageHeading, panel, primaryButton, secondaryButton, SectionTitle, textButton } from "./kit";
 
 // Overview, one to one with the selected 2026-10-06 prototype: one dominant next action decided by the Planner (a due
@@ -128,7 +129,7 @@ export function EngineeringOverview({ email, today, next, profile, daily, closed
         )}
 
         <section className="mx-[5px] my-[30px] md:mx-3.5 md:my-8">
-          <SectionTitle title="Relevant changes" action={<Link href={engineering.direction("radar")} className={textButton}>View radar</Link>} />
+          <SectionTitle title="Relevant changes" action={<RadarDialog profile={profile} />} />
           {radar.length ? radar.slice(0, 3).map((item) => (
             <div key={item.id} className={row}>
               <Badge>{radarTagWords[item.tag]}</Badge>
