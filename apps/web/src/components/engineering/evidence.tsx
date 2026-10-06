@@ -91,7 +91,7 @@ export function EngineeringEvidence({ email, view, closedBook = false }: { email
           )}
 
           {view.source && (
-            <details className="group rounded-lg border border-border px-4 py-3 text-sm">
+            <details className="group rounded-xl bg-card shadow-panel px-4 py-3 text-sm">
               <DisclosureSummary className="font-semibold">Record</DisclosureSummary>
               <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-1.5">
                 <dt className="text-muted-foreground">Written for</dt><dd>{view.source.runKind ? kindWords[view.source.runKind] : view.source.origin === "daily" ? "Today's practice" : "Topic page"}</dd>

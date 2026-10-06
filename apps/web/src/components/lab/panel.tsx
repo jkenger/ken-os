@@ -36,7 +36,7 @@ export function Panel({ title, meta, id, children, className, bodyClassName }: {
 }) {
   const headingId = id ?? `panel-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
-    <section aria-labelledby={headingId} className={cn("min-w-0 rounded-[5px] border border-border bg-card", className)}>
+    <section aria-labelledby={headingId} className={cn("min-w-0 rounded-xl bg-card shadow-panel", className)}>
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 rounded-t-[5px] border-b border-border bg-table-head px-[18px] py-3">
         <h2 className="text-xs font-semibold text-quiet" id={headingId}>{title}</h2>
         {meta && <div className="text-xs text-muted-foreground">{meta}</div>}

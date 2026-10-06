@@ -15,7 +15,7 @@ export default async function Home() {
   if (!session) {
     return (
       <main className="min-h-screen bg-[#f5f3ef] p-3 sm:p-8">
-        <div className="mx-auto grid min-h-[calc(100vh-24px)] max-w-7xl overflow-hidden rounded-2xl border border-border bg-background shadow-sm sm:min-h-[calc(100vh-64px)] lg:grid-cols-2">
+        <div className="mx-auto grid min-h-[calc(100vh-24px)] max-w-7xl overflow-hidden rounded-2xl bg-card shadow-panel sm:min-h-[calc(100vh-64px)] lg:grid-cols-2">
           <div className="flex flex-col px-6 py-7 sm:px-12 sm:py-10 lg:px-16">
             <div className="flex items-center gap-3 font-display text-xl font-bold tracking-[-0.05em]"><span className="grid size-9 place-items-center rounded-lg bg-primary text-primary-foreground">K</span>ken.os</div>
             <div className="my-auto max-w-xl py-24">

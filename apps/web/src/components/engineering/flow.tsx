@@ -12,7 +12,7 @@ import { eyebrow, Notice, panel, primaryButton, textButton } from "./kit";
 // panel beside a notes column, a session heading with a progress track, success views and dialogs. Sizes are the
 // prototype's; colours are the Ken OS tokens.
 
-export const field = "mt-2.5 block w-full rounded-[5px] border border-input bg-card px-3 py-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30";
+export const field = "mt-2.5 block w-full rounded-lg border border-input bg-card px-3 py-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30";
 export const fieldLabel = "block text-[13px] font-semibold";
 
 /** Task panel on the left, notes on the right; one column on a phone. */
@@ -94,7 +94,7 @@ export function Dialog({ title, trigger, children, triggerClassName }: { title: 
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/35 p-3.5 backdrop-blur-[3px] md:p-6" onMouseDown={close}>
           <section ref={box} role="dialog" aria-modal="true" aria-label={title} onMouseDown={(event) => event.stopPropagation()}
-            className="max-h-[85vh] w-full max-w-[650px] overflow-auto rounded-[9px] border border-border bg-card p-[22px] shadow-[0_16px_70px_rgba(41,40,36,0.2)] md:p-[27px]">
+            className="max-h-[85vh] w-full max-w-[650px] overflow-auto rounded-xl bg-card p-[22px] shadow-[0_16px_70px_rgba(26,26,23,0.2)] md:p-[27px]">
             <div className="mb-3.5 flex items-center justify-between gap-4">
               <h2 className="text-[23px] font-bold tracking-[-0.6px] md:text-[25px]">{title}</h2>
               <button type="button" aria-label="Close dialog" data-autofocus onClick={close} className="rounded-md p-1 hover:bg-muted"><IconX size={22} aria-hidden="true" /></button>
@@ -117,7 +117,7 @@ export function Confidence({ value, onChange, disabled }: { value: number | null
       <div className="flex w-[270px] max-w-full gap-2.5">
         {[1, 2, 3, 4, 5].map((rating) => (
           <button key={rating} type="button" aria-pressed={value === rating} onClick={() => onChange(rating)}
-            className={cn("h-10 w-[45px] rounded-[5px] border bg-card text-sm disabled:opacity-60", value === rating ? "border-primary bg-secondary font-semibold" : "border-input hover:bg-accent")}>
+            className={cn("h-10 w-[45px] rounded-lg border bg-card text-sm disabled:opacity-60", value === rating ? "border-primary bg-secondary font-semibold" : "border-input hover:bg-accent")}>
             {rating}
           </button>
         ))}

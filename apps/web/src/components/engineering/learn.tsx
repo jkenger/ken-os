@@ -84,10 +84,10 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
           <div className="mb-3.5 flex w-fit gap-1 rounded-md bg-secondary p-1 md:mb-0" role="group" aria-label="Topics shown">
             {options.map(([id, name]) => (
               <button key={id} type="button" aria-pressed={scope === id} onClick={() => setScope(id)}
-                className={cn("rounded-[4px] px-3.5 py-2 text-[13px]", scope === id ? "bg-card text-foreground shadow-[0_1px_3px_rgba(41,40,36,0.12)]" : "text-muted-foreground hover:text-foreground")}>{name}</button>
+                className={cn("rounded-full px-3.5 py-2 text-[13px]", scope === id ? "bg-card text-foreground shadow-tab" : "text-muted-foreground hover:text-foreground")}>{name}</button>
             ))}
           </div>
-          <label className="flex w-full items-center gap-2.5 rounded-[5px] border border-input bg-card px-3 md:w-80">
+          <label className="flex w-full items-center gap-2.5 rounded-full border border-input bg-card px-3 md:w-80">
             <IconSearch size={18} className="text-muted-foreground" aria-hidden="true" />
             <input aria-label="Search topics" placeholder="Search topics or chapters" value={query} onChange={(event) => setQuery(event.target.value)}
               className="w-full bg-transparent py-[11px] text-sm outline-none placeholder:text-muted-foreground" />

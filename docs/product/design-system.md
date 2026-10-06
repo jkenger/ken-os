@@ -21,11 +21,11 @@ For an agent or developer working in this repository, the module must point to t
 
 ## Existing decisions to carry forward
 
-- One warm, light monochrome system; no additional colour presets in v1. Since 2026-10-06 (design system 0.3) it uses the Evidence Workbench layouts: hairline panels with a 5px radius, page headings with facts, capability tables and rails in charcoal and stone. A day-long switch to cool greys and indigo was reverted.
-- Manrope for display text and Source Sans 3 for body and controls.
+- One light system; no additional colour presets in v1. Since 2026-10-06 (design system 0.4, "Studio") it is a flat stone ground with raised white panels (14px corners, a soft shadow, no outline), ink type, round controls, one cobalt signal for focus, rail levels and selection, and teal, amber and coral status colours. It keeps the Evidence Workbench page layouts: page headings with facts, capability tables and rails. It replaced the warm monochrome hairline look (0.3) after the owner found it dated.
+- Bricolage Grotesque for display text and Public Sans for body and controls.
 - Tailwind utilities for normal feature styling, CSS variables in `globals.css` for shared theme tokens, and tailored shadcn primitives in `components/ui`.
-- A tinted 232px rail flush against the canvas with the modules and the current module's sections, and a 59px header with a breadcrumb.
-- 44px charcoal primary buttons with an arrow end icon, hairline secondary buttons, rails for ordered levels, and capability-style tables that open into tinted detail.
+- A 64px module icon strip and a 208px section column on the same ground as the page, with no dividers; the current module and section are white tabs. Under 1024px the sections become tabs above the page. A 56px header carries a "Module / Section" breadcrumb.
+- 44px round ink primary buttons with an optional arrow, white secondary buttons with a visible edge, cobalt rails for ordered levels, and capability-style tables that open into tinted detail.
 - A design skill is an optional preset for personal work, not a mandate for every future project or client app.
 
 The current values and anatomy are recorded in [component language](../design/component-language.md) and the existing [portable skill](../../.agents/skills/ken-os-design/SKILL.md). They are a working baseline, not a claim that every state has been visually approved.

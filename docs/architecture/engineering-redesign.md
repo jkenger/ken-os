@@ -18,7 +18,7 @@ Checked against `main` at `c61c0a7` on 2026-10-06.
 | API under `/api/lab` | 18 route handlers under `apps/web/src/app/api/lab` | Kept unchanged; no endpoint moved |
 | Feature-flag mechanism | None exists in Ken OS | See decision D6 |
 | Domain in `packages/domain/src/engineering-lab`, agents in `packages/agents/src/engineering-lab` | Confirmed | Unchanged |
-| Ken OS visual base | Manrope headings, Source Sans 3 body, warm monochrome tokens, status colours only for meaning (`engineering-lab-ui.md`) | See decision D1 |
+| Ken OS visual base | Since 2026-10-06 the Studio look (design system 0.4): Bricolage Grotesque headings, Public Sans body, stone ground with raised white panels, one cobalt signal, status colours only for meaning. Before that, Manrope, Source Sans 3 and warm monochrome (`engineering-lab-ui.md`) | See decision D1 |
 
 ### Evidence rules as implemented
 

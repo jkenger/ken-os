@@ -37,20 +37,20 @@ export function TermsPage({ email, terms, preview = false }: { email: string; te
 
   return (
     <WorkspaceShell email={email} active="terms" preview={preview}>
-      <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-[1100px] border-x border-border px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-        <h1 className="text-[28px] font-[750] leading-[1.25] tracking-[-0.8px] md:text-[30px] xl:text-[36px] xl:tracking-[-1.3px]">Terms</h1>
+      <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-[1100px] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
+        <h1 className="text-[30px] font-[750] leading-[1.1] tracking-[-0.035em] md:text-[34px] xl:text-[40px] xl:leading-[1.05]">Terms</h1>
 
         {terms.length > 0 && (
-          <label className="mt-6 flex h-10 max-w-[420px] items-center gap-2 rounded-lg border border-input px-3 focus-within:ring-3 focus-within:ring-ring/50">
+          <label className="mt-6 flex h-10 max-w-[420px] items-center gap-2 rounded-full border border-input bg-card px-4 focus-within:ring-3 focus-within:ring-ring/50">
             <Search size={16} className="text-muted-foreground" aria-hidden="true" />
             <input className="min-w-0 flex-1 bg-transparent text-sm outline-none" placeholder="Search terms" aria-label="Search terms" value={query} onChange={(event) => setQuery(event.target.value)} />
           </label>
         )}
 
         {terms.length ? (
-          <ul className="mt-6 divide-y divide-border border-y border-border">
+          <ul className="mt-6 divide-y divide-border rounded-xl bg-card shadow-panel">
             {shown.map((term) => (
-              <li key={term.id} className="grid gap-2 py-5 md:grid-cols-[200px_minmax(0,1fr)_auto] md:gap-6">
+              <li key={term.id} className="grid gap-2 px-5 py-5 md:grid-cols-[200px_minmax(0,1fr)_auto] md:gap-6 md:px-6">
                 <p className="font-display text-lg font-semibold tracking-[-0.02em]">{term.term}</p>
                 <div className="min-w-0">
                   <p className="text-[15px] leading-6">{term.meaning}</p>
@@ -63,7 +63,7 @@ export function TermsPage({ email, terms, preview = false }: { email: string; te
                 <Button type="button" variant="ghost" size="sm" className="justify-self-start" disabled={removing === term.id} onClick={() => void remove(term)} aria-label={`Remove ${term.term}`}><Trash2 aria-hidden="true" />Remove</Button>
               </li>
             ))}
-            {!shown.length && <li className="py-5 text-sm text-muted-foreground">No matches for &ldquo;{query}&rdquo;</li>}
+            {!shown.length && <li className="px-5 py-5 text-sm text-muted-foreground md:px-6">No matches for &ldquo;{query}&rdquo;</li>}
           </ul>
         ) : (
           <div className="mt-8 max-w-[620px] rounded-xl border border-dashed border-input p-6 text-[15px] leading-6">

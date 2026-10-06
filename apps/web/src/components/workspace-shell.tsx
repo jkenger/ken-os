@@ -99,7 +99,6 @@ const previewMemorySections = [
 
 const sidebarLabel = "mb-2 px-3 text-[10px] font-bold tracking-[0.14em] text-muted-foreground";
 const sidebarLink = "flex h-10 items-center gap-3 rounded-lg px-3 text-[13px] font-medium transition-colors hover:bg-muted hover:text-foreground";
-const evidenceLink = "flex items-center gap-[15px] rounded-lg px-[17px] py-[13px] text-sm font-medium transition-colors hover:bg-sidebar-accent";
 
 /** Today in the owner's time zone, like "Tue, Oct 6, 2026". */
 function ownerDate() {
@@ -150,10 +149,10 @@ function ModuleSearch({ preview }: { preview: boolean }) {
 
   return (
     <div>
-      <button ref={triggerRef} className="flex h-9 w-9 items-center justify-center gap-2 rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:bg-muted sm:w-60 sm:justify-start sm:px-3 lg:w-72" type="button" onClick={() => setOpen(true)} aria-label="Jump to a module">
+      <button ref={triggerRef} className="flex h-9 w-9 items-center justify-center gap-2 rounded-full bg-card text-muted-foreground shadow-tab transition-colors hover:bg-accent sm:w-60 sm:justify-start sm:px-3.5 md:bg-muted md:shadow-none lg:w-72" type="button" onClick={() => setOpen(true)} aria-label="Jump to a module">
         <Search size={16} strokeWidth={1.8} aria-hidden="true" />
         <span className="hidden flex-1 text-left text-xs sm:block">Jump to a module…</span>
-        <kbd className="hidden rounded border border-border px-1.5 py-0.5 text-[10px] sm:block">Ctrl K</kbd>
+        <kbd className="hidden rounded-md bg-card px-1.5 py-0.5 text-[10px] text-quiet sm:block">Ctrl K</kbd>
       </button>
       {open && (
         <div className="fixed inset-0 z-50 flex justify-center bg-foreground/40 px-4 pt-[min(17vh,150px)]" onMouseDown={() => setOpen(false)}>
@@ -195,13 +194,11 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
   const pathname = usePathname();
   // Engineering's nested pages (a topic, the assessment, evidence) highlight one of its four sidebar sections.
   const engineeringTab = active === "lab" ? tab ?? tabForPath(pathname) : null;
-  // The Ken OS shell from design system 0.2 (the 2026-10-06 Evidence Workbench look). The Writing Studio mockup keeps
-  // its own collapsible rail until it is rebuilt.
-  const evidence = !(preview && active === "writing");
+  // Every module uses the Studio shell; only the Writing Studio mockup keeps its old rail.
+  const studio = !(preview && active === "writing");
   const [hash, setHash] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
-  const writingPreview = preview && active === "writing";
   const sidebarRef = useRef<HTMLDivElement>(null);
   const sidebarToggleRef = useRef<HTMLButtonElement>(null);
 
@@ -240,90 +237,165 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
     else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
   };
 
+  const moduleList = preview ? previewModules : modules;
+  const sections = (preview && active === "memory" ? previewMemorySections : detail.sections).map(({ label, href: originalHref, icon }, index) => {
+    const href = preview && active === "memory" ? originalHref.replace("/memory", "/design-preview?view=memory") : originalHref;
+    const resolvedHref = preview && active === "design" ? href.replace("/design-system", "/design-preview?view=design") : href;
+    const selected = engineeringTab ? tabForPath(resolvedHref) === engineeringTab : preview && (active === "memory" || active === "design")
+      ? (index === 0 ? !hash : resolvedHref.endsWith(hash) && Boolean(hash))
+      : resolvedHref === pathname + hash || (index === 0 && ((pathname === resolvedHref && !hash) || preview));
+    return { key: href, label, href: resolvedHref, icon, selected };
+  });
+  const currentSection = sections.find((section) => section.selected);
+
+  if (studio) {
+    // The Studio shell (design system 0.4): a module icon strip, the current module's section column and the page,
+    // all on one flat ground. Only the current items and the page's panels are raised.
+    const tile = "grid size-10 place-items-center rounded-lg text-sidebar-foreground transition-colors hover:bg-accent";
+    const tab = "flex h-10 items-center gap-2.5 rounded-lg px-3 text-sm transition-colors hover:bg-accent";
+    const current = "bg-sidebar-accent text-sidebar-accent-foreground shadow-tab hover:bg-sidebar-accent";
+    const mark = <span className="grid size-[34px] shrink-0 place-items-center rounded-full bg-foreground font-display text-base font-extrabold text-background">K</span>;
+    return (
+      <div className="min-h-screen bg-background font-sans text-foreground md:flex">
+        <aside className="hidden md:sticky md:top-0 md:flex md:h-screen md:shrink-0" aria-label="Workspace sidebar">
+          <div className="flex w-16 flex-col items-center gap-1.5 py-4">
+            <Link className="mb-3.5 rounded-full" href="/" aria-label="Ken OS home">{mark}</Link>
+            <nav className="grid gap-1.5" aria-label="Modules">
+              {moduleList.map(({ id, label, href, icon: Icon }) => (
+                <Link key={id} className={cn(tile, active === id && current)} href={href} aria-label={label} title={label} aria-current={active === id ? "page" : undefined}>
+                  <Icon size={20} strokeWidth={1.8} aria-hidden="true" />
+                </Link>
+              ))}
+            </nav>
+            <span className="mt-auto grid size-9 place-items-center rounded-full bg-secondary text-[11px] font-semibold text-quiet" title={email} aria-label={`Signed in as ${email}`}>{email.slice(0, 2).toUpperCase()}</span>
+          </div>
+          {sections.length > 0 && (
+            <div className="hidden w-[208px] py-[18px] pl-1 pr-3 lg:block">
+              <p className="px-3 pb-3.5 pt-1 font-display text-lg font-bold leading-tight tracking-[-0.02em]">{detail.title}</p>
+              <nav className="grid gap-0.5" aria-label={`${detail.title} sections`}>
+                {sections.map(({ key, label, href, icon: Icon, selected }) => (
+                  <Link key={key} className={cn(tab, selected ? cn(current, "font-semibold") : "text-sidebar-foreground")} href={href} aria-current={selected ? "location" : undefined}>
+                    <Icon size={17} strokeWidth={1.8} aria-hidden="true" />{label}
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          )}
+        </aside>
+
+        {mobileOpen && <button className="fixed inset-0 z-40 bg-foreground/40 md:hidden" type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)} />}
+        {mobileOpen && (
+          <div ref={sidebarRef} className="fixed inset-x-3 top-3 z-50 max-h-[calc(100vh-24px)] overflow-y-auto rounded-xl bg-card p-3 shadow-2xl md:hidden" role="dialog" aria-modal="true" aria-label="Navigation menu" onKeyDown={trapSidebarFocus} id="workspace-sidebar-content">
+            <div className="mb-2 flex items-center justify-between px-1">
+              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Modules</span>
+              <button className="grid size-9 place-items-center rounded-full hover:bg-accent" type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)}><X size={18} /></button>
+            </div>
+            <nav className="grid gap-0.5" aria-label="Modules">
+              {moduleList.map(({ id, label, href, icon: Icon }) => (
+                <Link key={id} className={cn(tab, active === id ? "bg-secondary font-semibold" : "text-sidebar-foreground")} href={href} aria-current={active === id ? "page" : undefined} onClick={() => setMobileOpen(false)}>
+                  <Icon size={18} strokeWidth={1.8} aria-hidden="true" />{label}
+                </Link>
+              ))}
+            </nav>
+            {sections.length > 0 && <>
+              <p className="mb-2 mt-5 px-1 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{detail.title}</p>
+              <nav className="grid gap-0.5" aria-label={`${detail.title} sections`}>
+                {sections.map(({ key, label, href, icon: Icon, selected }) => (
+                  <Link key={key} className={cn(tab, selected ? "bg-secondary font-semibold" : "text-sidebar-foreground")} href={href} aria-current={selected ? "location" : undefined} onClick={() => setMobileOpen(false)}>
+                    <Icon size={17} strokeWidth={1.8} aria-hidden="true" />{label}
+                  </Link>
+                ))}
+              </nav>
+            </>}
+            <p className="mt-5 truncate px-1 text-xs text-muted-foreground">{email}</p>
+          </div>
+        )}
+
+        {/* From md up the content sits on one raised canvas, inset from the window, with the top nav as its header. */}
+        <div className="min-w-0 flex-1 md:my-2 md:mr-2 md:min-h-[calc(100vh-16px)] md:rounded-xl md:bg-canvas md:shadow-panel">
+          <header className="flex h-14 items-center justify-between gap-4 px-3 md:border-b md:border-border md:px-6">
+            <div className="flex min-w-0 items-center gap-2.5 text-sm">
+              <button ref={sidebarToggleRef} className="grid size-9 shrink-0 place-items-center rounded-full bg-card shadow-tab md:hidden" type="button" aria-label="Open menu" aria-expanded={mobileOpen} aria-controls="workspace-sidebar-content" onClick={() => setMobileOpen(true)}><Menu size={18} /></button>
+              <span className="truncate text-muted-foreground">{detail.title}{currentSection && <><span className="px-2">/</span><span className="font-semibold text-foreground">{currentSection.label}</span></>}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="hidden text-[13px] text-quiet lg:inline" suppressHydrationWarning>{ownerDate()}</span>
+              <ModuleSearch preview={preview} />
+              <form action="/api/auth/signout" method="post"><Button variant="ghost" type="submit" className="text-xs">Sign out</Button></form>
+            </div>
+          </header>
+          {sections.length > 1 && (
+            <nav className="flex gap-1 overflow-x-auto px-3 pb-1 md:px-6 md:pt-3 lg:hidden" aria-label={`${detail.title} sections`}>
+              {sections.map(({ key, label, href, selected }) => (
+                <Link key={key} className={cn("shrink-0 rounded-full px-3.5 py-1.5 text-[13px] transition-colors", selected ? "bg-card font-semibold text-foreground shadow-tab" : "text-sidebar-foreground hover:bg-accent")} href={href} aria-current={selected ? "location" : undefined}>{label}</Link>
+              ))}
+            </nav>
+          )}
+          <main className="min-w-0" id="main-content">{termLookup ? <TermLookup module={detail.title}>{children}</TermLookup> : children}</main>
+          <Toaster />
+        </div>
+      </div>
+    );
+  }
+
+  // The Writing Studio mockup keeps its own collapsible rail until it is rebuilt.
   return (
     <div className="min-h-screen bg-background font-sans text-foreground md:flex">
-      <aside className={cn("h-[60px] border-b border-sidebar-border md:sticky md:top-0 md:h-screen md:shrink-0 md:border-b-0", evidence ? "md:w-[205px] xl:w-[232px]" : "md:border-r", !evidence && (writingPreview && desktopCollapsed ? "md:w-[64px]" : "md:w-[264px] xl:w-[276px]"))} aria-label="Workspace sidebar">
+      <aside className={cn("h-[60px] border-b border-sidebar-border md:sticky md:top-0 md:h-screen md:shrink-0 md:border-b-0 md:border-r", desktopCollapsed ? "md:w-[64px]" : "md:w-[264px] xl:w-[276px]")} aria-label="Workspace sidebar">
         {mobileOpen && <button className="fixed inset-0 z-40 bg-foreground/50 md:hidden" type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)} />}
         <div
           ref={sidebarRef}
           className={cn(
             "flex flex-col bg-sidebar text-sidebar-foreground md:h-screen",
-            mobileOpen ? "fixed inset-y-3 left-3 z-50 w-[min(308px,calc(100vw-24px))] rounded-xl border border-sidebar-border shadow-2xl md:static md:w-auto md:rounded-none md:border-0 md:shadow-none" : "h-[60px] md:h-screen",
+            mobileOpen ? "fixed inset-y-3 left-3 z-50 w-[min(308px,calc(100vw-24px))] rounded-xl bg-card shadow-2xl md:static md:w-auto md:rounded-none md:bg-sidebar md:shadow-none" : "h-[60px] md:h-screen",
           )}
           role={mobileOpen ? "dialog" : undefined}
           aria-modal={mobileOpen ? "true" : undefined}
           aria-label={mobileOpen ? "Navigation menu" : undefined}
           onKeyDown={trapSidebarFocus}
         >
-          <div className={cn("flex h-[60px] shrink-0 items-center justify-between px-4", evidence ? "md:h-auto md:px-5 md:pb-[30px] md:pt-[22px]" : "md:h-16 md:border-b md:border-sidebar-border", mobileOpen && "border-b border-sidebar-border", writingPreview && desktopCollapsed && "md:justify-center md:px-2")}>
-            {evidence ? (
-              <Link className="flex items-center gap-2.5 text-[25px] font-[750] tracking-[-1px] text-foreground" href="/" aria-label="Ken OS home" onClick={() => setMobileOpen(false)}>
-                <span className="grid h-[27px] w-[29px] place-items-center rounded-[5px] bg-foreground text-base font-[750] text-background">K</span>Ken OS
-              </Link>
-            ) : (
-              <Link className="flex items-center gap-2.5 font-display text-xl font-bold tracking-[-0.055em]" href="/" aria-label="Ken OS home" onClick={() => setMobileOpen(false)}>
-                <span className="grid size-9 place-items-center rounded-lg bg-primary text-xl text-primary-foreground">K</span>
-                <span className={cn(writingPreview && desktopCollapsed && "md:hidden")}>ken<span className="text-muted-foreground">.os</span></span>
-              </Link>
-            )}
-            <Button className={cn("md:hidden", writingPreview && "hidden")} ref={sidebarToggleRef} variant="outline" type="button" aria-label={mobileOpen ? "Close menu" : "Open menu"} aria-expanded={mobileOpen} aria-controls="workspace-sidebar-content" onClick={() => setMobileOpen((value) => !value)}>
-              {mobileOpen ? <X size={18} /> : <Menu size={18} />} Menu
-            </Button>
+          <div className={cn("flex h-[60px] shrink-0 items-center justify-between px-4 md:h-16 md:border-b md:border-sidebar-border", mobileOpen && "border-b border-sidebar-border", desktopCollapsed && "md:justify-center md:px-2")}>
+            <Link className="flex items-center gap-2.5 font-display text-xl font-bold tracking-[-0.03em]" href="/" aria-label="Ken OS home" onClick={() => setMobileOpen(false)}>
+              <span className="grid size-9 place-items-center rounded-full bg-primary text-lg text-primary-foreground">K</span>
+              <span className={cn(desktopCollapsed && "md:hidden")}>ken<span className="text-muted-foreground">.os</span></span>
+            </Link>
           </div>
-          <div className={cn("min-h-0 flex-1 overflow-y-auto px-3", evidence ? "py-6 md:pt-0" : "py-6", mobileOpen ? "block" : "hidden md:block", writingPreview && desktopCollapsed && "md:px-2")} id="workspace-sidebar-content">
+          <div className={cn("min-h-0 flex-1 overflow-y-auto px-3 py-6", mobileOpen ? "block" : "hidden md:block", desktopCollapsed && "md:px-2")} id="workspace-sidebar-content">
             <div>
-              <p className={cn(sidebarLabel, evidence && "sr-only", writingPreview && desktopCollapsed && "md:sr-only")}>WORKSPACE</p>
+              <p className={cn(sidebarLabel, desktopCollapsed && "md:sr-only")}>WORKSPACE</p>
               <nav className="grid gap-1" aria-label="Modules">
-                {(preview ? previewModules : modules).map(({ id, label, href, icon: Icon }) => (
-                  <Link key={id} className={cn(evidence ? evidenceLink : sidebarLink, active === id ? cn("bg-sidebar-accent text-sidebar-accent-foreground", evidence && "font-semibold") : evidence ? "text-sidebar-foreground" : "text-muted-foreground", writingPreview && desktopCollapsed && "md:justify-center md:px-2")} href={href} aria-label={writingPreview && desktopCollapsed ? label : undefined} title={writingPreview && desktopCollapsed ? label : undefined} aria-current={active === id ? "page" : undefined} onClick={() => setMobileOpen(false)}>
-                    <Icon size={evidence ? 21 : 18} strokeWidth={evidence ? 1.6 : 1.8} aria-hidden="true" /><span className={cn(writingPreview && desktopCollapsed && "md:sr-only")}>{label}</span>
+                {moduleList.map(({ id, label, href, icon: Icon }) => (
+                  <Link key={id} className={cn(sidebarLink, active === id ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-tab" : "text-muted-foreground", desktopCollapsed && "md:justify-center md:px-2")} href={href} aria-label={desktopCollapsed ? label : undefined} title={desktopCollapsed ? label : undefined} aria-current={active === id ? "page" : undefined} onClick={() => setMobileOpen(false)}>
+                    <Icon size={18} strokeWidth={1.8} aria-hidden="true" /><span className={cn(desktopCollapsed && "md:sr-only")}>{label}</span>
                   </Link>
                 ))}
               </nav>
             </div>
-            {writingPreview ? writingPreviewGroups.map((group) => (
+            {writingPreviewGroups.map((group) => (
               <div className={cn("mt-7", desktopCollapsed && "md:hidden")} key={group.title}>
                 <p className={sidebarLabel}>{group.title.toUpperCase()}</p>
                 <nav className="grid gap-1" aria-label={`${group.title} preview actions`}>
                   {group.items.map(({ label, icon: Icon }) => <button className={cn(sidebarLink, "w-full text-left text-muted-foreground")} key={label} type="button" onClick={() => { onPreviewAction?.(label); setMobileOpen(false); }}><Icon size={17} strokeWidth={1.8} aria-hidden="true" />{label}</button>)}
                 </nav>
               </div>
-            )) : <div className="mt-7">
-              <p className={sidebarLabel}>{detail.title.toUpperCase()}</p>
-              <nav className="grid gap-1" aria-label={`${detail.title} sections`}>
-                {(preview && active === "memory" ? previewMemorySections : detail.sections).map(({ label, href: originalHref, icon: Icon }, index) => {
-                  const href = preview && active === "memory" ? originalHref.replace("/memory", "/design-preview?view=memory") : originalHref;
-                  const resolvedHref = preview && active === "design" ? href.replace("/design-system", "/design-preview?view=design") : href;
-                  const selected = engineeringTab ? tabForPath(resolvedHref) === engineeringTab : preview && (active === "memory" || active === "design")
-                    ? (index === 0 ? !hash : resolvedHref.endsWith(hash) && Boolean(hash))
-                    : resolvedHref === pathname + hash || (index === 0 && ((pathname === resolvedHref && !hash) || preview));
-                  return <Link key={href} className={cn(sidebarLink, selected ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground")} href={resolvedHref} aria-current={selected ? "location" : undefined} onClick={() => setMobileOpen(false)}><Icon size={17} strokeWidth={1.8} aria-hidden="true" />{label}</Link>;
-                })}
-              </nav>
-            </div>}
+            ))}
           </div>
-          {evidence ? (
-            <div className={cn("items-center gap-[11px] px-5 pb-[22px] pt-3", mobileOpen ? "flex" : "hidden md:flex")} title={email}>
-              <span className="grid size-[41px] shrink-0 place-items-center rounded-full bg-secondary text-xs font-semibold text-foreground">{email.slice(0, 2).toUpperCase()}</span>
-              <span className="min-w-0"><strong className="block truncate text-xs font-semibold text-foreground">{email}</strong><small className="mt-1 block text-xs text-muted-foreground">Owner</small></span>
-            </div>
-          ) : (
-            <div className={cn("items-center gap-2.5 border-t border-sidebar-border px-4 py-3", mobileOpen ? "flex" : "hidden md:flex", writingPreview && desktopCollapsed && "md:justify-center md:px-2")} title={email}>
-              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-secondary text-xs font-bold">{email[0]?.toUpperCase()}</span>
-              <span className={cn("min-w-0", writingPreview && desktopCollapsed && "md:hidden")}><small className="block truncate text-xs text-muted-foreground">{email}</small></span>
-            </div>
-          )}
+          <div className={cn("items-center gap-2.5 border-t border-sidebar-border px-4 py-3", mobileOpen ? "flex" : "hidden md:flex", desktopCollapsed && "md:justify-center md:px-2")} title={email}>
+            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-secondary text-xs font-bold">{email[0]?.toUpperCase()}</span>
+            <span className={cn("min-w-0", desktopCollapsed && "md:hidden")}><small className="block truncate text-xs text-muted-foreground">{email}</small></span>
+          </div>
         </div>
       </aside>
 
       <div className="min-w-0 flex-1">
         <div className="min-h-[calc(100vh-60px)] bg-background md:min-h-screen">
-          <header className={cn("flex items-center justify-between gap-4 border-b border-border px-5", evidence ? "h-16 sm:px-8 md:h-[59px] md:pl-[26px] md:pr-[25px]" : "h-16 sm:px-8", writingPreview && "sm:px-5")}>
+          <header className="flex h-16 items-center justify-between gap-4 border-b border-border px-5">
             <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
-              {writingPreview && <><button className="grid size-9 shrink-0 place-items-center rounded-lg border border-border hover:bg-muted md:hidden" type="button" aria-label="Open sidebar" aria-controls="workspace-sidebar-content" aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><Menu size={17} /></button><button className="hidden size-9 shrink-0 place-items-center rounded-lg border border-border hover:bg-muted md:grid" type="button" aria-label={desktopCollapsed ? "Expand sidebar" : "Collapse sidebar"} aria-controls="workspace-sidebar-content" aria-expanded={!desktopCollapsed} onClick={() => setDesktopCollapsed((value) => !value)}>{desktopCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</button></>}
-              <span className="truncate"><span className="hidden text-muted-foreground sm:inline">Ken OS <span className="px-2 text-border">/</span></span>{detail.title}{writingPreview && <><span className="px-2 text-border">/</span>Draft</>}</span>
+              <button className="grid size-9 shrink-0 place-items-center rounded-lg border border-border hover:bg-muted md:hidden" type="button" aria-label="Open sidebar" aria-controls="workspace-sidebar-content" aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><Menu size={17} /></button>
+              <button className="hidden size-9 shrink-0 place-items-center rounded-lg border border-border hover:bg-muted md:grid" type="button" aria-label={desktopCollapsed ? "Expand sidebar" : "Collapse sidebar"} aria-controls="workspace-sidebar-content" aria-expanded={!desktopCollapsed} onClick={() => setDesktopCollapsed((value) => !value)}>{desktopCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</button>
+              <span className="truncate"><span className="hidden text-muted-foreground sm:inline">Ken OS <span className="px-2 text-border">/</span></span>{detail.title}<span className="px-2 text-border">/</span>Draft</span>
             </div>
-            {writingPreview ? headerActions : <div className="flex items-center gap-3">{evidence && <span className="hidden text-[13px] text-quiet lg:inline" suppressHydrationWarning>{ownerDate()}</span>}<ModuleSearch preview={preview} /><form action="/api/auth/signout" method="post"><Button variant="ghost" type="submit" className="text-xs">Sign out</Button></form></div>}
+            {headerActions}
           </header>
           <main className="min-w-0" id="main-content">{termLookup ? <TermLookup module={detail.title}>{children}</TermLookup> : children}</main>
           <Toaster />

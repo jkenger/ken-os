@@ -1,6 +1,6 @@
 # Components: repeated surfaces and actions
 
-Version: 0.3.0-working.1 · working / not yet approved. Adapt anatomy to the target product rather than copying Ken OS content.
+Version: 0.4.0-working.1 · working / not yet approved. Adapt anatomy to the target product rather than copying Ken OS content.
 
 ## Component reuse
 
@@ -8,23 +8,23 @@ Define components by shared anatomy and behavior, not by the module that first u
 
 ## Buttons
 
-One filled charcoal action per task area; secondary actions sit on the canvas with a hairline, text actions underline on hover. 44px high, 5px radius, 14px medium label, 19px side padding, an arrow end icon 14px from the label. Hover darkens the fill; buttons never fade.
+One filled ink action per task area; secondary actions are white with a visible edge; text actions underline on hover. 44px high and fully round, 14px medium label, 20px side padding, an optional arrow 10px after the label. Hover changes the fill; buttons never fade.
 
 ## Panels and cards
 
-Panels on the canvas with a 1px hairline and 5px radius; no shadows, no nested panels. Header strips use the table-head surface with a 12px semibold quiet label. Tables are panels whose rows open into a tinted detail block. Status must be readable as text, not colour alone.
+White panels raised off the stone ground: 14px corners and a soft shadow, no outline, no nested panels. The title and an optional count sit inside the panel. Rows are split by a hairline and open into a tinted detail block. Status must be readable as text, not colour alone.
 
 ## Page heading
 
-Eyebrow, large title, an optional badge, and facts on the right. No tagline under the title: screens name things, they don't describe themselves. Facts are a 12px label over a 15px semibold value.
+Eyebrow, large title, an optional badge and description, and facts on the right. The description is one line on what the page holds, never a tagline. Facts are a 12px label beside a 15px semibold value.
 
 ## Rails
 
-Junior, mid and senior (or any short ordered scale) as three 12px rounded segments with labels underneath. Light up the reached segment in charcoal, use stone for an estimate, and always write the value in words beside the rail. Coverage is a segment per requirement and a count, never a percentage.
+Junior, mid and senior (or any short ordered scale) as three round segments with labels underneath. Light up the reached segment in cobalt, use light cobalt for an estimate, and always write the value in words beside the rail. Coverage is a segment per requirement and a count, never a percentage.
 
 ## Inputs
 
-Canvas field, warm hairline, clear label and an obvious focus ring. Use 40–44px height, 14px text, the warm input edge and the warm focus ring; retain error and disabled states.
+White field, visible edge, clear label and a cobalt focus ring. Use 40px height, 10px corners, 14px text and the input edge (3.4:1); retain error and disabled states.
 
 ## Notifications
 
@@ -32,7 +32,7 @@ Call toast() after something finishes in the background or saves; keep errors ne
 
 ## App shell
 
-A tinted 232px rail with the modules and the current module's sections, and a 59px header with a breadcrumb. The rail (205px under 1280px) has the brand, the modules with 21px outline icons, and the owner at the bottom, with no divider against the canvas. The current module is a warm stone fill. Below the modules, a small label names the current module and lists its sections; the current section uses the same fill. The header shows 'Ken OS / Module' on the left and search and sign out on the right. Mobile uses an accessible menu holding both lists.
+A 64px module icon strip and a 208px section column on the stone ground, beside one raised content canvas. The strip has the round brand mark, a tile per module with a 20px outline icon and a tooltip, and the owner at the bottom. The current module is a white tile and the current section a white tab, both with the tab shadow. The content canvas is inset 8px with 14px corners and the panel shadow; its 56px header, with a hairline under it, carries 'Module / Section', the date, search and sign out. The section column is hidden under 1024px, where sections become tabs under the header. Under 768px the canvas drops away and the page sits on the ground. Mobile uses an accessible menu holding both lists.
 
 ## Density check
 
