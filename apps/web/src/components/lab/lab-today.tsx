@@ -14,6 +14,7 @@ import { Panel, Stat, TitleBar } from "./panel";
 import { RoadRail } from "./profile/road-rail";
 import { Skyline } from "./profile/skyline";
 import { formatDate, levelWords, radarTagWords, statusWords, toneFor } from "./words";
+import { engineering } from "@/features/engineering-lab/routes";
 
 // The lab home, in the lab's tight bordered layout (panel.tsx). Before the baseline: how to start it. After: your
 // shape beside a Today panel, the road ahead as a rail, then roles, reviews and changes. Chosen on 2026-10-03.
@@ -40,7 +41,7 @@ function StartPanel({ profile }: { profile: ProfileView }) {
         </ol>
       </details>
       <Button asChild className="mt-4">
-        <Link href="/lab/assessment">{started ? "Continue baseline" : profile.intake ? "Start baseline" : "Start intro"}<ButtonEndIcon><ArrowRight size={15} /></ButtonEndIcon></Link>
+        <Link href={engineering.assessment()}>{started ? "Continue baseline" : profile.intake ? "Start baseline" : "Start intro"}<ButtonEndIcon><ArrowRight size={15} /></ButtonEndIcon></Link>
       </Button>
     </Panel>
   );
@@ -57,7 +58,7 @@ function ContinuePanel({ today, next }: { today: TodayView; next: NextStep | nul
       <p className="font-display text-lg font-semibold">{topic.title}</p>
       <p className="mt-1 text-sm text-muted-foreground">Step {index + 1} of {next.steps.length}: {step.label}, {step.detail.toLowerCase()}</p>
       <p className="mt-2 max-w-[680px] text-sm leading-6">{plan.reason}</p>
-      <Button asChild className="mt-3"><Link href={`/lab/topics/${topic.id}?step=${next.suggested}`}>{plan.kind === "new" && index === 0 ? "Start" : "Continue"}: {step.label}</Link></Button>
+      <Button asChild className="mt-3"><Link href={engineering.topic(topic.id, next.suggested)}>{plan.kind === "new" && index === 0 ? "Start" : "Continue"}: {step.label}</Link></Button>
     </Panel>
   );
 }
@@ -80,7 +81,7 @@ function TodayPanel({ today, next, daily, profile }: { today: TodayView; next: N
           <h3 className="text-sm font-semibold" id="practice-title">Practice</h3>
           <p className="mt-1 text-sm leading-5 text-muted-foreground">{practice}{daily?.warmUp ? " · Warm-up until your first topic is proven" : ""}</p>
           <Button asChild size="sm" variant={daily?.done ? "outline" : "default"} className="mt-3">
-            <Link href="/lab/practice">{!daily ? "Start practice" : daily.done ? "Review answers" : "Continue practice"}</Link>
+            <Link href={engineering.practice}>{!daily ? "Start practice" : daily.done ? "Review answers" : "Continue practice"}</Link>
           </Button>
         </section>
         <section className="p-4" aria-labelledby="continue-title">
@@ -88,7 +89,7 @@ function TodayPanel({ today, next, daily, profile }: { today: TodayView; next: N
           {topic && step ? (
             <>
               <p className="mt-1 text-sm leading-5"><span className="font-semibold">{topic.title}</span><span className="text-muted-foreground"> · {step.label}</span></p>
-              <Button asChild size="sm" variant="outline" className="mt-3"><Link href={`/lab/topics/${topic.id}?step=${next!.suggested}`}>{step.label}</Link></Button>
+              <Button asChild size="sm" variant="outline" className="mt-3"><Link href={engineering.topic(topic.id, next!.suggested)}>{step.label}</Link></Button>
             </>
           ) : <p className="mt-1 text-sm leading-5 text-muted-foreground">Nothing due. New chapters coming</p>}
         </section>
@@ -99,9 +100,9 @@ function TodayPanel({ today, next, daily, profile }: { today: TodayView; next: N
               <p className="mt-1 text-sm leading-5"><Pill tone={radar.tag === "recheck" ? "gap" : "neutral"} className="mr-1.5 align-middle">{radarTagWords[radar.tag]}</Pill>{radar.title}</p>
               <p className="mt-1 text-sm leading-5 text-muted-foreground">{radar.reason}</p>
               <div className="mt-2 flex flex-wrap gap-x-4 text-sm">
-                {radar.topicId ? <Link href={`/lab/topics/${radar.topicId}?step=check`} className="underline underline-offset-4">Re-check</Link>
+                {radar.topicId ? <Link href={engineering.topic(radar.topicId, "check")} className="underline underline-offset-4">Re-check</Link>
                   : radar.sourceUrl && <a href={radar.sourceUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 underline underline-offset-4">Source<ExternalLink size={12} aria-hidden="true" /></a>}
-                <Link href="/lab/profile?pane=radar" className="text-muted-foreground underline-offset-4 hover:underline">All</Link>
+                <Link href={engineering.direction("radar")} className="text-muted-foreground underline-offset-4 hover:underline">All</Link>
               </div>
             </>
           ) : <p className="mt-1 text-sm leading-5 text-muted-foreground">{radarEmpty}</p>}
@@ -121,7 +122,7 @@ function ProfileHome({ today, next, daily, profile }: { today: TodayView; next: 
     <>
       {profile.careers.status === "draft" && (
         <p className="mt-4 rounded-md border border-border px-4 py-2.5 text-sm">
-          Role definitions · Draft <Link href="/lab/profile?pane=definitions" className="ml-2 underline underline-offset-4">Review</Link>
+          Role definitions · Draft <Link href={engineering.direction("definitions")} className="ml-2 underline underline-offset-4">Review</Link>
         </p>
       )}
 
@@ -137,11 +138,11 @@ function ProfileHome({ today, next, daily, profile }: { today: TodayView; next: 
         {chosen ? (
           profile.roadmap.length
             ? <RoadRail steps={profile.roadmap} weeklyHours={profile.pace.weeklyHours} />
-            : <p className="text-sm text-muted-foreground">Direction complete <Link href="/lab/profile?pane=roles" className="ml-2 underline underline-offset-4">Choose direction</Link> <Link href="/lab/assessment?new=1" className="ml-2 underline underline-offset-4">Start checkpoint</Link></p>
-        ) : <p className="text-sm text-muted-foreground"><span className="font-semibold text-foreground">No direction yet</span> · Choose one to see the chapters it needs <Link href="/lab/profile" className="ml-2 underline underline-offset-4">Ask the Guide</Link></p>}
+            : <p className="text-sm text-muted-foreground">Direction complete <Link href={engineering.direction("roles")} className="ml-2 underline underline-offset-4">Choose direction</Link> <Link href={engineering.assessment({ new: true })} className="ml-2 underline underline-offset-4">Start checkpoint</Link></p>
+        ) : <p className="text-sm text-muted-foreground"><span className="font-semibold text-foreground">No direction yet</span> · Choose one to see the chapters it needs <Link href={engineering.direction()} className="ml-2 underline underline-offset-4">Ask the Guide</Link></p>}
       </Panel>
 
-      <Panel className="mt-4" title="Roles" meta={<Link href="/lab/profile?pane=roles" className="underline-offset-4 hover:underline">Compare and choose</Link>} bodyClassName="p-0">
+      <Panel className="mt-4" title="Roles" meta={<Link href={engineering.direction("roles")} className="underline-offset-4 hover:underline">Compare and choose</Link>} bodyClassName="p-0">
         <ul className="divide-y divide-border text-sm">
           {roles.map((role) => {
             const isChosen = role.roleId === profile.direction;
@@ -181,7 +182,7 @@ export function LabToday({ email, today, next, profile, daily }: { email: string
             {baselineDone && chosen && <Stat label="Level" value={levelWords(chosen.overall)} />}
             <Stat label="Proven" value={`${proven} of ${topicMap.topics.length}`} />
           </>}
-          actions={baselineDone ? <Button asChild size="sm" variant="outline"><Link href="/lab/profile">Choose direction</Link></Button> : undefined}
+          actions={baselineDone ? <Button asChild size="sm" variant="outline"><Link href={engineering.direction()}>Choose direction</Link></Button> : undefined}
         />
 
         {baselineDone ? <ProfileHome today={today} next={next} daily={daily} profile={profile} /> : (
@@ -199,7 +200,7 @@ export function LabToday({ email, today, next, profile, daily }: { email: string
                   const item = today.progress.find((entry) => entry.topicId === id)!;
                   return (
                     <li key={id}>
-                      <Link href={`/lab/topics/${id}?step=check`} className="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-muted/60">
+                      <Link href={engineering.topic(id, "check")} className="flex items-center justify-between gap-3 px-4 py-2.5 hover:bg-muted/60">
                         <span className="text-sm font-semibold">{findTopic(id)?.title ?? id}</span>
                         <Pill tone={toneFor(item.status)}>{item.status === "NEEDS_REVISIT" ? statusWords.NEEDS_REVISIT : "Review due"}</Pill>
                       </Link>
@@ -215,7 +216,7 @@ export function LabToday({ email, today, next, profile, daily }: { email: string
               <ul className="space-y-3 text-sm">
                 {weak.map((item) => (
                   <li key={item.topicId}>
-                    <Link href={`/lab/topics/${item.topicId}`} className="font-semibold underline-offset-4 hover:underline">{findTopic(item.topicId)?.title}</Link>
+                    <Link href={engineering.topic(item.topicId)} className="font-semibold underline-offset-4 hover:underline">{findTopic(item.topicId)?.title}</Link>
                     <p className="text-muted-foreground">{item.weaknesses[0]}{item.weaknesses.length > 1 ? ` (+${item.weaknesses.length - 1} more)` : ""}</p>
                   </li>
                 ))}

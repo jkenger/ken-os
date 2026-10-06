@@ -56,7 +56,7 @@ Module names are proper names in title case and appear the same in the sidebar, 
 |---|---|
 | Resume | Resume hub, Your documents, Primary resume, 01 / Resume |
 | Skills | Agent skills, Agent capabilities, Skills library |
-| Engineering Lab | Lab, in running text only after the first mention |
+| Engineering | Engineering Lab, Lab (renamed 6 Oct 2026; code keeps `engineering-lab`) |
 | Terms | Saved terms, Words you looked up |
 | Project Memory | |
 | Design System | Design system |
@@ -78,7 +78,7 @@ Module names are proper names in title case and appear the same in the sidebar, 
 | Add skill | Upload a skill | Upload instructions, Upload skill |
 | On / Off | Whether the resume assistant gets it | Enable for resume agent, enabled, disabled |
 
-### Engineering Lab
+### Engineering
 
 | Use | Meaning | Instead of |
 |---|---|---|
@@ -87,10 +87,12 @@ Module names are proper names in title case and appear the same in the sidebar, 
 | Assessment | Baseline or checkpoint, when either fits | |
 | Intro | The short chat before the baseline | a short talk, the talk, intake |
 | Placement check | A quick check of what the owner already knows: one question per written topic, or two short questions for a chapter with no lessons yet | screening, screening questions, estimate (as a verb) |
-| Learn, Practice, Lab, Check | The four topic steps | Prove it with fresh questions |
-| Today's practice | The daily mixed set | daily practice, today's set, a short mixed set |
+| Overview, Profile, Learn, Practice | The four Engineering tabs. The Practice tab is titled "Today's practice" | Today, Course |
+| Lesson, Predict, Lab, Prove | The four topic steps (renamed 6 Oct 2026 so "Learn" and "Practice" only name tabs) | Learn, Practice, Check (as step names) |
+| Known | A topic placed by an all-solid placement check or assessment, not yet proven | Placed |
+| Today's practice | The daily mixed set. Its answers on unproven topics never count as proof | daily practice, today's set, a short mixed set |
 | Review | A topic coming back after a gap | |
-| Direction | The role the owner is aiming at | shape, what do you want to become |
+| Direction | The role the owner is aiming at, and the page under Profile where it's chosen with the Guide | shape, what do you want to become |
 | Radar | Weekly scan of docs and release notes | This week on your radar |
 | AI uses | Calls to a model, with the day's limit | AI calls used, AI use today, AI generations |
 | Guide | The chat that runs the intro and direction talk | |

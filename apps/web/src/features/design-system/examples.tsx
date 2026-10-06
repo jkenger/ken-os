@@ -107,7 +107,7 @@ export function ComponentExamples() {
           </div>
         </div>
         <p className="mt-1 text-sm leading-5 text-muted-foreground">
-          Warm border, clear label, visible focus
+          Cool hairline, clear label, visible focus
         </p>
         <label
           className="mt-5 block text-[13px] font-semibold"

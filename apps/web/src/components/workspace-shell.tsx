@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Archive, BookMarked, ClipboardCheck, UserRound, BookOpenText, FileText, FlaskConical, Image, Library, Lightbulb, ListTree, Menu, PanelLeftClose, PanelLeftOpen, Palette, PenLine, Search, Sparkles, Sun, X } from "lucide-react";
+import { Archive, BookMarked, UserRound, BookOpenText, FileText, FlaskConical, Image, LayoutDashboard, Library, Lightbulb, ListTree, Menu, PanelLeftClose, PanelLeftOpen, Palette, PenLine, Repeat, Search, Sparkles, X } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import { TermLookup } from "@/components/terms/term-lookup";
 import { Toaster } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
+import { engineering, tabForPath, type EngineeringTab } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
 
 type Module = "resume" | "skills" | "memory" | "design" | "lab" | "writing" | "terms";
@@ -16,7 +17,7 @@ const modules = [
   { id: "skills" as const, label: "Skills", href: "/skills", icon: Sparkles },
   { id: "design" as const, label: "Design System", href: "/design-system", icon: Palette },
   { id: "memory" as const, label: "Project Memory", href: "/memory", icon: BookOpenText },
-  { id: "lab" as const, label: "Engineering Lab", href: "/lab", icon: FlaskConical },
+  { id: "lab" as const, label: "Engineering", href: engineering.overview, icon: FlaskConical },
   { id: "terms" as const, label: "Terms", href: "/terms", icon: BookMarked },
 ];
 const previewModules = [
@@ -51,12 +52,12 @@ const moduleDetails: Record<Module, {
     ],
   },
   lab: {
-    title: "Engineering Lab",
+    title: "Engineering",
     sections: [
-      { label: "Today", href: "/lab", icon: Sun },
-      { label: "Course", href: "/lab/topics", icon: ListTree },
-      { label: "Profile", href: "/lab/profile", icon: UserRound },
-      { label: "Assessment", href: "/lab/assessment", icon: ClipboardCheck },
+      { label: "Overview", href: engineering.overview, icon: LayoutDashboard },
+      { label: "Profile", href: engineering.profile, icon: UserRound },
+      { label: "Learn", href: engineering.learn, icon: ListTree },
+      { label: "Practice", href: engineering.practice, icon: Repeat },
     ],
   },
   design: {
@@ -98,6 +99,12 @@ const previewMemorySections = [
 
 const sidebarLabel = "mb-2 px-3 text-[10px] font-bold tracking-[0.14em] text-muted-foreground";
 const sidebarLink = "flex h-10 items-center gap-3 rounded-lg px-3 text-[13px] font-medium transition-colors hover:bg-muted hover:text-foreground";
+const evidenceLink = "flex items-center gap-[15px] rounded-lg px-[17px] py-[13px] text-sm font-medium transition-colors hover:bg-[#e9edf4]";
+
+/** Today in the owner's time zone, like "Tue, Oct 6, 2026". */
+function ownerDate() {
+  return new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Manila", weekday: "short", month: "short", day: "numeric", year: "numeric" }).format(new Date());
+}
 
 function ModuleSearch({ preview }: { preview: boolean }) {
   const router = useRouter();
@@ -183,9 +190,14 @@ function ModuleSearch({ preview }: { preview: boolean }) {
   );
 }
 
-export function WorkspaceShell({ email, active, children, preview = false, headerActions, onPreviewAction, termLookup = true }: { email: string; active: Module; children: ReactNode; preview?: boolean; headerActions?: ReactNode; onPreviewAction?: (label: string) => void; termLookup?: boolean }) {
+export function WorkspaceShell({ email, active, children, preview = false, headerActions, onPreviewAction, termLookup = true, tab }: { email: string; active: Module; children: ReactNode; preview?: boolean; headerActions?: ReactNode; onPreviewAction?: (label: string) => void; termLookup?: boolean; tab?: EngineeringTab }) {
   const detail = moduleDetails[active];
   const pathname = usePathname();
+  // Engineering's nested pages (a topic, the assessment, evidence) highlight one of its four sidebar sections.
+  const engineeringTab = active === "lab" ? tab ?? tabForPath(pathname) : null;
+  // The Ken OS shell from design system 0.2 (the 2026-10-06 Evidence Workbench look). The Writing Studio mockup keeps
+  // its own collapsible rail until it is rebuilt.
+  const evidence = !(preview && active === "writing");
   const [hash, setHash] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
@@ -229,8 +241,8 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground md:flex">
-      <aside className={cn("h-[60px] border-b border-sidebar-border md:sticky md:top-0 md:h-screen md:shrink-0 md:border-b-0 md:border-r", writingPreview && desktopCollapsed ? "md:w-[64px]" : "md:w-[264px] xl:w-[276px]")} aria-label="Workspace sidebar">
+    <div className="min-h-screen bg-background font-sans text-foreground md:flex">
+      <aside className={cn("h-[60px] border-b border-sidebar-border md:sticky md:top-0 md:h-screen md:shrink-0 md:border-b-0", evidence ? "md:w-[205px] xl:w-[232px]" : "md:border-r", !evidence && (writingPreview && desktopCollapsed ? "md:w-[64px]" : "md:w-[264px] xl:w-[276px]"))} aria-label="Workspace sidebar">
         {mobileOpen && <button className="fixed inset-0 z-40 bg-foreground/50 md:hidden" type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)} />}
         <div
           ref={sidebarRef}
@@ -243,22 +255,28 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
           aria-label={mobileOpen ? "Navigation menu" : undefined}
           onKeyDown={trapSidebarFocus}
         >
-          <div className={cn("flex h-[60px] shrink-0 items-center justify-between px-4 md:h-16 md:border-b md:border-sidebar-border", mobileOpen && "border-b border-sidebar-border", writingPreview && desktopCollapsed && "md:justify-center md:px-2")}>
-            <Link className="flex items-center gap-2.5 font-display text-xl font-bold tracking-[-0.055em]" href="/" aria-label="Ken OS home" onClick={() => setMobileOpen(false)}>
-              <span className="grid size-9 place-items-center rounded-lg bg-primary text-xl text-primary-foreground">K</span>
-              <span className={cn(writingPreview && desktopCollapsed && "md:hidden")}>ken<span className="text-muted-foreground">.os</span></span>
-            </Link>
+          <div className={cn("flex h-[60px] shrink-0 items-center justify-between px-4", evidence ? "md:h-auto md:px-5 md:pb-[30px] md:pt-[22px]" : "md:h-16 md:border-b md:border-sidebar-border", mobileOpen && "border-b border-sidebar-border", writingPreview && desktopCollapsed && "md:justify-center md:px-2")}>
+            {evidence ? (
+              <Link className="flex items-center gap-2.5 text-[25px] font-[750] tracking-[-1px] text-foreground" href="/" aria-label="Ken OS home" onClick={() => setMobileOpen(false)}>
+                <span className="grid h-[27px] w-[29px] place-items-center rounded-[5px] bg-foreground text-base font-[750] text-background">K</span>Ken OS
+              </Link>
+            ) : (
+              <Link className="flex items-center gap-2.5 font-display text-xl font-bold tracking-[-0.055em]" href="/" aria-label="Ken OS home" onClick={() => setMobileOpen(false)}>
+                <span className="grid size-9 place-items-center rounded-lg bg-primary text-xl text-primary-foreground">K</span>
+                <span className={cn(writingPreview && desktopCollapsed && "md:hidden")}>ken<span className="text-muted-foreground">.os</span></span>
+              </Link>
+            )}
             <Button className={cn("md:hidden", writingPreview && "hidden")} ref={sidebarToggleRef} variant="outline" type="button" aria-label={mobileOpen ? "Close menu" : "Open menu"} aria-expanded={mobileOpen} aria-controls="workspace-sidebar-content" onClick={() => setMobileOpen((value) => !value)}>
               {mobileOpen ? <X size={18} /> : <Menu size={18} />} Menu
             </Button>
           </div>
-          <div className={cn("min-h-0 flex-1 overflow-y-auto px-3 py-6", mobileOpen ? "block" : "hidden md:block", writingPreview && desktopCollapsed && "md:px-2")} id="workspace-sidebar-content">
+          <div className={cn("min-h-0 flex-1 overflow-y-auto px-3", evidence ? "py-6 md:pt-0" : "py-6", mobileOpen ? "block" : "hidden md:block", writingPreview && desktopCollapsed && "md:px-2")} id="workspace-sidebar-content">
             <div>
-              <p className={cn(sidebarLabel, writingPreview && desktopCollapsed && "md:sr-only")}>WORKSPACE</p>
+              <p className={cn(sidebarLabel, evidence && "sr-only", writingPreview && desktopCollapsed && "md:sr-only")}>WORKSPACE</p>
               <nav className="grid gap-1" aria-label="Modules">
                 {(preview ? previewModules : modules).map(({ id, label, href, icon: Icon }) => (
-                  <Link key={id} className={cn(sidebarLink, active === id ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground", writingPreview && desktopCollapsed && "md:justify-center md:px-2")} href={href} aria-label={writingPreview && desktopCollapsed ? label : undefined} title={writingPreview && desktopCollapsed ? label : undefined} aria-current={active === id ? "page" : undefined} onClick={() => setMobileOpen(false)}>
-                    <Icon size={18} strokeWidth={1.8} aria-hidden="true" /><span className={cn(writingPreview && desktopCollapsed && "md:sr-only")}>{label}</span>
+                  <Link key={id} className={cn(evidence ? evidenceLink : sidebarLink, active === id ? cn("bg-sidebar-accent text-sidebar-accent-foreground", evidence && "font-semibold") : evidence ? "text-sidebar-foreground" : "text-muted-foreground", writingPreview && desktopCollapsed && "md:justify-center md:px-2")} href={href} aria-label={writingPreview && desktopCollapsed ? label : undefined} title={writingPreview && desktopCollapsed ? label : undefined} aria-current={active === id ? "page" : undefined} onClick={() => setMobileOpen(false)}>
+                    <Icon size={evidence ? 21 : 18} strokeWidth={evidence ? 1.6 : 1.8} aria-hidden="true" /><span className={cn(writingPreview && desktopCollapsed && "md:sr-only")}>{label}</span>
                   </Link>
                 ))}
               </nav>
@@ -276,7 +294,7 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
                 {(preview && active === "memory" ? previewMemorySections : detail.sections).map(({ label, href: originalHref, icon: Icon }, index) => {
                   const href = preview && active === "memory" ? originalHref.replace("/memory", "/design-preview?view=memory") : originalHref;
                   const resolvedHref = preview && active === "design" ? href.replace("/design-system", "/design-preview?view=design") : href;
-                  const selected = preview && (active === "memory" || active === "design")
+                  const selected = engineeringTab ? tabForPath(resolvedHref) === engineeringTab : preview && (active === "memory" || active === "design")
                     ? (index === 0 ? !hash : resolvedHref.endsWith(hash) && Boolean(hash))
                     : resolvedHref === pathname + hash || (index === 0 && ((pathname === resolvedHref && !hash) || preview));
                   return <Link key={href} className={cn(sidebarLink, selected ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-muted-foreground")} href={resolvedHref} aria-current={selected ? "location" : undefined} onClick={() => setMobileOpen(false)}><Icon size={17} strokeWidth={1.8} aria-hidden="true" />{label}</Link>;
@@ -284,21 +302,28 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
               </nav>
             </div>}
           </div>
-          <div className={cn("items-center gap-2.5 border-t border-sidebar-border px-4 py-3", mobileOpen ? "flex" : "hidden md:flex", writingPreview && desktopCollapsed && "md:justify-center md:px-2")} title={email}>
-            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-secondary text-xs font-bold">{email[0]?.toUpperCase()}</span>
-            <span className={cn("min-w-0", writingPreview && desktopCollapsed && "md:hidden")}><small className="block truncate text-xs text-muted-foreground">{email}</small></span>
-          </div>
+          {evidence ? (
+            <div className={cn("items-center gap-[11px] px-5 pb-[22px] pt-3", mobileOpen ? "flex" : "hidden md:flex")} title={email}>
+              <span className="grid size-[41px] shrink-0 place-items-center rounded-full bg-[#dfe4ec] text-xs font-semibold text-foreground">{email.slice(0, 2).toUpperCase()}</span>
+              <span className="min-w-0"><strong className="block truncate text-xs font-semibold text-foreground">{email}</strong><small className="mt-1 block text-xs text-muted-foreground">Owner</small></span>
+            </div>
+          ) : (
+            <div className={cn("items-center gap-2.5 border-t border-sidebar-border px-4 py-3", mobileOpen ? "flex" : "hidden md:flex", writingPreview && desktopCollapsed && "md:justify-center md:px-2")} title={email}>
+              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-secondary text-xs font-bold">{email[0]?.toUpperCase()}</span>
+              <span className={cn("min-w-0", writingPreview && desktopCollapsed && "md:hidden")}><small className="block truncate text-xs text-muted-foreground">{email}</small></span>
+            </div>
+          )}
         </div>
       </aside>
 
       <div className="min-w-0 flex-1">
         <div className="min-h-[calc(100vh-60px)] bg-background md:min-h-screen">
-          <header className={cn("flex h-16 items-center justify-between gap-4 border-b border-border px-5 sm:px-8", writingPreview && "sm:px-5")}>
+          <header className={cn("flex items-center justify-between gap-4 border-b border-border px-5", evidence ? "h-16 sm:px-8 md:h-[59px] md:pl-[26px] md:pr-[25px]" : "h-16 sm:px-8", writingPreview && "sm:px-5")}>
             <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
               {writingPreview && <><button className="grid size-9 shrink-0 place-items-center rounded-lg border border-border hover:bg-muted md:hidden" type="button" aria-label="Open sidebar" aria-controls="workspace-sidebar-content" aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><Menu size={17} /></button><button className="hidden size-9 shrink-0 place-items-center rounded-lg border border-border hover:bg-muted md:grid" type="button" aria-label={desktopCollapsed ? "Expand sidebar" : "Collapse sidebar"} aria-controls="workspace-sidebar-content" aria-expanded={!desktopCollapsed} onClick={() => setDesktopCollapsed((value) => !value)}>{desktopCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</button></>}
               <span className="truncate"><span className="hidden text-muted-foreground sm:inline">Ken OS <span className="px-2 text-border">/</span></span>{detail.title}{writingPreview && <><span className="px-2 text-border">/</span>Draft</>}</span>
             </div>
-            {writingPreview ? headerActions : <div className="flex items-center gap-3"><ModuleSearch preview={preview} /><form action="/api/auth/signout" method="post"><Button variant="ghost" type="submit" className="text-xs">Sign out</Button></form></div>}
+            {writingPreview ? headerActions : <div className="flex items-center gap-3">{evidence && <span className="hidden text-[13px] text-[#566178] lg:inline" suppressHydrationWarning>{ownerDate()}</span>}<ModuleSearch preview={preview} /><form action="/api/auth/signout" method="post"><Button variant="ghost" type="submit" className="text-xs">Sign out</Button></form></div>}
           </header>
           <main className="min-w-0" id="main-content">{termLookup ? <TermLookup module={detail.title}>{children}</TermLookup> : children}</main>
           <Toaster />

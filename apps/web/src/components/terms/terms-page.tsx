@@ -38,7 +38,7 @@ export function TermsPage({ email, terms, preview = false }: { email: string; te
   return (
     <WorkspaceShell email={email} active="terms" preview={preview}>
       <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-[1100px] border-x border-border px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-        <h1 className="font-display text-4xl font-bold leading-[1.08] tracking-[-0.065em] sm:text-5xl">Terms</h1>
+        <h1 className="text-[28px] font-[750] leading-[1.25] tracking-[-0.8px] md:text-[30px] xl:text-[36px] xl:tracking-[-1.3px]">Terms</h1>
 
         {terms.length > 0 && (
           <label className="mt-6 flex h-10 max-w-[420px] items-center gap-2 rounded-lg border border-input px-3 focus-within:ring-3 focus-within:ring-ring/50">

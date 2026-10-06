@@ -21,6 +21,7 @@
     "lab:import-sources": "tsx scripts/import-sources.ts",
     "test:db:lab": "tsx scripts/verify-lab.ts",
     "test:db:profile": "tsx scripts/verify-profile.ts",
+    "test:db:engineering": "tsx scripts/verify-engineering.ts",
     "test:db:terms": "tsx scripts/verify-terms.ts",
     "db:migrate:deploy": "tsx scripts/migrate-on-deploy.ts"
   },
@@ -32,6 +33,7 @@
     "@ken-os/agents": "workspace:*",
     "@ken-os/domain": "workspace:*",
     "@ken-os/drive": "workspace:*",
+    "@tabler/icons-react": "^3.49.0",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.3.2",
     "codemirror": "^6.0.2",

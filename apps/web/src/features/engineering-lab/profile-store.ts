@@ -136,6 +136,10 @@ export interface ProfileView {
   areas: AreaView[];
   /** How deep each chapter goes now, for the level table. */
   chapterStates: ChapterState[];
+  /** Chapter depths as they were when the baseline finished. Null before it does. */
+  baselineChapterStates: ChapterState[] | null;
+  /** Every topic's current progress, from the same replay as the levels, so no screen can disagree with them. */
+  progress: TopicProgress[];
   roles: (RoleDistance & { title: string; summary: string })[];
   roadmap: RoadmapChapter[];
   pace: { weeklyHours: number; source: "hours" | "history"; hoursPerTopic: number | null };
@@ -217,6 +221,8 @@ export async function getProfileView(userId: string): Promise<ProfileView> {
     direction: profile?.direction ?? null,
     areas,
     chapterStates: now,
+    baselineChapterStates: atBaseline,
+    progress,
     roles,
     roadmap: roadmapChapters,
     pace: { weeklyHours, source: hoursPerTopic ? "history" : "hours", hoursPerTopic },

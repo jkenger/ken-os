@@ -31,7 +31,7 @@ After signing in, the owner selects a resume from Google Drive once. The dashboa
 - Knowledge: notes, bookmarks, and searchable personal context.
 - Automation: recurring checks, scheduled agent work, and an approval inbox.
 - Skills: private, versioned skill uploads that can be enabled for chosen agents; see [the proposal](skills.md).
-- Engineering Lab (in progress): an adaptive learning system for full-stack and AI engineering. [Its handoff](ai-engineering-learning-handoff.md) is the module's source of truth; this brief stays the platform's.
+- Engineering (in progress, formerly Engineering Lab): an adaptive learning system for full-stack and AI engineering. [Its handoff](ai-engineering-learning-handoff.md) is the module's source of truth; this brief stays the platform's.
 
 These are candidates, not MVP commitments. Each should prove a recurring personal workflow before it becomes a module.
 

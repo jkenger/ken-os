@@ -1,28 +1,31 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { IconCheck } from "@tabler/icons-react";
 import type { StepId, StepState } from "@/features/engineering-lab/steps";
 import { cn } from "@/lib/utils";
 
-/** Where you are in a topic. Every step is clickable; the suggested one is marked, nothing is locked. */
+/**
+ * Where you are in a topic, as the 2026-10-06 prototype draws it: numbered steps on one line, the open one underlined.
+ * Every step is clickable; the suggested one is marked, nothing is locked. Each step's state is in its tooltip and
+ * read to screen readers.
+ */
 export function StepBar({ steps, active, suggested, onSelect }: { steps: StepState[]; active: StepId; suggested: StepId; onSelect: (id: StepId) => void }) {
   return (
     <nav aria-label="Topic steps" className="border-b border-border bg-background">
-      <ol className="flex overflow-x-auto">
+      <ol className="flex gap-5 overflow-x-auto md:gap-[30px]">
         {steps.map((step, index) => {
           const isActive = step.id === active;
+          const detail = step.id === suggested && !isActive && !step.done ? "Suggested next" : step.detail;
           return (
-            <li key={step.id} className="min-w-[84px] flex-1 sm:min-w-[136px]">
-              <button type="button" onClick={() => onSelect(step.id)} aria-current={isActive ? "step" : undefined}
-                className={cn("flex h-full w-full items-start gap-2 border-b-2 px-2.5 py-3 sm:gap-3 sm:px-4 text-left transition-colors hover:bg-muted/60", isActive ? "border-foreground" : "border-transparent")}>
-                <span className={cn("mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-bold",
-                  step.done ? "bg-status-solid-surface text-status-solid" : isActive ? "bg-primary text-primary-foreground" : "border border-input text-foreground")}>
-                  {step.done ? <Check size={13} aria-label="Done" /> : index + 1}
+            <li key={step.id} className="shrink-0">
+              <button type="button" onClick={() => onSelect(step.id)} aria-current={isActive ? "step" : undefined} title={detail}
+                className={cn("-mb-px flex items-center gap-2.5 border-b-2 px-1 pb-[17px] pt-3 text-[13px] transition-colors md:text-sm", isActive ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground")}>
+                <span className={cn("grid size-[23px] place-items-center rounded-full border text-[11px]", step.done ? "border-status-solid bg-status-solid-surface text-status-solid" : isActive ? "border-primary" : "border-[#d3dbe9]")}>
+                  {step.done ? <IconCheck size={13} aria-hidden="true" /> : index + 1}
                 </span>
-                <span className="min-w-0">
-                  <span className="block text-sm font-semibold">{step.label}</span>
-                  <span className="hidden truncate text-xs text-muted-foreground sm:block">{step.id === suggested && !isActive && !step.done ? "Suggested next" : step.detail}</span>
-                </span>
+                {step.label}
+                {step.id === suggested && !isActive && !step.done && <span className="size-1.5 rounded-full bg-primary" aria-hidden="true" />}
+                <span className="sr-only">: {detail}</span>
               </button>
             </li>
           );

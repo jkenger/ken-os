@@ -148,13 +148,13 @@ export function ResumeWorkspace({ email, selection, file, error, previewUrl, can
       <div className="mx-auto w-full max-w-[1320px] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
         <div className="mb-8 flex items-end justify-between gap-6 border-b border-border pb-8 sm:mb-10">
           <div>
-            <h1 className="font-display text-4xl font-bold tracking-[-0.06em] sm:text-5xl">Resume</h1>
+            <h1 className="text-[28px] font-[750] leading-[1.25] tracking-[-0.8px] md:text-[30px] xl:text-[36px] xl:tracking-[-1.3px]">Resume</h1>
           </div>
         </div>
 
         {labSummary && (
-          <a href="/lab" className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border px-5 py-4 hover:bg-muted/60">
-            <span><span className="block text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Engineering Lab</span><span className="mt-1 block text-[15px] font-semibold">{labSummary.headline}</span></span>
+          <a href="/engineering" className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border px-5 py-4 hover:bg-muted/60">
+            <span><span className="block text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Engineering</span><span className="mt-1 block text-[15px] font-semibold">{labSummary.headline}</span></span>
             <span className="text-sm text-muted-foreground">{labSummary.detail}</span>
           </a>
         )}

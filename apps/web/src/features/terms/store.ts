@@ -4,6 +4,7 @@ import { explainTerm } from "@ken-os/agents";
 import { finalizeTermAnswer, isTrustedSourceUrl, safeReturnPath, TERM_LOOKUP_LIMIT, TERM_MAX_LENGTH, termKey, type TermAnswer } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { kenTermLookups, kenTerms } from "@/lib/schema";
+import { ownerDayStart } from "@/lib/day";
 
 export class TermInputError extends Error {
   constructor(message: string, readonly status = 400) {
@@ -22,7 +23,7 @@ export interface SavedTerm {
 }
 
 function startOfToday() {
-  return new Date(`${new Date().toISOString().slice(0, 10)}T00:00:00Z`);
+  return ownerDayStart();
 }
 
 export async function lookupsToday(userId: string) {
@@ -65,7 +66,7 @@ export async function lookupTerm(userId: string, input: { selection: string; con
     .orderBy(desc(kenTermLookups.createdAt)).limit(1);
   if (recent?.answer) return { ...recent.answer, saved: await isSaved(userId, termKey(recent.answer.term)), reused: true };
 
-  if (await lookupsToday(userId) >= TERM_LOOKUP_LIMIT) throw new TermInputError(`Today's ${TERM_LOOKUP_LIMIT} lookups are used up. They reset at midnight UTC.`, 429);
+  if (await lookupsToday(userId) >= TERM_LOOKUP_LIMIT) throw new TermInputError(`Today's ${TERM_LOOKUP_LIMIT} lookups are used up. They reset at midnight Manila time`, 429);
   if (!process.env.OPENAI_API_KEY) throw new TermInputError("Term lookup isn't set up", 503);
   const { answer, model } = await explainTerm({ selection, context: input.context, place: input.place });
   await db().insert(kenTermLookups).values({ id: randomUUID(), userId, model, termKey: key, answer });

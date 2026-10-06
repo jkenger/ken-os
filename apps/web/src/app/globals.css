@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400..800&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -41,6 +41,14 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-rail: var(--rail);
+  --color-rail-lit: var(--rail-lit);
+  --color-rail-soft: var(--rail-soft);
+  --color-tint: var(--tint);
+  --color-table-head: var(--table-head);
+  --color-row-hover: var(--row-hover);
+  --color-primary-hover: var(--primary-hover);
+  --color-quiet: var(--quiet);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -50,7 +58,7 @@
 @layer base {
   * { @apply border-border; }
   html { @apply scroll-smooth; }
-  body { @apply bg-background font-sans text-foreground; }
+  body { @apply bg-background font-sans text-foreground; font-synthesis: none; }
   button, input, a, summary { @apply focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring; }
 
   /* Thin scrollbars: a 6px rounded thumb on a clear track, darker while dragged or hovered. */
@@ -71,3 +79,4 @@
     * { scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb) transparent; }
   }
 }
+

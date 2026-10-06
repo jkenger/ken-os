@@ -8,6 +8,7 @@ import { assessorModes, findLab, findTopic, labsForTopic } from "./curriculum";
 import { LabInputError } from "./errors";
 import { activeRun } from "./run-state";
 import { assertBudget, getAllProgress, type SavedAnswer } from "./store";
+import { ownerDay, ownerDayStart } from "@/lib/day";
 
 // Daily practice, as designed in docs/architecture/engineering-lab-v1.md section 9, first in the lab home's Today strip.
 
@@ -31,7 +32,7 @@ export function pickDailyTopics(progress: TopicProgress[], now: Date): { topicId
 }
 
 function today() {
-  return new Date().toISOString().slice(0, 10);
+  return ownerDay();
 }
 
 export interface DailyItemView {
@@ -65,7 +66,7 @@ export async function getDailySet(userId: string): Promise<DailyView | null> {
     assessmentIds.length ? db().select().from(labAttempts).where(inArray(labAttempts.assessmentId, assessmentIds)) : Promise.resolve([]),
     db().select({ labId: labAttempts.labId }).from(labAttempts).where(and(
       eq(labAttempts.userId, userId), eq(labAttempts.kind, "lab"), eq(labAttempts.label, "solid"), eq(labAttempts.solutionSeen, false),
-      gte(labAttempts.createdAt, new Date(`${day}T00:00:00Z`)),
+      gte(labAttempts.createdAt, ownerDayStart()),
     )),
   ]);
   const items = set.items.map((entry): DailyItemView => {
@@ -119,7 +120,7 @@ export async function generateDailySet(userId: string): Promise<DailyView> {
     if (!questions?.length) continue;
     const status = progress.find((item) => item.topicId === topic.id)?.status;
     const id = randomUUID();
-    rows.push({ id, userId, topicId: topic.id, kind: status === "VALIDATED" || status === "NEEDS_REVISIT" ? "review" : "assessment", items: questions, promptVersion: ASSESSOR_PROMPT_VERSION, model, origin: "daily" });
+    rows.push({ id, userId, topicId: topic.id, kind: status === "VALIDATED" || status === "NEEDS_REVISIT" ? "review" : "practice", items: questions, promptVersion: ASSESSOR_PROMPT_VERSION, model, origin: "daily" });
     items.push({ type: "question", topicId: topic.id, assessmentId: id, itemIndex: 0 });
   }
   if (!rows.length) throw new LabInputError("The Assessor's questions came back incomplete. Try again.", 502);

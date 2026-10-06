@@ -25,7 +25,8 @@ export interface StepInput {
   check: null | { total: number; answered: number; solid: number };
 }
 
-const labels: Record<StepId, string> = { learn: "Learn", practice: "Practice", lab: "Lab", check: "Check" };
+// Labels renamed 2026-10-06 so "Learn" and "Practice" only name Engineering tabs. Ids stay, so ?step= links keep working.
+const labels: Record<StepId, string> = { learn: "Lesson", practice: "Predict", lab: "Lab", check: "Prove" };
 
 export function topicSteps(input: StepInput): { steps: StepState[]; suggested: StepId } {
   const steps: StepState[] = [];

@@ -6,11 +6,15 @@ import { ProjectMemoryPreview } from "@/components/project-memory-preview";
 import { DesignSystemWorkspace } from "@/components/design-system-workspace";
 import { LabToday } from "@/components/lab/lab-today";
 import { LabTopic } from "@/components/lab/lab-topic";
-import { LabTopics } from "@/components/lab/lab-topics";
+import { EngineeringLearn } from "@/components/engineering/learn";
 import { TermsPage } from "@/components/terms/terms-page";
-import { assessorModes, findTopic, labsForTopic, placeOf, topicMap } from "@/features/engineering-lab/curriculum";
+import { EngineeringEvidence } from "@/components/engineering/evidence";
+import { EngineeringOverview } from "@/components/engineering/overview";
+import { EngineeringProfile } from "@/components/engineering/profile";
+import { capabilityRows, nextRequirement, pathChapters } from "@/features/engineering-lab/capabilities";
+import { assessorModes, careers, findTopic, labsForTopic, placeOf, topicMap } from "@/features/engineering-lab/curriculum";
 import { nextStepFromView } from "@/features/engineering-lab/next-step";
-import { previewDaily, previewLearner, previewProfile, previewRun, previewToday, previewTopic } from "@/features/engineering-lab/preview";
+import { previewDaily, previewEvidence, previewLearner, previewProfile, previewRun, previewToday, previewTopic } from "@/features/engineering-lab/preview";
 import { LabPractice } from "@/components/lab/practice/lab-practice";
 import { LabHomeExplore, type Direction } from "@/components/lab/explore/lab-home-explore";
 import { tracks, type Track } from "@/components/lab/explore/road-tracks";
@@ -67,9 +71,31 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
       { id: "t2", term: "idempotent", meaning: "Safe to repeat: doing it twice has the same effect as doing it once.", source: null, foundIn: "Engineering Lab · Idempotent create requests", foundAt: "/design-preview?view=lab-topic", savedAt },
     ]} />;
   }
+  if (view === "engineering") {
+    const today = previewToday();
+    const profile = previewProfile(screenParam === "start" ? "none" : "done");
+    return <EngineeringOverview email="preview@example.invalid" today={today} next={today.plan ? nextStepFromView(today.plan, previewTopic(today.plan.topicId)) : null} profile={profile} daily={screenParam === "start" ? null : previewDaily()} />;
+  }
+  if (view === "engineering-profile") {
+    const profile = previewProfile(screenParam === "start" ? "none" : "done");
+    const nodirection = screenParam === "nodirection";
+    const roleId = nodirection ? null : profile.direction;
+    const rows = capabilityRows({ careers, map: topicMap, progress: profile.progress, states: profile.chapterStates, baselineStates: profile.baselineChapterStates, roleId });
+    return <EngineeringProfile email="preview@example.invalid" view={{ ...profile, direction: roleId }} rows={rows} next={nextRequirement(rows, roleId)} evidence={previewEvidence().recent} />;
+  }
+  if (view === "engineering-evidence") {
+    const { view: evidence } = previewEvidence();
+    return <EngineeringEvidence email="preview@example.invalid" view={screenParam === "withheld" ? { ...evidence, result: null, question: { ...evidence.question, expectedOutput: null } } : evidence} />;
+  }
+  if (view === "engineering-learn") {
+    const assessable = topicMap.topics.filter((topic) => assessorModes(topic).length > 0).map((topic) => topic.id);
+    const today = previewToday();
+    const upNext = today.plan ? { topicId: today.plan.topicId, title: findTopic(today.plan.topicId)?.title ?? today.plan.topicId, step: "learn" as const, reason: today.plan.reason } : null;
+    return <EngineeringLearn email="preview@example.invalid" map={topicMap} progress={previewLearner().progress} assessable={assessable} path={pathChapters(careers, "fullstack-applied-ai")} upNext={upNext} />;
+  }
   if (view === "lab-course") {
     const assessable = topicMap.topics.filter((topic) => assessorModes(topic).length > 0).map((topic) => topic.id);
-    return <LabTopics email="preview@example.invalid" map={topicMap} progress={previewToday().progress} assessable={assessable} />;
+    return <EngineeringLearn email="preview@example.invalid" map={topicMap} progress={previewToday().progress} assessable={assessable} />;
   }
   if (view === "lab-topic") {
     const topic = findTopic(topicParam ?? "js.event_loop") ?? findTopic("js.event_loop")!;
@@ -104,7 +130,7 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
             <div className="mt-8 border-t border-border pt-7">
               <h3 className="font-display text-xl font-semibold tracking-[-0.04em]">What this establishes</h3>
               <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-6 text-muted-foreground">
-                <li>A warm monochrome palette with restrained emphasis</li>
+                <li>A cool light palette with one indigo action</li>
                 <li>Readable, editorial content density</li>
                 <li>One navigation system for present and future modules</li>
               </ul>
