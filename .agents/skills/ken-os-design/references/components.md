@@ -32,7 +32,7 @@ Call toast() after something finishes in the background or saves; keep errors ne
 
 ## App shell
 
-A 64px module icon strip and a 208px section column on the stone ground, beside one raised content canvas. The strip has the round brand mark, a tile per module with a 20px outline icon and a tooltip, and the owner at the bottom. The current module is a white tile and the current section a white tab, both with the tab shadow. The content canvas is inset 8px with 14px corners and the panel shadow; its 56px header, with a hairline under it, carries 'Module / Section', the date, search and sign out. The section column is hidden under 1024px, where sections become tabs under the header. Under 768px the canvas drops away and the page sits on the ground. Mobile uses an accessible menu holding both lists.
+shadcn's sidebar anatomy: a 48px icon rail and a 208px section column on the stone sidebar, split by a hairline, beside one raised content inset. Rail and column use shadcn's menu sizes: 32px buttons with 8px padding, 16px icons, 14px labels and 6px corners; the current module and section are white with the tab shadow and medium weight. The rail holds a 32px brand square, module icons with right-side tooltips, and the owner's initials. The inset sits 8px from the window with 14px corners and the panel shadow; its 56px header, with a hairline under it, carries a toggle for the section column (Ctrl or Cmd + B, remembered in a cookie), a divider, a 'Module › Section' breadcrumb, the date, search and sign out. Under 1024px, or when the column is hidden, sections become tabs under the header. Under 768px the inset drops away and an 18rem menu holds both lists.
 
 ## Density check
 

@@ -10,7 +10,7 @@ export const designSystem = {
   // Tailwind's radius steps derive from this: sm 6px, md 8px, lg 10px, xl 14px.
   radius: "0.625rem",
   colors: [
-    { variable: "background", value: "#f3f2ee", label: "Ground", use: "One flat stone surface under the module strip, section column, header and page; nothing divides them" },
+    { variable: "background", value: "#f3f2ee", label: "Ground", use: "Stone behind the icon rail and section column, framing the raised content inset" },
     { variable: "foreground", value: "#1a1a17", label: "Ink", use: "Primary text and titles" },
     { variable: "canvas", value: "#fcfcfa", label: "Canvas", use: "The raised content surface from 768px up, inset 8px from the window with the top nav as its header; panels on it are white with a shadow" },
     { variable: "card", value: "#ffffff", label: "Panel", use: "Panels, inputs, toasts and the current rail item; raised off the ground by a shadow, never outlined" },
@@ -28,7 +28,7 @@ export const designSystem = {
     { variable: "ring", value: "#2747c9", label: "Focus", use: "Visible keyboard focus, in the cobalt signal" },
     { variable: "signal", value: "#2747c9", label: "Signal", use: "The one accent, cobalt: focus, the reached level on a rail and selected controls; never decoration" },
     { variable: "destructive", value: "#c0362c", label: "Destructive", use: "Destructive actions and error emphasis, in coral" },
-    { variable: "sidebar", value: "#f3f2ee", label: "Rail", use: "The module strip and section column sit on the ground, beside the raised content canvas" },
+    { variable: "sidebar", value: "#f3f2ee", label: "Rail", use: "The icon rail and section column, one stone surface split by a hairline" },
     { variable: "sidebar-foreground", value: "#4f4d47", label: "Rail ink", use: "Module icons and section names" },
     { variable: "sidebar-accent", value: "#ffffff", label: "Current item", use: "The current module tile and section tab, white with a small shadow" },
     { variable: "sidebar-accent-foreground", value: "#1a1a17", label: "Current item ink", use: "Text of the current module and section" },
@@ -64,7 +64,7 @@ export const designSystem = {
     { label: "Table row", value: "12 / 18px", use: "Row vertical / horizontal padding inside a panel" },
     { label: "Sibling panels", value: "16px", use: "Gap between side-by-side panels" },
     { label: "Control height", value: "40 / 44px", use: "Inputs, small controls and rail items / main and secondary buttons" },
-    { label: "Rail", value: "64 + 208px", use: "Module strip and section column widths" },
+    { label: "Rail", value: "48 + 208px", use: "Icon rail and section column widths" },
   ],
   componentRules: [
     { name: "Component reuse", summary: "Define components by shared anatomy and behavior, not by the module that first uses them.", details: "Compose reusable primitives with slots or variants across modules. Create a module-specific component only when it owns genuinely distinct interaction, state, accessibility, or data behavior; different copy or sample content alone is not a reason to duplicate the component." },
@@ -74,7 +74,7 @@ export const designSystem = {
     { name: "Rails", summary: "Junior, mid and senior (or any short ordered scale) as three round segments with labels underneath.", details: "Light up the reached segment in cobalt, use light cobalt for an estimate, and always write the value in words beside the rail. Coverage is a segment per requirement and a count, never a percentage." },
     { name: "Inputs", summary: "White field, visible edge, clear label and a cobalt focus ring.", details: "Use 40px height, 10px corners, 14px text and the input edge (3.4:1); retain error and disabled states." },
     { name: "Notifications", summary: "Call toast() after something finishes in the background or saves; keep errors next to the action that failed.", details: "One shared Toaster in the workspace shell: bottom right on desktop, full width on a phone, at most three, newest last. Success and info leave after six seconds, pausing while hovered or focused; errors stay until dismissed. Each has a title, an optional one-line description and at most one action (a button or a Ken OS link). Colour comes from the status tokens and is always paired with an icon and words." },
-    { name: "App shell", summary: "A 64px module icon strip and a 208px section column on the stone ground, beside one raised content canvas.", details: "The strip has the round brand mark, a tile per module with a 20px outline icon and a tooltip, and the owner at the bottom. The current module is a white tile and the current section a white tab, both with the tab shadow. The content canvas is inset 8px with 14px corners and the panel shadow; its 56px header, with a hairline under it, carries 'Module / Section', the date, search and sign out. The section column is hidden under 1024px, where sections become tabs under the header. Under 768px the canvas drops away and the page sits on the ground. Mobile uses an accessible menu holding both lists." },
+    { name: "App shell", summary: "shadcn's sidebar anatomy: a 48px icon rail and a 208px section column on the stone sidebar, split by a hairline, beside one raised content inset.", details: "Rail and column use shadcn's menu sizes: 32px buttons with 8px padding, 16px icons, 14px labels and 6px corners; the current module and section are white with the tab shadow and medium weight. The rail holds a 32px brand square, module icons with right-side tooltips, and the owner's initials. The inset sits 8px from the window with 14px corners and the panel shadow; its 56px header, with a hairline under it, carries a toggle for the section column (Ctrl or Cmd + B, remembered in a cookie), a divider, a 'Module › Section' breadcrumb, the date, search and sign out. Under 1024px, or when the column is hidden, sections become tabs under the header. Under 768px the inset drops away and an 18rem menu holds both lists." },
   ],
   decisions: [
     { title: "Studio look: stone ground, raised white panels, one cobalt signal", rationale: "The owner found the warm cream and hairline look dated and chose the Studio direction from three proposals, with the icon strip and section column on one flat ground, raised panels, and teal and coral status. The page heading, capability tables, rails and app-language copy stay. The input edge was darkened from 1.5:1 to 3.4:1 so fields are visible on their own.", rejected: "Graphite (cool neutrals with Geist), Night shift (dark-first), hairline and inset panels, a top bar with no sidebar, the earthy status colours", recorded: "2026-10-06" },

@@ -2,11 +2,12 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Archive, BookMarked, UserRound, BookOpenText, FileText, FlaskConical, Image, LayoutDashboard, Library, Lightbulb, ListTree, Menu, PanelLeftClose, PanelLeftOpen, Palette, PenLine, Repeat, Search, Sparkles, X } from "lucide-react";
+import { Archive, BookMarked, ChevronRight, UserRound, BookOpenText, FileText, FlaskConical, Image, LayoutDashboard, Library, Lightbulb, ListTree, Menu, PanelLeft, PanelLeftClose, PanelLeftOpen, Palette, PenLine, Repeat, Search, Sparkles, X } from "lucide-react";
 import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 import { TermLookup } from "@/components/terms/term-lookup";
 import { Toaster } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { engineering, tabForPath, type EngineeringTab } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
 
@@ -227,6 +228,28 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
     };
   }, [mobileOpen]);
 
+  // The section column's open state, kept the way shadcn's sidebar keeps it.
+  useEffect(() => {
+    if (studio && document.cookie.split("; ").includes("sidebar_state=false")) setDesktopCollapsed(true);
+  }, [studio]);
+
+  const toggleSections = () => setDesktopCollapsed((collapsed) => {
+    document.cookie = `sidebar_state=${collapsed}; path=/; max-age=${60 * 60 * 24 * 7}`;
+    return !collapsed;
+  });
+
+  useEffect(() => {
+    if (!studio) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key.toLowerCase() === "b" && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        toggleSections();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [studio]);
+
   const trapSidebarFocus = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (!mobileOpen || event.key !== "Tab") return;
     const focusable = sidebarRef.current?.querySelectorAll<HTMLElement>('a, button:not([disabled])');
@@ -249,92 +272,124 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
   const currentSection = sections.find((section) => section.selected);
 
   if (studio) {
-    // The Studio shell (design system 0.4): a module icon strip, the current module's section column and the page,
-    // all on one flat ground. Only the current items and the page's panels are raised.
-    const tile = "grid size-10 place-items-center rounded-lg text-sidebar-foreground transition-colors hover:bg-accent";
-    const tab = "flex h-10 items-center gap-2.5 rounded-lg px-3 text-sm transition-colors hover:bg-accent";
-    const current = "bg-sidebar-accent text-sidebar-accent-foreground shadow-tab hover:bg-sidebar-accent";
-    const mark = <span className="grid size-[34px] shrink-0 place-items-center rounded-full bg-foreground font-display text-base font-extrabold text-background">K</span>;
+    // The Studio shell, following shadcn/ui's sidebar anatomy (the nested icon sidebar block with the inset variant):
+    // an icon rail and a section column on the stone sidebar, split by a hairline, beside one raised content inset.
+    // Ctrl or Cmd + B collapses the section column, and the choice is kept in shadcn's sidebar_state cookie.
+    const menuButton = "flex h-8 w-full items-center gap-2 rounded-md p-2 text-left text-sm text-sidebar-foreground transition-colors hover:bg-accent hover:text-foreground [&>svg]:size-4 [&>svg]:shrink-0";
+    const activeButton = "bg-sidebar-accent font-medium text-sidebar-accent-foreground shadow-tab hover:bg-sidebar-accent";
     return (
-      <div className="min-h-screen bg-background font-sans text-foreground md:flex">
-        <aside className="hidden md:sticky md:top-0 md:flex md:h-screen md:shrink-0" aria-label="Workspace sidebar">
-          <div className="flex w-16 flex-col items-center gap-1.5 py-4">
-            <Link className="mb-3.5 rounded-full" href="/" aria-label="Ken OS home">{mark}</Link>
-            <nav className="grid gap-1.5" aria-label="Modules">
-              {moduleList.map(({ id, label, href, icon: Icon }) => (
-                <Link key={id} className={cn(tile, active === id && current)} href={href} aria-label={label} title={label} aria-current={active === id ? "page" : undefined}>
-                  <Icon size={20} strokeWidth={1.8} aria-hidden="true" />
-                </Link>
-              ))}
-            </nav>
-            <span className="mt-auto grid size-9 place-items-center rounded-full bg-secondary text-[11px] font-semibold text-quiet" title={email} aria-label={`Signed in as ${email}`}>{email.slice(0, 2).toUpperCase()}</span>
-          </div>
-          {sections.length > 0 && (
-            <div className="hidden w-[208px] py-[18px] pl-1 pr-3 lg:block">
-              <p className="px-3 pb-3.5 pt-1 font-display text-lg font-bold leading-tight tracking-[-0.02em]">{detail.title}</p>
-              <nav className="grid gap-0.5" aria-label={`${detail.title} sections`}>
-                {sections.map(({ key, label, href, icon: Icon, selected }) => (
-                  <Link key={key} className={cn(tab, selected ? cn(current, "font-semibold") : "text-sidebar-foreground")} href={href} aria-current={selected ? "location" : undefined}>
-                    <Icon size={17} strokeWidth={1.8} aria-hidden="true" />{label}
+      <TooltipProvider delayDuration={0}>
+        <div className="min-h-screen bg-sidebar font-sans text-foreground md:flex">
+          <aside className="hidden md:sticky md:top-0 md:flex md:h-screen md:shrink-0" aria-label="Workspace sidebar">
+            <div className="flex w-[calc(3rem+1px)] flex-col border-r border-sidebar-border">
+              <div className="flex flex-col gap-2 p-2">
+                <Link className="grid size-8 place-items-center rounded-lg bg-sidebar-primary font-display text-sm font-extrabold text-sidebar-primary-foreground" href="/" aria-label="Ken OS home">K</Link>
+              </div>
+              <nav className="flex min-h-0 flex-1 flex-col gap-1 p-2" aria-label="Modules">
+                {moduleList.map(({ id, label, href, icon: Icon }) => (
+                  <Tooltip key={id}>
+                    <TooltipTrigger asChild>
+                      <Link className={cn(menuButton, "size-8 justify-center", active === id && activeButton)} href={href} aria-label={label} aria-current={active === id ? "page" : undefined}>
+                        <Icon strokeWidth={1.8} aria-hidden="true" />
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" align="center" sideOffset={6}>{label}</TooltipContent>
+                  </Tooltip>
+                ))}
+              </nav>
+              <div className="flex flex-col gap-2 p-2">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="grid size-8 place-items-center rounded-lg bg-secondary text-[11px] font-semibold text-quiet" tabIndex={0} aria-label={`Signed in as ${email}`}>{email.slice(0, 2).toUpperCase()}</span>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="center" sideOffset={6}>{email}</TooltipContent>
+                </Tooltip>
+              </div>
+            </div>
+            {sections.length > 0 && (
+              <div className={cn("hidden overflow-hidden transition-[width] duration-200 ease-linear lg:block", desktopCollapsed ? "w-0" : "w-[13rem]")} inert={desktopCollapsed || undefined}>
+                <div className="flex h-full w-[13rem] flex-col">
+                  <div className="flex h-14 shrink-0 items-center px-4">
+                    <p className="truncate font-display text-base font-semibold tracking-[-0.02em]">{detail.title}</p>
+                  </div>
+                  <nav className="flex flex-col gap-1 p-2" aria-label={`${detail.title} sections`}>
+                    {sections.map(({ key, label, href, icon: Icon, selected }) => (
+                      <Link key={key} className={cn(menuButton, selected && activeButton)} href={href} aria-current={selected ? "location" : undefined}>
+                        <Icon strokeWidth={1.8} aria-hidden="true" /><span className="truncate">{label}</span>
+                      </Link>
+                    ))}
+                  </nav>
+                </div>
+              </div>
+            )}
+          </aside>
+
+          {mobileOpen && <button className="fixed inset-0 z-40 bg-foreground/40 md:hidden" type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)} />}
+          {mobileOpen && (
+            <div ref={sidebarRef} className="fixed inset-y-0 left-0 z-50 w-[18rem] overflow-y-auto bg-sidebar p-2 shadow-2xl md:hidden" role="dialog" aria-modal="true" aria-label="Navigation menu" onKeyDown={trapSidebarFocus} id="workspace-sidebar-content">
+              <div className="flex items-center justify-between p-2">
+                <span className="flex items-center gap-2 text-sm font-semibold"><span className="grid size-8 place-items-center rounded-lg bg-sidebar-primary font-display font-extrabold text-sidebar-primary-foreground">K</span>Ken OS</span>
+                <button className="grid size-8 place-items-center rounded-md hover:bg-accent" type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)}><X size={16} /></button>
+              </div>
+              <p className="flex h-8 items-center px-2 text-xs font-medium text-sidebar-foreground/70">Modules</p>
+              <nav className="flex flex-col gap-1" aria-label="Modules">
+                {moduleList.map(({ id, label, href, icon: Icon }) => (
+                  <Link key={id} className={cn(menuButton, active === id && activeButton)} href={href} aria-current={active === id ? "page" : undefined} onClick={() => setMobileOpen(false)}>
+                    <Icon strokeWidth={1.8} aria-hidden="true" /><span>{label}</span>
                   </Link>
                 ))}
               </nav>
+              {sections.length > 0 && <>
+                <p className="mt-2 flex h-8 items-center px-2 text-xs font-medium text-sidebar-foreground/70">{detail.title}</p>
+                <nav className="flex flex-col gap-1" aria-label={`${detail.title} sections`}>
+                  {sections.map(({ key, label, href, icon: Icon, selected }) => (
+                    <Link key={key} className={cn(menuButton, selected && activeButton)} href={href} aria-current={selected ? "location" : undefined} onClick={() => setMobileOpen(false)}>
+                      <Icon strokeWidth={1.8} aria-hidden="true" /><span>{label}</span>
+                    </Link>
+                  ))}
+                </nav>
+              </>}
+              <p className="mt-4 truncate px-2 text-xs text-muted-foreground">{email}</p>
             </div>
           )}
-        </aside>
 
-        {mobileOpen && <button className="fixed inset-0 z-40 bg-foreground/40 md:hidden" type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)} />}
-        {mobileOpen && (
-          <div ref={sidebarRef} className="fixed inset-x-3 top-3 z-50 max-h-[calc(100vh-24px)] overflow-y-auto rounded-xl bg-card p-3 shadow-2xl md:hidden" role="dialog" aria-modal="true" aria-label="Navigation menu" onKeyDown={trapSidebarFocus} id="workspace-sidebar-content">
-            <div className="mb-2 flex items-center justify-between px-1">
-              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">Modules</span>
-              <button className="grid size-9 place-items-center rounded-full hover:bg-accent" type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)}><X size={18} /></button>
-            </div>
-            <nav className="grid gap-0.5" aria-label="Modules">
-              {moduleList.map(({ id, label, href, icon: Icon }) => (
-                <Link key={id} className={cn(tab, active === id ? "bg-secondary font-semibold" : "text-sidebar-foreground")} href={href} aria-current={active === id ? "page" : undefined} onClick={() => setMobileOpen(false)}>
-                  <Icon size={18} strokeWidth={1.8} aria-hidden="true" />{label}
-                </Link>
-              ))}
-            </nav>
-            {sections.length > 0 && <>
-              <p className="mb-2 mt-5 px-1 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{detail.title}</p>
-              <nav className="grid gap-0.5" aria-label={`${detail.title} sections`}>
-                {sections.map(({ key, label, href, icon: Icon, selected }) => (
-                  <Link key={key} className={cn(tab, selected ? "bg-secondary font-semibold" : "text-sidebar-foreground")} href={href} aria-current={selected ? "location" : undefined} onClick={() => setMobileOpen(false)}>
-                    <Icon size={17} strokeWidth={1.8} aria-hidden="true" />{label}
-                  </Link>
+          {/* shadcn's SidebarInset with the inset variant: m-2 ml-0, rounded-xl and a soft shadow. */}
+          <div className="relative flex min-w-0 flex-1 flex-col bg-canvas md:m-2 md:ml-0 md:min-h-[calc(100vh-16px)] md:rounded-xl md:shadow-panel">
+            <header className="flex h-14 shrink-0 items-center justify-between gap-4 px-3 md:border-b md:border-border md:px-4">
+              <div className="flex min-w-0 items-center gap-2 text-sm">
+                <button ref={sidebarToggleRef} className="grid size-7 shrink-0 place-items-center rounded-md hover:bg-accent md:hidden" type="button" aria-label="Open menu" aria-expanded={mobileOpen} aria-controls="workspace-sidebar-content" onClick={() => setMobileOpen(true)}><Menu size={16} /></button>
+                {sections.length > 0 && <>
+                  <button className="-ml-1 hidden size-7 shrink-0 place-items-center rounded-md hover:bg-accent lg:grid" type="button" aria-label={desktopCollapsed ? "Show sections" : "Hide sections"} aria-expanded={!desktopCollapsed} title="Ctrl B" onClick={toggleSections}><PanelLeft size={16} /></button>
+                  <span className="mr-2 hidden h-4 w-px bg-border lg:block" aria-hidden="true" />
+                </>}
+                <nav aria-label="Breadcrumb" className="min-w-0">
+                  <ol className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
+                    <li className={cn("truncate", currentSection && "hidden sm:inline-flex")}>{sections[0] && currentSection ? <Link className="transition-colors hover:text-foreground" href={sections[0].href}>{detail.title}</Link> : <span className="text-foreground">{detail.title}</span>}</li>
+                    {currentSection && <>
+                      <li className="hidden sm:inline-flex" aria-hidden="true"><ChevronRight className="size-3.5" /></li>
+                      <li className="truncate font-normal text-foreground" aria-current="page">{currentSection.label}</li>
+                    </>}
+                  </ol>
+                </nav>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="hidden text-[13px] text-quiet xl:inline" suppressHydrationWarning>{ownerDate()}</span>
+                <ModuleSearch preview={preview} />
+                <form action="/api/auth/signout" method="post"><Button variant="ghost" type="submit" className="text-xs">Sign out</Button></form>
+              </div>
+            </header>
+            {sections.length > 1 && (
+              <nav className={cn("flex gap-1 overflow-x-auto px-3 pt-3 md:px-4", !desktopCollapsed && "lg:hidden")} aria-label={`${detail.title} sections`}>
+                {sections.map(({ key, label, href, selected }) => (
+                  <Link key={key} className={cn("h-8 shrink-0 rounded-md px-3 py-1.5 text-sm transition-colors", selected ? "bg-sidebar-accent font-medium text-foreground shadow-tab" : "text-sidebar-foreground hover:bg-accent")} href={href} aria-current={selected ? "location" : undefined}>{label}</Link>
                 ))}
               </nav>
-            </>}
-            <p className="mt-5 truncate px-1 text-xs text-muted-foreground">{email}</p>
+            )}
+            <main className="min-w-0 flex-1" id="main-content">{termLookup ? <TermLookup module={detail.title}>{children}</TermLookup> : children}</main>
+            <Toaster />
           </div>
-        )}
-
-        {/* From md up the content sits on one raised canvas, inset from the window, with the top nav as its header. */}
-        <div className="min-w-0 flex-1 md:my-2 md:mr-2 md:min-h-[calc(100vh-16px)] md:rounded-xl md:bg-canvas md:shadow-panel">
-          <header className="flex h-14 items-center justify-between gap-4 px-3 md:border-b md:border-border md:px-6">
-            <div className="flex min-w-0 items-center gap-2.5 text-sm">
-              <button ref={sidebarToggleRef} className="grid size-9 shrink-0 place-items-center rounded-full bg-card shadow-tab md:hidden" type="button" aria-label="Open menu" aria-expanded={mobileOpen} aria-controls="workspace-sidebar-content" onClick={() => setMobileOpen(true)}><Menu size={18} /></button>
-              <span className="truncate text-muted-foreground">{detail.title}{currentSection && <><span className="px-2">/</span><span className="font-semibold text-foreground">{currentSection.label}</span></>}</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <span className="hidden text-[13px] text-quiet lg:inline" suppressHydrationWarning>{ownerDate()}</span>
-              <ModuleSearch preview={preview} />
-              <form action="/api/auth/signout" method="post"><Button variant="ghost" type="submit" className="text-xs">Sign out</Button></form>
-            </div>
-          </header>
-          {sections.length > 1 && (
-            <nav className="flex gap-1 overflow-x-auto px-3 pb-1 md:px-6 md:pt-3 lg:hidden" aria-label={`${detail.title} sections`}>
-              {sections.map(({ key, label, href, selected }) => (
-                <Link key={key} className={cn("shrink-0 rounded-full px-3.5 py-1.5 text-[13px] transition-colors", selected ? "bg-card font-semibold text-foreground shadow-tab" : "text-sidebar-foreground hover:bg-accent")} href={href} aria-current={selected ? "location" : undefined}>{label}</Link>
-              ))}
-            </nav>
-          )}
-          <main className="min-w-0" id="main-content">{termLookup ? <TermLookup module={detail.title}>{children}</TermLookup> : children}</main>
-          <Toaster />
         </div>
-      </div>
+      </TooltipProvider>
     );
   }
 

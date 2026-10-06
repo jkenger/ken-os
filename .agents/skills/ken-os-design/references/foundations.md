@@ -6,7 +6,7 @@ Version: 0.4.0-working.1 · working / not yet approved. These are portable defau
 
 | Role | Value | Use |
 | --- | --- | --- |
-| Ground | `#f3f2ee` | One flat stone surface under the module strip, section column, header and page; nothing divides them |
+| Ground | `#f3f2ee` | Stone behind the icon rail and section column, framing the raised content inset |
 | Ink | `#1a1a17` | Primary text and titles |
 | Canvas | `#fcfcfa` | The raised content surface from 768px up, inset 8px from the window with the top nav as its header; panels on it are white with a shadow |
 | Panel | `#ffffff` | Panels, inputs, toasts and the current rail item; raised off the ground by a shadow, never outlined |
@@ -24,7 +24,7 @@ Version: 0.4.0-working.1 · working / not yet approved. These are portable defau
 | Focus | `#2747c9` | Visible keyboard focus, in the cobalt signal |
 | Signal | `#2747c9` | The one accent, cobalt: focus, the reached level on a rail and selected controls; never decoration |
 | Destructive | `#c0362c` | Destructive actions and error emphasis, in coral |
-| Rail | `#f3f2ee` | The module strip and section column sit on the ground, beside the raised content canvas |
+| Rail | `#f3f2ee` | The icon rail and section column, one stone surface split by a hairline |
 | Rail ink | `#4f4d47` | Module icons and section names |
 | Current item | `#ffffff` | The current module tile and section tab, white with a small shadow |
 | Current item ink | `#1a1a17` | Text of the current module and section |
