@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DisclosureSummary } from "@/components/ui/disclosure-summary";
 import type { StoredSkill } from "@/lib/skills";
+import { Label } from "@/components/ui/label";
 
 export function SkillManager({ skills }: { skills: StoredSkill[] }) {
   const router = useRouter();
@@ -101,7 +102,7 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
           <code>references/*.md</code>
         </p>
         <form className="mt-7 grid gap-3" onSubmit={upload}>
-          <label className="text-xs font-semibold" htmlFor="skill-bundle">Skill file</label>
+          <Label className="block text-xs font-semibold" htmlFor="skill-bundle">Skill file</Label>
           <input
             className="w-full rounded-lg border border-dashed border-input bg-card p-3 text-xs file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-2 file:py-1.5 file:text-xs file:font-medium"
             id="skill-bundle"
@@ -138,7 +139,7 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
               Markdown instructions the resume assistant can follow
             </p>
             <Button asChild variant="outline" className="mt-4 h-9 px-3">
-              <label htmlFor="skill-bundle" className="cursor-pointer">Add skill</label>
+              <Label htmlFor="skill-bundle" className="cursor-pointer">Add skill</Label>
             </Button>
           </CardContent></Card>
         ) : (

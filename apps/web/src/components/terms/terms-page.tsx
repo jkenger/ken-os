@@ -8,6 +8,7 @@ import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toaster";
 import type { SavedTerm } from "@/features/terms/store";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 
 function saved(value: string) {
   return new Date(value).toLocaleDateString("en", { month: "short", day: "numeric" });
@@ -41,10 +42,10 @@ export function TermsPage({ email, terms, preview = false }: { email: string; te
         <h1 className="text-[30px] font-[750] leading-[1.1] tracking-[-0.035em] md:text-[34px] xl:text-[40px] xl:leading-[1.05]">Terms</h1>
 
         {terms.length > 0 && (
-          <label className="mt-6 flex h-10 max-w-[420px] items-center gap-2 rounded-full border border-input bg-card px-4 focus-within:ring-3 focus-within:ring-ring/50">
-            <Search size={16} className="text-muted-foreground" aria-hidden="true" />
-            <input className="min-w-0 flex-1 bg-transparent text-sm outline-none" placeholder="Search terms" aria-label="Search terms" value={query} onChange={(event) => setQuery(event.target.value)} />
-          </label>
+          <InputGroup className="mt-6 max-w-[420px] rounded-full">
+            <InputGroupAddon><Search size={16} aria-hidden="true" /></InputGroupAddon>
+            <InputGroupInput placeholder="Search terms" aria-label="Search terms" value={query} onChange={(event) => setQuery(event.target.value)} />
+          </InputGroup>
         )}
 
         {terms.length ? (

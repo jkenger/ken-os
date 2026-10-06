@@ -9,6 +9,9 @@ import { Markdown } from "@/components/lab/markdown";
 import { cn } from "@/lib/utils";
 import { check, isGap, lab, lesson, practice, statusText, tracks, type MockStatus, type MockTopic } from "./mock-data";
 import { CodeEditor, eyebrow, Pill, PredictionDiff, RubricChecklist, StepBar, TermLookup, UntestedIcon, useTerms, type Step, type StepId, type Tone } from "./parts";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 
 export type Screen = "today" | "course" | "topic" | "terms";
 
@@ -115,13 +118,13 @@ function Course({ go }: { go: (screen: Screen, step?: StepId) => void }) {
               className={cn("-mb-px border-b-2 px-4 py-3 text-sm font-semibold", item.id === trackId ? "border-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}>{item.title}</button>
           ))}
         </div>
-        <label className="mb-2 flex cursor-pointer items-center gap-3 text-sm font-semibold">
+        <Label className="mb-2 flex cursor-pointer items-center gap-3 text-sm font-semibold">
           My gaps only
           <button type="button" role="switch" aria-checked={gapsOnly} onClick={() => setGapsOnly(!gapsOnly)}
             className={cn("relative h-6 w-11 rounded-full transition-colors", gapsOnly ? "bg-primary" : "bg-input")}>
             <span className={cn("absolute top-0.5 size-5 rounded-full bg-background shadow transition-transform", gapsOnly ? "translate-x-[22px]" : "translate-x-0.5")} />
           </button>
-        </label>
+        </Label>
       </div>
 
       <div className="mt-5 flex flex-wrap items-baseline justify-between gap-3">
@@ -253,10 +256,10 @@ function PracticeStep({ next }: { next: () => void }) {
         </div>
       ) : (
         <div className="mt-5">
-          <label className="block"><span className="mb-2 block text-sm font-semibold">What it prints, one line per log</span>
-            <textarea className="min-h-[110px] w-full rounded-lg border border-input bg-background px-3 py-2.5 font-mono text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50" value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={"now\nfirst\n..."} /></label>
-          <label className="mt-3 block"><span className="block text-sm font-semibold">Why</span><span className="mb-2 block text-sm text-muted-foreground">Optional and not graded. Compare it with the explanation after you check.</span>
-            <textarea className="min-h-[72px] w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50" /></label>
+          <Label className="block"><span className="mb-2 block text-sm font-semibold">What it prints, one line per log</span>
+            <Textarea className="min-h-[110px] w-full rounded-lg border border-input bg-background px-3 py-2.5 font-mono text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50" value={draft} onChange={(event) => setDraft(event.target.value)} placeholder={"now\nfirst\n..."} /></Label>
+          <Label className="mt-3 block"><span className="block text-sm font-semibold">Why</span><span className="mb-2 block text-sm text-muted-foreground">Optional and not graded. Compare it with the explanation after you check.</span>
+            <Textarea className="min-h-[72px] w-full rounded-lg border border-input bg-background px-3 py-2.5 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50" /></Label>
           <Button type="button" className="mt-3" onClick={() => setSolved(true)}><Play aria-hidden="true" />Check by running it</Button>
           <p className="mt-2 text-xs text-muted-foreground">Mockup: any answer shows the Solid result.</p>
         </div>
@@ -394,10 +397,10 @@ function TermsPage() {
       <p className={eyebrow}>KEN OS · TERMS</p>
       <h1 className={cn(title, "mt-3")}>Words you looked up.</h1>
       <p className="mt-3 max-w-[600px] text-[15px] text-muted-foreground">Saved from any Ken OS page. Each one links back to where you found it, and will show up in daily practice once that exists.</p>
-      <label className="mt-6 flex h-10 max-w-[420px] items-center gap-2 rounded-lg border border-input px-3">
-        <Search size={16} className="text-muted-foreground" aria-hidden="true" />
-        <input className="min-w-0 flex-1 bg-transparent text-sm outline-none" placeholder="Search your terms" aria-label="Search your terms" value={query} onChange={(event) => setQuery(event.target.value)} />
-      </label>
+      <InputGroup className="mt-6 max-w-[420px]">
+        <InputGroupAddon><Search size={16} aria-hidden="true" /></InputGroupAddon>
+        <InputGroupInput placeholder="Search your terms" aria-label="Search your terms" value={query} onChange={(event) => setQuery(event.target.value)} />
+      </InputGroup>
       <ul className="mt-6 divide-y divide-border border-y border-border">
         {shown.map((term) => (
           <li key={term.term} className="grid gap-2 py-5 md:grid-cols-[200px_minmax(0,1fr)]">

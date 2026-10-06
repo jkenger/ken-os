@@ -7,7 +7,8 @@ import type { EvidenceLink } from "@/features/engineering-lab/evidence";
 import type { ProfileView } from "@/features/engineering-lab/profile-store";
 import { engineering } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
-import { Badge, Coverage, Fact, levelShort, PageHeading, panel, primaryButton, Rail, textButton } from "./kit";
+import { Badge, Coverage, Fact, levelShort, PageHeading, panel, Rail } from "./kit";
+import { Button } from "@/components/ui/button";
 
 // Profile, one to one with the selected 2026-10-06 prototype: a capability table whose rows open into the remaining
 // proof requirements, a next-milestone column, and assessment history. Every value comes from capabilities.ts, the
@@ -134,10 +135,10 @@ function Milestone({ next }: { next: NextRequirement | null }) {
             {next.requirement.title} · {depthWords[next.requirement.need]} · {plural(next.requirement.missing.length, "topic")} left
           </p>
           <hr className="my-[25px] border-border" />
-          {topic && <Link href={engineering.topic(topic.topicId)} className={cn(primaryButton, "w-full")}>Continue learning<IconArrowRight size={19} aria-hidden="true" /></Link>}
+          {topic && <Button asChild className="w-full"><Link href={engineering.topic(topic.topicId)}>Continue learning<IconArrowRight size={19} aria-hidden="true" /></Link></Button>}
         </>
       ) : <h2 className="mt-[9px] text-[25px] font-bold tracking-[-0.6px]">Direction complete</h2>}
-      <Link href={engineering.assessment({ new: true })} className={cn(textButton, "mx-auto mt-4 flex w-fit")}>Take assessment</Link>
+      <Button asChild variant="text" className="mx-auto mt-4 flex w-fit"><Link href={engineering.assessment({ new: true })}>Take assessment</Link></Button>
     </aside>
   );
 }
@@ -154,7 +155,7 @@ function NotYet({ view }: { view: ProfileView }) {
         <li>Pause between chapters</li>
         <li>Proven topics are skipped</li>
       </ul>
-      <Link href={engineering.assessment()} className={primaryButton}>{started ? "Continue baseline" : view.intake ? "Start baseline" : "Start intro"}<IconArrowRight size={18} aria-hidden="true" /></Link>
+      <Button asChild><Link href={engineering.assessment()}>{started ? "Continue baseline" : view.intake ? "Start baseline" : "Start intro"}<IconArrowRight size={18} aria-hidden="true" /></Link></Button>
     </section>
   );
 }

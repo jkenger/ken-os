@@ -10,8 +10,11 @@ import { labelWords, modeWords, toneFor } from "@/components/lab/words";
 import { Pill } from "@/components/ui/pill";
 import type { RunAnswerView, RunQuestion } from "@/features/engineering-lab/assessment-run";
 import { cn } from "@/lib/utils";
-import { eyebrow, Notice, primaryButton, textButton } from "./kit";
+import { eyebrow, Notice } from "./kit";
 import { Confidence, field, fieldLabel, questionPanel } from "./flow";
+import { Button } from "@/components/ui/button";
+import { Label as FieldLabel } from "@/components/ui/label"; // Label is also the domain grade type
+import { Textarea } from "@/components/ui/textarea";
 
 // The assessment as a conversation with the Assessor (docs/architecture/engineering-assessment-v2.md, A5). The code
 // still decides every question, grade and stop; the conversation only frames them. A written answer may get one
@@ -152,31 +155,31 @@ export function AssessorChat({ kicker, current, history, onSubmit, onNext, nextL
       {problem && <Notice tone="error"><strong className="font-semibold">Couldn&apos;t send</strong><p className="mt-1">{problem}. Your answer is still here</p></Notice>}
 
       {grade ? (
-        <button type="button" className={cn(primaryButton, "mt-6")} onClick={onNext}>{nextLabel}<IconArrowRight size={18} aria-hidden="true" /></button>
+        <Button className="mt-6" type="button" onClick={onNext}>{nextLabel}<IconArrowRight size={18} aria-hidden="true" /></Button>
       ) : followUp ? (
         <div className="mt-6">
-          <label className={fieldLabel}>Your reply
-            <textarea className={cn(field, "min-h-[96px] resize-y leading-[1.6]")} value={reply} onChange={(event) => setReply(event.target.value)} />
-          </label>
-          <button type="button" className={cn(primaryButton, "mt-4")} disabled={busy || reply.trim().length < 2} onClick={submitReply}>{busy ? "Grading…" : "Send reply"}<IconArrowRight size={18} aria-hidden="true" /></button>
+          <FieldLabel className={fieldLabel}>Your reply
+            <Textarea className={cn(field, "min-h-[96px] resize-y leading-[1.6]")} value={reply} onChange={(event) => setReply(event.target.value)} />
+          </FieldLabel>
+          <Button className="mt-4" type="button" disabled={busy || reply.trim().length < 2} onClick={submitReply}>{busy ? "Grading…" : "Send reply"}<IconArrowRight size={18} aria-hidden="true" /></Button>
         </div>
       ) : (
         <div className="mt-6">
-          <label className={fieldLabel}>
+          <FieldLabel className={fieldLabel}>
             {predict ? "Your answer · one line per log" : "Your answer"}
-            <textarea className={cn(field, "min-h-[120px] resize-y leading-[1.6]", predict && "font-mono")} spellCheck={!predict} value={answer}
+            <Textarea className={cn(field, "min-h-[120px] resize-y leading-[1.6]", predict && "font-mono")} spellCheck={!predict} value={answer}
               placeholder={predict ? "What prints, in order" : "What you think happens and why"} onChange={(event) => setAnswer(event.target.value)} />
-          </label>
+          </FieldLabel>
           {predict && (
-            <label className={cn(fieldLabel, "mt-5")}>
+            <FieldLabel className={cn(fieldLabel, "mt-5")}>
               Why <span className="font-normal text-muted-foreground">· optional, not graded</span>
-              <textarea className={cn(field, "min-h-[80px] resize-y leading-[1.6]")} value={why} onChange={(event) => setWhy(event.target.value)} />
-            </label>
+              <Textarea className={cn(field, "min-h-[80px] resize-y leading-[1.6]")} value={why} onChange={(event) => setWhy(event.target.value)} />
+            </FieldLabel>
           )}
           <Confidence value={rating} onChange={setRating} />
           <div className="flex flex-wrap items-center gap-5">
-            <button type="button" className={primaryButton} disabled={busy || !answer.trim() || !rating} onClick={submitFirst}>{busy ? (predict ? "Running…" : "Grading…") : "Submit answer"}<IconArrowRight size={18} aria-hidden="true" /></button>
-            {!predict && <button type="button" className={textButton} disabled={busy || !rating} onClick={dontKnow}>I don&apos;t know</button>}
+            <Button type="button" disabled={busy || !answer.trim() || !rating} onClick={submitFirst}>{busy ? (predict ? "Running…" : "Grading…") : "Submit answer"}<IconArrowRight size={18} aria-hidden="true" /></Button>
+            {!predict && <Button variant="text" type="button" disabled={busy || !rating} onClick={dontKnow}>I don&apos;t know</Button>}
           </div>
           {!predict && !rating && <p className="mt-2 text-xs text-muted-foreground">Choose how sure you are first, also for I don&apos;t know</p>}
         </div>

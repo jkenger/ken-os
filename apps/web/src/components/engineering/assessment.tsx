@@ -14,9 +14,14 @@ import { toast } from "@/components/ui/toaster";
 import type { RunChapterView, RunView } from "@/features/engineering-lab/assessment-run";
 import { engineering } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
-import { Badge, Back, eyebrow, Notice, PageHeading, panel, primaryButton } from "./kit";
+import { Badge, Back, eyebrow, Notice, PageHeading, panel } from "./kit";
 import { Dialog, field, fieldLabel, FlowLayout, FlowNotes, NoteList, ProgressTrack, questionPanel, SessionHeading, SuccessView } from "./flow";
 import { AssessorChat, type ChatGrade } from "./assessor-chat";
+import { Button } from "@/components/ui/button";
+import { Label as FieldLabel } from "@/components/ui/label"; // Label is also the domain grade type
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 // Establish profile, as the selected 2026-10-06 prototype lays it out: intro form, then the closed-book assessment one
 // question at a time with a progress column, then results. Every step uses the real run: questions are written per
@@ -79,10 +84,10 @@ function Intro({ intake, kind, roles, onStart, busy, problem }: { intake: Intake
   const [values, setValues] = useState<IntakeAnswers>(intake ?? { building: "", stack: "", aiWork: "", weeklyHours: 5 });
   const valid = values.building.trim() && values.stack.trim() && values.aiWork.trim() && values.weeklyHours >= 1 && values.weeklyHours <= 80;
   const text = (key: "building" | "stack" | "aiWork", label: string, hint: string) => (
-    <label className={cn(fieldLabel, "mb-[25px]")}>
+    <FieldLabel className={cn(fieldLabel, "mb-[25px]")}>
       {label}
-      <textarea className={cn(field, "min-h-[96px] resize-y leading-[1.6]")} placeholder={hint} value={values[key]} onChange={(event) => setValues({ ...values, [key]: event.target.value })} />
-    </label>
+      <Textarea className={cn(field, "min-h-[96px] resize-y leading-[1.6]")} placeholder={hint} value={values[key]} onChange={(event) => setValues({ ...values, [key]: event.target.value })} />
+    </FieldLabel>
   );
   return (
     <>
@@ -94,22 +99,22 @@ function Intro({ intake, kind, roles, onStart, busy, problem }: { intake: Intake
           {text("building", "What are you building?", "My own web products, a SaaS for clinics")}
           {text("stack", "What do you use day to day?", "Languages, frameworks, databases, hosting")}
           {text("aiWork", "What AI work have you started?", "Even partly: embeddings, RAG, agents, evals")}
-          <label className={cn(fieldLabel, "mb-[25px]")}>
+          <FieldLabel className={cn(fieldLabel, "mb-[25px]")}>
             What would you like to grow toward?
-            <select className={field} value={values.growToward ?? ""} onChange={(event) => setValues({ ...values, growToward: event.target.value || undefined })}>
-              <option value="">Not sure yet</option>
-              {roles.map((role) => <option key={role.id} value={role.id}>{role.title}</option>)}
-            </select>
-          </label>
-          <label className={cn(fieldLabel, "mb-[25px]")}>
+            <NativeSelect className="mt-2.5 w-full" value={values.growToward ?? ""} onChange={(event) => setValues({ ...values, growToward: event.target.value || undefined })}>
+              <NativeSelectOption value="">Not sure yet</NativeSelectOption>
+              {roles.map((role) => <NativeSelectOption key={role.id} value={role.id}>{role.title}</NativeSelectOption>)}
+            </NativeSelect>
+          </FieldLabel>
+          <FieldLabel className={cn(fieldLabel, "mb-[25px]")}>
             Hours per week you can comfortably spend
-            <input type="number" min={1} max={80} className={cn(field, "max-w-[160px]")} value={values.weeklyHours} onChange={(event) => setValues({ ...values, weeklyHours: Number(event.target.value) })} />
-          </label>
+            <Input type="number" min={1} max={80} className="mt-2.5 max-w-[160px]" value={values.weeklyHours} onChange={(event) => setValues({ ...values, weeklyHours: Number(event.target.value) })} />
+          </FieldLabel>
           <p className="mb-[18px] text-xs text-muted-foreground">A starting preference, never graded. Choose a direction after the assessment</p>
           {problem && <Notice tone="error">{problem}</Notice>}
-          <button type="button" className={primaryButton} disabled={busy || !valid} onClick={() => onStart(values)}>
+          <Button type="button" disabled={busy || !valid} onClick={() => onStart(values)}>
             {busy ? "Starting…" : "Continue to assessment"}<IconArrowRight size={18} aria-hidden="true" />
-          </button>
+          </Button>
         </section>
         <FlowNotes title="Your starting point">
           <p className="mt-[7px]">Thirteen chapters across five areas. Short predictions and practical scenarios.</p>
@@ -244,13 +249,13 @@ function Session({ run }: { run: RunView }) {
                   : `2 chapter questions first · topic questions only if needed · ${chapter.topics.length} topics${chapter.skipped.length ? ` · ${chapter.skipped.length} skipped as known` : ""}`}
             </p>
             {problem && <Notice tone="error">{problem}</Notice>}
-            <button type="button" className={primaryButton} disabled={busy} onClick={() => void prepare(chapter.chapterId)}>
+            <Button type="button" disabled={busy} onClick={() => void prepare(chapter.chapterId)}>
               {busy ? "Writing questions… ~30 s" : chapter.stage === "topics" ? "Write topic questions" : "Start chapter"}<IconArrowRight size={18} aria-hidden="true" />
-            </button>
+            </Button>
           </section>
         ) : (
           <section className={questionPanel}>
-            <SuccessView title={`${name} complete`} action={<Link href={engineering.results(run.id)} className={primaryButton}>View results<IconArrowRight size={18} aria-hidden="true" /></Link>} />
+            <SuccessView title={`${name} complete`} action={<Button asChild><Link href={engineering.results(run.id)}>View results<IconArrowRight size={18} aria-hidden="true" /></Link></Button>} />
           </section>
         )}
         <ProgressColumn run={run} current={chapter?.chapterId ?? null} />
@@ -278,7 +283,7 @@ function Results({ run }: { run: RunView }) {
         </div>
         <Notice>{run.kind === "baseline" ? "The baseline never changes. Later evidence updates the profile; a checkpoint is a new snapshot" : "Shown next to the baseline on the profile"}</Notice>
         <div className="flex flex-wrap items-center gap-5">
-          <Link href={run.kind === "baseline" ? engineering.direction() : engineering.profile} className={primaryButton}>{run.kind === "baseline" ? "Choose your direction" : "Open profile"}<IconArrowRight size={18} aria-hidden="true" /></Link>
+          <Button asChild><Link href={run.kind === "baseline" ? engineering.direction() : engineering.profile}>{run.kind === "baseline" ? "Choose your direction" : "Open profile"}<IconArrowRight size={18} aria-hidden="true" /></Link></Button>
           <EvidenceDialog run={run} />
         </div>
       </section>

@@ -1,18 +1,24 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
-import { IconArrowRight, IconCheck, IconX } from "@tabler/icons-react";
+import { useEffect, useState, type ReactNode } from "react";
+import { IconArrowRight, IconCheck } from "@tabler/icons-react";
 import { parsePredictedLines, type PublicItem } from "@ken-os/domain";
 import { CodeBlock, Markdown } from "@/components/lab/markdown";
 import { realOutput } from "@/components/lab/topic/client";
 import { cn } from "@/lib/utils";
-import { eyebrow, Notice, panel, primaryButton, textButton } from "./kit";
+import { eyebrow, Notice, panel } from "./kit";
+import { Button } from "@/components/ui/button";
+import { Dialog as DialogRoot, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 // The task flows of the selected 2026-10-06 prototype (intro, assessment, practice, direction): a form or question
 // panel beside a notes column, a session heading with a progress track, success views and dialogs. Sizes are the
 // prototype's; colours are the Ken OS tokens.
 
-export const field = "mt-2.5 block w-full rounded-lg border border-input bg-card px-3 py-3 text-sm text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30";
+/** Spacing and size for a form control under its label; the control itself is the shadcn primitive. */
+export const field = "mt-2.5 py-3";
 export const fieldLabel = "block text-[13px] font-semibold";
 
 /** Task panel on the left, notes on the right; one column on a phone. */
@@ -61,51 +67,21 @@ export function SuccessView({ title, children, action }: { title: string; childr
   );
 }
 
-/** A modal dialog: Escape and the backdrop close it, focus is trapped inside and returns to the opener. */
-export function Dialog({ title, trigger, children, triggerClassName }: { title: string; trigger: ReactNode; children: ReactNode | ((close: () => void) => ReactNode); triggerClassName?: string }) {
+/** A modal dialog on shadcn's Dialog: Escape and the backdrop close it, focus is trapped inside and returns to the opener. */
+export function Dialog({ title, trigger, children }: { title: string; trigger: ReactNode; children: ReactNode | ((close: () => void) => ReactNode) }) {
   const [open, setOpen] = useState(false);
-  const opener = useRef<HTMLButtonElement>(null);
-  const box = useRef<HTMLElement>(null);
   const close = () => setOpen(false);
 
-  useEffect(() => {
-    if (!open) return;
-    const previous = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    box.current?.querySelector<HTMLElement>("[data-autofocus]")?.focus();
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-      if (event.key !== "Tab" || !box.current) return;
-      const focusable = box.current.querySelectorAll<HTMLElement>("a, button:not([disabled]), input, textarea, select, summary");
-      if (!focusable.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-      else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
-    };
-    window.addEventListener("keydown", onKey);
-    const trigger = opener.current;
-    return () => { document.body.style.overflow = previous; window.removeEventListener("keydown", onKey); trigger?.focus(); };
-  }, [open]);
-
   return (
-    <>
-      <button ref={opener} type="button" className={triggerClassName ?? textButton} onClick={() => setOpen(true)}>{trigger}</button>
-      {open && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/35 p-3.5 backdrop-blur-[3px] md:p-6" onMouseDown={close}>
-          <section ref={box} role="dialog" aria-modal="true" aria-label={title} onMouseDown={(event) => event.stopPropagation()}
-            className="max-h-[85vh] w-full max-w-[650px] overflow-auto rounded-xl bg-card p-[22px] shadow-[0_16px_70px_rgba(26,26,23,0.2)] md:p-[27px]">
-            <div className="mb-3.5 flex items-center justify-between gap-4">
-              <h2 className="text-[23px] font-bold tracking-[-0.6px] md:text-[25px]">{title}</h2>
-              <button type="button" aria-label="Close dialog" data-autofocus onClick={close} className="rounded-md p-1 hover:bg-muted"><IconX size={22} aria-hidden="true" /></button>
-            </div>
-            <div className="text-sm leading-[1.6] text-muted-foreground [&_h3]:mb-2 [&_h3]:mt-[23px] [&_h3]:text-[17px] [&_h3]:font-semibold [&_h3]:text-foreground">
-              {typeof children === "function" ? children(close) : children}
-            </div>
-          </section>
+    <DialogRoot open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild><Button variant="text" type="button">{trigger}</Button></DialogTrigger>
+      <DialogContent aria-describedby={undefined} className="max-h-[85vh] w-full max-w-[calc(100%-1.75rem)] gap-0 overflow-auto p-[22px] sm:max-w-[650px] md:p-[27px]">
+        <DialogTitle className="mb-3.5 pr-8 text-[23px] font-bold leading-tight tracking-[-0.6px] md:text-[25px]">{title}</DialogTitle>
+        <div className="text-sm leading-[1.6] text-muted-foreground [&_h3]:mb-2 [&_h3]:mt-[23px] [&_h3]:text-[17px] [&_h3]:font-semibold [&_h3]:text-foreground">
+          {typeof children === "function" ? children(close) : children}
         </div>
-      )}
-    </>
+      </DialogContent>
+    </DialogRoot>
   );
 }
 
@@ -114,14 +90,14 @@ export function Confidence({ value, onChange, disabled }: { value: number | null
   return (
     <fieldset className="my-[25px]" disabled={disabled}>
       <legend className="mb-[11px] text-[13px] font-semibold">How sure are you?</legend>
-      <div className="flex w-[270px] max-w-full gap-2.5">
+      <ToggleGroup type="single" spacing={2.5} variant="outline" aria-label="How sure are you?" disabled={disabled} className="w-[270px] max-w-full"
+        value={value ? String(value) : ""} onValueChange={(next) => { if (next) onChange(Number(next)); }}>
         {[1, 2, 3, 4, 5].map((rating) => (
-          <button key={rating} type="button" aria-pressed={value === rating} onClick={() => onChange(rating)}
-            className={cn("h-10 w-[45px] rounded-lg border bg-card text-sm disabled:opacity-60", value === rating ? "border-primary bg-secondary font-semibold" : "border-input hover:bg-accent")}>
+          <ToggleGroupItem key={rating} value={String(rating)} className="h-10 w-[45px] border-input bg-card text-sm font-normal hover:bg-accent data-[state=on]:border-primary data-[state=on]:bg-secondary data-[state=on]:font-semibold">
             {rating}
-          </button>
+          </ToggleGroupItem>
         ))}
-      </div>
+      </ToggleGroup>
       <small className="mt-2 flex w-[270px] max-w-full justify-between text-[11px] text-muted-foreground"><span>1 · Guessing</span><span>5 · Very sure</span></small>
     </fieldset>
   );
@@ -202,25 +178,25 @@ export function QuestionPanel({ kicker, title, item, submitLabel = "Submit answe
       {item.code && <div className="mt-4"><CodeBlock code={item.code} label="Question code" /></div>}
       {!locked && (
         <>
-          <label className={cn(fieldLabel, "mt-[25px]")}>
+          <Label className={cn(fieldLabel, "mt-[25px]")}>
             {predict ? "Your answer · one line per log" : "Your answer"}
-            <textarea className={cn(field, "min-h-[120px] resize-y leading-[1.6]", predict && "font-mono")} spellCheck={!predict} value={answer} disabled={done}
+            <Textarea className={cn(field, "min-h-[120px] resize-y leading-[1.6]", predict && "font-mono")} spellCheck={!predict} value={answer} disabled={done}
               placeholder={predict ? "What prints, in order" : "What you think happens and why"} onChange={(event) => setAnswer(event.target.value)} />
-          </label>
+          </Label>
           {predict && (
-            <label className={cn(fieldLabel, "mt-5")}>
+            <Label className={cn(fieldLabel, "mt-5")}>
               Why <span className="font-normal text-muted-foreground">· optional, not graded</span>
-              <textarea className={cn(field, "min-h-[80px] resize-y leading-[1.6]")} value={why} disabled={done} onChange={(event) => setWhy(event.target.value)} />
-            </label>
+              <Textarea className={cn(field, "min-h-[80px] resize-y leading-[1.6]")} value={why} disabled={done} onChange={(event) => setWhy(event.target.value)} />
+            </Label>
           )}
           <Confidence value={rating} onChange={setRating} disabled={done} />
         </>
       )}
       {problem && <Notice tone="error"><strong className="font-semibold">Couldn&apos;t save</strong><p className="mt-1">{problem}. Your answer is still here</p></Notice>}
       {done ? after : (
-        <button type="button" className={primaryButton} disabled={busy || !answer.trim() || !rating} onClick={() => void submit()}>
+        <Button type="button" disabled={busy || !answer.trim() || !rating} onClick={() => void submit()}>
           {busy ? (predict ? "Running…" : "Grading…") : submitLabel}<IconArrowRight size={18} aria-hidden="true" />
-        </button>
+        </Button>
       )}
     </section>
   );

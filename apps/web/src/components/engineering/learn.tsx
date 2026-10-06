@@ -11,7 +11,9 @@ import { statusWords } from "@/components/lab/words";
 import { toast } from "@/components/ui/toaster";
 import { engineering, type TopicStep } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
-import { PageHeading, panel, primaryButton, secondaryButton } from "./kit";
+import { PageHeading, panel } from "./kit";
+import { Button } from "@/components/ui/button";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 
 // Learn, one to one with the selected 2026-10-06 prototype: My path / Gaps / All topics, search, chapters as cards
 // that open into topic rows, and the Planner's next topic beside them. Statuses are the existing progress rules.
@@ -91,11 +93,10 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
                 className={cn("rounded-full px-3.5 py-2 text-[13px]", scope === id ? "bg-card text-foreground shadow-tab" : "text-muted-foreground hover:text-foreground")}>{name}</button>
             ))}
           </div>
-          <label className="flex w-full items-center gap-2.5 rounded-full border border-input bg-card px-3 md:w-80">
-            <IconSearch size={18} className="text-muted-foreground" aria-hidden="true" />
-            <input aria-label="Search topics" placeholder="Search topics or chapters" value={query} onChange={(event) => setQuery(event.target.value)}
-              className="w-full bg-transparent py-[11px] text-sm outline-none placeholder:text-muted-foreground" />
-          </label>
+          <InputGroup className="h-11 rounded-full md:w-80">
+            <InputGroupAddon><IconSearch size={18} aria-hidden="true" /></InputGroupAddon>
+            <InputGroupInput aria-label="Search topics" placeholder="Search topics or chapters" value={query} onChange={(event) => setQuery(event.target.value)} />
+          </InputGroup>
         </div>
 
         <div className="mx-[5px] grid grid-cols-1 gap-[18px] md:mx-3.5 md:grid-cols-[2fr_1fr] md:gap-5 lg:grid-cols-[minmax(0,2.4fr)_minmax(230px,1fr)] lg:gap-8">
@@ -151,7 +152,7 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
               <div className={cn(panel, "p-[35px] text-center")}>
                 <h3 className="text-[17px] font-semibold">No topics found</h3>
                 <p className="mb-[18px] mt-[7px] text-sm text-muted-foreground">Try a broader word</p>
-                <button type="button" className={secondaryButton} onClick={() => { setQuery(""); setScope("all"); }}>Clear search</button>
+                <Button variant="outline" type="button" onClick={() => { setQuery(""); setScope("all"); }}>Clear search</Button>
               </div>
             )}
           </section>
@@ -161,7 +162,7 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
             {upNext ? (
               <>
                 <p className="mb-[18px] mt-[7px] leading-[1.65]"><strong className="font-semibold text-foreground">{upNext.title}</strong> · {upNext.reason}</p>
-                <Link href={engineering.topic(upNext.topicId, upNext.step)} className={primaryButton}>Continue topic<IconArrowRight size={18} aria-hidden="true" /></Link>
+                <Button asChild><Link href={engineering.topic(upNext.topicId, upNext.step)}>Continue topic<IconArrowRight size={18} aria-hidden="true" /></Link></Button>
               </>
             ) : <p className="mt-[7px]">Nothing due</p>}
             <hr className="my-[25px] border-border" />

@@ -5,6 +5,8 @@ import type { GuideMessage, IntakeAnswers } from "@ken-os/domain";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { post, textarea } from "../topic/client";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 export interface GuideProposals {
   intake: IntakeAnswers | null;
@@ -69,14 +71,14 @@ export function GuideChat({ phase, history, onProposals, opener, subtitle = "The
       </div>
       {footer && <div className="space-y-2 border-t border-border p-3">{footer}</div>}
       <div className="border-t border-border p-3">
-        <label className="block">
+        <Label className="block">
           <span className="sr-only">Message</span>
-          <textarea
-            className={cn(textarea, "min-h-[64px]")} value={draft} onChange={(event) => setDraft(event.target.value)}
+          <Textarea
+            className="min-h-[64px]" value={draft} onChange={(event) => setDraft(event.target.value)}
             onKeyDown={(event) => { if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) void send(); }}
             placeholder="Message the Guide"
           />
-        </label>
+        </Label>
         {problem && <p className="mt-2 rounded-md bg-muted px-3 py-2 text-sm" role="alert">{problem}</p>}
         <div className="mt-2 flex items-center justify-between gap-3">
           <p className="text-xs text-muted-foreground">Ctrl+Enter to send · 1 AI use per reply</p>

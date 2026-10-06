@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import { Bold, ChevronDown, ChevronLeft, ChevronRight, Check, Code2, Ellipsis, Italic, Link2, List, ListOrdered, MessageCircle, PanelRightClose, PanelRightOpen, Pause, Play, Quote, Redo2, Settings2, Sparkles, Undo2, X } from "lucide-react";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 const initialTitle = "What building Project Memory taught me about remembering decisions";
 const initialBody = `<p>Early in building Project Memory, I kept losing the context behind our decisions. We had the what in issue threads and the how in code, but not the why. A few weeks later, I’d be rereading a thread and thinking, why did we choose this approach? The answer was usually buried in a teammate’s message or a document I couldn’t find.</p><p>We tried a few fixes: longer documentation, stricter templates, and a dedicated “decisions” folder. They helped, but they all required more discipline than we could sustain. The real shift came when we treated memory as a product surface, not a folder. We embedded decision notes where work already happens—right next to the artifact—and made them easy to capture, easy to find, and light weight to maintain.</p><p>The tradeoff was scope. We could have built a more structured knowledge graph early on, but that would have slowed us down. Instead, we chose a simpler approach: a consistent, minimal format that anyone on the team could use. It wasn’t perfect, but it was enough to change our habits—and that mattered more than elegance.</p><hr><h2>The choice that mattered</h2><p data-guidance="true" contenteditable="false">Describe the key decision, the options you considered, and why you chose the path you did.</p><p>Choosing simplicity over a full knowledge graph was the right call. It let us ship, get real usage, and learn what actually needed to be structured. In hindsight, the most valuable part wasn’t the system we built—it was the habit it created: writing down the why, while it’s still fresh.</p>`;
@@ -82,11 +84,11 @@ export function WritingStudioPreview() {
 
   const headerActions = <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
     <span className="hidden text-xs text-muted-foreground xl:inline">Preview only · not saved</span>
-    <label className="hidden items-center gap-1.5 rounded-lg bg-muted px-2.5 py-2 text-xs sm:flex">
+    <Label className="hidden items-center gap-1.5 rounded-lg bg-muted px-2.5 py-2 text-xs sm:flex">
       <span className="sr-only">Writing outline</span>
       <select className="max-w-32 cursor-pointer appearance-none bg-transparent outline-none" aria-label="Writing outline" value={outline} onChange={(event) => changeOutline(event.target.value)}>{outlines.map((item) => <option key={item}>{item}</option>)}</select>
       <ChevronDown size={13} aria-hidden="true" />
-    </label>
+    </Label>
     <Button className="hidden text-xs lg:inline-flex" size="sm" variant="ghost" type="button" onClick={() => setNotice("Choose a different outline above. Existing writing stays in place.")}><Settings2 size={15} /> Change outline</Button>
     <Button className="hidden text-xs md:inline-flex" size="sm" variant="outline" type="button" onClick={() => { setRawSaved(true); setNotice("Raw snapshot marked in this preview only. It is not stored or public."); }}>{rawSaved ? "Raw marked" : "Save raw draft"}</Button>
     <Button className="text-xs" size="sm" variant="outline" type="button" onClick={() => { setPreviewBody(editorRef.current?.innerText ?? ""); setPreviewOpen(true); }}>Preview</Button>
@@ -100,10 +102,10 @@ export function WritingStudioPreview() {
     <div className={`grid min-h-[calc(100vh-90px)] ${assistantOpen ? "lg:grid-cols-[minmax(0,1fr)_minmax(286px,32%)]" : "grid-cols-1"}`}>
       <section className="min-w-0 border-r border-border" aria-label="Post editor">
         <div className="sticky top-0 z-10 flex h-14 items-center gap-1 overflow-x-auto border-b border-border bg-background px-5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:px-7">
-          <label className="mr-2 flex items-center gap-1.5 border-r border-border pr-3 text-xs text-muted-foreground">
+          <Label className="mr-2 flex items-center gap-1.5 border-r border-border pr-3 text-xs text-muted-foreground">
             <span className="sr-only">Text style</span>
             <select className="cursor-pointer appearance-none bg-transparent outline-none" aria-label="Text style" value={format} onChange={(event) => { setFormat(event.target.value); applyFormat("formatBlock", event.target.value); }}><option value="p">Paragraph</option><option value="h2">Heading 2</option><option value="h3">Heading 3</option></select><ChevronDown size={13} />
-          </label>
+          </Label>
           {toolbar.map(({ label, icon: Icon, command, value }, index) => <button className={`grid size-8 shrink-0 place-items-center rounded-md text-foreground hover:bg-muted ${index === 3 || index === 5 ? "ml-2 border-l border-border pl-2" : ""}`} key={label} type="button" title={label} aria-label={label} onMouseDown={(event) => event.preventDefault()} onClick={() => applyFormat(command, value)}><Icon size={16} /></button>)}
           <span className="flex-1" />
           <button className="grid size-8 shrink-0 place-items-center rounded-md hover:bg-muted" type="button" title="Undo" aria-label="Undo" onMouseDown={(event) => event.preventDefault()} onClick={() => applyFormat("undo")}><Undo2 size={16} /></button>
@@ -111,7 +113,7 @@ export function WritingStudioPreview() {
           <button className="grid size-8 shrink-0 place-items-center rounded-md hover:bg-muted" type="button" title="More formatting" aria-label="More formatting" onClick={() => setNotice("More formatting options are planned for the real editor.")}><Ellipsis size={17} /></button>
         </div>
         <div className="mx-auto w-full max-w-[780px] px-6 pb-24 pt-5 sm:px-10 lg:px-11">
-          <textarea className="block w-full resize-none overflow-hidden border-0 bg-transparent font-display text-[clamp(2rem,3.1vw,3.3rem)] font-bold leading-[1.06] tracking-[-0.065em] outline-none placeholder:text-muted-foreground" aria-label="Post title" rows={3} value={title} onChange={(event) => { setTitle(event.target.value); refreshCount(event.target.value); }} />
+          <Textarea className="block w-full resize-none overflow-hidden border-0 bg-transparent font-display text-[clamp(2rem,3.1vw,3.3rem)] font-bold leading-[1.06] tracking-[-0.065em] outline-none placeholder:text-muted-foreground" aria-label="Post title" rows={3} value={title} onChange={(event) => { setTitle(event.target.value); refreshCount(event.target.value); }} />
           <input className="mt-1 w-full bg-transparent text-lg text-muted-foreground outline-none placeholder:text-muted-foreground" aria-label="Subtitle" placeholder="Add a subtitle (optional)" value={subtitle} onChange={(event) => setSubtitle(event.target.value)} />
           <div className="mt-4 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.13em] text-muted-foreground sm:hidden"><span>{outline}</span><span>·</span><button className="underline underline-offset-2" type="button" onClick={() => setNotice("Use the outline menu on a larger screen; the guidance never changes existing text.")}>Change outline</button></div>
           <div ref={editorRef} className="mt-5 min-h-[520px] outline-none [&_h2]:mb-1 [&_h2]:mt-6 [&_h2]:font-display [&_h2]:text-[1.7rem] [&_h2]:font-bold [&_h2]:leading-tight [&_h2]:tracking-[-0.04em] [&_hr]:my-5 [&_hr]:border-border [&_p]:mb-5 [&_p]:text-[16px] [&_p]:leading-[1.42] [&_p]:text-[#3b414a] [&_p[data-guidance]]:mb-4 [&_p[data-guidance]]:text-sm [&_p[data-guidance]]:text-muted-foreground [&_pre]:my-4 [&_pre]:overflow-auto [&_pre]:rounded-lg [&_pre]:bg-muted [&_pre]:p-4 [&_blockquote]:border-l-2 [&_blockquote]:border-foreground [&_blockquote]:pl-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6" contentEditable suppressContentEditableWarning role="textbox" aria-label="Article body" aria-multiline="true" onInput={() => refreshCount()} dangerouslySetInnerHTML={{ __html: initialBody }} />

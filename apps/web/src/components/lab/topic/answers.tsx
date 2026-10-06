@@ -11,6 +11,8 @@ import { CodeBlock, Markdown } from "../markdown";
 import { label, labelWords, modeWords, toneFor } from "../words";
 import { post, realOutput, textarea } from "./client";
 import { PredictionDiff, RubricChecklist } from "./feedback";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 export function Tag({ value, children }: { value: string; children: React.ReactNode }) {
   return <Pill tone={toneFor(value)}>{children}</Pill>;
@@ -43,15 +45,15 @@ function Confidence({ value, onChange }: { value: number | null; onChange: (valu
 function PredictInputs({ lines, why, onLines, onWhy, tall }: { lines: string; why: string; onLines: (value: string) => void; onWhy: (value: string) => void; tall?: boolean }) {
   return (
     <>
-      <label className="mt-4 block">
+      <Label className="mt-4 block">
         <span className="mb-2 block text-sm font-semibold">Predicted output · one line per log</span>
-        <textarea className={cn(textarea, tall ? "min-h-[110px]" : "min-h-[80px]", "font-mono")} spellCheck={false} value={lines} onChange={(event) => onLines(event.target.value)} />
-      </label>
-      <label className="mt-3 block">
+        <Textarea className={cn(tall ? "min-h-[110px]" : "min-h-[80px]", "font-mono")} spellCheck={false} value={lines} onChange={(event) => onLines(event.target.value)} />
+      </Label>
+      <Label className="mt-3 block">
         <span className="block text-sm font-semibold">Why</span>
         <span className="mb-2 block text-sm text-muted-foreground">Optional · not graded</span>
-        <textarea className={cn(textarea, "min-h-[72px]")} value={why} onChange={(event) => onWhy(event.target.value)} />
-      </label>
+        <Textarea className={cn("min-h-[72px]")} value={why} onChange={(event) => onWhy(event.target.value)} />
+      </Label>
     </>
   );
 }
@@ -147,10 +149,10 @@ export function Question({ assessment, index, onDone, heading, submitTo }: {
         <>
           <Confidence value={rating} onChange={setRating} />
           {item.mode === "predict" ? <PredictInputs lines={answer} why={why} onLines={setAnswer} onWhy={setWhy} tall /> : (
-            <label className="mt-4 block">
+            <Label className="mt-4 block">
               <span className="mb-2 block text-sm font-semibold">Answer</span>
-              <textarea className={cn(textarea, "min-h-[130px]")} value={answer} onChange={(event) => setAnswer(event.target.value)} />
-            </label>
+              <Textarea className={cn("min-h-[130px]")} value={answer} onChange={(event) => setAnswer(event.target.value)} />
+            </Label>
           )}
           {problem && <p className="mt-3 rounded-lg bg-muted px-4 py-3 text-sm" role="alert">{problem}</p>}
           <Button type="button" className="mt-3" disabled={busy || !answer.trim()} onClick={() => void submit()}>{busy ? "Grading…" : "Submit"}</Button>

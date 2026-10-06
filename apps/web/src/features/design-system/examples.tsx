@@ -22,6 +22,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function ComponentExamples() {
   const [actionDone, setActionDone] = useState(false);
@@ -109,12 +110,12 @@ export function ComponentExamples() {
         <p className="mt-1 text-sm leading-5 text-muted-foreground">
           Warm hairline, clear label, visible focus
         </p>
-        <label
+        <Label
           className="mt-5 block text-[13px] font-semibold"
           htmlFor="design-example-name"
         >
           Project name
-        </label>
+        </Label>
         <Input
           className="mt-2 max-w-sm"
           id="design-example-name"
@@ -134,9 +135,9 @@ export function ComponentExamples() {
           </DisclosureSummary>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <div>
-              <label htmlFor="design-example-disabled" className="mb-1 block">
+              <Label htmlFor="design-example-disabled" className="mb-1 block">
                 Disabled
-              </label>
+              </Label>
               <Input
                 id="design-example-disabled"
                 value="Unavailable"
@@ -145,9 +146,9 @@ export function ComponentExamples() {
               />
             </div>
             <div>
-              <label htmlFor="design-example-invalid" className="mb-1 block">
+              <Label htmlFor="design-example-invalid" className="mb-1 block">
                 Needs attention
-              </label>
+              </Label>
               <Input
                 id="design-example-invalid"
                 value=""
