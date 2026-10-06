@@ -1,5 +1,5 @@
 import { and, eq, isNotNull, isNull } from "drizzle-orm";
-import { nextScreenQuestion, nextTopicQuestion, type ItemAnswer, type RunChapter } from "@ken-os/domain";
+import { nextScreenQuestion, nextTopicQuestion, stageOne, type ItemAnswer, type Label, type RunChapter, type StageOne } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { labAssessmentRuns, labAssessments, labAttempts, labChapterScreens } from "@/lib/schema";
 import { LabInputError } from "./errors";
@@ -24,11 +24,22 @@ export async function nextRunItem(reader: Reader, assessment: Pick<AssessmentRow
   return nextTopicQuestion(assessment.items.map((item) => item.mode), await itemAnswers(reader, assessment.id));
 }
 
+/** Where stage 1 of a two-stage chapter stands, from its answered chapter questions in this run. */
+export async function chapterStage(reader: Reader, runId: string, chapterId: string): Promise<StageOne> {
+  const rows = await reader.select({ itemIndex: labChapterScreens.itemIndex, label: labChapterScreens.label }).from(labChapterScreens)
+    .where(and(eq(labChapterScreens.setId, runId), eq(labChapterScreens.chapterId, chapterId), isNotNull(labChapterScreens.answeredAt)));
+  return stageOne(rows.sort((a, b) => a.itemIndex - b.itemIndex).map((row) => row.label as Label));
+}
+
 /** A run answer must be the question the run is asking now, in an unfinished run. */
 export async function assertRunTurn(assessment: AssessmentRow, itemIndex: number) {
   if (!assessment.runId) return;
   const [run] = await db().select().from(labAssessmentRuns).where(eq(labAssessmentRuns.id, assessment.runId)).limit(1);
   if (!run || run.completedAt) throw new LabInputError("This assessment is already finished.", 409);
+  const chapter = run.plan.chapters.find((item) => item.kind === "topics" && item.topicIds.includes(assessment.topicId));
+  if (chapter?.kind === "topics" && chapter.screenFirst && (await chapterStage(db(), run.id, chapter.chapterId)) !== "drill") {
+    throw new LabInputError("Answer the chapter's first two questions before its topics.", 409);
+  }
   const next = await nextRunItem(db(), assessment);
   if (next !== itemIndex) throw new LabInputError("Answer the assessment's questions in the order it asks them.", 409);
 }
@@ -38,6 +49,11 @@ export async function chapterDone(reader: Reader, run: RunRow, chapter: RunChapt
     const rows = await reader.select({ itemIndex: labChapterScreens.itemIndex }).from(labChapterScreens)
       .where(and(eq(labChapterScreens.setId, run.id), eq(labChapterScreens.chapterId, chapter.chapterId), isNotNull(labChapterScreens.answeredAt)));
     return nextScreenQuestion(rows.map((row) => row.itemIndex)) === null;
+  }
+  if (chapter.screenFirst) {
+    const stage = await chapterStage(reader, run.id, chapter.chapterId);
+    if (stage === "pending") return false;
+    if (stage === "cleared") return true;
   }
   const sets = await reader.select().from(labAssessments).where(eq(labAssessments.runId, run.id));
   for (const topicId of chapter.topicIds) {

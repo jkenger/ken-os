@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { IconArrowLeft, IconArrowRight, IconCheck, IconCircle, IconCircleDot } from "@tabler/icons-react";
-import type { IntakeAnswers } from "@ken-os/domain";
+import type { IntakeAnswers, Label, RubricResult } from "@ken-os/domain";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { post } from "@/components/lab/topic/client";
 import { RubricChecklist } from "@/components/lab/topic/feedback";
@@ -15,7 +15,8 @@ import type { RunChapterView, RunView } from "@/features/engineering-lab/assessm
 import { engineering } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
 import { Badge, Back, eyebrow, Notice, PageHeading, panel, primaryButton } from "./kit";
-import { Dialog, Feedback, field, fieldLabel, FlowLayout, FlowNotes, NoteList, ProgressTrack, QuestionPanel, questionPanel, SessionHeading, SuccessView, type QuestionPayload } from "./flow";
+import { Dialog, field, fieldLabel, FlowLayout, FlowNotes, NoteList, ProgressTrack, questionPanel, SessionHeading, SuccessView } from "./flow";
+import { AssessorChat, type ChatGrade } from "./assessor-chat";
 
 // Establish profile, as the selected 2026-10-06 prototype lays it out: intro form, then the closed-book assessment one
 // question at a time with a progress column, then results. Every step uses the real run: questions are written per
@@ -74,7 +75,7 @@ function EvidenceDialog({ run, trigger = "Inspect assessment evidence" }: { run:
 }
 
 /** Step 1: the intro. Shapes where questions start and the first pace estimate; never graded. */
-function Intro({ intake, kind, onStart, busy, problem }: { intake: IntakeAnswers | null; kind: "baseline" | "checkpoint"; onStart: (values: IntakeAnswers) => void; busy: boolean; problem: string }) {
+function Intro({ intake, kind, roles, onStart, busy, problem }: { intake: IntakeAnswers | null; kind: "baseline" | "checkpoint"; roles: { id: string; title: string }[]; onStart: (values: IntakeAnswers) => void; busy: boolean; problem: string }) {
   const [values, setValues] = useState<IntakeAnswers>(intake ?? { building: "", stack: "", aiWork: "", weeklyHours: 5 });
   const valid = values.building.trim() && values.stack.trim() && values.aiWork.trim() && values.weeklyHours >= 1 && values.weeklyHours <= 80;
   const text = (key: "building" | "stack" | "aiWork", label: string, hint: string) => (
@@ -94,10 +95,17 @@ function Intro({ intake, kind, onStart, busy, problem }: { intake: IntakeAnswers
           {text("stack", "What do you use day to day?", "Languages, frameworks, databases, hosting")}
           {text("aiWork", "What AI work have you started?", "Even partly: embeddings, RAG, agents, evals")}
           <label className={cn(fieldLabel, "mb-[25px]")}>
+            What would you like to grow toward?
+            <select className={field} value={values.growToward ?? ""} onChange={(event) => setValues({ ...values, growToward: event.target.value || undefined })}>
+              <option value="">Not sure yet</option>
+              {roles.map((role) => <option key={role.id} value={role.id}>{role.title}</option>)}
+            </select>
+          </label>
+          <label className={cn(fieldLabel, "mb-[25px]")}>
             Hours per week you can comfortably spend
             <input type="number" min={1} max={80} className={cn(field, "max-w-[160px]")} value={values.weeklyHours} onChange={(event) => setValues({ ...values, weeklyHours: Number(event.target.value) })} />
           </label>
-          <p className="mb-[18px] text-xs text-muted-foreground">Never graded. Choose a direction after the assessment</p>
+          <p className="mb-[18px] text-xs text-muted-foreground">A starting preference, never graded. Choose a direction after the assessment</p>
           {problem && <Notice tone="error">{problem}</Notice>}
           <button type="button" className={primaryButton} disabled={busy || !valid} onClick={() => onStart(values)}>
             {busy ? "Starting…" : "Continue to assessment"}<IconArrowRight size={18} aria-hidden="true" />
@@ -123,7 +131,7 @@ function ProgressColumn({ run, current }: { run: RunView; current: string | null
               : chapter.chapterId === current ? <IconCircleDot size={18} className="shrink-0" aria-label="Current" />
                 : <IconCircle size={18} className="shrink-0" aria-hidden="true" />}
             <span className="flex-1">{chapter.title}</span>
-            {chapter.status === "done" && chapter.kind === "topics" && <span className="text-[11px] font-normal">{chapter.topics.filter((topic) => topic.label === "solid").length + chapter.skipped.length} of {chapter.topics.length + chapter.skipped.length} known</span>}
+            {chapter.status === "done" && chapter.kind === "topics" && <span className="text-[11px] font-normal">{chapter.cleared ? "Cleared · estimate" : `${chapter.topics.filter((topic) => topic.label === "solid").length + chapter.skipped.length} of ${chapter.topics.length + chapter.skipped.length} known`}</span>}
           </li>
         ))}
       </ol>
@@ -144,6 +152,25 @@ function Session({ run }: { run: RunView }) {
   const number = chapter ? run.chapters.indexOf(chapter) + 1 : run.chapters.length;
   const name = run.kind === "baseline" ? "Baseline" : "Checkpoint";
   const previous = [...run.chapters].reverse().find((item) => item.status === "done");
+  const upcoming = chapter ? run.chapters.slice(run.chapters.indexOf(chapter) + 1).find((item) => item.status === "not_started") : undefined;
+  const prefetched = useRef(new Set<string>());
+
+  // When stage 1 says to dig in, write the topic questions straight away instead of asking for another click.
+  const digging = !run.current && chapter?.stage === "topics" && chapter.unwritten > 0;
+  const dug = useRef(new Set<string>());
+  useEffect(() => {
+    if (!digging || !chapter || dug.current.has(chapter.chapterId)) return;
+    dug.current.add(chapter.chapterId);
+    void prepare(chapter.chapterId);
+  }, [digging, chapter?.chapterId]);
+
+  // While a question is open, write the next chapter's questions behind it, so starting that chapter doesn't wait.
+  // Same allowance either way: they're needed anyway, and writing them again only fills in what's missing.
+  useEffect(() => {
+    if (!run.current || !upcoming || prefetched.current.has(upcoming.chapterId)) return;
+    prefetched.current.add(upcoming.chapterId);
+    void post(`/api/lab/runs/${run.id}/chapters/${upcoming.chapterId}`).catch(() => undefined);
+  }, [run.id, run.current, upcoming]);
 
   async function prepare(chapterId: string) {
     setBusy(true); setProblem("");
@@ -152,16 +179,25 @@ function Session({ run }: { run: RunView }) {
     finally { setBusy(false); }
   }
 
-  async function submit(payload: QuestionPayload) {
+  async function submit(payload: { selfRating: number; text?: string; lines?: string[]; why?: string; actualOutput?: string[]; allowClarify: boolean }): Promise<{ clarify: string } | { grade: ChatGrade }> {
     const current = run.current!;
-    const result = current.type === "screen"
-      ? await post<{ runFinished: boolean }>("/api/lab/screens", { screenId: current.id, text: payload.text ?? "", selfRating: payload.selfRating })
-      : await post<{ runFinished: boolean }>("/api/lab/attempts", {
-        type: "answer", assessmentId: current.id, itemIndex: current.itemIndex, selfRating: payload.selfRating,
-        response: payload.lines ? { lines: payload.lines, ...(payload.why ? { why: payload.why } : {}) } : { text: payload.text ?? "" },
-        ...(payload.actualOutput ? { actualOutput: payload.actualOutput } : {}),
+    if (current.type === "screen") {
+      const value = await post<{ clarify?: string; runFinished: boolean; label: Label | null; feedback: string | null; rubric: RubricResult[] | null }>("/api/lab/screens", {
+        screenId: current.id, text: payload.text ?? "", selfRating: payload.selfRating, allowClarify: payload.allowClarify,
       });
-    setFinished(result.runFinished);
+      if (value.clarify) return { clarify: value.clarify };
+      setFinished(value.runFinished);
+      return { grade: { label: value.label!, feedback: value.feedback ?? "", rubric: value.rubric, voided: false } };
+    }
+    const value = await post<{ clarify?: string; runFinished: boolean; grade: { label: Label; feedback: string; rubric?: RubricResult[] | null; voided?: boolean } | null }>("/api/lab/attempts", {
+      type: "answer", assessmentId: current.id, itemIndex: current.itemIndex, selfRating: payload.selfRating, allowClarify: payload.allowClarify,
+      response: payload.lines ? { lines: payload.lines, ...(payload.why ? { why: payload.why } : {}) } : { text: payload.text ?? "" },
+      ...(payload.actualOutput ? { actualOutput: payload.actualOutput } : {}),
+    });
+    if (value.clarify) return { clarify: value.clarify };
+    setFinished(value.runFinished);
+    const grade = value.grade!;
+    return { grade: { label: grade.label, feedback: grade.feedback, rubric: grade.rubric ?? null, voided: Boolean(grade.voided) } };
   }
 
   function next() {
@@ -186,19 +222,14 @@ function Session({ run }: { run: RunView }) {
       <ProgressTrack done={done} total={run.chapters.length} />
       <FlowLayout>
         {current && chapter ? (
-          <QuestionPanel
+          <AssessorChat
             key={`${current.id}-${current.itemIndex}`}
-            kicker={`${chapter.title}${topic ? ` · ${topic.title}` : ""} · Question ${current.position} of up to ${current.outOf}`}
-            title={modeWords[current.item.mode] ?? "Question"}
-            item={current.item}
+            kicker={`${chapter.title}${topic ? ` · ${topic.title}` : chapter.stage === "chapter" ? " · Chapter question" : ""} · ${chapter.stage === "chapter" ? `${current.position} of 2` : `Question ${current.position} of up to ${current.outOf}`}`}
+            current={current}
+            history={chapter.answers}
             onSubmit={submit}
-            after={(
-              <Feedback badge={<Badge>Saved · graded with the chapter</Badge>} title={finished ? `${name} complete` : "Answer saved"} action={(
-                <button type="button" className={primaryButton} onClick={next}>{finished ? "View results" : "Next question"}<IconArrowRight size={18} aria-hidden="true" /></button>
-              )}>
-                Grades show when this chapter is done. You can stop here and come back.
-              </Feedback>
-            )}
+            onNext={next}
+            nextLabel={finished ? "View results" : "Next question"}
           />
         ) : chapter ? (
           <section className={questionPanel}>
@@ -208,12 +239,13 @@ function Session({ run }: { run: RunView }) {
             <div className={eyebrow}>Chapter {number} of {run.chapters.length}</div>
             <h2 className="my-3 text-[23px] font-bold tracking-[-0.6px] md:text-[25px]">{chapter.title}</h2>
             <p className="mb-[18px] text-[15px] leading-[1.6] text-muted-foreground">
-              {chapter.kind === "topics" ? `${chapter.topics.length} topics${chapter.skipped.length ? ` · ${chapter.skipped.length} skipped as known` : ""}` : "No lessons yet · placement check, 2 questions"}
-              {chapter.unwritten > 0 && chapter.status === "in_progress" ? ` · ${chapter.unwritten} need questions` : ""}
+              {chapter.kind === "screen" ? "No lessons yet · placement check, 2 questions"
+                : chapter.stage === "topics" ? `Digging into ${chapter.topics.length} topics · 1 or 2 questions each`
+                  : `2 chapter questions first · topic questions only if needed · ${chapter.topics.length} topics${chapter.skipped.length ? ` · ${chapter.skipped.length} skipped as known` : ""}`}
             </p>
             {problem && <Notice tone="error">{problem}</Notice>}
             <button type="button" className={primaryButton} disabled={busy} onClick={() => void prepare(chapter.chapterId)}>
-              {busy ? "Writing questions… ~30 s" : chapter.unwritten > 0 && chapter.status === "in_progress" ? "Write questions" : "Start chapter"}<IconArrowRight size={18} aria-hidden="true" />
+              {busy ? "Writing questions… ~30 s" : chapter.stage === "topics" ? "Write topic questions" : "Start chapter"}<IconArrowRight size={18} aria-hidden="true" />
             </button>
           </section>
         ) : (
@@ -254,7 +286,7 @@ function Results({ run }: { run: RunView }) {
   );
 }
 
-export function EngineeringAssessment({ email, intake, run, baselineDone }: { email: string; intake: IntakeAnswers | null; run: RunView | null; baselineDone: boolean }) {
+export function EngineeringAssessment({ email, intake, run, baselineDone, roles = [] }: { email: string; intake: IntakeAnswers | null; run: RunView | null; baselineDone: boolean; roles?: { id: string; title: string }[] }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState("");
@@ -276,7 +308,7 @@ export function EngineeringAssessment({ email, intake, run, baselineDone }: { em
 
   return (
     <Shell email={email}>
-      {!run ? <Intro intake={intake} kind={kind} onStart={(values) => void start(values)} busy={busy} problem={problem} />
+      {!run ? <Intro intake={intake} kind={kind} roles={roles} onStart={(values) => void start(values)} busy={busy} problem={problem} />
         : run.completedAt ? <Results run={run} />
           : <Session run={run} />}
     </Shell>

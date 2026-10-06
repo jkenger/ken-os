@@ -1,9 +1,8 @@
-import { and, desc, eq, inArray, isNull } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { countsAsProof, isLegacyBaseline, PLACING_KINDS, type AttemptKind, type AttemptResponse, type CodeRun, type Label, type Mode, type RubricResult } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { labAssessmentRuns, labAssessments, labAttempts } from "@/lib/schema";
 import { findLab, findTopic } from "./curriculum";
-import { chapterDone } from "./run-state";
 import { toRecord } from "./store";
 
 // One graded answer as it was recorded, for the Profile's evidence link. Read only: attempts are never edited here.
@@ -20,8 +19,8 @@ export interface EvidenceView {
   /** What this answer can do for a topic under the progress rules. */
   role: EvidenceRole;
   at: string;
-  /** Null while the answer belongs to an unfinished chapter of an open assessment, so grades can't steer it. */
-  result: null | {
+  /** Shown as soon as the answer is graded, also during an assessment (engineering-assessment-v2.md A3). */
+  result: {
     label: Label;
     gradedBy: "code" | "assessor" | "baseline";
     feedback: string;
@@ -56,20 +55,10 @@ export interface EvidenceLink {
   at: string;
 }
 
-/**
- * The latest answers that count for something (proof or placement), newest first. Answers inside an open assessment
- * are left out, like the run's own results, until it finishes.
- */
+/** The latest answers that count for something (proof or placement), newest first. */
 export async function recentEvidence(userId: string, limit = 6): Promise<EvidenceLink[]> {
-  const [rows, open] = await Promise.all([
-    db().select().from(labAttempts).where(eq(labAttempts.userId, userId)).orderBy(desc(labAttempts.createdAt)).limit(80),
-    db().select({ id: labAssessmentRuns.id }).from(labAssessmentRuns).where(and(eq(labAssessmentRuns.userId, userId), isNull(labAssessmentRuns.completedAt))),
-  ]);
-  const openSets = open.length
-    ? new Set((await db().select({ id: labAssessments.id }).from(labAssessments).where(inArray(labAssessments.runId, open.map((run) => run.id)))).map((row) => row.id))
-    : new Set<string>();
+  const rows = await db().select().from(labAttempts).where(eq(labAttempts.userId, userId)).orderBy(desc(labAttempts.createdAt)).limit(80);
   return rows
-    .filter((row) => !row.assessmentId || !openSets.has(row.assessmentId))
     .map((row) => ({ row, role: roleOf(toRecord(row)) }))
     .filter(({ role }) => role === "proof" || role === "placement")
     .slice(0, limit)
@@ -87,12 +76,6 @@ export async function getEvidence(userId: string, attemptId: string): Promise<Ev
     ? await db().select().from(labAssessmentRuns).where(and(eq(labAssessmentRuns.id, assessment.runId), eq(labAssessmentRuns.userId, userId))).limit(1)
     : [];
 
-  let withheld = false;
-  if (run && !run.completedAt) {
-    const chapter = run.plan.chapters.find((item) => item.kind === "topics" && item.topicIds.includes(row.topicId));
-    withheld = !chapter || !(await chapterDone(db(), run, chapter));
-  }
-
   const item = row.item;
   const lab = row.labId ? findLab(row.labId) : undefined;
   return {
@@ -103,7 +86,7 @@ export async function getEvidence(userId: string, attemptId: string): Promise<Ev
     mode: row.mode,
     role: roleOf(toRecord(row)),
     at: row.createdAt.toISOString(),
-    result: withheld ? null : {
+    result: {
       label: row.label, gradedBy: row.gradedBy, feedback: row.feedback, misconceptions: row.misconceptions,
       rubric: row.rubric ?? null, run: row.run ?? null, solutionSeen: row.solutionSeen,
     },
@@ -112,8 +95,8 @@ export async function getEvidence(userId: string, attemptId: string): Promise<Ev
       prompt: text(item.prompt),
       code: text(item.code),
       // The answer key and rubric stay hidden until the answer's result is shown.
-      expectedOutput: withheld ? null : lines(item.expectedOutput),
-      rubric: withheld ? null : lines(item.rubric),
+      expectedOutput: lines(item.expectedOutput),
+      rubric: lines(item.rubric),
       labTitle: lab?.title ?? text(item.title),
     },
     response: row.response,

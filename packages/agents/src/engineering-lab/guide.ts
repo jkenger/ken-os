@@ -2,12 +2,12 @@ import { Agent, getDefaultModel, run } from "@openai/agents";
 import { AREAS, type GuideMessage, type IntakeAnswers } from "@ken-os/domain";
 import { z } from "zod";
 
-export const GUIDE_PROMPT_VERSION = "guide-v1";
+export const GUIDE_PROMPT_VERSION = "guide-v2";
 
 const replySchema = z.object({
   reply: z.string(),
   /** Filled once the intake has enough to save. The owner confirms before anything is stored. */
-  intake: z.object({ building: z.string(), stack: z.string(), aiWork: z.string(), weeklyHours: z.number() }).nullable(),
+  intake: z.object({ building: z.string(), stack: z.string(), aiWork: z.string(), weeklyHours: z.number(), growToward: z.string() }).nullable(),
   /** A role id from the list, when the owner and Guide have landed on a direction. The owner confirms. */
   direction: z.string().nullable(),
   /** Chapters the course doesn't have that the owner's products need. Each is only a suggestion. */
@@ -21,10 +21,12 @@ There are two phases.
 
 intake (before the assessment): in a few short turns, learn what they build, what they use day to day, what AI work they
 have already started, and how many hours a week they can give the lab. Ask one or two questions at a time. When you have
-all four, fill intake. Until then intake is null. The intake only steers where questions start; say so if they ask.
+all four, fill intake. If they say which role they lean toward, put its role id in growToward, otherwise an empty string.
+Until then intake is null. The intake only steers where questions start; say so if they ask.
 
 direction (after the assessment): walk through their shape, meaning their level per area and their distance to each role,
-using only the numbers you are given. Help them pick a direction for their goals, which is building their own products.
+using only the numbers you are given. intake.growToward, if set, is the role they leaned toward before the assessment:
+start from it, but follow the evidence. Help them pick a direction for their goals, which is building their own products.
 Name tradeoffs plainly, such as which roles share chapters. When they clearly choose, set direction to that role id.
 If their products need a chapter the course does not have, suggest it in addChapters with a one-line reason. Never
 suggest model training or ML research chapters: this lab is applied AI.
@@ -63,7 +65,9 @@ export async function guideTurn(input: GuideInput): Promise<GuideReply> {
   const hours = output.intake ? Math.round(output.intake.weeklyHours) : 0;
   return {
     reply: output.reply,
-    intake: output.intake && hours >= 1 && hours <= 80 ? { ...output.intake, weeklyHours: hours } : null,
+    intake: output.intake && hours >= 1 && hours <= 80
+      ? { building: output.intake.building, stack: output.intake.stack, aiWork: output.intake.aiWork, weeklyHours: hours, ...(roleIds.has(output.intake.growToward) ? { growToward: output.intake.growToward } : {}) }
+      : null,
     direction: output.direction && roleIds.has(output.direction) ? output.direction : null,
     addChapters: input.phase === "direction" ? output.addChapters.slice(0, 3) : [],
     model: getDefaultModel(),

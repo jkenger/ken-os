@@ -2,7 +2,7 @@ import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
-import { parseBaseline, parseCareers, parseLabMeta, parseProbeQuestions, parseTopicMap, type LabDefinition } from "@ken-os/domain";
+import { attachPoints, parseBaseline, parseCareers, parseLabMeta, parseProbeQuestions, parseTopicMap, type LabDefinition } from "@ken-os/domain";
 
 // Turns content/engineering-lab and labs/ into checked TypeScript, so the hosted app never reads repo files at runtime.
 const scriptDirectory = dirname(fileURLToPath(import.meta.url));
@@ -33,7 +33,9 @@ for (const folder of readdirSync(resolve(repoRoot, "labs"), { withFileTypes: tru
   solutions[folder] = read("labs", folder, "solution", "main.js");
 }
 
-const topicMap = parseTopicMap(parse(read("content/engineering-lab/curriculum/topics.yaml")), new Map(labs.map((lab) => [lab.id, lab.modes])));
+const parsedMap = parseTopicMap(parse(read("content/engineering-lab/curriculum/topics.yaml")), new Map(labs.map((lab) => [lab.id, lab.modes])));
+// Assessment points: what a solid answer shows, per topic (engineering-assessment-v2.md, A6).
+const { map: topicMap, status: pointsStatus, reviewedOn: pointsReviewedOn } = attachPoints(parsedMap, parse(read("content/engineering-lab/curriculum/points.yaml")));
 for (const lab of labs) {
   for (const topicId of lab.topics) {
     const topic = topicMap.topics.find((item) => item.id === topicId);
@@ -52,6 +54,8 @@ export const topicMap: TopicMap = ${JSON.stringify(topicMap, null, 2)};
 export const baseline: Baseline = ${JSON.stringify(baseline, null, 2)};
 
 export const careers: Careers = ${JSON.stringify(careers, null, 2)};
+
+export const pointsReview = ${JSON.stringify({ status: pointsStatus, reviewedOn: pointsReviewedOn })} as const;
 
 export const labs: LabDefinition[] = ${JSON.stringify(labs, null, 2)};
 `],

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
-  areaLevel, chapterStates, computeProgress, isoWeek, measuredHoursPerTopic, nextScreenQuestion, nextTopicQuestion, parseCareers, planRun,
+  areaLevel, chapterStates, computeProgress, isoWeek, measuredHoursPerTopic, nextScreenQuestion, nextTopicQuestion, parseCareers, planRun, stageOne,
   roadmap, roleDistance, type AttemptRecord, type Label, type ModuleInfo, type Mode, type TopicProgress,
 } from "@ken-os/domain";
 import { careers, findTopic, runModes, topicMap } from "./curriculum";
@@ -121,7 +121,9 @@ test("chapter depth: build needs the working topics known, run needs all; screen
   const weak = chapterStates(topicMap, progressFor([]), [{ chapterId: "added-payments", labels: ["partial", "gap"] }], [payments]);
   assert.equal(weak.find((state) => state.chapterId === "added-payments")?.depth, "none");
   const screenedWritten = chapterStates(topicMap, progressFor([]), [{ chapterId: "m3-db-concurrency", labels: ["solid", "solid"] }]);
-  assert.equal(screenedWritten.find((state) => state.chapterId === "m3-db-concurrency")?.depth, "none", "a written chapter ignores placement estimates");
+  // Assessment v2 (A2): a written chapter cleared in stage 1 counts as "can build it", as an estimate, never as proven.
+  assert.equal(screenedWritten.find((state) => state.chapterId === "m3-db-concurrency")?.depth, "build");
+  assert.equal(screenedWritten.find((state) => state.chapterId === "m3-db-concurrency")?.estimate, true);
   const all = chapterStates(topicMap, progressFor(placed(db.map((topic) => topic.id))), []);
   assert.equal(all.find((state) => state.chapterId === "m3-db-concurrency")?.depth, "run");
 });
@@ -199,4 +201,35 @@ test("daily practice draws on due and proven topics, or warms up before anything
 test("radar weeks follow ISO weeks", () => {
   assert.equal(isoWeek(new Date("2026-10-03T12:00:00Z")), "2026-W40");
   assert.equal(isoWeek(new Date("2027-01-01T12:00:00Z")), "2026-W53");
+});
+
+test("two-stage runs: written chapters ask two chapter questions first", () => {
+  const plan = planRun(topicMap, progressFor([]));
+  const written = plan.chapters.filter((chapter) => chapter.kind === "topics");
+  assert.ok(written.length > 0);
+  assert.ok(written.every((chapter) => chapter.kind === "topics" && chapter.screenFirst === (chapter.topicIds.length > 0)));
+});
+
+test("stage 1: both solid clears the chapter, anything else digs into topics", () => {
+  assert.equal(stageOne([]), "pending");
+  assert.equal(stageOne(["solid"]), "pending");
+  assert.equal(stageOne(["solid", "solid"]), "cleared");
+  assert.equal(stageOne(["solid", "partial"]), "drill");
+  assert.equal(stageOne(["gap", "solid"]), "drill");
+});
+
+test("a cleared chapter counts as can-build-it, as an estimate, and proves no topic", () => {
+  const progress = progressFor([]);
+  const states = chapterStates(topicMap, progress, [{ chapterId: "m1-js-runtime", labels: ["solid", "solid"] }]);
+  const runtime = states.find((state) => state.chapterId === "m1-js-runtime")!;
+  assert.equal(runtime.depth, "build");
+  assert.equal(runtime.estimate, true);
+  assert.equal(runtime.known, 0, "chapter questions never make a topic known");
+  const notCleared = chapterStates(topicMap, progress, [{ chapterId: "m1-js-runtime", labels: ["solid", "partial"] }]).find((state) => state.chapterId === "m1-js-runtime")!;
+  assert.equal(notCleared.depth, "none");
+  // Placed topics already at "can run it" are never lowered by stage-1 answers.
+  const placedAll = progressFor(placed(topicMap.topics.filter((topic) => topic.module === "m1-js-runtime").map((topic) => topic.id)));
+  const run = chapterStates(topicMap, placedAll, [{ chapterId: "m1-js-runtime", labels: ["solid", "solid"] }]).find((state) => state.chapterId === "m1-js-runtime")!;
+  assert.equal(run.depth, "run");
+  assert.equal(run.estimate, false);
 });

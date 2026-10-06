@@ -33,7 +33,9 @@ export function validIntake(value: unknown): IntakeAnswers {
   };
   const hours = Number(input.weeklyHours);
   if (!Number.isInteger(hours) || hours < 1 || hours > 80) throw new LabInputError("weeklyHours must be a whole number from 1 to 80.");
-  return { building: text("building"), stack: text("stack"), aiWork: text("aiWork"), weeklyHours: hours };
+  const lean = input.growToward;
+  if (lean !== undefined && lean !== null && lean !== "" && !careers.roles.some((role) => role.id === lean)) throw new LabInputError("growToward must be one of the roles.");
+  return { building: text("building"), stack: text("stack"), aiWork: text("aiWork"), weeklyHours: hours, ...(typeof lean === "string" && lean ? { growToward: lean } : {}) };
 }
 
 export async function saveIntake(userId: string, intake: IntakeAnswers) {

@@ -3,6 +3,7 @@ import { EngineeringAssessment } from "@/components/engineering/assessment";
 import { getRunView, latestRun } from "@/features/engineering-lab/assessment-run";
 import { getProfileRow } from "@/features/engineering-lab/profile-store";
 import { activeRun, completedBaseline } from "@/features/engineering-lab/run-state";
+import { careers } from "@/features/engineering-lab/curriculum";
 import { getSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -16,6 +17,6 @@ export default async function AssessmentPage({ searchParams }: { searchParams: P
   const runId = runParam ?? open?.id ?? (fresh ? null : (await latestRun(session.userId))?.id ?? null);
   const run = runId ? await getRunView(session.userId, runId, chapter).catch(() => null) : null;
   return (
-    <EngineeringAssessment email={session.email} intake={profile?.intake ?? null} run={run} baselineDone={Boolean(baselineRun)} />
+    <EngineeringAssessment email={session.email} intake={profile?.intake ?? null} run={run} baselineDone={Boolean(baselineRun)} roles={careers.roles.map((role) => ({ id: role.id, title: role.title }))} />
   );
 }

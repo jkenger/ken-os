@@ -4,6 +4,7 @@ import { config } from "dotenv";
 import { and, eq } from "drizzle-orm";
 import type { AssessmentItem } from "@ken-os/domain";
 import { closeDb, db } from "../src/lib/db";
+import { answerStageOne } from "./stage-one";
 import { labAssessments, labChapterScreens, labRadarItems, users } from "../src/lib/schema";
 
 config({ path: ".env.local" });
@@ -39,6 +40,8 @@ async function main() {
     // Stand-in for the Assessor: every topic gets two code-checked predictions.
     const predict = (n: number): AssessmentItem => ({ mode: "predict", prompt: `What prints? (${n})`, code: `console.log(${n})`, expectedOutput: [String(n)] });
     const sets = new Map<string, string>();
+    // Two-stage runs: answer each chapter's two chapter questions so it digs into topics, as before.
+    for (const chapter of run.plan.chapters) await answerStageOne(userId, run.id, chapter, "drill");
     for (const chapter of run.plan.chapters) {
       if (chapter.kind === "topics") {
         for (const topicId of chapter.topicIds) {
@@ -69,7 +72,7 @@ async function main() {
     for (const [topicId, assessmentId] of sets) {
       const first = await store.submitAnswer(userId, { assessmentId, itemIndex: 0, selfRating: 4, response: { lines: topicId === "js.event_loop" ? ["9"] : ["1"] }, actualOutput: ["1"] });
       if (topicId === "js.event_loop") {
-        assert.notEqual(first.grade.label, "solid");
+        assert.notEqual(first.grade!.label, "solid");
         assert.equal(await state.nextRunItem(db(), { id: assessmentId, items: [predict(1), predict(2)] }), 1, "a partly right answer gets a probing follow-up");
         finished = (await store.submitAnswer(userId, { assessmentId, itemIndex: 1, selfRating: 2, response: { lines: ["9"] }, actualOutput: ["2"] })).runFinished;
         continue;

@@ -294,6 +294,8 @@ export interface AnswerInput {
   selfRating: number;
   /** What the snippet printed when the learner's browser ran it. Only for predict questions. */
   actualOutput?: string[];
+  /** Let the grader ask one clarifying question instead of grading an ambiguous written answer (assessment v2). */
+  allowClarify?: boolean;
 }
 
 export async function submitAnswer(userId: string, input: AnswerInput) {
@@ -315,7 +317,9 @@ export async function submitAnswer(userId: string, input: AnswerInput) {
     const answer = input.response.text?.trim() ?? "";
     if (answer.length < 10) throw new LabInputError("Write at least a sentence.");
     if (!process.env.OPENAI_API_KEY) throw new LabInputError("Grader isn't set up", 503);
-    grade = await gradeAnswer(requireTopic(assessment.topicId), item, answer);
+    grade = await gradeAnswer(requireTopic(assessment.topicId), item, answer, { allowClarify: input.allowClarify });
+    // A follow-up is asked before anything is stored; the reply joins the answer and it's graded once, for good.
+    if (grade.clarify) return { clarify: grade.clarify, attemptId: null, grade: null, status: null, runFinished: false };
   }
 
   return db().transaction(async (tx) => {

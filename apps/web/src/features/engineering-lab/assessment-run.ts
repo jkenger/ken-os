@@ -3,20 +3,22 @@ import { and, asc, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
 import { ASSESSOR_PROMPT_VERSION, gradeAnswer, SCREENER_PROMPT_VERSION, writeChapterAssessment, writeChapterScreen } from "@ken-os/agents";
 import {
   nextScreenQuestion, planRun, SCREEN_QUESTIONS, toPublicItem,
-  type AddedChapter, type IntakeAnswers, type Label, type PublicItem, type RubricResult, type RunChapter, type RunKind,
-} from "@ken-os/domain";
+  type AddedChapter, type IntakeAnswers, type Label, type PublicItem, type RubricResult, type RunChapter, type RunKind, stageOne } from "@ken-os/domain";
 import { db } from "@/lib/db";
-import { labAssessmentRuns, labAssessments, labAttempts, labChapterScreens, labLessons, labProfile } from "@/lib/schema";
+import { labAssessmentRuns, labAssessments, labAttempts, labChapterScreens, labLessons, labProfile, labSourcePackets } from "@/lib/schema";
 import { findChapter, findTopic, runModes, topicMap } from "./curriculum";
 import { LabInputError } from "./errors";
-import { activeRun, chapterDone, completedBaseline, completeRunIfDone, nextRunItem, type RunRow } from "./run-state";
+import { activeRun, chapterDone, chapterStage, completedBaseline, completeRunIfDone, nextRunItem, type RunRow } from "./run-state";
 import { assertBudget, getAllProgress } from "./store";
 
 // The baseline assessment and its retakes. Design: docs/architecture/engineering-lab-profile.md, section 4.
 
-/** AI calls a run may make: one per chapter, plus room for retries. Separate from the daily limit. */
+/**
+ * AI calls a run may make: one per chapter, plus six for retries. A two-stage chapter can need two (its stage-1
+ * questions, then its topics), so those count twice. Separate from the daily limit.
+ */
 export function runAllowance(run: Pick<RunRow, "plan">) {
-  return run.plan.chapters.length + 6;
+  return run.plan.chapters.reduce((sum, chapter) => sum + (chapter.kind === "topics" && chapter.screenFirst ? 2 : 1), 0) + 6;
 }
 
 function fingerprint(prompt: string) {
@@ -88,25 +90,41 @@ export async function prepareChapter(userId: string, runId: string, chapterId: s
   const profile = await profileOf(userId);
   const hint = intakeHint(profile?.intake);
 
-  if (chapter.kind === "screen") {
+  // Two chapter questions: the whole of an unwritten chapter, or stage 1 of a two-stage written one.
+  const writeScreens = async (planned: string[], topics?: { title: string; points: string[] }[]) => {
     const existing = await db().select({ id: labChapterScreens.id }).from(labChapterScreens)
       .where(and(eq(labChapterScreens.setId, run.id), eq(labChapterScreens.chapterId, chapterId)));
-    if (existing.length >= SCREEN_QUESTIONS) return { written: 0 };
+    if (existing.length >= SCREEN_QUESTIONS) return null;
     const info = chapterInfo(chapterId, profile?.addedChapters)!;
     await bumpGenerations(run.id);
-    const { items, model } = await writeChapterScreen({ ...info, hint });
+    const { items, model } = await writeChapterScreen({ ...info, planned, ...(topics ? { topics } : {}), hint });
     await db().insert(labChapterScreens).values(items.map((item, itemIndex) => ({
       id: randomUUID(), userId, setId: run.id, runId: run.id, chapterId, itemIndex, item, promptVersion: SCREENER_PROMPT_VERSION, model,
     }))).onConflictDoNothing();
     return { written: items.length };
+  };
+
+  if (chapter.kind === "screen") return (await writeScreens(chapterInfo(chapterId, profile?.addedChapters)!.planned)) ?? { written: 0 };
+
+  if (chapter.screenFirst) {
+    // Stage 1 covers the chapter's written topics; topic questions are written only if it doesn't clear the chapter.
+    const stage1 = await writeScreens([], chapter.topicIds.map((topicId) => {
+      const topic = findTopic(topicId)!;
+      return { title: topic.title, points: topic.points };
+    }));
+    if (stage1) return stage1;
+    if ((await chapterStage(db(), run.id, chapterId)) !== "drill") return { written: 0 };
   }
 
   const sets = await db().select({ topicId: labAssessments.topicId }).from(labAssessments).where(eq(labAssessments.runId, run.id));
   const missing = chapter.topicIds.filter((topicId) => !sets.some((set) => set.topicId === topicId));
   if (!missing.length) return { written: 0 };
-  const [lessons, previous] = await Promise.all([
+  const [lessons, previous, packets] = await Promise.all([
     db().select({ snapshot: labLessons.snapshot }).from(labLessons).where(and(eq(labLessons.userId, userId), inArray(labLessons.topicId, missing))),
     db().select({ items: labAssessments.items }).from(labAssessments).where(and(eq(labAssessments.userId, userId), inArray(labAssessments.topicId, missing))).orderBy(desc(labAssessments.createdAt)).limit(30),
+    // The newest saved source packet per topic grounds its questions and rubrics in the trusted sites. Older topics may have none.
+    db().select({ topicId: labSourcePackets.topicId, packet: labSourcePackets.packet }).from(labSourcePackets)
+      .where(and(eq(labSourcePackets.userId, userId), inArray(labSourcePackets.topicId, missing))).orderBy(desc(labSourcePackets.generatedAt)),
   ]);
   const avoid = [
     ...lessons.flatMap((lesson) => [lesson.snapshot.sections.workedExample.code, ...lesson.snapshot.practice.map((item) => item.prompt)]),
@@ -115,7 +133,7 @@ export async function prepareChapter(userId: string, runId: string, chapterId: s
   await bumpGenerations(run.id);
   const { byTopic, model } = await writeChapterAssessment(missing.map((topicId) => {
     const topic = findTopic(topicId)!;
-    return { topic, packet: null, modes: runModes(topic), hint };
+    return { topic, packet: packets.find((row) => row.topicId === topicId)?.packet ?? null, modes: runModes(topic), hint };
   }), avoid);
   const rows = Object.entries(byTopic).map(([topicId, items]) => ({
     id: randomUUID(), userId, topicId, kind: run.kind, items, promptVersion: ASSESSOR_PROMPT_VERSION, model, origin: "run" as const, runId: run.id,
@@ -133,6 +151,8 @@ export interface ScreenAnswerInput {
   screenId: string;
   text: string;
   selfRating: number;
+  /** Let the grader ask one clarifying question instead of grading an ambiguous answer (assessment v2). */
+  allowClarify?: boolean;
 }
 
 /** Grades a screening answer. Screening never proves a topic; it only estimates the chapter's depth. */
@@ -152,7 +172,8 @@ export async function submitScreenAnswer(userId: string, input: ScreenAnswerInpu
   if (nextScreenQuestion(answered.map((row) => row.itemIndex)) !== screen.itemIndex) throw new LabInputError("Answer the questions in the order they're asked.", 409);
   const profile = await profileOf(userId);
   const info = chapterInfo(screen.chapterId, profile?.addedChapters);
-  const grade = await gradeAnswer({ id: screen.chapterId, title: info?.title ?? screen.chapterId }, screen.item, answer);
+  const grade = await gradeAnswer({ id: screen.chapterId, title: info?.title ?? screen.chapterId }, screen.item, answer, { allowClarify: input.allowClarify });
+  if (grade.clarify) return { clarify: grade.clarify, label: null, feedback: null, rubric: null, runFinished: false };
   return db().transaction(async (tx) => {
     const updated = await tx.update(labChapterScreens).set({
       response: { text: answer.slice(0, 6000) }, selfRating: input.selfRating, label: grade.label, misconceptions: grade.misconceptions,
@@ -160,7 +181,7 @@ export async function submitScreenAnswer(userId: string, input: ScreenAnswerInpu
     }).where(and(eq(labChapterScreens.id, screen.id), sql`${labChapterScreens.answeredAt} is null`)).returning({ id: labChapterScreens.id });
     if (!updated.length) throw new LabInputError("This question already has an answer.", 409);
     const runFinished = screen.runId ? await completeRunIfDone(tx, screen.runId) : false;
-    return { label: grade.label, runFinished };
+    return { label: grade.label, feedback: grade.feedback, rubric: grade.rubric ?? null, runFinished };
   });
 }
 
@@ -218,7 +239,11 @@ export interface RunChapterView {
   answered: number;
   /** Topics whose questions came back incomplete and still need writing. */
   unwritten: number;
-  /** Shown only once the chapter is done, so grades can't steer the rest of a closed-book chapter. */
+  /** Two-stage chapters: "chapter" while its two chapter questions are open, "topics" once it digs into topics. */
+  stage: "chapter" | "topics" | null;
+  /** Both chapter questions solid: done without topic questions, counted as "can build it", an estimate. */
+  cleared: boolean;
+  /** Every graded answer so far. Grades show after each answer (engineering-assessment-v2.md A3). */
   answers: RunAnswerView[];
 }
 
@@ -260,6 +285,7 @@ export async function getRunView(userId: string, runId: string, focusChapter?: s
     const view: RunChapterView = {
       chapterId: chapter.chapterId, title: info?.title ?? chapter.chapterId, area: info?.area ?? "", kind: chapter.kind,
       status: done ? "done" : "not_started", skipped: chapter.kind === "topics" ? chapter.skipped : [], topics: [], answered: 0, unwritten: 0, answers: [],
+      stage: null, cleared: false,
     };
     let next: RunQuestion | null = null;
     if (chapter.kind === "screen") {
@@ -271,7 +297,8 @@ export async function getRunView(userId: string, runId: string, focusChapter?: s
         const row = rows.find((item) => item.itemIndex === index);
         if (row) next = { chapterId: chapter.chapterId, type: "screen", id: row.id, topicId: null, itemIndex: row.itemIndex, item: toPublicItem(row.item), position: answeredRows.length + 1, outOf: SCREEN_QUESTIONS };
       }
-      if (done) {
+      // Grades show after every answer (owner, 2026-10-06; engineering-assessment-v2.md A3).
+      {
         view.answers = answeredRows.map((row) => ({
           label: row.label!, voided: false, feedback: row.feedback ?? "", prompt: row.item.prompt, mode: row.item.mode,
           answer: row.response?.text ?? "", rubric: row.rubric ?? null, selfRating: row.selfRating,
@@ -279,7 +306,32 @@ export async function getRunView(userId: string, runId: string, focusChapter?: s
       }
     } else {
       let position = 1;
+      // Stage 1 of a two-stage chapter: its two chapter questions come before any topic question.
+      const stage = chapter.screenFirst
+        ? stageOne(screens.filter((row) => row.chapterId === chapter.chapterId && row.answeredAt).sort((a, b) => a.itemIndex - b.itemIndex).map((row) => row.label as Label))
+        : "drill";
+      if (chapter.screenFirst) {
+        const rows = screens.filter((row) => row.chapterId === chapter.chapterId);
+        const answeredRows = rows.filter((row) => row.answeredAt);
+        view.stage = stage === "pending" ? "chapter" : stage === "drill" ? "topics" : null;
+        view.cleared = stage === "cleared";
+        view.answered += answeredRows.length;
+        position += answeredRows.length;
+        view.answers.push(...answeredRows.map((row) => ({
+          label: row.label!, voided: false, feedback: row.feedback ?? "", prompt: row.item.prompt, mode: row.item.mode,
+          answer: row.response?.text ?? "", rubric: row.rubric ?? null, selfRating: row.selfRating,
+        })));
+        if (stage === "pending" && !done) {
+          const index = nextScreenQuestion(answeredRows.map((row) => row.itemIndex));
+          const row = rows.find((item) => item.itemIndex === index);
+          if (row) next = { chapterId: chapter.chapterId, type: "screen", id: row.id, topicId: null, itemIndex: row.itemIndex, item: toPublicItem(row.item), position: answeredRows.length + 1, outOf: SCREEN_QUESTIONS };
+        }
+      }
       for (const topicId of chapter.topicIds) {
+        if (stage !== "drill") {
+          view.topics.push({ topicId, title: findTopic(topicId)?.title ?? topicId, done: false, label: null });
+          continue;
+        }
         const set = sets.find((item) => item.topicId === topicId);
         const topicAttempts = set ? attempts.filter((attempt) => attempt.assessmentId === set.id).sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime()) : [];
         if (!set) view.unwritten += 1;
@@ -287,13 +339,13 @@ export async function getRunView(userId: string, runId: string, focusChapter?: s
         const topicDone = Boolean(set) && nextIndex === null;
         const counted = topicAttempts.filter((attempt) => !attempt.voided);
         const label = counted.length ? (counted.find((attempt) => attempt.label !== "solid")?.label ?? "solid") : null;
-        view.topics.push({ topicId, title: findTopic(topicId)?.title ?? topicId, done: topicDone, label: done ? label : null });
+        view.topics.push({ topicId, title: findTopic(topicId)?.title ?? topicId, done: topicDone, label });
         view.answered += topicAttempts.length;
         position += topicAttempts.length;
         if (!next && set && nextIndex !== null) {
-          next = { chapterId: chapter.chapterId, type: "topic", id: set.id, topicId, itemIndex: nextIndex, item: toPublicItem(set.items[nextIndex]), position, outOf: chapter.topicIds.length * 2 };
+          next = { chapterId: chapter.chapterId, type: "topic", id: set.id, topicId, itemIndex: nextIndex, item: toPublicItem(set.items[nextIndex]), position, outOf: (chapter.screenFirst ? SCREEN_QUESTIONS : 0) + chapter.topicIds.length * 2 };
         }
-        if (done) {
+        {
           for (const attempt of topicAttempts) {
             view.answers.push({
               label: attempt.label, voided: attempt.voided, feedback: attempt.feedback, prompt: (attempt.item as { prompt?: string }).prompt ?? "",
@@ -303,7 +355,9 @@ export async function getRunView(userId: string, runId: string, focusChapter?: s
         }
       }
     }
-    const prepared = chapter.kind === "screen" ? screens.some((row) => row.chapterId === chapter.chapterId) : sets.some((set) => chapter.topicIds.includes(set.topicId));
+    const prepared = chapter.kind === "screen" || (chapter.kind === "topics" && chapter.screenFirst)
+      ? screens.some((row) => row.chapterId === chapter.chapterId)
+      : sets.some((set) => chapter.topicIds.includes(set.topicId));
     if (!done && prepared) view.status = "in_progress";
     chapters.push(view);
     if (!current && next && (!focusChapter || focusChapter === chapter.chapterId)) current = next;

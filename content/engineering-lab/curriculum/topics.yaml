@@ -17,6 +17,30 @@ tracks:
     title: AI Engineering
     summary: Retrieval, structured outputs, agents and evals, built and measured.
 
+# Books group chapters in reading order (docs/architecture/engineering-assessment-v2.md, A6). Every chapter is in exactly
+# one book. Areas stay on chapters, so levels and roles don't change. Next.js foundations joins after the baseline (A7).
+books:
+  - id: web-foundations
+    title: Web foundations
+    summary: How JavaScript runs and how the browser talks to servers.
+    chapters: [m1-js-runtime, m2-http-browser]
+  - id: react-foundations
+    title: React foundations
+    summary: How React renders, and keeping effects in sync.
+    chapters: [m4-react]
+  - id: backend-data
+    title: Backend and data
+    summary: API boundaries, transactions, concurrency and indexes.
+    chapters: [m4-api-boundaries, m3-db-concurrency]
+  - id: production-engineering
+    title: Production engineering
+    summary: Testing, security, reliability, observability and scale.
+    chapters: [m5-testing-security, m6-production-reliability, m7-observability, m8-architecture-scale]
+  - id: ai-engineering
+    title: AI engineering
+    summary: Retrieval, model interfaces, agents, and running AI in production.
+    chapters: [a1-retrieval, a2-model-interfaces, a3-agents, a4-ai-production]
+
 modules:
   - id: m1-js-runtime
     title: JavaScript runtime and async

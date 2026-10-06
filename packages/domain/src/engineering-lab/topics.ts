@@ -23,6 +23,14 @@ export interface ModuleInfo {
   planned: string[];
 }
 
+/** A book groups chapters in reading order (assessment v2, A6). Areas stay on chapters, so levels don't change. */
+export interface BookInfo {
+  id: string;
+  title: string;
+  summary: string;
+  chapters: string[];
+}
+
 export interface Topic {
   id: string;
   title: string;
@@ -36,10 +44,13 @@ export interface Topic {
   /** Proof modes that must all be solid before the topic counts as validated. */
   prove: Mode[];
   labs: string[];
+  /** What a solid answer must show, 4 to 6 short statements. The Assessor writes questions and rubrics from them. */
+  points: string[];
 }
 
 export interface TopicMap {
   tracks: TrackInfo[];
+  books: BookInfo[];
   modules: ModuleInfo[];
   topics: Topic[];
 }
@@ -82,7 +93,7 @@ function oneOf<T extends string>(value: unknown, options: readonly T[], where: s
 /** Validates the topic map: shapes, known ids, known labs, and no prerequisite loops. */
 export function parseTopicMap(raw: unknown, knownLabs: ReadonlyMap<string, readonly Mode[]>): TopicMap {
   if (!raw || typeof raw !== "object") fail("topics.yaml", "expected tracks, modules and topics");
-  const input = raw as { tracks?: unknown; modules?: unknown; topics?: unknown };
+  const input = raw as { tracks?: unknown; books?: unknown; modules?: unknown; topics?: unknown };
   const tracks = list(input.tracks, "tracks").map((value, index): TrackInfo => {
     const item = value as Record<string, unknown>;
     const where = `tracks[${index}]`;
@@ -131,6 +142,7 @@ export function parseTopicMap(raw: unknown, knownLabs: ReadonlyMap<string, reado
       depth: oneOf(item.depth ?? "working", ["working", "deep"] as const, `${where}.depth`),
       prove,
       labs,
+      points: [],
     };
   });
 
@@ -155,7 +167,42 @@ export function parseTopicMap(raw: unknown, knownLabs: ReadonlyMap<string, reado
   for (const module of modules) {
     if (!module.planned.length && !topics.some((topic) => topic.module === module.id)) fail(module.id, "a chapter needs topics or planned topic names");
   }
-  return { tracks, modules, topics };
+  const books = list(input.books, "books").map((value, index): BookInfo => {
+    const item = value as Record<string, unknown>;
+    const where = `books[${index}]`;
+    const chapters = list(item.chapters, `${where}.chapters`).map((chapter) => text(chapter, `${where}.chapters`));
+    for (const chapter of chapters) if (!moduleIds.has(chapter)) fail(where, `unknown chapter ${chapter}`);
+    if (!chapters.length) fail(where, "a book needs at least one chapter");
+    return { id: text(item.id, `${where}.id`), title: text(item.title, `${where}.title`), summary: text(item.summary, `${where}.summary`), chapters };
+  });
+  if (books.length) {
+    if (new Set(books.map((book) => book.id)).size !== books.length) fail("books", "duplicate book id");
+    const placed = books.flatMap((book) => book.chapters);
+    for (const module of modules) if (placed.filter((id) => id === module.id).length !== 1) fail("books", `chapter ${module.id} must be in exactly one book`);
+  }
+  return { tracks, books, modules, topics };
+}
+
+export const POINTS_PER_TOPIC = { min: 4, max: 6 } as const;
+
+/**
+ * Attaches assessment points (content/engineering-lab/curriculum/points.yaml) to the topic map. Every written topic needs
+ * 4 to 6; unknown topic ids fail. Returns the review status so the app can say whether the owner has approved them.
+ */
+export function attachPoints(map: TopicMap, raw: unknown): { map: TopicMap; status: "draft" | "approved"; reviewedOn: string | null } {
+  const input = (raw ?? {}) as { status?: unknown; reviewedOn?: unknown; topics?: unknown };
+  const status = oneOf(input.status ?? "draft", ["draft", "approved"] as const, "points.status");
+  const reviewedOn = input.reviewedOn === null || input.reviewedOn === undefined ? null : text(input.reviewedOn, "points.reviewedOn");
+  if (status === "approved" && !reviewedOn) fail("points", "approved points need reviewedOn");
+  const byTopic = (input.topics ?? {}) as Record<string, unknown>;
+  const ids = new Set(map.topics.map((topic) => topic.id));
+  for (const id of Object.keys(byTopic)) if (!ids.has(id)) fail("points", `unknown topic ${id}`);
+  const topics = map.topics.map((topic) => {
+    const points = list(byTopic[topic.id], `points.${topic.id}`).map((point) => text(point, `points.${topic.id}`, 10));
+    if (points.length < POINTS_PER_TOPIC.min || points.length > POINTS_PER_TOPIC.max) fail(`points.${topic.id}`, `expected ${POINTS_PER_TOPIC.min} to ${POINTS_PER_TOPIC.max} points, found ${points.length}`);
+    return { ...topic, points };
+  });
+  return { map: { ...map, topics }, status, reviewedOn };
 }
 
 export function parseBaseline(raw: unknown, map: TopicMap): Baseline {

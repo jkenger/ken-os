@@ -33,6 +33,8 @@ export interface PredictItem {
   expectedOutput: string[];
   /** Why it prints that, in a few sentences. Shown only after answering. Items written before tutor-v2 / assessor-v2 have none. */
   explanation?: string;
+  /** What the Assessor says before asking, in a line or two (assessment v2). Never a hint. Older items have none. */
+  lead?: string;
 }
 
 export interface WrittenItem {
@@ -43,6 +45,8 @@ export interface WrittenItem {
   /** Points a solid answer must cover. Shown to the grader, never to the learner before answering. */
   rubric: string[];
   misconceptionsToWatch: string[];
+  /** What the Assessor says before asking, in a line or two (assessment v2). Never a hint. Older items have none. */
+  lead?: string;
 }
 
 export type AssessmentItem = PredictItem | WrittenItem;
@@ -53,8 +57,9 @@ export type PublicItem =
   | Omit<WrittenItem, "rubric" | "misconceptionsToWatch">;
 
 export function toPublicItem(item: AssessmentItem): PublicItem {
-  if (item.mode === "predict") return { mode: item.mode, prompt: item.prompt, code: item.code };
-  return { mode: item.mode, prompt: item.prompt, code: item.code };
+  const lead = item.lead ? { lead: item.lead } : {};
+  if (item.mode === "predict") return { mode: item.mode, prompt: item.prompt, code: item.code, ...lead };
+  return { mode: item.mode, prompt: item.prompt, code: item.code, ...lead };
 }
 
 export interface AttemptResponse {
@@ -84,6 +89,11 @@ export interface Grade {
   voided?: boolean;
   /** For written answers: how the answer did on each rubric point, in rubric order. */
   rubric?: RubricResult[];
+  /**
+   * A clarifying question the grader asks when an answer is ambiguous (assessment v2). Asked at most once per question;
+   * the reply joins the answer and it is graded again. Never stored on its own.
+   */
+  clarify?: string;
 }
 
 export const RUBRIC_RESULTS = ["covered", "partly", "missed"] as const;

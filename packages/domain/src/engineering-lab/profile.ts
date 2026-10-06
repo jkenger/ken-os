@@ -10,6 +10,8 @@ export interface IntakeAnswers {
   stack: string;
   aiWork: string;
   weeklyHours: number;
+  /** A role id the owner leans toward before the baseline. Only a starting preference for the Guide: never a direction, never evidence. */
+  growToward?: string;
 }
 
 export interface GuideMessage {

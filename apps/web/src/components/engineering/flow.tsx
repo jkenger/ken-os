@@ -142,8 +142,10 @@ export const questionPanel = cn(panel, "p-[23px] md:p-[30px]");
  * A prediction gets the printed lines (checked by running the code after you submit) and an optional, ungraded why.
  * After submitting, `after` replaces the button; the answer stays visible and locked.
  */
-export function QuestionPanel({ kicker, title, item, submitLabel = "Submit answer", onSubmit, after, locked = false }: {
+export function QuestionPanel({ kicker, title, item, submitLabel = "Submit answer", onSubmit, after, locked = false, draftKey }: {
   kicker: string; title: string; item: PublicItem; submitLabel?: string;
+  /** Keeps an unsent answer in this browser across a refresh, until it's submitted. A convenience, never evidence. */
+  draftKey?: string;
   onSubmit: (payload: QuestionPayload) => Promise<void>;
   /** Shown once the answer is in: feedback, the next action. */
   after?: ReactNode;
@@ -157,6 +159,24 @@ export function QuestionPanel({ kicker, title, item, submitLabel = "Submit answe
   const [sent, setSent] = useState(false);
   const done = locked || sent;
   const predict = item.mode === "predict";
+  const storageKey = draftKey ? `ken-draft:${draftKey}` : null;
+
+  useEffect(() => {
+    if (!storageKey || locked) return;
+    try {
+      const saved = JSON.parse(window.localStorage.getItem(storageKey) ?? "null") as { answer?: string; why?: string } | null;
+      if (saved?.answer) setAnswer(saved.answer);
+      if (saved?.why) setWhy(saved.why);
+    } catch { /* storage unavailable: start empty */ }
+  }, [storageKey, locked]);
+
+  useEffect(() => {
+    if (!storageKey || done) return;
+    try {
+      if (answer || why) window.localStorage.setItem(storageKey, JSON.stringify({ answer, why }));
+      else window.localStorage.removeItem(storageKey);
+    } catch { /* storage unavailable: nothing to keep */ }
+  }, [storageKey, done, answer, why]);
 
   async function submit() {
     if (!rating) return;
@@ -166,6 +186,7 @@ export function QuestionPanel({ kicker, title, item, submitLabel = "Submit answe
         ? { selfRating: rating, lines: parsePredictedLines(answer), ...(why.trim() ? { why: why.trim() } : {}), actualOutput: await realOutput(item.code ?? "") }
         : { selfRating: rating, text: answer });
       setSent(true);
+      if (storageKey) { try { window.localStorage.removeItem(storageKey); } catch { /* nothing to clear */ } }
     } catch (error) {
       setProblem(error instanceof Error ? error.message : "Couldn't save. Try again");
     } finally {
