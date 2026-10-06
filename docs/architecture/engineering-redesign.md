@@ -86,7 +86,7 @@ The redirects stay temporary until the owner has used the new pages for a while 
 | Pages | `app/engineering/**` |
 | New screens | `components/engineering/overview.tsx`, `profile.tsx`, `evidence.tsx`, `level-rail.tsx` |
 | Reused screens | Course outline (now titled Learn, with My path), topic page, assessment, practice, profile Workbench (now titled Direction) |
-| Shell | Module renamed Engineering; sections are the four tabs; a sticky tab bar on phones |
+| Shell | Module renamed Engineering; the four sections are in the sidebar and the header keeps the "Ken OS / Engineering" breadcrumb (owner, 2026-10-06, replacing the prototype's header tabs) |
 | Closed book | `app/api/terms/lookup/route.ts` refuses while a run is open; Engineering pages hide Explain during a run |
 | Profile view | `getProfileView` also returns `progress` and `baselineChapterStates`, so the table uses the same replay as the levels |
 
@@ -94,7 +94,7 @@ Notes:
 
 - **Level words.** The table says "Known" for a placement-style pass and "Proven" for `VALIDATED`. In-app baseline answers can prove a topic when they cover every required mode with a code check (as `computeProgress` already did); lab-only topics can only become Known from a baseline. The evidence page names the attempt kind, so provenance stays visible.
 - **The evidence page's "Record" section** shows the question version and model behind a collapsed toggle. The app-language rule keeps model and prompt details off screens; this is the one place they appear, because the handoff asks for traceable grades and the record is content, not frame.
-- **The look** follows the prototype one to one: 232px sidebar (205px under 1280px), tabs in a 59px header, eyebrow and 36px titles, the capability table, rails (12px segments, lit for the level, soft for an estimate), the tint requirement panel, the milestone column, list rows, the segmented Learn filter, chapter cards, numbered step tabs and square confidence buttons. Building blocks are in `components/engineering/kit.tsx`; icons are Tabler, as in the prototype.
+- **The look** follows the prototype one to one: 232px sidebar (205px under 1280px) holding the four sections, a 59px header with the breadcrumb, eyebrow and 36px titles, the capability table, rails (12px segments, lit for the level, soft for an estimate), the tint requirement panel, the milestone column, list rows, the segmented Learn filter, chapter cards, numbered step tabs and square confidence buttons. Building blocks are in `components/engineering/kit.tsx`; icons are Tabler, as in the prototype.
 - **Where it differs from the prototype on purpose:** no tagline paragraphs under titles (app-language rule); "Proof coverage" is a count of requirements met, never a percentage; the prototype's illustrative levels, demo grading, Blob worker, localStorage and "From your projects" are not copied; the prototype's rail labels (#748096, 3.9:1) use the muted colour (4.9:1); search and Sign out stay in the header.
 - **The Skyline home (`lab-today.tsx`) is no longer routed.** It stays for the `design-preview?view=lab` mockup and is deleted with other redundant UI once the redirects are permanent (proposal §13, phase F).
 

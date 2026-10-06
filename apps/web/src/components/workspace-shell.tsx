@@ -7,7 +7,7 @@ import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent, 
 import { TermLookup } from "@/components/terms/term-lookup";
 import { Toaster } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
-import { engineering, engineeringTabs, tabForPath, type EngineeringTab } from "@/features/engineering-lab/routes";
+import { engineering, tabForPath, type EngineeringTab } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
 
 type Module = "resume" | "skills" | "memory" | "design" | "lab" | "writing" | "terms";
@@ -106,7 +106,7 @@ function ownerDate() {
   return new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Manila", weekday: "short", month: "short", day: "numeric", year: "numeric" }).format(new Date());
 }
 
-function ModuleSearch({ preview, compact = false }: { preview: boolean; compact?: boolean }) {
+function ModuleSearch({ preview }: { preview: boolean }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -150,10 +150,10 @@ function ModuleSearch({ preview, compact = false }: { preview: boolean; compact?
 
   return (
     <div>
-      <button ref={triggerRef} className={cn("flex h-9 w-9 items-center justify-center gap-2 rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:bg-muted", compact ? "xl:w-60 xl:justify-start xl:px-3" : "sm:w-60 sm:justify-start sm:px-3 lg:w-72")} type="button" onClick={() => setOpen(true)} aria-label="Jump to a module">
+      <button ref={triggerRef} className="flex h-9 w-9 items-center justify-center gap-2 rounded-lg border border-border bg-background text-muted-foreground transition-colors hover:bg-muted sm:w-60 sm:justify-start sm:px-3 lg:w-72" type="button" onClick={() => setOpen(true)} aria-label="Jump to a module">
         <Search size={16} strokeWidth={1.8} aria-hidden="true" />
-        <span className={cn("hidden flex-1 text-left text-xs", compact ? "xl:block" : "sm:block")}>Jump to a module…</span>
-        <kbd className={cn("hidden rounded border border-border px-1.5 py-0.5 text-[10px]", compact ? "xl:block" : "sm:block")}>Ctrl K</kbd>
+        <span className="hidden flex-1 text-left text-xs sm:block">Jump to a module…</span>
+        <kbd className="hidden rounded border border-border px-1.5 py-0.5 text-[10px] sm:block">Ctrl K</kbd>
       </button>
       {open && (
         <div className="fixed inset-0 z-50 flex justify-center bg-foreground/40 px-4 pt-[min(17vh,150px)]" onMouseDown={() => setOpen(false)}>
@@ -190,24 +190,10 @@ function ModuleSearch({ preview, compact = false }: { preview: boolean; compact?
   );
 }
 
-/** On a phone the sidebar folds into Menu, so Engineering's four tabs stay reachable in a sticky bar. */
-function EngineeringTabs({ current }: { current: EngineeringTab }) {
-  return (
-    <nav className="sticky top-0 z-30 flex border-b border-border bg-background md:hidden" aria-label="Engineering">
-      {engineeringTabs.map((item) => (
-        <Link key={item.id} href={item.href} aria-current={item.id === current ? "page" : undefined}
-          className={cn("-mb-px flex h-11 flex-1 items-center justify-center border-b-2 text-[13px] font-semibold", item.id === current ? "border-foreground text-foreground" : "border-transparent text-muted-foreground")}>
-          {item.label}
-        </Link>
-      ))}
-    </nav>
-  );
-}
-
 export function WorkspaceShell({ email, active, children, preview = false, headerActions, onPreviewAction, termLookup = true, tab }: { email: string; active: Module; children: ReactNode; preview?: boolean; headerActions?: ReactNode; onPreviewAction?: (label: string) => void; termLookup?: boolean; tab?: EngineeringTab }) {
   const detail = moduleDetails[active];
   const pathname = usePathname();
-  // Engineering's nested pages (a topic, the assessment, evidence) belong to one of its four tabs.
+  // Engineering's nested pages (a topic, the assessment, evidence) highlight one of its four sidebar sections.
   const engineeringTab = active === "lab" ? tab ?? tabForPath(pathname) : null;
   // The Ken OS shell from design system 0.2 (the 2026-10-06 Evidence Workbench look). The Writing Studio mockup keeps
   // its own collapsible rail until it is rebuilt.
@@ -302,7 +288,7 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
                   {group.items.map(({ label, icon: Icon }) => <button className={cn(sidebarLink, "w-full text-left text-muted-foreground")} key={label} type="button" onClick={() => { onPreviewAction?.(label); setMobileOpen(false); }}><Icon size={17} strokeWidth={1.8} aria-hidden="true" />{label}</button>)}
                 </nav>
               </div>
-            )) : <div className={cn("mt-7", engineeringTab && "md:hidden")}>
+            )) : <div className="mt-7">
               <p className={sidebarLabel}>{detail.title.toUpperCase()}</p>
               <nav className="grid gap-1" aria-label={`${detail.title} sections`}>
                 {(preview && active === "memory" ? previewMemorySections : detail.sections).map(({ label, href: originalHref, icon: Icon }, index) => {
@@ -333,23 +319,12 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
       <div className="min-w-0 flex-1">
         <div className="min-h-[calc(100vh-60px)] bg-background md:min-h-screen">
           <header className={cn("flex items-center justify-between gap-4 border-b border-border px-5", evidence ? "h-16 sm:px-8 md:h-[59px] md:pl-[26px] md:pr-[25px]" : "h-16 sm:px-8", writingPreview && "sm:px-5")}>
-            {engineeringTab && (
-              <nav className="hidden h-full gap-[26px] md:flex" aria-label="Engineering">
-                {engineeringTabs.map((item) => (
-                  <Link key={item.id} href={item.href} aria-current={item.id === engineeringTab ? "page" : undefined}
-                    className={cn("flex h-full items-center border-b-[3px] px-1.5 pt-[3px] text-sm", item.id === engineeringTab ? "border-primary font-[650] text-sidebar-accent-foreground" : "border-transparent text-[#566178] hover:text-foreground")}>
-                    {item.label}
-                  </Link>
-                ))}
-              </nav>
-            )}
-            <div className={cn("flex min-w-0 items-center gap-2 text-sm font-medium", engineeringTab && "md:hidden")}>
+            <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
               {writingPreview && <><button className="grid size-9 shrink-0 place-items-center rounded-lg border border-border hover:bg-muted md:hidden" type="button" aria-label="Open sidebar" aria-controls="workspace-sidebar-content" aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><Menu size={17} /></button><button className="hidden size-9 shrink-0 place-items-center rounded-lg border border-border hover:bg-muted md:grid" type="button" aria-label={desktopCollapsed ? "Expand sidebar" : "Collapse sidebar"} aria-controls="workspace-sidebar-content" aria-expanded={!desktopCollapsed} onClick={() => setDesktopCollapsed((value) => !value)}>{desktopCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</button></>}
               <span className="truncate"><span className="hidden text-muted-foreground sm:inline">Ken OS <span className="px-2 text-border">/</span></span>{detail.title}{writingPreview && <><span className="px-2 text-border">/</span>Draft</>}</span>
             </div>
-            {writingPreview ? headerActions : <div className="flex items-center gap-3">{evidence && <span className="hidden text-[13px] text-[#566178] lg:inline" suppressHydrationWarning>{ownerDate()}</span>}<ModuleSearch preview={preview} compact={evidence} /><form action="/api/auth/signout" method="post"><Button variant="ghost" type="submit" className="text-xs">Sign out</Button></form></div>}
+            {writingPreview ? headerActions : <div className="flex items-center gap-3">{evidence && <span className="hidden text-[13px] text-[#566178] lg:inline" suppressHydrationWarning>{ownerDate()}</span>}<ModuleSearch preview={preview} /><form action="/api/auth/signout" method="post"><Button variant="ghost" type="submit" className="text-xs">Sign out</Button></form></div>}
           </header>
-          {engineeringTab && <EngineeringTabs current={engineeringTab} />}
           <main className="min-w-0" id="main-content">{termLookup ? <TermLookup module={detail.title}>{children}</TermLookup> : children}</main>
           <Toaster />
         </div>

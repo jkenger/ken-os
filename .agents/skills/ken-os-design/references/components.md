@@ -32,7 +32,7 @@ Call toast() after something finishes in the background or saves; keep errors ne
 
 ## App shell
 
-A tinted 232px module rail and a 59px header; a module's own sections become tabs in the header when it has them. The rail (205px under 1280px) has the brand, the modules with 21px outline icons, and the owner at the bottom, with no divider against the canvas. The current module is a pale blue pill with indigo text. Modules with tabs show them in the header with a 3px indigo underline; modules without keep their sections in the rail. Mobile uses an accessible menu and a sticky tab bar.
+A tinted 232px rail with the modules and the current module's sections, and a 59px header with a breadcrumb. The rail (205px under 1280px) has the brand, the modules with 21px outline icons, and the owner at the bottom, with no divider against the canvas. The current module is a pale blue pill with indigo text. Below the modules, a small label names the current module and lists its sections; the current section uses the same pale blue fill. The header shows 'Ken OS / Module' on the left and search and sign out on the right. Mobile uses an accessible menu holding both lists.
 
 ## Density check
 
