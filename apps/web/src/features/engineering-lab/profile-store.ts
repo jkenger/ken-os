@@ -7,7 +7,7 @@ import {
 } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { labAssessmentRuns, labAttempts, labChapterScreens, labLessons, labProfile, labRadarItems } from "@/lib/schema";
-import { baselineAttempts, careers, findTopic, topicMap } from "./curriculum";
+import { careers, findTopic, topicMap } from "./curriculum";
 import { LabInputError } from "./errors";
 import { activeRun, completedBaseline } from "./run-state";
 import { assertBudget } from "./store";
@@ -163,13 +163,12 @@ export async function getProfileView(userId: string): Promise<ProfileView> {
   const baselineRun = runs.find((run) => run.kind === "baseline") ?? null;
   const baselineDone = baselineRun?.completedAt ?? null;
   const records = rows.map(toRecord);
-  const legacy = baselineDone ? [] : baselineAttempts();
   const started = new Set(lessonRows.map((row) => row.topicId));
   const added = profile?.addedChapters ?? [];
   const extra = addedAsModules(added);
 
   const progressAt = (at: Date | null): TopicProgress[] => {
-    const attempts = [...legacy, ...records.filter((attempt) => !at || attempt.createdAt <= at)];
+    const attempts = records.filter((attempt) => !at || attempt.createdAt <= at);
     return topicMap.topics.map((topic) => computeProgress(topic, attempts, started.has(topic.id)).progress);
   };
   const statesAt = (at: Date | null) => chapterStates(topicMap, progressAt(at), screensAt(screenRows, at), extra);

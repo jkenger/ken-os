@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { computeProgress, gradeLabRun, isKnown, gradePrediction, parsePredictedLines, parseTopicMap, planNext, type AttemptRecord, type Label, type Mode, type TopicProgress } from "@ken-os/domain";
-import { assessorModes, baselineAttempts, findTopic, labs, topicMap } from "./curriculum";
+import { assessorModes, findTopic, labs, topicMap } from "./curriculum";
 
 let counter = 0;
 function attempt(topicId: string, mode: Mode, label: Label, overrides: Partial<AttemptRecord> = {}): AttemptRecord {
@@ -14,15 +14,22 @@ function attempt(topicId: string, mode: Mode, label: Label, overrides: Partial<A
   };
 }
 
+// A hand-made entry in the shape of the retired 2026-10-01 summary (retired 2026-10-06). Old data could still carry
+// one, so the domain's guard stays tested: it shows a label but never counts as evidence.
+const legacy: AttemptRecord[] = [attempt("js.event_loop", "predict", "misconception", {
+  kind: "baseline", gradedBy: "baseline", selfRating: null, createdAt: new Date(Date.UTC(2026, 9, 1)),
+  misconceptions: ["Code runs top to bottom, with timers and promises as the same kind of async work", "setTimeout(..., 0) runs before promise callbacks"],
+})];
+
 function progressFor(attempts: AttemptRecord[], started = new Set<string>()): TopicProgress[] {
-  const all = [...baselineAttempts(), ...attempts];
+  const all = [...legacy, ...attempts];
   return topicMap.topics.map((topic) => computeProgress(topic, all, started.has(topic.id)).progress);
 }
 
 const eventLoop = findTopic("js.event_loop")!;
 const now = new Date(Date.UTC(2026, 9, 2));
 
-test("baseline alone starts nothing and proves nothing", () => {
+test("a legacy summary entry starts nothing and proves nothing", () => {
   const progress = progressFor([]);
   assert.ok(progress.every((item) => item.status === "NOT_STARTED"));
   const eventLoopProgress = progress.find((item) => item.topicId === "js.event_loop")!;
@@ -38,7 +45,7 @@ test("the Planner starts with the event loop's prerequisite on the real baseline
 });
 
 test("reading a lesson moves a topic to LEARNING and no further", () => {
-  const { progress } = computeProgress(eventLoop, baselineAttempts(), true);
+  const { progress } = computeProgress(eventLoop, legacy, true);
   assert.equal(progress.status, "LEARNING");
   assert.deepEqual(progress.evidence, {});
 });
@@ -98,7 +105,7 @@ test("high confidence on a misconception is flagged as overconfident", () => {
 });
 
 test("a later solid answer in the same mode clears a weakness", () => {
-  const all = [...baselineAttempts(), attempt("js.event_loop", "predict", "solid")];
+  const all = [...legacy, attempt("js.event_loop", "predict", "solid")];
   assert.deepEqual(computeProgress(eventLoop, all, true).progress.weaknesses, []);
 });
 

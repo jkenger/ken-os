@@ -1,5 +1,5 @@
 import { areaLevel, chapterStates, computeProgress, planNext, roadmap, roleDistance, type Label } from "@ken-os/domain";
-import { baselineAttempts, careers, topicMap } from "./curriculum";
+import { careers, topicMap } from "./curriculum";
 import type { RunView } from "./assessment-run";
 import type { DailyView } from "./daily";
 import type { ProfileView } from "./profile-store";
@@ -9,18 +9,18 @@ import type { EvidenceLink, EvidenceView } from "./evidence";
 // Sample data for the development-only design preview. Built from the real topic map and baseline; nothing is stored.
 
 export function previewToday(): TodayView {
-  const progress = topicMap.topics.map((topic) => computeProgress(topic, baselineAttempts(), false).progress);
+  const progress = topicMap.topics.map((topic) => computeProgress(topic, [], false).progress);
   return {
     plan: planNext({ map: topicMap, progress, latestLabel: {}, now: new Date() }),
     progress, reviewsDue: [], recentlyValidated: [], recentChanges: [], generationsUsed: 0, generationLimit: 20,
   };
 }
 
-const previewBaseline = { on: "2026-10-01T12:00:00Z", source: "summary" as const };
+const previewBaseline = { on: "2026-10-04T12:00:00Z" };
 
 export function previewTopic(topicId: string): TopicView {
   const topic = topicMap.topics.find((item) => item.id === topicId)!;
-  const progress = computeProgress(topic, baselineAttempts(), true).progress;
+  const progress = computeProgress(topic, [], true).progress;
   const mdn = "https://developer.mozilla.org/en-US/docs/Web/API/HTML_DOM_API/Microtask_guide";
   if (topicId !== "js.event_loop") {
     return { progress, lessonCount: 0, lesson: null, sources: [], sourceCheckedAt: null, assessment: null, attempts: [], revealedLabs: [], passedLabs: [], reviewDue: false, practiceResults: {}, baseline: previewBaseline, closedBook: false };

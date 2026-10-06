@@ -18,7 +18,7 @@ async function main() {
   try {
     const today = await store.getToday(userId);
     assert.equal(today.plan?.topicId, "js.call_stack", "a fresh learner starts with the call stack");
-    assert.equal(today.progress.find((item) => item.topicId === "js.event_loop")?.baselineLabel, "misconception");
+    assert.equal(today.progress.find((item) => item.topicId === "js.event_loop")?.baselineLabel, null, "the 1 Oct summary is retired: no baseline label before the in-app run");
     console.log("ok - fresh learner: plan and baseline");
 
     const topicId = "js.references_mutation";

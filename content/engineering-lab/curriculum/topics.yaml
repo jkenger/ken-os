@@ -1,5 +1,5 @@
 # Engineering Lab topic map. Rules: docs/architecture/engineering-lab-v0.md, section 3.
-# Each gap quotes or paraphrases the 2026-10-01 baseline in docs/product/ai-engineering-learning-handoff.md.
+# Each gap says what the topic teaches. Personal gaps come from the in-app baseline and later answers, never from here.
 # Validation needs every mode in `prove` to be solid, with at least one checked by code
 # (a predict question or a lab), so every topic lists predict or a lab that covers one of its modes.
 #
@@ -103,9 +103,8 @@ topics:
     freshness: core_concept
     sourceGroups: [javascript]
     gap: >-
-      The event-loop answer described code as running top to bottom with no model of the call stack. Needs: what the
-      call stack is, that a function runs to completion before anything else runs, and why a busy stack blocks every
-      callback, timer and render.
+      What the call stack is, that a function runs to completion before anything else runs, and why a busy stack
+      blocks every callback, timer and render.
     depth: working
     prove: [predict, explain]
     labs: []
@@ -117,9 +116,8 @@ topics:
     freshness: web_platform
     sourceGroups: [javascript]
     gap: >-
-      Predicted A B D C for sync logs, setTimeout(..., 0) and Promise.resolve().then(...). Believes code runs top to
-      bottom with timers and promises as generic async. Needs: synchronous code first, then the whole microtask queue,
-      then the next task; where setTimeout, promise callbacks and queueMicrotask land.
+      How the event loop orders work: synchronous code first, then the whole microtask queue, then the next task;
+      where setTimeout, promise callbacks and queueMicrotask land.
     depth: deep
     prove: [predict, explain, debug]
     labs: [event-loop-order]
@@ -131,8 +129,8 @@ topics:
     freshness: web_platform
     sourceGroups: [javascript]
     gap: >-
-      No reliable model of when promise callbacks and code after await run. Needs: promise states, then callbacks as
-      microtasks, await as a pause that resumes in a microtask, chaining, error propagation and unhandled rejections.
+      When promise callbacks and code after await actually run, what an async function returns, and how errors and
+      Promise.all behave.
     depth: working
     prove: [predict, explain]
     labs: []
@@ -144,9 +142,8 @@ topics:
     freshness: core_concept
     sourceGroups: [javascript]
     gap: >-
-      Could not explain closures and thought captured state only exists after the function is invoked. Needs: a
-      function keeps its surrounding scope from when it was created, closure lifetime, let versus var in loops, and how
-      this produces stale values in callbacks.
+      What a closure captures, why callbacks made in a loop with var share one variable, and how factories give each
+      call its own state.
     depth: working
     prove: [predict, explain, debug]
     labs: [closure-loop]
@@ -158,9 +155,8 @@ topics:
     freshness: core_concept
     sourceGroups: [javascript]
     gap: >-
-      Predicted nested objects become different after object spread and said objects cannot be compared with ===.
-      Needs: reference versus value, === on objects compares identity, spread copies one level so nested objects stay
-      shared, and structuredClone for deep copies.
+      How objects and arrays are shared by reference, what equality compares, and why spread makes only a shallow
+      copy.
     depth: working
     prove: [predict, explain, debug]
     labs: [shallow-copy]
@@ -172,9 +168,7 @@ topics:
     freshness: web_platform
     sourceGroups: [javascript, react]
     gap: >-
-      Thought useCallback would fix an out-of-order search response and worried a [query] dependency would loop
-      forever. Needs: why responses arrive out of order, ignoring stale responses, AbortController cancellation,
-      debouncing, and timeouts with AbortSignal.timeout.
+      Why responses can arrive out of order, how to ignore or cancel stale requests, and what AbortController does.
     depth: working
     prove: [explain, implement]
     labs: [search-race]
@@ -187,9 +181,8 @@ topics:
     freshness: web_platform
     sourceGroups: [web]
     gap: >-
-      Could not explain what happens between typing a URL and seeing a page, had no working model of DNS, and described
-      HTTP as local or unsecured and HTTPS as public. Needs: DNS lookup, TCP and TLS at concept level, HTTPS as HTTP
-      inside TLS (encryption, integrity, server identity), the request and response, and which headers the browser adds.
+      What happens from typing a URL to getting a response: DNS, TCP, TLS, the request, status codes and the meaning
+      of HTTP methods.
     depth: working
     prove: [explain, predict]
     labs: [request-anatomy]
@@ -201,9 +194,8 @@ topics:
     freshness: web_platform
     sourceGroups: [web]
     gap: >-
-      Remembered credentials include and origin ideas, but the browser's cookie and session rules were unclear. Needs:
-      how a server-set cookie becomes a session, Path, Max-Age, HttpOnly, Secure, SameSite, and when a cookie travels
-      with a request.
+      How cookies carry a session, what HttpOnly, Secure and SameSite do, and why cookie-authenticated writes need
+      CSRF protection.
     depth: working
     prove: [explain, predict]
     labs: [cookie-rules]
@@ -215,8 +207,8 @@ topics:
     freshness: web_platform
     sourceGroups: [web]
     gap: >-
-      Described CORS as protection against unauthorized bad actors. Needs: CORS is a browser rule about which origins
-      may read a response, not server authorization; simple versus preflighted requests; credentials and the wildcard.
+      What the same-origin policy blocks, how CORS headers and preflights allow cross-origin reads, and why CORS is
+      not access control.
     depth: working
     prove: [explain, predict]
     labs: [cors-rules]
@@ -228,8 +220,8 @@ topics:
     freshness: web_platform
     sourceGroups: [web]
     gap: >-
-      Could not tell browser caching from server caching. Needs: Cache-Control max-age, no-cache and no-store, ETag
-      revalidation and 304, private versus shared caches, and where a CDN or server cache sits relative to the browser.
+      How Cache-Control, ETag and revalidation decide what the browser reuses, and how to cache safely without
+      leaking personal data.
     depth: working
     prove: [explain, predict]
     labs: [cache-rules]
@@ -242,8 +234,8 @@ topics:
     freshness: core_concept
     sourceGroups: [database]
     gap: >-
-      Baseline was solid: related writes should roll back together. Check it in code, including that a failure in the
-      middle leaves nothing behind, and that a database transaction cannot undo emails or calls to other services.
+      How a transaction makes several writes all-or-nothing, when to roll back, and why transactions should stay
+      short.
     depth: working
     prove: [explain, implement]
     labs: [transfer-rollback]
@@ -255,8 +247,8 @@ topics:
     freshness: core_concept
     sourceGroups: [database]
     gap: >-
-      Knew database uniqueness beats application checks but not why. Needs: why check-then-insert races, unique
-      constraints and expression indexes, and handling a unique violation as a normal outcome.
+      Why unique, foreign key and check constraints are the real source of truth, and how to handle a violation as a
+      normal outcome.
     depth: working
     prove: [explain, debug]
     labs: [unique-signup]
@@ -268,9 +260,8 @@ topics:
     freshness: core_concept
     sourceGroups: [database]
     gap: >-
-      Sensed possible inconsistency but could not explain lost updates or isolation, or two buyers both succeeding on
-      the same stock. Needs: read-modify-write races, why a transaction alone does not prevent them at the default
-      isolation level, and the options that do.
+      How read-modify-write loses concurrent changes, and how atomic updates, row locks or version checks prevent
+      it.
     depth: deep
     prove: [explain, debug]
     labs: [stock-race]
@@ -282,8 +273,7 @@ topics:
     freshness: core_concept
     sourceGroups: [database]
     gap: >-
-      No working fix for concurrent stock decrements. Needs: doing the check and the change in one statement,
-      UPDATE with WHERE and RETURNING, and when to reach for row locks or a stricter isolation level instead.
+      How a single conditional statement checks and changes data together, and how to tell whether it took effect.
     depth: working
     prove: [explain, implement]
     labs: [stock-race]
@@ -295,8 +285,7 @@ topics:
     freshness: core_concept
     sourceGroups: [database]
     gap: >-
-      Knew indexes help on large tables but could not design or inspect one. Needs: B-tree basics, Seq Scan versus
-      Index Scan, reading EXPLAIN, and the write and storage cost of an index.
+      What an index is, when Postgres chooses it over a sequential scan, and what indexes cost on writes.
     depth: working
     prove: [explain, implement]
     labs: [email-lookup]
@@ -308,8 +297,8 @@ topics:
     freshness: core_concept
     sourceGroups: [database]
     gap: >-
-      No model of composite indexes; for a slow user_id plus created_at query, only suggested selecting fewer columns.
-      Needs: how column order decides which queries an index can serve, and an index that also returns rows in order.
+      Which queries a composite index can serve, why column order matters, and how an index can also provide sort
+      order.
     depth: deep
     prove: [explain, implement]
     labs: [order-history-index]
@@ -321,8 +310,8 @@ topics:
     freshness: core_concept
     sourceGroups: [database]
     gap: >-
-      Missed the execution plan and scan and sort behavior when diagnosing a slow query. Needs: reading EXPLAIN and
-      EXPLAIN ANALYZE, Index Cond versus Filter, Sort nodes, and row estimates versus actual rows.
+      How to read EXPLAIN and EXPLAIN ANALYZE, spot the expensive step, and tell when statistics or a missing index
+      are to blame.
     depth: working
     prove: [explain, debug]
     labs: [order-history-index]
@@ -334,9 +323,8 @@ topics:
     freshness: core_concept
     sourceGroups: [web, database]
     gap: >-
-      No working model of idempotency; missed that a retried create needs a stable request key. Needs: which HTTP
-      methods are idempotent, idempotency keys, enforcing them with a unique constraint, and returning the original
-      result on a retry.
+      How an idempotency key lets the server recognise a retried create request and return the first result instead
+      of duplicating it.
     depth: working
     prove: [explain, implement]
     labs: [idempotent-payment]
@@ -348,11 +336,8 @@ topics:
     freshness: framework
     sourceGroups: [typescript, javascript, web]
     gap: >-
-      Knows incoming data should be validated, but mixes validation with unrelated checks such as whether a record
-      exists or who may change it. Needs: TypeScript types are erased at runtime, so every trust boundary (request
-      bodies, query strings, environment, third-party responses) needs a runtime check; parsing into a new typed value
-      instead of checking and passing the input through; dropping unknown fields so extra ones like isAdmin never reach
-      the database; and reporting every error with its field.
+      Why every input crossing a trust boundary must be validated at runtime with a schema, including third-party
+      and model output.
     depth: working
     prove: [explain, implement]
     labs: [order-input]
@@ -364,10 +349,8 @@ topics:
     freshness: core_concept
     sourceGroups: [database, web]
     gap: >-
-      Knows pages exist but can't explain how offset and cursor paging differ. Needs: an offset recounts from the top,
-      so rows shift when new ones arrive and deep pages read every skipped row; a cursor continues after the last row
-      seen; a unique tiebreaker such as id in both the order and the cursor; an index that matches the order; and an
-      opaque cursor the client only hands back.
+      How offset and cursor pagination differ, why cursors stay stable while data changes, and how to build a
+      reliable cursor.
     depth: deep
     prove: [explain, implement]
     labs: [feed-pages]
@@ -379,11 +362,8 @@ topics:
     freshness: framework
     sourceGroups: [testing, javascript]
     gap: >-
-      Can name unit, integration and end-to-end tests but not say what each is for, and isn't sure when to use a real
-      database, a fake or a mock. Needs: a test earns its place by failing when the code is wrong; bugs hide at edges,
-      so cases sit at each rule's boundary; fast unit tests for logic, integration tests against a real database for
-      queries and constraints, a few end-to-end tests for the paths users take; and mocks only at boundaries you don't
-      own.
+      How to write tests that fail when behaviour breaks: testing through public interfaces, choosing unit or
+      integration tests, and avoiding flakiness.
     depth: working
     prove: [explain, implement]
     labs: [discount-tests]
@@ -395,10 +375,8 @@ topics:
     freshness: web_platform
     sourceGroups: [web, operations, react]
     gap: >-
-      Little working model of cross-site scripting. Needs: how text from one user becomes code in another user's
-      browser; encoding on output for the context (HTML text, attributes, URLs); why a javascript: link is dangerous
-      even when escaped; what React escapes by default and what dangerouslySetInnerHTML turns off; and a Content
-      Security Policy as a second line of defence.
+      How untrusted text becomes script in a page, how context-aware output encoding prevents it, and what a Content
+      Security Policy adds.
     depth: working
     prove: [explain, implement]
     labs: [comment-render]
@@ -410,10 +388,7 @@ topics:
     freshness: core_concept
     sourceGroups: [operations, database, web]
     gap: >-
-      Knows that signing in isn't enough, but reaches for checking who the user is rather than whether they belong to
-      the resource's organisation with a role that allows the action. Needs: authentication versus authorization;
-      checking membership and role on every read and write, in the same query; answering outsiders as "not found" so
-      ids can't be probed; and tenant scope that a client can't change.
+      How to check ownership and tenant on every request on the server, and why hidden links are not authorization.
     depth: deep
     prove: [explain, implement]
     labs: [team-docs]
@@ -425,10 +400,7 @@ topics:
     freshness: framework
     sourceGroups: [react]
     gap: >-
-      Knows state, props and context can trigger a render and mentions the virtual DOM, but render, reconciliation and
-      commit are hazy. Needs: what render, reconcile and commit each do; that React compares references, so state
-      updates build new objects along the changed path and reuse the rest; why mutating state can mean nothing
-      re-renders; and when memo helps and when it doesn't.
+      When React re-renders, how references in props affect it, when state updates apply, and why list keys matter.
     depth: working
     prove: [explain, implement]
     labs: [todo-updates]
@@ -440,10 +412,8 @@ topics:
     freshness: framework
     sourceGroups: [react]
     gap: >-
-      Expects an effect with [] to re-run when props change and links dependencies to infinite loops. Needs: an effect
-      keeps something outside React in step with the current render; every value it reads belongs in its dependencies;
-      cleanup undoes the setup and runs before the next run and on unmount; stale closures and races in effects; and
-      when no effect is needed at all, because the value can be computed during render.
+      What effects are for, how to keep dependencies honest, how cleanup works, and how to handle stale fetch
+      responses.
     depth: deep
     prove: [explain, implement]
     labs: [chat-connection]
@@ -455,9 +425,8 @@ topics:
     freshness: core_concept
     sourceGroups: [database, operations]
     gap: >-
-      Slow work moves to a queue, but claiming jobs safely is the hard part. Needs: claiming a job atomically so two
-      workers never take the same one (FOR UPDATE SKIP LOCKED); leases so a crashed worker's job is picked up again;
-      backoff and a dead state for jobs that keep failing; and why every job must be safe to run twice.
+      How to move slow work into queues with idempotent jobs, retries, dead-letter handling and safe claiming by
+      workers.
     depth: working
     prove: [explain, implement]
     labs: [job-queue]
@@ -469,9 +438,8 @@ topics:
     freshness: core_concept
     sourceGroups: [operations, web]
     gap: >-
-      No confident model of retries. Needs: which failures are worth retrying and which never succeed; exponential
-      backoff with a cap; jitter so clients don't retry in lockstep; honouring Retry-After; a retry budget; and why a
-      retried request must be idempotent.
+      Which failures are worth retrying, and how exponential backoff, jitter, caps and Retry-After keep retries
+      safe.
     depth: working
     prove: [explain, implement]
     labs: [retry-policy]
@@ -483,9 +451,8 @@ topics:
     freshness: core_concept
     sourceGroups: [javascript, web, operations]
     gap: >-
-      Needs: every call to another service gets a timeout chosen from how long it normally takes; a timeout must also
-      cancel the work (AbortSignal), or the work keeps holding connections; clearing timers after success; and deadlines
-      that shrink as a request passes through several services.
+      Why every outbound call needs a timeout, what an unknown outcome means, and how deadlines propagate down a
+      call chain.
     depth: working
     prove: [explain, implement]
     labs: [request-timeout]
@@ -497,9 +464,8 @@ topics:
     freshness: core_concept
     sourceGroups: [operations, database]
     gap: >-
-      Knows a database transaction rolls back together, but not what to do when steps span services that can't share
-      one. Needs: sagas, where each completed step registers how to undo itself and a failure runs the undo steps newest
-      first; undo steps that are safe to repeat; and surfacing an undo that fails for a person to resolve.
+      How to handle multi-step operations where some steps fail: required versus deferrable steps, compensation and
+      sagas.
     depth: deep
     prove: [explain, implement]
     labs: [order-saga]
@@ -511,9 +477,8 @@ topics:
     freshness: core_concept
     sourceGroups: [operations]
     gap: >-
-      Needs: keeping the core of a page working when a dependency fails; circuit breakers that fail fast after repeated
-      failures and test recovery with one trial call; fallbacks such as cached or popular content; and what the user
-      should see while a feature is degraded.
+      How to serve a reduced experience when a dependency fails, how circuit breakers work, and when to fail open or
+      closed.
     depth: working
     prove: [explain, implement]
     labs: [circuit-breaker]
@@ -525,9 +490,8 @@ topics:
     freshness: core_concept
     sourceGroups: [operations]
     gap: >-
-      Knows logs should hold errors and request context and avoid sensitive data. Needs: one JSON object per event with
-      consistent field names; request, trace and user ids carried through a child logger; operation, status and
-      duration; redacting secrets by key at any depth; and serializing errors so the stack survives.
+      How to write structured logs with request ids, outcomes and durations, without logging secrets or personal
+      data.
     depth: working
     prove: [explain, implement]
     labs: [structured-logs]
@@ -539,9 +503,7 @@ topics:
     freshness: core_concept
     sourceGroups: [operations]
     gap: >-
-      Needs: why averages hide the slow requests users feel; p50, p95 and p99; error rate counting only server errors;
-      counters, gauges and histograms; and why cumulative histogram buckets can be combined across servers while
-      averages and percentiles can't.
+      How rates, errors and latency are measured, why percentiles beat averages, and how histograms and labels work.
     depth: working
     prove: [explain, implement]
     labs: [latency-summary]
@@ -553,9 +515,8 @@ topics:
     freshness: web_platform
     sourceGroups: [operations, web]
     gap: >-
-      Needs: traces as a tree of spans sharing one trace id; passing context between services with the W3C traceparent
-      header; strict header validation that starts a new trace instead of failing; child spans for work inside a
-      service; and a trace id in every log line to join logs and traces.
+      How a trace follows one request across services with spans and propagated context, and when to use traces,
+      logs or metrics.
     depth: working
     prove: [explain, implement]
     labs: [trace-context]
@@ -567,9 +528,8 @@ topics:
     freshness: core_concept
     sourceGroups: [web, operations]
     gap: >-
-      Needs: deciding what may be stale and for how long; read-through caching with a TTL; preventing stampedes by
-      sharing one load per key; never caching failures; invalidation on write and the race with a load already running;
-      and why, across several servers, the TTL is the real guarantee.
+      How to choose what to cache and for how long, keep it fresh with invalidation and TTLs, and avoid stampedes
+      and leaks.
     depth: working
     prove: [explain, implement]
     labs: [read-through-cache]
@@ -581,9 +541,8 @@ topics:
     freshness: core_concept
     sourceGroups: [operations]
     gap: >-
-      Needs: stateless services that scale out; finding the real bottleneck, often the database; limiting concurrency to
-      what a resource can handle; bounded queues that refuse work early instead of turning overload into timeouts; and
-      sizing a shared limit for many servers.
+      How stateless services scale out, why the database is the usual bottleneck, and how limits and load shedding
+      prevent cascades.
     depth: working
     prove: [explain, implement]
     labs: [load-shedding]
@@ -595,9 +554,8 @@ topics:
     freshness: core_concept
     sourceGroups: [database, operations]
     gap: >-
-      Needs: shared-database, shared-schema and separate-database tenancy and their trade-offs; tenant ids in every
-      key, composite foreign keys and per-tenant unique constraints so the database refuses cross-tenant data;
-      row-level security as a second guard; and noisy neighbours.
+      How to keep every tenant's data separate, from mandatory query scoping to row-level security, and how to stop
+      noisy neighbours.
     depth: deep
     prove: [explain, implement]
     labs: [tenant-keys]
@@ -609,9 +567,7 @@ topics:
     freshness: core_concept
     sourceGroups: [database]
     gap: >-
-      Needs: old and new code running against one database during a deploy; expand and contract migrations (add,
-      backfill, sync, switch, remove); adding a required column safely; backward-compatible API changes; and why a
-      one-step rename breaks a zero-downtime deploy.
+      How to change schemas and systems without downtime: expand and contract, batched backfills and feature flags.
     depth: working
     prove: [explain, implement]
     labs: [expand-contract]
@@ -623,9 +579,8 @@ topics:
     freshness: ai_ecosystem
     sourceGroups: [ai, database]
     gap: >-
-      Has started on embeddings, vectors and approximate nearest neighbours. Needs: embeddings as directions of meaning;
-      cosine similarity rather than raw dot products; filtering before ranking; a minimum score so search can return
-      nothing; storage and indexes such as HNSW; and where keyword search beats embeddings.
+      How embeddings and vector similarity find related text, what approximate indexes trade off, and why similarity
+      is not relevance.
     depth: working
     prove: [explain, implement]
     labs: [vector-search]
@@ -637,9 +592,7 @@ topics:
     freshness: ai_ecosystem
     sourceGroups: [ai]
     gap: >-
-      Needs: a labeled set of questions and the documents that answer them; recall@k, precision@k and MRR; which matters
-      most when a model reads the top few chunks; per-question results so regressions show; and evaluating retrieval
-      separately from answer quality.
+      How to measure retrieval with known relevant passages and Recall@k, changing one thing at a time.
     depth: working
     prove: [explain, implement]
     labs: [retrieval-metrics]
@@ -651,9 +604,8 @@ topics:
     freshness: ai_ecosystem
     sourceGroups: [ai]
     gap: >-
-      Needs: chunking documents; building a prompt from the best chunks within a token budget; labeling sources so the
-      answer can cite them; instructions to stay grounded and admit gaps; checking citations afterwards; and why
-      grounding reduces but can't prevent invented answers.
+      How retrieval-augmented generation grounds answers in retrieved context, how chunking affects it, and why
+      retrieval is usually the weak link.
     depth: working
     prove: [explain, implement]
     labs: [rag-prompt]
@@ -665,9 +617,8 @@ topics:
     freshness: ai_ecosystem
     sourceGroups: [ai, database]
     gap: >-
-      Needs: hybrid search combining keyword and vector results; reciprocal rank fusion instead of adding incomparable
-      scores; diversifying results across documents; query rewriting and its cost; and measuring each change with
-      retrieval metrics.
+      How hybrid search, query rewriting, metadata filters and rank fusion improve retrieval beyond plain vector
+      search.
     depth: deep
     prove: [explain, implement]
     labs: [rank-fusion]
@@ -679,9 +630,7 @@ topics:
     freshness: ai_ecosystem
     sourceGroups: [ai]
     gap: >-
-      Needs: two-stage retrieval, where a cheap search makes a shortlist and a slower model reorders it; batching
-      reranker calls; choosing the shortlist size from recall; stable ordering on ties; and the latency and cost
-      trade-off.
+      How rerankers rescore a wider candidate set more precisely, and how to check they earn their latency and cost.
     depth: working
     prove: [explain, implement]
     labs: [rerank-budget]
@@ -693,9 +642,7 @@ topics:
     freshness: ai_ecosystem
     sourceGroups: [ai, typescript]
     gap: >-
-      Needs: asking a model for an exact shape; reading replies leniently (fences, surrounding text) and validating
-      strictly; one repair attempt that shows the model its errors; failing clearly after that; and what provider
-      structured-output modes guarantee (the shape) and don't (correct values).
+      How to make model output fit a schema, validate it in code, and fall back safely when it doesn't.
     depth: working
     prove: [explain, implement]
     labs: [invoice-extract]
@@ -707,9 +654,8 @@ topics:
     freshness: ai_ecosystem
     sourceGroups: [ai]
     gap: >-
-      Needs: the tool-calling loop, where the model proposes calls and your code runs them and returns results; matching
-      results to call ids; treating arguments as untrusted input; reporting the model's mistakes back as tool results; a
-      step limit; and approval for tools that spend money or change data.
+      How models propose tool calls, how your code validates and authorizes them, and how to keep tool loops
+      bounded.
     depth: working
     prove: [explain, implement]
     labs: [tool-loop]
@@ -721,9 +667,8 @@ topics:
     freshness: ai_ecosystem
     sourceGroups: [ai]
     gap: >-
-      Needs: the context window as a budget; what must always stay (instructions, the question); a deliberate order for
-      dropping the rest; placing instructions and the question where they're read reliably; marking retrieved text as
-      data to resist prompt injection; and summarizing long histories.
+      How to spend the context window well: structure, relevance, trimming long histories, and treating untrusted
+      content as data.
     depth: working
     prove: [explain, implement]
     labs: [context-budget]
@@ -735,9 +680,8 @@ topics:
     freshness: ai_ecosystem
     sourceGroups: [ai]
     gap: >-
-      Needs: workflows (code picks the steps) versus agents (the model picks them); routing, chaining and
-      evaluator loops; keeping consequential decisions in code; confidence thresholds and handing off to a person; and
-      choosing the least autonomy that does the job.
+      How an agent loop works, when a fixed workflow is better, and how stop conditions and logging keep agents
+      safe.
     depth: deep
     prove: [explain, implement]
     labs: [support-workflow]
@@ -749,9 +693,8 @@ topics:
     freshness: ai_ecosystem
     sourceGroups: [ai]
     gap: >-
-      Needs: short-term memory as the conversation; rolling summaries when it outgrows the window; pinned facts that
-      must not blur; long-term memory stored outside the chat and read back; and letting the user see and delete what's
-      remembered.
+      How agents remember only what the app stores and passes back, and how to write, retrieve and correct memory
+      safely.
     depth: working
     prove: [explain, implement]
     labs: [chat-memory]
@@ -763,9 +706,8 @@ topics:
     freshness: ai_ecosystem
     sourceGroups: [ai]
     gap: >-
-      Needs: what the Model Context Protocol standardizes; JSON-RPC requests, responses and notifications; initialize,
-      tools/list and tools/call; protocol errors versus tool errors the model can read; and what to check before
-      connecting a third-party server.
+      What MCP servers expose, how clients decide what a model may use, and why server permissions and outputs need
+      care.
     depth: working
     prove: [explain, implement]
     labs: [mcp-server]
@@ -777,9 +719,7 @@ topics:
     freshness: ai_ecosystem
     sourceGroups: [ai, testing]
     gap: >-
-      Needs: labeled cases drawn from real traffic and past failures; grading with code where possible and with a
-      checked model grader where not; pass rates per tag; naming the exact cases that regressed; and running a small set
-      on every prompt or model change.
+      How to build evals that run on every prompt or model change, score them reliably, and track results over time.
     depth: deep
     prove: [explain, implement]
     labs: [eval-gate]
@@ -791,8 +731,8 @@ topics:
     freshness: ai_ecosystem
     sourceGroups: [ai, operations]
     gap: >-
-      Needs: tracing model and tool calls as spans; recording model, tokens, latency and prompt version; cost per run
-      and per model; wall-clock time with parallel steps; keeping personal data out of traces; and sampling at volume.
+      How to log and trace model calls so bad answers can be traced, fed back into evals and stored without personal
+      data.
     depth: working
     prove: [explain, implement]
     labs: [llm-trace]
@@ -804,9 +744,7 @@ topics:
     freshness: ai_ecosystem
     sourceGroups: [ai]
     gap: >-
-      Needs: routing easy requests to a small model and escalating when unsure; caching answers; a spending budget that
-      degrades instead of failing; shorter prompts, provider prompt caching, streaming for a fast first word, and batch
-      APIs for work nobody waits on.
+      How tokens drive cost and latency, and how trimming, routing to smaller models and caching keep both down.
     depth: working
     prove: [explain, implement]
     labs: [smart-routing]
@@ -818,9 +756,7 @@ topics:
     freshness: ai_ecosystem
     sourceGroups: [ai, operations]
     gap: >-
-      Needs: deadlines on model calls; which failures justify trying another provider (timeouts, rate limits, server
-      errors, empty output) and which don't (bad requests, safety refusals); recording which provider answered; and
-      checking a fallback with evals before trusting it.
+      How to run model calls reliably: timeouts, retries, output validation, budgets and pinned model versions.
     depth: working
     prove: [explain, implement]
     labs: [provider-fallback]
