@@ -108,6 +108,7 @@ export function EngineeringPractice({ email, daily, closedBook = false }: { emai
             ) : entry.item ? (
               <QuestionPanel
                 key={`${entry.assessmentId}-${entry.itemIndex}-${entry.answered ? "done" : "open"}`}
+                draftKey={`daily:${entry.assessmentId}:${entry.itemIndex}`}
                 kicker={`${kicker} · ${entry.topicTitle}`}
                 title={modeWords[entry.item.mode] ?? "Question"}
                 item={entry.item}

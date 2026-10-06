@@ -6,7 +6,7 @@ import {
   type AddedChapter, type IntakeAnswers, type Label, type PublicItem, type RubricResult, type RunChapter, type RunKind,
 } from "@ken-os/domain";
 import { db } from "@/lib/db";
-import { labAssessmentRuns, labAssessments, labAttempts, labChapterScreens, labLessons, labProfile } from "@/lib/schema";
+import { labAssessmentRuns, labAssessments, labAttempts, labChapterScreens, labLessons, labProfile, labSourcePackets } from "@/lib/schema";
 import { findChapter, findTopic, runModes, topicMap } from "./curriculum";
 import { LabInputError } from "./errors";
 import { activeRun, chapterDone, completedBaseline, completeRunIfDone, nextRunItem, type RunRow } from "./run-state";
@@ -104,9 +104,12 @@ export async function prepareChapter(userId: string, runId: string, chapterId: s
   const sets = await db().select({ topicId: labAssessments.topicId }).from(labAssessments).where(eq(labAssessments.runId, run.id));
   const missing = chapter.topicIds.filter((topicId) => !sets.some((set) => set.topicId === topicId));
   if (!missing.length) return { written: 0 };
-  const [lessons, previous] = await Promise.all([
+  const [lessons, previous, packets] = await Promise.all([
     db().select({ snapshot: labLessons.snapshot }).from(labLessons).where(and(eq(labLessons.userId, userId), inArray(labLessons.topicId, missing))),
     db().select({ items: labAssessments.items }).from(labAssessments).where(and(eq(labAssessments.userId, userId), inArray(labAssessments.topicId, missing))).orderBy(desc(labAssessments.createdAt)).limit(30),
+    // The newest saved source packet per topic grounds its questions and rubrics in the trusted sites. Older topics may have none.
+    db().select({ topicId: labSourcePackets.topicId, packet: labSourcePackets.packet }).from(labSourcePackets)
+      .where(and(eq(labSourcePackets.userId, userId), inArray(labSourcePackets.topicId, missing))).orderBy(desc(labSourcePackets.generatedAt)),
   ]);
   const avoid = [
     ...lessons.flatMap((lesson) => [lesson.snapshot.sections.workedExample.code, ...lesson.snapshot.practice.map((item) => item.prompt)]),
@@ -115,7 +118,7 @@ export async function prepareChapter(userId: string, runId: string, chapterId: s
   await bumpGenerations(run.id);
   const { byTopic, model } = await writeChapterAssessment(missing.map((topicId) => {
     const topic = findTopic(topicId)!;
-    return { topic, packet: null, modes: runModes(topic), hint };
+    return { topic, packet: packets.find((row) => row.topicId === topicId)?.packet ?? null, modes: runModes(topic), hint };
   }), avoid);
   const rows = Object.entries(byTopic).map(([topicId, items]) => ({
     id: randomUUID(), userId, topicId, kind: run.kind, items, promptVersion: ASSESSOR_PROMPT_VERSION, model, origin: "run" as const, runId: run.id,

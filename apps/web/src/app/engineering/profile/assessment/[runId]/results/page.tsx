@@ -4,6 +4,7 @@ import { getRunView } from "@/features/engineering-lab/assessment-run";
 import { getProfileRow } from "@/features/engineering-lab/profile-store";
 import { completedBaseline } from "@/features/engineering-lab/run-state";
 import { engineering } from "@/features/engineering-lab/routes";
+import { careers } from "@/features/engineering-lab/curriculum";
 import { getSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -16,5 +17,5 @@ export default async function ResultsPage({ params }: { params: Promise<{ runId:
   const [run, profile, baselineRun] = await Promise.all([getRunView(session.userId, runId).catch(() => null), getProfileRow(session.userId), completedBaseline(session.userId)]);
   if (!run) notFound();
   if (!run.completedAt) redirect(engineering.assessment({ run: run.id }));
-  return <EngineeringAssessment email={session.email} intake={profile?.intake ?? null} run={run} baselineDone={Boolean(baselineRun)} />;
+  return <EngineeringAssessment email={session.email} intake={profile?.intake ?? null} run={run} baselineDone={Boolean(baselineRun)} roles={careers.roles.map((role) => ({ id: role.id, title: role.title }))} />;
 }
