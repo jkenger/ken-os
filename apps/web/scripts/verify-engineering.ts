@@ -4,6 +4,7 @@ import { config } from "dotenv";
 import { eq } from "drizzle-orm";
 import type { AssessmentItem } from "@ken-os/domain";
 import { closeDb, db } from "../src/lib/db";
+import { answerStageOne } from "./stage-one";
 import { labAssessments, users } from "../src/lib/schema";
 
 config({ path: ".env.local" });
@@ -40,7 +41,19 @@ async function main() {
     const predict = (n: number): AssessmentItem => ({ mode: "predict", prompt: `What prints? (${n})`, code: `console.log(${n})`, expectedOutput: [String(n)] });
     const setId = randomUUID();
     await db().insert(labAssessments).values({ id: setId, userId: owner, topicId: first.topicIds[0], kind: "baseline", items: [predict(1), predict(2)], promptVersion: "check", model: "none", origin: "run", runId: run.id });
+    await assert.rejects(
+      store.submitAnswer(owner, { assessmentId: setId, itemIndex: 0, selfRating: 4, response: { lines: ["1"] }, actualOutput: ["1"] }),
+      /first two questions/, "topic questions wait for the chapter's two stage-1 questions",
+    );
+    // One chapter is cleared in stage 1; every other written chapter digs into its topics.
+    const cleared = run.plan.chapters.find((chapter) => chapter.chapterId === "m8-architecture-scale")!;
+    for (const chapter of run.plan.chapters) await answerStageOne(owner, run.id, chapter, chapter === cleared ? "clear" : "drill");
     await store.submitAnswer(owner, { assessmentId: setId, itemIndex: 0, selfRating: 4, response: { lines: ["1"] }, actualOutput: ["1"] });
+    const clearedView = (await runs.getRunView(owner, run.id)).chapters.find((chapter) => chapter.chapterId === cleared.chapterId)!;
+    assert.equal(clearedView.status, "done");
+    assert.equal(clearedView.cleared, true);
+    assert.equal(clearedView.answers.length, 2, "stage-1 answers show in the run");
+    console.log("ok - two stages: topic questions wait for stage 1; a cleared chapter is done without topic questions");
     const [attempt] = await db().select().from(labAttempts).where(eq(labAttempts.assessmentId, setId));
     assert.ok(attempt);
 
@@ -60,7 +73,7 @@ async function main() {
 
     // Finish the run: every full-stack topic solid twice, every AI topic wrong.
     for (const chapter of run.plan.chapters) {
-      if (chapter.kind !== "topics") continue;
+      if (chapter.kind !== "topics" || chapter === cleared) continue;
       const wrong = topicMap.modules.find((module) => module.id === chapter.chapterId)?.track === "ai";
       for (const topicId of chapter.topicIds) {
         const id = topicId === first.topicIds[0] ? setId : randomUUID();
@@ -96,6 +109,10 @@ async function main() {
     assert.ok(next && rows.find((row) => row.area === next.area)?.target, "the next milestone comes from an area the direction needs");
     assert.equal(rows.find((row) => row.area === "ai")!.current, null, "wrong answers never make an area junior");
     assert.ok(rows.every((row) => row.atBaseline === row.current), "right after the baseline, now and at-baseline agree");
+    const architecture = view.chapterStates.find((state) => state.chapterId === "m8-architecture-scale")!;
+    assert.equal(architecture.depth, "build", "a cleared chapter counts as can build it");
+    assert.equal(architecture.estimate, true, "as an estimate");
+    assert.equal(architecture.known, 0, "and proves no topic");
     console.log(`ok - Profile table agrees with levels and role distance (${role.missing.length} requirements left)`);
   } finally {
     await db().delete(users).where(eq(users.id, owner));

@@ -1,5 +1,6 @@
 import { isKnown, type TopicProgress } from "./mastery";
 import { AREAS, type Area, type ModuleInfo, type TopicMap } from "./topics";
+import { stageOne } from "./runs";
 import type { Label } from "./types";
 
 // Roles, levels and the career profile. Design: docs/architecture/engineering-lab-profile.md, section 2.
@@ -202,8 +203,13 @@ export function chapterStates(map: TopicMap, progress: TopicProgress[], screens:
       if (isKnown(item) || ["solid", "partial", "rusty"].includes(item.baselineLabel ?? "")) return true;
       return Object.values(item.evidence).some((evidence) => evidence && ["solid", "partial", "rusty"].includes(evidence.label));
     });
-    const depth: ReachedDepth = allKnown ? "run" : workingKnown ? "build" : someSense ? "aware" : "none";
-    return { chapterId: module.id, area: module.area, depth, estimate: module.planned.length > 0, written: topics.length, known: known.length, planned: module.planned.length };
+    const fromTopics: ReachedDepth = allKnown ? "run" : workingKnown ? "build" : someSense ? "aware" : "none";
+    // A chapter cleared in stage 1 of a two-stage assessment counts as "can build it", as an estimate, until its topics
+    // are proven or placed. It never lowers what the topics already show.
+    const labels = screens.filter((screen) => screen.chapterId === module.id).flatMap((screen) => screen.labels);
+    const cleared = stageOne(labels) === "cleared" && (fromTopics === "none" || fromTopics === "aware");
+    const depth: ReachedDepth = cleared ? "build" : fromTopics;
+    return { chapterId: module.id, area: module.area, depth, estimate: module.planned.length > 0 || cleared, written: topics.length, known: known.length, planned: module.planned.length };
   });
 }
 

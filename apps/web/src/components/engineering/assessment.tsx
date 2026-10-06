@@ -132,7 +132,7 @@ function ProgressColumn({ run, current }: { run: RunView; current: string | null
               : chapter.chapterId === current ? <IconCircleDot size={18} className="shrink-0" aria-label="Current" />
                 : <IconCircle size={18} className="shrink-0" aria-hidden="true" />}
             <span className="flex-1">{chapter.title}</span>
-            {chapter.status === "done" && chapter.kind === "topics" && <span className="text-[11px] font-normal">{chapter.topics.filter((topic) => topic.label === "solid").length + chapter.skipped.length} of {chapter.topics.length + chapter.skipped.length} known</span>}
+            {chapter.status === "done" && chapter.kind === "topics" && <span className="text-[11px] font-normal">{chapter.cleared ? "Cleared · estimate" : `${chapter.topics.filter((topic) => topic.label === "solid").length + chapter.skipped.length} of ${chapter.topics.length + chapter.skipped.length} known`}</span>}
           </li>
         ))}
       </ol>
@@ -156,6 +156,15 @@ function Session({ run }: { run: RunView }) {
   const previous = [...run.chapters].reverse().find((item) => item.status === "done");
   const upcoming = chapter ? run.chapters.slice(run.chapters.indexOf(chapter) + 1).find((item) => item.status === "not_started") : undefined;
   const prefetched = useRef(new Set<string>());
+
+  // When stage 1 says to dig in, write the topic questions straight away instead of asking for another click.
+  const digging = !run.current && chapter?.stage === "topics" && chapter.unwritten > 0;
+  const dug = useRef(new Set<string>());
+  useEffect(() => {
+    if (!digging || !chapter || dug.current.has(chapter.chapterId)) return;
+    dug.current.add(chapter.chapterId);
+    void prepare(chapter.chapterId);
+  }, [digging, chapter?.chapterId]);
 
   // While a question is open, write the next chapter's questions behind it, so starting that chapter doesn't wait.
   // Same allowance either way: they're needed anyway, and writing them again only fills in what's missing.
@@ -212,7 +221,7 @@ function Session({ run }: { run: RunView }) {
           <QuestionPanel
             key={`${current.id}-${current.itemIndex}`}
             draftKey={`run:${current.id}:${current.itemIndex}`}
-            kicker={`${chapter.title}${topic ? ` · ${topic.title}` : ""} · Question ${current.position} of up to ${current.outOf}`}
+            kicker={`${chapter.title}${topic ? ` · ${topic.title}` : chapter.stage === "chapter" ? " · Chapter question" : ""} · ${chapter.stage === "chapter" ? `${current.position} of 2` : `Question ${current.position} of up to ${current.outOf}`}`}
             title={modeWords[current.item.mode] ?? "Question"}
             item={current.item}
             onSubmit={submit}
@@ -234,12 +243,13 @@ function Session({ run }: { run: RunView }) {
             <div className={eyebrow}>Chapter {number} of {run.chapters.length}</div>
             <h2 className="my-3 text-[23px] font-bold tracking-[-0.6px] md:text-[25px]">{chapter.title}</h2>
             <p className="mb-[18px] text-[15px] leading-[1.6] text-muted-foreground">
-              {chapter.kind === "topics" ? `${chapter.topics.length} topics${chapter.skipped.length ? ` · ${chapter.skipped.length} skipped as known` : ""}` : "No lessons yet · placement check, 2 questions"}
-              {chapter.unwritten > 0 && chapter.status === "in_progress" ? ` · ${chapter.unwritten} need questions` : ""}
+              {chapter.kind === "screen" ? "No lessons yet · placement check, 2 questions"
+                : chapter.stage === "topics" ? `Digging into ${chapter.topics.length} topics · 1 or 2 questions each`
+                  : `2 chapter questions first · topic questions only if needed · ${chapter.topics.length} topics${chapter.skipped.length ? ` · ${chapter.skipped.length} skipped as known` : ""}`}
             </p>
             {problem && <Notice tone="error">{problem}</Notice>}
             <button type="button" className={primaryButton} disabled={busy} onClick={() => void prepare(chapter.chapterId)}>
-              {busy ? "Writing questions… ~30 s" : chapter.unwritten > 0 && chapter.status === "in_progress" ? "Write questions" : "Start chapter"}<IconArrowRight size={18} aria-hidden="true" />
+              {busy ? "Writing questions… ~30 s" : chapter.stage === "topics" ? "Write topic questions" : "Start chapter"}<IconArrowRight size={18} aria-hidden="true" />
             </button>
           </section>
         ) : (

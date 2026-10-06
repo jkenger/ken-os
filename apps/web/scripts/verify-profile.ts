@@ -4,6 +4,7 @@ import { config } from "dotenv";
 import { and, eq } from "drizzle-orm";
 import type { AssessmentItem } from "@ken-os/domain";
 import { closeDb, db } from "../src/lib/db";
+import { answerStageOne } from "./stage-one";
 import { labAssessments, labChapterScreens, labRadarItems, users } from "../src/lib/schema";
 
 config({ path: ".env.local" });
@@ -39,6 +40,8 @@ async function main() {
     // Stand-in for the Assessor: every topic gets two code-checked predictions.
     const predict = (n: number): AssessmentItem => ({ mode: "predict", prompt: `What prints? (${n})`, code: `console.log(${n})`, expectedOutput: [String(n)] });
     const sets = new Map<string, string>();
+    // Two-stage runs: answer each chapter's two chapter questions so it digs into topics, as before.
+    for (const chapter of run.plan.chapters) await answerStageOne(userId, run.id, chapter, "drill");
     for (const chapter of run.plan.chapters) {
       if (chapter.kind === "topics") {
         for (const topicId of chapter.topicIds) {
