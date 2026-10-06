@@ -242,7 +242,7 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
                   {assessment && assessment.kind !== "assessment" && <p className={label}>{kindWords[assessment.kind]}</p>}
-                  <h2 className={cn(heading, assessment && assessment.kind !== "assessment" && "mt-1")}>Check</h2>
+                  <h2 className={cn(heading, assessment && assessment.kind !== "assessment" && "mt-1")}>Prove</h2>
                 </div>
                 {!openQuestions && <Button type="button" disabled={busy !== ""} onClick={() => void makeQuestions()}>{busy === "questions" ? "Writing questions…" : assessment ? "New questions" : "Get questions"}</Button>}
               </div>

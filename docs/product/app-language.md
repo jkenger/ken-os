@@ -88,9 +88,9 @@ Module names are proper names in title case and appear the same in the sidebar, 
 | Intro | The short chat before the baseline | a short talk, the talk, intake |
 | Placement check | A quick check of what the owner already knows: one question per written topic, or two short questions for a chapter with no lessons yet | screening, screening questions, estimate (as a verb) |
 | Overview, Profile, Learn, Practice | The four Engineering tabs. The Practice tab is titled "Today's practice" | Today, Course |
-| Learn, Practice, Lab, Check | The four topic steps. "Learn" and "Practice" also name tabs; open question Q2 in `docs/architecture/engineering-redesign.md` | Prove it with fresh questions |
+| Lesson, Predict, Lab, Prove | The four topic steps (renamed 6 Oct 2026 so "Learn" and "Practice" only name tabs) | Learn, Practice, Check (as step names) |
 | Known | A topic placed by an all-solid placement check or assessment, not yet proven | Placed |
-| Today's practice | The daily mixed set | daily practice, today's set, a short mixed set |
+| Today's practice | The daily mixed set. Its answers on unproven topics never count as proof | daily practice, today's set, a short mixed set |
 | Review | A topic coming back after a gap | |
 | Direction | The role the owner is aiming at, and the page under Profile where it's chosen with the Guide | shape, what do you want to become |
 | Radar | Weekly scan of docs and release notes | This week on your radar |

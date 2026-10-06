@@ -146,3 +146,18 @@ test("predictions are graded against the real run, and a wrong question is voide
   assert.equal(gradeLabRun({ passed: 2, failed: 0, output: "" }).label, "solid");
   assert.equal(gradeLabRun({ passed: 1, failed: 1, output: "" }).label, "partial");
 });
+
+test("today's practice never first-proves a topic, but a review restores one that slipped", () => {
+  const practiced = eventLoop.prove.map((mode) => attempt(eventLoop.id, mode, "solid", { kind: "practice" }));
+  const practiceOnly = progressFor(practiced).find((item) => item.topicId === eventLoop.id)!;
+  assert.equal(practiceOnly.status, "PRACTICING", "solid practice answers move the topic along");
+  assert.equal(isKnown(practiceOnly), false, "practice alone never proves or places");
+
+  const proven = eventLoop.prove.map((mode) => attempt(eventLoop.id, mode, "solid"));
+  const slipped = attempt(eventLoop.id, eventLoop.prove[0], "partial", { kind: "review" });
+  const restored = eventLoop.prove.map((mode) => attempt(eventLoop.id, mode, "solid", { kind: "review" }));
+  const before = progressFor([...proven, slipped]).find((item) => item.topicId === eventLoop.id)!;
+  assert.equal(before.status, "NEEDS_REVISIT");
+  const after = progressFor([...proven, slipped, ...restored]).find((item) => item.topicId === eventLoop.id)!;
+  assert.equal(after.status, "VALIDATED", "reviews of a proven topic restore it");
+});

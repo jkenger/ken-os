@@ -1,7 +1,5 @@
 import { redirect } from "next/navigation";
 import { EngineeringOverview } from "@/components/engineering/overview";
-import { capabilityRows, nextRequirement } from "@/features/engineering-lab/capabilities";
-import { careers, topicMap } from "@/features/engineering-lab/curriculum";
 import { getDailySet } from "@/features/engineering-lab/daily";
 import { nextStepFor } from "@/features/engineering-lab/next-step";
 import { getProfileView } from "@/features/engineering-lab/profile-store";
@@ -15,11 +13,5 @@ export default async function EngineeringPage() {
   const session = await getSession();
   if (!session) redirect("/");
   const [today, profile, daily, open] = await Promise.all([getToday(session.userId), getProfileView(session.userId), getDailySet(session.userId), activeRun(session.userId)]);
-  const rows = capabilityRows({ careers, map: topicMap, progress: profile.progress, states: profile.chapterStates, roleId: profile.direction });
-  return (
-    <EngineeringOverview
-      email={session.email} today={today} next={await nextStepFor(session.userId, today.plan)} profile={profile} daily={daily}
-      nextRequirement={nextRequirement(rows, profile.direction)} closedBook={Boolean(open)}
-    />
-  );
+  return <EngineeringOverview email={session.email} today={today} next={await nextStepFor(session.userId, today.plan)} profile={profile} daily={daily} closedBook={Boolean(open)} />;
 }

@@ -1,19 +1,20 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
-// The lab's tight, bordered layout: a compact title bar per page, and content in bordered panels with a small header
-// strip. Chosen on 2026-10-03 so the lab reads as a tool rather than a page. Shared by the home and the profile.
+// Engineering's page heading and bordered panels, in the selected 2026-10-06 prototype's sizes ("light Evidence
+// Workbench"): an eyebrow, a large title, facts on the right, and white panels with a small header strip.
+// Colours come from the [data-theme="evidence"] tokens. Shared by practice, the assessment, Direction and evidence.
 
-export function TitleBar({ kicker, title, stats, actions }: { kicker?: string; title: string; stats?: ReactNode; actions?: ReactNode }) {
+export function TitleBar({ kicker = "Engineering", title, stats, actions }: { kicker?: string; title: string; stats?: ReactNode; actions?: ReactNode }) {
   return (
-    <header className="flex flex-wrap items-end justify-between gap-x-8 gap-y-3 border-b border-border pb-4">
+    <header className="mb-[25px] flex flex-wrap items-start justify-between gap-x-8 gap-y-4 md:mb-8">
       <div className="min-w-0">
-        {kicker && <p className="text-xs text-muted-foreground">{kicker}</p>}
-        <h1 className="font-display text-2xl font-semibold tracking-[-0.03em]">{title}</h1>
+        <p className="mb-[9px] text-[11px] font-medium uppercase tracking-[0.06em] text-[#586579]">{kicker}</p>
+        <h1 className="text-[28px] font-[750] leading-[1.25] tracking-[-0.8px] md:text-[30px] xl:text-[36px] xl:tracking-[-1.3px]">{title}</h1>
       </div>
       {(stats || actions) && (
-        <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
-          {stats && <dl className="flex flex-wrap gap-x-6 gap-y-2">{stats}</dl>}
+        <div className="flex flex-wrap items-end gap-x-7 gap-y-3 md:pt-1">
+          {stats && <dl className="flex flex-wrap gap-x-7 gap-y-2">{stats}</dl>}
           {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
         </div>
       )}
@@ -25,7 +26,7 @@ export function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="text-sm font-semibold">{value}</dd>
+      <dd className="mt-1 text-[15px] font-[650]">{value}</dd>
     </div>
   );
 }
@@ -35,12 +36,12 @@ export function Panel({ title, meta, id, children, className, bodyClassName }: {
 }) {
   const headingId = id ?? `panel-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`;
   return (
-    <section aria-labelledby={headingId} className={cn("min-w-0 rounded-lg border border-border", className)}>
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b border-border px-4 py-2.5">
-        <h2 className="text-sm font-semibold" id={headingId}>{title}</h2>
+    <section aria-labelledby={headingId} className={cn("min-w-0 rounded-[5px] border border-border bg-card", className)}>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 rounded-t-[5px] border-b border-border bg-table-head px-[18px] py-3">
+        <h2 className="text-xs font-semibold text-[#566178]" id={headingId}>{title}</h2>
         {meta && <div className="text-xs text-muted-foreground">{meta}</div>}
       </div>
-      <div className={cn("p-4", bodyClassName)}>{children}</div>
+      <div className={cn("p-[18px]", bodyClassName)}>{children}</div>
     </section>
   );
 }

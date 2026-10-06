@@ -6,7 +6,7 @@ import { ProjectMemoryPreview } from "@/components/project-memory-preview";
 import { DesignSystemWorkspace } from "@/components/design-system-workspace";
 import { LabToday } from "@/components/lab/lab-today";
 import { LabTopic } from "@/components/lab/lab-topic";
-import { LabTopics } from "@/components/lab/lab-topics";
+import { EngineeringLearn } from "@/components/engineering/learn";
 import { TermsPage } from "@/components/terms/terms-page";
 import { EngineeringEvidence } from "@/components/engineering/evidence";
 import { EngineeringOverview } from "@/components/engineering/overview";
@@ -74,8 +74,7 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
   if (view === "engineering") {
     const today = previewToday();
     const profile = previewProfile(screenParam === "start" ? "none" : "done");
-    const rows = capabilityRows({ careers, map: topicMap, progress: profile.progress, states: profile.chapterStates, roleId: profile.direction });
-    return <EngineeringOverview email="preview@example.invalid" today={today} next={today.plan ? nextStepFromView(today.plan, previewTopic(today.plan.topicId)) : null} profile={profile} daily={screenParam === "start" ? null : previewDaily()} nextRequirement={nextRequirement(rows, profile.direction)} />;
+    return <EngineeringOverview email="preview@example.invalid" today={today} next={today.plan ? nextStepFromView(today.plan, previewTopic(today.plan.topicId)) : null} profile={profile} daily={screenParam === "start" ? null : previewDaily()} />;
   }
   if (view === "engineering-profile") {
     const profile = previewProfile(screenParam === "start" ? "none" : "done");
@@ -90,11 +89,13 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
   }
   if (view === "engineering-learn") {
     const assessable = topicMap.topics.filter((topic) => assessorModes(topic).length > 0).map((topic) => topic.id);
-    return <LabTopics email="preview@example.invalid" map={topicMap} progress={previewLearner().progress} assessable={assessable} path={pathChapters(careers, "fullstack-applied-ai")} />;
+    const today = previewToday();
+    const upNext = today.plan ? { topicId: today.plan.topicId, title: findTopic(today.plan.topicId)?.title ?? today.plan.topicId, step: "learn" as const, reason: today.plan.reason } : null;
+    return <EngineeringLearn email="preview@example.invalid" map={topicMap} progress={previewLearner().progress} assessable={assessable} path={pathChapters(careers, "fullstack-applied-ai")} upNext={upNext} />;
   }
   if (view === "lab-course") {
     const assessable = topicMap.topics.filter((topic) => assessorModes(topic).length > 0).map((topic) => topic.id);
-    return <LabTopics email="preview@example.invalid" map={topicMap} progress={previewToday().progress} assessable={assessable} />;
+    return <EngineeringLearn email="preview@example.invalid" map={topicMap} progress={previewToday().progress} assessable={assessable} />;
   }
   if (view === "lab-topic") {
     const topic = findTopic(topicParam ?? "js.event_loop") ?? findTopic("js.event_loop")!;

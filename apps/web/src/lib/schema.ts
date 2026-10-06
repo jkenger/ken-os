@@ -201,7 +201,7 @@ export const labAssessments = pgTable("lab_assessments", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   topicId: text("topic_id").notNull(),
-  kind: text("kind").$type<"assessment" | "review" | "placement" | RunKind>().notNull(),
+  kind: text("kind").$type<"assessment" | "review" | "placement" | "practice" | RunKind>().notNull(),
   items: jsonb("items").$type<AssessmentItem[]>().notNull(),
   promptVersion: text("prompt_version").notNull(),
   model: text("model").notNull(),

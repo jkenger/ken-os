@@ -23,16 +23,18 @@ export function GradeTag({ label: grade, voided }: { label: string; voided: bool
 
 function Confidence({ value, onChange }: { value: number | null; onChange: (value: number) => void }) {
   return (
-    <fieldset className="mt-4">
-      <legend className="text-sm font-semibold">Confidence</legend>
-      <p className="mt-1 text-sm text-muted-foreground">Not graded. Flags sure-but-wrong answers</p>
-      <div className="mt-2 flex flex-wrap gap-1.5">
+    <fieldset className="my-[25px]">
+      <legend className="mb-1 text-[13px] font-semibold">How sure are you?</legend>
+      <p className="mb-[11px] text-xs text-muted-foreground">Not graded. Flags sure-but-wrong answers</p>
+      <div className="flex w-[270px] max-w-full gap-2.5">
         {[1, 2, 3, 4, 5].map((rating) => (
-          <Button key={rating} type="button" size="sm" variant={value === rating ? "default" : "outline"} aria-pressed={value === rating} onClick={() => onChange(rating)}>
-            {rating}{rating === 1 ? " guessing" : rating === 5 ? " certain" : ""}
-          </Button>
+          <button key={rating} type="button" aria-pressed={value === rating} onClick={() => onChange(rating)}
+            className={cn("h-10 w-[45px] rounded-[5px] border bg-card text-sm", value === rating ? "border-primary bg-[#eaf0ff] text-[#163fcf]" : "border-[#ccd5e3] hover:bg-accent")}>
+            {rating}
+          </button>
         ))}
       </div>
+      <small className="mt-2 flex w-[270px] max-w-full justify-between text-[11px] text-muted-foreground"><span>1 · Guessing</span><span>5 · Very sure</span></small>
     </fieldset>
   );
 }

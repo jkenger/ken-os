@@ -36,6 +36,7 @@ export const kindWords: Record<string, string> = {
   review: "Review",
   placement: "Placement check",
   checkpoint: "Checkpoint",
+  practice: "Today's practice",
 };
 
 export function levelWords(level: Level | null) {

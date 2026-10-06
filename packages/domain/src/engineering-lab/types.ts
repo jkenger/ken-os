@@ -16,10 +16,13 @@ export type Status = (typeof STATUSES)[number];
  * checkpoint: an answer in a later retake of the assessment. Counts like a placement answer.
  * lesson: practice inside a lesson.
  * lab: an authored lab run in the code box.
- * assessment / review: Assessor questions, the only kinds that ask for a confidence rating.
+ * assessment / review: Assessor questions. Review is a proven topic coming back, including in today's practice.
+ * practice: today's practice question on a topic that isn't proven yet. Moves status and records misconceptions, but
+ *   never proves anything: practice restores what was proven, it doesn't first-prove it (owner, 2026-10-06).
+ * assessment, review, practice and the placement-style kinds ask for a confidence rating.
  * placement: Assessor questions for a topic you may already know, asked before any lesson.
  */
-export const ATTEMPT_KINDS = ["baseline", "lesson", "lab", "assessment", "review", "placement", "checkpoint"] as const;
+export const ATTEMPT_KINDS = ["baseline", "lesson", "lab", "assessment", "review", "placement", "checkpoint", "practice"] as const;
 export type AttemptKind = (typeof ATTEMPT_KINDS)[number];
 
 export interface PredictItem {

@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=Manrope:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -41,6 +41,14 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-rail: var(--rail);
+  --color-rail-lit: var(--rail-lit);
+  --color-rail-soft: var(--rail-soft);
+  --color-tint: var(--tint);
+  --color-table-head: var(--table-head);
+  --color-row-hover: var(--row-hover);
+  --color-primary-hover: var(--primary-hover);
+  --color-quiet: var(--quiet);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
@@ -70,4 +78,56 @@
   @supports (-moz-appearance: none) {
     * { scrollbar-width: thin; scrollbar-color: var(--scrollbar-thumb) transparent; }
   }
+}
+
+/*
+ * Engineering's look: the selected 2026-10-06 prototype ("light Evidence Workbench"), adopted one to one by the owner.
+ * Scoped to the Engineering module (WorkspaceShell sets data-theme="evidence") until the owner decides whether it
+ * becomes the Ken OS standard; then these values move into features/design-system/contract.ts.
+ * Inter and an indigo action colour are on the owner's default avoid list; the owner chose them for this module on
+ * 2026-10-06 (docs/architecture/engineering-redesign.md, D1). Text colours are measured: muted #657086 is 4.9:1 on the
+ * page and 4.6:1 on the tint; the prototype's #748096 rail labels (3.9:1) were darkened to the muted colour.
+ */
+[data-theme="evidence"] {
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-heading: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --background: #fbfcfe;
+  --foreground: #101827;
+  --card: #ffffff;
+  --card-foreground: #101827;
+  --popover: #ffffff;
+  --popover-foreground: #101827;
+  --primary: #173fdf;
+  --primary-hover: #1034c4;
+  --primary-foreground: #ffffff;
+  --muted: #f2f5f9;
+  --secondary: #ebeff5;
+  --secondary-foreground: #33425c;
+  --muted-foreground: #657086;
+  --quiet: #526078;
+  --accent: #f5f8fe;
+  --accent-foreground: #101827;
+  --border: #e0e5ed;
+  --input: #ced6e2;
+  --ring: #86a9ff;
+  --sidebar: #f2f5f9;
+  --sidebar-foreground: #4e5b70;
+  --sidebar-accent: #e4edff;
+  --sidebar-accent-foreground: #1240db;
+  --sidebar-border: #e0e5ed;
+  --status-solid: #276345;
+  --status-solid-surface: #eff8f4;
+  --status-gap: #823e2f;
+  --status-gap-surface: #fff4f1;
+  --rail: #e2e5eb;
+  --rail-lit: #6599fa;
+  --rail-soft: #a3c6ff;
+  --tint: #f2f6fd;
+  --table-head: #f7f9fc;
+  --row-hover: #f9fbff;
+  --radius: 0.3125rem;
+  font-family: var(--font-body);
+  font-synthesis: none;
+  color: var(--foreground);
+  background: var(--background);
 }

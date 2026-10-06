@@ -12,6 +12,7 @@ import { assessorModes, baseline, baselineAttempts, findLab, findTopic, labsForT
 import { LabInputError } from "./errors";
 import { assertRunTurn, completedBaseline, completeRunIfDone, topicIsClosedBook } from "./run-state";
 import { labSolutions } from "./generated/lab-solutions.generated";
+import { ownerDay, ownerDayStart } from "@/lib/day";
 
 export { LabInputError };
 
@@ -22,7 +23,7 @@ type Database = ReturnType<typeof db>;
 type Transaction = Parameters<Parameters<Database["transaction"]>[0]>[0];
 
 function today() {
-  return new Date().toISOString().slice(0, 10);
+  return ownerDay();
 }
 
 function requireTopic(topicId: string) {
@@ -70,7 +71,7 @@ export async function baselineEntryFor(userId: string, topicId: string): Promise
 }
 
 export async function generationsToday(userId: string) {
-  const since = new Date(`${today()}T00:00:00Z`);
+  const since = ownerDayStart();
   const [packets, lessons, assessments] = await Promise.all([
     db().select({ n: sql<number>`count(*)::int` }).from(labSourcePackets).where(and(eq(labSourcePackets.userId, userId), gte(labSourcePackets.createdAt, since))),
     db().select({ n: sql<number>`count(*)::int` }).from(labLessons).where(and(eq(labLessons.userId, userId), gte(labLessons.createdAt, since))),
@@ -82,7 +83,7 @@ export async function generationsToday(userId: string) {
 export async function assertBudget(userId: string, needed = 1) {
   const used = await generationsToday(userId);
   if (used + needed > DAILY_GENERATION_LIMIT) {
-    throw new LabInputError(`Out of AI uses for today (${DAILY_GENERATION_LIMIT}). Resets at midnight UTC`, 429);
+    throw new LabInputError(`Out of AI uses for today (${DAILY_GENERATION_LIMIT}). Resets at midnight Manila time`, 429);
   }
 }
 

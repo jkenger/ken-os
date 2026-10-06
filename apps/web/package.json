@@ -33,6 +33,7 @@
     "@ken-os/agents": "workspace:*",
     "@ken-os/domain": "workspace:*",
     "@ken-os/drive": "workspace:*",
+    "@tabler/icons-react": "^3.49.0",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.3.2",
     "codemirror": "^6.0.2",

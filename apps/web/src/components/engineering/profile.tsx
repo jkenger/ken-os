@@ -1,180 +1,161 @@
 import Link from "next/link";
-import { ArrowRight, Check, CircleDashed } from "lucide-react";
+import { IconArrowRight, IconCheck, IconChevronDown, IconChevronRight, IconCircle } from "@tabler/icons-react";
 import { WorkspaceShell } from "@/components/workspace-shell";
-import { Panel, Stat, TitleBar } from "@/components/lab/panel";
-import { depthWords, formatDate, kindWords, labelWords, levelWords, statusWords, toneFor } from "@/components/lab/words";
-import { Button, ButtonEndIcon } from "@/components/ui/button";
-import { DisclosureSummary } from "@/components/ui/disclosure-summary";
-import { Pill } from "@/components/ui/pill";
-import type { CapabilityRow, NextRequirement, RequirementRow, RequirementTopic } from "@/features/engineering-lab/capabilities";
+import { depthWords, formatDate, kindWords, labelWords } from "@/components/lab/words";
+import type { CapabilityRow, NextRequirement, RequirementRow } from "@/features/engineering-lab/capabilities";
 import type { EvidenceLink } from "@/features/engineering-lab/evidence";
 import type { ProfileView } from "@/features/engineering-lab/profile-store";
 import { engineering } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
-import { LevelRail } from "./level-rail";
+import { Badge, Coverage, Fact, levelShort, PageHeading, panel, primaryButton, Rail, textButton } from "./kit";
 
-// Profile: the evidence behind each area, the chosen direction's target, and the next requirement. Layout from the
-// selected "Evidence Workbench" prototype (capability table, milestone column), in Ken OS type and tokens.
-// Design: docs/architecture/engineering-redesign.md.
+// Profile, one to one with the selected 2026-10-06 prototype: a capability table whose rows open into the remaining
+// proof requirements, a next-milestone column, and assessment history. Every value comes from capabilities.ts, the
+// same rules as levels and the roadmap. Design: docs/architecture/engineering-redesign.md.
 
-const columns = "md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,0.8fr)_minmax(0,0.9fr)_16px]";
+const columns = "grid-cols-[1.45fr_1fr_18px] gap-3 md:grid-cols-[1.6fr_1.3fr_.55fr_1.15fr_15px] md:gap-2.5 xl:grid-cols-[2fr_1.6fr_.62fr_1.45fr_18px] xl:gap-[13px]";
 
-function TopicChip({ topic }: { topic: RequirementTopic }) {
-  const words = topic.origin === "proof" ? "Proven" : topic.origin === "placement" ? "Known" : statusWords[topic.status];
-  return (
-    <li>
-      <Link href={engineering.topic(topic.topicId)} className={cn("inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs hover:bg-muted", topic.needed ? "border-border" : "border-dashed border-input text-muted-foreground")}>
-        {topic.origin ? <Check size={12} aria-hidden="true" className="text-status-solid" /> : <CircleDashed size={12} aria-hidden="true" className="text-muted-foreground" />}
-        <span className="font-semibold">{topic.title}</span>
-        <span className="text-muted-foreground">· {words}</span>
-      </Link>
-    </li>
-  );
+function plural(count: number, word: string) {
+  return `${count} ${word}${count === 1 ? "" : "s"}`;
 }
 
-function Requirement({ item }: { item: RequirementRow }) {
+function requirementLine(item: RequirementRow) {
+  const topics = item.missing.map((id) => item.topics.find((topic) => topic.topicId === id)?.title ?? id);
+  const now = item.met ? "Met" : `${depthWords[item.have]} now`;
+  return [depthWords[item.need], now, topics.length ? `Missing: ${topics.join(", ")}` : null, item.estimate ? "Estimate" : null].filter(Boolean).join(" · ");
+}
+
+function Requirements({ row }: { row: CapabilityRow }) {
+  const remaining = row.requirements.filter((item) => !item.met);
+  const shown = remaining.length ? remaining : row.requirements;
   return (
-    <li className="grid gap-2 py-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:gap-4">
-      <div className="min-w-0">
-        <p className="text-sm">
-          <span className="font-semibold">{item.title}</span>
-          <span className="text-muted-foreground"> · {depthWords[item.need]} · {levelWords(item.level)}</span>
-        </p>
-        {item.topics.length > 0 && <ul className="mt-2 flex flex-wrap gap-1.5" aria-label={`${item.title} topics`}>{item.topics.map((topic) => <TopicChip key={topic.topicId} topic={topic} />)}</ul>}
-      </div>
-      <div className="flex items-start gap-2 sm:justify-end">
-        {item.met
-          ? <Pill tone="solid" icon={<Check size={12} aria-hidden="true" />}>Met</Pill>
-          : <Pill tone={item.have === "none" ? "neutral" : "partial"}>{item.have === "none" ? "Missing" : `${depthWords[item.have]} now`}</Pill>}
-        {item.estimate && <Pill tone="quiet">Estimate</Pill>}
-      </div>
-    </li>
+    <div className="mx-3 mb-[7px] rounded-[5px] bg-tint px-2.5 pb-[5px] pt-3.5 md:px-[13px]">
+      <strong className="text-sm font-semibold">{remaining.length ? `Remaining proof requirements for ${row.title} · ${levelShort(row.scope)}` : `${row.title} · ${levelShort(row.scope)} met`}</strong>
+      <p className="mb-[9px] mt-1 text-xs text-muted-foreground">{row.requirements.length - remaining.length} of {plural(row.requirements.length, "requirement")} met</p>
+      {shown.length === 0 ? <p className="pb-3 text-xs text-muted-foreground">Every level in this area is met</p> : shown.map((item) => {
+        const target = item.missing[0] ?? item.topics[0]?.topicId;
+        const body = (
+          <>
+            {item.met ? <IconCheck size={20} className="mt-0.5 shrink-0 text-status-solid" aria-label="Met" /> : <IconCircle size={20} className="mt-0.5 shrink-0 text-[#6d7b91]" aria-label="Not met" />}
+            <span className="min-w-0">
+              <strong className="block text-[13px] font-medium">{item.title} · {levelShort(item.level)}</strong>
+              <small className="mt-0.5 block text-[11px] leading-[1.5] text-muted-foreground md:text-xs">{requirementLine(item)}</small>
+            </span>
+          </>
+        );
+        return target
+          ? <Link key={`${item.chapterId}-${item.need}`} href={engineering.topic(target)} className="flex w-full items-start gap-[9px] pb-[9px] pt-[5px] text-left hover:text-primary md:gap-4">{body}</Link>
+          : <div key={`${item.chapterId}-${item.need}`} className="flex w-full items-start gap-[9px] pb-[9px] pt-[5px] md:gap-4">{body}</div>;
+      })}
+    </div>
   );
 }
 
 function CapabilityTable({ rows, hasDirection }: { rows: CapabilityRow[]; hasDirection: boolean }) {
+  const open = rows.find((row) => row.target && row.remaining > 0)?.area ?? rows.find((row) => row.remaining > 0)?.area;
   return (
-    <section aria-labelledby="capabilities-title" className="min-w-0 rounded-lg border border-border">
-      <h2 id="capabilities-title" className="sr-only">Areas</h2>
-      <div className={cn("hidden gap-4 border-b border-border bg-muted/50 px-4 py-2.5 text-xs font-semibold text-muted-foreground md:grid", columns)}>
-        <span>Area</span><span>Now</span><span>Target</span><span>Requirements</span><span />
+    <section className={cn(panel, "min-w-0 overflow-hidden")} aria-label="Capabilities">
+      <div className={cn("grid items-center border-b border-border bg-table-head p-3.5 text-xs font-semibold text-[#566178] md:px-3.5 md:py-[15px] xl:px-[18px]", columns)}>
+        <span>Capability</span><span>Evidence level</span><span className="hidden md:block">Target</span><span className="hidden md:block">Proof coverage</span><span />
       </div>
-      {rows.map((row, index) => (
-        <details key={row.area} className="group border-b border-border last:border-b-0" open={index === 0 && row.remaining > 0}>
-          <summary className={cn("grid cursor-pointer list-none grid-cols-[minmax(0,1fr)_16px] items-center gap-x-4 gap-y-3 px-4 py-4 hover:bg-muted/40 md:py-5 [&::-webkit-details-marker]:hidden", columns)}>
-            <span className="min-w-0">
-              <span className="block text-sm font-semibold">{row.title}</span>
-              <span className="mt-0.5 block text-xs leading-5 text-muted-foreground">{row.summary}</span>
-            </span>
-            <span className="col-start-1 md:col-start-auto"><LevelRail current={row.current} target={row.target} estimate={row.estimate} /></span>
-            <span className="col-start-1 text-sm md:col-start-auto">
-              <span className="text-xs text-muted-foreground md:hidden">Target · </span>
-              {row.target ? levelWords(row.target) : <span className="text-muted-foreground">{hasDirection ? "Not needed" : "No direction"}</span>}
-            </span>
-            <span className="col-start-1 text-sm md:col-start-auto">
-              {row.requirements.length === 0 ? <span className="text-muted-foreground">Senior reached</span>
-                : row.remaining === 0 ? <span className="font-semibold text-status-solid">All met</span>
-                  : <><span className="font-semibold">{row.remaining}</span> of {row.requirements.length} to go<span className="block text-xs text-muted-foreground">For {levelWords(row.scope)}</span></>}
-            </span>
-            <svg aria-hidden="true" viewBox="0 0 16 16" className="col-start-2 row-start-1 size-4 shrink-0 transition-transform group-open:rotate-90 md:col-start-auto md:row-start-auto"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" strokeWidth="1.8" /></svg>
+      {rows.map((row) => (
+        <details key={row.area} className="group border-b border-border last:border-b-0" open={row.area === open}>
+          <summary className={cn("grid min-h-[110px] cursor-pointer list-none items-center p-3.5 text-left hover:bg-row-hover md:min-h-[105px] md:px-3.5 md:py-3 xl:px-[18px] [&::-webkit-details-marker]:hidden group-open:border-l-2 group-open:border-l-[#c9dcff] group-open:bg-[#fafcff] group-open:pl-3 xl:group-open:pl-4", columns)}>
+            <div className="min-w-0">
+              <strong className="text-[13px] font-semibold md:text-sm">{row.title}</strong>
+              <p className="mt-1 max-w-[210px] text-[11px] leading-[1.5] text-muted-foreground xl:text-xs">{row.summary}</p>
+            </div>
+            <div className="min-w-0">
+              <strong className="text-[13px] font-semibold md:text-sm">{levelShort(row.current)}{row.estimate && row.current ? " · Estimate" : ""}</strong>
+              <Rail level={row.current} soft={row.estimate} />
+            </div>
+            <strong className="hidden text-sm font-semibold md:block">{row.target ? levelShort(row.target) : <span className="font-normal text-muted-foreground">{hasDirection ? "Not needed" : "None"}</span>}</strong>
+            <div className="hidden md:block"><Coverage met={row.requirements.length - row.remaining} total={row.requirements.length} /></div>
+            <span className="text-[#566178]"><IconChevronRight size={18} className="group-open:hidden" aria-hidden="true" /><IconChevronDown size={18} className="hidden group-open:block" aria-hidden="true" /></span>
           </summary>
-          <div className="border-t border-border bg-muted/20 px-4">
-            {row.requirements.length ? <ul className="divide-y divide-border">{row.requirements.map((item) => <Requirement key={`${item.chapterId}-${item.need}`} item={item} />)}</ul>
-              : <p className="py-3 text-sm text-muted-foreground">Every level in this area is met</p>}
-            {row.atBaseline !== row.current && row.atBaseline !== undefined && (
-              <p className="border-t border-border py-2.5 text-xs text-muted-foreground">At baseline · {levelWords(row.atBaseline)}</p>
-            )}
-          </div>
+          <Requirements row={row} />
         </details>
       ))}
     </section>
   );
 }
 
-function Milestone({ next }: { next: NextRequirement | null }) {
-  if (!next) return <Panel title="Next milestone"><p className="text-sm">Direction complete</p><Button asChild size="sm" variant="outline" className="mt-3"><Link href={engineering.assessment({ new: true })}>Start checkpoint</Link></Button></Panel>;
-  const { requirement } = next;
-  const topic = requirement.topics.find((item) => item.topicId === next.topicId);
+function History({ view, evidence }: { view: ProfileView; evidence: EvidenceLink[] }) {
+  const runs = [
+    ...(view.baseline.runId ? [{ id: view.baseline.runId, name: "Baseline", at: view.baseline.completedAt }] : []),
+    ...view.checkpoint.done.map((item) => ({ id: item.id, name: "Checkpoint", at: item.completedAt as string | null })),
+    ...(view.checkpoint.inProgressRunId ? [{ id: view.checkpoint.inProgressRunId, name: "Checkpoint", at: null }] : []),
+  ];
+  const row = "grid w-full grid-cols-[1fr_auto] rounded-[4px] border border-border bg-card text-left text-[11px] md:grid-cols-[1fr_1.5fr_auto] md:text-xs xl:grid-cols-[1fr_1.5fr_1.5fr_auto]";
+  const cell = "border-r border-border px-[9px] py-3 text-[#536078] md:px-[15px]";
+  const link = "flex items-center gap-[9px] px-[9px] py-3 font-medium text-primary md:px-[15px]";
   return (
-    <Panel title="Next milestone" meta={levelWords(requirement.level)}>
-      <p className="text-xs text-muted-foreground">{next.areaTitle}</p>
-      <p className="mt-0.5 font-display text-lg font-semibold">{requirement.title}</p>
-      <p className="mt-1 text-sm text-muted-foreground">{depthWords[requirement.need]} · {depthWords[requirement.have]} now · {requirement.missing.length === 1 ? "1 topic left" : `${requirement.missing.length} topics left`}</p>
-      {topic && (
-        <Button asChild size="sm" className="mt-3">
-          <Link href={engineering.topic(topic.topicId)}>{topic.title}<ButtonEndIcon><ArrowRight size={14} /></ButtonEndIcon></Link>
-        </Button>
-      )}
-    </Panel>
-  );
-}
-
-function History({ view }: { view: ProfileView }) {
-  return (
-    <Panel title="Assessments" bodyClassName="p-0">
-      <ul className="divide-y divide-border text-sm">
-        {view.baseline.runId && (
-          <li className="flex items-baseline justify-between gap-3 px-4 py-2.5">
-            <Link href={view.baseline.completedAt ? engineering.results(view.baseline.runId) : engineering.assessment({ run: view.baseline.runId })} className="font-semibold underline-offset-4 hover:underline">Baseline</Link>
-            <span className="text-muted-foreground">{view.baseline.completedAt ? formatDate(view.baseline.completedAt) : "In progress"}</span>
-          </li>
-        )}
-        {view.checkpoint.done.map((item) => (
-          <li key={item.id} className="flex items-baseline justify-between gap-3 px-4 py-2.5">
-            <Link href={engineering.results(item.id)} className="font-semibold underline-offset-4 hover:underline">Checkpoint</Link>
-            <span className="text-muted-foreground">{formatDate(item.completedAt)}</span>
-          </li>
+    <div className="mt-[22px] border-t border-border px-1 pt-[15px] md:px-[15px]">
+      <strong className="text-xs font-semibold">Assessment history</strong>
+      <p className="mb-2.5 mt-[3px] text-xs text-muted-foreground">{plural(runs.length, "assessment")} · Snapshots never change</p>
+      <div className="space-y-2">
+        {runs.map((run) => (
+          <Link key={run.id} href={run.at ? engineering.results(run.id) : engineering.assessment({ run: run.id })} className={row}>
+            <span className={cell}>{run.name}</span>
+            <span className={cn(cell, "hidden md:block")}>{run.at ? formatDate(run.at) : "In progress"}</span>
+            <span className={cn(cell, "hidden xl:block")}>{run.at ? "Complete" : "Resume any time"}</span>
+            <b className={link}>{run.at ? "View evidence" : "Continue"}<IconArrowRight size={15} aria-hidden="true" /></b>
+          </Link>
         ))}
-        {view.checkpoint.inProgressRunId && (
-          <li className="flex items-baseline justify-between gap-3 px-4 py-2.5">
-            <Link href={engineering.assessment({ run: view.checkpoint.inProgressRunId })} className="font-semibold underline-offset-4 hover:underline">Checkpoint</Link>
-            <span className="text-muted-foreground">In progress</span>
-          </li>
-        )}
-      </ul>
-    </Panel>
+      </div>
+      {evidence.length > 0 && (
+        <>
+          <strong className="mt-5 block text-xs font-semibold">Recent evidence</strong>
+          <div className="mt-2.5 space-y-2">
+            {evidence.map((item) => (
+              <Link key={item.id} href={engineering.evidence(item.id)} className={row}>
+                <span className={cn(cell, "truncate")}>{item.topicTitle}</span>
+                <span className={cn(cell, "hidden md:block")}>{kindWords[item.kind]} · {formatDate(item.at)}</span>
+                <span className={cn(cell, "hidden xl:block")}>{labelWords[item.label]}</span>
+                <b className={link}>Inspect<IconArrowRight size={15} aria-hidden="true" /></b>
+              </Link>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
-function Evidence({ items }: { items: EvidenceLink[] }) {
+function Milestone({ next }: { next: NextRequirement | null }) {
+  const topic = next?.requirement.topics.find((item) => item.topicId === next.topicId);
   return (
-    <Panel title="Recent evidence" bodyClassName={items.length ? "p-0" : undefined}>
-      {items.length ? (
-        <ul className="divide-y divide-border text-sm">
-          {items.map((item) => (
-            <li key={item.id}>
-              <Link href={engineering.evidence(item.id)} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-2.5 hover:bg-muted/60">
-                <span className="min-w-0">
-                  <span className="block truncate font-semibold">{item.topicTitle}</span>
-                  <span className="text-xs text-muted-foreground">{kindWords[item.kind]} · {formatDate(item.at)}</span>
-                </span>
-                <Pill tone={toneFor(item.label)}>{labelWords[item.label]}</Pill>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      ) : <p className="text-sm text-muted-foreground">No graded answers yet</p>}
-    </Panel>
+    <aside className={cn(panel, "h-fit p-5 lg:p-[18px] xl:p-5")}>
+      <small className="text-sm font-semibold text-[#5a6578]">Next milestone</small>
+      {next ? (
+        <>
+          <h2 className="mt-[9px] text-[23px] font-bold tracking-[-0.6px] md:text-[25px]">{next.areaTitle} · {levelShort(next.requirement.level)}</h2>
+          <p className="mb-[26px] mt-[15px] text-[13px] leading-[1.5] text-muted-foreground lg:text-sm xl:text-[15px]">
+            {next.requirement.title} · {depthWords[next.requirement.need]} · {plural(next.requirement.missing.length, "topic")} left
+          </p>
+          <hr className="my-[25px] border-border" />
+          {topic && <Link href={engineering.topic(topic.topicId)} className={cn(primaryButton, "w-full")}>Continue learning<IconArrowRight size={19} aria-hidden="true" /></Link>}
+        </>
+      ) : <h2 className="mt-[9px] text-[25px] font-bold tracking-[-0.6px]">Direction complete</h2>}
+      <Link href={engineering.assessment({ new: true })} className={cn(textButton, "mx-auto mt-4 flex w-fit")}>Take assessment</Link>
+    </aside>
   );
 }
 
 function NotYet({ view }: { view: ProfileView }) {
   const started = view.baseline.state === "in_progress";
   return (
-    <Panel title={started ? "Baseline · In progress" : "Baseline · Not started"} className="mt-4 border-foreground">
-      <p className="text-sm">Intro, then closed-book questions by chapter. Pause between chapters</p>
-      <details className="group mt-2 max-w-[680px] text-sm">
-        <DisclosureSummary className="text-muted-foreground">How this works</DisclosureSummary>
-        <ol className="mt-2 space-y-1 pl-6 leading-6">
-          <li>1. Intro: what you build, what you use, hours a week. Never graded</li>
-          <li>2. Assessment: closed-book, chapter by chapter, no timer</li>
-          <li>3. Profile: a level per area from graded answers, then a direction</li>
-        </ol>
-      </details>
-      <Button asChild className="mt-4">
-        <Link href={engineering.assessment()}>{started ? "Continue baseline" : view.intake ? "Start baseline" : "Start intro"}<ButtonEndIcon><ArrowRight size={15} /></ButtonEndIcon></Link>
-      </Button>
-    </Panel>
+    <section className={cn(panel, "mx-[5px] max-w-[850px] p-[23px] md:mx-3.5 md:p-8")}>
+      <Badge>{started ? "Baseline · In progress" : "Baseline · Not started"}</Badge>
+      <h2 className="my-4 text-[23px] font-bold tracking-[-0.6px] md:text-[25px]">{started ? "Continue the baseline" : "Take the baseline"}</h2>
+      <ul className="mb-6 list-disc space-y-1 pl-5 text-sm leading-[1.9] text-muted-foreground">
+        <li>Intro first. Never graded</li>
+        <li>Closed-book, chapter by chapter, no timer</li>
+        <li>Pause between chapters</li>
+        <li>Proven topics are skipped</li>
+      </ul>
+      <Link href={engineering.assessment()} className={primaryButton}>{started ? "Continue baseline" : view.intake ? "Start baseline" : "Start intro"}<IconArrowRight size={18} aria-hidden="true" /></Link>
+    </section>
   );
 }
 
@@ -187,38 +168,24 @@ export function EngineeringProfile({ email, view, rows, next, evidence, closedBo
   const estimate = rows.some((row) => (chosen ? row.target : true) && row.estimate);
   return (
     <WorkspaceShell email={email} active="lab" tab="profile" termLookup={!closedBook}>
-      <div className="w-full px-5 py-6 sm:px-8">
-        <TitleBar
+      <div className="mx-auto max-w-[1500px] px-3 pb-9 pt-6 md:px-5 md:pt-[30px] min-[1500px]:pt-9">
+        <PageHeading
           title="Profile"
-          stats={done ? <>
-            <Stat label="Direction" value={chosen?.title ?? "No direction yet"} />
-            {chosen && <Stat label="Level" value={`${levelWords(chosen.overall)}${estimate ? " · Estimate" : ""}`} />}
-            {latest && <Stat label="Last assessed" value={formatDate(latest)} />}
+          badge={done ? (estimate ? "Includes estimates" : "From graded answers") : undefined}
+          facts={done ? <>
+            <Fact label="Target role" first>
+              <Link href={engineering.direction()} className="flex items-center gap-2.5 text-left hover:text-primary">{chosen?.title ?? "Choose direction"}<IconChevronDown size={16} aria-hidden="true" /></Link>
+            </Fact>
+            <Fact label="Last assessed">{latest ? formatDate(latest) : "Never"}{chosen ? ` · ${levelShort(chosen.overall)}` : ""}</Fact>
           </> : undefined}
-          actions={done ? <Button asChild size="sm" variant="outline"><Link href={engineering.direction()}>{chosen ? "Change direction" : "Choose direction"}</Link></Button> : undefined}
         />
-
         {!done ? <NotYet view={view} /> : (
-          <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <div className="grid grid-cols-1 gap-[9px] lg:grid-cols-[minmax(0,1fr)_260px] xl:grid-cols-[minmax(0,1fr)_306px]">
             <div className="min-w-0">
               <CapabilityTable rows={rows} hasDirection={Boolean(chosen)} />
-              <details className="group mt-3 text-sm">
-                <DisclosureSummary className="text-muted-foreground">How levels work</DisclosureSummary>
-                <ul className="mt-2 max-w-[680px] space-y-1 pl-6 leading-6">
-                  <li>A level needs its chapters known or proven, at the depth that level asks for</li>
-                  <li>Known: every answer in a placement check or assessment was solid</li>
-                  <li>Proven: every required kind of question solid, at least one checked by running code</li>
-                  <li>Estimate means a chapter rests on placement questions only</li>
-                  <li>A direction&apos;s level is its weakest area</li>
-                  <li><Link href={engineering.direction("definitions")} className="underline underline-offset-4">Definitions</Link></li>
-                </ul>
-              </details>
+              <History view={view} evidence={evidence} />
             </div>
-            <div className="space-y-4">
-              <Milestone next={next} />
-              <History view={view} />
-              <Evidence items={evidence} />
-            </div>
+            <Milestone next={next} />
           </div>
         )}
       </div>
