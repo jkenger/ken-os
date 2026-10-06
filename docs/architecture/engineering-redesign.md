@@ -46,7 +46,7 @@ These are real differences between the proposal and the code. None was changed s
 
 | # | Question | Decision | Why |
 |---|---|---|---|
-| D1 | Prototype styling (Inter, indigo accent, blue rails) or Ken OS? | **The prototype's look, one to one** (owner, 2026-10-06, overriding the first build's Ken OS look). Scoped to Engineering as `[data-theme="evidence"]` tokens in `globals.css` | Inter and an indigo action colour are on the owner's default avoid list; this is the owner's explicit brand choice for the module. If it becomes the Ken OS standard, the tokens move into the design-system contract and the `ken-os-design` skill is regenerated (not done yet) |
+| D1 | Prototype styling (Inter, indigo accent, blue rails) or Ken OS? | **The prototype's look, one to one** (owner, 2026-10-06, overriding the first build's Ken OS look). First scoped to Engineering, then made the Ken OS standard the same day: the tokens live in `features/design-system/contract.ts` (version 0.2.0-working.1) and the `ken-os-design` skill is regenerated from them | Inter and an indigo action colour are on the owner's default avoid list; this is the owner's explicit brand choice, recorded in the contract's decision log. Muted text is #5f6a80, not the prototype's #657086, so it clears 4.5:1 on every surface |
 | D2 | Module name | **Engineering** in the sidebar, search and title; `engineering-lab` stays in code, tables and APIs | Proposal §1; a cosmetic rename doesn't touch the database |
 | D3 | Topic stages | **Keep four steps, renamed Lesson, Predict, Lab, Prove** (owner, 2026-10-06: "rename"). `?step=` ids stay `learn`, `practice`, `lab`, `check`, so old links work | Keeps predictions and labs apart as the owner asked on 2026-10-02, while "Prove" matches the prototype |
 | D4 | Tab names that collided with step names | **Tabs keep the prototype's names; the steps were renamed** (D3) | One name per thing (app-language rule) |
@@ -86,7 +86,7 @@ The redirects stay temporary until the owner has used the new pages for a while 
 | Pages | `app/engineering/**` |
 | New screens | `components/engineering/overview.tsx`, `profile.tsx`, `evidence.tsx`, `level-rail.tsx` |
 | Reused screens | Course outline (now titled Learn, with My path), topic page, assessment, practice, profile Workbench (now titled Direction) |
-| Shell | Module renamed Engineering; sections are the four tabs; a sticky tab bar on phones |
+| Shell | Module renamed Engineering; the four sections are in the sidebar and the header keeps the "Ken OS / Engineering" breadcrumb (owner, 2026-10-06, replacing the prototype's header tabs) |
 | Closed book | `app/api/terms/lookup/route.ts` refuses while a run is open; Engineering pages hide Explain during a run |
 | Profile view | `getProfileView` also returns `progress` and `baselineChapterStates`, so the table uses the same replay as the levels |
 
@@ -94,7 +94,7 @@ Notes:
 
 - **Level words.** The table says "Known" for a placement-style pass and "Proven" for `VALIDATED`. In-app baseline answers can prove a topic when they cover every required mode with a code check (as `computeProgress` already did); lab-only topics can only become Known from a baseline. The evidence page names the attempt kind, so provenance stays visible.
 - **The evidence page's "Record" section** shows the question version and model behind a collapsed toggle. The app-language rule keeps model and prompt details off screens; this is the one place they appear, because the handoff asks for traceable grades and the record is content, not frame.
-- **The look** follows the prototype one to one: 232px sidebar (205px under 1280px), tabs in a 59px header, eyebrow and 36px titles, the capability table, rails (12px segments, lit for the level, soft for an estimate), the tint requirement panel, the milestone column, list rows, the segmented Learn filter, chapter cards, numbered step tabs and square confidence buttons. Building blocks are in `components/engineering/kit.tsx`; icons are Tabler, as in the prototype.
+- **The look** follows the prototype one to one: 232px sidebar (205px under 1280px) holding the four sections, a 59px header with the breadcrumb, eyebrow and 36px titles, the capability table, rails (12px segments, lit for the level, soft for an estimate), the tint requirement panel, the milestone column, list rows, the segmented Learn filter, chapter cards, numbered step tabs and square confidence buttons. Building blocks are in `components/engineering/kit.tsx`; icons are Tabler, as in the prototype.
 - **Where it differs from the prototype on purpose:** no tagline paragraphs under titles (app-language rule); "Proof coverage" is a count of requirements met, never a percentage; the prototype's illustrative levels, demo grading, Blob worker, localStorage and "From your projects" are not copied; the prototype's rail labels (#748096, 3.9:1) use the muted colour (4.9:1); search and Sign out stay in the header.
 - **The Skyline home (`lab-today.tsx`) is no longer routed.** It stays for the `design-preview?view=lab` mockup and is deleted with other redundant UI once the redirects are permanent (proposal §13, phase F).
 
@@ -117,9 +117,9 @@ Checks run:
 ## 6. Waiting on the owner
 
 1. **Take the baseline** at `/engineering/profile/assessment`. An agent must not answer it. Then the legacy-baseline retirement in [engineering-lab-profile.md](engineering-lab-profile.md) §8 can happen as its own change.
-2. **Decide whether the Engineering look becomes the Ken OS standard.** If yes: move the `evidence` tokens into `features/design-system/contract.ts`, run `design:generate` to update the `ken-os-design` skill, and drop the scope.
+2. **Review the Design System gallery** to approve the new look as 1.0. It stays `working` until then.
 
-Answered 2026-10-06: Q1 the prototype's look one to one (D1); Q2 rename the steps (D3); Q3 practice stops counting as proof; Q4 Manila day.
+Answered 2026-10-06: Q1 the prototype's look one to one (D1); Q2 rename the steps (D3); Q3 practice stops counting as proof; Q4 Manila day. Same day: make the look the Ken OS standard (done in design system 0.2.0-working.1).
 
 ## 7. Still deferred, as the proposal says
 

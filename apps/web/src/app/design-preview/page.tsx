@@ -130,7 +130,7 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
             <div className="mt-8 border-t border-border pt-7">
               <h3 className="font-display text-xl font-semibold tracking-[-0.04em]">What this establishes</h3>
               <ul className="mt-4 list-disc space-y-2 pl-5 text-sm leading-6 text-muted-foreground">
-                <li>A warm monochrome palette with restrained emphasis</li>
+                <li>A cool light palette with one indigo action</li>
                 <li>Readable, editorial content density</li>
                 <li>One navigation system for present and future modules</li>
               </ul>

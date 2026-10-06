@@ -1,6 +1,6 @@
 # Components: repeated surfaces and actions
 
-Version: 0.1.0-working.8 · working / not yet approved. Adapt anatomy to the target product rather than copying Ken OS content.
+Version: 0.2.0-working.1 · working / not yet approved. Adapt anatomy to the target product rather than copying Ken OS content.
 
 ## Component reuse
 
@@ -8,19 +8,23 @@ Define components by shared anatomy and behavior, not by the module that first u
 
 ## Buttons
 
-One filled primary action per task area; outline and quiet actions recede. Warm-charcoal fill, 10px radius and 14px semibold label. An end icon gets a fine divider only when it reinforces the action.
+One filled indigo action per task area; secondary actions are white with a hairline, text actions are indigo words. 44px high, 5px radius, 14px medium label, 19px side padding, an arrow end icon 14px from the label. Hover darkens the fill; buttons never fade.
 
-## Cards
+## Panels and cards
 
-Use the stock shadcn Card surface and standard slots across modules; do not create module-named copies or nested cards. Keep the established Ken OS density and typography: 16px compact spacing, 16px semibold titles, 14px supporting text, 13px source metadata, and 8px between repeated cards. Compose CardHeader, CardTitle, CardDescription, CardAction, CardContent and CardFooter as needed. Status must be readable as text, not color alone. Custom surface styling remains an open decision.
+White panels on the canvas with a 1px hairline and 5px radius; no shadows, no nested panels. Header strips use the table-head surface with a 12px semibold quiet label. Tables are panels whose rows open into a tinted detail block. Status must be readable as text, not colour alone.
 
-## Feature panels
+## Page heading
 
-Use the same Card or a plain section for task surfaces. Give roomier task surfaces 24–28px spacing and 15–16px explanatory copy. Do not add a module-specific Card component merely for different content.
+Eyebrow, large title, an optional badge, and facts on the right. No tagline under the title: screens name things, they don't describe themselves. Facts are a 12px label over a 15px semibold value.
+
+## Rails
+
+Junior, mid and senior (or any short ordered scale) as three 12px rounded segments with labels underneath. Light up the reached segment, use the soft colour for an estimate, and always write the value in words beside the rail. Coverage is a segment per requirement and a count, never a percentage.
 
 ## Inputs
 
-Quiet boundary, clear label and obvious focus. Use 40–44px height, 14px text, warm border and visible focus ring; retain error and disabled states.
+White field, cool hairline, clear label and a soft blue focus ring. Use 40–44px height, 14px text and a 3px #e6eeff focus halo with a #507ceb edge; retain error and disabled states.
 
 ## Notifications
 
@@ -28,7 +32,7 @@ Call toast() after something finishes in the background or saves; keep errors ne
 
 ## App shell
 
-Navigation is persistent only when there are real sibling destinations. A flush 264–276px desktop rail and main area, both edge to edge, divided by one hairline; no inset cards, rounded frames or shadows on the shell, so it reads as an app. Their header strips share one height, so the lines meet. Mobile uses an accessible menu. Dividers reach the content frame while text stays padded.
+A tinted 232px rail with the modules and the current module's sections, and a 59px header with a breadcrumb. The rail (205px under 1280px) has the brand, the modules with 21px outline icons, and the owner at the bottom, with no divider against the canvas. The current module is a pale blue pill with indigo text. Below the modules, a small label names the current module and lists its sections; the current section uses the same pale blue fill. The header shows 'Ken OS / Module' on the left and search and sign out on the right. Mobile uses an accessible menu holding both lists.
 
 ## Density check
 

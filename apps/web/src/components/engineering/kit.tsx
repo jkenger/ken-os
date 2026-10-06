@@ -5,7 +5,7 @@ import { LEVELS, levelRank, type Level } from "@ken-os/domain";
 import { cn } from "@/lib/utils";
 
 // Building blocks of the selected 2026-10-06 Engineering prototype ("light Evidence Workbench"), one to one: sizes,
-// weights and spacing are the prototype's. Colours come from the [data-theme="evidence"] tokens in globals.css.
+// weights and spacing are the prototype's. Colours come from the Ken OS tokens (features/design-system/contract.ts).
 
 export const button = "inline-flex min-h-11 items-center justify-center gap-3.5 rounded-[5px] border px-[19px] py-[11px] text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50";
 export const primaryButton = cn(button, "border-primary bg-primary text-primary-foreground hover:bg-primary-hover");

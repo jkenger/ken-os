@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 // Engineering's page heading and bordered panels, in the selected 2026-10-06 prototype's sizes ("light Evidence
 // Workbench"): an eyebrow, a large title, facts on the right, and white panels with a small header strip.
-// Colours come from the [data-theme="evidence"] tokens. Shared by practice, the assessment, Direction and evidence.
+// Colours come from the Ken OS tokens. Shared by practice, the assessment, Direction and evidence.
 
 export function TitleBar({ kicker = "Engineering", title, stats, actions }: { kicker?: string; title: string; stats?: ReactNode; actions?: ReactNode }) {
   return (
