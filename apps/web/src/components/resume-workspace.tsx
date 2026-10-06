@@ -146,20 +146,20 @@ export function ResumeWorkspace({ email, selection, file, error, previewUrl, can
     <WorkspaceShell email={email} active="resume" preview={preview}>
       <Script src="https://apis.google.com/js/api.js" strategy="afterInteractive" />
       <div className="mx-auto w-full max-w-[1320px] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-        <div className="mb-8 flex items-end justify-between gap-6 border-b border-border pb-8 sm:mb-10">
+        <div className="mb-6 flex items-end justify-between gap-6 sm:mb-8">
           <div>
-            <h1 className="text-[28px] font-[750] leading-[1.25] tracking-[-0.8px] md:text-[30px] xl:text-[36px] xl:tracking-[-1.3px]">Resume</h1>
+            <h1 className="text-[30px] font-[750] leading-[1.1] tracking-[-0.035em] md:text-[34px] xl:text-[40px] xl:leading-[1.05]">Resume</h1>
           </div>
         </div>
 
         {labSummary && (
-          <a href="/engineering" className="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border px-5 py-4 hover:bg-muted/60">
+          <a href="/engineering" className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-xl bg-card shadow-panel px-5 py-4 transition-colors hover:bg-row-hover">
             <span><span className="block text-[11px] font-bold uppercase tracking-[0.14em] text-muted-foreground">Engineering</span><span className="mt-1 block text-[15px] font-semibold">{labSummary.headline}</span></span>
             <span className="text-sm text-muted-foreground">{labSummary.detail}</span>
           </a>
         )}
 
-        <section className="grid overflow-hidden rounded-xl border border-border bg-card shadow-sm lg:grid-cols-[minmax(320px,0.85fr)_minmax(0,1.15fr)]">
+        <section className="grid overflow-hidden rounded-xl bg-card shadow-panel lg:grid-cols-[minmax(320px,0.85fr)_minmax(0,1.15fr)]">
           <div className="flex min-h-[400px] flex-col items-start p-6 sm:p-8">
             <div className="mb-7 grid size-11 place-items-center rounded-xl bg-secondary text-foreground">{file ? <FileText size={22} strokeWidth={1.6} /> : <Plus size={22} strokeWidth={1.6} />}</div>
             {file ? (

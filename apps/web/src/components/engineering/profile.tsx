@@ -29,7 +29,7 @@ function Requirements({ row }: { row: CapabilityRow }) {
   const remaining = row.requirements.filter((item) => !item.met);
   const shown = remaining.length ? remaining : row.requirements;
   return (
-    <div className="mx-3 mb-[7px] rounded-[5px] bg-tint px-2.5 pb-[5px] pt-3.5 md:px-[13px]">
+    <div className="mx-3 mb-3 mt-1.5 rounded-md bg-tint px-2.5 pb-1.5 pt-3.5 md:px-[13px]">
       <strong className="text-sm font-semibold">{remaining.length ? `Remaining proof requirements for ${row.title} · ${levelShort(row.scope)}` : `${row.title} · ${levelShort(row.scope)} met`}</strong>
       <p className="mb-[9px] mt-1 text-xs text-muted-foreground">{row.requirements.length - remaining.length} of {plural(row.requirements.length, "requirement")} met</p>
       {shown.length === 0 ? <p className="pb-3 text-xs text-muted-foreground">Every level in this area is met</p> : shown.map((item) => {
@@ -86,7 +86,7 @@ function History({ view, evidence }: { view: ProfileView; evidence: EvidenceLink
     ...view.checkpoint.done.map((item) => ({ id: item.id, name: "Checkpoint", at: item.completedAt as string | null })),
     ...(view.checkpoint.inProgressRunId ? [{ id: view.checkpoint.inProgressRunId, name: "Checkpoint", at: null }] : []),
   ];
-  const row = "grid w-full grid-cols-[1fr_auto] rounded-[4px] border border-border bg-card text-left text-[11px] md:grid-cols-[1fr_1.5fr_auto] md:text-xs xl:grid-cols-[1fr_1.5fr_1.5fr_auto]";
+  const row = "grid w-full grid-cols-[1fr_auto] rounded-lg border border-border bg-card text-left text-[11px] md:grid-cols-[1fr_1.5fr_auto] md:text-xs xl:grid-cols-[1fr_1.5fr_1.5fr_auto]";
   const cell = "border-r border-border px-[9px] py-3 text-quiet md:px-[15px]";
   const link = "flex items-center gap-[9px] px-[9px] py-3 font-medium text-primary md:px-[15px]";
   return (

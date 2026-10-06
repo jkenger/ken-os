@@ -103,7 +103,7 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
         <form className="mt-7 grid gap-3" onSubmit={upload}>
           <label className="text-xs font-semibold" htmlFor="skill-bundle">Skill file</label>
           <input
-            className="w-full rounded-lg border border-dashed border-input bg-background p-3 text-xs file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-2 file:py-1.5 file:text-xs file:font-medium"
+            className="w-full rounded-lg border border-dashed border-input bg-card p-3 text-xs file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-2 file:py-1.5 file:text-xs file:font-medium"
             id="skill-bundle"
             name="bundle"
             type="file"
@@ -146,7 +146,7 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
             <Card key={skill.id}><CardContent>
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2">
-                  <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-lg border border-border bg-background text-muted-foreground"><FileText size={15} aria-hidden="true" /></span>
+                  <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground"><FileText size={15} aria-hidden="true" /></span>
                   <span className="truncate text-[11px] font-bold tracking-[0.1em] text-muted-foreground">{skill.slug} / v{skill.version}</span>
                 </div>
                 <span
@@ -179,27 +179,27 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
                     {Object.entries(skill.files)
                       .sort(([left], [right]) => left.localeCompare(right))
                       .map(([path, content]) => (
-                        <details className="group mt-2 rounded-lg border border-border p-3" key={path}>
+                        <details className="group mt-2 rounded-lg bg-muted p-3" key={path}>
                           <DisclosureSummary className="break-all text-xs font-medium">{path}</DisclosureSummary>
                           <pre className="mt-3 max-h-80 overflow-auto whitespace-pre-wrap break-all text-xs leading-5">{content}</pre>
                         </details>
                       ))}
                     <div className="mt-4 flex flex-wrap gap-2">
                       <button
-                        className="inline-flex h-9 items-center rounded-lg border border-border bg-background px-3 text-xs font-medium hover:bg-muted"
+                        className="inline-flex h-9 items-center rounded-lg border border-border bg-card px-3 text-xs font-medium hover:bg-muted"
                         type="button"
                         onClick={() => void copyManifest(skill)}
                       >
                         Copy SKILL.md
                       </button>
                       <a
-                        className="inline-flex h-9 items-center rounded-lg border border-border bg-background px-3 text-xs font-medium hover:bg-muted"
+                        className="inline-flex h-9 items-center rounded-lg border border-border bg-card px-3 text-xs font-medium hover:bg-muted"
                         href={`/api/skills/${encodeURIComponent(skill.id)}/export?format=md`}
                       >
                         Download SKILL.md
                       </a>
                       <a
-                        className="inline-flex h-9 items-center rounded-lg border border-border bg-background px-3 text-xs font-medium hover:bg-muted"
+                        className="inline-flex h-9 items-center rounded-lg border border-border bg-card px-3 text-xs font-medium hover:bg-muted"
                         href={`/api/skills/${encodeURIComponent(skill.id)}/export?format=zip`}
                       >
                         Export ZIP

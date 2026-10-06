@@ -39,8 +39,8 @@ export function ProjectMemoryPreview() {
 
   return (
     <WorkspaceShell email="preview@example.invalid" active="memory" preview>
-      <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-[1320px] border-x border-border">
-        <header className="border-b border-border px-5 pt-8 pb-4 sm:px-8 lg:px-10 lg:pt-10">
+      <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-[1320px] pb-8">
+        <header className="px-5 pt-8 pb-4 sm:px-8 lg:px-10 lg:pt-10">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <p className={label}>PROJECT MEMORY</p>
@@ -65,7 +65,7 @@ export function ProjectMemoryPreview() {
 
         <div className="grid lg:grid-cols-[minmax(0,1.75fr)_minmax(300px,0.85fr)]">
           <div className="min-w-0">
-            <section className="scroll-mt-24 border-b border-border px-5 py-8 sm:px-8 lg:px-10" id="decisions" aria-labelledby="confirmed-title">
+            <section className="scroll-mt-24 px-5 py-6 sm:px-8 lg:px-10" id="decisions" aria-labelledby="confirmed-title">
               <h2 className={label} id="confirmed-title">CONFIRMED DECISIONS</h2>
               <p className="mt-1 mb-2 text-sm leading-5 text-muted-foreground">These choices came from you and should be treated as current.</p>
               <div className="space-y-2">
@@ -88,7 +88,7 @@ export function ProjectMemoryPreview() {
               </div>
             </section>
 
-            <section className="border-b border-border px-5 py-8 sm:px-8 lg:px-10" aria-labelledby="proposed-title">
+            <section className="px-5 py-6 sm:px-8 lg:px-10" aria-labelledby="proposed-title">
               <h2 className={label} id="proposed-title">PROPOSED NEXT STEP</h2>
               <p className="mt-1 mb-2 text-sm leading-5 text-muted-foreground">Not yet confirmed. Suggested for your review.</p>
               <Card>
@@ -100,7 +100,7 @@ export function ProjectMemoryPreview() {
               </Card>
             </section>
 
-            <section className="scroll-mt-24 border-b border-border px-5 py-8 sm:px-8 lg:px-10" id="open-questions" aria-labelledby="questions-title">
+            <section className="scroll-mt-24 px-5 py-6 sm:px-8 lg:px-10" id="open-questions" aria-labelledby="questions-title">
               <h2 className={label} id="questions-title">OPEN QUESTIONS</h2>
               <p className="mt-1 mb-2 text-sm leading-5 text-muted-foreground">Needs your input before the policy is settled.</p>
               <Card>
@@ -113,17 +113,17 @@ export function ProjectMemoryPreview() {
             </section>
           </div>
 
-          <aside className="min-w-0 border-t border-border lg:border-t-0 lg:border-l" aria-label="About this handoff">
-            <section className="border-b border-border px-5 py-8 sm:px-8 lg:px-9">
+          <aside className="min-w-0" aria-label="About this handoff">
+            <section className="px-5 py-6 sm:px-8 lg:px-9">
               <h2 className={label}>ABOUT THIS BRIEF</h2>
               <p className="mt-4 text-base leading-6 text-muted-foreground">A short, source-linked view of what a new agent session needs: current choices, a proposed direction, and the question still open.</p>
               <p className="mt-4 text-base leading-6 text-muted-foreground">This page is a visual preview. Nothing shown here is stored as a Project Memory record.</p>
             </section>
-            <section className="border-b border-border px-5 py-8 sm:px-8 lg:px-9">
+            <section className="px-5 py-6 sm:px-8 lg:px-9">
               <h2 className={label}>LATEST OUTCOME</h2>
               <p className="mt-4 text-base leading-6 text-muted-foreground">The Ken OS shell and typography baseline are ready. Project Memory is the next module being designed.</p>
             </section>
-            <section className="scroll-mt-24 border-b border-border px-5 py-8 sm:px-8 lg:px-9" id="sources">
+            <section className="scroll-mt-24 px-5 py-6 sm:px-8 lg:px-9" id="sources">
               <h2 className={label}>SOURCES IN THIS BRIEF</h2>
               <details className="group mt-4 text-sm text-muted-foreground">
                 <DisclosureSummary className="rounded-md py-1 hover:text-foreground"><FileText size={16} aria-hidden="true" />Resume hub → How it works</DisclosureSummary>

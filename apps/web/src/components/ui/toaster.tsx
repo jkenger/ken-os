@@ -77,7 +77,7 @@ function ToastCard({ item }: { item: ToastItem }) {
 
   return (
     <li role={item.tone === "error" ? "alert" : "status"} onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onFocus={() => setPaused(true)} onBlur={() => setPaused(false)}
-      className="pointer-events-auto flex w-full gap-3 rounded-xl border border-border bg-popover p-4 text-sm shadow-xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2">
+      className="pointer-events-auto flex w-full gap-3 rounded-xl bg-popover p-4 text-sm shadow-xl ring-1 ring-foreground/5 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2">
       <Icon size={17} className={cn("mt-0.5 shrink-0", tones[item.tone].className)} aria-hidden="true" />
       <div className="min-w-0 flex-1">
         <p className="font-semibold leading-5">{item.title}</p>

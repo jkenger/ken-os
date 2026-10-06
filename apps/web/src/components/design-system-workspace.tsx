@@ -17,9 +17,9 @@ export function DesignSystemWorkspace({
 }) {
   return (
     <WorkspaceShell email={email} active="design" preview={preview}>
-      <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-[1320px] border-x border-border">
+      <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-[1320px] pb-8">
         <header
-          className="border-b border-border px-5 pb-7 pt-8 sm:px-8 lg:px-10 lg:pt-10"
+          className="px-5 pb-4 pt-8 sm:px-8 lg:px-10 lg:pt-10"
           id="overview"
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -32,7 +32,7 @@ export function DesignSystemWorkspace({
           </div>
           <div className="mt-4 flex flex-wrap items-end justify-between gap-6">
             <div className="max-w-[730px]">
-              <h1 className="text-[28px] font-[750] leading-[1.25] tracking-[-0.8px] md:text-[30px] xl:text-[36px] xl:tracking-[-1.3px]">
+              <h1 className="text-[30px] font-[750] leading-[1.1] tracking-[-0.035em] md:text-[34px] xl:text-[40px] xl:leading-[1.05]">
                 Design System
               </h1>
               <p className="mt-3 max-w-[680px] text-base leading-6 text-muted-foreground sm:text-lg sm:leading-7">
@@ -57,7 +57,7 @@ export function DesignSystemWorkspace({
         </header>
 
         <section
-          className="scroll-mt-20 border-b border-border"
+          className="scroll-mt-20 pb-2"
           id="foundations"
           aria-labelledby="foundations-title"
         >
@@ -72,7 +72,7 @@ export function DesignSystemWorkspace({
               Color, type and density
             </p>
           </div>
-          <div className="grid border-y border-border md:grid-cols-2 xl:grid-cols-4">
+          <div className="mx-5 grid overflow-hidden rounded-xl bg-card shadow-panel sm:mx-8 md:grid-cols-2 lg:mx-10 xl:grid-cols-4">
             {designSystem.colors.slice(0, 8).map((color) => (
               <div
                 key={color.variable}
@@ -95,14 +95,14 @@ export function DesignSystemWorkspace({
               </div>
             ))}
           </div>
-          <div className="grid lg:grid-cols-2">
+          <div className="mx-5 mt-4 grid overflow-hidden rounded-xl bg-card shadow-panel sm:mx-8 lg:mx-10 lg:grid-cols-2">
             <div className="px-5 py-6 sm:px-8 lg:border-r lg:px-10">
               <p className={label}>Type</p>
-              <p className="mt-4 font-display text-[30px] font-[750] leading-tight tracking-[-1px]">
-                Manrope makes a point.
+              <p className="mt-4 font-display text-[30px] font-[750] leading-tight tracking-[-0.035em]">
+                Bricolage Grotesque makes a point.
               </p>
               <p className="mt-2 text-base leading-6 text-muted-foreground">
-                Source Sans 3 carries the explanation. The display face stays
+                Public Sans carries the explanation. The display face stays
                 out of dense body copy.
               </p>
               <div className="mt-5 space-y-2 border-t border-border pt-4">
@@ -142,7 +142,7 @@ export function DesignSystemWorkspace({
         </section>
 
         <section
-          className="scroll-mt-20 border-b border-border px-5 py-6 sm:px-8 lg:px-10"
+          className="scroll-mt-20 px-5 py-6 sm:px-8 lg:px-10"
           id="components"
           aria-labelledby="components-title"
         >
@@ -158,7 +158,7 @@ export function DesignSystemWorkspace({
             </p>
           </div>
           <ComponentExamples />
-          <details className="group mt-4 rounded-xl border border-border px-4 py-3 text-sm">
+          <details className="group mt-4 rounded-xl bg-card shadow-panel px-4 py-3 text-sm">
             <DisclosureSummary className="font-semibold">
               Usage rules and anatomy
             </DisclosureSummary>
@@ -178,7 +178,7 @@ export function DesignSystemWorkspace({
         </section>
 
         <section
-          className="scroll-mt-20 border-b border-border"
+          className="scroll-mt-20 pb-2"
           id="patterns"
           aria-labelledby="patterns-title"
         >
@@ -193,7 +193,7 @@ export function DesignSystemWorkspace({
               Compact for repeated items, roomy for tasks
             </p>
           </div>
-          <div className="grid border-t border-border md:grid-cols-3">
+          <div className="mx-5 grid overflow-hidden rounded-xl bg-card shadow-panel sm:mx-8 md:grid-cols-3 lg:mx-10">
             <Link
               href="/"
               className="group border-b border-border p-5 transition-colors hover:bg-muted/50 md:border-b-0 md:border-r sm:px-8"
@@ -242,7 +242,7 @@ export function DesignSystemWorkspace({
         </section>
 
         <section
-          className="scroll-mt-20 border-b border-border px-5 py-6 sm:px-8 lg:px-10"
+          className="scroll-mt-20 px-5 py-6 sm:px-8 lg:px-10"
           id="decisions"
           aria-labelledby="decisions-title"
         >
@@ -256,7 +256,7 @@ export function DesignSystemWorkspace({
             {designSystem.decisions.map((decision) => (
               <div
                 key={decision.title}
-                className="rounded-xl border border-border bg-muted/35 p-4"
+                className="rounded-xl bg-card shadow-panel p-4"
               >
                 <span className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
                   Recorded {decision.recorded}
@@ -284,7 +284,7 @@ export function DesignSystemWorkspace({
           id="export"
           aria-labelledby="export-title"
         >
-          <div className="grid gap-5 rounded-xl border border-border bg-muted/35 p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div className="grid gap-5 rounded-xl bg-card shadow-panel p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
             <div>
               <h2
                 className="font-display text-xl font-semibold tracking-[-0.04em]"

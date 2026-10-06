@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@400..800&family=Source+Sans+3:wght@400..700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Public+Sans:wght@400..700&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
@@ -49,6 +49,10 @@
   --color-row-hover: var(--row-hover);
   --color-primary-hover: var(--primary-hover);
   --color-quiet: var(--quiet);
+  --color-signal: var(--signal);
+  --color-canvas: var(--canvas);
+  --shadow-panel: var(--elevation-panel);
+  --shadow-tab: var(--elevation-tab);
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
