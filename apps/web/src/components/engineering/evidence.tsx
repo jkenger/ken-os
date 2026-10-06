@@ -60,7 +60,6 @@ export function EngineeringEvidence({ email, view, closedBook = false }: { email
             {!response.lines && !response.text && !response.code && <p className="text-sm text-muted-foreground">No answer text</p>}
           </Panel>
 
-          {result ? (
             <Panel title="Result" meta={gradedWords[result.gradedBy]}>
               <div className="flex flex-wrap items-center gap-2">
                 <Pill tone={toneFor(result.label)}>{labelWords[result.label]}</Pill>
@@ -86,9 +85,6 @@ export function EngineeringEvidence({ email, view, closedBook = false }: { email
                 <><p className="mb-1 mt-4 text-xs text-muted-foreground">Misconceptions</p><ul className="list-disc space-y-1 pl-5 text-sm leading-6">{result.misconceptions.map((item) => <li key={item}>{item}</li>)}</ul></>
               )}
             </Panel>
-          ) : (
-            <Panel title="Result"><p className="text-sm text-muted-foreground">Shown when this chapter of the assessment is done</p></Panel>
-          )}
 
           {view.source && (
             <details className="group rounded-lg border border-border px-4 py-3 text-sm">

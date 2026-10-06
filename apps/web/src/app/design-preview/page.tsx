@@ -104,7 +104,7 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
   }
   if (view === "engineering-evidence") {
     const { view: evidence } = previewEvidence();
-    return <EngineeringEvidence email="preview@example.invalid" view={screenParam === "withheld" ? { ...evidence, result: null, question: { ...evidence.question, expectedOutput: null } } : evidence} />;
+    return <EngineeringEvidence email="preview@example.invalid" view={evidence} />;
   }
   if (view === "engineering-learn") {
     const assessable = topicMap.topics.filter((topic) => assessorModes(topic).length > 0).map((topic) => topic.id);

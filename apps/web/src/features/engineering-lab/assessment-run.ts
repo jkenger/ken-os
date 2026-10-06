@@ -163,7 +163,7 @@ export async function submitScreenAnswer(userId: string, input: ScreenAnswerInpu
     }).where(and(eq(labChapterScreens.id, screen.id), sql`${labChapterScreens.answeredAt} is null`)).returning({ id: labChapterScreens.id });
     if (!updated.length) throw new LabInputError("This question already has an answer.", 409);
     const runFinished = screen.runId ? await completeRunIfDone(tx, screen.runId) : false;
-    return { label: grade.label, runFinished };
+    return { label: grade.label, feedback: grade.feedback, rubric: grade.rubric ?? null, runFinished };
   });
 }
 
@@ -221,7 +221,7 @@ export interface RunChapterView {
   answered: number;
   /** Topics whose questions came back incomplete and still need writing. */
   unwritten: number;
-  /** Shown only once the chapter is done, so grades can't steer the rest of a closed-book chapter. */
+  /** Every graded answer so far. Grades show after each answer (engineering-assessment-v2.md A3). */
   answers: RunAnswerView[];
 }
 
@@ -274,7 +274,8 @@ export async function getRunView(userId: string, runId: string, focusChapter?: s
         const row = rows.find((item) => item.itemIndex === index);
         if (row) next = { chapterId: chapter.chapterId, type: "screen", id: row.id, topicId: null, itemIndex: row.itemIndex, item: toPublicItem(row.item), position: answeredRows.length + 1, outOf: SCREEN_QUESTIONS };
       }
-      if (done) {
+      // Grades show after every answer (owner, 2026-10-06; engineering-assessment-v2.md A3).
+      {
         view.answers = answeredRows.map((row) => ({
           label: row.label!, voided: false, feedback: row.feedback ?? "", prompt: row.item.prompt, mode: row.item.mode,
           answer: row.response?.text ?? "", rubric: row.rubric ?? null, selfRating: row.selfRating,
@@ -290,13 +291,13 @@ export async function getRunView(userId: string, runId: string, focusChapter?: s
         const topicDone = Boolean(set) && nextIndex === null;
         const counted = topicAttempts.filter((attempt) => !attempt.voided);
         const label = counted.length ? (counted.find((attempt) => attempt.label !== "solid")?.label ?? "solid") : null;
-        view.topics.push({ topicId, title: findTopic(topicId)?.title ?? topicId, done: topicDone, label: done ? label : null });
+        view.topics.push({ topicId, title: findTopic(topicId)?.title ?? topicId, done: topicDone, label });
         view.answered += topicAttempts.length;
         position += topicAttempts.length;
         if (!next && set && nextIndex !== null) {
           next = { chapterId: chapter.chapterId, type: "topic", id: set.id, topicId, itemIndex: nextIndex, item: toPublicItem(set.items[nextIndex]), position, outOf: chapter.topicIds.length * 2 };
         }
-        if (done) {
+        {
           for (const attempt of topicAttempts) {
             view.answers.push({
               label: attempt.label, voided: attempt.voided, feedback: attempt.feedback, prompt: (attempt.item as { prompt?: string }).prompt ?? "",

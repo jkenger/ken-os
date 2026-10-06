@@ -46,13 +46,13 @@ async function main() {
 
     const during = await evidence.getEvidence(owner, attempt.id);
     assert.ok(during);
-    assert.equal(during.result, null, "the grade stays hidden while its chapter is unfinished");
-    assert.equal(during.question.expectedOutput, null, "so does the answer key");
+    assert.equal(during.result.label, "solid", "grades show after every answer, also during the run (assessment v2, A3)");
+    assert.deepEqual(during.question.expectedOutput, ["1"]);
     assert.equal(during.selfRating, 4, "confidence is recorded independently of the grade");
     assert.equal(during.role, "placement");
     assert.equal(during.source?.runKind, "baseline");
-    assert.equal((await evidence.recentEvidence(owner)).length, 0, "answers in an open run stay out of recent evidence");
-    console.log("ok - during the run: evidence page hides the grade and answer key, recent evidence leaves it out");
+    assert.equal((await evidence.recentEvidence(owner)).length, 1, "recent evidence includes answers from the open run");
+    console.log("ok - during the run: the evidence page shows the grade, and recent evidence lists the answer");
 
     assert.equal(await evidence.getEvidence(other, attempt.id), null, "another owner's id reads as missing");
     assert.equal(await evidence.getEvidence(owner, "no-such-attempt"), null);

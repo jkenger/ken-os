@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { IconArrowLeft, IconArrowRight, IconCheck, IconCircle, IconCircleDot } from "@tabler/icons-react";
-import type { IntakeAnswers } from "@ken-os/domain";
+import type { IntakeAnswers, Label, RubricResult } from "@ken-os/domain";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { post } from "@/components/lab/topic/client";
 import { RubricChecklist } from "@/components/lab/topic/feedback";
@@ -21,6 +21,8 @@ import { Dialog, Feedback, field, fieldLabel, FlowLayout, FlowNotes, NoteList, P
 // question at a time with a progress column, then results. Every step uses the real run: questions are written per
 // chapter, answers are graded and stored, and grades stay hidden until a chapter is done.
 // Design: docs/architecture/engineering-redesign.md; rules: engineering-lab-profile.md section 4.
+
+interface Graded { label: Label; feedback: string; rubric: RubricResult[] | null; voided?: boolean }
 
 const page = "mx-auto max-w-[1500px] px-3 pb-9 pt-6 md:px-5 md:pt-[30px] min-[1500px]:pt-9";
 
@@ -146,6 +148,7 @@ function Session({ run }: { run: RunView }) {
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState("");
   const [finished, setFinished] = useState(false);
+  const [graded, setGraded] = useState<Graded | null>(null);
   const done = run.chapters.filter((chapter) => chapter.status === "done").length;
   const chapter = run.chapters.find((item) => item.chapterId === run.current?.chapterId) ?? run.chapters.find((item) => item.status !== "done") ?? null;
   const number = chapter ? run.chapters.indexOf(chapter) + 1 : run.chapters.length;
@@ -172,13 +175,15 @@ function Session({ run }: { run: RunView }) {
   async function submit(payload: QuestionPayload) {
     const current = run.current!;
     const result = current.type === "screen"
-      ? await post<{ runFinished: boolean }>("/api/lab/screens", { screenId: current.id, text: payload.text ?? "", selfRating: payload.selfRating })
-      : await post<{ runFinished: boolean }>("/api/lab/attempts", {
+      ? await post<{ runFinished: boolean; label: Label; feedback: string; rubric: RubricResult[] | null }>("/api/lab/screens", { screenId: current.id, text: payload.text ?? "", selfRating: payload.selfRating })
+        .then((value) => ({ ...value, grade: { label: value.label, feedback: value.feedback, rubric: value.rubric, voided: false } }))
+      : await post<{ runFinished: boolean; grade: Graded }>("/api/lab/attempts", {
         type: "answer", assessmentId: current.id, itemIndex: current.itemIndex, selfRating: payload.selfRating,
         response: payload.lines ? { lines: payload.lines, ...(payload.why ? { why: payload.why } : {}) } : { text: payload.text ?? "" },
         ...(payload.actualOutput ? { actualOutput: payload.actualOutput } : {}),
       });
     setFinished(result.runFinished);
+    setGraded({ label: result.grade.label, feedback: result.grade.feedback, rubric: result.grade.rubric ?? null, voided: Boolean(result.grade.voided) });
   }
 
   function next() {
@@ -187,6 +192,7 @@ function Session({ run }: { run: RunView }) {
       router.push(engineering.results(run.id));
       return;
     }
+    setGraded(null);
     router.refresh();
   }
 
@@ -211,10 +217,12 @@ function Session({ run }: { run: RunView }) {
             item={current.item}
             onSubmit={submit}
             after={(
-              <Feedback badge={<Badge>Saved · graded with the chapter</Badge>} title={finished ? `${name} complete` : "Answer saved"} action={(
-                <button type="button" className={primaryButton} onClick={next}>{finished ? "View results" : "Next question"}<IconArrowRight size={18} aria-hidden="true" /></button>
-              )}>
-                Grades show when this chapter is done. You can stop here and come back.
+              <Feedback
+                badge={graded ? <Pill tone={toneFor(graded.voided ? "voided" : graded.label)}>{graded.voided ? "Discarded · question was wrong" : labelWords[graded.label]}</Pill> : undefined}
+                title={graded?.feedback || (finished ? `${name} complete` : "Answer saved")}
+                action={<button type="button" className={primaryButton} onClick={next}>{finished ? "View results" : "Next question"}<IconArrowRight size={18} aria-hidden="true" /></button>}
+              >
+                {graded?.rubric && <RubricChecklist items={graded.rubric} />}
               </Feedback>
             )}
           />
