@@ -21,11 +21,11 @@ For an agent or developer working in this repository, the module must point to t
 
 ## Existing decisions to carry forward
 
-- One warm, light monochrome system; no additional color presets in v1. Custom card styling is deferred; use shadcn's default Card.
-- Manrope for display text and Source Sans 3 for body and controls.
+- One light system, the Evidence Workbench look adopted on 2026-10-06 (design system 0.2): cool greys with one indigo action colour; no additional colour presets in v1. Panels are white with a hairline and 5px radius. It replaced the earlier warm monochrome baseline.
+- Inter for every role, with weight carrying hierarchy.
 - Tailwind utilities for normal feature styling, CSS variables in `globals.css` for shared theme tokens, and tailored shadcn primitives in `components/ui`.
-- Floating sidebar and inset main surface when an app has meaningful sibling destinations; full-width section dividers within the content frame.
-- Stock shadcn Card surface and slots with Ken OS's existing compact/roomy density and type scale, plus a warm-charcoal primary button with an optional separated end icon.
+- A tinted 232px module rail flush against the canvas, and a 59px header that carries a module's tabs when it has them.
+- 44px indigo primary buttons with an arrow end icon, white secondary buttons, rails for ordered levels, and capability-style tables that open into tinted detail.
 - A design skill is an optional preset for personal work, not a mandate for every future project or client app.
 
 The current values and anatomy are recorded in [component language](../design/component-language.md) and the existing [portable skill](../../.agents/skills/ken-os-design/SKILL.md). They are a working baseline, not a claim that every state has been visually approved.

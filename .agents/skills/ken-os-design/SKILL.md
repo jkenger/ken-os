@@ -1,11 +1,11 @@
 ---
 name: ken-os-design
-description: Apply the owner's working Ken OS-derived visual baseline to a personal web app when requested. Covers shell, warm monochrome typography, stock shadcn cards, and primary actions; not for unrelated UI work.
+description: Apply the owner's working Ken OS-derived visual baseline to a personal web app when requested. Covers the shell, Inter typography, cool-grey panels, rails and the indigo primary action; not for unrelated UI work.
 ---
 
 # Ken OS design baseline
 
-Version: 0.1.0-working.8. Status: **working / not yet approved**. This is an optional visual preset, not a project scaffold. The user's explicit choices and the target project's existing design system take precedence.
+Version: 0.2.0-working.1. Status: **working / not yet approved**. This is an optional visual preset, not a project scaffold. The user's explicit choices and the target project's existing design system take precedence.
 
 ## Apply it
 
@@ -16,4 +16,4 @@ Version: 0.1.0-working.8. Status: **working / not yet approved**. This is an opt
 
 ## Boundaries
 
-The light palette is intentional. Card styling remains open: use stock shadcn Card until the owner settles a custom treatment. Do not add green or blue accents, decorative corner brackets, cut edges, or heavy shadows without a new owner decision. Do not copy Ken OS branding, module names, sample data, or navigation into another product. Do not install globally, alter unrelated dependencies, deploy, or publish solely because this skill is invoked.
+The light, cool palette with one indigo action colour is intentional. Panels are white with a hairline and 5px radius. Do not add gradients, glass effects, second accent colours, decorative corner brackets, cut edges, heavy shadows or tagline paragraphs without a new owner decision. Do not copy Ken OS branding, module names, sample data, or navigation into another product. Do not install globally, alter unrelated dependencies, deploy, or publish solely because this skill is invoked.

@@ -32,7 +32,7 @@ export function DesignSystemWorkspace({
           </div>
           <div className="mt-4 flex flex-wrap items-end justify-between gap-6">
             <div className="max-w-[730px]">
-              <h1 className="font-display text-4xl font-bold leading-[1.08] tracking-[-0.065em] sm:text-5xl">
+              <h1 className="text-[28px] font-[750] leading-[1.25] tracking-[-0.8px] md:text-[30px] xl:text-[36px] xl:tracking-[-1.3px]">
                 Design System
               </h1>
               <p className="mt-3 max-w-[680px] text-base leading-6 text-muted-foreground sm:text-lg sm:leading-7">
@@ -98,12 +98,12 @@ export function DesignSystemWorkspace({
           <div className="grid lg:grid-cols-2">
             <div className="px-5 py-6 sm:px-8 lg:border-r lg:px-10">
               <p className={label}>Type</p>
-              <p className="mt-4 font-display text-3xl font-semibold leading-tight tracking-[-0.055em]">
-                Manrope makes a point.
+              <p className="mt-4 text-[30px] font-[750] leading-tight tracking-[-1px]">
+                Inter carries every role.
               </p>
               <p className="mt-2 text-base leading-6 text-muted-foreground">
-                Source Sans 3 carries the explanation. The display face stays
-                out of dense body copy.
+                Weight sets the hierarchy: 750 for titles, 600 for headings,
+                500 for controls, 400 for reading.
               </p>
               <div className="mt-5 space-y-2 border-t border-border pt-4">
                 {designSystem.typeScale.slice(2, 6).map((item) => (

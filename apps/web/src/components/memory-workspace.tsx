@@ -152,7 +152,7 @@ export function MemoryWorkspace({ email, overview }: { email: string; overview: 
     <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-[1320px] border-x border-border">
       <header className="border-b border-border px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
         <div className="flex flex-wrap items-end justify-between gap-6">
-          <h1 className="font-display text-4xl font-bold leading-[1.08] tracking-[-0.065em] sm:text-5xl">Project Memory</h1>
+          <h1 className="text-[28px] font-[750] leading-[1.25] tracking-[-0.8px] md:text-[30px] xl:text-[36px] xl:tracking-[-1.3px]">Project Memory</h1>
           <Button type="button" onClick={() => void navigator.clipboard.writeText(handoffText).then(() => setMessage("Handoff copied")).catch(() => setMessage("Couldn't copy. Try again"))}>Copy handoff<ButtonEndIcon><Copy size={15} /></ButtonEndIcon></Button>
         </div>
         {message && <p className="mt-5 rounded-lg bg-muted px-4 py-3 text-sm" role="status">{message}</p>}

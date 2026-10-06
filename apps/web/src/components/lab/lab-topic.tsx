@@ -174,7 +174,7 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
         <header className="px-5 pb-6 pt-8 sm:px-8 lg:px-10 lg:pt-10">
           <p className={cn(label, "flex flex-wrap items-center gap-1")}>{place.track.toUpperCase()}<ChevronRight size={12} aria-hidden="true" />CHAPTER {place.chapterNumber} · {place.chapterTitle.toUpperCase()}</p>
           <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
-            <h1 className="max-w-[820px] font-display text-3xl font-bold leading-[1.1] tracking-[-0.06em] sm:text-4xl">{topic.title}</h1>
+            <h1 className="max-w-[820px] text-[28px] font-[750] leading-[1.25] tracking-[-0.8px] md:text-[30px] xl:text-[36px] xl:tracking-[-1.3px]">{topic.title}</h1>
             <Tag value={progress.status}>{statusWords[progress.status]}</Tag>
           </div>
           <p className="mt-3 max-w-[720px] text-[15px] leading-6 text-muted-foreground">{topic.gap}</p>

@@ -209,8 +209,9 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
   const pathname = usePathname();
   // Engineering's nested pages (a topic, the assessment, evidence) belong to one of its four tabs.
   const engineeringTab = active === "lab" ? tab ?? tabForPath(pathname) : null;
-  // Engineering wears the 2026-10-06 prototype's look (globals.css, [data-theme="evidence"]).
-  const evidence = active === "lab";
+  // The Ken OS shell from design system 0.2 (the 2026-10-06 Evidence Workbench look). The Writing Studio mockup keeps
+  // its own collapsible rail until it is rebuilt.
+  const evidence = !(preview && active === "writing");
   const [hash, setHash] = useState("");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [desktopCollapsed, setDesktopCollapsed] = useState(false);
@@ -254,7 +255,7 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
   };
 
   return (
-    <div className="min-h-screen bg-background font-sans text-foreground md:flex" data-theme={evidence ? "evidence" : undefined}>
+    <div className="min-h-screen bg-background font-sans text-foreground md:flex">
       <aside className={cn("h-[60px] border-b border-sidebar-border md:sticky md:top-0 md:h-screen md:shrink-0 md:border-b-0", evidence ? "md:w-[205px] xl:w-[232px]" : "md:border-r", !evidence && (writingPreview && desktopCollapsed ? "md:w-[64px]" : "md:w-[264px] xl:w-[276px]"))} aria-label="Workspace sidebar">
         {mobileOpen && <button className="fixed inset-0 z-40 bg-foreground/50 md:hidden" type="button" aria-label="Close menu" onClick={() => setMobileOpen(false)} />}
         <div
@@ -301,7 +302,7 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
                   {group.items.map(({ label, icon: Icon }) => <button className={cn(sidebarLink, "w-full text-left text-muted-foreground")} key={label} type="button" onClick={() => { onPreviewAction?.(label); setMobileOpen(false); }}><Icon size={17} strokeWidth={1.8} aria-hidden="true" />{label}</button>)}
                 </nav>
               </div>
-            )) : <div className={cn("mt-7", evidence && "md:hidden")}>
+            )) : <div className={cn("mt-7", engineeringTab && "md:hidden")}>
               <p className={sidebarLabel}>{detail.title.toUpperCase()}</p>
               <nav className="grid gap-1" aria-label={`${detail.title} sections`}>
                 {(preview && active === "memory" ? previewMemorySections : detail.sections).map(({ label, href: originalHref, icon: Icon }, index) => {

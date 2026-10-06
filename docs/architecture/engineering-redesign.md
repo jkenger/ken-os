@@ -46,7 +46,7 @@ These are real differences between the proposal and the code. None was changed s
 
 | # | Question | Decision | Why |
 |---|---|---|---|
-| D1 | Prototype styling (Inter, indigo accent, blue rails) or Ken OS? | **The prototype's look, one to one** (owner, 2026-10-06, overriding the first build's Ken OS look). Scoped to Engineering as `[data-theme="evidence"]` tokens in `globals.css` | Inter and an indigo action colour are on the owner's default avoid list; this is the owner's explicit brand choice for the module. If it becomes the Ken OS standard, the tokens move into the design-system contract and the `ken-os-design` skill is regenerated (not done yet) |
+| D1 | Prototype styling (Inter, indigo accent, blue rails) or Ken OS? | **The prototype's look, one to one** (owner, 2026-10-06, overriding the first build's Ken OS look). First scoped to Engineering, then made the Ken OS standard the same day: the tokens live in `features/design-system/contract.ts` (version 0.2.0-working.1) and the `ken-os-design` skill is regenerated from them | Inter and an indigo action colour are on the owner's default avoid list; this is the owner's explicit brand choice, recorded in the contract's decision log. Muted text is #5f6a80, not the prototype's #657086, so it clears 4.5:1 on every surface |
 | D2 | Module name | **Engineering** in the sidebar, search and title; `engineering-lab` stays in code, tables and APIs | Proposal §1; a cosmetic rename doesn't touch the database |
 | D3 | Topic stages | **Keep four steps, renamed Lesson, Predict, Lab, Prove** (owner, 2026-10-06: "rename"). `?step=` ids stay `learn`, `practice`, `lab`, `check`, so old links work | Keeps predictions and labs apart as the owner asked on 2026-10-02, while "Prove" matches the prototype |
 | D4 | Tab names that collided with step names | **Tabs keep the prototype's names; the steps were renamed** (D3) | One name per thing (app-language rule) |
@@ -117,9 +117,9 @@ Checks run:
 ## 6. Waiting on the owner
 
 1. **Take the baseline** at `/engineering/profile/assessment`. An agent must not answer it. Then the legacy-baseline retirement in [engineering-lab-profile.md](engineering-lab-profile.md) §8 can happen as its own change.
-2. **Decide whether the Engineering look becomes the Ken OS standard.** If yes: move the `evidence` tokens into `features/design-system/contract.ts`, run `design:generate` to update the `ken-os-design` skill, and drop the scope.
+2. **Review the Design System gallery** to approve the new look as 1.0. It stays `working` until then.
 
-Answered 2026-10-06: Q1 the prototype's look one to one (D1); Q2 rename the steps (D3); Q3 practice stops counting as proof; Q4 Manila day.
+Answered 2026-10-06: Q1 the prototype's look one to one (D1); Q2 rename the steps (D3); Q3 practice stops counting as proof; Q4 Manila day. Same day: make the look the Ken OS standard (done in design system 0.2.0-working.1).
 
 ## 7. Still deferred, as the proposal says
 
