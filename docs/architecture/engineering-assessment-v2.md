@@ -1,6 +1,6 @@
 # Engineering assessment v2: conversational, two-stage, book-grounded
 
-Status: **agreed with the owner on 2026-10-06; being built on `feat/assessment-v2`.** It changes how the intro and the assessment run, before the owner takes the in-app baseline. It extends [engineering-lab-profile.md](engineering-lab-profile.md) section 4 and [engineering-redesign.md](engineering-redesign.md). The Oct 1 baseline is retired only after the in-app baseline is complete, as before.
+Status: **agreed with the owner on 2026-10-06; built on `feat/assessment-v2` (all five slices). Points await the owner's review.** It changes how the intro and the assessment run, before the owner takes the in-app baseline. It extends [engineering-lab-profile.md](engineering-lab-profile.md) section 4 and [engineering-redesign.md](engineering-redesign.md). The Oct 1 baseline is retired only after the in-app baseline is complete, as before.
 
 ## Decisions (owner, 2026-10-06)
 
@@ -28,7 +28,7 @@ The code, not the conversation, decides: which chapter and topic come next, how 
 ## Conversation
 
 - Each question arrives as an Assessor message that introduces it in a line or two, using the intro where it helps. The question itself is the stored item, unchanged.
-- **One clarifying follow-up per question at most**, only when the answer is ambiguous. The owner's reply is appended to the same answer before grading, so nothing is graded twice. Follow-ups count against the run's AI allowance.
+- **One clarifying follow-up per question at most**, only when a written answer is ambiguous. The grader asks it instead of grading (`grader-v3`, `clarify`); nothing is stored until the reply is appended to the same answer and graded once. It costs one extra grading call; like every grading call, it is not counted in the run's question allowance.
 - After grading, the Assessor replies with the grade and the grader's feedback in sentences. No extra AI call for feedback.
 - **"I don't know"** is a valid answer: recorded as a gap, and the conversation moves on.
 - Confidence is still chosen before each answer, as quick chips.

@@ -72,7 +72,7 @@ async function main() {
     for (const [topicId, assessmentId] of sets) {
       const first = await store.submitAnswer(userId, { assessmentId, itemIndex: 0, selfRating: 4, response: { lines: topicId === "js.event_loop" ? ["9"] : ["1"] }, actualOutput: ["1"] });
       if (topicId === "js.event_loop") {
-        assert.notEqual(first.grade.label, "solid");
+        assert.notEqual(first.grade!.label, "solid");
         assert.equal(await state.nextRunItem(db(), { id: assessmentId, items: [predict(1), predict(2)] }), 1, "a partly right answer gets a probing follow-up");
         finished = (await store.submitAnswer(userId, { assessmentId, itemIndex: 1, selfRating: 2, response: { lines: ["9"] }, actualOutput: ["2"] })).runFinished;
         continue;

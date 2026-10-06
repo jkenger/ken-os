@@ -31,6 +31,7 @@ export async function POST(request: Request) {
           ...(response.why !== undefined ? { why: text(response.why, "response.why", 2000) } : {}),
         },
         ...(body.actualOutput !== undefined ? { actualOutput: stringList(body.actualOutput, "actualOutput", 200) } : {}),
+        allowClarify: body.allowClarify === true,
       });
     }
     if (body.type === "practice") {

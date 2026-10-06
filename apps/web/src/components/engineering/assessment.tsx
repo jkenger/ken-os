@@ -15,14 +15,13 @@ import type { RunChapterView, RunView } from "@/features/engineering-lab/assessm
 import { engineering } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
 import { Badge, Back, eyebrow, Notice, PageHeading, panel, primaryButton } from "./kit";
-import { Dialog, Feedback, field, fieldLabel, FlowLayout, FlowNotes, NoteList, ProgressTrack, QuestionPanel, questionPanel, SessionHeading, SuccessView, type QuestionPayload } from "./flow";
+import { Dialog, field, fieldLabel, FlowLayout, FlowNotes, NoteList, ProgressTrack, questionPanel, SessionHeading, SuccessView } from "./flow";
+import { AssessorChat, type ChatGrade } from "./assessor-chat";
 
 // Establish profile, as the selected 2026-10-06 prototype lays it out: intro form, then the closed-book assessment one
 // question at a time with a progress column, then results. Every step uses the real run: questions are written per
 // chapter, answers are graded and stored, and grades stay hidden until a chapter is done.
 // Design: docs/architecture/engineering-redesign.md; rules: engineering-lab-profile.md section 4.
-
-interface Graded { label: Label; feedback: string; rubric: RubricResult[] | null; voided?: boolean }
 
 const page = "mx-auto max-w-[1500px] px-3 pb-9 pt-6 md:px-5 md:pt-[30px] min-[1500px]:pt-9";
 
@@ -148,7 +147,6 @@ function Session({ run }: { run: RunView }) {
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState("");
   const [finished, setFinished] = useState(false);
-  const [graded, setGraded] = useState<Graded | null>(null);
   const done = run.chapters.filter((chapter) => chapter.status === "done").length;
   const chapter = run.chapters.find((item) => item.chapterId === run.current?.chapterId) ?? run.chapters.find((item) => item.status !== "done") ?? null;
   const number = chapter ? run.chapters.indexOf(chapter) + 1 : run.chapters.length;
@@ -181,18 +179,25 @@ function Session({ run }: { run: RunView }) {
     finally { setBusy(false); }
   }
 
-  async function submit(payload: QuestionPayload) {
+  async function submit(payload: { selfRating: number; text?: string; lines?: string[]; why?: string; actualOutput?: string[]; allowClarify: boolean }): Promise<{ clarify: string } | { grade: ChatGrade }> {
     const current = run.current!;
-    const result = current.type === "screen"
-      ? await post<{ runFinished: boolean; label: Label; feedback: string; rubric: RubricResult[] | null }>("/api/lab/screens", { screenId: current.id, text: payload.text ?? "", selfRating: payload.selfRating })
-        .then((value) => ({ ...value, grade: { label: value.label, feedback: value.feedback, rubric: value.rubric, voided: false } }))
-      : await post<{ runFinished: boolean; grade: Graded }>("/api/lab/attempts", {
-        type: "answer", assessmentId: current.id, itemIndex: current.itemIndex, selfRating: payload.selfRating,
-        response: payload.lines ? { lines: payload.lines, ...(payload.why ? { why: payload.why } : {}) } : { text: payload.text ?? "" },
-        ...(payload.actualOutput ? { actualOutput: payload.actualOutput } : {}),
+    if (current.type === "screen") {
+      const value = await post<{ clarify?: string; runFinished: boolean; label: Label | null; feedback: string | null; rubric: RubricResult[] | null }>("/api/lab/screens", {
+        screenId: current.id, text: payload.text ?? "", selfRating: payload.selfRating, allowClarify: payload.allowClarify,
       });
-    setFinished(result.runFinished);
-    setGraded({ label: result.grade.label, feedback: result.grade.feedback, rubric: result.grade.rubric ?? null, voided: Boolean(result.grade.voided) });
+      if (value.clarify) return { clarify: value.clarify };
+      setFinished(value.runFinished);
+      return { grade: { label: value.label!, feedback: value.feedback ?? "", rubric: value.rubric, voided: false } };
+    }
+    const value = await post<{ clarify?: string; runFinished: boolean; grade: { label: Label; feedback: string; rubric?: RubricResult[] | null; voided?: boolean } | null }>("/api/lab/attempts", {
+      type: "answer", assessmentId: current.id, itemIndex: current.itemIndex, selfRating: payload.selfRating, allowClarify: payload.allowClarify,
+      response: payload.lines ? { lines: payload.lines, ...(payload.why ? { why: payload.why } : {}) } : { text: payload.text ?? "" },
+      ...(payload.actualOutput ? { actualOutput: payload.actualOutput } : {}),
+    });
+    if (value.clarify) return { clarify: value.clarify };
+    setFinished(value.runFinished);
+    const grade = value.grade!;
+    return { grade: { label: grade.label, feedback: grade.feedback, rubric: grade.rubric ?? null, voided: Boolean(grade.voided) } };
   }
 
   function next() {
@@ -201,7 +206,6 @@ function Session({ run }: { run: RunView }) {
       router.push(engineering.results(run.id));
       return;
     }
-    setGraded(null);
     router.refresh();
   }
 
@@ -218,22 +222,14 @@ function Session({ run }: { run: RunView }) {
       <ProgressTrack done={done} total={run.chapters.length} />
       <FlowLayout>
         {current && chapter ? (
-          <QuestionPanel
+          <AssessorChat
             key={`${current.id}-${current.itemIndex}`}
-            draftKey={`run:${current.id}:${current.itemIndex}`}
             kicker={`${chapter.title}${topic ? ` · ${topic.title}` : chapter.stage === "chapter" ? " · Chapter question" : ""} · ${chapter.stage === "chapter" ? `${current.position} of 2` : `Question ${current.position} of up to ${current.outOf}`}`}
-            title={modeWords[current.item.mode] ?? "Question"}
-            item={current.item}
+            current={current}
+            history={chapter.answers}
             onSubmit={submit}
-            after={(
-              <Feedback
-                badge={graded ? <Pill tone={toneFor(graded.voided ? "voided" : graded.label)}>{graded.voided ? "Discarded · question was wrong" : labelWords[graded.label]}</Pill> : undefined}
-                title={graded?.feedback || (finished ? `${name} complete` : "Answer saved")}
-                action={<button type="button" className={primaryButton} onClick={next}>{finished ? "View results" : "Next question"}<IconArrowRight size={18} aria-hidden="true" /></button>}
-              >
-                {graded?.rubric && <RubricChecklist items={graded.rubric} />}
-              </Feedback>
-            )}
+            onNext={next}
+            nextLabel={finished ? "View results" : "Next question"}
           />
         ) : chapter ? (
           <section className={questionPanel}>

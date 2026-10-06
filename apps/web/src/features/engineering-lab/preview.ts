@@ -128,7 +128,7 @@ export function previewRun(): RunView {
     id: "preview-run", kind: "baseline", startedAt: "2026-10-04T09:00:00Z", completedAt: null, generations: 2, allowance: 19,
     current: {
       chapterId: "m2-http-browser", type: "topic", id: "preview-set", topicId: "web.cors", itemIndex: 0, position: 1, outOf: 8,
-      item: { mode: "explain", prompt: "A page on app.example calls api.example with fetch. The request reaches the server and the server logs it, but the page sees an error. What happened, and what was CORS protecting?", code: null },
+      item: { mode: "explain", lead: "You mentioned building your own web products. Here is a bug report you might get from one of them.", prompt: "A page on app.example calls api.example with fetch. The request reaches the server and the server logs it, but the page sees an error. What happened, and what was CORS protecting?", code: null },
     },
     chapters: topicMap.modules.map((module, index) => ({
       chapterId: module.id, title: module.title, area: module.area, kind: topicMap.topics.some((topic) => topic.module === module.id) ? "topics" as const : "screen" as const,

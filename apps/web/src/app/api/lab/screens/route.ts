@@ -12,6 +12,6 @@ export async function POST(request: Request) {
     if (typeof body.screenId !== "string" || body.screenId.length > 64) throw new LabInputError("screenId is required.");
     if (typeof body.text !== "string" || body.text.length > 6000) throw new LabInputError("text must be up to 6000 characters.");
     if (!Number.isInteger(body.selfRating)) throw new LabInputError("selfRating must be a whole number.");
-    return submitScreenAnswer(session.userId, { screenId: body.screenId, text: body.text, selfRating: body.selfRating as number });
+    return submitScreenAnswer(session.userId, { screenId: body.screenId, text: body.text, selfRating: body.selfRating as number, allowClarify: body.allowClarify === true });
   }, { write: true, ai: true });
 }
