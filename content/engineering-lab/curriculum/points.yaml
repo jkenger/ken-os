@@ -2,11 +2,10 @@
 # The Assessor writes stage-1 and topic questions and their rubrics from these, so baseline grades rest on reviewed
 # statements instead of the model alone. Each written topic needs 4 to 6 points; `lab:generate` checks them.
 #
-# Drafted by Claude Code on 2026-10-06 for the owner to review before the baseline. To approve, edit in a reviewed
-# commit, set status: approved and reviewedOn to the date. Points describe what to show, never personal history.
+# Drafted by Claude Code and approved by the owner on 2026-10-06. Change them in a reviewed commit and move reviewedOn. Points describe what to show, never personal history.
 
-status: draft
-reviewedOn: null
+status: approved
+reviewedOn: "2026-10-06"
 
 topics:
   # Web foundations · JavaScript runtime and async

@@ -2013,7 +2013,7 @@ export const careers: Careers = {
   ]
 };
 
-export const pointsReview = {"status":"draft","reviewedOn":null} as const;
+export const pointsReview = {"status":"approved","reviewedOn":"2026-10-06"} as const;
 
 export const labs: LabDefinition[] = [
   {

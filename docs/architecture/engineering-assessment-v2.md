@@ -1,6 +1,6 @@
 # Engineering assessment v2: conversational, two-stage, book-grounded
 
-Status: **agreed with the owner on 2026-10-06; built on `feat/assessment-v2` (all five slices). Points await the owner's review.** It changes how the intro and the assessment run, before the owner takes the in-app baseline. It extends [engineering-lab-profile.md](engineering-lab-profile.md) section 4 and [engineering-redesign.md](engineering-redesign.md). The Oct 1 baseline is retired only after the in-app baseline is complete, as before.
+Status: **agreed with the owner on 2026-10-06; built on `feat/assessment-v2` (all five slices). Assessment points approved by the owner on 2026-10-06.** It changes how the intro and the assessment run, before the owner takes the in-app baseline. It extends [engineering-lab-profile.md](engineering-lab-profile.md) section 4 and [engineering-redesign.md](engineering-redesign.md). The Oct 1 baseline is retired only after the in-app baseline is complete, as before.
 
 ## Decisions (owner, 2026-10-06)
 
