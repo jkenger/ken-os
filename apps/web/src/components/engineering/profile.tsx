@@ -36,7 +36,7 @@ function Requirements({ row }: { row: CapabilityRow }) {
         const target = item.missing[0] ?? item.topics[0]?.topicId;
         const body = (
           <>
-            {item.met ? <IconCheck size={20} className="mt-0.5 shrink-0 text-status-solid" aria-label="Met" /> : <IconCircle size={20} className="mt-0.5 shrink-0 text-[#6d7b91]" aria-label="Not met" />}
+            {item.met ? <IconCheck size={20} className="mt-0.5 shrink-0 text-status-solid" aria-label="Met" /> : <IconCircle size={20} className="mt-0.5 shrink-0 text-muted-foreground" aria-label="Not met" />}
             <span className="min-w-0">
               <strong className="block text-[13px] font-medium">{item.title} · {levelShort(item.level)}</strong>
               <small className="mt-0.5 block text-[11px] leading-[1.5] text-muted-foreground md:text-xs">{requirementLine(item)}</small>
@@ -55,12 +55,12 @@ function CapabilityTable({ rows, hasDirection }: { rows: CapabilityRow[]; hasDir
   const open = rows.find((row) => row.target && row.remaining > 0)?.area ?? rows.find((row) => row.remaining > 0)?.area;
   return (
     <section className={cn(panel, "min-w-0 overflow-hidden")} aria-label="Capabilities">
-      <div className={cn("grid items-center border-b border-border bg-table-head p-3.5 text-xs font-semibold text-[#566178] md:px-3.5 md:py-[15px] xl:px-[18px]", columns)}>
+      <div className={cn("grid items-center border-b border-border bg-table-head p-3.5 text-xs font-semibold text-quiet md:px-3.5 md:py-[15px] xl:px-[18px]", columns)}>
         <span>Capability</span><span>Evidence level</span><span className="hidden md:block">Target</span><span className="hidden md:block">Proof coverage</span><span />
       </div>
       {rows.map((row) => (
         <details key={row.area} className="group border-b border-border last:border-b-0" open={row.area === open}>
-          <summary className={cn("grid min-h-[110px] cursor-pointer list-none items-center p-3.5 text-left hover:bg-row-hover md:min-h-[105px] md:px-3.5 md:py-3 xl:px-[18px] [&::-webkit-details-marker]:hidden group-open:border-l-2 group-open:border-l-[#c9dcff] group-open:bg-[#fafcff] group-open:pl-3 xl:group-open:pl-4", columns)}>
+          <summary className={cn("grid min-h-[110px] cursor-pointer list-none items-center p-3.5 text-left hover:bg-row-hover md:min-h-[105px] md:px-3.5 md:py-3 xl:px-[18px] [&::-webkit-details-marker]:hidden group-open:border-l-2 group-open:border-l-rail-soft group-open:bg-row-hover group-open:pl-3 xl:group-open:pl-4", columns)}>
             <div className="min-w-0">
               <strong className="text-[13px] font-semibold md:text-sm">{row.title}</strong>
               <p className="mt-1 max-w-[210px] text-[11px] leading-[1.5] text-muted-foreground xl:text-xs">{row.summary}</p>
@@ -71,7 +71,7 @@ function CapabilityTable({ rows, hasDirection }: { rows: CapabilityRow[]; hasDir
             </div>
             <strong className="hidden text-sm font-semibold md:block">{row.target ? levelShort(row.target) : <span className="font-normal text-muted-foreground">{hasDirection ? "Not needed" : "None"}</span>}</strong>
             <div className="hidden md:block"><Coverage met={row.requirements.length - row.remaining} total={row.requirements.length} /></div>
-            <span className="text-[#566178]"><IconChevronRight size={18} className="group-open:hidden" aria-hidden="true" /><IconChevronDown size={18} className="hidden group-open:block" aria-hidden="true" /></span>
+            <span className="text-quiet"><IconChevronRight size={18} className="group-open:hidden" aria-hidden="true" /><IconChevronDown size={18} className="hidden group-open:block" aria-hidden="true" /></span>
           </summary>
           <Requirements row={row} />
         </details>
@@ -87,7 +87,7 @@ function History({ view, evidence }: { view: ProfileView; evidence: EvidenceLink
     ...(view.checkpoint.inProgressRunId ? [{ id: view.checkpoint.inProgressRunId, name: "Checkpoint", at: null }] : []),
   ];
   const row = "grid w-full grid-cols-[1fr_auto] rounded-[4px] border border-border bg-card text-left text-[11px] md:grid-cols-[1fr_1.5fr_auto] md:text-xs xl:grid-cols-[1fr_1.5fr_1.5fr_auto]";
-  const cell = "border-r border-border px-[9px] py-3 text-[#536078] md:px-[15px]";
+  const cell = "border-r border-border px-[9px] py-3 text-quiet md:px-[15px]";
   const link = "flex items-center gap-[9px] px-[9px] py-3 font-medium text-primary md:px-[15px]";
   return (
     <div className="mt-[22px] border-t border-border px-1 pt-[15px] md:px-[15px]">
@@ -126,7 +126,7 @@ function Milestone({ next }: { next: NextRequirement | null }) {
   const topic = next?.requirement.topics.find((item) => item.topicId === next.topicId);
   return (
     <aside className={cn(panel, "h-fit p-5 lg:p-[18px] xl:p-5")}>
-      <small className="text-sm font-semibold text-[#5a6578]">Next milestone</small>
+      <small className="text-sm font-semibold text-quiet">Next milestone</small>
       {next ? (
         <>
           <h2 className="mt-[9px] text-[23px] font-bold tracking-[-0.6px] md:text-[25px]">{next.areaTitle} · {levelShort(next.requirement.level)}</h2>

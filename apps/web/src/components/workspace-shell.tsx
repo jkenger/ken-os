@@ -99,7 +99,7 @@ const previewMemorySections = [
 
 const sidebarLabel = "mb-2 px-3 text-[10px] font-bold tracking-[0.14em] text-muted-foreground";
 const sidebarLink = "flex h-10 items-center gap-3 rounded-lg px-3 text-[13px] font-medium transition-colors hover:bg-muted hover:text-foreground";
-const evidenceLink = "flex items-center gap-[15px] rounded-lg px-[17px] py-[13px] text-sm font-medium transition-colors hover:bg-[#e9edf4]";
+const evidenceLink = "flex items-center gap-[15px] rounded-lg px-[17px] py-[13px] text-sm font-medium transition-colors hover:bg-sidebar-accent";
 
 /** Today in the owner's time zone, like "Tue, Oct 6, 2026". */
 function ownerDate() {
@@ -304,7 +304,7 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
           </div>
           {evidence ? (
             <div className={cn("items-center gap-[11px] px-5 pb-[22px] pt-3", mobileOpen ? "flex" : "hidden md:flex")} title={email}>
-              <span className="grid size-[41px] shrink-0 place-items-center rounded-full bg-[#dfe4ec] text-xs font-semibold text-foreground">{email.slice(0, 2).toUpperCase()}</span>
+              <span className="grid size-[41px] shrink-0 place-items-center rounded-full bg-secondary text-xs font-semibold text-foreground">{email.slice(0, 2).toUpperCase()}</span>
               <span className="min-w-0"><strong className="block truncate text-xs font-semibold text-foreground">{email}</strong><small className="mt-1 block text-xs text-muted-foreground">Owner</small></span>
             </div>
           ) : (
@@ -323,7 +323,7 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
               {writingPreview && <><button className="grid size-9 shrink-0 place-items-center rounded-lg border border-border hover:bg-muted md:hidden" type="button" aria-label="Open sidebar" aria-controls="workspace-sidebar-content" aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><Menu size={17} /></button><button className="hidden size-9 shrink-0 place-items-center rounded-lg border border-border hover:bg-muted md:grid" type="button" aria-label={desktopCollapsed ? "Expand sidebar" : "Collapse sidebar"} aria-controls="workspace-sidebar-content" aria-expanded={!desktopCollapsed} onClick={() => setDesktopCollapsed((value) => !value)}>{desktopCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</button></>}
               <span className="truncate"><span className="hidden text-muted-foreground sm:inline">Ken OS <span className="px-2 text-border">/</span></span>{detail.title}{writingPreview && <><span className="px-2 text-border">/</span>Draft</>}</span>
             </div>
-            {writingPreview ? headerActions : <div className="flex items-center gap-3">{evidence && <span className="hidden text-[13px] text-[#566178] lg:inline" suppressHydrationWarning>{ownerDate()}</span>}<ModuleSearch preview={preview} /><form action="/api/auth/signout" method="post"><Button variant="ghost" type="submit" className="text-xs">Sign out</Button></form></div>}
+            {writingPreview ? headerActions : <div className="flex items-center gap-3">{evidence && <span className="hidden text-[13px] text-quiet lg:inline" suppressHydrationWarning>{ownerDate()}</span>}<ModuleSearch preview={preview} /><form action="/api/auth/signout" method="post"><Button variant="ghost" type="submit" className="text-xs">Sign out</Button></form></div>}
           </header>
           <main className="min-w-0" id="main-content">{termLookup ? <TermLookup module={detail.title}>{children}</TermLookup> : children}</main>
           <Toaster />

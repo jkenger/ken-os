@@ -81,13 +81,13 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
         <PageHeading title="Learn" />
 
         <div className="mx-[5px] mb-5 block justify-between gap-5 md:mx-3.5 md:mb-[25px] md:flex">
-          <div className="mb-3.5 flex w-fit gap-1 rounded-md bg-[#edf1f7] p-1 md:mb-0" role="group" aria-label="Topics shown">
+          <div className="mb-3.5 flex w-fit gap-1 rounded-md bg-secondary p-1 md:mb-0" role="group" aria-label="Topics shown">
             {options.map(([id, name]) => (
               <button key={id} type="button" aria-pressed={scope === id} onClick={() => setScope(id)}
-                className={cn("rounded-[4px] px-3.5 py-2 text-[13px]", scope === id ? "bg-card text-[#173fce] shadow-[0_1px_3px_#dce1ea]" : "text-[#5c6980] hover:text-foreground")}>{name}</button>
+                className={cn("rounded-[4px] px-3.5 py-2 text-[13px]", scope === id ? "bg-card text-foreground shadow-[0_1px_3px_rgba(41,40,36,0.12)]" : "text-muted-foreground hover:text-foreground")}>{name}</button>
             ))}
           </div>
-          <label className="flex w-full items-center gap-2.5 rounded-[5px] border border-[#d6deea] bg-card px-3 md:w-80">
+          <label className="flex w-full items-center gap-2.5 rounded-[5px] border border-input bg-card px-3 md:w-80">
             <IconSearch size={18} className="text-muted-foreground" aria-hidden="true" />
             <input aria-label="Search topics" placeholder="Search topics or chapters" value={query} onChange={(event) => setQuery(event.target.value)}
               className="w-full bg-transparent py-[11px] text-sm outline-none placeholder:text-muted-foreground" />
@@ -108,21 +108,21 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
                       <h3 className="mt-1 text-sm font-semibold md:text-[15px]">{module.title}</h3>
                     </div>
                     <span className="ml-auto shrink-0 text-[10px] text-muted-foreground md:text-xs">{topics.length ? `${done} / ${topics.length} proven${known > done ? ` · ${known - done} known` : ""}` : "Not written yet"}</span>
-                    <IconChevronDown size={18} className="shrink-0 text-[#566178] transition-transform group-open:rotate-180" aria-hidden="true" />
+                    <IconChevronDown size={18} className="shrink-0 text-quiet transition-transform group-open:rotate-180" aria-hidden="true" />
                   </summary>
                   {rows.map(({ topic, item, status }) => (
-                    <div key={topic.id} className="flex w-full items-center gap-2.5 border-t border-border px-[15px] py-[15px] text-left hover:bg-[#f7faff] md:gap-[13px] md:px-[21px] md:py-4">
+                    <div key={topic.id} className="flex w-full items-center gap-2.5 border-t border-border px-[15px] py-[15px] text-left hover:bg-row-hover md:gap-[13px] md:px-[21px] md:py-4">
                       {item.status === "VALIDATED" || knownHere(item) ? <IconCheck size={18} className="shrink-0 text-status-solid" aria-hidden="true" />
                         : isUnassessed(item) ? <IconCircleDashed size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
                           : <IconCircle size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />}
                       <Link href={engineering.topic(topic.id)} className="min-w-0 flex-1 text-xs font-medium hover:text-primary md:text-[13px]">{topic.title}</Link>
                       {isUnassessed(item) && assessable.includes(topic.id) && (
-                        <button type="button" disabled={placing !== ""} onClick={() => void place(topic.id)} className="shrink-0 text-[11px] text-primary hover:text-[#0b2eaa] disabled:opacity-50">
+                        <button type="button" disabled={placing !== ""} onClick={() => void place(topic.id)} className="shrink-0 text-[11px] text-primary hover:underline underline-offset-4 disabled:opacity-50">
                           {placing === topic.id ? "Writing questions…" : "Placement check"}
                         </button>
                       )}
                       <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">{status}</span>
-                      <Link href={engineering.topic(topic.id)} aria-label={`Open ${topic.title}`} className="shrink-0 text-[#566178]"><IconChevronRight size={18} aria-hidden="true" /></Link>
+                      <Link href={engineering.topic(topic.id)} aria-label={`Open ${topic.title}`} className="shrink-0 text-quiet"><IconChevronRight size={18} aria-hidden="true" /></Link>
                     </div>
                   ))}
                   {scope === "gaps" && rows.length === 0 && topics.length > 0 && <p className="border-t border-border px-5 py-4 text-xs text-muted-foreground">No gaps</p>}

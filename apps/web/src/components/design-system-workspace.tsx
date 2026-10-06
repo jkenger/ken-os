@@ -98,12 +98,12 @@ export function DesignSystemWorkspace({
           <div className="grid lg:grid-cols-2">
             <div className="px-5 py-6 sm:px-8 lg:border-r lg:px-10">
               <p className={label}>Type</p>
-              <p className="mt-4 text-[30px] font-[750] leading-tight tracking-[-1px]">
-                Inter carries every role.
+              <p className="mt-4 font-display text-[30px] font-[750] leading-tight tracking-[-1px]">
+                Manrope makes a point.
               </p>
               <p className="mt-2 text-base leading-6 text-muted-foreground">
-                Weight sets the hierarchy: 750 for titles, 600 for headings,
-                500 for controls, 400 for reading.
+                Source Sans 3 carries the explanation. The display face stays
+                out of dense body copy.
               </p>
               <div className="mt-5 space-y-2 border-t border-border pt-4">
                 {designSystem.typeScale.slice(2, 6).map((item) => (

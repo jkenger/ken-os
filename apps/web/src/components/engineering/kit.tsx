@@ -9,17 +9,17 @@ import { cn } from "@/lib/utils";
 
 export const button = "inline-flex min-h-11 items-center justify-center gap-3.5 rounded-[5px] border px-[19px] py-[11px] text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50";
 export const primaryButton = cn(button, "border-primary bg-primary text-primary-foreground hover:bg-primary-hover");
-export const secondaryButton = cn(button, "border-[#d8dee9] bg-card text-secondary-foreground hover:bg-accent");
-export const textButton = "inline-flex items-center gap-2 text-[13px] text-primary hover:text-[#0b2eaa]";
+export const secondaryButton = cn(button, "border-input bg-card text-secondary-foreground hover:bg-accent");
+export const textButton = "inline-flex items-center gap-2 text-[13px] font-semibold text-foreground underline decoration-input underline-offset-4 hover:decoration-foreground";
 export const panel = "rounded-[5px] border border-border bg-card";
-export const eyebrow = "mb-[9px] text-[11px] font-medium uppercase tracking-[0.06em] text-[#586579]";
+export const eyebrow = "mb-[9px] text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground";
 
 export function Badge({ children, className }: { children: ReactNode; className?: string }) {
   return <span className={cn("inline-flex items-center rounded-[4px] bg-secondary px-2.5 py-[5px] align-middle text-[11px] font-medium leading-[1.2] tracking-normal text-quiet", className)}>{children}</span>;
 }
 
 export function Back({ href, children }: { href: string; children: ReactNode }) {
-  return <Link href={href} className="mx-[5px] mb-[23px] inline-flex items-center gap-2 text-[13px] text-[#58677d] hover:text-foreground md:mx-3.5"><IconArrowLeft size={17} aria-hidden="true" />{children}</Link>;
+  return <Link href={href} className="mx-[5px] mb-[23px] inline-flex items-center gap-2 text-[13px] text-muted-foreground hover:text-foreground md:mx-3.5"><IconArrowLeft size={17} aria-hidden="true" />{children}</Link>;
 }
 
 /** Eyebrow, title with an optional badge, and facts on the right. No tagline: screens name things, they don't sell them. */
@@ -85,9 +85,9 @@ export function SectionTitle({ title, action }: { title: string; action?: ReactN
 export function Notice({ tone = "info", children }: { tone?: "info" | "error" | "success"; children: ReactNode }) {
   return (
     <div className={cn("my-5 rounded-[5px] border p-4 text-[13px] leading-[1.6]",
-      tone === "info" && "border-[#dce7f9] bg-[#f0f5fd] text-[#425572]",
-      tone === "error" && "border-[#efcec2] bg-status-gap-surface text-status-gap",
-      tone === "success" && "border-[#d4e8dd] bg-status-solid-surface text-status-solid")}>
+      tone === "info" && "border-border bg-tint text-foreground",
+      tone === "error" && "border-status-gap/30 bg-status-gap-surface text-status-gap",
+      tone === "success" && "border-status-solid/30 bg-status-solid-surface text-status-solid")}>
       {children}
     </div>
   );
