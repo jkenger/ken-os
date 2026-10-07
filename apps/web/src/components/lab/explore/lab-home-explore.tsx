@@ -13,7 +13,7 @@ import { depthWords, levelWords } from "../words";
 import { RailTrack, RoadAhead, tracks, type Track } from "./road-tracks";
 
 // Design exploration for the lab home, development preview only. Three layout directions over the same sample
-// learner, on the Ken OS visual baseline (.agents/skills/ken-os-design). Nothing here ships until one is chosen.
+// learner, on the Ken OS visual baseline (the Claude design system). Nothing here ships until one is chosen.
 
 export type Direction = "report" | "route" | "skyline";
 

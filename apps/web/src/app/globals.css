@@ -51,13 +51,17 @@
   --color-quiet: var(--quiet);
   --color-signal: var(--signal);
   --color-canvas: var(--canvas);
-  --shadow-panel: var(--elevation-panel);
-  --shadow-tab: var(--elevation-tab);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
+  /* Tailwind's corner sizes, pointed at the design system's named radii. */
+  --radius-sm: var(--radius-item);
+  --radius-md: var(--radius-menu);
+  --radius-lg: var(--radius-tab);
+  --radius-xl: var(--radius-panel);
 }
+
+/* The design system's shadows keep their own names as variables, so they are utilities rather than theme keys
+   (a theme key of the same name would point at itself). */
+@utility shadow-panel { box-shadow: var(--shadow-panel); }
+@utility shadow-tab { box-shadow: var(--shadow-tab); }
 
 @layer base {
   * { @apply border-border; }

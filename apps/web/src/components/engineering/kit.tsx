@@ -6,7 +6,7 @@ import { Badge as ShadcnBadge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 // Ken OS page building blocks in the Studio look chosen on 2026-10-06: round controls, raised white panels on the
-// stone ground, one cobalt signal. Colours, radii and shadows come from features/design-system/contract.ts.
+// stone ground, one cobalt signal. Colours, radii and shadows come from the Claude design system (design-system/tokens.json).
 
 export const button = "inline-flex min-h-11 items-center justify-center gap-2.5 rounded-full border px-5 py-[11px] text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50";
 export const primaryButton = cn(button, "border-primary bg-primary text-primary-foreground hover:bg-primary-hover");
