@@ -27,4 +27,4 @@ Choose Vite + React instead of Next.js when the product is genuinely client-only
 
 Do not treat “default” as “already installed.” In an existing repo, inspect dependencies, schema, styling, and migrations before applying the default. Preserve an existing architecture unless the user requests a change or the first outcome exposes a concrete gap.
 
-For the owner's personal projects with no settled visual direction, offer the `ken-os-design` skill as an optional UI preset when it is available. It does not decide the framework or repository shape, and it must not be imposed on work or client projects.
+For the owner's personal projects with no settled visual direction, offer the Ken OS design system (the owner's private design system in Claude) as an optional starting point; it can be exported on request for a project or agent that can't read it. It does not decide the framework or repository shape, and it must not be imposed on work or client projects.

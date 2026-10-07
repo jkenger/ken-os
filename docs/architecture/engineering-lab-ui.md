@@ -100,7 +100,7 @@ Defaults the owner accepted without a separate question: term lookups get their 
 
 **Ken OS stays the base.** Manrope headings, Source Sans 3 body text, the warm monochrome tokens, the same radii and spacing. Nothing here is a framework default.
 
-**New tokens, for meaning only.** They live in `features/design-system/contract.ts` (added in step 1), with Tailwind names such as `bg-status-solid-surface` and `text-status-solid`:
+**New tokens, for meaning only.** They lived in `features/design-system/contract.ts` (added in step 1) and now live in the Ken OS design system in Claude, synced to `apps/web/design-system/tokens.json`, with Tailwind names such as `bg-status-solid-surface` and `text-status-solid`:
 
 | Token | Text | Tint (`-surface`) | Text on tint | Text on page |
 |---|---|---|---|---|

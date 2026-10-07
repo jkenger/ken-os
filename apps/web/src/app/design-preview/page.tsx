@@ -3,7 +3,6 @@ import { WorkspaceShell } from "@/components/workspace-shell";
 import { ResumeWorkspace } from "@/components/resume-workspace";
 import { SkillsWorkspace } from "@/components/skills-workspace";
 import { ProjectMemoryPreview } from "@/components/project-memory-preview";
-import { DesignSystemWorkspace } from "@/components/design-system-workspace";
 import { LabToday } from "@/components/lab/lab-today";
 import { LabTopic } from "@/components/lab/lab-topic";
 import { EngineeringLearn } from "@/components/engineering/learn";
@@ -125,9 +124,6 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
     const screen = (["today", "course", "topic", "terms"] as const).find((item) => item === screenParam) ?? "today";
     const step = (["learn", "practice", "lab", "check"] as const).find((item) => item === stepParam) ?? "learn";
     return <LabUiPreview initialScreen={screen} initialStep={step} />;
-  }
-  if (view === "design") {
-    return <DesignSystemWorkspace email="preview@example.invalid" preview />;
   }
   if (view === "writing") {
     return <WritingStudioPreview />;

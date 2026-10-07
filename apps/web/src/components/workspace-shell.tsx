@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Archive, BookMarked, ChevronRight, UserRound, BookOpenText, FileText, FlaskConical, Image, LayoutDashboard, Library, Lightbulb, ListTree, Menu, PanelLeftClose, PanelLeftOpen, Palette, PenLine, Repeat, Search, Sparkles, X } from "lucide-react";
+import { Archive, BookMarked, ChevronRight, UserRound, BookOpenText, FileText, FlaskConical, Image, LayoutDashboard, Library, Lightbulb, ListTree, Menu, PanelLeftClose, PanelLeftOpen, PenLine, Repeat, Search, Sparkles, X } from "lucide-react";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { TermLookup } from "@/components/terms/term-lookup";
 import { Toaster } from "@/components/ui/toaster";
@@ -15,18 +15,17 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { engineering, tabForPath, type EngineeringTab } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
 
-type Module = "resume" | "skills" | "memory" | "design" | "lab" | "writing" | "terms";
+type Module = "resume" | "skills" | "memory" | "lab" | "writing" | "terms";
 
 const modules = [
   { id: "resume" as const, label: "Resume", href: "/", icon: FileText },
   { id: "skills" as const, label: "Skills", href: "/skills", icon: Sparkles },
-  { id: "design" as const, label: "Design System", href: "/design-system", icon: Palette },
   { id: "memory" as const, label: "Project Memory", href: "/memory", icon: BookOpenText },
   { id: "lab" as const, label: "Engineering", href: engineering.overview, icon: FlaskConical },
   { id: "terms" as const, label: "Terms", href: "/terms", icon: BookMarked },
 ];
 const previewModules = [
-  ...modules.map((module) => module.id === "design" ? { ...module, href: "/design-preview?view=design" } : module.id === "memory" ? { ...module, href: "/design-preview?view=memory" } : module),
+  ...modules.map((module) => module.id === "memory" ? { ...module, href: "/design-preview?view=memory" } : module),
   { id: "writing" as const, label: "Writing Studio", href: "/design-preview?view=writing", icon: PenLine },
 ];
 
@@ -63,17 +62,6 @@ const moduleDetails: Record<Module, {
       { label: "Profile", href: engineering.profile, icon: UserRound },
       { label: "Learn", href: engineering.learn, icon: ListTree },
       { label: "Practice", href: engineering.practice, icon: Repeat },
-    ],
-  },
-  design: {
-    title: "Design System",
-    sections: [
-      { label: "Overview", href: "/design-system", icon: Palette },
-      { label: "Foundations", href: "/design-system#foundations", icon: Library },
-      { label: "Components", href: "/design-system#components", icon: FileText },
-      { label: "Patterns", href: "/design-system#patterns", icon: BookOpenText },
-      { label: "Decisions", href: "/design-system#decisions", icon: Library },
-      { label: "Export", href: "/design-system#export", icon: FileText },
     ],
   },
   writing: { title: "Writing Studio", sections: [] },
@@ -324,11 +312,10 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
   const moduleList: ModuleLink[] = preview ? previewModules : modules;
   const sections = (preview && active === "memory" ? previewMemorySections : detail.sections).map(({ label, href: originalHref, icon }, index) => {
     const href = preview && active === "memory" ? originalHref.replace("/memory", "/design-preview?view=memory") : originalHref;
-    const resolvedHref = preview && active === "design" ? href.replace("/design-system", "/design-preview?view=design") : href;
-    const selected = engineeringTab ? tabForPath(resolvedHref) === engineeringTab : preview && (active === "memory" || active === "design")
-      ? (index === 0 ? !hash : resolvedHref.endsWith(hash) && Boolean(hash))
-      : resolvedHref === pathname + hash || (index === 0 && ((pathname === resolvedHref && !hash) || preview));
-    return { key: href, label, href: resolvedHref, icon, selected };
+    const selected = engineeringTab ? tabForPath(href) === engineeringTab : preview && active === "memory"
+      ? (index === 0 ? !hash : href.endsWith(hash) && Boolean(hash))
+      : href === pathname + hash || (index === 0 && ((pathname === href && !hash) || preview));
+    return { key: href, label, href, icon, selected };
   });
   const content = termLookup ? <TermLookup module={detail.title}>{children}</TermLookup> : children;
 

@@ -59,7 +59,6 @@ Module names are proper names in title case and appear the same in the sidebar, 
 | Engineering | Engineering Lab, Lab (renamed 6 Oct 2026; code keeps `engineering-lab`) |
 | Terms | Saved terms, Words you looked up |
 | Project Memory | |
-| Design System | Design system |
 | Writing Studio | Writing studio |
 
 ### Resume
@@ -260,4 +259,4 @@ Made by the owner on 3 Oct 2026:
 - Contractions throughout ("Couldn't", "Isn't").
 - The policy version leaves the Project Memory screen.
 - Screening and placement check merge into one name, **Placement check**, since both mean a quick check of what the owner already knows. Code identifiers keep their own names.
-- "Design System" and "Writing Studio" use title case as proper module names.
+- "Writing Studio" uses title case as a proper module name.
