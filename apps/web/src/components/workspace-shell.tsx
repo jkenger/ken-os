@@ -2,20 +2,19 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Archive, BookMarked, ChevronRight, UserRound, BookOpenText, FileText, FlaskConical, Image, LayoutDashboard, Library, Lightbulb, ListTree, Menu, PanelLeftClose, PanelLeftOpen, PenLine, Repeat, Search, Sparkles, X } from "lucide-react";
+import { BookMarked, ChevronRight, UserRound, BookOpenText, FileText, FlaskConical, LayoutDashboard, Library, ListTree, Repeat, Search, Sparkles, X } from "lucide-react";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { TermLookup } from "@/components/terms/term-lookup";
 import { Toaster } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
 import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Separator } from "@/components/ui/separator";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupLabel, SidebarHeader, SidebarInset, SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { engineering, tabForPath, type EngineeringTab } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
 
-type Module = "resume" | "skills" | "memory" | "lab" | "writing" | "terms";
+type Module = "resume" | "skills" | "memory" | "lab" | "terms";
 
 const modules = [
   { id: "resume" as const, label: "Resume", href: "/", icon: FileText },
@@ -23,10 +22,6 @@ const modules = [
   { id: "memory" as const, label: "Project Memory", href: "/memory", icon: BookOpenText },
   { id: "lab" as const, label: "Engineering", href: engineering.overview, icon: FlaskConical },
   { id: "terms" as const, label: "Terms", href: "/terms", icon: BookMarked },
-];
-const previewModules = [
-  ...modules.map((module) => module.id === "memory" ? { ...module, href: "/design-preview?view=memory" } : module),
-  { id: "writing" as const, label: "Writing Studio", href: "/design-preview?view=writing", icon: PenLine },
 ];
 
 const moduleDetails: Record<Module, {
@@ -64,37 +59,11 @@ const moduleDetails: Record<Module, {
       { label: "Practice", href: engineering.practice, icon: Repeat },
     ],
   },
-  writing: { title: "Writing Studio", sections: [] },
   terms: { title: "Terms", sections: [{ label: "Terms", href: "/terms", icon: BookMarked }] },
 };
 
-const writingPreviewGroups = [
-  { title: "Create", items: [
-    { label: "New post", icon: FileText },
-    { label: "Templates", icon: Library },
-    { label: "Snippets", icon: PenLine },
-    { label: "Media", icon: Image },
-  ] },
-  { title: "Library", items: [
-    { label: "All posts", icon: FileText },
-    { label: "Drafts", icon: FileText },
-    { label: "Published", icon: FileText },
-    { label: "Ideas", icon: Lightbulb },
-    { label: "Archive", icon: Archive },
-  ] },
-];
-
-const previewMemorySections = [
-  { label: "Handoff", href: "/design-preview?view=memory", icon: BookOpenText },
-  { label: "Decisions", href: "/design-preview?view=memory#decisions", icon: Library },
-  { label: "Open questions", href: "/design-preview?view=memory#open-questions", icon: FileText },
-];
-
-const sidebarLabel = "mb-2 px-3 text-[10px] font-bold tracking-[0.14em] text-muted-foreground";
-const sidebarLink = "flex h-10 items-center gap-3 rounded-lg px-3 text-[13px] font-medium transition-colors hover:bg-muted hover:text-foreground";
-
 type Section = { key: string; label: string; href: string; icon: typeof FileText; selected: boolean };
-type ModuleLink = (typeof previewModules)[number];
+type ModuleLink = (typeof modules)[number];
 
 /** Today in the owner's time zone, like "Tue, Oct 6, 2026". */
 function ownerDate() {
@@ -102,10 +71,9 @@ function ownerDate() {
 }
 
 /** Ctrl or Cmd + K opens shadcn's command dialog over the modules. */
-function ModuleSearch({ preview }: { preview: boolean }) {
+function ModuleSearch() {
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const list: ModuleLink[] = preview ? previewModules : modules;
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -132,7 +100,7 @@ function ModuleSearch({ preview }: { preview: boolean }) {
           <CommandList>
             <CommandEmpty>No matches</CommandEmpty>
             <CommandGroup heading="Modules">
-              {list.map(({ id, label, href, icon: Icon }) => (
+              {modules.map(({ id, label, href, icon: Icon }) => (
                 <CommandItem key={id} value={label} onSelect={() => { setOpen(false); router.push(href); }}>
                   <Icon strokeWidth={1.8} aria-hidden="true" />{label}
                 </CommandItem>
@@ -246,7 +214,7 @@ function StudioSidebar({ email, active, moduleList, title, sections }: { email: 
 }
 
 /** The raised content inset: a 56px header with the section toggle, breadcrumb, date, search and sign out. */
-function StudioInset({ title, sections, preview, children }: { title: string; sections: Section[]; preview: boolean; children: ReactNode }) {
+function StudioInset({ title, sections, children }: { title: string; sections: Section[]; children: ReactNode }) {
   const { open } = useSidebar();
   const currentSection = sections.find((section) => section.selected);
   return (
@@ -270,7 +238,7 @@ function StudioInset({ title, sections, preview, children }: { title: string; se
         </div>
         <div className="flex items-center gap-3">
           <span className="hidden text-[13px] text-quiet xl:inline" suppressHydrationWarning>{ownerDate()}</span>
-          <ModuleSearch preview={preview} />
+          <ModuleSearch />
           <form action="/api/auth/signout" method="post"><Button variant="ghost" size="sm" type="submit" className="text-xs">Sign out</Button></form>
         </div>
       </header>
@@ -287,13 +255,11 @@ function StudioInset({ title, sections, preview, children }: { title: string; se
   );
 }
 
-export function WorkspaceShell({ email, active, children, preview = false, headerActions, onPreviewAction, termLookup = true, tab }: { email: string; active: Module; children: ReactNode; preview?: boolean; headerActions?: ReactNode; onPreviewAction?: (label: string) => void; termLookup?: boolean; tab?: EngineeringTab }) {
+export function WorkspaceShell({ email, active, children, termLookup = true, tab }: { email: string; active: Module; children: ReactNode; termLookup?: boolean; tab?: EngineeringTab }) {
   const detail = moduleDetails[active];
   const pathname = usePathname();
   // Engineering's nested pages (a topic, the assessment, evidence) highlight one of its four sidebar sections.
   const engineeringTab = active === "lab" ? tab ?? tabForPath(pathname) : null;
-  // Every module uses the Studio shell; only the Writing Studio mockup keeps its old rail.
-  const studio = !(preview && active === "writing");
   const [hash, setHash] = useState("");
   // The section column's open state, kept in shadcn's sidebar_state cookie; Ctrl or Cmd + B toggles it.
   const [sectionsOpen, setSectionsOpen] = useState(true);
@@ -309,19 +275,11 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
     if (document.cookie.split("; ").includes("sidebar_state=false")) setSectionsOpen(false);
   }, []);
 
-  const moduleList: ModuleLink[] = preview ? previewModules : modules;
-  const sections = (preview && active === "memory" ? previewMemorySections : detail.sections).map(({ label, href: originalHref, icon }, index) => {
-    const href = preview && active === "memory" ? originalHref.replace("/memory", "/design-preview?view=memory") : originalHref;
-    const selected = engineeringTab ? tabForPath(href) === engineeringTab : preview && active === "memory"
-      ? (index === 0 ? !hash : href.endsWith(hash) && Boolean(hash))
-      : href === pathname + hash || (index === 0 && ((pathname === href && !hash) || preview));
+  const sections = detail.sections.map(({ label, href, icon }, index) => {
+    const selected = engineeringTab ? tabForPath(href) === engineeringTab : href === pathname + hash || (index === 0 && pathname === href && !hash);
     return { key: href, label, href, icon, selected };
   });
   const content = termLookup ? <TermLookup module={detail.title}>{children}</TermLookup> : children;
-
-  if (!studio) {
-    return <WritingPreviewShell email={email} title={detail.title} moduleList={moduleList} active={active} headerActions={headerActions} onPreviewAction={onPreviewAction}>{content}</WritingPreviewShell>;
-  }
 
   // The Studio shell, following shadcn/ui's sidebar anatomy (the nested icon sidebar block): an icon rail and a
   // section column on the stone sidebar, beside one raised content inset. The column shows from 1024px.
@@ -330,86 +288,9 @@ export function WorkspaceShell({ email, active, children, preview = false, heade
     <SidebarProvider open={sectionsOpen} onOpenChange={setSectionsOpen}
       style={{ "--sidebar-width": "var(--shell-width)", "--sidebar-width-icon": "calc(3rem + 1px)" } as CSSProperties}
       className={cn("min-h-screen bg-sidebar font-sans text-foreground [--shell-width:calc(3rem+1px)]", sections.length > 0 && "lg:[--shell-width:calc(16rem+1px)]")}>
-      <StudioSidebar email={email} active={active} moduleList={moduleList} title={detail.title} sections={sections} />
-      <StudioInset title={detail.title} sections={sections} preview={preview}>{content}</StudioInset>
+      <StudioSidebar email={email} active={active} moduleList={modules} title={detail.title} sections={sections} />
+      <StudioInset title={detail.title} sections={sections}>{content}</StudioInset>
     </SidebarProvider>
     </TooltipProvider>
-  );
-}
-
-/** The Writing Studio mockup keeps its own collapsible rail until it is rebuilt; its phone menu is shadcn's Sheet. */
-function WritingPreviewShell({ email, title, moduleList, active, headerActions, onPreviewAction, children }: { email: string; title: string; moduleList: ModuleLink[]; active: Module; headerActions?: ReactNode; onPreviewAction?: (label: string) => void; children: ReactNode }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [desktopCollapsed, setDesktopCollapsed] = useState(false);
-
-  const brand = (collapsed: boolean, close?: () => void) => (
-    <Link className="flex items-center gap-2.5 font-display text-xl font-bold tracking-[-0.03em]" href="/" aria-label="Ken OS home" onClick={close}>
-      <span className="grid size-9 place-items-center rounded-full bg-primary text-lg text-primary-foreground">K</span>
-      <span className={cn(collapsed && "md:hidden")}>ken<span className="text-muted-foreground">.os</span></span>
-    </Link>
-  );
-  const nav = (collapsed: boolean, close: () => void) => (
-    <>
-      <div>
-        <p className={cn(sidebarLabel, collapsed && "md:sr-only")}>WORKSPACE</p>
-        <nav className="grid gap-1" aria-label="Modules">
-          {moduleList.map(({ id, label, href, icon: Icon }) => (
-            <Link key={id} className={cn(sidebarLink, active === id ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-tab" : "text-muted-foreground", collapsed && "md:justify-center md:px-2")} href={href} aria-label={collapsed ? label : undefined} title={collapsed ? label : undefined} aria-current={active === id ? "page" : undefined} onClick={close}>
-              <Icon size={18} strokeWidth={1.8} aria-hidden="true" /><span className={cn(collapsed && "md:sr-only")}>{label}</span>
-            </Link>
-          ))}
-        </nav>
-      </div>
-      {writingPreviewGroups.map((group) => (
-        <div className={cn("mt-7", collapsed && "md:hidden")} key={group.title}>
-          <p className={sidebarLabel}>{group.title.toUpperCase()}</p>
-          <nav className="grid gap-1" aria-label={`${group.title} preview actions`}>
-            {group.items.map(({ label, icon: Icon }) => (
-              <Button variant="ghost" className={cn(sidebarLink, "w-full justify-start text-muted-foreground")} key={label} type="button" onClick={() => { onPreviewAction?.(label); close(); }}>
-                <Icon size={17} strokeWidth={1.8} aria-hidden="true" />{label}
-              </Button>
-            ))}
-          </nav>
-        </div>
-      ))}
-    </>
-  );
-  const account = (collapsed: boolean) => (
-    <div className={cn("flex items-center gap-2.5 border-t border-sidebar-border px-4 py-3", collapsed && "md:justify-center md:px-2")} title={email}>
-      <span className="grid size-8 shrink-0 place-items-center rounded-full bg-secondary text-xs font-bold">{email[0]?.toUpperCase()}</span>
-      <span className={cn("min-w-0", collapsed && "md:hidden")}><small className="block truncate text-xs text-muted-foreground">{email}</small></span>
-    </div>
-  );
-
-  return (
-    <div className="min-h-screen bg-background font-sans text-foreground md:flex">
-      <aside className={cn("hidden border-sidebar-border bg-sidebar text-sidebar-foreground md:sticky md:top-0 md:flex md:h-screen md:shrink-0 md:flex-col md:border-r", desktopCollapsed ? "md:w-[64px]" : "md:w-[264px] xl:w-[276px]")} aria-label="Workspace sidebar">
-        <div className={cn("flex h-16 shrink-0 items-center border-b border-sidebar-border px-4", desktopCollapsed && "justify-center px-2")}>{brand(desktopCollapsed)}</div>
-        <div className={cn("min-h-0 flex-1 overflow-y-auto px-3 py-6", desktopCollapsed && "px-2")} id="workspace-sidebar-content">{nav(desktopCollapsed, () => {})}</div>
-        {account(desktopCollapsed)}
-      </aside>
-      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" className="w-[min(308px,calc(100vw-24px))] gap-0 p-0" aria-describedby={undefined}>
-          <SheetTitle className="flex h-[60px] shrink-0 items-center border-b border-sidebar-border px-4">{brand(false, () => setMobileOpen(false))}</SheetTitle>
-          <div className="min-h-0 flex-1 overflow-y-auto px-3 py-6">{nav(false, () => setMobileOpen(false))}</div>
-          {account(false)}
-        </SheetContent>
-      </Sheet>
-
-      <div className="min-w-0 flex-1">
-        <div className="min-h-screen bg-background">
-          <header className="flex h-16 items-center justify-between gap-4 border-b border-border px-5">
-            <div className="flex min-w-0 items-center gap-2 text-sm font-medium">
-              <Button variant="outline" size="icon-lg" className="rounded-lg md:hidden" type="button" aria-label="Open sidebar" aria-expanded={mobileOpen} onClick={() => setMobileOpen(true)}><Menu size={17} /></Button>
-              <Button variant="outline" size="icon-lg" className="hidden rounded-lg md:inline-flex" type="button" aria-label={desktopCollapsed ? "Expand sidebar" : "Collapse sidebar"} aria-controls="workspace-sidebar-content" aria-expanded={!desktopCollapsed} onClick={() => setDesktopCollapsed((value) => !value)}>{desktopCollapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</Button>
-              <span className="truncate"><span className="hidden text-muted-foreground sm:inline">Ken OS <span className="px-2 text-border">/</span></span>{title}<span className="px-2 text-border">/</span>Draft</span>
-            </div>
-            {headerActions}
-          </header>
-          <main className="min-w-0" id="main-content">{children}</main>
-          <Toaster />
-        </div>
-      </div>
-    </div>
   );
 }

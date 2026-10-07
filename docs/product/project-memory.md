@@ -1,6 +1,6 @@
 # Project Memory — product spec
 
-Status: Ken OS pilot implemented locally; hosted release and owner verification are tracked separately. The sample-data mockup remains at `/design-preview?view=memory`. The owner-only `/memory` workspace stores proposed decisions and receipts, supports review, and derives a source-linked handoff. It does not import sessions or capture automatically.
+Status: Ken OS pilot implemented locally; hosted release and owner verification are tracked separately. The owner-only `/memory` workspace stores proposed decisions and receipts, supports review, and derives a source-linked handoff. It does not import sessions or capture automatically.
 
 ## Problem and outcome
 

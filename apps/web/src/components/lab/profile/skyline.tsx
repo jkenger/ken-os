@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { levelWords } from "../words";
 
 // The shape of your skills: one column per area, built up block by block from junior to senior.
-// Chosen on 2026-10-03 from the design exploration (/design-preview?view=lab-explore&d=skyline).
+// Chosen on 2026-10-03 from the skyline design exploration (since removed; see git history).
 
 /** Solid blocks are proven or placed; hatched ones rest on screening only; the red line is the direction's target. */
 export function Skyline({ areas, targets, compact = false }: { areas: AreaView[]; targets: Partial<Record<string, Level>>; compact?: boolean }) {

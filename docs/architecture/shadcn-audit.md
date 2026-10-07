@@ -65,7 +65,7 @@ Nothing checked any of this. App language had a scan test; shadcn use had none.
 |---|---|
 | `<details>` with `DisclosureSummary` | Works without JavaScript, and find-in-page opens it. shadcn's Collapsible unmounts closed content. Already the project's chosen disclosure (2026-10-01). |
 | Term lookup card (`role="dialog"`) | Non-modal card anchored to a text selection. Popover would take focus and close on the mouseup that makes the selection. Listed in the test's allow list. |
-| `code-editor.tsx`, `timeline.tsx` | No shadcn equivalent; they live in `components/ui` and use shadcn tokens. |
+| `code-editor.tsx` | No shadcn equivalent; it lives in `components/ui` and uses shadcn tokens. (`timeline.tsx` was removed on 2026-10-07 when its last user, the lab mockups, went.) |
 | Section tabs in the shell header | They are page links with `aria-current`, not tab panels, so `Tabs` would be the wrong role. |
 
 ## Follow-ups

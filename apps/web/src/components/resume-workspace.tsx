@@ -41,7 +41,6 @@ interface Props {
   error: string | null;
   previewUrl: string | null;
   canAsk: boolean;
-  preview?: boolean;
   /** A one-line Engineering Lab summary that links into the lab. Absent when the lab has nothing to say yet. */
   labSummary?: { headline: string; detail: string } | null;
 }
@@ -52,7 +51,7 @@ const mimeNames: Record<string, string> = {
   [DOCX_MIME]: "Word document",
 };
 
-export function ResumeWorkspace({ email, selection, file, error, previewUrl, canAsk, preview = false, labSummary = null }: Props) {
+export function ResumeWorkspace({ email, selection, file, error, previewUrl, canAsk, labSummary = null }: Props) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -144,7 +143,7 @@ export function ResumeWorkspace({ email, selection, file, error, previewUrl, can
   }
 
   return (
-    <WorkspaceShell email={email} active="resume" preview={preview}>
+    <WorkspaceShell email={email} active="resume">
       <Script src="https://apis.google.com/js/api.js" strategy="afterInteractive" />
       <div className="mx-auto w-full max-w-[1320px] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
         <div className="mb-6 flex items-end justify-between gap-6 sm:mb-8">

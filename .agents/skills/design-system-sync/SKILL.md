@@ -1,6 +1,6 @@
 ---
 name: design-system-sync
-description: Pull the Ken OS design system from Claude into this repo and open a PR. Use when the owner asks to sync the design system, after a change to the Ken OS design system in Claude, or when the app's look must follow it; not for changing the look itself, which happens in the design system first.
+description: Keep the Ken OS design system in Claude and this repo in step. Pulls its tokens into the app and opens a PR, and pushes the app's rebuilt components to its live previews. Use when the owner asks to sync the design system, after a change to it, or after a change to the app's components; not for changing the look itself, which happens in the design system first.
 ---
 
 # Sync the Ken OS design system
@@ -16,5 +16,15 @@ Design system: https://claude.ai/artifact/RQFnaHFKvuprgmgPk6nFqj (private: only 
 5. **New token kinds.** Colours, font families, spacing, radius and shadow tokens become CSS variables under their design system names. If the design system adds a radius that Tailwind should use, or a shadow, wire it in `apps/web/src/app/globals.css`: radii through the `--radius-sm` to `--radius-xl` table, shadows as an `@utility` with the same name.
 6. **Check it renders.** Open the changed screens in the browser and confirm the change shows and nothing else moved.
 7. **PR.** Commit the snapshot, the generated CSS and any screen updates together. The PR names the design system version and status from `meta`, lists what changed, and links the design system. Merging deploys; ask the owner before merging.
+
+## The other direction: components
+
+The design system's previews run the app's real components (`window.KenOS`), so when a component in `apps/web/src/components/ui` or `components/engineering/kit.tsx` changes, rebuild and publish them:
+
+1. If a component is new, export it from `apps/web/design-system/components.ts`.
+2. Run `pnpm --filter @ken-os/web design:bundle`. It writes `design-system/dist/components/`: `bundle.js`, `bundle.css`, and React 19 in `lib/react.js` and `lib/react-dom.js`.
+3. Read the design system's `project/design-system.json`, `project/components/index.d.ts` and any card you will change. Publish the four built files to the design system under `project/components/`, plus updated props in `index.d.ts`, and a `preview.html` and `README.md` for a new card. Previews mount components with `React.createElement` and inline styles for layout; Tailwind classes only work if a scanned source already uses them.
+4. Publish the index last, keeping its `libraries` (React 19 from `components/lib`) and `namespace` (`KenOS`), with a new `lastChange`.
+5. Check two or three cards in the design system render without errors.
 
 Never edit `tokens.json` or the generated CSS by hand, and never change the look in a code PR first. An export for an outside agent or project is done on request from the design system itself, not from this repo.

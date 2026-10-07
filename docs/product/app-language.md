@@ -227,7 +227,7 @@ Developer-only messages, such as the missing `OWNER_EMAIL` setup hint, stay as t
 
 ### Out of scope for the first pass
 
-The preview pages (`design-preview`, `lab-ui-preview`, `writing-studio-preview`, `project-memory-preview`) follow the rule when they are next touched. One fix happens now: `design-preview/page.tsx` still says "Project Memory is not implemented yet."
+The in-app preview pages were removed on 2026-10-07; mockups now live in the Ken OS design system in Claude, and they follow this rule too.
 
 ## Automated check
 

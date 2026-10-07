@@ -2,9 +2,9 @@ import { SkillManager } from "@/components/skill-manager";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import type { StoredSkill } from "@/lib/skills";
 
-export function SkillsWorkspace({ email, skills, preview = false }: { email: string; skills: StoredSkill[]; preview?: boolean }) {
+export function SkillsWorkspace({ email, skills }: { email: string; skills: StoredSkill[] }) {
   return (
-    <WorkspaceShell email={email} active="skills" preview={preview}>
+    <WorkspaceShell email={email} active="skills">
       <div className="mx-auto w-full max-w-[1320px] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
         <div className="mb-6 flex items-end justify-between gap-6 sm:mb-8">
           <div>
