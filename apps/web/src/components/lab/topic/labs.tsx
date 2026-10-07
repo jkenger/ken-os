@@ -1,5 +1,6 @@
 "use client";
 
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useEffect, useState } from "react";
 import { Play, RotateCcw } from "lucide-react";
 import { scoreProbe, type LabDefinition } from "@ken-os/domain";
@@ -87,12 +88,13 @@ export function Lab({ lab, revealed, passed, onDone }: { lab: LabDefinition; rev
         </div>
         {passed && <Tag value="solid">Passed</Tag>}
       </div>
-      <div role="tablist" aria-label={`${lab.title} panels`} className="flex gap-1 border-b border-border px-3 lg:hidden">
-        {(["brief", "code"] as const).map((id) => (
-          <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)}
-            className={cn("-mb-px border-b-2 px-3 py-2.5 text-sm font-semibold", tab === id ? "border-foreground" : "border-transparent text-muted-foreground")}>{id === "brief" ? "Instructions" : "Code"}</button>
-        ))}
-      </div>
+      <Tabs value={tab} onValueChange={(next) => setTab(next as typeof tab)} className="border-b border-border px-3 lg:hidden">
+        <TabsList variant="line" aria-label={`${lab.title} panels`} className="gap-1 group-data-horizontal/tabs:h-auto">
+          {(["brief", "code"] as const).map((id) => (
+            <TabsTrigger key={id} value={id} className="flex-none px-3 py-2.5 font-semibold">{id === "brief" ? "Instructions" : "Code"}</TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
       <div className="grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
         <div className={cn("space-y-4 p-5 lg:border-r lg:border-border", tab !== "brief" && "hidden lg:block")}>
           <div className="lg:sticky lg:top-28">

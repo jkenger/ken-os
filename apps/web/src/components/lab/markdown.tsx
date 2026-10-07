@@ -1,3 +1,4 @@
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Fragment, type ReactNode } from "react";
 import { CodeEditor } from "@/components/ui/code-editor";
 
@@ -50,10 +51,10 @@ export function Markdown({ text }: { text: string }) {
       const key = blocks.length;
       blocks.push(
         <div key={key} className="overflow-x-auto">
-          <table className="w-full border-collapse text-left text-sm">
-            <thead><tr>{head.map((cell, cellIndex) => <th key={cellIndex} className="border-b border-border px-3 py-2 font-semibold">{inline(cell, `${key}-h${cellIndex}`)}</th>)}</tr></thead>
-            <tbody>{body.map((row, rowIndex) => <tr key={rowIndex}>{row.map((cell, cellIndex) => <td key={cellIndex} className="border-b border-border px-3 py-2 align-top">{inline(cell, `${key}-${rowIndex}-${cellIndex}`)}</td>)}</tr>)}</tbody>
-          </table>
+          <Table className="w-full border-collapse text-left text-sm">
+            <TableHeader><TableRow>{head.map((cell, cellIndex) => <TableHead key={cellIndex} className="border-b border-border px-3 py-2 font-semibold">{inline(cell, `${key}-h${cellIndex}`)}</TableHead>)}</TableRow></TableHeader>
+            <TableBody>{body.map((row, rowIndex) => <TableRow key={rowIndex}>{row.map((cell, cellIndex) => <TableCell key={cellIndex} className="border-b border-border px-3 py-2 align-top">{inline(cell, `${key}-${rowIndex}-${cellIndex}`)}</TableCell>)}</TableRow>)}</TableBody>
+          </Table>
         </div>,
       );
       continue;

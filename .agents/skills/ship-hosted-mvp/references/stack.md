@@ -14,6 +14,15 @@ Defaults are starting points, not obligations. Honor an existing codebase and ex
 
 Whenever the stack uses shadcn/ui, always set up the [shadcn MCP server](https://ui.shadcn.com/docs/mcp) in the same step as `components.json`, so agents browse, search and install components from the registry instead of guessing their source. For Claude Code, run `pnpm dlx shadcn@latest mcp init --client claude`; it writes a project `.mcp.json` that runs `npx shadcn@latest mcp`. Other clients (Cursor, VS Code, Codex) take the same command in their own config file; follow the linked page for the current form. Commit the project config, and keep any private registry token in `.env.local`, never in the repo.
 
+Choosing shadcn/ui is not the same as using it. In the same setup step:
+
+- Tailor `Button`, `Input` and the other first primitives to the product's design rules, so screens never need class strings that stand in for a component.
+- Before building a screen, add every primitive it needs from the registry (tabs, dialog, select, table, sheet and so on) and use those. Never hand-build a control that the registry has.
+- Add a test that fails on raw `button`, `input`, `select`, `textarea`, `label` or `table` elements, hand-built widget roles and direct Radix imports outside the primitives folder, with a short allow list for deliberate exceptions.
+- Write the rule into the project's agent instructions: use or add the primitive first, and when the design changes a control, change the primitive.
+
+Ken OS skipped these and ended up with a second, hand-built set of buttons, tabs, dialogs and a sidebar beside an installed shadcn.
+
 Choose Vite + React instead of Next.js when the product is genuinely client-only or already has a separate API. Add a worker, queue, vector database, or agent specialist only when the first outcome requires it. Prefer a single process for the first hosted slice. For external content, store a stable reference and fetch current content from its owner unless a cached copy is itself a product requirement.
 
 Do not treat “default” as “already installed.” In an existing repo, inspect dependencies, schema, styling, and migrations before applying the default. Preserve an existing architecture unless the user requests a change or the first outcome exposes a concrete gap.

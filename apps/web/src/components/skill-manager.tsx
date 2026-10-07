@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DisclosureSummary } from "@/components/ui/disclosure-summary";
 import type { StoredSkill } from "@/lib/skills";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export function SkillManager({ skills }: { skills: StoredSkill[] }) {
   const router = useRouter();
@@ -101,9 +103,9 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
           <code>references/*.md</code>
         </p>
         <form className="mt-7 grid gap-3" onSubmit={upload}>
-          <label className="text-xs font-semibold" htmlFor="skill-bundle">Skill file</label>
-          <input
-            className="w-full rounded-lg border border-dashed border-input bg-card p-3 text-xs file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-2 file:py-1.5 file:text-xs file:font-medium"
+          <Label className="block text-xs font-semibold" htmlFor="skill-bundle">Skill file</Label>
+          <Input
+            className="h-auto border-dashed p-3 text-xs file:mr-3 file:rounded-md file:border-0 file:bg-secondary file:px-2 file:py-1.5 file:text-xs file:font-medium"
             id="skill-bundle"
             name="bundle"
             type="file"
@@ -138,7 +140,7 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
               Markdown instructions the resume assistant can follow
             </p>
             <Button asChild variant="outline" className="mt-4 h-9 px-3">
-              <label htmlFor="skill-bundle" className="cursor-pointer">Add skill</label>
+              <Label htmlFor="skill-bundle" className="cursor-pointer">Add skill</Label>
             </Button>
           </CardContent></Card>
         ) : (
@@ -185,25 +187,15 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
                         </details>
                       ))}
                     <div className="mt-4 flex flex-wrap gap-2">
-                      <button
-                        className="inline-flex h-9 items-center rounded-lg border border-border bg-card px-3 text-xs font-medium hover:bg-muted"
-                        type="button"
-                        onClick={() => void copyManifest(skill)}
-                      >
+                      <Button variant="outline" size="sm" className="h-9 rounded-lg px-3 text-xs" type="button" onClick={() => void copyManifest(skill)}>
                         Copy SKILL.md
-                      </button>
-                      <a
-                        className="inline-flex h-9 items-center rounded-lg border border-border bg-card px-3 text-xs font-medium hover:bg-muted"
-                        href={`/api/skills/${encodeURIComponent(skill.id)}/export?format=md`}
-                      >
-                        Download SKILL.md
-                      </a>
-                      <a
-                        className="inline-flex h-9 items-center rounded-lg border border-border bg-card px-3 text-xs font-medium hover:bg-muted"
-                        href={`/api/skills/${encodeURIComponent(skill.id)}/export?format=zip`}
-                      >
-                        Export ZIP
-                      </a>
+                      </Button>
+                      <Button asChild variant="outline" size="sm" className="h-9 rounded-lg px-3 text-xs">
+                        <a href={`/api/skills/${encodeURIComponent(skill.id)}/export?format=md`}>Download SKILL.md</a>
+                      </Button>
+                      <Button asChild variant="outline" size="sm" className="h-9 rounded-lg px-3 text-xs">
+                        <a href={`/api/skills/${encodeURIComponent(skill.id)}/export?format=zip`}>Export ZIP</a>
+                      </Button>
                     </div>
                     {copyStatus?.id === skill.id && (
                       <p className="mt-3 text-xs text-muted-foreground" role="status">

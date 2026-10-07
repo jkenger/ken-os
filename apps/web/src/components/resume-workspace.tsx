@@ -10,6 +10,7 @@ import { ArrowUpRight, Download, FileText, Plus, RefreshCw } from "lucide-react"
 import { Button, ButtonEndIcon } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface PickerBuilder {
   addView(view: unknown): PickerBuilder;
@@ -204,7 +205,7 @@ export function ResumeWorkspace({ email, selection, file, error, previewUrl, can
           <section className="scroll-mt-24" id="resume-assistant">
             <Card className="h-full [--card-spacing:--spacing(6)]"><CardContent>
             <h3 className="font-display text-lg font-semibold leading-7 tracking-[-0.035em]">Resume assistant</h3>
-            {canAsk ? <form className="mt-5 flex flex-wrap gap-2" onSubmit={ask}><label htmlFor="question" className="sr-only">Question</label><Input className="min-w-0 flex-1" id="question" value={question} onChange={(event) => setQuestion(event.target.value)} maxLength={2000} placeholder="What should I improve?"/><Button type="submit" disabled={asking}>{asking ? "Thinking…" : "Ask"}<ButtonEndIcon><ArrowUpRight size={15} /></ButtonEndIcon></Button></form> : <p className="mt-2 text-[15px] leading-[22px] text-muted-foreground">{file?.mimeType === GOOGLE_DOC_MIME ? "Not set up" : "Works with Google Docs only"}</p>}
+            {canAsk ? <form className="mt-5 flex flex-wrap gap-2" onSubmit={ask}><Label htmlFor="question" className="sr-only">Question</Label><Input className="min-w-0 flex-1" id="question" value={question} onChange={(event) => setQuestion(event.target.value)} maxLength={2000} placeholder="What should I improve?"/><Button type="submit" disabled={asking}>{asking ? "Thinking…" : "Ask"}<ButtonEndIcon><ArrowUpRight size={15} /></ButtonEndIcon></Button></form> : <p className="mt-2 text-[15px] leading-[22px] text-muted-foreground">{file?.mimeType === GOOGLE_DOC_MIME ? "Not set up" : "Works with Google Docs only"}</p>}
             {answer && <><div className="mt-5 whitespace-pre-wrap rounded-lg bg-muted p-4 text-sm leading-6" role="status">{answer}</div>{answerSkills.length > 0 && <p className="mt-3 text-xs text-muted-foreground">Skills on for this answer: {answerSkills.map((skill) => `${skill.name} v${skill.version}`).join(", ")}</p>}</>}
             </CardContent></Card>
           </section>

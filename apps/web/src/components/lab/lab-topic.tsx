@@ -42,8 +42,8 @@ function PracticeStep({ view, onDone, onNext, nextLabel, goLearn }: { view: Topi
   const item = items[index];
   const dotTone = (dot: number) => {
     const result = view.practiceResults[dot];
-    if (items[dot].kind !== "predict" || !result || result.voided) return dot === index ? "bg-foreground" : "bg-border";
-    return result.label === "solid" ? "bg-status-solid" : "bg-status-partial";
+    if (items[dot].kind !== "predict" || !result || result.voided) return dot === index ? "bg-foreground hover:bg-foreground" : "bg-border hover:bg-input";
+    return result.label === "solid" ? "bg-status-solid hover:bg-status-solid" : "bg-status-partial hover:bg-status-partial";
   };
   const last = index === items.length - 1;
 
@@ -52,7 +52,7 @@ function PracticeStep({ view, onDone, onNext, nextLabel, goLearn }: { view: Topi
       <div className="flex items-center justify-between gap-3">
         <p className={label}>PRACTICE {index + 1} OF {items.length}{item.kind === "think" ? " · THINK IT THROUGH" : " · PREDICT THE OUTPUT"}</p>
         <div className="flex gap-1.5">
-          {items.map((_, dot) => <button key={dot} type="button" aria-label={`Practice ${dot + 1}`} aria-current={dot === index ? "step" : undefined} onClick={() => setIndex(dot)} className={cn("h-1.5 w-7 rounded-full", dotTone(dot), dot === index && "ring-2 ring-foreground/30 ring-offset-2")} />)}
+          {items.map((_, dot) => <Button key={dot} variant="ghost" size="xs" type="button" aria-label={`Practice ${dot + 1}`} aria-current={dot === index ? "step" : undefined} onClick={() => setIndex(dot)} className={cn("h-1.5 w-7 rounded-full p-0", dotTone(dot), dot === index && "ring-2 ring-foreground/30 ring-offset-2")} />)}
         </div>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">Not graded · only Check and Lab prove a topic</p>

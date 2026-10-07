@@ -13,8 +13,12 @@ import { toast } from "@/components/ui/toaster";
 import type { ProfileView } from "@/features/engineering-lab/profile-store";
 import { engineering } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
-import { Back, Badge, levelShort, Notice, PageHeading, panel, primaryButton, secondaryButton } from "./kit";
+import { Back, Badge, levelShort, Notice, PageHeading, panel } from "./kit";
 import { Dialog, field, fieldLabel, FlowLayout, FlowNotes } from "./flow";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 
 // Direction, as the selected 2026-10-06 prototype lays it out: pick a target role, see what it needs per area, save;
 // pace beside it. The Guide conversation, the definitions and added chapters open from here instead of a workbench.
@@ -67,12 +71,12 @@ export function EngineeringDirection({ email, view, closedBook = false }: { emai
         <FlowLayout>
           <section className={cn(panel, "p-[23px] md:p-[30px]")}>
             {!done && <Notice>Available after the baseline · <Link href={engineering.assessment()} className="font-semibold underline underline-offset-4">{view.baseline.state === "in_progress" ? "Continue baseline" : "Start baseline"}</Link></Notice>}
-            <label className={cn(fieldLabel, "mb-[25px]")}>
+            <Label className={cn(fieldLabel, "mb-[25px]")}>
               Target role
-              <select className={field} value={roleId} disabled={!done} onChange={(event) => setRoleId(event.target.value)}>
-                {view.roles.map((item) => <option key={item.roleId} value={item.roleId}>{item.title} · {item.missing.length ? `${item.missing.length} chapters away` : "ready"}</option>)}
-              </select>
-            </label>
+              <NativeSelect className="mt-2.5 w-full" value={roleId} disabled={!done} onChange={(event) => setRoleId(event.target.value)}>
+                {view.roles.map((item) => <NativeSelectOption key={item.roleId} value={item.roleId}>{item.title} · {item.missing.length ? `${item.missing.length} chapters away` : "ready"}</NativeSelectOption>)}
+              </NativeSelect>
+            </Label>
             {role && (
               <>
                 <h3 className="text-[17px] font-semibold">{role.title}</h3>
@@ -90,9 +94,9 @@ export function EngineeringDirection({ email, view, closedBook = false }: { emai
               </>
             )}
             <div className="flex flex-wrap items-center gap-5">
-              <button type="button" className={primaryButton} disabled={!done || !roleId || busy !== "" || roleId === view.direction} onClick={() => void saveDirection()}>
+              <Button type="button" disabled={!done || !roleId || busy !== "" || roleId === view.direction} onClick={() => void saveDirection()}>
                 {busy === "direction" ? "Saving…" : roleId === view.direction ? "Saved" : "Save direction"}<IconCheck size={18} aria-hidden="true" />
-              </button>
+              </Button>
               {done && (
                 <Dialog title="Guide" trigger="Talk it through with the Guide">
                   {(close) => (
@@ -111,11 +115,11 @@ export function EngineeringDirection({ email, view, closedBook = false }: { emai
           </section>
 
           <FlowNotes title="Pace">
-            <label className={cn(fieldLabel, "mt-3 text-foreground")}>
+            <Label className={cn(fieldLabel, "mt-3 text-foreground")}>
               Weekly hours
-              <input type="number" min={1} max={80} className={field} value={hours} disabled={!view.intake} onChange={(event) => setHours(Number(event.target.value))} />
-            </label>
-            {view.intake && hours !== view.intake.weeklyHours && <button type="button" className={cn(secondaryButton, "mt-3")} disabled={busy !== ""} onClick={() => void savePace()}>{busy === "pace" ? "Saving…" : "Save pace"}</button>}
+              <Input type="number" min={1} max={80} className="mt-2.5" value={hours} disabled={!view.intake} onChange={(event) => setHours(Number(event.target.value))} />
+            </Label>
+            {view.intake && hours !== view.intake.weeklyHours && <Button variant="outline" className="mt-3" type="button" disabled={busy !== ""} onClick={() => void savePace()}>{busy === "pace" ? "Saving…" : "Save pace"}</Button>}
             <p className="mt-3">{view.pace.source === "history" ? "Paced from your proven topics" : "Paced from weekly hours until three topics are proven"}</p>
             <div className="mt-3"><DefinitionsDialog view={view} /></div>
           </FlowNotes>
@@ -130,8 +134,8 @@ export function EngineeringDirection({ email, view, closedBook = false }: { emai
                 <p className="mt-2 font-semibold">{chapter.title}</p>
                 <p className="mt-1 text-muted-foreground">{chapter.reason}</p>
                 <div className="mt-3 flex gap-3">
-                  <button type="button" className={secondaryButton} disabled={busy !== ""} onClick={() => void act(chapter.title, () => post("/api/lab/profile", { action: "addChapter", chapter }), "Added · Not written yet", () => setSuggested((current) => current.filter((item) => item.title !== chapter.title)))}>Add chapter</button>
-                  <button type="button" className="text-[13px] text-muted-foreground hover:text-foreground" onClick={() => setSuggested((current) => current.filter((item) => item.title !== chapter.title))}>Dismiss</button>
+                  <Button variant="outline" type="button" disabled={busy !== ""} onClick={() => void act(chapter.title, () => post("/api/lab/profile", { action: "addChapter", chapter }), "Added · Not written yet", () => setSuggested((current) => current.filter((item) => item.title !== chapter.title)))}>Add chapter</Button>
+                  <Button variant="ghost" size="sm" type="button" className="text-[13px] font-normal text-muted-foreground" onClick={() => setSuggested((current) => current.filter((item) => item.title !== chapter.title))}>Dismiss</Button>
                 </div>
               </div>
             ))}
@@ -142,7 +146,7 @@ export function EngineeringDirection({ email, view, closedBook = false }: { emai
                   <Badge>{chapter.screened ? `${depthWords[chapter.depth as keyof typeof depthWords]} · estimate` : "Not assessed"}</Badge>
                 </div>
                 <p className="mt-1 text-muted-foreground">{chapter.reason}</p>
-                {!chapter.started && <button type="button" className={cn(secondaryButton, "mt-3")} disabled={busy !== ""} onClick={() => void act(chapter.id, () => post("/api/lab/screens/added", { chapterId: chapter.id }), "Questions ready")}>{busy === chapter.id ? "Writing questions…" : "Placement check"}</button>}
+                {!chapter.started && <Button variant="outline" className="mt-3" type="button" disabled={busy !== ""} onClick={() => void act(chapter.id, () => post("/api/lab/screens/added", { chapterId: chapter.id }), "Questions ready")}>{busy === chapter.id ? "Writing questions…" : "Placement check"}</Button>}
                 {chapter.next && <div className="mt-4"><AddedChapterScreen chapter={chapter} /></div>}
               </div>
             ))}

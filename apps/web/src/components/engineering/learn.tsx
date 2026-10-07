@@ -11,7 +11,10 @@ import { statusWords } from "@/components/lab/words";
 import { toast } from "@/components/ui/toaster";
 import { engineering, type TopicStep } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
-import { PageHeading, panel, primaryButton, secondaryButton } from "./kit";
+import { PageHeading, panel } from "./kit";
+import { Button } from "@/components/ui/button";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 // Learn, one to one with the selected 2026-10-06 prototype: My path / Gaps / All topics, search, chapters as cards
 // that open into topic rows, and the Planner's next topic beside them. Statuses are the existing progress rules.
@@ -85,17 +88,15 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
         <PageHeading title="Learn" />
 
         <div className="mx-[5px] mb-5 block justify-between gap-5 md:mx-3.5 md:mb-[25px] md:flex">
-          <div className="mb-3.5 flex w-fit gap-1 rounded-md bg-secondary p-1 md:mb-0" role="group" aria-label="Topics shown">
+          <ToggleGroup type="single" spacing={1} value={scope} onValueChange={(next) => { if (next) setScope(next as Scope); }} aria-label="Topics shown" className="mb-3.5 rounded-md bg-secondary p-1 md:mb-0">
             {options.map(([id, name]) => (
-              <button key={id} type="button" aria-pressed={scope === id} onClick={() => setScope(id)}
-                className={cn("rounded-full px-3.5 py-2 text-[13px]", scope === id ? "bg-card text-foreground shadow-tab" : "text-muted-foreground hover:text-foreground")}>{name}</button>
+              <ToggleGroupItem key={id} value={id} className="h-auto rounded-full px-3.5 py-2 text-[13px] font-normal text-muted-foreground hover:bg-transparent hover:text-foreground data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-tab">{name}</ToggleGroupItem>
             ))}
-          </div>
-          <label className="flex w-full items-center gap-2.5 rounded-full border border-input bg-card px-3 md:w-80">
-            <IconSearch size={18} className="text-muted-foreground" aria-hidden="true" />
-            <input aria-label="Search topics" placeholder="Search topics or chapters" value={query} onChange={(event) => setQuery(event.target.value)}
-              className="w-full bg-transparent py-[11px] text-sm outline-none placeholder:text-muted-foreground" />
-          </label>
+          </ToggleGroup>
+          <InputGroup className="h-11 rounded-full md:w-80">
+            <InputGroupAddon><IconSearch size={18} aria-hidden="true" /></InputGroupAddon>
+            <InputGroupInput aria-label="Search topics" placeholder="Search topics or chapters" value={query} onChange={(event) => setQuery(event.target.value)} />
+          </InputGroup>
         </div>
 
         <div className="mx-[5px] grid grid-cols-1 gap-[18px] md:mx-3.5 md:grid-cols-[2fr_1fr] md:gap-5 lg:grid-cols-[minmax(0,2.4fr)_minmax(230px,1fr)] lg:gap-8">
@@ -129,9 +130,9 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
                           : <IconCircle size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />}
                       <Link href={engineering.topic(topic.id)} className="min-w-0 flex-1 text-xs font-medium hover:text-primary md:text-[13px]">{topic.title}</Link>
                       {isUnassessed(item) && assessable.includes(topic.id) && (
-                        <button type="button" disabled={placing !== ""} onClick={() => void place(topic.id)} className="shrink-0 text-[11px] text-primary hover:underline underline-offset-4 disabled:opacity-50">
+                        <Button variant="link" size="xs" type="button" disabled={placing !== ""} onClick={() => void place(topic.id)} className="h-auto shrink-0 px-0 text-[11px] font-normal">
                           {placing === topic.id ? "Writing questions…" : "Placement check"}
-                        </button>
+                        </Button>
                       )}
                       <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">{status}</span>
                       <Link href={engineering.topic(topic.id)} aria-label={`Open ${topic.title}`} className="shrink-0 text-quiet"><IconChevronRight size={18} aria-hidden="true" /></Link>
@@ -151,7 +152,7 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
               <div className={cn(panel, "p-[35px] text-center")}>
                 <h3 className="text-[17px] font-semibold">No topics found</h3>
                 <p className="mb-[18px] mt-[7px] text-sm text-muted-foreground">Try a broader word</p>
-                <button type="button" className={secondaryButton} onClick={() => { setQuery(""); setScope("all"); }}>Clear search</button>
+                <Button variant="outline" type="button" onClick={() => { setQuery(""); setScope("all"); }}>Clear search</Button>
               </div>
             )}
           </section>
@@ -161,7 +162,7 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
             {upNext ? (
               <>
                 <p className="mb-[18px] mt-[7px] leading-[1.65]"><strong className="font-semibold text-foreground">{upNext.title}</strong> · {upNext.reason}</p>
-                <Link href={engineering.topic(upNext.topicId, upNext.step)} className={primaryButton}>Continue topic<IconArrowRight size={18} aria-hidden="true" /></Link>
+                <Button asChild><Link href={engineering.topic(upNext.topicId, upNext.step)}>Continue topic<IconArrowRight size={18} aria-hidden="true" /></Link></Button>
               </>
             ) : <p className="mt-[7px]">Nothing due</p>}
             <hr className="my-[25px] border-border" />

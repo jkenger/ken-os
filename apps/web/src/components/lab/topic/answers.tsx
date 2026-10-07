@@ -11,6 +11,9 @@ import { CodeBlock, Markdown } from "../markdown";
 import { label, labelWords, modeWords, toneFor } from "../words";
 import { post, realOutput, textarea } from "./client";
 import { PredictionDiff, RubricChecklist } from "./feedback";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 export function Tag({ value, children }: { value: string; children: React.ReactNode }) {
   return <Pill tone={toneFor(value)}>{children}</Pill>;
@@ -26,14 +29,14 @@ function Confidence({ value, onChange }: { value: number | null; onChange: (valu
     <fieldset className="my-[25px]">
       <legend className="mb-1 text-[13px] font-semibold">How sure are you?</legend>
       <p className="mb-[11px] text-xs text-muted-foreground">Not graded. Flags sure-but-wrong answers</p>
-      <div className="flex w-[270px] max-w-full gap-2.5">
+      <ToggleGroup type="single" spacing={2.5} variant="outline" aria-label="How sure are you?" className="w-[270px] max-w-full"
+        value={value ? String(value) : ""} onValueChange={(next) => { if (next) onChange(Number(next)); }}>
         {[1, 2, 3, 4, 5].map((rating) => (
-          <button key={rating} type="button" aria-pressed={value === rating} onClick={() => onChange(rating)}
-            className={cn("h-10 w-[45px] rounded-lg border bg-card text-sm", value === rating ? "border-primary bg-secondary text-foreground" : "border-input hover:bg-accent")}>
+          <ToggleGroupItem key={rating} value={String(rating)} className="h-10 w-[45px] border-input bg-card text-sm font-normal hover:bg-accent data-[state=on]:border-primary data-[state=on]:bg-secondary data-[state=on]:text-foreground">
             {rating}
-          </button>
+          </ToggleGroupItem>
         ))}
-      </div>
+      </ToggleGroup>
       <small className="mt-2 flex w-[270px] max-w-full justify-between text-[11px] text-muted-foreground"><span>1 · Guessing</span><span>5 · Very sure</span></small>
     </fieldset>
   );
@@ -43,15 +46,15 @@ function Confidence({ value, onChange }: { value: number | null; onChange: (valu
 function PredictInputs({ lines, why, onLines, onWhy, tall }: { lines: string; why: string; onLines: (value: string) => void; onWhy: (value: string) => void; tall?: boolean }) {
   return (
     <>
-      <label className="mt-4 block">
+      <Label className="mt-4 block">
         <span className="mb-2 block text-sm font-semibold">Predicted output · one line per log</span>
-        <textarea className={cn(textarea, tall ? "min-h-[110px]" : "min-h-[80px]", "font-mono")} spellCheck={false} value={lines} onChange={(event) => onLines(event.target.value)} />
-      </label>
-      <label className="mt-3 block">
+        <Textarea className={cn(tall ? "min-h-[110px]" : "min-h-[80px]", "font-mono")} spellCheck={false} value={lines} onChange={(event) => onLines(event.target.value)} />
+      </Label>
+      <Label className="mt-3 block">
         <span className="block text-sm font-semibold">Why</span>
         <span className="mb-2 block text-sm text-muted-foreground">Optional · not graded</span>
-        <textarea className={cn(textarea, "min-h-[72px]")} value={why} onChange={(event) => onWhy(event.target.value)} />
-      </label>
+        <Textarea className={cn("min-h-[72px]")} value={why} onChange={(event) => onWhy(event.target.value)} />
+      </Label>
     </>
   );
 }
@@ -147,10 +150,10 @@ export function Question({ assessment, index, onDone, heading, submitTo }: {
         <>
           <Confidence value={rating} onChange={setRating} />
           {item.mode === "predict" ? <PredictInputs lines={answer} why={why} onLines={setAnswer} onWhy={setWhy} tall /> : (
-            <label className="mt-4 block">
+            <Label className="mt-4 block">
               <span className="mb-2 block text-sm font-semibold">Answer</span>
-              <textarea className={cn(textarea, "min-h-[130px]")} value={answer} onChange={(event) => setAnswer(event.target.value)} />
-            </label>
+              <Textarea className={cn("min-h-[130px]")} value={answer} onChange={(event) => setAnswer(event.target.value)} />
+            </Label>
           )}
           {problem && <p className="mt-3 rounded-lg bg-muted px-4 py-3 text-sm" role="alert">{problem}</p>}
           <Button type="button" className="mt-3" disabled={busy || !answer.trim()} onClick={() => void submit()}>{busy ? "Grading…" : "Submit"}</Button>

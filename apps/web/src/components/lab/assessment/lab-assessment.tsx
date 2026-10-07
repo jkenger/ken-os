@@ -19,6 +19,9 @@ import { RubricChecklist } from "../topic/feedback";
 import { Panel, Stat, TitleBar } from "../panel";
 import { label, labelWords, modeWords, toneFor } from "../words";
 import { engineering } from "@/features/engineering-lab/routes";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 // The baseline assessment and its retakes. Design: docs/architecture/engineering-lab-profile.md, sections 3 and 4.
 // Closed-book: this page turns off term lookup, and grades stay hidden until a chapter is done. Laid out in the lab's
@@ -34,11 +37,11 @@ function IntakeCard({ proposal, onSaved }: { proposal: IntakeAnswers | null; onS
   // A new proposal from the Guide refills the card; your own edits stay until then.
   if (proposal && proposal !== seen) { setSeen(proposal); setValues(proposal); }
   const field = (key: "building" | "stack" | "aiWork", title: string, hint: string) => (
-    <label className="block">
+    <Label className="block">
       <span className="block text-sm font-semibold">{title}</span>
       <span className="mb-1.5 block text-sm text-muted-foreground">{hint}</span>
-      <textarea className={cn(textarea, "min-h-[64px]")} value={values[key]} onChange={(event) => setValues({ ...values, [key]: event.target.value })} />
-    </label>
+      <Textarea className={cn("min-h-[64px]")} value={values[key]} onChange={(event) => setValues({ ...values, [key]: event.target.value })} />
+    </Label>
   );
 
   async function save() {
@@ -57,10 +60,10 @@ function IntakeCard({ proposal, onSaved }: { proposal: IntakeAnswers | null; onS
         {field("building", "What you build", "e.g. my own web products, a SaaS for clinics")}
         {field("stack", "What you use day to day", "Languages, frameworks, databases, hosting")}
         {field("aiWork", "AI work you've already started", "Even partly: embeddings, RAG, agents, evals")}
-        <label className="block">
+        <Label className="block">
           <span className="mb-1.5 block text-sm font-semibold">Hours per week</span>
-          <input type="number" min={1} max={80} className={cn(textarea, "w-28")} value={values.weeklyHours} onChange={(event) => setValues({ ...values, weeklyHours: Number(event.target.value) })} />
-        </label>
+          <Input type="number" min={1} max={80} className="w-28" value={values.weeklyHours} onChange={(event) => setValues({ ...values, weeklyHours: Number(event.target.value) })} />
+        </Label>
       </div>
       {problem && <p className="mt-3 rounded-lg bg-muted px-4 py-3 text-sm" role="alert">{problem}</p>}
       <Button type="button" className="mt-4" disabled={busy || !values.building.trim() || !values.stack.trim() || !values.aiWork.trim()} onClick={() => void save()}>{busy ? "Saving…" : "Save and continue"}</Button>

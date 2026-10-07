@@ -1,3 +1,4 @@
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption } from "@/components/ui/table";
 import Link from "next/link";
 import { Check, ExternalLink } from "lucide-react";
 import { depthAtLeast, LEVELS, levelRank, type ChapterState, type Level } from "@ken-os/domain";
@@ -90,25 +91,25 @@ export function LevelTable({ profile, states, targets }: { profile: ProfileView;
   const state = (chapter: string) => states.find((item) => item.chapterId === chapter);
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[680px] border-collapse text-left text-sm">
-        <caption className="mb-2 text-left text-sm text-muted-foreground">A tick means that chapter is deep enough. Your direction&apos;s target is outlined.</caption>
-        <thead>
-          <tr className="border-b border-foreground">
-            <th scope="col" className="w-[160px] py-2 pr-4 font-semibold">Area</th>
-            {LEVELS.map((level) => <th key={level} scope="col" className="py-2 pr-4 font-semibold">{levelWords(level)}</th>)}
-          </tr>
-        </thead>
-        <tbody>
+      <Table className="w-full min-w-[680px] border-collapse text-left text-sm">
+        <TableCaption className="mb-2 text-left text-sm text-muted-foreground">A tick means that chapter is deep enough. Your direction&apos;s target is outlined.</TableCaption>
+        <TableHeader>
+          <TableRow className="border-b border-foreground">
+            <TableHead scope="col" className="pl-0 w-[160px] py-2 pr-4 font-semibold">Area</TableHead>
+            {LEVELS.map((level) => <TableHead key={level} scope="col" className="pl-0 py-2 pr-4 font-semibold">{levelWords(level)}</TableHead>)}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {careers.areas.map((ladder) => {
             const area = profile.areas.find((item) => item.area === ladder.id)!;
             return (
-              <tr key={ladder.id} className="border-b border-border align-top">
-                <th scope="row" className="py-3 pr-4 font-normal">
+              <TableRow key={ladder.id} className="border-b border-border align-top">
+                <TableHead scope="row" className="pl-0 py-3 pr-4 font-normal">
                   <span className="block font-semibold">{ladder.title}</span>
                   <span className="text-muted-foreground">{levelWords(area.now.level)}{area.now.estimate ? ", estimate" : ""}</span>
-                </th>
+                </TableHead>
                 {LEVELS.map((level) => (
-                  <td key={level} className="py-2 pr-2">
+                  <TableCell key={level} className="pl-0 py-2 pr-2">
                     <div className={cn("rounded-md p-2", levelRank(area.now.level) >= levelRank(level) && "bg-status-solid-surface", targets[ladder.id] === level && "outline-2 outline-foreground")}>
                       <ul className="space-y-1">
                         {ladder.levels[level].map((requirement) => {
@@ -122,13 +123,13 @@ export function LevelTable({ profile, states, targets }: { profile: ProfileView;
                         })}
                       </ul>
                     </div>
-                  </td>
+                  </TableCell>
                 ))}
-              </tr>
+              </TableRow>
             );
           })}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }
@@ -273,33 +274,33 @@ function Compare({ profile, states }: { profile: ProfileView; states: ChapterSta
       <p className="mt-3 max-w-[640px] text-[17px] leading-7 text-muted-foreground">Each column is a role. Each row is an area: what the role needs, against where you are now.</p>
 
       <div className="mt-8 overflow-x-auto">
-        <table className="w-full min-w-[820px] border-collapse text-left text-sm">
-          <caption className="sr-only">Roles compared by the level each needs per area, and your level now</caption>
-          <thead>
-            <tr className="align-bottom">
-              <th scope="col" className="w-[150px] pb-3 pr-3 font-semibold">You now</th>
+        <Table className="w-full min-w-[820px] border-collapse text-left text-sm">
+          <TableCaption className="sr-only">Roles compared by the level each needs per area, and your level now</TableCaption>
+          <TableHeader>
+            <TableRow className="align-bottom">
+              <TableHead scope="col" className="pl-0 w-[150px] pb-3 pr-3 font-semibold">You now</TableHead>
               {roles.map((role) => (
-                <th key={role.roleId} scope="col" className={cn("px-3 pb-3 font-semibold", role.roleId === profile.direction && "rounded-t-lg bg-muted")}>
+                <TableHead key={role.roleId} scope="col" className={cn("px-3 pb-3 font-semibold", role.roleId === profile.direction && "rounded-t-lg bg-muted")}>
                   <span className="block font-display text-[15px] leading-5">{role.title}</span>
                   <span className="mt-1 block font-normal text-muted-foreground">{role.missing.length} chapters away</span>
-                </th>
+                </TableHead>
               ))}
-            </tr>
-          </thead>
-          <tbody>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
             {careers.areas.map((ladder) => {
               const area = profile.areas.find((item) => item.area === ladder.id)!;
               return (
-                <tr key={ladder.id} className="border-t border-border">
-                  <th scope="row" className="py-3 pr-3 font-normal">
+                <TableRow key={ladder.id} className="border-t border-border">
+                  <TableHead scope="row" className="pl-0 py-3 pr-3 font-normal">
                     <span className="block font-semibold">{ladder.title}</span>
                     <span className="text-muted-foreground">{levelWords(area.now.level)}{area.now.estimate ? ", estimate" : ""}</span>
-                  </th>
+                  </TableHead>
                   {roles.map((role) => {
                     const target = careers.roles.find((item) => item.id === role.roleId)!.targets[ladder.id];
                     const short = target ? Math.max(0, levelRank(target) - levelRank(area.now.level)) : 0;
                     return (
-                      <td key={role.roleId} className={cn("px-3 py-3", role.roleId === profile.direction && "bg-muted")}>
+                      <TableCell key={role.roleId} className={cn("px-3 py-3", role.roleId === profile.direction && "bg-muted")}>
                         {target ? (
                           <span className="flex items-center gap-2">
                             <span className="flex gap-0.5" aria-hidden="true">
@@ -310,22 +311,22 @@ function Compare({ profile, states }: { profile: ProfileView; states: ChapterSta
                             <span>{levelWords(target)}{short ? <span className="text-muted-foreground">, {short} up</span> : <span className="text-status-solid">, there</span>}</span>
                           </span>
                         ) : <span className="text-muted-foreground">Not needed</span>}
-                      </td>
+                      </TableCell>
                     );
                   })}
-                </tr>
+                </TableRow>
               );
             })}
-            <tr className="border-t border-border">
-              <td />
+            <TableRow className="border-t border-border">
+              <TableCell />
               {roles.map((role) => (
-                <td key={role.roleId} className={cn("px-3 py-3", role.roleId === profile.direction && "rounded-b-lg bg-muted")}>
+                <TableCell key={role.roleId} className={cn("px-3 py-3", role.roleId === profile.direction && "rounded-b-lg bg-muted")}>
                   {role.roleId === profile.direction ? <Pill tone="solid">Your direction</Pill> : <Button size="sm" variant="outline">Choose</Button>}
-                </td>
+                </TableCell>
               ))}
-            </tr>
-          </tbody>
-        </table>
+            </TableRow>
+          </TableBody>
+        </Table>
       </div>
       <p className="mt-3 text-sm text-muted-foreground">Filled squares are levels you have; outlined ones are what the role still needs.</p>
 

@@ -1,3 +1,4 @@
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption } from "@/components/ui/table";
 import { Check } from "lucide-react";
 import { depthAtLeast, LEVELS, levelRank, type Level } from "@ken-os/domain";
 import { careers, topicMap } from "@/features/engineering-lab/curriculum";
@@ -16,27 +17,27 @@ export function LevelTable({ profile, targets }: { profile: ProfileView; targets
   const state = (chapter: string) => profile.chapterStates.find((item) => item.chapterId === chapter);
   return (
     <div className="overflow-x-auto">
-      <table className="w-full min-w-[680px] border-collapse text-left text-sm">
-        <caption className="mb-3 text-left text-sm text-muted-foreground">
+      <Table className="w-full min-w-[680px] border-collapse text-left text-sm">
+        <TableCaption className="mb-3 text-left text-sm text-muted-foreground">
           Tick: deep enough · Shaded: reached{Object.keys(targets).length ? " · Outlined: direction target" : ""}
-        </caption>
-        <thead>
-          <tr className="border-b border-foreground">
-            <th scope="col" className="w-[160px] py-2 pr-4 font-semibold">Area</th>
-            {LEVELS.map((level) => <th key={level} scope="col" className="py-2 pr-4 font-semibold">{levelWords(level)}</th>)}
-          </tr>
-        </thead>
-        <tbody>
+        </TableCaption>
+        <TableHeader>
+          <TableRow className="border-b border-foreground">
+            <TableHead scope="col" className="pl-0 w-[160px] py-2 pr-4 font-semibold">Area</TableHead>
+            {LEVELS.map((level) => <TableHead key={level} scope="col" className="pl-0 py-2 pr-4 font-semibold">{levelWords(level)}</TableHead>)}
+          </TableRow>
+        </TableHeader>
+        <TableBody>
           {careers.areas.map((ladder) => {
             const area = profile.areas.find((item) => item.area === ladder.id)!;
             return (
-              <tr key={ladder.id} className="border-b border-border align-top">
-                <th scope="row" className="py-3 pr-4 font-normal">
+              <TableRow key={ladder.id} className="border-b border-border align-top">
+                <TableHead scope="row" className="pl-0 py-3 pr-4 font-normal">
                   <span className="block font-semibold">{ladder.title}</span>
                   <span className="text-muted-foreground">{levelWords(area.now.level)}{area.now.estimate ? ", estimate" : ""}</span>
-                </th>
+                </TableHead>
                 {LEVELS.map((level) => (
-                  <td key={level} className="py-2 pr-2">
+                  <TableCell key={level} className="pl-0 py-2 pr-2">
                     <div className={cn("rounded-md p-2", levelRank(area.now.level) >= levelRank(level) && "bg-status-solid-surface", targets[ladder.id] === level && "outline-2 outline-foreground")}>
                       <ul className="space-y-1">
                         {ladder.levels[level].map((requirement) => {
@@ -52,13 +53,13 @@ export function LevelTable({ profile, targets }: { profile: ProfileView; targets
                         })}
                       </ul>
                     </div>
-                  </td>
+                  </TableCell>
                 ))}
-              </tr>
+              </TableRow>
             );
           })}
-        </tbody>
-      </table>
+        </TableBody>
+      </Table>
     </div>
   );
 }

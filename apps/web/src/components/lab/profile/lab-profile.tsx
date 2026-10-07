@@ -20,6 +20,7 @@ import { GuideChat, type GuideProposals } from "./guide-chat";
 import { LevelTable } from "./level-table";
 import { Skyline } from "./skyline";
 import { engineering } from "@/features/engineering-lab/routes";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 // The profile page as a tool: a compact title bar, the Guide in a pane on the left, and the detail in a tabbed pane
 // on the right; both panes scroll on their own. Chosen on 2026-10-03 from the design exploration ("Workbench, app
@@ -144,15 +145,15 @@ export function LabProfile({ email, view, initialPane, closedBook = false }: { e
             />
 
             <section aria-label="Profile detail" className="flex min-h-[480px] min-w-0 flex-col rounded-lg border border-border lg:min-h-0">
-              <div role="tablist" aria-label="Profile sections" className="flex overflow-x-auto border-b border-border px-1 [scrollbar-width:none]">
+              <Tabs value={pane} onValueChange={(next) => setPane(next as ProfilePane)} className="flex min-h-0 flex-1 flex-col gap-0">
+              <TabsList variant="line" aria-label="Profile sections" className="w-full justify-start gap-0 overflow-x-auto rounded-none border-b border-border px-1 group-data-horizontal/tabs:h-auto [scrollbar-width:none]">
                 {(Object.keys(paneNames) as ProfilePane[]).map((id) => (
-                  <button key={id} type="button" role="tab" id={`tab-${id}`} aria-selected={pane === id} aria-controls="profile-pane" onClick={() => setPane(id)}
-                    className={cn("shrink-0 border-b-2 px-2.5 py-2.5 text-sm font-semibold", pane === id ? "border-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}>
+                  <TabsTrigger key={id} value={id} className="flex-none px-2.5 py-2.5 font-semibold">
                     {paneNames[id]}{id === "chapters" && view.addedChapters.length ? ` (${view.addedChapters.length})` : ""}
-                  </button>
+                  </TabsTrigger>
                 ))}
-              </div>
-              <div id="profile-pane" role="tabpanel" aria-labelledby={`tab-${pane}`} className="min-h-0 flex-1 overflow-y-auto p-5">
+              </TabsList>
+              <TabsContent value={pane} className="min-h-0 overflow-y-auto p-5">
                 {pane === "shape" && (
                   <div className="grid max-w-[760px] gap-8">
                     <Skyline areas={view.areas} targets={targets} compact />
@@ -287,7 +288,8 @@ export function LabProfile({ email, view, initialPane, closedBook = false }: { e
                     <p className="text-muted-foreground md:col-span-2">{view.careers.status === "draft" ? "Draft · not approved" : `Approved ${view.careers.approvedOn}`} · {view.careers.note}</p>
                   </div>
                 )}
-              </div>
+              </TabsContent>
+              </Tabs>
             </section>
           </div>
         )}
