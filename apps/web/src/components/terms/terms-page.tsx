@@ -15,7 +15,7 @@ function saved(value: string) {
 }
 
 /** Every term looked up and saved anywhere in Ken OS, with where it was found. */
-export function TermsPage({ email, terms, preview = false }: { email: string; terms: SavedTerm[]; preview?: boolean }) {
+export function TermsPage({ email, terms }: { email: string; terms: SavedTerm[] }) {
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [removing, setRemoving] = useState("");
@@ -37,7 +37,7 @@ export function TermsPage({ email, terms, preview = false }: { email: string; te
   }
 
   return (
-    <WorkspaceShell email={email} active="terms" preview={preview}>
+    <WorkspaceShell email={email} active="terms">
       <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-[1100px] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
         <h1 className="text-[30px] font-[750] leading-[1.1] tracking-[-0.035em] md:text-[34px] xl:text-[40px] xl:leading-[1.05]">Terms</h1>
 

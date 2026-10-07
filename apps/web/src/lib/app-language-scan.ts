@@ -10,12 +10,6 @@ export const srcRoot = join(__dirname, "..");
 const excluded = [
   /\.test\./,
   /^components\/ui\//,
-  /^app\/design-preview\//,
-  /^components\/lab-ui-preview\//,
-  /^components\/lab\/explore\//,
-  /^components\/writing-studio-preview\.tsx$/,
-  /^components\/project-memory-preview\.tsx$/,
-  /^features\/engineering-lab\/preview\.ts$/,
   // Agent-facing Project Memory: agents read these errors, not the owner.
   /^features\/project-memory\/(contract|store)\.ts$/,
   /^app\/api\/memory\/agent\//,

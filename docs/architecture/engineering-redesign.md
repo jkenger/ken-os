@@ -96,7 +96,7 @@ Notes:
 - **The evidence page's "Record" section** shows the question version and model behind a collapsed toggle. The app-language rule keeps model and prompt details off screens; this is the one place they appear, because the handoff asks for traceable grades and the record is content, not frame.
 - **The look** follows the prototype one to one: 232px sidebar (205px under 1280px) holding the four sections, a 59px header with the breadcrumb, eyebrow and 36px titles, the capability table, rails (12px segments, lit for the level, soft for an estimate), the tint requirement panel, the milestone column, list rows, the segmented Learn filter, chapter cards, numbered step tabs and square confidence buttons. Building blocks are in `components/engineering/kit.tsx`; icons are Tabler, as in the prototype.
 - **Where it differs from the prototype on purpose:** no tagline paragraphs under titles (app-language rule); "Proof coverage" is a count of requirements met, never a percentage; the prototype's illustrative levels, demo grading, Blob worker, localStorage and "From your projects" are not copied; the prototype's rail labels (#748096, 3.9:1) use the muted colour (4.9:1); search and Sign out stay in the header.
-- **The Skyline home (`lab-today.tsx`) is no longer routed.** It stays for the `design-preview?view=lab` mockup and is deleted with other redundant UI once the redirects are permanent (proposal §13, phase F).
+- **The Skyline home (`lab-today.tsx`) is no longer routed.** It was deleted on 2026-10-07 together with `/design-preview`, the developer-only screen preview it lived in.
 
 **Task flows, 2026-10-06 (second pass).** The prototype's end-to-end flow now drives every task screen, on the real engine:
 
