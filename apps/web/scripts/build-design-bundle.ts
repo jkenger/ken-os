@@ -78,6 +78,10 @@ async function main() {
   const globalsPath = resolve(webRoot, "src/app/globals.css");
   const source = readFileSync(globalsPath, "utf8")
     .replace(/@import "\.\/design-tokens\.generated\.css";\r?\n/, "")
+    // Ken OS has one light theme. The design system page adds a "dark" class to its preview frames when the viewer
+    // uses dark mode, which would switch on shadcn's built-in dark styles; point the variant at a class nothing sets.
+    .replace("@custom-variant dark (&:is(.dark *));", "@custom-variant dark (&:is(.ken-os-dark-theme *));")
+    .concat("\nhtml { color-scheme: light !important; }\n")
     .replace(`@import "tailwindcss";`, `@import "tailwindcss" source(none);\n@source "../components/ui";\n@source "../components/engineering/kit.tsx";\n@source "../components/workspace-shell.tsx";`);
   const plugin = tailwind({ optimize: { minify: true } }) as AcceptedPlugin;
   const css = await postcss([plugin]).process(source, { from: globalsPath });
