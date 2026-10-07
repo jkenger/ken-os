@@ -1,31 +1,31 @@
-/* Generated from design-system/tokens.json (Ken OS 0.5.0, working), a copy of the Claude design system. Do not edit. */
+/* Generated from design-system/tokens.json (Ken OS 0.6.0, working), a copy of the Claude design system. Do not edit. */
 :root {
-  --background: #f3f2ee;
-  --foreground: #1a1a17;
-  --canvas: #fcfcfa;
+  --background: #f4f4f5;
+  --foreground: #18181b;
+  --canvas: #fafafa;
   --card: #ffffff;
-  --primary: #1a1a17;
-  --primary-hover: #3a3933;
+  --primary: #18181b;
+  --primary-hover: #3f3f46;
   --primary-foreground: #ffffff;
-  --muted: #f3f2ee;
-  --secondary: #ecebe6;
-  --secondary-foreground: #1a1a17;
-  --muted-foreground: #62605a;
-  --quiet: #4f4d47;
-  --accent: #ecebe6;
-  --border: #e6e4de;
-  --input: #8e8b83;
+  --muted: #f4f4f5;
+  --secondary: #ececef;
+  --secondary-foreground: #18181b;
+  --muted-foreground: #52525b;
+  --quiet: #3f3f46;
+  --accent: #ececef;
+  --border: #e4e4e7;
+  --input: #85858e;
   --ring: #2747c9;
   --signal: #2747c9;
   --destructive: #c0362c;
   --sidebar: var(--background);
-  --sidebar-foreground: #4f4d47;
+  --sidebar-foreground: #3f3f46;
   --sidebar-accent: #ffffff;
-  --sidebar-accent-foreground: #1a1a17;
-  --tint: #f7f6f2;
-  --table-head: #fafaf8;
-  --row-hover: #faf9f6;
-  --rail: #e6e4de;
+  --sidebar-accent-foreground: #18181b;
+  --tint: #f6f6f7;
+  --table-head: #fafafa;
+  --row-hover: #fafafa;
+  --rail: #e4e4e7;
   --rail-lit: var(--signal);
   --rail-soft: #8fa0e3;
   --status-solid: #0f766e;
@@ -66,7 +66,7 @@
   --radius-panel: 14px;
   --radius-segment: 99px;
   --radius-full: 9999px;
-  --shadow-panel: 0 0 0 1px rgba(26, 26, 23, 0.06), 0 1px 3px rgba(26, 26, 23, 0.08);
-  --shadow-tab: 0 1px 2px rgba(26, 26, 23, 0.08);
+  --shadow-panel: 0 0 0 1px rgba(24, 24, 27, 0.06), 0 1px 3px rgba(24, 24, 27, 0.08);
+  --shadow-tab: 0 1px 2px rgba(24, 24, 27, 0.08);
   --shadow-overlay: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
