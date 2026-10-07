@@ -67,7 +67,7 @@ export function EngineeringDirection({ email, view, closedBook = false }: { emai
     <WorkspaceShell email={email} active="lab" tab="profile" termLookup={!closedBook}>
       <div className="mx-auto max-w-[1500px] px-3 pb-9 pt-6 md:px-5 md:pt-[30px] min-[1500px]:pt-9">
         <Back href={engineering.profile}>Profile</Back>
-        <PageHeading title="Direction" badge={view.direction ? "Saved" : undefined} />
+        <PageHeading title="Direction" description="Target role and what it requires, chosen with the Guide" badge={view.direction ? "Saved" : undefined} />
         <FlowLayout>
           <section className={cn(panel, "p-[23px] md:p-[30px]")}>
             {!done && <Notice>Available after the baseline · <Link href={engineering.assessment()} className="font-semibold underline underline-offset-4">{view.baseline.state === "in_progress" ? "Continue baseline" : "Start baseline"}</Link></Notice>}

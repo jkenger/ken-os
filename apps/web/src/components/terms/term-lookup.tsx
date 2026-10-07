@@ -147,7 +147,7 @@ export function TermLookup({ module, children }: { module: string; children: Rea
         </Button>
       )}
       {pending && open && (
-        <div data-term-lookup role="dialog" aria-label={`Meaning of ${pending.text}`} className="fixed z-40 w-[340px] max-w-[calc(100vw-32px)] rounded-xl border border-border bg-popover p-4 text-sm shadow-2xl" style={{ left, top }}>
+        <div data-term-lookup role="dialog" aria-label={`Meaning of ${pending.text}`} className="fixed z-40 w-[340px] max-w-[calc(100vw-32px)] rounded-xl bg-popover p-4 text-sm shadow-2xl ring-1 ring-foreground/5" style={{ left, top }}>
           <div className="flex items-start justify-between gap-2">
             <p className="font-display text-base font-semibold tracking-[-0.02em]">{job?.state === "done" ? job.answer.term : pending.text}</p>
             <Button type="button" variant="ghost" size="icon-xs" aria-label="Close" onClick={close}><X size={15} /></Button>

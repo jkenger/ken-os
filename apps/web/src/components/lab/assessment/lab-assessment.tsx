@@ -198,7 +198,7 @@ export function LabAssessment({ email, intake, conversation, run, focus, baselin
             {run.completedAt && <Stat label="Finished" value={new Date(run.completedAt).toLocaleDateString("en", { month: "short", day: "numeric" })} />}
           </> : undefined}
         />
-        {problem && <p className="mt-4 rounded-md border border-border px-4 py-2.5 text-sm" role="alert">{problem}</p>}
+        {problem && <p className="mt-4 rounded-md bg-card px-4 py-2.5 text-sm shadow-panel" role="alert">{problem}</p>}
 
         {!run && !intake && (
           <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">

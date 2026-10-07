@@ -87,7 +87,7 @@ export function EngineeringOverview({ email, today, next, profile, daily, closed
   return (
     <WorkspaceShell email={email} active="lab" tab="overview" termLookup={!closedBook}>
       <div className="mx-auto max-w-[1500px] px-3 pb-9 pt-6 md:px-5 md:pt-[30px] min-[1500px]:pt-9">
-        <PageHeading title="Overview" badge={`AI uses · ${today.generationsUsed} of ${today.generationLimit}`} />
+        <PageHeading title="Overview" description="Next step, today's practice and the path to the target role" badge={`AI uses · ${today.generationsUsed} of ${today.generationLimit}`} />
 
         <div className="mx-[5px] grid grid-cols-1 gap-[18px] md:mx-3.5 md:grid-cols-[2fr_1fr] md:gap-5">
           <NextAction today={today} next={next} profile={profile} />

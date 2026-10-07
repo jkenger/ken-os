@@ -85,7 +85,7 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
   return (
     <WorkspaceShell email={email} active="lab" tab="learn" termLookup={!closedBook}>
       <div className="mx-auto max-w-[1500px] px-3 pb-9 pt-6 md:px-5 md:pt-[30px] min-[1500px]:pt-9">
-        <PageHeading title="Learn" />
+        <PageHeading title="Learn" description="Topics by chapter, each with a lesson, a prediction, a lab and proof" />
 
         <div className="mx-[5px] mb-5 block justify-between gap-5 md:mx-3.5 md:mb-[25px] md:flex">
           <ToggleGroup type="single" spacing={1} value={scope} onValueChange={(next) => { if (next) setScope(next as Scope); }} aria-label="Topics shown" className="mb-3.5 rounded-md bg-secondary p-1 md:mb-0">

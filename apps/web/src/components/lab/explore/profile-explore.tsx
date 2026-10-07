@@ -64,7 +64,7 @@ function Switcher({ active, tab }: { active: ProfileDirection; tab: ProfileTab }
 
 function Talk({ tall }: { tall?: boolean }) {
   return (
-    <section aria-labelledby="talk-title" className="rounded-xl border border-border p-5">
+    <section aria-labelledby="talk-title" className="rounded-xl bg-card shadow-panel p-5">
       <h2 className="font-display text-lg font-semibold" id="talk-title">Talk it through</h2>
       <p className="mt-1 text-sm text-muted-foreground">The Guide only uses your real numbers. It suggests; you confirm.</p>
       <ol className={cn("mt-4 space-y-3 overflow-y-auto", tall ? "max-h-[520px]" : "max-h-[340px]")}>

@@ -44,7 +44,7 @@ function Today({ go }: { go: (screen: Screen, step?: StepId) => void }) {
       <p className={eyebrow}>ENGINEERING LAB · TODAY</p>
       <h1 className={cn(title, "mt-3")}>Pick up where you left off.</h1>
 
-      <article className="mt-8 rounded-xl border border-border p-6 sm:p-8">
+      <article className="mt-8 rounded-xl bg-card shadow-panel p-6 sm:p-8">
         <p className={eyebrow}>CONTINUE · FULL-STACK · CHAPTER 1</p>
         <h2 className="mt-3 font-display text-3xl font-semibold tracking-[-0.05em]">Event loop, tasks and microtasks</h2>
         <p className="mt-2 text-[15px] text-muted-foreground">Step 2 of 4 · Practice · 1 of 2 predictions done</p>
@@ -58,7 +58,7 @@ function Today({ go }: { go: (screen: Screen, step?: StepId) => void }) {
       </article>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2">
-        <section className="rounded-xl border border-border p-5" aria-labelledby="due">
+        <section className="rounded-xl bg-card shadow-panel p-5" aria-labelledby="due">
           <p className={eyebrow} id="due">REVIEWS DUE · 1</p>
           <Button variant="outline" type="button" className="mt-3 h-auto w-full justify-between gap-3 whitespace-normal rounded-lg border-border px-4 py-3 text-left font-normal hover:bg-muted/60" onClick={() => go("topic", "check")}>
             <span><span className="block text-sm font-semibold">From URL to response, including HTTPS</span><span className="text-sm text-muted-foreground">You missed a review on Oct 1</span></span>
@@ -235,7 +235,7 @@ function PracticeStep({ next }: { next: () => void }) {
       <div className="mt-4"><CodeEditor key={index} value={item.code} readOnly label="Code to predict" /></div>
 
       {index === 0 ? (
-        <div className="mt-5 rounded-xl border border-border p-5">
+        <div className="mt-5 rounded-xl bg-card shadow-panel p-5">
           <ResultHeader tone="gap" label="Misconception" line="Right lines, wrong order. That points at the ordering rule, not the values." />
           <PredictionDiff actual={item.actual} answer={item.answer!} />
           <p className="mt-4 text-sm"><span className="font-semibold">Your why: </span>{item.why}</p>
@@ -246,7 +246,7 @@ function PracticeStep({ next }: { next: () => void }) {
           </div>
         </div>
       ) : solved ? (
-        <div className="mt-5 rounded-xl border border-border p-5" role="status">
+        <div className="mt-5 rounded-xl bg-card shadow-panel p-5" role="status">
           <ResultHeader tone="solid" label="Solid" line="That's the drain rule exactly: a microtask queued mid-drain still runs before the timer." />
           <PredictionDiff actual={item.actual} answer={item.actual} />
           <div className="mt-4 rounded-lg bg-muted p-4"><p className="mb-1 text-sm font-semibold">Why it prints this</p><Markdown text={item.explanation} /></div>
@@ -284,7 +284,7 @@ function LabStep({ next }: { next: () => void }) {
         <Button type="button" variant="ghost">Show solution</Button>
       </div>
       {ran && (
-        <div className="mt-4 rounded-xl border border-border p-4" role="status">
+        <div className="mt-4 rounded-xl bg-card shadow-panel p-4" role="status">
           <ResultHeader tone="partial" label="1 of 2 passing" line="Close. One ordering test still fails." />
           <ul className="mt-3 space-y-2 text-sm">
             {lab.tests.map((test) => <li key={test.name} className="flex items-center gap-2"><Pill tone={test.passed ? "solid" : "gap"}>{test.passed ? "Pass" : "Fail"}</Pill>{test.name}</li>)}
@@ -325,7 +325,7 @@ function CheckStep() {
       )}
       <p className="text-sm text-muted-foreground">Written by a separate assessor that hasn&apos;t seen the lesson.</p>
 
-      <article className="rounded-xl border border-border p-5">
+      <article className="rounded-xl bg-card shadow-panel p-5">
         <p className={eyebrow}>QUESTION 1 OF 2 · PREDICT THE OUTPUT</p>
         <p className="mt-2 text-[15px]">{check.predict.prompt}</p>
         <div className="mt-3"><CodeEditor value={check.predict.code} readOnly label="Question code" /></div>
@@ -336,7 +336,7 @@ function CheckStep() {
         </div>
       </article>
 
-      <article className="rounded-xl border border-border p-5">
+      <article className="rounded-xl bg-card shadow-panel p-5">
         <p className={eyebrow}>QUESTION 2 OF 2 · EXPLAIN IT</p>
         <p className="mt-2 text-[15px]">{check.written.prompt}</p>
         <fieldset className="mt-4">

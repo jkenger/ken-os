@@ -19,7 +19,7 @@ import { post } from "./client";
 function Results({ results, passWord, failWord }: { results: TestResult[]; passWord: string; failWord: string }) {
   const passed = results.filter((item) => item.passed).length;
   return (
-    <div className="mt-4 rounded-xl border border-border p-4" role="status">
+    <div className="mt-4 rounded-lg bg-muted p-4" role="status">
       <div className="flex flex-wrap items-center gap-3">
         <Tag value={passed === results.length ? "solid" : passed ? "partial" : "gap"}>{passed} of {results.length} passing</Tag>
         <p className="text-sm">{passed === results.length ? "All tests pass" : passed ? `${results.length - passed} failing` : "All failing"}</p>
@@ -80,7 +80,7 @@ export function Lab({ lab, revealed, passed, onDone }: { lab: LabDefinition; rev
   }
 
   return (
-    <article className="rounded-xl border border-border">
+    <article className="rounded-xl bg-card shadow-panel">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4">
         <div>
           <h3 className="font-display text-lg font-semibold tracking-[-0.03em]">{lab.title}</h3>
@@ -148,7 +148,7 @@ export function ProbeLab({ lab, passed, onDone }: { lab: LabDefinition; passed: 
   }
 
   return (
-    <article className="rounded-xl border border-border p-5">
+    <article className="rounded-xl bg-card shadow-panel p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h3 className="font-display text-lg font-semibold tracking-[-0.03em]">{lab.title}</h3>

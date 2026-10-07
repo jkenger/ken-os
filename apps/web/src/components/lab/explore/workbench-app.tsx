@@ -39,7 +39,7 @@ function Stat({ label, value }: { label: string; value: string }) {
 
 function GuidePane() {
   return (
-    <section aria-labelledby="guide-pane-title" className="flex min-h-[420px] flex-col rounded-lg border border-border lg:min-h-0">
+    <section aria-labelledby="guide-pane-title" className="flex min-h-[420px] flex-col rounded-xl bg-card shadow-panel lg:min-h-0">
       <div className="border-b border-border px-4 py-3">
         <h2 className="text-sm font-semibold" id="guide-pane-title">Guide</h2>
         <p className="text-xs text-muted-foreground">Uses your real numbers. Suggests; you confirm.</p>
@@ -87,7 +87,7 @@ export function WorkbenchApp({ profile, states, pane }: { profile: ProfileView; 
 
       <div className="mt-4 grid gap-4 lg:h-[calc(100vh-300px)] lg:min-h-[520px] lg:grid-cols-[320px_minmax(0,1fr)]">
         <GuidePane />
-        <section aria-label="Profile detail" className="flex min-h-0 flex-col rounded-lg border border-border">
+        <section aria-label="Profile detail" className="flex min-h-0 flex-col rounded-xl bg-card shadow-panel">
           <nav aria-label="Profile sections" className="overflow-x-auto border-b border-border px-2">
             <ul className="flex min-w-max">
               {panes.map((item) => (

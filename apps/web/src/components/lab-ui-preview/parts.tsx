@@ -82,7 +82,7 @@ export function PredictionDiff({ actual, answer }: { actual: string[]; answer: s
   return (
     <div className="mt-3">
       <p className="text-sm font-semibold">Real output against yours</p>
-      <ol className="mt-2 overflow-hidden rounded-lg border border-border font-mono text-[13px] leading-6">
+      <ol className="mt-2 overflow-hidden rounded-lg bg-muted font-mono text-[13px] leading-6">
         {rows.map((row, index) => (
           <li key={index} className={cn("flex items-center gap-3 px-3", row.kind === "missing" && "bg-status-gap-surface", row.kind === "extra" && "bg-status-partial-surface")}>
             <span className="w-4 shrink-0" aria-hidden="true">{row.kind === "match" ? <Check size={13} className="text-status-solid" /> : row.kind === "missing" ? <Minus size={13} /> : <Plus size={13} />}</span>
@@ -108,7 +108,7 @@ export function RubricChecklist({ items }: { items: { point: string; result: key
   return (
     <div className="mt-3">
       <p className="text-sm font-semibold">What the grader looked for</p>
-      <ul className="mt-2 divide-y divide-border rounded-lg border border-border text-sm">
+      <ul className="mt-2 divide-y divide-border rounded-lg bg-muted text-sm">
         {items.map((item) => (
           <li key={item.point} className="flex items-start justify-between gap-3 px-3 py-2.5">
             <span className="leading-5">{item.point}</span>
@@ -187,7 +187,7 @@ export function TermLookup({ place, children }: { place: string; children: React
         </Button>
       )}
       {pending?.open && answer && (
-        <div data-lookup role="dialog" aria-label={`Meaning of ${answer.term}`} className="fixed z-40 w-[320px] max-w-[calc(100vw-32px)] rounded-xl border border-border bg-popover p-4 text-sm shadow-2xl"
+        <div data-lookup role="dialog" aria-label={`Meaning of ${answer.term}`} className="fixed z-40 w-[320px] max-w-[calc(100vw-32px)] rounded-xl bg-popover p-4 text-sm shadow-2xl ring-1 ring-foreground/5"
           style={{ left, top: Math.min(pending.y + 8, window.innerHeight - 260) }}>
           <div className="flex items-start justify-between gap-2">
             <p className="font-display text-base font-semibold tracking-[-0.02em]">{answer.term}</p>

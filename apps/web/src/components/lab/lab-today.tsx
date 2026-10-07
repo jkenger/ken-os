@@ -121,7 +121,7 @@ function ProfileHome({ today, next, daily, profile }: { today: TodayView; next: 
   return (
     <>
       {profile.careers.status === "draft" && (
-        <p className="mt-4 rounded-md border border-border px-4 py-2.5 text-sm">
+        <p className="mt-4 rounded-md bg-card px-4 py-2.5 text-sm shadow-panel">
           Role definitions · Draft <Link href={engineering.direction("definitions")} className="ml-2 underline underline-offset-4">Review</Link>
         </p>
       )}
