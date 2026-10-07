@@ -137,7 +137,7 @@ export function Question({ assessment, index, onDone, heading, submitTo }: {
   }
 
   return (
-    <article className="rounded-lg border border-border p-5">
+    <article className="rounded-xl bg-card shadow-panel p-5">
       <p className={label}>{heading ?? `Question ${index + 1} of ${assessment.items.length}`} · {modeWords[item.mode]}</p>
       <div className="mt-2"><Markdown text={item.prompt} /></div>
       {item.code && <div className="mt-3"><CodeBlock code={item.code} label={`Code for question ${index + 1}`} /></div>}
@@ -195,7 +195,7 @@ export function PracticePredict({ lessonId, index, item, result, onDone }: {
       <div className="[&_p]:text-lg [&_p]:leading-7"><Markdown text={item.prompt} /></div>
       <div className="mt-4"><CodeBlock code={item.code} label={`Code for practice ${index + 1}`} /></div>
       {result && !retrying ? (
-        <div className="mt-5 rounded-xl border border-border p-5 text-sm" role="status">
+        <div className="mt-5 rounded-lg bg-muted p-5 text-sm" role="status">
           <div className="flex flex-wrap items-center gap-3"><GradeTag label={result.label} voided={result.voided} /><p className="leading-5">{result.feedback}</p></div>
           <Graded answer={result.answer} explanation={item.explanation} />
           {!solid && <Button type="button" size="sm" variant="outline" className="mt-4" onClick={tryAgain}><RotateCcw size={14} aria-hidden="true" />Try again</Button>}

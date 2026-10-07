@@ -172,6 +172,7 @@ export function EngineeringProfile({ email, view, rows, next, evidence, closedBo
       <div className="mx-auto max-w-[1500px] px-3 pb-9 pt-6 md:px-5 md:pt-[30px] min-[1500px]:pt-9">
         <PageHeading
           title="Profile"
+          description="Evidence for each capability, measured against the target role"
           badge={done ? (estimate ? "Includes estimates" : "From graded answers") : undefined}
           facts={done ? <>
             <Fact label="Target role" first>

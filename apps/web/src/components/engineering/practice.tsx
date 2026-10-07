@@ -72,7 +72,7 @@ export function EngineeringPractice({ email, daily, closedBook = false }: { emai
   return (
     <WorkspaceShell email={email} active="lab" tab="practice" termLookup={!closedBook}>
       <div className={page}>
-        <PageHeading title="Today's practice" />
+        <PageHeading title="Today's practice" description="A mixed set from topics already learned; answers here never count as proof" />
         {closedBook ? (
           <section className={cn(panel, "mx-[5px] max-w-[850px] p-[23px] md:mx-3.5 md:p-8")}>
             <div className={eyebrow}>Practice</div>

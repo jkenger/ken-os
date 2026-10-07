@@ -60,7 +60,7 @@ function PracticeStep({ view, onDone, onNext, nextLabel, goLearn }: { view: Topi
         {item.kind === "think" ? (
           <div>
             <div className="[&_p]:text-lg [&_p]:leading-7"><Markdown text={item.prompt} /></div>
-            <details className="group mt-4 rounded-xl border border-border p-4"><DisclosureSummary className="text-[15px] font-semibold">Show answer</DisclosureSummary><div className="mt-3 pl-6"><Markdown text={item.answer} /></div></details>
+            <details className="group mt-4 rounded-lg bg-muted p-4"><DisclosureSummary className="text-[15px] font-semibold">Show answer</DisclosureSummary><div className="mt-3 pl-6"><Markdown text={item.answer} /></div></details>
           </div>
         ) : (
           <PracticePredict key={`${lesson.id}-${index}`} lessonId={lesson.id} index={index} item={item} result={view.practiceResults[index]} onDone={onDone} />
@@ -79,13 +79,13 @@ function PracticeStep({ view, onDone, onNext, nextLabel, goLearn }: { view: Topi
 function Proof({ topic, view }: { topic: Topic; view: TopicView }) {
   const { progress } = view;
   return (
-    <section aria-labelledby="proof-title" className="rounded-xl border border-border p-5">
+    <section aria-labelledby="proof-title" className="rounded-xl bg-card shadow-panel p-5">
       <h3 className="font-display text-lg font-semibold tracking-[-0.02em]" id="proof-title">Evidence</h3>
       <ul className="mt-3 grid gap-2 sm:grid-cols-2">
         {topic.prove.map((mode) => {
           const evidence = progress.evidence[mode];
           return (
-            <li key={mode} className="flex items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5 text-sm">
+            <li key={mode} className="flex items-center justify-between gap-3 rounded-lg bg-muted px-3 py-2.5 text-sm">
               <span>{modeWords[mode]}</span>
               {evidence ? <Tag value={evidence.label}>{labelWords[evidence.label]}{evidence.by === "code" ? " · by code" : ""}</Tag> : <span className="text-muted-foreground">No answer yet</span>}
             </li>
@@ -108,7 +108,7 @@ function Proof({ topic, view }: { topic: Topic; view: TopicView }) {
 function History({ view }: { view: TopicView }) {
   if (!view.attempts.length) return null;
   return (
-    <details className="group rounded-xl border border-border p-5">
+    <details className="group rounded-xl bg-card shadow-panel p-5">
       <DisclosureSummary className="text-[15px] font-semibold">All answers ({view.attempts.length})</DisclosureSummary>
       <ol className="mt-3 divide-y divide-border border-y border-border text-sm">
         {view.attempts.map((attempt) => (

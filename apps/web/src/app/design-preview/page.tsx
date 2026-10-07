@@ -142,7 +142,7 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
           <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">A quiet workspace with modules and their sections in one spacious sidebar, leaving room for the task at hand.</p>
         </div>
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(260px,1fr)]">
-          <article className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+          <article className="rounded-xl bg-card shadow-panel p-6 sm:p-8">
             <p className="mb-3 text-[11px] font-bold tracking-[0.16em] text-muted-foreground">DESIGN DIRECTION · DRAFT</p>
             <h2 className="font-display text-2xl font-semibold tracking-[-0.05em] sm:text-3xl">A floating sidebar for Ken OS</h2>
             <p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground">Modules and their sections sit together in a familiar, grouped navigation. The main content keeps its focus while the sidebar has room to breathe.</p>
@@ -155,7 +155,7 @@ export default async function DesignPreview({ searchParams }: { searchParams: Pr
               </ul>
             </div>
           </article>
-          <aside className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+          <aside className="rounded-xl bg-card shadow-panel p-6 sm:p-8">
             <p className="mb-5 text-[11px] font-bold tracking-[0.16em] text-muted-foreground">CURRENT MODULES</p>
             <div className="space-y-3 text-sm"><p>Resume hub</p><p>Agent skills</p></div>
           </aside>

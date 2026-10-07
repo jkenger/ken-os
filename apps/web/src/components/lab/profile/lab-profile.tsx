@@ -96,7 +96,7 @@ export function LabProfile({ email, view, initialPane, closedBook = false }: { e
         </div>
       )}
       {proposals.addChapters.map((chapter) => (
-        <div key={chapter.title} className="rounded-md border border-border p-3 text-sm">
+        <div key={chapter.title} className="rounded-md bg-muted p-3 text-sm">
           <p className="text-xs text-muted-foreground">Suggested chapter</p>
           <p className="font-semibold">{chapter.title}</p>
           <p className="text-muted-foreground">{chapter.reason}</p>
@@ -130,7 +130,7 @@ export function LabProfile({ email, view, initialPane, closedBook = false }: { e
         />
 
         {!baselineDone ? (
-          <div className="mt-4 rounded-lg border border-border p-5 text-sm">
+          <div className="mt-4 rounded-xl bg-card shadow-panel p-5 text-sm">
             <p className="font-semibold">Available after the baseline</p>
             <Button asChild size="sm" className="mt-3"><Link href={engineering.assessment()}>{view.baseline.state === "in_progress" ? "Continue baseline" : "Start baseline"}</Link></Button>
           </div>
@@ -144,7 +144,7 @@ export function LabProfile({ email, view, initialPane, closedBook = false }: { e
               footer={hasSuggestions ? suggestions : undefined}
             />
 
-            <section aria-label="Profile detail" className="flex min-h-[480px] min-w-0 flex-col rounded-lg border border-border lg:min-h-0">
+            <section aria-label="Profile detail" className="flex min-h-[480px] min-w-0 flex-col rounded-xl bg-card shadow-panel lg:min-h-0">
               <Tabs value={pane} onValueChange={(next) => setPane(next as ProfilePane)} className="flex min-h-0 flex-1 flex-col gap-0">
               <TabsList variant="line" aria-label="Profile sections" className="w-full justify-start gap-0 overflow-x-auto rounded-none border-b border-border px-1 group-data-horizontal/tabs:h-auto [scrollbar-width:none]">
                 {(Object.keys(paneNames) as ProfilePane[]).map((id) => (
@@ -201,7 +201,7 @@ export function LabProfile({ email, view, initialPane, closedBook = false }: { e
                   view.addedChapters.length ? (
                     <ul className="space-y-4">
                       {view.addedChapters.map((chapter) => (
-                        <li key={chapter.id} className="rounded-lg border border-border p-4">
+                        <li key={chapter.id} className="rounded-lg bg-muted p-4">
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <p className="text-sm font-semibold">{chapter.title}</p>
                             <Pill tone={chapter.screened ? "neutral" : "quiet"}>{chapter.screened ? `${depthWords[chapter.depth as keyof typeof depthWords]}, estimate` : "Not assessed"}</Pill>

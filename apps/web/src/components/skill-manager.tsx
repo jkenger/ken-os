@@ -148,7 +148,7 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
             <Card key={skill.id}><CardContent>
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2">
-                  <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground"><FileText size={15} aria-hidden="true" /></span>
+                  <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"><FileText size={15} aria-hidden="true" /></span>
                   <span className="truncate text-[11px] font-bold tracking-[0.1em] text-muted-foreground">{skill.slug} / v{skill.version}</span>
                 </div>
                 <span
