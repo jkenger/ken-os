@@ -35,8 +35,8 @@ async function main() {
       store.submitAnswer(userId, { assessmentId, itemIndex: 0, selfRating: 4, response: { lines: ["false", "true"] }, actualOutput: ["false", "true"] }),
       store.submitAnswer(userId, { assessmentId, itemIndex: 1, selfRating: 2, response: { lines: ["1"] }, actualOutput: ["1"] }),
     ]);
-    assert.equal(first.grade!.label, "solid");
-    assert.equal(second.grade!.voided, true, "a question whose expected answer disagrees with the real run is thrown out");
+    assert.equal(first.grade.label, "solid");
+    assert.equal(second.grade.voided, true, "a question whose expected answer disagrees with the real run is thrown out");
     const changes = await db().select().from(labProgressChanges).where(and(eq(labProgressChanges.userId, userId), eq(labProgressChanges.topicId, topicId)));
     assert.equal(changes.length, 1, "concurrent answers log one status change");
     assert.equal(changes[0].toStatus, "PRACTICING");
