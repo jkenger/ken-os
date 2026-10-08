@@ -151,8 +151,6 @@ export interface ScreenAnswerInput {
   screenId: string;
   text: string;
   selfRating: number;
-  /** Let the grader ask one clarifying question instead of grading an ambiguous answer (assessment v2). */
-  allowClarify?: boolean;
 }
 
 /** Grades a screening answer. Screening never proves a topic; it only estimates the chapter's depth. */
@@ -172,8 +170,7 @@ export async function submitScreenAnswer(userId: string, input: ScreenAnswerInpu
   if (nextScreenQuestion(answered.map((row) => row.itemIndex)) !== screen.itemIndex) throw new LabInputError("Answer the questions in the order they're asked.", 409);
   const profile = await profileOf(userId);
   const info = chapterInfo(screen.chapterId, profile?.addedChapters);
-  const grade = await gradeAnswer({ id: screen.chapterId, title: info?.title ?? screen.chapterId }, screen.item, answer, { allowClarify: input.allowClarify });
-  if (grade.clarify) return { clarify: grade.clarify, label: null, feedback: null, rubric: null, runFinished: false };
+  const grade = await gradeAnswer({ id: screen.chapterId, title: info?.title ?? screen.chapterId }, screen.item, answer);
   return db().transaction(async (tx) => {
     const updated = await tx.update(labChapterScreens).set({
       response: { text: answer.slice(0, 6000) }, selfRating: input.selfRating, label: grade.label, misconceptions: grade.misconceptions,
