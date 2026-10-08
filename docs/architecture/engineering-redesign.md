@@ -126,7 +126,7 @@ Checks run:
 ## 6. Waiting on the owner
 
 1. **Take the baseline** at `/engineering/profile/assessment`. An agent must not answer it. Then the legacy-baseline retirement in [engineering-lab-profile.md](engineering-lab-profile.md) §8 can happen as its own change.
-2. **Review the Ken OS design system in Claude** to approve the new look as 1.0.0 (its "Versions and approval" section). It stays `working` until then.
+2. ~~**Review the Ken OS design system in Claude** to approve the new look as 1.0.0.~~ Done: approved as 1.0.0 on 2026-10-08.
 
 Answered 2026-10-06: Q1 the prototype's look one to one (D1); Q2 rename the steps (D3); Q3 practice stops counting as proof; Q4 Manila day. Same day: make the look the Ken OS standard (done in design system 0.2.0-working.1).
 
