@@ -89,12 +89,12 @@ function ModuleSearch() {
   return (
     <>
       <Button variant="ghost" type="button" onClick={() => setOpen(true)} aria-label="Jump to a module"
-        className="h-9 w-9 gap-2 rounded-full bg-card px-0 text-muted-foreground shadow-tab hover:bg-accent sm:w-60 sm:justify-start sm:px-3.5 md:bg-muted md:shadow-none lg:w-72">
+        className="h-9 w-9 gap-2 rounded-full bg-card px-0 text-muted-foreground hover:bg-accent sm:w-60 sm:justify-start sm:px-3.5 md:bg-muted md:shadow-none lg:w-72">
         <Search size={16} strokeWidth={1.8} aria-hidden="true" />
         <span className="hidden flex-1 text-left text-xs font-normal sm:block">Jump to a module…</span>
-        <kbd className="hidden rounded-md bg-card px-1.5 py-0.5 text-[10px] font-normal text-quiet sm:block">Ctrl K</kbd>
+        <kbd className="hidden rounded-md bg-card px-1.5 py-0.5 text-xs font-normal text-muted-foreground sm:block">Ctrl K</kbd>
       </Button>
-      <CommandDialog open={open} onOpenChange={setOpen} title="Jump to a module" description="Find a module by name" className="top-[min(17vh,150px)] sm:max-w-[480px]">
+      <CommandDialog open={open} onOpenChange={setOpen} title="Jump to a module" description="Find a module by name" className="top-[min(17vh,150px)] sm:max-w-md">
         <Command>
           <CommandInput placeholder="Find a module…" aria-label="Search modules" />
           <CommandList>
@@ -114,12 +114,12 @@ function ModuleSearch() {
 }
 
 function Brand() {
-  return <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-sidebar-primary font-display text-sm font-extrabold text-sidebar-primary-foreground">K</span>;
+  return <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-sidebar-primary font-heading text-sm font-extrabold text-sidebar-primary-foreground">K</span>;
 }
 
-/** The Studio sidebar on shadcn's Sidebar (its nested icon block): an icon rail and a section column. On a phone,
+/** The Ken OS sidebar on shadcn's Sidebar (its nested icon block): an icon rail and a section column. On a phone,
  *  shadcn renders it as an 18rem sheet that holds both lists. */
-function StudioSidebar({ email, active, moduleList, title, sections }: { email: string; active: Module; moduleList: ModuleLink[]; title: string; sections: Section[] }) {
+function ShellSidebar({ email, active, moduleList, title, sections }: { email: string; active: Module; moduleList: ModuleLink[]; title: string; sections: Section[] }) {
   const { isMobile, state, setOpenMobile } = useSidebar();
 
   if (isMobile) {
@@ -183,16 +183,16 @@ function StudioSidebar({ email, active, moduleList, title, sections }: { email: 
         <SidebarFooter>
           <Tooltip>
             <TooltipTrigger asChild>
-              <span className="grid size-8 place-items-center rounded-lg bg-secondary text-[11px] font-semibold text-quiet" tabIndex={0} aria-label={`Signed in as ${email}`}>{email.slice(0, 2).toUpperCase()}</span>
+              <span className="grid size-8 place-items-center rounded-lg bg-secondary text-xs font-semibold text-muted-foreground" tabIndex={0} aria-label={`Signed in as ${email}`}>{email.slice(0, 2).toUpperCase()}</span>
             </TooltipTrigger>
             <TooltipContent side="right" align="center" sideOffset={6}>{email}</TooltipContent>
           </Tooltip>
         </SidebarFooter>
       </Sidebar>
       {sections.length > 0 && (
-        <Sidebar collapsible="none" className="hidden w-[13rem] shrink-0 lg:flex" inert={state === "collapsed" || undefined}>
+        <Sidebar collapsible="none" className="hidden w-52 shrink-0 lg:flex" inert={state === "collapsed" || undefined}>
           <SidebarHeader className="h-14 justify-center px-4">
-            <p className="truncate font-display text-base font-semibold tracking-[-0.02em] text-foreground">{title}</p>
+            <p className="truncate font-heading text-base font-semibold tracking-tight text-foreground">{title}</p>
           </SidebarHeader>
           <SidebarContent>
             <SidebarGroup>
@@ -214,11 +214,11 @@ function StudioSidebar({ email, active, moduleList, title, sections }: { email: 
 }
 
 /** The raised content inset: a 56px header with the section toggle, breadcrumb, date, search and sign out. */
-function StudioInset({ title, sections, children }: { title: string; sections: Section[]; children: ReactNode }) {
+function ShellInset({ title, sections, children }: { title: string; sections: Section[]; children: ReactNode }) {
   const { open } = useSidebar();
   const currentSection = sections.find((section) => section.selected);
   return (
-    <SidebarInset className="md:m-2 md:ml-0 md:min-h-[calc(100svh-16px)] md:rounded-xl md:shadow-panel">
+    <SidebarInset className="md:m-2 md:ml-0 md:min-h-[calc(100svh-16px)] md:rounded-xl md:border">
       <header className="flex h-14 shrink-0 items-center justify-between gap-4 px-3 md:border-b md:border-border md:px-4">
         <div className="flex min-w-0 items-center gap-2 text-sm">
           <SidebarTrigger className="md:hidden" aria-label="Open menu" />
@@ -237,7 +237,7 @@ function StudioInset({ title, sections, children }: { title: string; sections: S
           </nav>
         </div>
         <div className="flex items-center gap-3">
-          <span className="hidden text-[13px] text-quiet xl:inline" suppressHydrationWarning>{ownerDate()}</span>
+          <span className="hidden text-sm text-muted-foreground xl:inline" suppressHydrationWarning>{ownerDate()}</span>
           <ModuleSearch />
           <form action="/api/auth/signout" method="post"><Button variant="ghost" size="sm" type="submit" className="text-xs">Sign out</Button></form>
         </div>
@@ -245,7 +245,7 @@ function StudioInset({ title, sections, children }: { title: string; sections: S
       {sections.length > 1 && (
         <nav className={cn("flex gap-1 overflow-x-auto px-3 pt-3 md:px-4", open && "lg:hidden")} aria-label={`${title} sections`}>
           {sections.map(({ key, label, href, selected }) => (
-            <Link key={key} className={cn("h-8 shrink-0 rounded-md px-3 py-1.5 text-sm transition-colors", selected ? "bg-sidebar-accent font-medium text-foreground shadow-tab" : "text-sidebar-foreground hover:bg-accent")} href={href} aria-current={selected ? "location" : undefined}>{label}</Link>
+            <Link key={key} className={cn("h-8 shrink-0 rounded-md px-3 py-1.5 text-sm transition-colors", selected ? "bg-sidebar-accent font-medium text-foreground" : "text-sidebar-foreground hover:bg-accent")} href={href} aria-current={selected ? "location" : undefined}>{label}</Link>
           ))}
         </nav>
       )}
@@ -281,15 +281,15 @@ export function WorkspaceShell({ email, active, children, termLookup = true, tab
   });
   const content = termLookup ? <TermLookup module={detail.title}>{children}</TermLookup> : children;
 
-  // The Studio shell, following shadcn/ui's sidebar anatomy (the nested icon sidebar block): an icon rail and a
-  // section column on the stone sidebar, beside one raised content inset. The column shows from 1024px.
+  // The Ken OS shell, following shadcn/ui's sidebar anatomy (the nested icon sidebar block): an icon rail and a
+  // section column on the sidebar, beside one content inset. The column shows from 1024px.
   return (
     <TooltipProvider delayDuration={0}>
     <SidebarProvider open={sectionsOpen} onOpenChange={setSectionsOpen}
       style={{ "--sidebar-width": "var(--shell-width)", "--sidebar-width-icon": "calc(3rem + 1px)" } as CSSProperties}
       className={cn("min-h-screen bg-sidebar font-sans text-foreground [--shell-width:calc(3rem+1px)]", sections.length > 0 && "lg:[--shell-width:calc(16rem+1px)]")}>
-      <StudioSidebar email={email} active={active} moduleList={modules} title={detail.title} sections={sections} />
-      <StudioInset title={detail.title} sections={sections}>{content}</StudioInset>
+      <ShellSidebar email={email} active={active} moduleList={modules} title={detail.title} sections={sections} />
+      <ShellInset title={detail.title} sections={sections}>{content}</ShellInset>
     </SidebarProvider>
     </TooltipProvider>
   );

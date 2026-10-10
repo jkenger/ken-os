@@ -22,14 +22,14 @@ export function Skyline({ areas, targets, compact = false }: { areas: AreaView[]
                 const full = index < reached;
                 const partial = index === reached ? fraction : 0;
                 return (
-                  <div key={level} className={cn("relative overflow-hidden rounded-[4px] bg-muted", compact ? "h-10" : "h-16 sm:h-20")}>
+                  <div key={level} className={cn("relative overflow-hidden rounded-sm bg-muted", compact ? "h-10" : "h-16 sm:h-20")}>
                     {(full || partial > 0) && (
                       <div
                         className={cn("absolute inset-x-0 bottom-0", area.now.estimate ? "bg-[repeating-linear-gradient(135deg,var(--color-foreground)_0_2px,transparent_2px_7px)]" : "bg-foreground")}
                         style={{ height: full ? "100%" : `${partial * 100}%` }}
                       />
                     )}
-                    {target === level && <span className="absolute inset-x-0 top-0 h-0.5 bg-status-gap" />}
+                    {target === level && <span className="absolute inset-x-0 top-0 h-0.5 bg-destructive" />}
                   </div>
                 );
               })}
@@ -39,7 +39,7 @@ export function Skyline({ areas, targets, compact = false }: { areas: AreaView[]
       </div>
       <div className="mt-3 grid grid-cols-5 gap-2 sm:gap-4">
         {areas.map((area) => (
-          <div key={area.area} className="min-w-0 text-[11px] leading-4 break-words hyphens-auto sm:text-sm sm:leading-5">
+          <div key={area.area} className="min-w-0 text-xs leading-4 break-words hyphens-auto sm:text-sm sm:leading-5">
             <p className="font-semibold">{area.title}</p>
             <p className="text-muted-foreground">{levelWords(area.now.level)}{area.now.estimate ? ", estimate" : ""}</p>
           </div>

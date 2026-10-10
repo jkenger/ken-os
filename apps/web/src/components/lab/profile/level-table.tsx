@@ -17,13 +17,13 @@ export function LevelTable({ profile, targets }: { profile: ProfileView; targets
   const state = (chapter: string) => profile.chapterStates.find((item) => item.chapterId === chapter);
   return (
     <div className="overflow-x-auto">
-      <Table className="w-full min-w-[680px] border-collapse text-left text-sm">
+      <Table className="w-full min-w-2xl border-collapse text-left text-sm">
         <TableCaption className="mb-3 text-left text-sm text-muted-foreground">
           Tick: deep enough · Shaded: reached{Object.keys(targets).length ? " · Outlined: direction target" : ""}
         </TableCaption>
         <TableHeader>
           <TableRow className="border-b border-foreground">
-            <TableHead scope="col" className="pl-0 w-[160px] py-2 pr-4 font-semibold">Area</TableHead>
+            <TableHead scope="col" className="pl-0 w-40 py-2 pr-4 font-semibold">Area</TableHead>
             {LEVELS.map((level) => <TableHead key={level} scope="col" className="pl-0 py-2 pr-4 font-semibold">{levelWords(level)}</TableHead>)}
           </TableRow>
         </TableHeader>
@@ -38,14 +38,14 @@ export function LevelTable({ profile, targets }: { profile: ProfileView; targets
                 </TableHead>
                 {LEVELS.map((level) => (
                   <TableCell key={level} className="pl-0 py-2 pr-2">
-                    <div className={cn("rounded-md p-2", levelRank(area.now.level) >= levelRank(level) && "bg-status-solid-surface", targets[ladder.id] === level && "outline-2 outline-foreground")}>
+                    <div className={cn("rounded-md p-2", levelRank(area.now.level) >= levelRank(level) && "bg-muted", targets[ladder.id] === level && "outline-2 outline-foreground")}>
                       <ul className="space-y-1">
                         {ladder.levels[level].map((requirement) => {
                           const met = depthAtLeast(state(requirement.chapter)?.depth ?? "none", requirement.depth);
                           return (
                             <li key={requirement.chapter} className="flex items-start gap-1.5">
                               {met
-                                ? <Check size={14} className="mt-0.5 shrink-0 text-status-solid" aria-label="Done" />
+                                ? <Check size={14} className="mt-0.5 shrink-0 text-foreground" aria-label="Done" />
                                 : <span className="mt-1.5 size-2 shrink-0 rounded-full border border-muted-foreground" role="img" aria-label="Not yet" />}
                               <span>{chapterTitle(requirement.chapter, profile)} <span className="text-muted-foreground">({depthWords[requirement.depth].toLowerCase()})</span></span>
                             </li>

@@ -26,10 +26,10 @@ import { TopicEvidenceDialog } from "@/components/engineering/topic-evidence";
 
 export interface TopicPlace { track: string; chapterNumber: number; chapterTitle: string }
 
-const heading = "font-display text-2xl font-semibold tracking-[-0.05em]";
+const heading = "font-heading text-2xl font-semibold tracking-tighter";
 
 function Empty({ children, action }: { children: React.ReactNode; action?: React.ReactNode }) {
-  return <div className="mx-auto max-w-[620px] rounded-xl border border-dashed border-input p-6 text-[15px] leading-6">{children}{action && <div className="mt-4">{action}</div>}</div>;
+  return <div className="mx-auto max-w-xl rounded-xl border border-dashed border-input p-6 text-sm leading-6">{children}{action && <div className="mt-4">{action}</div>}</div>;
 }
 
 function PracticeStep({ view, onDone, onNext, nextLabel, goLearn }: { view: TopicView; onDone: (message: string) => void; onNext: () => void; nextLabel: string; goLearn: () => void }) {
@@ -43,12 +43,12 @@ function PracticeStep({ view, onDone, onNext, nextLabel, goLearn }: { view: Topi
   const dotTone = (dot: number) => {
     const result = view.practiceResults[dot];
     if (items[dot].kind !== "predict" || !result || result.voided) return dot === index ? "bg-foreground hover:bg-foreground" : "bg-border hover:bg-input";
-    return result.label === "solid" ? "bg-status-solid hover:bg-status-solid" : "bg-status-partial hover:bg-status-partial";
+    return result.label === "solid" ? "bg-primary hover:bg-primary" : "bg-primary/40 hover:bg-primary/40";
   };
   const last = index === items.length - 1;
 
   return (
-    <div className="mx-auto max-w-[720px]">
+    <div className="mx-auto max-w-2xl">
       <div className="flex items-center justify-between gap-3">
         <p className={label}>PRACTICE {index + 1} OF {items.length}{item.kind === "think" ? " · THINK IT THROUGH" : " · PREDICT THE OUTPUT"}</p>
         <div className="flex gap-1.5">
@@ -60,7 +60,7 @@ function PracticeStep({ view, onDone, onNext, nextLabel, goLearn }: { view: Topi
         {item.kind === "think" ? (
           <div>
             <div className="[&_p]:text-lg [&_p]:leading-7"><Markdown text={item.prompt} /></div>
-            <details className="group mt-4 rounded-lg bg-muted p-4"><DisclosureSummary className="text-[15px] font-semibold">Show answer</DisclosureSummary><div className="mt-3 pl-6"><Markdown text={item.answer} /></div></details>
+            <details className="group mt-4 rounded-lg bg-muted p-4"><DisclosureSummary className="text-sm font-semibold">Show answer</DisclosureSummary><div className="mt-3 pl-6"><Markdown text={item.answer} /></div></details>
           </div>
         ) : (
           <PracticePredict key={`${lesson.id}-${index}`} lessonId={lesson.id} index={index} item={item} result={view.practiceResults[index]} onDone={onDone} />
@@ -79,8 +79,8 @@ function PracticeStep({ view, onDone, onNext, nextLabel, goLearn }: { view: Topi
 function Proof({ topic, view }: { topic: Topic; view: TopicView }) {
   const { progress } = view;
   return (
-    <section aria-labelledby="proof-title" className="rounded-xl bg-card shadow-panel p-5">
-      <h3 className="font-display text-lg font-semibold tracking-[-0.02em]" id="proof-title">Evidence</h3>
+    <section aria-labelledby="proof-title" className="rounded-xl bg-card border p-5">
+      <h3 className="font-heading text-lg font-semibold tracking-tight" id="proof-title">Evidence</h3>
       <ul className="mt-3 grid gap-2 sm:grid-cols-2">
         {topic.prove.map((mode) => {
           const evidence = progress.evidence[mode];
@@ -108,8 +108,8 @@ function Proof({ topic, view }: { topic: Topic; view: TopicView }) {
 function History({ view }: { view: TopicView }) {
   if (!view.attempts.length) return null;
   return (
-    <details className="group rounded-xl bg-card shadow-panel p-5">
-      <DisclosureSummary className="text-[15px] font-semibold">All answers ({view.attempts.length})</DisclosureSummary>
+    <details className="group rounded-xl bg-card border p-5">
+      <DisclosureSummary className="text-sm font-semibold">All answers ({view.attempts.length})</DisclosureSummary>
       <ol className="mt-3 divide-y divide-border border-y border-border text-sm">
         {view.attempts.map((attempt) => (
           <li key={attempt.id} className="flex flex-col gap-1 py-3 sm:flex-row sm:items-start sm:justify-between">
@@ -172,37 +172,37 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
 
   return (
     <WorkspaceShell email={email} active="lab" tab="learn" termLookup={!view.closedBook}>
-      <div className="mx-auto w-full max-w-[1500px] px-3 pb-9 pt-6 md:px-5 md:pt-[30px] min-[1500px]:pt-9">
+      <div className="mx-auto w-full max-w-375 px-3 pb-9 pt-6 md:px-5 md:pt-7 min-[1500px]:pt-9">
         <Back href={engineering.learn}>Learning path</Back>
-        <header className="mx-[5px] mb-[25px] block items-start justify-between gap-[22px] md:mx-3.5 md:mb-8 md:flex">
+        <header className="mx-1 mb-6 block items-start justify-between gap-5 md:mx-3.5 md:mb-8 md:flex">
           <div className="min-w-0">
-            <p className="mb-[9px] text-[11px] font-medium uppercase tracking-[0.06em] text-muted-foreground">{place.track} · Chapter {place.chapterNumber} · {place.chapterTitle}</p>
-            <h1 className="max-w-[900px] text-[28px] font-[750] leading-[1.25] tracking-[-0.8px] md:text-[30px] xl:text-[36px] xl:tracking-[-1.3px]">
+            <p className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground">{place.track} · Chapter {place.chapterNumber} · {place.chapterTitle}</p>
+            <h1 className="max-w-4xl text-3xl font-bold leading-tight tracking-tight md:text-3xl xl:text-4xl xl:tracking-tighter">
               {topic.title}<Badge className="mt-2.5 table md:ml-2 md:mt-0 md:inline-flex">{progress.status === "NOT_STARTED" && progress.placement === "passed" ? "Known" : statusWords[progress.status]}</Badge>
             </h1>
-            <p className="mt-[9px] max-w-[760px] text-[15px] leading-[1.55] text-muted-foreground">{topic.gap}</p>
+            <p className="mt-2 max-w-3xl text-sm leading-normal text-muted-foreground">{topic.gap}</p>
           </div>
           <div className="mt-3 shrink-0 md:mt-1"><TopicEvidenceDialog prove={topic.prove} sources={view.sources} attempts={view.attempts} /></div>
         </header>
 
-        <div ref={stepsTop} className="sticky top-0 z-10 mx-[5px] scroll-mt-0 md:mx-3.5">
+        <div ref={stepsTop} className="sticky top-0 z-10 mx-1 scroll-mt-0 md:mx-3.5">
           <StepBar steps={steps} active={step} suggested={suggested} onSelect={go} />
         </div>
         {justProven && (
-          <div className="mx-[5px] mt-5 md:mx-3.5">
+          <div className="mx-1 mt-5 md:mx-3.5">
             <ProvenBanner title={topic.title} nextReviewAt={progress.nextReviewAt} byCode={topic.prove.filter((mode) => progress.evidence[mode]?.by === "code").length} />
           </div>
         )}
 
         {view.closedBook ? (
-          <div className="mx-[5px] py-8 md:mx-3.5">
+          <div className="mx-1 py-8 md:mx-3.5">
             <Empty action={<Button asChild><Link href={engineering.assessment()}>Back to assessment</Link></Button>}>
               <p className="font-semibold">Locked during assessment</p>
               <p className="mt-1 text-muted-foreground">Lesson, practice and labs open when it&apos;s done</p>
             </Empty>
           </div>
         ) : (
-        <div className="mx-[5px] py-8 md:mx-3.5">
+        <div className="mx-1 py-8 md:mx-3.5">
           {step === "learn" && (
             lesson ? (
               <>
@@ -229,7 +229,7 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
 
           {step === "lab" && (
             <div className="space-y-6">
-              <p className="max-w-[720px] text-sm text-muted-foreground">
+              <p className="max-w-2xl text-sm text-muted-foreground">
                 {labs.every((lab) => lab.runner === "probe")
                   ? "Checked against real requests from your browser · all right proves the topic"
                   : "Runs in your browser, isolated from Ken OS · a full pass proves the topic unless you opened the solution"}
@@ -243,7 +243,7 @@ export function LabTopic({ email, topic, view, labs, skipLesson, place, initialS
           )}
 
           {step === "check" && (
-            <div className="mx-auto max-w-[760px] space-y-6">
+            <div className="mx-auto max-w-3xl space-y-6">
               <div className="flex flex-wrap items-end justify-between gap-3">
                 <div>
                   {assessment && assessment.kind !== "assessment" && <p className={label}>{kindWords[assessment.kind]}</p>}

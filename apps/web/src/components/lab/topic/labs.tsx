@@ -80,10 +80,10 @@ export function Lab({ lab, revealed, passed, onDone }: { lab: LabDefinition; rev
   }
 
   return (
-    <article className="rounded-xl bg-card shadow-panel">
+    <article className="rounded-xl bg-card border">
       <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4">
         <div>
-          <h3 className="font-display text-lg font-semibold tracking-[-0.03em]">{lab.title}</h3>
+          <h3 className="font-heading text-lg font-semibold tracking-tight">{lab.title}</h3>
           <p className={cn(label, "mt-1")}>{lab.modes.map((mode) => modeWords[mode]).join(" · ").toUpperCase()}</p>
         </div>
         {passed && <Tag value="solid">Passed</Tag>}
@@ -148,20 +148,20 @@ export function ProbeLab({ lab, passed, onDone }: { lab: LabDefinition; passed: 
   }
 
   return (
-    <article className="rounded-xl bg-card shadow-panel p-5">
+    <article className="rounded-xl bg-card border p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h3 className="font-display text-lg font-semibold tracking-[-0.03em]">{lab.title}</h3>
+          <h3 className="font-heading text-lg font-semibold tracking-tight">{lab.title}</h3>
           <p className={cn(label, "mt-1")}>Predict, then check</p>
         </div>
         {passed && <Tag value="solid">Passed</Tag>}
       </div>
-      <div className="mt-3 max-w-[720px]"><Markdown text={lab.readme} /></div>
+      <div className="mt-3 max-w-2xl"><Markdown text={lab.readme} /></div>
       <ol className="mt-5 space-y-4">
         {questions.map((question, index) => (
           <li key={question.id}>
             <fieldset>
-              <legend className="text-[15px] font-semibold">{index + 1}. {question.prompt}</legend>
+              <legend className="text-sm font-semibold">{index + 1}. {question.prompt}</legend>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {question.options.map((option) => (
                   <Button key={option} type="button" size="sm" variant={predicted[question.id] === option ? "default" : "outline"} aria-pressed={predicted[question.id] === option}

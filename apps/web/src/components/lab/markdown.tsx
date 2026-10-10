@@ -77,5 +77,5 @@ export function Markdown({ text }: { text: string }) {
     while (index < lines.length && lines[index].trim() && !lines[index].trim().startsWith("|") && !lines[index].startsWith("```") && !/^\s*([-*]|\d+\.)\s+/.test(lines[index]) && !/^#{1,4}\s/.test(lines[index])) paragraph.push(lines[index++]);
     blocks.push(<p key={blocks.length}>{inline(paragraph.join(" "), `${blocks.length}`)}</p>);
   }
-  return <div className="space-y-3 text-[15px] leading-6">{blocks.map((block, blockIndex) => <Fragment key={blockIndex}>{block}</Fragment>)}</div>;
+  return <div className="space-y-3 text-sm leading-6">{blocks.map((block, blockIndex) => <Fragment key={blockIndex}>{block}</Fragment>)}</div>;
 }

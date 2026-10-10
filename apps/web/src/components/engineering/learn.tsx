@@ -84,13 +84,13 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
 
   return (
     <WorkspaceShell email={email} active="lab" tab="learn" termLookup={!closedBook}>
-      <div className="mx-auto max-w-[1500px] px-3 pb-9 pt-6 md:px-5 md:pt-[30px] min-[1500px]:pt-9">
+      <div className="mx-auto max-w-375 px-3 pb-9 pt-6 md:px-5 md:pt-7 min-[1500px]:pt-9">
         <PageHeading title="Learn" description="Topics by chapter, each with a lesson, a prediction, a lab and proof" />
 
-        <div className="mx-[5px] mb-5 block justify-between gap-5 md:mx-3.5 md:mb-[25px] md:flex">
+        <div className="mx-1 mb-5 block justify-between gap-5 md:mx-3.5 md:mb-6 md:flex">
           <ToggleGroup type="single" spacing={1} value={scope} onValueChange={(next) => { if (next) setScope(next as Scope); }} aria-label="Topics shown" className="mb-3.5 rounded-md bg-secondary p-1 md:mb-0">
             {options.map(([id, name]) => (
-              <ToggleGroupItem key={id} value={id} className="h-auto rounded-full px-3.5 py-2 text-[13px] font-normal text-muted-foreground hover:bg-transparent hover:text-foreground data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-tab">{name}</ToggleGroupItem>
+              <ToggleGroupItem key={id} value={id} className="h-auto rounded-full px-3.5 py-2 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground data-[state=on]:bg-card data-[state=on]:text-foreground">{name}</ToggleGroupItem>
             ))}
           </ToggleGroup>
           <InputGroup className="h-11 rounded-full md:w-80">
@@ -99,7 +99,7 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
           </InputGroup>
         </div>
 
-        <div className="mx-[5px] grid grid-cols-1 gap-[18px] md:mx-3.5 md:grid-cols-[2fr_1fr] md:gap-5 lg:grid-cols-[minmax(0,2.4fr)_minmax(230px,1fr)] lg:gap-8">
+        <div className="mx-1 grid grid-cols-1 gap-4 md:mx-3.5 md:grid-cols-[2fr_1fr] md:gap-5 lg:grid-cols-[minmax(0,2.4fr)_minmax(230px,1fr)] lg:gap-8">
           <section className="min-w-0">
             {chapters.map(({ module, number, track, bookId, topics }, position) => {
               const book = bookId && chapters[position - 1]?.bookId !== bookId ? map.books.find((item) => item.id === bookId) : null;
@@ -110,38 +110,38 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
                 <Fragment key={module.id}>
                 {book && (
                   <div className={cn("mb-3.5", position > 0 && "mt-8")}>
-                    <h2 className="text-lg font-bold tracking-[-0.3px]">{book.title}</h2>
-                    <p className="mt-0.5 text-[13px] text-muted-foreground">{book.summary}</p>
+                    <h2 className="text-lg font-bold tracking-tight">{book.title}</h2>
+                    <p className="mt-0.5 text-sm text-muted-foreground">{book.summary}</p>
                   </div>
                 )}
                 <details className={cn(panel, "group mb-3")} open={Boolean(needle) || module.id === openChapter}>
-                  <summary className="flex cursor-pointer list-none items-center gap-[9px] px-[15px] py-[17px] md:gap-5 md:px-5 md:py-[19px] [&::-webkit-details-marker]:hidden">
+                  <summary className="flex cursor-pointer list-none items-center gap-2 px-3.5 py-4 md:gap-5 md:px-5 md:py-5 [&::-webkit-details-marker]:hidden">
                     <div className="min-w-0 flex-1">
-                      <small className="text-[11px] text-muted-foreground">{track} · Chapter {number}</small>
-                      <h3 className="mt-1 text-sm font-semibold md:text-[15px]">{module.title}</h3>
+                      <small className="text-xs text-muted-foreground">{track} · Chapter {number}</small>
+                      <h3 className="mt-1 text-sm font-semibold md:text-sm">{module.title}</h3>
                     </div>
-                    <span className="ml-auto shrink-0 text-[10px] text-muted-foreground md:text-xs">{topics.length ? `${done} / ${topics.length} proven${known > done ? ` · ${known - done} known` : ""}` : "Not written yet"}</span>
-                    <IconChevronDown size={18} className="shrink-0 text-quiet transition-transform group-open:rotate-180" aria-hidden="true" />
+                    <span className="ml-auto shrink-0 text-xs text-muted-foreground md:text-xs">{topics.length ? `${done} / ${topics.length} proven${known > done ? ` · ${known - done} known` : ""}` : "Not written yet"}</span>
+                    <IconChevronDown size={18} className="shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
                   </summary>
                   {rows.map(({ topic, item, status }) => (
-                    <div key={topic.id} className="flex w-full items-center gap-2.5 border-t border-border px-[15px] py-[15px] text-left hover:bg-row-hover md:gap-[13px] md:px-[21px] md:py-4">
-                      {item.status === "VALIDATED" || knownHere(item) ? <IconCheck size={18} className="shrink-0 text-status-solid" aria-hidden="true" />
+                    <div key={topic.id} className="flex w-full items-center gap-2.5 border-t border-border px-3.5 py-3.5 text-left hover:bg-muted/50 md:gap-3 md:px-5 md:py-4">
+                      {item.status === "VALIDATED" || knownHere(item) ? <IconCheck size={18} className="shrink-0 text-foreground" aria-hidden="true" />
                         : isUnassessed(item) ? <IconCircleDashed size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
                           : <IconCircle size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />}
-                      <Link href={engineering.topic(topic.id)} className="min-w-0 flex-1 text-xs font-medium hover:text-primary md:text-[13px]">{topic.title}</Link>
+                      <Link href={engineering.topic(topic.id)} className="min-w-0 flex-1 text-xs font-medium hover:text-primary md:text-sm">{topic.title}</Link>
                       {isUnassessed(item) && assessable.includes(topic.id) && (
-                        <Button variant="link" size="xs" type="button" disabled={placing !== ""} onClick={() => void place(topic.id)} className="h-auto shrink-0 px-0 text-[11px] font-normal">
+                        <Button variant="link" size="xs" type="button" disabled={placing !== ""} onClick={() => void place(topic.id)} className="h-auto shrink-0 px-0 text-xs font-normal">
                           {placing === topic.id ? "Writing questions…" : "Placement check"}
                         </Button>
                       )}
-                      <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">{status}</span>
-                      <Link href={engineering.topic(topic.id)} aria-label={`Open ${topic.title}`} className="shrink-0 text-quiet"><IconChevronRight size={18} aria-hidden="true" /></Link>
+                      <span className="ml-auto shrink-0 text-xs text-muted-foreground">{status}</span>
+                      <Link href={engineering.topic(topic.id)} aria-label={`Open ${topic.title}`} className="shrink-0 text-muted-foreground"><IconChevronRight size={18} aria-hidden="true" /></Link>
                     </div>
                   ))}
                   {scope === "gaps" && rows.length === 0 && topics.length > 0 && <p className="border-t border-border px-5 py-4 text-xs text-muted-foreground">No gaps</p>}
                   {module.planned.map((title) => (
-                    <div key={title} className="flex items-center gap-[13px] border-t border-border px-[21px] py-4 text-[13px] text-muted-foreground">
-                      <IconCircleDashed size={18} aria-hidden="true" /><span className="flex-1">{title}</span><span className="text-[11px]">Not written yet</span>
+                    <div key={title} className="flex items-center gap-3 border-t border-border px-5 py-4 text-sm text-muted-foreground">
+                      <IconCircleDashed size={18} aria-hidden="true" /><span className="flex-1">{title}</span><span className="text-xs">Not written yet</span>
                     </div>
                   ))}
                 </details>
@@ -149,25 +149,25 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
               );
             })}
             {chapters.length === 0 && (
-              <div className={cn(panel, "p-[35px] text-center")}>
-                <h3 className="text-[17px] font-semibold">No topics found</h3>
-                <p className="mb-[18px] mt-[7px] text-sm text-muted-foreground">Try a broader word</p>
+              <div className={cn(panel, "p-9 text-center")}>
+                <h3 className="text-base font-semibold">No topics found</h3>
+                <p className="mb-4 mt-1.5 text-sm text-muted-foreground">Try a broader word</p>
                 <Button variant="outline" type="button" onClick={() => { setQuery(""); setScope("all"); }}>Clear search</Button>
               </div>
             )}
           </section>
 
-          <aside className="py-2.5 text-sm text-muted-foreground md:py-[15px]">
-            <h3 className="text-[17px] font-semibold text-foreground">Up next</h3>
+          <aside className="py-2.5 text-sm text-muted-foreground md:py-3.5">
+            <h3 className="text-base font-semibold text-foreground">Up next</h3>
             {upNext ? (
               <>
-                <p className="mb-[18px] mt-[7px] leading-[1.65]"><strong className="font-semibold text-foreground">{upNext.title}</strong> · {upNext.reason}</p>
+                <p className="mb-4 mt-1.5 leading-relaxed"><strong className="font-semibold text-foreground">{upNext.title}</strong> · {upNext.reason}</p>
                 <Button asChild><Link href={engineering.topic(upNext.topicId, upNext.step)}>Continue topic<IconArrowRight size={18} aria-hidden="true" /></Link></Button>
               </>
-            ) : <p className="mt-[7px]">Nothing due</p>}
-            <hr className="my-[25px] border-border" />
+            ) : <p className="mt-1.5">Nothing due</p>}
+            <hr className="my-6 border-border" />
             <strong className="text-foreground">Statuses</strong>
-            <ul className="mt-2 list-disc space-y-1 pl-[19px] leading-[1.9]">
+            <ul className="mt-2 list-disc space-y-1 pl-5 leading-loose">
               <li>Proven: every required kind of question solid, one checked by code</li>
               <li>Known: placed by an all-solid placement check or assessment</li>
               <li>Opening a lesson never proves a topic</li>

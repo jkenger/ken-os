@@ -32,7 +32,7 @@ export function EngineeringEvidence({ email, view, closedBook = false }: { email
   const { question, response, result } = view;
   return (
     <WorkspaceShell email={email} active="lab" tab="profile" termLookup={!closedBook}>
-      <div className="w-full max-w-[960px] px-5 py-6 sm:px-8">
+      <div className="w-full max-w-4xl px-5 py-6 sm:px-8">
         <Button asChild size="sm" variant="ghost" className="-ml-2 mb-2"><Link href={engineering.profile}><ArrowLeft size={14} aria-hidden="true" />Profile</Link></Button>
         <TitleBar
           kicker={`${kindWords[view.kind]} · ${modeWords[view.mode] ?? view.mode}`}
@@ -87,7 +87,7 @@ export function EngineeringEvidence({ email, view, closedBook = false }: { email
             </Panel>
 
           {view.source && (
-            <details className="group rounded-xl bg-card shadow-panel px-4 py-3 text-sm">
+            <details className="group rounded-xl bg-card border px-4 py-3 text-sm">
               <DisclosureSummary className="font-semibold">Record</DisclosureSummary>
               <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-1.5">
                 <dt className="text-muted-foreground">Written for</dt><dd>{view.source.runKind ? kindWords[view.source.runKind] : view.source.origin === "daily" ? "Today's practice" : "Topic page"}</dd>

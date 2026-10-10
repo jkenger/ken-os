@@ -55,7 +55,7 @@ export function GuideChat({ phase, history, onProposals, opener, subtitle = "The
 
   // A pane: header, messages that scroll, then suggestions and the message box pinned at the bottom.
   return (
-    <section className={cn("flex min-h-[420px] flex-col rounded-lg border border-border", className)} aria-labelledby="guide-title">
+    <section className={cn("flex min-h-105 flex-col rounded-lg border border-border", className)} aria-labelledby="guide-title">
       <div className="border-b border-border px-4 py-3">
         <h2 className="text-sm font-semibold" id="guide-title">Guide</h2>
         <p className="text-xs text-muted-foreground">{subtitle}</p>
@@ -74,7 +74,7 @@ export function GuideChat({ phase, history, onProposals, opener, subtitle = "The
         <Label className="block">
           <span className="sr-only">Message</span>
           <Textarea
-            className="min-h-[64px]" value={draft} onChange={(event) => setDraft(event.target.value)}
+            className="min-h-16" value={draft} onChange={(event) => setDraft(event.target.value)}
             onKeyDown={(event) => { if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) void send(); }}
             placeholder="Message the Guide"
           />

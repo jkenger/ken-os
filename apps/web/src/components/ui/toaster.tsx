@@ -47,7 +47,7 @@ export function dismissToast(id: string | number) {
   sonner.dismiss(id);
 }
 
-/** Bottom right on desktop, full width at the bottom on a phone. At most three at once. */
+/** Bottom right on desktop, full width at the bottom on a phone. At most three at once. Light only, since Ken OS has no theme switch yet. */
 export function Toaster() {
-  return <Sonner position="bottom-right" visibleToasts={3} containerAriaLabel="Notifications" />;
+  return <Sonner theme="light" position="bottom-right" visibleToasts={3} containerAriaLabel="Notifications" />;
 }

@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 // proof requirements, a next-milestone column, and assessment history. Every value comes from capabilities.ts, the
 // same rules as levels and the roadmap. Design: docs/architecture/engineering-redesign.md.
 
-const columns = "grid-cols-[1.45fr_1fr_18px] gap-3 md:grid-cols-[1.6fr_1.3fr_.55fr_1.15fr_15px] md:gap-2.5 xl:grid-cols-[2fr_1.6fr_.62fr_1.45fr_18px] xl:gap-[13px]";
+const columns = "grid-cols-[1.45fr_1fr_18px] gap-3 md:grid-cols-[1.6fr_1.3fr_.55fr_1.15fr_15px] md:gap-2.5 xl:grid-cols-[2fr_1.6fr_.62fr_1.45fr_18px] xl:gap-3";
 
 function plural(count: number, word: string) {
   return `${count} ${word}${count === 1 ? "" : "s"}`;
@@ -30,23 +30,23 @@ function Requirements({ row }: { row: CapabilityRow }) {
   const remaining = row.requirements.filter((item) => !item.met);
   const shown = remaining.length ? remaining : row.requirements;
   return (
-    <div className="mx-3 mb-3 mt-1.5 rounded-md bg-tint px-2.5 pb-1.5 pt-3.5 md:px-[13px]">
+    <div className="mx-3 mb-3 mt-1.5 rounded-md bg-muted px-2.5 pb-1.5 pt-3.5 md:px-3">
       <strong className="text-sm font-semibold">{remaining.length ? `Remaining proof requirements for ${row.title} · ${levelShort(row.scope)}` : `${row.title} · ${levelShort(row.scope)} met`}</strong>
-      <p className="mb-[9px] mt-1 text-xs text-muted-foreground">{row.requirements.length - remaining.length} of {plural(row.requirements.length, "requirement")} met</p>
+      <p className="mb-2 mt-1 text-xs text-muted-foreground">{row.requirements.length - remaining.length} of {plural(row.requirements.length, "requirement")} met</p>
       {shown.length === 0 ? <p className="pb-3 text-xs text-muted-foreground">Every level in this area is met</p> : shown.map((item) => {
         const target = item.missing[0] ?? item.topics[0]?.topicId;
         const body = (
           <>
-            {item.met ? <IconCheck size={20} className="mt-0.5 shrink-0 text-status-solid" aria-label="Met" /> : <IconCircle size={20} className="mt-0.5 shrink-0 text-muted-foreground" aria-label="Not met" />}
+            {item.met ? <IconCheck size={20} className="mt-0.5 shrink-0 text-foreground" aria-label="Met" /> : <IconCircle size={20} className="mt-0.5 shrink-0 text-muted-foreground" aria-label="Not met" />}
             <span className="min-w-0">
-              <strong className="block text-[13px] font-medium">{item.title} · {levelShort(item.level)}</strong>
-              <small className="mt-0.5 block text-[11px] leading-[1.5] text-muted-foreground md:text-xs">{requirementLine(item)}</small>
+              <strong className="block text-sm font-medium">{item.title} · {levelShort(item.level)}</strong>
+              <small className="mt-0.5 block text-xs leading-normal text-muted-foreground md:text-xs">{requirementLine(item)}</small>
             </span>
           </>
         );
         return target
-          ? <Link key={`${item.chapterId}-${item.need}`} href={engineering.topic(target)} className="flex w-full items-start gap-[9px] pb-[9px] pt-[5px] text-left hover:text-primary md:gap-4">{body}</Link>
-          : <div key={`${item.chapterId}-${item.need}`} className="flex w-full items-start gap-[9px] pb-[9px] pt-[5px] md:gap-4">{body}</div>;
+          ? <Link key={`${item.chapterId}-${item.need}`} href={engineering.topic(target)} className="flex w-full items-start gap-2 pb-2 pt-1 text-left hover:text-primary md:gap-4">{body}</Link>
+          : <div key={`${item.chapterId}-${item.need}`} className="flex w-full items-start gap-2 pb-2 pt-1 md:gap-4">{body}</div>;
       })}
     </div>
   );
@@ -56,23 +56,23 @@ function CapabilityTable({ rows, hasDirection }: { rows: CapabilityRow[]; hasDir
   const open = rows.find((row) => row.target && row.remaining > 0)?.area ?? rows.find((row) => row.remaining > 0)?.area;
   return (
     <section className={cn(panel, "min-w-0 overflow-hidden")} aria-label="Capabilities">
-      <div className={cn("grid items-center border-b border-border bg-table-head p-3.5 text-xs font-semibold text-quiet md:px-3.5 md:py-[15px] xl:px-[18px]", columns)}>
+      <div className={cn("grid items-center border-b border-border bg-muted p-3.5 text-xs font-semibold text-muted-foreground md:px-3.5 md:py-3.5 xl:px-4", columns)}>
         <span>Capability</span><span>Evidence level</span><span className="hidden md:block">Target</span><span className="hidden md:block">Proof coverage</span><span />
       </div>
       {rows.map((row) => (
         <details key={row.area} className="group border-b border-border last:border-b-0" open={row.area === open}>
-          <summary className={cn("grid min-h-[110px] cursor-pointer list-none items-center p-3.5 text-left hover:bg-row-hover md:min-h-[105px] md:px-3.5 md:py-3 xl:px-[18px] [&::-webkit-details-marker]:hidden group-open:border-l-2 group-open:border-l-rail-soft group-open:bg-row-hover group-open:pl-3 xl:group-open:pl-4", columns)}>
+          <summary className={cn("grid min-h-28 cursor-pointer list-none items-center p-3.5 text-left hover:bg-muted/50 md:min-h-28 md:px-3.5 md:py-3 xl:px-4 [&::-webkit-details-marker]:hidden group-open:border-l-2 group-open:border-l-primary/40 group-open:bg-muted/50 group-open:pl-3 xl:group-open:pl-4", columns)}>
             <div className="min-w-0">
-              <strong className="text-[13px] font-semibold md:text-sm">{row.title}</strong>
-              <p className="mt-1 max-w-[210px] text-[11px] leading-[1.5] text-muted-foreground xl:text-xs">{row.summary}</p>
+              <strong className="text-sm font-semibold md:text-sm">{row.title}</strong>
+              <p className="mt-1 max-w-52 text-xs leading-normal text-muted-foreground xl:text-xs">{row.summary}</p>
             </div>
             <div className="min-w-0">
-              <strong className="text-[13px] font-semibold md:text-sm">{levelShort(row.current)}{row.estimate && row.current ? " · Estimate" : ""}</strong>
+              <strong className="text-sm font-semibold md:text-sm">{levelShort(row.current)}{row.estimate && row.current ? " · Estimate" : ""}</strong>
               <Rail level={row.current} soft={row.estimate} />
             </div>
             <strong className="hidden text-sm font-semibold md:block">{row.target ? levelShort(row.target) : <span className="font-normal text-muted-foreground">{hasDirection ? "Not needed" : "None"}</span>}</strong>
             <div className="hidden md:block"><Coverage met={row.requirements.length - row.remaining} total={row.requirements.length} /></div>
-            <span className="text-quiet"><IconChevronRight size={18} className="group-open:hidden" aria-hidden="true" /><IconChevronDown size={18} className="hidden group-open:block" aria-hidden="true" /></span>
+            <span className="text-muted-foreground"><IconChevronRight size={18} className="group-open:hidden" aria-hidden="true" /><IconChevronDown size={18} className="hidden group-open:block" aria-hidden="true" /></span>
           </summary>
           <Requirements row={row} />
         </details>
@@ -87,13 +87,13 @@ function History({ view, evidence }: { view: ProfileView; evidence: EvidenceLink
     ...view.checkpoint.done.map((item) => ({ id: item.id, name: "Checkpoint", at: item.completedAt as string | null })),
     ...(view.checkpoint.inProgressRunId ? [{ id: view.checkpoint.inProgressRunId, name: "Checkpoint", at: null }] : []),
   ];
-  const row = "grid w-full grid-cols-[1fr_auto] rounded-lg border border-border bg-card text-left text-[11px] md:grid-cols-[1fr_1.5fr_auto] md:text-xs xl:grid-cols-[1fr_1.5fr_1.5fr_auto]";
-  const cell = "border-r border-border px-[9px] py-3 text-quiet md:px-[15px]";
-  const link = "flex items-center gap-[9px] px-[9px] py-3 font-medium text-primary md:px-[15px]";
+  const row = "grid w-full grid-cols-[1fr_auto] rounded-lg border border-border bg-card text-left text-xs md:grid-cols-[1fr_1.5fr_auto] md:text-xs xl:grid-cols-[1fr_1.5fr_1.5fr_auto]";
+  const cell = "border-r border-border px-2 py-3 text-muted-foreground md:px-3.5";
+  const link = "flex items-center gap-2 px-2 py-3 font-medium text-primary md:px-3.5";
   return (
-    <div className="mt-[22px] border-t border-border px-1 pt-[15px] md:px-[15px]">
+    <div className="mt-5 border-t border-border px-1 pt-3.5 md:px-3.5">
       <strong className="text-xs font-semibold">Assessment history</strong>
-      <p className="mb-2.5 mt-[3px] text-xs text-muted-foreground">{plural(runs.length, "assessment")} · Snapshots never change</p>
+      <p className="mb-2.5 mt-0.5 text-xs text-muted-foreground">{plural(runs.length, "assessment")} · Snapshots never change</p>
       <div className="space-y-2">
         {runs.map((run) => (
           <Link key={run.id} href={run.at ? engineering.results(run.id) : engineering.assessment({ run: run.id })} className={row}>
@@ -126,19 +126,19 @@ function History({ view, evidence }: { view: ProfileView; evidence: EvidenceLink
 function Milestone({ next }: { next: NextRequirement | null }) {
   const topic = next?.requirement.topics.find((item) => item.topicId === next.topicId);
   return (
-    <aside className={cn(panel, "h-fit p-5 lg:p-[18px] xl:p-5")}>
-      <small className="text-sm font-semibold text-quiet">Next milestone</small>
+    <aside className={cn(panel, "h-fit p-5 lg:p-4 xl:p-5")}>
+      <small className="text-sm font-semibold text-muted-foreground">Next milestone</small>
       {next ? (
         <>
-          <h2 className="mt-[9px] text-[23px] font-bold tracking-[-0.6px] md:text-[25px]">{next.areaTitle} · {levelShort(next.requirement.level)}</h2>
-          <p className="mb-[26px] mt-[15px] text-[13px] leading-[1.5] text-muted-foreground lg:text-sm xl:text-[15px]">
+          <h2 className="mt-2 text-2xl font-bold tracking-tight md:text-2xl">{next.areaTitle} · {levelShort(next.requirement.level)}</h2>
+          <p className="mb-6 mt-3.5 text-sm leading-normal text-muted-foreground lg:text-sm xl:text-sm">
             {next.requirement.title} · {depthWords[next.requirement.need]} · {plural(next.requirement.missing.length, "topic")} left
           </p>
-          <hr className="my-[25px] border-border" />
+          <hr className="my-6 border-border" />
           {topic && <Button asChild className="w-full"><Link href={engineering.topic(topic.topicId)}>Continue learning<IconArrowRight size={19} aria-hidden="true" /></Link></Button>}
         </>
-      ) : <h2 className="mt-[9px] text-[25px] font-bold tracking-[-0.6px]">Direction complete</h2>}
-      <Button asChild variant="text" className="mx-auto mt-4 flex w-fit"><Link href={engineering.assessment({ new: true })}>Take assessment</Link></Button>
+      ) : <h2 className="mt-2 text-2xl font-bold tracking-tight">Direction complete</h2>}
+      <Button asChild variant="link" className="mx-auto mt-4 flex w-fit"><Link href={engineering.assessment({ new: true })}>Take assessment</Link></Button>
     </aside>
   );
 }
@@ -146,10 +146,10 @@ function Milestone({ next }: { next: NextRequirement | null }) {
 function NotYet({ view }: { view: ProfileView }) {
   const started = view.baseline.state === "in_progress";
   return (
-    <section className={cn(panel, "mx-[5px] max-w-[850px] p-[23px] md:mx-3.5 md:p-8")}>
+    <section className={cn(panel, "mx-1 max-w-4xl p-6 md:mx-3.5 md:p-8")}>
       <Badge>{started ? "Baseline · In progress" : "Baseline · Not started"}</Badge>
-      <h2 className="my-4 text-[23px] font-bold tracking-[-0.6px] md:text-[25px]">{started ? "Continue the baseline" : "Take the baseline"}</h2>
-      <ul className="mb-6 list-disc space-y-1 pl-5 text-sm leading-[1.9] text-muted-foreground">
+      <h2 className="my-4 text-2xl font-bold tracking-tight md:text-2xl">{started ? "Continue the baseline" : "Take the baseline"}</h2>
+      <ul className="mb-6 list-disc space-y-1 pl-5 text-sm leading-loose text-muted-foreground">
         <li>Intro first. Never graded</li>
         <li>Closed-book, chapter by chapter, no timer</li>
         <li>Pause between chapters</li>
@@ -169,7 +169,7 @@ export function EngineeringProfile({ email, view, rows, next, evidence, closedBo
   const estimate = rows.some((row) => (chosen ? row.target : true) && row.estimate);
   return (
     <WorkspaceShell email={email} active="lab" tab="profile" termLookup={!closedBook}>
-      <div className="mx-auto max-w-[1500px] px-3 pb-9 pt-6 md:px-5 md:pt-[30px] min-[1500px]:pt-9">
+      <div className="mx-auto max-w-375 px-3 pb-9 pt-6 md:px-5 md:pt-7 min-[1500px]:pt-9">
         <PageHeading
           title="Profile"
           description="Evidence for each capability, measured against the target role"
@@ -182,7 +182,7 @@ export function EngineeringProfile({ email, view, rows, next, evidence, closedBo
           </> : undefined}
         />
         {!done ? <NotYet view={view} /> : (
-          <div className="grid grid-cols-1 gap-[9px] lg:grid-cols-[minmax(0,1fr)_260px] xl:grid-cols-[minmax(0,1fr)_306px]">
+          <div className="grid grid-cols-1 gap-2 lg:grid-cols-[minmax(0,1fr)_260px] xl:grid-cols-[minmax(0,1fr)_306px]">
             <div className="min-w-0">
               <CapabilityTable rows={rows} hasDirection={Boolean(chosen)} />
               <History view={view} evidence={evidence} />

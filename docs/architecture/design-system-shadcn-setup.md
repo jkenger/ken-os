@@ -1,6 +1,14 @@
 # Reset to the shadcn default setup
 
-Status: approved by the owner, 10 Oct 2026. Not yet implemented. Written for a separate implementation session.
+Status: approved by the owner, 10 Oct 2026. Implemented on 10 Oct 2026 on branch `refactor/shadcn-default`, with shadcn CLI 4.21.4. The owner checked the hosted preview on 10 Oct 2026, so every point in §11 is met.
+
+Implementation notes:
+
+- The scratch app's `ThemeProvider` (next-themes, with a "d" key that toggles dark mode) was left out of `layout.tsx`, since turning dark mode on is a later decision (§6). Without it, the registry `sonner.tsx` would follow the system theme, so the Ken OS `toaster.tsx` passes `theme="light"`.
+- The visible-focus rule was dropped: shadcn's base gives every element `outline-ring/50`, and the primitives bring their own focus rings (§4).
+- The Button's `text` variant and `ButtonEndIcon` were Ken OS additions; screens now use the `link` variant and an icon with `data-icon="inline-end"`.
+- Fixed pixel sizes became the nearest Tailwind step: type to the `text-*` scale, tracking and leading to the named steps, spacing to the documented spacing steps, and wide `max-w` values to the container scale.
+- The preview bundle keeps working (§8, recommended option): `bundle.css` carries the default variables and a Geist font link that only the previews load.
 
 ## Decision
 
