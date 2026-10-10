@@ -98,6 +98,8 @@ Defaults the owner accepted without a separate question: term lookups get their 
 
 ## Visual rules
 
+> **Superseded on 10 Oct 2026:** the app reset to the shadcn default ([design-system-shadcn-setup.md](design-system-shadcn-setup.md)). The fonts and status tokens below are gone; status uses the Badge variants.
+
 **Ken OS stays the base.** Manrope headings, Source Sans 3 body text, the warm monochrome tokens, the same radii and spacing. Nothing here is a framework default.
 
 **New tokens, for meaning only.** They lived in `features/design-system/contract.ts` (added in step 1) and now live in the Ken OS design system in Claude, synced to `apps/web/design-system/tokens.json`, with Tailwind names such as `bg-status-solid-surface` and `text-status-solid`:

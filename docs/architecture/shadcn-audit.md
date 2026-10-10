@@ -1,5 +1,7 @@
 # shadcn/ui audit
 
+> **Superseded on 10 Oct 2026** by [design-system-shadcn-setup.md](design-system-shadcn-setup.md): the primitives in `components/ui` are now the registry default, so the tailoring notes below no longer apply. The rule against raw controls and its allow list still stand.
+
 Audited and fixed on 2026-10-06 on branch `refactor/shadcn-audit`.
 
 **Answer:** screens were not using shadcn. Ken OS had shadcn installed but only ever pulled three of its components, and no rule, tool or test said screens had to use them. Every page now builds its controls from shadcn primitives in `apps/web/src/components/ui`, and a test fails if that slips again.

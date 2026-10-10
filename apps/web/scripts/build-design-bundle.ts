@@ -9,8 +9,9 @@ import tailwind from "@tailwindcss/postcss";
 //   components/lib/react.js, components/lib/react-dom.js  React 19 as classic scripts (window.React, window.ReactDOM)
 //   components/bundle.js                                  the app's components as window.KenOS
 //   components/bundle.css                                 the Tailwind CSS those components need
-// The design system already supplies the token variables (its tokens.css uses the same names as the app), so the
-// stylesheet leaves them out. Publishing the files is done from a Claude session (see the design-system-sync skill).
+// The stylesheet carries the app's own shadcn default variables. Previews run outside Next, so next/font never loads
+// Geist there; the bundle CSS links it from Google Fonts instead, for the previews only (the app itself never does).
+// Publishing the files is done from a Claude session (see the design-system-sync skill).
 
 const webRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const out = resolve(webRoot, "design-system/dist/components");
@@ -74,19 +75,21 @@ async function main() {
     plugins: [globals({ react: "window.React", "react-dom": "window.ReactDOM", "react-dom/client": "window.ReactDOM" }), nextLink],
   });
 
-  // The app's stylesheet without its own token values, scanning only what the bundle contains.
+  // The app's stylesheet, scanning only what the bundle contains, with Geist set the way next/font would set it.
   const globalsPath = resolve(webRoot, "src/app/globals.css");
   const source = readFileSync(globalsPath, "utf8")
-    .replace(/@import "\.\/design-tokens\.generated\.css";\r?\n/, "")
     // Ken OS has one light theme. The design system page adds a "dark" class to its preview frames when the viewer
     // uses dark mode, which would switch on shadcn's built-in dark styles; point the variant at a class nothing sets.
     .replace("@custom-variant dark (&:is(.dark *));", "@custom-variant dark (&:is(.ken-os-dark-theme *));")
     .concat("\nhtml { color-scheme: light !important; }\n")
+    .concat(`\n:root { --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif; --font-mono: "Geist Mono", ui-monospace, monospace; }\nhtml { font-family: var(--font-sans); }\n`)
     .replace(`@import "tailwindcss";`, `@import "tailwindcss" source(none);\n@source "../components/ui";\n@source "../components/engineering/kit.tsx";\n@source "../components/workspace-shell.tsx";`);
   const plugin = tailwind({ optimize: { minify: true } }) as AcceptedPlugin;
   const css = await postcss([plugin]).process(source, { from: globalsPath });
-  writeFileSync(resolve(out, "bundle.css"), css.css);
-  sizes["bundle.css"] = css.css.length;
+  // The font link must be the first rule: an @import after any other rule is ignored.
+  const fonts = `@import url("https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Geist+Mono:wght@100..900&display=swap");\n`;
+  writeFileSync(resolve(out, "bundle.css"), fonts + css.css);
+  sizes["bundle.css"] = fonts.length + css.css.length;
 
   for (const [file, size] of Object.entries(sizes)) console.log(`${file.padEnd(18)} ${(size / 1024).toFixed(1)} KB`);
 }
