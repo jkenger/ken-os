@@ -26,7 +26,8 @@ The next deployable process is a worker only when background jobs are needed. A 
 ## Security boundary
 
 - OAuth state and PKCE protect the sign-in callback.
-- The configured owner email gates the session.
+- The configured owner email gates the session. Sign-in asks only for `openid email profile`; Drive (`drive.file`) is a separate grant from the Resume page (`/api/auth/google/drive`). See `docs/architecture/auth-sign-in.md`.
+- Sessions roll: 30 days from last use, renewed at most daily by `src/proxy.ts`, never past 90 days from sign-in. The proxy only renews; pages call `requireSession`.
 - The Google refresh token is encrypted at rest with `TOKEN_ENCRYPTION_KEY`.
 - API routes validate the session and mutation origin.
 - Picker obtains a short-lived access token only after a valid session.

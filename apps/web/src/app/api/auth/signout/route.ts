@@ -3,8 +3,9 @@ import { clearSession } from "@/lib/session";
 import { hasValidOrigin } from "@/lib/origin";
 import { messages } from "@/lib/messages";
 
+/** Ends the Ken OS session only. The Drive connection stays, so signing back in doesn't ask for Drive again. */
 export async function POST(request: Request) {
   if (!hasValidOrigin(request)) return NextResponse.json({ error: messages.invalidOrigin }, { status: 403 });
   await clearSession();
-  return NextResponse.redirect(new URL("/", request.url), { status: 303 });
+  return NextResponse.redirect(new URL("/sign-in?signed_out=1", request.url), { status: 303 });
 }

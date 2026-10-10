@@ -1,33 +1,14 @@
-import { createHash, randomBytes } from "node:crypto";
-import { NextResponse } from "next/server";
-import { appUrl, ownerEmailIsConfigured, requiredEnv } from "@/lib/config";
+import { NextResponse, type NextRequest } from "next/server";
+import { signInSetupGap } from "@/lib/config";
+import { SIGN_IN_SCOPES, startGoogleAuth } from "@/lib/oauth";
+import { safeNext } from "@/lib/session";
 
 export const runtime = "nodejs";
 
-export async function GET() {
-  if (!ownerEmailIsConfigured()) {
-    return NextResponse.json(
-      { error: process.env.NODE_ENV === "development" ? "Set OWNER_EMAIL in apps/web/.env to your Google account email, then restart the dev server." : "Sign-in isn't set up" },
-      { status: 503 },
-    );
-  }
-  const state = randomBytes(32).toString("base64url");
-  const verifier = randomBytes(32).toString("base64url");
-  const challenge = createHash("sha256").update(verifier).digest("base64url");
-  const params = new URLSearchParams({
-    client_id: requiredEnv("GOOGLE_CLIENT_ID"),
-    redirect_uri: `${appUrl()}/api/auth/google/callback`,
-    response_type: "code",
-    scope: "openid email profile https://www.googleapis.com/auth/drive.file",
-    access_type: "offline",
-    prompt: "consent",
-    state,
-    code_challenge: challenge,
-    code_challenge_method: "S256",
-  });
-  const response = NextResponse.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params}`);
-  const options = { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" as const, path: "/", maxAge: 600 };
-  response.cookies.set("ken_os_oauth_state", state, options);
-  response.cookies.set("ken_os_oauth_verifier", verifier, options);
-  return response;
+/** Starts Google sign-in. Also "Use another account": `prompt=select_account` always shows Google's chooser. */
+export async function GET(request: NextRequest) {
+  const next = safeNext(request.nextUrl.searchParams.get("next"));
+  // The sign-in page shows what's missing.
+  if (signInSetupGap()) return NextResponse.redirect(new URL(`/sign-in?next=${encodeURIComponent(next)}`, request.url), { status: 303 });
+  return startGoogleAuth({ intent: "signin", next, scope: SIGN_IN_SCOPES, extra: { prompt: "select_account" } });
 }

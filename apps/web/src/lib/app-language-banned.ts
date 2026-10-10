@@ -25,8 +25,8 @@ export const bannedPhrases: BannedPhrase[] = [
   { phrase: "Request failed" },
   { phrase: "Invalid origin" },
   { phrase: "Sign in required" },
-  // The setup hint only shows in local development.
-  { phrase: "OWNER_EMAIL", exceptFiles: ["app/api/auth/google/route.ts"] },
+  // The sign-in page's development-only setup hint names the variable at runtime (lib/config.ts signInSetupGap).
+  { phrase: "OWNER_EMAIL" },
   { phrase: "screening", ignoreCase: true },
   { phrase: "receipt", ignoreCase: true, screenOnly: true },
   { phrase: "..." },

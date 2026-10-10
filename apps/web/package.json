@@ -15,6 +15,7 @@
     "lab:research": "tsx scripts/research.ts",
     "test:db": "tsx scripts/verify-skills.ts",
     "test:db:resume": "tsx scripts/verify-resume.ts",
+    "test:db:auth": "tsx scripts/verify-auth.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",
     "lab:generate": "tsx scripts/generate-lab-content.ts --write",

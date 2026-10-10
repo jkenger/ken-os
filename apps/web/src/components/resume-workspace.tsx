@@ -4,9 +4,11 @@ import { useRouter } from "next/navigation";
 import Script from "next/script";
 import { useState, type FormEvent } from "react";
 import { DOCX_MIME, GOOGLE_DOC_MIME, type Artifact } from "@ken-os/domain";
+import type { DriveAccess } from "@/lib/google";
 import type { ResumeSelection } from "@/lib/resume";
 import { WorkspaceShell } from "@/components/workspace-shell";
-import { ArrowUpRight, Download, FileText, Plus, RefreshCw } from "lucide-react";
+import { AlertCircle, ArrowUpRight, Download, FileText, Plus, RefreshCw } from "lucide-react";
+import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -39,6 +41,10 @@ interface Props {
   selection: ResumeSelection | null;
   file: Artifact | null;
   error: string | null;
+  /** Whether Drive is granted; sign-in no longer includes it (docs/architecture/auth-sign-in.md §4). */
+  drive: DriveAccess;
+  /** Why the last Drive grant didn't finish, from `?drive_error=`. */
+  driveNotice?: string | null;
   previewUrl: string | null;
   canAsk: boolean;
   /** A one-line Engineering Lab summary that links into the lab. Absent when the lab has nothing to say yet. */
@@ -51,8 +57,12 @@ const mimeNames: Record<string, string> = {
   [DOCX_MIME]: "Word document",
 };
 
-export function ResumeWorkspace({ email, selection, file, error, previewUrl, canAsk, labSummary = null }: Props) {
+/** Starts the Drive grant and comes back here. */
+const connectDriveHref = "/api/auth/google/drive?next=%2F";
+
+export function ResumeWorkspace({ email, selection, file, error, drive: initialDrive, driveNotice = null, previewUrl, canAsk, labSummary = null }: Props) {
   const router = useRouter();
+  const [drive, setDrive] = useState<DriveAccess>(initialDrive);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [question, setQuestion] = useState("");
@@ -91,7 +101,10 @@ export function ResumeWorkspace({ email, selection, file, error, previewUrl, can
     try {
       const response = await fetch("/api/drive/picker-token", { cache: "no-store" });
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error ?? "Couldn't connect to Google Drive. Reconnect Google");
+      if (!response.ok) {
+        if (data.drive === "not_connected" || data.drive === "disconnected") { setDrive(data.drive); setBusy(false); return; }
+        throw new Error(data.error ?? "Couldn't reach Google Drive. Try again");
+      }
       window.gapi.load("picker", () => {
         const picker = window.google?.picker;
         if (!picker) { setMessage("Drive picker didn't load. Reload the page"); setBusy(false); return; }
@@ -159,10 +172,23 @@ export function ResumeWorkspace({ email, selection, file, error, previewUrl, can
           </a>
         )}
 
+        {driveNotice && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertCircle />
+            <AlertTitle>{driveNotice}</AlertTitle>
+          </Alert>
+        )}
+
         <section className="grid overflow-hidden rounded-xl bg-card border lg:grid-cols-[minmax(320px,0.85fr)_minmax(0,1.15fr)]">
           <div className="flex min-h-100 flex-col items-start p-6 sm:p-8">
             <div className="mb-7 grid size-11 place-items-center rounded-xl bg-secondary text-foreground">{file ? <FileText size={22} strokeWidth={1.6} /> : <Plus size={22} strokeWidth={1.6} />}</div>
-            {file ? (
+            {drive !== "connected" ? (
+              <>
+                <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground">{drive === "disconnected" ? "Needs attention" : "Not connected"}</div>
+                <h2 className="mt-3 break-words font-heading text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">{drive === "disconnected" ? "Google Drive disconnected" : "Google Drive not connected"}</h2>
+                <p className="mt-5 max-w-md text-base leading-6 text-muted-foreground">{drive === "disconnected" ? "Reconnect it to see your resume" : "Connect it to choose your resume"}</p>
+              </>
+            ) : file ? (
               <>
                 <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-muted-foreground"><span className="size-1.5 rounded-full bg-foreground" />Connected</div>
                 <h2 className="mt-3 break-words font-heading text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">{file.name}</h2>
@@ -177,12 +203,15 @@ export function ResumeWorkspace({ email, selection, file, error, previewUrl, can
               </>
             )}
             <div className="mt-auto flex flex-wrap items-center gap-2 pt-8">
-              <Button type="button" onClick={openPicker} disabled={busy}>{busy ? "Opening…" : file ? "Choose another" : "Choose resume"}<ArrowUpRight data-icon="inline-end" aria-hidden="true" /></Button>
-              {file && <>
+              {drive !== "connected" ? (
+                <Button asChild><a href={connectDriveHref}>{drive === "disconnected" ? "Reconnect Google Drive" : "Connect Google Drive"}<ArrowUpRight data-icon="inline-end" aria-hidden="true" /></a></Button>
+              ) : (
+                <Button type="button" onClick={openPicker} disabled={busy}>{busy ? "Opening…" : file ? "Choose another" : "Choose resume"}<ArrowUpRight data-icon="inline-end" aria-hidden="true" /></Button>
+              )}
+              {drive === "connected" && file && <>
                 {file.canDownload !== false && <Button asChild variant="outline" className="h-10 px-4"><a href="/api/resume/content?download=1">Download <Download size={15} /></a></Button>}
                 <Button variant="outline" size="icon" className="size-10" type="button" title="Refresh" aria-label="Refresh resume" onClick={() => router.refresh()}><RefreshCw size={16} /></Button>
               </>}
-              {error && <Button asChild variant="outline" className="h-10 px-4"><a href="/api/auth/google">Reconnect Google <ArrowUpRight size={15} /></a></Button>}
             </div>
             {message && <p className="mt-4 rounded-lg bg-muted p-3 text-sm" role="alert">{message}</p>}
           </div>

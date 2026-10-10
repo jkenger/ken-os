@@ -1,26 +1,14 @@
-import { NextRequest, NextResponse } from "next/server";
-import { eq, sql } from "drizzle-orm";
-import { appUrl, ownerEmail, requiredEnv } from "@/lib/config";
-import { db } from "@/lib/db";
-import { encryptToken } from "@/lib/google";
-import { createSession } from "@/lib/session";
-import { googleConnections, users } from "@/lib/schema";
+import type { NextRequest } from "next/server";
+import { finishDriveGrant, finishSignIn, type GoogleProfile, type GoogleTokens } from "@/lib/auth-flow";
+import { requiredEnv } from "@/lib/config";
+import { callbackUrl, finishRedirect, readOAuthCookies, withParam } from "@/lib/oauth";
+import { createSession, getSession, safeNext } from "@/lib/session";
 
 export const runtime = "nodejs";
 
-export async function GET(request: NextRequest) {
-  const url = new URL(request.url);
-  const code = url.searchParams.get("code");
-  const state = url.searchParams.get("state");
-  const storedState = request.cookies.get("ken_os_oauth_state")?.value;
-  const verifier = request.cookies.get("ken_os_oauth_verifier")?.value;
-  if (!code || !state || !storedState || state !== storedState || !verifier) {
-    return NextResponse.json(
-      { error: "Sign-in expired. Sign in again" },
-      { status: 400 },
-    );
-  }
+type Exchange = { ok: true; tokens: GoogleTokens; profile: GoogleProfile } | { ok: false; reason: "expired" | "google" };
 
+async function exchange(code: string, verifier: string): Promise<Exchange> {
   const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -28,96 +16,55 @@ export async function GET(request: NextRequest) {
       code,
       client_id: requiredEnv("GOOGLE_CLIENT_ID"),
       client_secret: requiredEnv("GOOGLE_CLIENT_SECRET"),
-      redirect_uri: `${appUrl()}/api/auth/google/callback`,
+      redirect_uri: callbackUrl(),
       grant_type: "authorization_code",
       code_verifier: verifier,
     }),
     cache: "no-store",
-  });
-  if (!tokenResponse.ok) {
-    const tokenError = (await tokenResponse.json().catch(() => null)) as { error?: string } | null;
-    return NextResponse.json(
-      {
-        error: tokenError?.error === "invalid_grant"
-          ? "Sign-in expired. Sign in again"
-          : "Google sign-in failed. Sign in again",
-      },
-      { status: 400 },
-    );
+  }).catch(() => null);
+  if (!tokenResponse?.ok) {
+    const tokenError = (await tokenResponse?.json().catch(() => null)) as { error?: string } | null;
+    return { ok: false, reason: tokenError?.error === "invalid_grant" ? "expired" : "google" };
   }
-  const tokens = (await tokenResponse.json()) as {
-    access_token?: string;
-    refresh_token?: string;
-    scope?: string;
-  };
-  if (!tokens.access_token)
-    return NextResponse.json(
-      { error: "Google didn't finish sign-in. Sign in again" },
-      { status: 400 },
-    );
-  if (!tokens.scope?.split(" ").includes("https://www.googleapis.com/auth/drive.file")) {
-    return NextResponse.json(
-      { error: "Drive access wasn't allowed. Sign in again and allow it" },
-      { status: 403 },
-    );
+  const tokens = (await tokenResponse.json()) as GoogleTokens;
+  if (!tokens.access_token) return { ok: false, reason: "google" };
+  const userResponse = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
+    headers: { Authorization: `Bearer ${tokens.access_token}` },
+    cache: "no-store",
+  }).catch(() => null);
+  if (!userResponse?.ok) return { ok: false, reason: "google" };
+  return { ok: true, tokens, profile: (await userResponse.json()) as GoogleProfile };
+}
+
+/** Finishes both flows. Every outcome is a redirect: `next` on success, the sign-in page or `?drive_error=` on failure. */
+export async function GET(request: NextRequest) {
+  const query = request.nextUrl.searchParams;
+  const cookies = readOAuthCookies(request);
+  const next = safeNext(cookies.next);
+  const googleError = query.get("error");
+  const code = query.get("code");
+  const state = query.get("state");
+  const stateMatches = Boolean(state && cookies.state && state === cookies.state && cookies.verifier);
+
+  if (cookies.intent === "drive") {
+    const session = await getSession();
+    if (!session) return finishRedirect(`/sign-in?${new URLSearchParams({ expired: "1", next })}`);
+    const fail = (reason: "cancelled" | "scope" | "google") => finishRedirect(withParam(next, "drive_error", reason));
+    if (googleError) return fail(googleError === "access_denied" ? "cancelled" : "google");
+    if (!code || !stateMatches) return fail("google");
+    const result = await exchange(code, cookies.verifier!);
+    if (!result.ok) return fail("google");
+    const granted = await finishDriveGrant(session.userId, result.tokens, result.profile);
+    return granted.ok ? finishRedirect(next) : fail(granted.code);
   }
-  const userResponse = await fetch(
-    "https://openidconnect.googleapis.com/v1/userinfo",
-    {
-      headers: { Authorization: `Bearer ${tokens.access_token}` },
-      cache: "no-store",
-    },
-  );
-  if (!userResponse.ok)
-    return NextResponse.json(
-      { error: "Couldn't verify your Google account. Sign in again" },
-      { status: 400 },
-    );
-  const profile = (await userResponse.json()) as {
-    sub?: string;
-    email?: string;
-    email_verified?: boolean;
-    name?: string;
-  };
-  if (
-    !profile.sub ||
-    !profile.email_verified ||
-    profile.email?.trim().toLowerCase() !== ownerEmail()
-  ) {
-    return NextResponse.json(
-      { error: "This Google account doesn't have access" },
-      { status: 403 },
-    );
-  }
-  await db().insert(users).values({
-    id: profile.sub,
-    email: profile.email,
-    name: profile.name ?? null,
-  }).onConflictDoUpdate({
-    target: users.id,
-    set: { email: profile.email, name: profile.name ?? null },
-  });
-  if (tokens.refresh_token) {
-    const encryptedRefreshToken = encryptToken(tokens.refresh_token);
-    await db().insert(googleConnections).values({
-      userId: profile.sub,
-      encryptedRefreshToken,
-    }).onConflictDoUpdate({
-      target: googleConnections.userId,
-      set: { encryptedRefreshToken, updatedAt: sql`now()` },
-    });
-  } else {
-    const existing = await db().select({ userId: googleConnections.userId })
-      .from(googleConnections).where(eq(googleConnections.userId, profile.sub)).limit(1);
-    if (!existing[0])
-      return NextResponse.json(
-        { error: "Google didn't keep you signed in. Sign in again" },
-        { status: 400 },
-      );
-  }
-  await createSession({ userId: profile.sub, email: profile.email });
-  const response = NextResponse.redirect(appUrl());
-  response.cookies.delete("ken_os_oauth_state");
-  response.cookies.delete("ken_os_oauth_verifier");
-  return response;
+
+  const fail = (reason: string) => finishRedirect(`/sign-in?${new URLSearchParams({ error: reason, next })}`);
+  if (googleError) return fail(googleError === "access_denied" ? "cancelled" : "google");
+  if (!code || !stateMatches) return fail("expired");
+  const result = await exchange(code, cookies.verifier!);
+  if (!result.ok) return fail(result.reason);
+  const signedIn = await finishSignIn(result.profile);
+  if (!signedIn.ok) return fail(signedIn.code);
+  await createSession(signedIn.session);
+  return finishRedirect(next);
 }

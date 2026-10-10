@@ -1,6 +1,16 @@
 # Sign-in page and flow
 
-Status: proposed, 10 Oct 2026. Not yet implemented. Written for a separate implementation session.
+Status: implemented 10 Oct 2026 on `feat/auth-sign-in` (all three slices on one branch). The eight hand checks in §8 still need the hosted app.
+
+### Implementation notes
+
+- `requireSession(path, query)` takes the page's query too, so a deep link like `/engineering/learn?area=web` comes back whole.
+- The callback's decisions live in `src/lib/auth-flow.ts` (`finishSignIn`, `finishDriveGrant`), so `pnpm --filter @ken-os/web test:db:auth` can run both intents against local Postgres without Google.
+- A Drive state mismatch, or a grant from a different Google account than the session, reports `drive_error=google`.
+- `signin` checks the owner email before `email_verified`, so an unverified stranger sees "doesn't have access", and an unverified owner address sees "isn't verified".
+- Tokens issued before this change have no `auth_time`; their issue time stands in for it, so existing sessions keep working.
+- `src/lib/google.ts` throws `DriveAccessError` (`not_connected` or `disconnected` on `invalid_grant`); the Resume page and the picker route use it to show Connect or Reconnect Google Drive.
+- "Not set up" also covers a missing `GOOGLE_CLIENT_SECRET` or `APP_URL`.
 
 ## Decision
 
