@@ -30,4 +30,14 @@ export const bannedPhrases: BannedPhrase[] = [
   { phrase: "screening", ignoreCase: true },
   { phrase: "receipt", ignoreCase: true, screenOnly: true },
   { phrase: "..." },
+  // Retired by the Engineering rebuild (docs/architecture/engineering-rebuild.md, section 2 and section 8).
+  { phrase: "Known", screenOnly: true },
+  { phrase: "Not assessed", ignoreCase: true, screenOnly: true },
+  { phrase: "Needs another look", ignoreCase: true, screenOnly: true },
+  { phrase: "Placement check", ignoreCase: true, screenOnly: true },
+  { phrase: "Checkpoint", screenOnly: true },
+  { phrase: "Baseline", screenOnly: true },
+  { phrase: "Estimate", ignoreCase: true, screenOnly: true },
+  { phrase: "Guide", screenOnly: true },
+  { phrase: "Not yet junior", ignoreCase: true, screenOnly: true },
 ];

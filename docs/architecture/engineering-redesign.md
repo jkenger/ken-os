@@ -1,5 +1,8 @@
 # Engineering redesign: reconciliation and build record
 
+> **Superseded on 10 Oct 2026** by [engineering-rebuild.md](engineering-rebuild.md). Kept as history; don't build from it.
+
+
 Status: **Slice 0 reconciled and the four tabs built on 2026-10-06, in the prototype's look; the owner's four answers (section 6) are applied.** Not deployed. The owner still has to take the baseline, which unlocks the Slice 2 acceptance gate and the legacy-baseline retirement.
 
 The proposal is [engineering-redesign-handoff.md](../product/engineering-redesign-handoff.md), dated 2026-10-06, together with the "light Evidence Workbench" prototype (`Ken-OS-Engineering-Design.zip`, not checked in). The [module handoff](../product/ai-engineering-learning-handoff.md) is still the source of truth inside the module, and [engineering-lab.md](engineering-lab.md) still records decisions. This file records what the redesign proposal met in the real repository, and what was built from it.

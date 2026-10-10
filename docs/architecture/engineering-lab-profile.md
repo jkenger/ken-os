@@ -1,5 +1,8 @@
 # Engineering Lab profile and baseline
 
+> **Superseded on 10 Oct 2026** by [engineering-rebuild.md](engineering-rebuild.md). Kept as history; don't build from it.
+
+
 Status: **built on 2026-10-03, waiting on two owner steps** (see "As built" at the end): approving the role definitions, and taking the baseline. The retirement in section 8 happens after that. Every decision below was agreed with the owner in discussion on 2026-10-03. It extends the lab as built ([decisions](engineering-lab.md), [UI](engineering-lab-ui.md)) and slots in ahead of the [v1 proposal](engineering-lab-v1.md), reusing its daily practice (§9) and roadmap graph (§8).
 
 ## The short version

@@ -39,7 +39,6 @@ Never:
 Allowed to speak in sentences:
 
 - Lesson text, worked examples and Go deeper sections.
-- The Guide's chat in the Lab.
 - Feedback on an answer or a prediction ("Right lines, wrong order").
 - Resume assistant answers and term explanations.
 - The signed-out page, which is the only marketing page.
@@ -79,26 +78,25 @@ Module names are proper names in title case and appear the same in the sidebar, 
 
 ### Engineering
 
+Updated 10 Oct 2026 for the Engineering rebuild ([engineering-rebuild.md](../architecture/engineering-rebuild.md)).
+
 | Use | Meaning | Instead of |
 |---|---|---|
-| Baseline | The first full test. Never changes. | your starting point |
-| Checkpoint | A later full test, compared with the baseline | |
-| Assessment | Baseline or checkpoint, when either fits | |
-| Intro | The short chat before the baseline | a short talk, the talk, intake |
-| Placement check | A quick check of what the owner already knows: one question per written topic, or two short questions for a chapter with no lessons yet | screening, screening questions, estimate (as a verb) |
-| Overview, Profile, Learn, Practice | The four Engineering tabs. The Practice tab is titled "Today's practice" | Today, Course |
-| Lesson, Predict, Lab, Prove | The four topic steps (renamed 6 Oct 2026 so "Learn" and "Practice" only name tabs) | Learn, Practice, Check (as step names) |
-| Known | A topic placed by an all-solid placement check or assessment, not yet proven | Placed |
-| Today's practice | The daily mixed set. Its answers on unproven topics never count as proof | daily practice, today's set, a short mixed set |
-| Review | A topic coming back after a gap | |
-| Direction | The role the owner is aiming at, and the page under Profile where it's chosen with the Guide | shape, what do you want to become |
-| Radar | Weekly scan of docs and release notes | This week on your radar |
+| Assessment | The 5-question test, one question per area. The only test name; the first one is just the first row in history | Baseline, Checkpoint, Placement check, Intro |
+| Intake | The 3-field form before the assessment: what you're building, target role, hours per week. Never graded | Intro, a short talk |
+| Overview, Profile, Learn, Practice | The four Engineering tabs | Today, Course, Today's practice |
+| Learn, Exercise, Prove | The three topic steps | Lesson, Predict, Lab, Check (as step names) |
+| Not started, Learning, Practicing, Proven | The four topic states | Known, Not assessed, Needs another look |
+| Developing | An area with no level met yet | Not yet junior |
+| Practice | The daily set of 4 short reviews | daily practice, today's set |
+| Review | A topic coming back in Practice | |
+| Direction | The target role and hours per week, and the page under Profile where they're chosen | shape, what do you want to become |
+| Radar | Weekly scan of official docs and release notes | This week on your radar |
 | AI uses | Calls to a model, with the day's limit | AI calls used, AI use today, AI generations |
-| Guide | The chat that runs the intro and direction talk | |
 
-Topic states stay as `statusWords` has them: Not started, Learning, Practicing, Proven, Needs another look. Answer grades stay as `labelWords`: Solid, Partly there, Rusty, Misconception, Gap.
+Answer grades stay as `labelWords`: Solid, Partly there, Rusty, Misconception, Gap. A proof lists each rubric line as Met or Missed.
 
-The Researcher, Tutor and Assessor stop appearing by name. The screen says what is happening instead: "Writing lesson…", "Questions by a separate grader that hasn't seen the lesson". The Guide keeps its name because it talks to the owner directly.
+The Researcher, Tutor and Assessor never appear by name. The screen says what is happening instead: "Writing lesson…", "Writing prompt…", "Grading…". The Guide is removed.
 
 ### Project Memory
 
@@ -260,3 +258,5 @@ Made by the owner on 3 Oct 2026:
 - The policy version leaves the Project Memory screen.
 - Screening and placement check merge into one name, **Placement check**, since both mean a quick check of what the owner already knows. Code identifiers keep their own names.
 - "Writing Studio" uses title case as a proper module name.
+
+Superseded for Engineering on 10 Oct 2026 by [engineering-rebuild.md](../architecture/engineering-rebuild.md): the Guide and the Placement check are gone, and the Engineering word list above replaces the 3 Oct one.

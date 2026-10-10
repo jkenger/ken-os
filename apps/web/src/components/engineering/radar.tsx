@@ -26,7 +26,7 @@ export function RadarDialog({ radar }: { radar: RadarView }) {
   return (
     <Dialog title="Radar" trigger="View radar">
       {!radar.direction ? (
-        <div className="py-6 text-center"><h3 className="!mt-0">No direction yet</h3><p>The radar scans for your direction</p><Button asChild variant="outline" className="mt-4"><Link href={engineering.direction}>Choose direction</Link></Button></div>
+        <div className="py-6 text-center"><h3 className="!mt-0">No direction yet</h3><p>Choose a target role first</p><Button asChild variant="outline" className="mt-4"><Link href={engineering.direction}>Choose direction</Link></Button></div>
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-3">
@@ -49,7 +49,7 @@ export function RadarDialog({ radar }: { radar: RadarView }) {
                 </li>
               ))}
             </ul>
-          ) : <div className="py-6 text-center"><h3 className="!mt-0">No verified radar items yet</h3><p>Up to five changes a week from official sources, each tied to your direction</p></div>}
+          ) : <div className="py-6 text-center"><h3 className="!mt-0">No changes yet</h3><p>Checked weekly from official docs</p></div>}
         </>
       )}
     </Dialog>

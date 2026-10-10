@@ -7,49 +7,6 @@ export type Mode = (typeof MODES)[number];
 export const LABELS = ["solid", "partial", "rusty", "misconception", "gap"] as const;
 export type Label = (typeof LABELS)[number];
 
-export interface PredictItem {
-  mode: "predict";
-  prompt: string;
-  code: string;
-  /** Console lines the Assessor expects. Checked against a real run before it can count. */
-  expectedOutput: string[];
-  /** Why it prints that, in a few sentences. Shown only after answering. Items written before tutor-v2 / assessor-v2 have none. */
-  explanation?: string;
-}
-
-export interface WrittenItem {
-  mode: Exclude<Mode, "predict">;
-  prompt: string;
-  /** Code shown with the question, if any (for example a buggy snippet to diagnose). */
-  code: string | null;
-  /** Points a solid answer must cover. Shown to the grader, never to the learner before answering. */
-  rubric: string[];
-  misconceptionsToWatch: string[];
-}
-
-export type AssessmentItem = PredictItem | WrittenItem;
-
-/** What the learner's browser may see before answering. */
-export type PublicItem =
-  | Omit<PredictItem, "expectedOutput" | "explanation">
-  | Omit<WrittenItem, "rubric" | "misconceptionsToWatch">;
-
-export function toPublicItem(item: AssessmentItem): PublicItem {
-  if (item.mode === "predict") return { mode: item.mode, prompt: item.prompt, code: item.code };
-  return { mode: item.mode, prompt: item.prompt, code: item.code };
-}
-
-export interface AttemptResponse {
-  text?: string;
-  code?: string;
-  /** Predicted console lines, one per entry. */
-  lines?: string[];
-  /** The learner's own reason for a prediction. Saved and shown back, never graded. */
-  why?: string;
-  /** For predictions: what the code really printed in the learner's browser. */
-  actual?: string[];
-}
-
 export interface CodeRun {
   passed: number;
   failed: number;

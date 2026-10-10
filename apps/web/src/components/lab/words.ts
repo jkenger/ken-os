@@ -18,15 +18,6 @@ export const labelWords: Record<Label, string> = {
   gap: "Gap",
 };
 
-export const modeWords: Record<string, string> = {
-  explain: "Explain it",
-  predict: "Predict the output",
-  debug: "Find and fix the bug",
-  implement: "Build it",
-  review: "Review code",
-  design: "Design a solution",
-};
-
 export function levelWords(level: Level | null) {
   return level === null ? "Developing" : { junior: "Junior", mid: "Mid-level", senior: "Senior" }[level];
 }

@@ -1,6 +1,6 @@
 # Engineering rebuild
 
-Status: approved by the owner, 10 Oct 2026. Not yet implemented. Written for a separate implementation session.
+Status: approved by the owner, 10 Oct 2026. Built the same day in 8 stacked PRs (section 9). Waiting on: owner approval of `points.yaml` and `roles.yaml`, and a walk through the hosted app.
 
 ## Decision
 
@@ -367,6 +367,21 @@ One branch and one PR per slice, cut from up-to-date `main`. Each slice runs `pn
 | 8 | `docs/engineering-rebuild-done` | Word list update, AGENTS.md and architecture docs pointed here, old docs marked superseded |
 
 Slices 1 and 2 go first. Owner approval of `points.yaml` and `roles.yaml` is needed before slice 5 ships.
+
+### As built (10 Oct 2026)
+
+All 8 slices are built as stacked PRs, each on the one before: jkenger/ken-os#49 (curriculum, with this spec), #50 (reset), #52 (assessment), #53 (topic), #54 (profile), #55 (overview and learn), #56 (practice) and the docs slice. Merge them in order. While only some are merged, Engineering pages that aren't built yet are missing, so merge the stack together.
+
+Decisions made while building, within the spec:
+
+- **Predict question.** Question 1 has an Output field (one printed line each) next to Answer, so the printed lines can be compared in code before the Assessor reads the reason. The grade is the weaker of the two.
+- **Answers save without the AI.** Submitting an assessment answer never waits on an AI check; if grading fails the answer stays saved with Retry.
+- **Show solution.** Allowed any time behind a confirm. It resets the editor to the starter and closes Prove until the exercise passes again.
+- **Shared exercise.** A run of `event-loop-order` counts for both Promises and Event loop, and so does opening its solution.
+- **Lab starters are plain scripts,** so the Retry & backoff starter has no `export` (section 4).
+- **Lesson sources** are the packet sources the lesson cites; a hand-written lesson carries its own, checked on the date in its file.
+- **Practice questions** are written when the day's set is made (up to 4 AI uses) and stay the same all day.
+- **Retired words** (Known, Not assessed, Needs another look, Placement check, Checkpoint, Baseline, Estimate, Guide, Not yet junior) are on the app-language banned list, so they can't come back on a screen.
 
 ## 10. Done when
 
