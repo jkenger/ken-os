@@ -3,7 +3,9 @@
 # a pass needs every rubric line. A predict question also lists the exact console output, which is compared first.
 #
 # Approved by the owner on 2026-10-10 by choosing the reference prototype's question set. Change it in a reviewed commit
-# and move reviewedOn. A retake uses the same questions.
+# and move reviewedOn. A retake uses the same questions. Wording is plain: no term a smart person outside the
+# field would have to look up, unless the question is about that term (docs/product/app-language.md, Question wording).
+# Reworded in plain language on 2026-10-10 at the owner's request; what each question checks is unchanged.
 
 status: approved
 reviewedOn: "2026-10-10"
@@ -12,7 +14,7 @@ questions:
   - id: foundations-microtasks
     area: foundations
     kind: predict
-    prompt: What will this snippet print, in order?
+    prompt: What does this code print, and in what order?
     code: |-
       console.log("A");
       Promise.resolve().then(() => console.log("B"));
@@ -20,41 +22,44 @@ questions:
     expectedOutput: [A, C, B]
     rubric:
       - Prints A, C, B
-      - Says synchronous code finishes before the promise microtask runs
+      - Explains that the plain lines run first, and the promise callback waits until they finish
 
   - id: frontend-stale-response
     area: frontend
     kind: explain
     prompt: >-
-      An effect fetches data whenever its dependency changes. How would you prevent an older response overwriting a
-      newer one?
+      A React component loads data in an effect every time a value it depends on changes. When the replies come back
+      out of order, an older reply can replace newer data on screen. How would you stop that?
     rubric:
-      - Cancels the obsolete request or ignores its result
-      - Uses a request identity or cleanup to tell them apart
+      - Cancels the old request, or ignores its reply when it arrives
+      - Tells old and new requests apart, for example with a request id or the effect's cleanup
 
   - id: backend-oversell
     area: backend
     kind: debug
     prompt: >-
-      Two requests both see one remaining item and each complete a purchase. Where should the invariant be enforced?
+      Two customers buy the last item at the same moment. Both requests see one item left, and both purchases go
+      through. Where would you check "never sell more than we have" so this can't happen?
     rubric:
-      - Enforces it in the database transaction
-      - Uses an atomic conditional update or appropriate locking
+      - Checks it in the database, as part of the purchase itself
+      - Uses one update that only succeeds while stock is left, or locks the row during the purchase
 
   - id: production-payment-timeout
     area: production
     kind: failure
-    prompt: A payment request times out. Is it safe to retry immediately? Explain your decision.
+    prompt: >-
+      A request to charge a card gets no reply before the time limit. Is it safe to send it again straight away? Explain
+      why.
     rubric:
-      - A timeout doesn't prove failure
-      - Uses an idempotency key or reconciles before repeating
+      - No reply doesn't mean the charge failed; it may have gone through
+      - Sends the same request key so the payment provider can't charge twice, or checks the payment before trying again
 
   - id: ai-irrelevant-chunks
     area: ai
     kind: explain
     prompt: >-
-      Your retrieval returns semantically similar but irrelevant chunks. What would you inspect before changing the
-      LLM?
+      Your AI feature searches your documents for passages to answer from. It keeps finding passages that sound
+      related but don't answer the question. What would you look at before switching to a different AI model?
     rubric:
-      - Inspects chunk boundaries, queries or metadata filters
-      - Measures with known relevant documents
+      - Looks at how the documents are split, how the search is worded, or the filters it uses
+      - Measures with test questions whose right passages are already known

@@ -27,23 +27,24 @@ lesson:
       Full jitter picks a delay between zero and the exponential cap. It spreads clients out but doesn't make an unsafe
       write safe.
   prove:
-    - Implement a bounded delay policy
-    - Explain an uncertain write outcome
-    - Choose a safe retry strategy
+    - Write a wait that doubles each try, up to a cap
+    - Explain why no reply doesn't mean it failed
+    - Choose a safe way to try again
   sources:
     - title: Timeouts, retries and backoff with jitter (AWS Builders' Library)
       url: https://aws.amazon.com/builders-library/timeouts-retries-and-backoff-with-jitter/
 
 proof:
   prompt: >-
-    **The payment timed out. What now?** A payment provider may have accepted the request before the connection timed
-    out. Explain how you would retry safely, and how you'd avoid a retry storm.
+    **The payment timed out. What now?** The payment provider may have charged the card before the connection gave up.
+    How would you try again without charging twice, and without every client hammering the provider at the same moment?
   rubric:
-    - Uses an idempotency key or reconciles the earlier request
-    - Caps attempts and exponential delays
-    - Adds jitter to spread concurrent retries
+    - Sends the same request key on every try so the provider can't charge twice, or checks the earlier payment first
+    - Limits the number of tries, with waits that double each time up to a cap
+    - Adds a random part to each wait so clients don't all try again at once
   referenceAnswer: >-
-    A timeout doesn't tell you whether the provider charged the card, so a blind retry can charge twice. Send the same
-    idempotency key on every attempt so the provider returns the first result instead of charging again, or look the
-    payment up before repeating it. Retry with exponential delays, capped, and stop after a few attempts. Add jitter, a
-    random part of each delay, so many clients that failed together don't all retry at the same moment.
+    No reply doesn't tell you whether the card was charged, so sending the request again blindly can charge twice. Send
+    the same request key (an idempotency key) on every try, so the provider returns the first result instead of
+    charging again, or look the payment up before trying again. Wait longer each time, doubling the wait up to a cap,
+    and stop after a few tries. Add a random part to each wait (jitter), so many clients that failed together don't all
+    try again at the same moment.
