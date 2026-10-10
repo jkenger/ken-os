@@ -197,7 +197,7 @@ If grading fails: "Couldn't grade. Your answer is saved" with **Retry** and **Sa
 | 4 | Production | Reason about failure | A payment request times out. Is it safe to retry immediately? Explain your decision. | | A timeout doesn't prove failure · Uses an idempotency key or reconciles before repeating |
 | 5 | Applied AI | Explain a decision | Your retrieval returns semantically similar but irrelevant chunks. What would you inspect before changing the LLM? | | Inspects chunk boundaries, queries or metadata filters · Measures with known relevant documents |
 
-These live in a new `content/engineering-lab/curriculum/assessment.yaml`, with `status: approved` and `reviewedOn: "2026-10-10"` (the owner chose this set by choosing the reference).
+Reworded in plain language on 10 Oct 2026 at the owner's request, same meaning; `assessment.yaml` holds the live wording. These live in a new `content/engineering-lab/curriculum/assessment.yaml`, with `status: approved` and `reviewedOn: "2026-10-10"` (the owner chose this set by choosing the reference).
 
 Grades use today's labels: Solid, Partly there, Rusty, Misconception, Gap. Question 1 is graded by comparing the output first, then the Assessor checks the reason.
 
@@ -286,6 +286,7 @@ Hand-written from the reference, stored as the lesson for `rel.retry_backoff` so
 
 - Prompt: The payment timed out. What now? A payment provider may have accepted the request before the connection timed out. Explain how you would retry safely, and how you'd avoid a retry storm.
 - Rubric: Uses an idempotency key or reconciles the earlier request · Caps attempts and exponential delays · Adds jitter to spread concurrent retries
+- Reworded in plain language on 10 Oct 2026 (same meaning); `content/engineering-lab/lessons/rel.retry_backoff.yaml` holds the live wording
 
 ## 5. Profile rules
 

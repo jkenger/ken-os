@@ -1524,9 +1524,9 @@ export const authoredTopics: Record<string, AuthoredTopic> = {
         "body": "Full jitter picks a delay between zero and the exponential cap. It spreads clients out but doesn't make an unsafe write safe."
       },
       "prove": [
-        "Implement a bounded delay policy",
-        "Explain an uncertain write outcome",
-        "Choose a safe retry strategy"
+        "Write a wait that doubles each try, up to a cap",
+        "Explain why no reply doesn't mean it failed",
+        "Choose a safe way to try again"
       ],
       "sources": [
         {
@@ -1536,14 +1536,14 @@ export const authoredTopics: Record<string, AuthoredTopic> = {
       ]
     },
     "proof": {
-      "prompt": "**The payment timed out. What now?** A payment provider may have accepted the request before the connection timed out. Explain how you would retry safely, and how you'd avoid a retry storm.",
+      "prompt": "**The payment timed out. What now?** The payment provider may have charged the card before the connection gave up. How would you try again without charging twice, and without every client hammering the provider at the same moment?",
       "code": null,
       "rubric": [
-        "Uses an idempotency key or reconciles the earlier request",
-        "Caps attempts and exponential delays",
-        "Adds jitter to spread concurrent retries"
+        "Sends the same request key on every try so the provider can't charge twice, or checks the earlier payment first",
+        "Limits the number of tries, with waits that double each time up to a cap",
+        "Adds a random part to each wait so clients don't all try again at once"
       ],
-      "referenceAnswer": "A timeout doesn't tell you whether the provider charged the card, so a blind retry can charge twice. Send the same idempotency key on every attempt so the provider returns the first result instead of charging again, or look the payment up before repeating it. Retry with exponential delays, capped, and stop after a few attempts. Add jitter, a random part of each delay, so many clients that failed together don't all retry at the same moment."
+      "referenceAnswer": "No reply doesn't tell you whether the card was charged, so sending the request again blindly can charge twice. Send the same request key (an idempotency key) on every try, so the provider returns the first result instead of charging again, or look the payment up before trying again. Wait longer each time, doubling the wait up to a cap, and stop after a few tries. Add a random part to each wait (jitter), so many clients that failed together don't all try again at the same moment."
     }
   }
 };
@@ -1556,7 +1556,7 @@ export const assessment: AssessmentSet = {
       "id": "foundations-microtasks",
       "area": "foundations",
       "kind": "predict",
-      "prompt": "What will this snippet print, in order?",
+      "prompt": "What does this code print, and in what order?",
       "code": "console.log(\"A\");\nPromise.resolve().then(() => console.log(\"B\"));\nconsole.log(\"C\");",
       "expectedOutput": [
         "A",
@@ -1565,55 +1565,55 @@ export const assessment: AssessmentSet = {
       ],
       "rubric": [
         "Prints A, C, B",
-        "Says synchronous code finishes before the promise microtask runs"
+        "Explains that the plain lines run first, and the promise callback waits until they finish"
       ]
     },
     {
       "id": "frontend-stale-response",
       "area": "frontend",
       "kind": "explain",
-      "prompt": "An effect fetches data whenever its dependency changes. How would you prevent an older response overwriting a newer one?",
+      "prompt": "A React component loads data in an effect every time a value it depends on changes. When the replies come back out of order, an older reply can replace newer data on screen. How would you stop that?",
       "code": null,
       "expectedOutput": null,
       "rubric": [
-        "Cancels the obsolete request or ignores its result",
-        "Uses a request identity or cleanup to tell them apart"
+        "Cancels the old request, or ignores its reply when it arrives",
+        "Tells old and new requests apart, for example with a request id or the effect's cleanup"
       ]
     },
     {
       "id": "backend-oversell",
       "area": "backend",
       "kind": "debug",
-      "prompt": "Two requests both see one remaining item and each complete a purchase. Where should the invariant be enforced?",
+      "prompt": "Two customers buy the last item at the same moment. Both requests see one item left, and both purchases go through. Where would you check \"never sell more than we have\" so this can't happen?",
       "code": null,
       "expectedOutput": null,
       "rubric": [
-        "Enforces it in the database transaction",
-        "Uses an atomic conditional update or appropriate locking"
+        "Checks it in the database, as part of the purchase itself",
+        "Uses one update that only succeeds while stock is left, or locks the row during the purchase"
       ]
     },
     {
       "id": "production-payment-timeout",
       "area": "production",
       "kind": "failure",
-      "prompt": "A payment request times out. Is it safe to retry immediately? Explain your decision.",
+      "prompt": "A request to charge a card gets no reply before the time limit. Is it safe to send it again straight away? Explain why.",
       "code": null,
       "expectedOutput": null,
       "rubric": [
-        "A timeout doesn't prove failure",
-        "Uses an idempotency key or reconciles before repeating"
+        "No reply doesn't mean the charge failed; it may have gone through",
+        "Sends the same request key so the payment provider can't charge twice, or checks the payment before trying again"
       ]
     },
     {
       "id": "ai-irrelevant-chunks",
       "area": "ai",
       "kind": "explain",
-      "prompt": "Your retrieval returns semantically similar but irrelevant chunks. What would you inspect before changing the LLM?",
+      "prompt": "Your AI feature searches your documents for passages to answer from. It keeps finding passages that sound related but don't answer the question. What would you look at before switching to a different AI model?",
       "code": null,
       "expectedOutput": null,
       "rubric": [
-        "Inspects chunk boundaries, queries or metadata filters",
-        "Measures with known relevant documents"
+        "Looks at how the documents are split, how the search is worded, or the filters it uses",
+        "Measures with test questions whose right passages are already known"
       ]
     }
   ]
