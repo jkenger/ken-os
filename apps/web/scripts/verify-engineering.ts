@@ -101,6 +101,26 @@ async function main() {
     assert.equal((await profiles.getProfileRow(owner))?.direction, "frontend-developer");
     assert.equal((await runs.getRunView(owner, runId)).answers.length, 5, "a new direction never changes evidence");
     console.log("ok - grades finish the run, history keeps every run, direction leaves evidence alone");
+    // Profile (section 5). A brand-new owner: Developing everywhere, no made-up levels.
+    const fresh = await profiles.getProfileView(other);
+    assert.equal(fresh.direction, null);
+    assert.equal(fresh.lastAssessed, null);
+    assert.ok(fresh.rows.every((row) => row.level === null && row.coverage.proven === 0));
+    assert.equal(fresh.milestone, null);
+    // The owner proved Retry & backoff and aims at Full-stack developer with applied AI.
+    await profiles.saveDirection(owner, { role: "fullstack-applied-ai", weeklyHours: 5 });
+    const mine = await profiles.getProfileView(owner);
+    assert.equal(mine.direction?.id, "fullstack-applied-ai");
+    assert.ok(mine.lastAssessed, "the finished assessment is the last assessed date");
+    assert.equal(mine.history.length, 2, "both assessments are in history, the open retake too");
+    assert.ok(mine.openRunId, "the retake is open");
+    const production = mine.rows.find((row) => row.area === "production")!;
+    assert.ok(production.coverage.proven <= 1);
+    assert.ok(mine.rows.every((row) => row.level === null), "one proven topic reaches no level, and the assessment never sets one");
+    assert.equal(mine.overall, null);
+    assert.ok(mine.milestone && mine.milestone.topicId, "the next milestone names a topic");
+    assert.ok(!production.remainingTopics.some((topic) => topic.id === "rel.retry_backoff"), "a proven topic is not remaining");
+    console.log("ok - Profile: Developing before evidence, levels only from proven topics, history and milestone");
     // Topic page (section 3, Topic). A fresh owner, so the run above doesn't keep lessons closed.
     const learner = `engineering-check-${randomUUID()}`;
     await db().insert(users).values({ id: learner, email: `${learner}@example.invalid`, name: "Engineering check (learner)" });
