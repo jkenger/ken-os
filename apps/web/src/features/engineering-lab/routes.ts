@@ -1,7 +1,8 @@
 // Every Engineering page address in one place, so a link can't drift from the routes that exist.
-// Design: docs/architecture/engineering-redesign.md, section 3. API routes stay under /api/lab.
+// Spec: docs/architecture/engineering-rebuild.md, section 3. API routes stay under /api/lab.
 
-export type TopicStep = "learn" | "practice" | "lab" | "check";
+/** The three steps of a topic page. */
+export type TopicStep = "learn" | "exercise" | "prove";
 
 function withQuery(path: string, query: Record<string, string | undefined | null>) {
   const params = new URLSearchParams();
@@ -13,11 +14,11 @@ function withQuery(path: string, query: Record<string, string | undefined | null
 export const engineering = {
   overview: "/engineering",
   profile: "/engineering/profile",
-  direction: (pane?: string) => withQuery("/engineering/profile/direction", { pane }),
-  assessment: (query: { run?: string; chapter?: string; new?: boolean } = {}) =>
-    withQuery("/engineering/profile/assessment", { run: query.run, chapter: query.chapter, new: query.new ? "1" : undefined }),
+  direction: "/engineering/profile/direction",
+  /** Intake when no assessment is open, otherwise the open one. */
+  assessment: "/engineering/profile/assessment",
   results: (runId: string) => `/engineering/profile/assessment/${encodeURIComponent(runId)}/results`,
-  evidence: (attemptId: string) => `/engineering/profile/evidence/${encodeURIComponent(attemptId)}`,
+  evidence: (runId: string) => `/engineering/profile/evidence/${encodeURIComponent(runId)}`,
   learn: "/engineering/learn",
   topic: (topicId: string, step?: TopicStep | null) => withQuery(`/engineering/learn/${encodeURIComponent(topicId)}`, { step }),
   practice: "/engineering/practice",
@@ -49,8 +50,8 @@ export function legacyLabPath(pathname: string, search = ""): string | null {
   const query = search && !search.startsWith("?") ? `?${search}` : search;
   const path = pathname.replace(/\/+$/, "") || "/";
   if (path === "/lab") return `${engineering.overview}${query}`;
-  if (path === "/lab/profile") return `/engineering/profile/direction${query}`;
-  if (path === "/lab/assessment") return `/engineering/profile/assessment${query}`;
+  if (path === "/lab/profile") return `${engineering.direction}${query}`;
+  if (path === "/lab/assessment") return `${engineering.assessment}${query}`;
   if (path === "/lab/practice") return `${engineering.practice}${query}`;
   if (path === "/lab/topics") return `${engineering.learn}${query}`;
   const topic = /^\/lab\/topics\/([^/]+)$/.exec(path);

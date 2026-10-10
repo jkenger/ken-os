@@ -1,4 +1,6 @@
+import { gradePrediction } from "./grading";
 import { AREAS, type Area } from "./topics";
+import type { Label, RubricResult } from "./types";
 
 // The fixed Engineering assessment: 5 questions, one per area. Spec: docs/architecture/engineering-rebuild.md, section 3.
 
@@ -66,4 +68,60 @@ export function parseAssessment(raw: unknown): AssessmentSet {
   if (questions.map((question) => question.area).join() !== AREAS.join()) fail("questions", `expected one question per area, in order: ${AREAS.join(", ")}`);
   if (new Set(questions.map((question) => question.id)).size !== questions.length) fail("questions", "duplicate id");
   return { status, reviewedOn, questions };
+}
+
+/** How strong a grade is, for ordering My path and picking the weaker of two grades. */
+export const LABEL_SCORE: Record<Label, number> = { solid: 4, partial: 3, rusty: 2, misconception: 1, gap: 0 };
+
+export function weakerLabel(a: Label, b: Label): Label {
+  return LABEL_SCORE[a] <= LABEL_SCORE[b] ? a : b;
+}
+
+/** The answers so far, in question order. A null label means the answer is saved but grading failed. */
+export interface RunAnswerState {
+  questionIndex: number;
+  label: Label | null;
+}
+
+/**
+ * Where a run stands: the question to show next, or that it's waiting on a grade, or done. An answer must be graded
+ * before the next question opens, so a failed grade is retried rather than skipped.
+ */
+export function runPosition(questionCount: number, answers: RunAnswerState[]): { kind: "question"; index: number } | { kind: "grading"; index: number } | { kind: "done" } {
+  const byIndex = new Map(answers.map((answer) => [answer.questionIndex, answer]));
+  for (let index = 0; index < questionCount; index += 1) {
+    const answer = byIndex.get(index);
+    if (!answer) return { kind: "question", index };
+    if (!answer.label) return { kind: "grading", index };
+  }
+  return { kind: "done" };
+}
+
+/** Grade per area from a run, lower is weaker. Used to put the weakest area first in My path. */
+export function areaScores(questions: AssessmentQuestion[], answers: { questionIndex: number; label: Label | null }[]): Partial<Record<Area, number>> {
+  const scores: Partial<Record<Area, number>> = {};
+  for (const answer of answers) {
+    const question = questions[answer.questionIndex];
+    if (question && answer.label) scores[question.area] = LABEL_SCORE[answer.label];
+  }
+  return scores;
+}
+
+/**
+ * A predict answer: the printed lines are checked in code first, against the stored output, and decide the first
+ * rubric line. The Assessor grades the reason against the rest. The grade is the weaker of the two.
+ */
+export function combinePredictGrade(
+  question: AssessmentQuestion,
+  predicted: string[],
+  reason: { label: Label; rubric: RubricResult[]; feedback: string },
+): { label: Label; rubric: RubricResult[]; feedback: string } {
+  const output = gradePrediction(predicted, question.expectedOutput ?? [], null);
+  const right = output.label === "solid";
+  const rubric: RubricResult[] = [{ point: question.rubric[0], result: right ? "covered" : "missed" }, ...reason.rubric];
+  return {
+    label: right ? reason.label : weakerLabel(output.label, reason.label),
+    rubric,
+    feedback: right ? reason.feedback : `${output.feedback} ${reason.feedback}`,
+  };
 }

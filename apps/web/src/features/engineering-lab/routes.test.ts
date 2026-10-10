@@ -19,13 +19,12 @@ test("API routes and unknown paths are not redirected", () => {
 });
 
 test("route builders keep stable topic ids and drop empty query values", () => {
-  assert.equal(engineering.topic("db.transactions", "check"), "/engineering/learn/db.transactions?step=check");
+  assert.equal(engineering.topic("db.transactions", "prove"), "/engineering/learn/db.transactions?step=prove");
   assert.equal(engineering.topic("db.transactions"), "/engineering/learn/db.transactions");
-  assert.equal(engineering.assessment(), "/engineering/profile/assessment");
-  assert.equal(engineering.assessment({ new: true }), "/engineering/profile/assessment?new=1");
-  assert.equal(engineering.assessment({ run: "r1", chapter: "m1" }), "/engineering/profile/assessment?run=r1&chapter=m1");
-  assert.equal(engineering.direction("radar"), "/engineering/profile/direction?pane=radar");
+  assert.equal(engineering.assessment, "/engineering/profile/assessment");
+  assert.equal(engineering.direction, "/engineering/profile/direction");
   assert.equal(engineering.results("r 1"), "/engineering/profile/assessment/r%201/results");
+  assert.equal(engineering.evidence("r 1"), "/engineering/profile/evidence/r%201");
 });
 
 test("nested pages belong to their tab", () => {

@@ -1,7 +1,7 @@
 import type { Mode, Topic } from "@ken-os/domain";
-import { careers, labs, topicMap } from "./generated/curriculum.generated";
+import { assessment, careers, labs, topicMap } from "./generated/curriculum.generated";
 
-export { careers, labs, topicMap };
+export { assessment, careers, labs, topicMap };
 
 export function findChapter(chapterId: string) {
   return topicMap.chapters.find((chapter) => chapter.id === chapterId);

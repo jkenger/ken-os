@@ -26,7 +26,7 @@ export function RadarDialog({ radar }: { radar: RadarView }) {
   return (
     <Dialog title="Radar" trigger="View radar">
       {!radar.direction ? (
-        <div className="py-6 text-center"><h3 className="!mt-0">No direction yet</h3><p>The radar scans for your direction</p><Button asChild variant="outline" className="mt-4"><Link href={engineering.direction()}>Choose direction</Link></Button></div>
+        <div className="py-6 text-center"><h3 className="!mt-0">No direction yet</h3><p>The radar scans for your direction</p><Button asChild variant="outline" className="mt-4"><Link href={engineering.direction}>Choose direction</Link></Button></div>
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-3">

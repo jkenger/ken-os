@@ -1325,7 +1325,7 @@ export const careers: Careers = {
     },
     {
       "id": "backend",
-      "title": "Backend and data",
+      "title": "Backend & Data",
       "summary": "API boundaries, transactions, concurrency, indexes and safe retries.",
       "levels": {
         "junior": [
