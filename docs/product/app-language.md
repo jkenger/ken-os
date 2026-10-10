@@ -98,6 +98,17 @@ Answer grades stay as `labelWords`: Solid, Partly there, Rusty, Misconception, G
 
 The Researcher, Tutor and Assessor never appear by name. The screen says what is happening instead: "Writing lesson…", "Writing prompt…", "Grading…". The Guide is removed.
 
+### Question wording
+
+Owner rule, 10 Oct 2026, for every question and everything written around one: assessment questions, proof prompts, practice questions, rubric lines, reference answers, feedback and lessons.
+
+- A smart person outside the exact field understands it on first read, without looking anything up.
+- Everyday words over jargon: "check" not "enforce", "a rule that must always hold" not "invariant", "send it again" not "retry idempotently".
+- A technical term only when it is the thing being taught or tested, and then explained in a few plain words the first time.
+- Code names (functions, keywords, APIs) stay exact; the sentences around them stay plain.
+
+Where it lives: the fixed questions in `content/engineering-lab/curriculum/assessment.yaml`, hand-written topics in `content/engineering-lab/lessons/`, and the agents' shared rule in `packages/agents/src/engineering-lab/plain.ts`, which the Assessor and Tutor prompts include.
+
 ### Project Memory
 
 | Use | Meaning | Instead of |

@@ -1,8 +1,9 @@
 import { Agent, getDefaultModel, run } from "@openai/agents";
 import { LESSON_BLOCK_KINDS, type LessonDraft, type SourcePacket, type Topic } from "@ken-os/domain";
 import { z } from "zod";
+import { PLAIN_LANGUAGE } from "./plain";
 
-export const TUTOR_PROMPT_VERSION = "tutor-v5";
+export const TUTOR_PROMPT_VERSION = "tutor-v6";
 
 const draftSchema = z.object({
   heading: z.string(),
@@ -18,7 +19,9 @@ const draftSchema = z.object({
 // The format matches the hand-written Retry & backoff lesson (docs/architecture/engineering-rebuild.md, section 4).
 const instructions = `You are the Tutor for the owner's Engineering module, teaching an experienced full-stack developer one topic from the source packet you are given. You do not grade; a separate Assessor does.
 
-Write short and concrete. Plain words, no filler, no em dashes, no motivational talk. Build every claim only from the packet's claims.
+Write short and concrete. No filler, no motivational talk. Build every claim only from the packet's claims.
+
+${PLAIN_LANGUAGE}
 
 Parts, in order:
 - heading: the core idea as a short statement, like "A timeout is an uncertain outcome". Under 8 words, no period.
