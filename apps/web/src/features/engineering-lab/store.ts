@@ -99,13 +99,6 @@ export async function recordEvent(userId: string, event: EventInput, tx?: Transa
   return tx ? write(tx) : db().transaction(write);
 }
 
-/** Opening a lesson moves a topic to Learning. Recorded once; later openings change nothing. */
-export async function markLessonOpened(userId: string, topicId: string) {
-  const progress = await getProgress(userId, topicId);
-  if (progress.state !== "NOT_STARTED") return progress;
-  return (await recordEvent(userId, { topicId, kind: "lesson_opened" })).progress;
-}
-
 export async function latestPacket(userId: string, topicId: string) {
   const [row] = await db().select().from(labSourcePackets)
     .where(and(eq(labSourcePackets.userId, userId), eq(labSourcePackets.topicId, topicId))).orderBy(desc(labSourcePackets.generatedAt)).limit(1);

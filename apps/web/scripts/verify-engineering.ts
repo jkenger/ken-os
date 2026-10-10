@@ -14,6 +14,7 @@ async function main() {
   const store = await import("../src/features/engineering-lab/store");
   const runs = await import("../src/features/engineering-lab/assessment-store");
   const profiles = await import("../src/features/engineering-lab/profile-store");
+  const topics = await import("../src/features/engineering-lab/topic-store");
 
   const owner = `engineering-check-${randomUUID()}`;
   const other = `engineering-check-${randomUUID()}`;
@@ -25,8 +26,8 @@ async function main() {
     // Topic states (section 2): Learning, Practicing, then Proven only after a passed exercise and a passed proof.
     const topicId = "rel.retry_backoff";
     assert.equal((await store.getProgress(owner, topicId)).state, "NOT_STARTED");
-    assert.equal((await store.markLessonOpened(owner, topicId)).state, "LEARNING");
-    assert.equal((await store.markLessonOpened(owner, topicId)).state, "LEARNING", "opening again changes nothing");
+    assert.equal((await topics.openLesson(owner, topicId)).state, "LEARNING");
+    assert.equal((await topics.openLesson(owner, topicId)).state, "LEARNING", "opening again changes nothing");
     let { progress } = await store.recordEvent(owner, { topicId, kind: "exercise_run", labId: "retry-policy", passed: false });
     assert.equal(progress.state, "PRACTICING");
     assert.equal(progress.exercisePassed, false);
@@ -100,6 +101,48 @@ async function main() {
     assert.equal((await profiles.getProfileRow(owner))?.direction, "frontend-developer");
     assert.equal((await runs.getRunView(owner, runId)).answers.length, 5, "a new direction never changes evidence");
     console.log("ok - grades finish the run, history keeps every run, direction leaves evidence alone");
+    // Topic page (section 3, Topic). A fresh owner, so the run above doesn't keep lessons closed.
+    const learner = `engineering-check-${randomUUID()}`;
+    await db().insert(users).values({ id: learner, email: `${learner}@example.invalid`, name: "Engineering check (learner)" });
+    try {
+      const retry = "rel.retry_backoff";
+      const lesson = await topics.getLesson(learner, retry);
+      assert.equal(lesson?.authored, true, "Retry & backoff ships with its hand-written lesson");
+      await assert.rejects(topics.openLesson(learner, "js.closures"), /No lesson yet/, "no lesson, nothing to open");
+      await assert.rejects(topics.getOrWriteProof(learner, retry), /Pass the exercise first/);
+      await assert.rejects(topics.recordExerciseRun(learner, retry, { labId: "closure-loop", code: "", passed: 1, failed: 0, output: "" }), /another topic/);
+      let ran = await topics.recordExerciseRun(learner, retry, { labId: "retry-policy", code: "function retryDelay() { return 1000; }", passed: 1, failed: 3, output: "" });
+      assert.equal(ran.passed, false);
+      assert.equal(ran.progress.state, "PRACTICING");
+      ran = await topics.recordExerciseRun(learner, retry, { labId: "retry-policy", code: "...", passed: 4, failed: 0, output: "" });
+      assert.equal(ran.progress.exercisePassed, true);
+      const { solution } = await topics.openSolution(learner, retry, "retry-policy");
+      assert.match(solution, /Math\.min/);
+      await assert.rejects(topics.getOrWriteProof(learner, retry), /Pass the exercise first/, "opening the solution closes Prove");
+      await topics.recordExerciseRun(learner, retry, { labId: "retry-policy", code: "...", passed: 4, failed: 0, output: "" });
+      const proof = await topics.getOrWriteProof(learner, retry);
+      assert.match(proof.prompt, /The payment timed out/, "the hand-written proof needs no AI");
+      assert.equal((await topics.getOrWriteProof(learner, retry)).id, proof.id, "Try again reuses the prompt");
+      await assert.rejects(topics.submitProof(learner, retry, { questionId: proof.id, answer: "Too short", selfRating: 3 }), /at least 30/);
+      await assert.rejects(topics.submitProof(other, retry, { questionId: proof.id, answer: "x".repeat(40), selfRating: 3 }), /Pass the exercise first/);
+      const view = await topics.getTopicView(learner, retry);
+      assert.equal(view.proof?.id, proof.id);
+      assert.equal(view.evidence.filter((item) => item.kind === "exercise_run").length, 3);
+      assert.ok(view.sourcesCheckedAt);
+
+      // event-loop-order serves two topics: one run counts for both.
+      await topics.recordExerciseRun(learner, "js.promises", { labId: "event-loop-order", code: "...", passed: 3, failed: 0, output: "" });
+      assert.equal((await store.getProgress(learner, "js.event_loop")).exercisePassed, true);
+
+      // An open assessment closes lessons.
+      await profiles.saveIntake(learner, { building: "A clinic booking app", role: "frontend-developer", weeklyHours: 4 });
+      await runs.startRun(learner);
+      assert.equal((await topics.getTopicView(learner, retry)).lesson, null);
+      await assert.rejects(topics.openLesson(learner, retry), /closed during the assessment/);
+      console.log("ok - topic page: exercise runs, shared exercise, solution, hand-written proof prompt, closed-book");
+    } finally {
+      await db().delete(users).where(eq(users.id, learner));
+    }
   } finally {
     await db().delete(users).where(eq(users.id, owner));
     await db().delete(users).where(eq(users.id, other));
