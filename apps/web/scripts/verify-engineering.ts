@@ -3,7 +3,8 @@ import { randomUUID } from "node:crypto";
 import { config } from "dotenv";
 import { and, eq } from "drizzle-orm";
 import { closeDb, db } from "../src/lib/db";
-import { labProgress, labRunAnswers, users } from "../src/lib/schema";
+import { labDailySets, labProgress, labQuestions, labRunAnswers, users } from "../src/lib/schema";
+import { ownerDay } from "../src/lib/day";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
@@ -15,6 +16,7 @@ async function main() {
   const runs = await import("../src/features/engineering-lab/assessment-store");
   const profiles = await import("../src/features/engineering-lab/profile-store");
   const topics = await import("../src/features/engineering-lab/topic-store");
+  const practice = await import("../src/features/engineering-lab/practice-store");
 
   const owner = `engineering-check-${randomUUID()}`;
   const other = `engineering-check-${randomUUID()}`;
@@ -121,6 +123,29 @@ async function main() {
     assert.ok(mine.milestone && mine.milestone.topicId, "the next milestone names a topic");
     assert.ok(!production.remainingTopics.some((topic) => topic.id === "rel.retry_backoff"), "a proven topic is not remaining");
     console.log("ok - Profile: Developing before evidence, levels only from proven topics, history and milestone");
+    // Practice (section 3). The owner's only topic is proven and not due yet: nothing to practice.
+    assert.deepEqual(await practice.practiceCandidates(owner), []);
+    await assert.rejects(practice.startPractice(owner), /Nothing to practice/);
+    // A changed source for a proven topic puts it back into Practice without changing its state.
+    await store.flagRecheck(owner, "rel.retry_backoff", { changedSinceLast: ["The guidance on jitter changed."], sources: [{ url: "https://aws.amazon.com/builders-library/" }] } as never);
+    assert.deepEqual(await practice.practiceCandidates(owner), [{ topicId: "rel.retry_backoff", reason: "changed" }]);
+    assert.equal((await store.getProgress(owner, "rel.retry_backoff")).state, "PROVEN");
+    // Stand in for the Assessor: one stored question and today's set.
+    const questionId = randomUUID();
+    await db().insert(labQuestions).values({ id: questionId, userId: owner, topicId: "rel.retry_backoff", kind: "review", prompt: "**Retry storm.** What spreads retries out?", rubric: ["Adds jitter"], referenceAnswer: "Jitter.", promptVersion: "check", model: "none" });
+    await db().insert(labDailySets).values({ userId: owner, day: ownerDay(), items: [{ topicId: "rel.retry_backoff", reason: "changed", questionId }] });
+    const today = await practice.getPractice(owner);
+    assert.equal(today?.items.length, 1);
+    assert.equal(today?.done, false);
+    assert.equal((await practice.startPractice(owner)).items[0].questionId, questionId, "the day's set stays the same");
+    await assert.rejects(practice.answerPractice(owner, { questionId, answer: "short", selfRating: 3 }), /at least a sentence/);
+    await assert.rejects(practice.answerPractice(owner, { questionId: "nope", answer: "Jitter spreads the retries.", selfRating: 3 }), /not in today/);
+    await store.recordEvent(owner, { topicId: "rel.retry_backoff", kind: "review", questionId, answer: "Jitter spreads the retries.", selfRating: 3, label: "solid", rubric: [], feedback: "Right." });
+    const after = await practice.getPractice(owner);
+    assert.equal(after?.done, true);
+    assert.ok(after?.items[0].answered?.nextReviewAt, "the grade sets the next review date");
+    await assert.rejects(practice.answerPractice(owner, { questionId, answer: "Jitter spreads the retries.", selfRating: 3 }), /Already answered/);
+    console.log("ok - Practice: candidates, re-check without a state change, stable daily set, one answer per item");
     // Topic page (section 3, Topic). A fresh owner, so the run above doesn't keep lessons closed.
     const learner = `engineering-check-${randomUUID()}`;
     await db().insert(users).values({ id: learner, email: `${learner}@example.invalid`, name: "Engineering check (learner)" });

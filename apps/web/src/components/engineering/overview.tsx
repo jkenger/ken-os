@@ -114,3 +114,17 @@ export function Overview({ email, assessment, path, areas, radar, practice }: {
     </WorkspaceShell>
   );
 }
+
+/** The Practice card: shown once there is an assessment behind it. */
+export function PracticeCard({ ready, done, minutes }: { ready: number; done: boolean; minutes: number }) {
+  return (
+    <section className={card}>
+      <div className={eyebrow}>{done ? "Done" : `${ready} ready`}</div>
+      <h2 className="text-[21px] font-bold tracking-[-0.5px]">Practice</h2>
+      <p className="my-4 text-xs text-muted-foreground">~{minutes} min</p>
+      <Button asChild variant="outline">
+        <Link href={done ? `${engineering.practice}?summary=1` : engineering.practice}>{done ? "View summary" : "Start practice"}</Link>
+      </Button>
+    </section>
+  );
+}
