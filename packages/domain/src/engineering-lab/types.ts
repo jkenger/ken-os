@@ -1,29 +1,11 @@
-// Shared Engineering Lab shapes. See docs/architecture/engineering-lab-v0.md for why each exists.
+// Shared Engineering shapes.
 
 export const MODES = ["explain", "predict", "debug", "implement", "review", "design"] as const;
 export type Mode = (typeof MODES)[number];
 
-/** The five labels the baseline used. Grades must use exactly these. */
+/** Grade labels: Solid, Partly there, Rusty, Misconception, Gap. Grades must use exactly these. */
 export const LABELS = ["solid", "partial", "rusty", "misconception", "gap"] as const;
 export type Label = (typeof LABELS)[number];
-
-export const STATUSES = ["NOT_STARTED", "LEARNING", "PRACTICING", "VALIDATED", "NEEDS_REVISIT"] as const;
-export type Status = (typeof STATUSES)[number];
-
-/**
- * baseline: an answer in the in-app baseline assessment. It counts like a placement answer. The retired 2026-10-01
- *   summary also used this kind, with gradedBy "baseline"; those entries are never proof of anything.
- * checkpoint: an answer in a later retake of the assessment. Counts like a placement answer.
- * lesson: practice inside a lesson.
- * lab: an authored lab run in the code box.
- * assessment / review: Assessor questions. Review is a proven topic coming back, including in today's practice.
- * practice: today's practice question on a topic that isn't proven yet. Moves status and records misconceptions, but
- *   never proves anything: practice restores what was proven, it doesn't first-prove it (owner, 2026-10-06).
- * assessment, review, practice and the placement-style kinds ask for a confidence rating.
- * placement: Assessor questions for a topic you may already know, asked before any lesson.
- */
-export const ATTEMPT_KINDS = ["baseline", "lesson", "lab", "assessment", "review", "placement", "checkpoint", "practice"] as const;
-export type AttemptKind = (typeof ATTEMPT_KINDS)[number];
 
 export interface PredictItem {
   mode: "predict";
@@ -92,19 +74,15 @@ export interface RubricResult {
   result: (typeof RUBRIC_RESULTS)[number];
 }
 
-export interface AttemptRecord {
-  id: string;
-  topicId: string;
-  kind: AttemptKind;
-  mode: Mode;
-  label: Label;
-  gradedBy: Grade["by"];
-  voided: boolean;
-  selfRating: number | null;
-  misconceptions: string[];
-  /** For lab attempts: whether the solution had been revealed before this run. */
-  solutionSeen: boolean;
-  /** The question set it answered, if any. Groups placement-style answers into one sitting. */
-  assessmentId?: string | null;
-  createdAt: Date;
+/** What a topic question is for: the proof step, or a review in Practice. */
+export type QuestionUse = "proof" | "review";
+
+/** A proof prompt or practice question, written by the Assessor from the topic's assessment points. */
+export interface TopicQuestion {
+  prompt: string;
+  code: string | null;
+  /** A pass needs every line. Hidden until the answer is graded. */
+  rubric: string[];
+  /** Shown after answering. */
+  referenceAnswer: string;
 }

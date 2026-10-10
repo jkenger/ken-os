@@ -71,6 +71,13 @@
       "when": 1791010873310,
       "tag": "0009_lab_profile",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791600445554,
+      "tag": "0010_engineering_rebuild",
+      "breakpoints": true
     }
   ]
 }

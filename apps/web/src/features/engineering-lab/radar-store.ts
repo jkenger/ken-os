@@ -1,15 +1,16 @@
 import { randomUUID } from "node:crypto";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { scanRadar } from "@ken-os/agents";
 import { isoWeek, radarDomains, type Area } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { labProfile, labRadarItems } from "@/lib/schema";
-import { careers } from "./curriculum";
+import { careers, findTopic } from "./curriculum";
 import { LabInputError } from "./errors";
 import { getProfileRow } from "./profile-store";
 
-// The weekly radar. Design: docs/architecture/engineering-lab-profile.md, section 7. It has its own allowance, one
-// scan per week, instead of the daily AI limit.
+// The weekly radar: official sources, at most 5 items a week, never graded. It has its own allowance, one scan per
+// week, instead of the daily AI limit. A changed source for a proven topic adds a re-check item and puts the topic into
+// Practice; it never changes the topic's state.
 
 export async function runRadar(userId: string) {
   const profile = await getProfileRow(userId);
@@ -38,4 +39,44 @@ export async function runRadar(userId: string) {
     await db().update(labProfile).set({ radarCheckedWeek: profile?.radarCheckedWeek ?? null }).where(eq(labProfile.userId, userId));
     throw error;
   }
+}
+
+export interface RadarView {
+  week: string;
+  checked: boolean;
+  /** The target role, or null before one is chosen; the radar watches its areas. */
+  direction: string | null;
+  items: { id: string; tag: string; title: string; reason: string; sourceUrl: string | null; topicId: string | null; area: string }[];
+}
+
+/** This week's items and every open re-check, newest first. */
+export async function getRadarView(userId: string): Promise<RadarView> {
+  const week = isoWeek(new Date());
+  const [profile, rows] = await Promise.all([
+    getProfileRow(userId),
+    db().select().from(labRadarItems).where(and(eq(labRadarItems.userId, userId), isNull(labRadarItems.dismissedAt))).orderBy(desc(labRadarItems.createdAt)).limit(20),
+  ]);
+  return {
+    week,
+    checked: profile?.radarCheckedWeek === week,
+    direction: profile?.direction ?? null,
+    items: rows.filter((row) => row.week === week || row.tag === "recheck").map((row) => ({
+      id: row.id, tag: row.tag, title: row.tag === "recheck" && row.topicId ? `Re-check ${findTopic(row.topicId)?.title ?? row.topicId}` : row.title,
+      reason: row.reason, sourceUrl: row.sourceUrl, topicId: row.topicId, area: row.area,
+    })),
+  };
+}
+
+/** Proven topics with an open re-check item: they come back in Practice. */
+export async function recheckTopics(userId: string): Promise<string[]> {
+  const rows = await db().select({ topicId: labRadarItems.topicId }).from(labRadarItems)
+    .where(and(eq(labRadarItems.userId, userId), eq(labRadarItems.tag, "recheck"), isNull(labRadarItems.dismissedAt)));
+  return [...new Set(rows.map((row) => row.topicId).filter((id): id is string => Boolean(id)))];
+}
+
+export async function dismissRadarItem(userId: string, id: string) {
+  const updated = await db().update(labRadarItems).set({ dismissedAt: new Date() })
+    .where(and(eq(labRadarItems.id, id), eq(labRadarItems.userId, userId))).returning({ id: labRadarItems.id });
+  if (!updated.length) throw new LabInputError("Radar item not found. Reload the page", 404);
+  return { dismissed: true };
 }

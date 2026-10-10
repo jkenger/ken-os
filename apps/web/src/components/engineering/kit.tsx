@@ -55,7 +55,7 @@ export function Fact({ label, children, first }: { label: string; children: Reac
 export function Rail({ level, soft = false, label }: { level: Level | null; soft?: boolean; label?: string }) {
   const lit = levelRank(level);
   return (
-    <div className="mt-[5px] min-w-0" role="img" aria-label={label ?? `Level: ${level ?? "not yet junior"}`}>
+    <div className="mt-[5px] min-w-0" role="img" aria-label={label ?? `Level: ${level ?? "Developing"}`}>
       <div className="flex gap-[3px]">
         {LEVELS.map((item, index) => <span key={item} className={cn("h-2 flex-1 rounded-full", index === lit ? (soft ? "bg-rail-soft" : "bg-rail-lit") : "bg-rail")} />)}
       </div>
@@ -99,5 +99,5 @@ export function Notice({ tone = "info", children }: { tone?: "info" | "error" | 
 
 /** Level names as the prototype's table writes them: Junior, Mid, Senior. */
 export function levelShort(level: Level | null) {
-  return level === null ? "Not yet junior" : { junior: "Junior", mid: "Mid", senior: "Senior" }[level];
+  return level === null ? "Developing" : { junior: "Junior", mid: "Mid", senior: "Senior" }[level];
 }

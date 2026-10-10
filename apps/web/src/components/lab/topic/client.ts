@@ -2,7 +2,11 @@ import { buildPredictScript } from "@/features/engineering-lab/runner/harness";
 import { runInWorker } from "@/features/engineering-lab/runner/run-in-worker";
 
 export async function post<T>(path: string, body: unknown = {}): Promise<T> {
-  const response = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  return send<T>(path, "POST", body);
+}
+
+export async function send<T>(path: string, method: "POST" | "PUT" | "DELETE", body: unknown = {}): Promise<T> {
+  const response = await fetch(path, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   const result = await response.json().catch(() => ({})) as T & { error?: string };
   if (!response.ok) throw new Error(result.error ?? "Request failed.");
   return result;

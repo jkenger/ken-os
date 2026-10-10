@@ -309,6 +309,21 @@ Start fresh. The owner's progress is deleted, not migrated.
 - **Progress status values** shrink to `NOT_STARTED`, `LEARNING`, `PRACTICING`, `PROVEN`. Rename or map `VALIDATED` to `PROVEN` and delete `NEEDS_REVISIT` in code.
 - **AI-use limit and its reset** are unchanged.
 
+### As built (slice 2, migration `0010_engineering_rebuild.sql`)
+
+The old tables were shaped around topic-by-topic placement, so the new flow got its own tables instead of reusing them. Old ones are emptied by the same migration and dropped later.
+
+| Table | Holds |
+|---|---|
+| `lab_runs` | One assessment, with its 5 questions copied in so a taken assessment never changes |
+| `lab_run_answers` | One locked answer per question; the grade fills in afterwards and stays empty while grading has failed |
+| `lab_questions` | Proof prompts and practice questions the Assessor wrote, with rubric and reference answer |
+| `lab_topic_events` | Lesson opened, exercise run, solution opened, proof, review. Topic state is rebuilt from these |
+| `lab_progress` | A cache of the rebuilt state; never the source of truth |
+| `lab_profile` | Intake, target role, and a new `weekly_hours` column |
+
+Kept as they were: `lab_source_packets`, `lab_lessons`, `lab_daily_sets`, `lab_radar_items`. Emptied now, dropped in a later release: `lab_assessment_runs`, `lab_assessments`, `lab_attempts`, `lab_chapter_screens`, `lab_solution_reveals`, `lab_progress_changes`, and `lab_profile.conversation` and `added_chapters`.
+
 ## 7. Removed from the build
 
 Delete the code, routes, prompts and tests for:

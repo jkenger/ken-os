@@ -20,8 +20,6 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "lab:generate": "tsx scripts/generate-lab-content.ts --write",
     "lab:import-sources": "tsx scripts/import-sources.ts",
-    "test:db:lab": "tsx scripts/verify-lab.ts",
-    "test:db:profile": "tsx scripts/verify-profile.ts",
     "test:db:engineering": "tsx scripts/verify-engineering.ts",
     "test:db:terms": "tsx scripts/verify-terms.ts",
     "db:migrate:deploy": "tsx scripts/migrate-on-deploy.ts"

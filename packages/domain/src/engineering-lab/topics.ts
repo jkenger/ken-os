@@ -1,5 +1,5 @@
 import { SOURCE_DOMAINS, type FreshnessClass, type ResearchTarget, type SourceGroup } from "./sources";
-import { LABELS, MODES, type Label, type Mode } from "./types";
+import { MODES, type Mode } from "./types";
 
 /** The five areas a level is measured in. Every chapter belongs to one. */
 export const AREAS = ["foundations", "frontend", "backend", "production", "ai"] as const;
@@ -29,7 +29,7 @@ export interface Topic {
   /** What the topic repairs: the wrong belief or missing piece it targets. */
   gap: string;
   depth: "working" | "deep";
-  /** Proof modes that must all be solid before the topic counts as validated. */
+  /** Modes the topic is checked in: at least one rests on code, through predict or its exercise. */
   prove: Mode[];
   labs: string[];
   /** What a solid answer must show, 4 to 6 short statements. The Assessor writes questions and rubrics from them. */
@@ -42,14 +42,6 @@ export interface TopicMap {
   chapters: ChapterInfo[];
   /** Every topic in course order, chapter by chapter. */
   topics: Topic[];
-}
-
-export interface BaselineEntry {
-  topicId: string;
-  label: Label;
-  mode: Mode;
-  notes: string;
-  misconceptions: string[];
 }
 
 const FRESHNESS: FreshnessClass[] = ["core_concept", "web_platform", "framework", "ai_ecosystem"];
