@@ -1,17 +1,16 @@
-import { redirect } from "next/navigation";
 import { Overview, PracticeCard } from "@/components/engineering/overview";
 import { activeRun, getRunView, listRuns } from "@/features/engineering-lab/assessment-store";
 import { careers, topicMap } from "@/features/engineering-lab/curriculum";
 import { getPathView } from "@/features/engineering-lab/path-store";
 import { getPractice, practiceCandidates, PRACTICE_MINUTES } from "@/features/engineering-lab/practice-store";
 import { getRadarView } from "@/features/engineering-lab/radar-store";
-import { getSession } from "@/lib/session";
+import { requireSession } from "@/lib/session";
+import { engineering } from "@/features/engineering-lab/routes";
 
 export const dynamic = "force-dynamic";
 
 export default async function EngineeringPage() {
-  const session = await getSession();
-  if (!session) redirect("/");
+  const session = await requireSession(engineering.overview);
   const [runs, open, path, radar] = await Promise.all([listRuns(session.userId), activeRun(session.userId), getPathView(session.userId), getRadarView(session.userId)]);
   const openView = open ? await getRunView(session.userId, open.id) : null;
   const finished = runs.some((run) => run.completedAt);

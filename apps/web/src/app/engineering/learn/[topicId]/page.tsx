@@ -1,19 +1,18 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { TopicPage } from "@/components/engineering/topic";
 import { findTopic, placeOf, topicMap } from "@/features/engineering-lab/curriculum";
 import type { TopicStep } from "@/features/engineering-lab/routes";
 import { provenTopics } from "@/features/engineering-lab/store";
 import { exerciseView, getTopicView } from "@/features/engineering-lab/topic-store";
-import { getSession } from "@/lib/session";
+import { requireSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
 const STEPS: TopicStep[] = ["learn", "exercise", "prove"];
 
 export default async function TopicRoute({ params, searchParams }: { params: Promise<{ topicId: string }>; searchParams: Promise<{ step?: string }> }) {
-  const session = await getSession();
-  if (!session) redirect("/");
   const [{ topicId }, { step }] = await Promise.all([params, searchParams]);
+  const session = await requireSession(`/engineering/learn/${encodeURIComponent(topicId)}`, { step });
   const topic = findTopic(topicId);
   if (!topic) notFound();
   const [view, proven] = await Promise.all([getTopicView(session.userId, topicId), provenTopics(session.userId)]);

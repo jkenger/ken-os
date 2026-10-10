@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getGoogleAccessToken } from "@/lib/google";
+import { DriveAccessError, getGoogleAccessToken } from "@/lib/google";
 import { getSession } from "@/lib/session";
 import { messages } from "@/lib/messages";
 
@@ -19,7 +19,9 @@ export async function GET() {
     return NextResponse.json(
       {
         error:
-          error instanceof Error ? error.message : "Google connection failed.",
+          error instanceof Error ? error.message : "Couldn't reach Google Drive. Try again",
+        // Lets the Resume page switch to Connect or Reconnect Google Drive.
+        drive: error instanceof DriveAccessError ? error.access : undefined,
       },
       { status: 502 },
     );

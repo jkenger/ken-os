@@ -11,6 +11,23 @@ import { googleConnections } from "./schema";
 
 const TOKEN_ENDPOINT = "https://oauth2.googleapis.com/token";
 
+/** Where the owner's Drive access stands: never granted, or granted but no longer accepted by Google. */
+export type DriveAccess = "connected" | "not_connected" | "disconnected";
+
+/** Thrown when Drive can't be used until the owner connects or reconnects it (docs/architecture/auth-sign-in.md §4). */
+export class DriveAccessError extends Error {
+  constructor(readonly access: Exclude<DriveAccess, "connected">) {
+    super(access === "not_connected" ? "Google Drive not connected. Connect Google Drive" : "Google Drive disconnected. Reconnect Google Drive");
+    this.name = "DriveAccessError";
+  }
+}
+
+export async function hasDriveConnection(userId: string): Promise<boolean> {
+  const rows = await db().select({ userId: googleConnections.userId })
+    .from(googleConnections).where(eq(googleConnections.userId, userId)).limit(1);
+  return Boolean(rows[0]);
+}
+
 function key(): Buffer {
   return createHash("sha256")
     .update(requiredEnv("TOKEN_ENCRYPTION_KEY"))
@@ -32,7 +49,7 @@ export function encryptToken(value: string): string {
 function decryptToken(value: string): string {
   const [encodedIv, encodedTag, encodedCiphertext] = value.split(".");
   if (!encodedIv || !encodedTag || !encodedCiphertext)
-    throw new Error("Google sign-in is broken. Reconnect Google");
+    throw new DriveAccessError("disconnected");
   const decipher = createDecipheriv(
     "aes-256-gcm",
     key(),
@@ -48,22 +65,32 @@ function decryptToken(value: string): string {
 export async function getGoogleAccessToken(userId: string): Promise<string> {
   const rows = await db().select({ encryptedRefreshToken: googleConnections.encryptedRefreshToken })
     .from(googleConnections).where(eq(googleConnections.userId, userId)).limit(1);
-  if (!rows[0]) throw new Error("Google Drive isn't connected. Reconnect Google");
+  if (!rows[0]) throw new DriveAccessError("not_connected");
+  let refreshToken: string;
+  try {
+    refreshToken = decryptToken(rows[0].encryptedRefreshToken);
+  } catch {
+    throw new DriveAccessError("disconnected");
+  }
   const response = await fetch(TOKEN_ENDPOINT, {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       client_id: requiredEnv("GOOGLE_CLIENT_ID"),
       client_secret: requiredEnv("GOOGLE_CLIENT_SECRET"),
-      refresh_token: decryptToken(rows[0].encryptedRefreshToken),
+      refresh_token: refreshToken,
       grant_type: "refresh_token",
     }),
     cache: "no-store",
   });
-  if (!response.ok)
-    throw new Error("Google sign-in expired. Reconnect Google");
+  if (!response.ok) {
+    // invalid_grant: revoked in Google account settings, or expired.
+    const failure = (await response.json().catch(() => null)) as { error?: string } | null;
+    if (failure?.error === "invalid_grant") throw new DriveAccessError("disconnected");
+    throw new Error("Couldn't reach Google Drive. Refresh to try again");
+  }
   const payload = (await response.json()) as { access_token?: string };
   if (!payload.access_token)
-    throw new Error("Google didn't respond. Reconnect Google");
+    throw new Error("Couldn't reach Google Drive. Refresh to try again");
   return payload.access_token;
 }
