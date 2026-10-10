@@ -10,7 +10,7 @@ The reference: `C:\Users\johnk\Downloads\Ken-OS-Engineering-Design\ken-engineeri
 
 Two things are not copied word for word:
 
-- **Look.** The reference uses Inter, indigo and Tabler icons. Ken OS uses its design system (Studio 1.0.0). Look changes start in the design system, never in a code PR.
+- **Look.** The reference uses Inter, indigo and Tabler icons. Ken OS uses shadcn's Nova default (design system 2.0.0, see `docs/architecture/design-system-shadcn-setup.md`): build every screen from the registry components as shipped, with no Ken OS-only tokens. Look changes start in the design system, never in a code PR.
 - **Copy.** The reference has small labels above headings and taglines under them. Screens follow [app-language.md](../product/app-language.md): same structure, app-language wording. This document gives the wording.
 
 This supersedes `engineering-redesign.md`, `engineering-assessment-v2.md`, `engineering-lab-profile.md` and the Engineering slices (3, 4, 5) of `docs/product/app-language-rewrite.md`. Keep those files as history; don't build from them.

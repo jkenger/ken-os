@@ -26,7 +26,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 // Intake, then the 5-question assessment. Spec: docs/architecture/engineering-rebuild.md, section 3.
 // Closed-book: the shell hides term lookup while a run is open, and lessons stay closed on the server.
 
-const page = "mx-auto max-w-[1500px] px-3 pb-9 pt-6 md:px-5 md:pt-[30px] min-[1500px]:pt-9";
+const page = "mx-auto max-w-7xl px-3 pb-9 pt-6 md:px-5 md:pt-7.5";
 
 export interface AreaName { id: Area; title: string }
 
@@ -58,19 +58,19 @@ export function Intake({ email, intake, roles }: { email: string; intake: Intake
       <Back href={engineering.overview}>Overview</Back>
       <PageHeading title="Intake" />
       <FlowLayout>
-        <section className={cn(panel, "p-[23px] md:p-[30px]")}>
-          <FieldLabel className={cn(fieldLabel, "mb-[25px]")}>
+        <section className={cn(panel, "p-6 md:p-7.5")}>
+          <FieldLabel className={cn(fieldLabel, "mb-6.5")}>
             What you&apos;re building
-            <Textarea className={cn(field, "min-h-[110px] resize-y leading-[1.6]")} value={values.building} onChange={(event) => setValues({ ...values, building: event.target.value })} />
+            <Textarea className={cn(field, "min-h-27.5 resize-y leading-relaxed")} value={values.building} onChange={(event) => setValues({ ...values, building: event.target.value })} />
           </FieldLabel>
-          <FieldLabel className={cn(fieldLabel, "mb-[25px]")}>
+          <FieldLabel className={cn(fieldLabel, "mb-6.5")}>
             Role you&apos;re aiming for
             <NativeSelect className="mt-2.5 w-full" value={values.role} onChange={(event) => setValues({ ...values, role: event.target.value })}>
               {roles.map((role) => <NativeSelectOption key={role.id} value={role.id}>{role.title}</NativeSelectOption>)}
             </NativeSelect>
             <span className="mt-2 block text-xs font-normal text-muted-foreground">Change it after the assessment</span>
           </FieldLabel>
-          <FieldLabel className={cn(fieldLabel, "mb-[25px]")}>
+          <FieldLabel className={cn(fieldLabel, "mb-6.5")}>
             Hours per week
             <Input type="number" min={WEEKLY_HOURS.min} max={WEEKLY_HOURS.max} className="mt-2.5 max-w-[160px]" value={Number.isNaN(values.weeklyHours) ? "" : values.weeklyHours}
               onChange={(event) => setValues({ ...values, weeklyHours: event.target.value === "" ? Number.NaN : Number(event.target.value) })} />
@@ -111,8 +111,8 @@ function AreaList({ run, areas }: { run: RunView; areas: AreaName[] }) {
           const done = run.answers.some((answer) => answer.index === question.index && answer.label);
           const here = question.index === current;
           return (
-            <li key={question.index} className={cn("flex items-center gap-3 border-b border-border py-[13px] text-[13px]", here && "font-semibold text-foreground")} aria-current={here ? "step" : undefined}>
-              {done ? <IconCheck size={18} className="shrink-0 text-status-solid" aria-label="Done" />
+            <li key={question.index} className={cn("flex items-center gap-3 border-b border-border py-3.5 text-xs", here && "font-semibold text-foreground")} aria-current={here ? "step" : undefined}>
+              {done ? <IconCheck size={18} className="shrink-0 text-foreground" aria-label="Done" />
                 : here ? <IconCircleDot size={18} className="shrink-0" aria-label="Current" />
                   : <IconCircle size={18} className="shrink-0" aria-hidden="true" />}
               <span className="flex-1">{areas.find((area) => area.id === question.area)?.title ?? question.area}</span>
@@ -176,17 +176,17 @@ function Question({ run, index, areas, onDone }: { run: RunView; index: number; 
   return (
     <section className={questionPanel}>
       <div className={eyebrow}>{area} · {QUESTION_KIND_LABELS[question.kind]}</div>
-      <div className="mt-3 text-[15px] leading-[1.6] md:text-base [&_p]:text-foreground"><Markdown text={question.prompt} /></div>
+      <div className="mt-3 text-sm leading-relaxed md:text-base [&_p]:text-foreground"><Markdown text={question.prompt} /></div>
       {question.code && <div className="mt-4"><CodeBlock code={question.code} label="Question code" /></div>}
       {predict && (
-        <FieldLabel className={cn(fieldLabel, "mt-[25px]")}>
+        <FieldLabel className={cn(fieldLabel, "mt-6.5")}>
           Output
-          <Textarea className={cn(field, "min-h-[90px] resize-y font-mono leading-[1.6]")} spellCheck={false} placeholder="One line each" value={output} onChange={(event) => setOutput(event.target.value)} />
+          <Textarea className={cn(field, "min-h-22.5 resize-y font-mono leading-relaxed")} spellCheck={false} placeholder="One line each" value={output} onChange={(event) => setOutput(event.target.value)} />
         </FieldLabel>
       )}
-      <FieldLabel className={cn(fieldLabel, "mt-[25px]")}>
+      <FieldLabel className={cn(fieldLabel, "mt-6.5")}>
         Answer
-        <Textarea className={cn(field, "min-h-[130px] resize-y leading-[1.6]")} value={answer} onChange={(event) => setAnswer(event.target.value)} />
+        <Textarea className={cn(field, "min-h-32.5 resize-y leading-relaxed")} value={answer} onChange={(event) => setAnswer(event.target.value)} />
       </FieldLabel>
       <Confidence value={rating} onChange={setRating} />
       {problem && <Notice tone="error">{problem}</Notice>}
@@ -230,11 +230,11 @@ function Answered({ run, answer, areas, last }: { run: RunView; answer: AnswerVi
   return (
     <section className={questionPanel}>
       <div className={eyebrow}>{area} · {QUESTION_KIND_LABELS[question.kind]}</div>
-      <div className="mt-3 text-[15px] leading-[1.6] md:text-base [&_p]:text-foreground"><Markdown text={question.prompt} /></div>
+      <div className="mt-3 text-sm leading-relaxed md:text-base [&_p]:text-foreground"><Markdown text={question.prompt} /></div>
       {question.code && <div className="mt-4"><CodeBlock code={question.code} label="Question code" /></div>}
-      {current.output && <><p className="mt-5 text-[13px] font-semibold">Output</p><pre className="mt-2 whitespace-pre-wrap rounded-lg bg-muted px-3 py-2 font-mono text-[13px]">{current.output.join("\n")}</pre></>}
-      <p className="mt-5 text-[13px] font-semibold">Answer · Confidence {current.selfRating} of 5</p>
-      <blockquote className="mt-2 whitespace-pre-wrap border-l-[3px] border-rail-soft pl-[15px] text-sm leading-[1.6]">{current.answer}</blockquote>
+      {current.output && <><p className="mt-5 text-xs font-semibold">Output</p><pre className="mt-2 whitespace-pre-wrap rounded-lg bg-muted px-3 py-2 font-mono text-xs">{current.output.join("\n")}</pre></>}
+      <p className="mt-5 text-xs font-semibold">Answer · Confidence {current.selfRating} of 5</p>
+      <blockquote className="mt-2 whitespace-pre-wrap border-l-[3px] border-primary/40 pl-4 text-sm leading-relaxed">{current.answer}</blockquote>
       {current.label ? (
         <Feedback
           badge={<Pill tone={toneFor(current.label)}>{labelWords[current.label]}</Pill>}
@@ -249,7 +249,7 @@ function Answered({ run, answer, areas, last }: { run: RunView; answer: AnswerVi
           action={(
             <div className="flex flex-wrap items-center gap-4">
               <Button type="button" disabled={busy} onClick={() => void retry()}>{busy ? "Grading…" : "Retry"}</Button>
-              <Button asChild variant="text"><Link href={engineering.overview}>Save & exit</Link></Button>
+              <Button asChild variant="link"><Link href={engineering.overview}>Save & exit</Link></Button>
             </div>
           )}
         />
@@ -274,7 +274,7 @@ export function Assessment({ email, run, areas }: { email: string; run: RunView;
   return (
     <Shell email={email} closedBook={!run.completedAt}>
       <SessionHeading
-        left={<Link href={engineering.overview} className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground md:text-[13px]"><IconArrowLeft size={17} aria-hidden="true" />Save & exit</Link>}
+        left={<Link href={engineering.overview} className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground md:text-xs"><IconArrowLeft size={17} aria-hidden="true" />Save & exit</Link>}
         middle={`Question ${index + 1} of ${total}`}
         right={<RulesDialog />}
       />
@@ -286,7 +286,7 @@ export function Assessment({ email, run, areas }: { email: string; run: RunView;
           <Question key={position.index} run={run} index={position.index} areas={areas} onDone={(answer) => setShown(answer)} />
         ) : (
           <section className={questionPanel}>
-            <h2 className="text-[23px] font-bold tracking-[-0.6px]">Assessment complete</h2>
+            <h2 className="text-2xl font-bold tracking-tight">Assessment complete</h2>
             <Button asChild className="mt-5"><Link href={engineering.results(run.id)}>View results<IconArrowRight size={18} aria-hidden="true" /></Link></Button>
           </section>
         )}

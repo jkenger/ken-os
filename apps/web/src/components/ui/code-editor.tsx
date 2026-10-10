@@ -9,8 +9,8 @@ import { keymap } from "@codemirror/view";
 import { cn } from "@/lib/utils";
 
 const kenTheme = EditorView.theme({
-  "&": { fontSize: "13px", backgroundColor: "var(--background)", color: "var(--foreground)" },
-  ".cm-content": { fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace", padding: "10px 0" },
+  "&": { fontSize: "var(--text-sm)", backgroundColor: "var(--background)", color: "var(--foreground)" },
+  ".cm-content": { fontFamily: "var(--font-mono)", padding: "10px 0" },
   ".cm-gutters": { backgroundColor: "var(--muted)", color: "var(--muted-foreground)", border: "none" },
   ".cm-activeLine": { backgroundColor: "color-mix(in oklch, var(--muted), transparent 40%)" },
   ".cm-activeLineGutter": { backgroundColor: "var(--secondary)", color: "var(--foreground)" },
@@ -23,7 +23,7 @@ const readOnlyTheme = EditorView.theme({
 });
 
 /**
- * CodeMirror 6 with the Ken OS theme, used both for writing and for showing code so the two look the same.
+ * CodeMirror 6 themed with the shadcn tokens, used both for writing and for showing code so the two look the same.
  * The text is plain until the editor mounts, so code is readable without JavaScript and the layout doesn't jump.
  * Tab indents; Escape then Tab moves focus on, which is CodeMirror's keyboard-trap escape.
  */
@@ -72,7 +72,7 @@ export function CodeEditor({ value, onChange, readOnly = false, label, minHeight
 
   return (
     <div className={cn("overflow-hidden rounded-lg border border-border", className)} style={{ minHeight }}>
-      {!ready && <pre className="overflow-x-auto bg-background px-4 py-2.5 font-mono text-[13px] leading-[1.4]" aria-label={label}><code>{value.replace(/\n$/, "")}</code></pre>}
+      {!ready && <pre className="overflow-x-auto bg-background px-4 py-2.5 font-mono text-sm" aria-label={label}><code>{value.replace(/\n$/, "")}</code></pre>}
       <div ref={host} className={cn("[&_.cm-editor]:h-full", !ready && "hidden")} style={{ minHeight }} />
     </div>
   );

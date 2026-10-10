@@ -3,9 +3,9 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { test } from "node:test";
 
-// Screens are built from the shadcn/ui primitives in components/ui, tailored to the Ken OS contract. A raw control
+// Screens are built from the shadcn/ui primitives in components/ui, kept as the registry ships them. A raw control
 // or a hand-built widget role outside that folder means a primitive was skipped; add it with
-// `pnpm dlx shadcn@latest add <name>` (or the shadcn MCP server), tailor it, and use it instead.
+// `pnpm dlx shadcn@latest add <name>` (or the shadcn MCP server) and use it instead.
 // See docs/architecture/shadcn-audit.md.
 
 const srcRoot = join(__dirname, "..");

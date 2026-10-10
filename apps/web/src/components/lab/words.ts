@@ -36,7 +36,7 @@ export const radarTagWords: Record<string, string> = {
   recheck: "Re-check",
 };
 
-export const label = "text-[11px] font-bold uppercase tracking-[0.15em] text-muted-foreground";
+export const label = "text-xs font-bold uppercase tracking-widest text-muted-foreground";
 
 /** Which status colour a grade or status gets. The Pill always shows the words too, so meaning never depends on colour. */
 export function toneFor(value: string): PillTone {

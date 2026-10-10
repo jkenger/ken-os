@@ -19,7 +19,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 type Scope = "path" | "all";
 
 function StateIcon({ state }: { state: TopicState }) {
-  if (state === "PROVEN") return <IconCheck size={18} className="shrink-0 text-status-solid" aria-hidden="true" />;
+  if (state === "PROVEN") return <IconCheck size={18} className="shrink-0 text-foreground" aria-hidden="true" />;
   if (state === "NOT_STARTED") return <IconCircle size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />;
   return <IconCircleDot size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />;
 }
@@ -42,12 +42,12 @@ export function Learn({ email, map, view, area, closedBook }: { email: string; m
 
   return (
     <WorkspaceShell email={email} active="lab" tab="learn" termLookup={!closedBook}>
-      <div className="mx-auto max-w-[1500px] px-3 pb-9 pt-6 md:px-5 md:pt-[30px] min-[1500px]:pt-9">
+      <div className="mx-auto max-w-7xl px-3 pb-9 pt-6 md:px-5 md:pt-7.5">
         <PageHeading title="Learn" badge={area ? map.areas.find((item) => item.id === area)?.title : undefined} />
-        <div className="mx-[5px] mb-5 block justify-between gap-5 md:mx-3.5 md:mb-[25px] md:flex">
+        <div className="mx-1.5 mb-5 block justify-between gap-5 md:mx-3.5 md:mb-6.5 md:flex">
           <ToggleGroup type="single" spacing={1} value={scope} onValueChange={(next) => { if (next) setScope(next as Scope); }} aria-label="Topics shown" className="mb-3.5 rounded-md bg-secondary p-1 md:mb-0">
             {([["path", "My path"], ["all", "All topics"]] as const).map(([id, name]) => (
-              <ToggleGroupItem key={id} value={id} disabled={id === "path" && !view.path} className="h-auto rounded-full px-3.5 py-2 text-[13px] font-normal text-muted-foreground hover:bg-transparent hover:text-foreground data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:shadow-tab">{name}</ToggleGroupItem>
+              <ToggleGroupItem key={id} value={id} disabled={id === "path" && !view.path} className="h-auto rounded-full px-3.5 py-2 text-xs font-normal text-muted-foreground hover:bg-transparent hover:text-foreground data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:">{name}</ToggleGroupItem>
             ))}
           </ToggleGroup>
           <InputGroup className="h-11 rounded-full md:w-80">
@@ -56,7 +56,7 @@ export function Learn({ email, map, view, area, closedBook }: { email: string; m
           </InputGroup>
         </div>
 
-        <div className="mx-[5px] grid grid-cols-1 gap-[18px] md:mx-3.5 md:grid-cols-[2fr_1fr] md:gap-5 lg:grid-cols-[minmax(0,2.4fr)_minmax(230px,1fr)] lg:gap-8">
+        <div className="mx-1.5 grid grid-cols-1 gap-4.5 md:mx-3.5 md:grid-cols-[2fr_1fr] md:gap-5 lg:grid-cols-[minmax(0,2.4fr)_minmax(230px,1fr)] lg:gap-8">
           <section className="min-w-0">
             {!chapters.length && (
               <div className={cn(panel, "p-7 text-center")}>
@@ -68,21 +68,21 @@ export function Learn({ email, map, view, area, closedBook }: { email: string; m
               const newArea = position === 0 || chapters[position - 1].chapter.area !== chapter.area;
               return (
                 <Fragment key={chapter.id}>
-                  {newArea && <h2 className={cn("mb-3 text-lg font-bold tracking-[-0.3px]", position > 0 && "mt-8")}>{map.areas.find((item) => item.id === chapter.area)?.title}</h2>}
+                  {newArea && <h2 className={cn("mb-3 text-lg font-bold tracking-tight", position > 0 && "mt-8")}>{map.areas.find((item) => item.id === chapter.area)?.title}</h2>}
                   <details className={cn(panel, "group mb-3")} open={Boolean(needle) || shown.some((topic) => topic.id === view.next?.id)}>
-                    <summary className="flex cursor-pointer list-none items-center gap-[9px] px-[15px] py-[17px] md:gap-5 md:px-5 md:py-[19px] [&::-webkit-details-marker]:hidden">
-                      <h3 className="min-w-0 flex-1 text-sm font-semibold md:text-[15px]">{chapter.title}</h3>
-                      <span className="ml-auto shrink-0 text-[11px] text-muted-foreground md:text-xs">{proven} / {topics.length} proven</span>
-                      <IconChevronDown size={18} className="shrink-0 text-quiet transition-transform group-open:rotate-180" aria-hidden="true" />
+                    <summary className="flex cursor-pointer list-none items-center gap-2.5 px-4 py-4.5 md:gap-5 md:px-5 md:py-5 [&::-webkit-details-marker]:hidden">
+                      <h3 className="min-w-0 flex-1 text-sm font-semibold md:text-sm">{chapter.title}</h3>
+                      <span className="ml-auto shrink-0 text-xs text-muted-foreground md:text-xs">{proven} / {topics.length} proven</span>
+                      <IconChevronDown size={18} className="shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
                     </summary>
                     {shown.map((topic) => {
                       const state = view.states[topic.id] ?? "NOT_STARTED";
                       return (
-                        <Link key={topic.id} href={engineering.topic(topic.id)} className="flex w-full items-center gap-2.5 border-t border-border px-[15px] py-[15px] text-left hover:bg-row-hover md:gap-[13px] md:px-[21px] md:py-4">
+                        <Link key={topic.id} href={engineering.topic(topic.id)} className="flex w-full items-center gap-2.5 border-t border-border px-4 py-4 text-left hover:bg-muted/50 md:gap-3.5 md:px-5.5 md:py-4">
                           <StateIcon state={state} />
-                          <span className="min-w-0 flex-1 text-xs font-medium md:text-[13px]">{topic.title}</span>
-                          <span className="ml-auto shrink-0 text-[11px] text-muted-foreground">{statusWords[state]}</span>
-                          <IconChevronRight size={18} className="shrink-0 text-quiet" aria-hidden="true" />
+                          <span className="min-w-0 flex-1 text-xs font-medium md:text-xs">{topic.title}</span>
+                          <span className="ml-auto shrink-0 text-xs text-muted-foreground">{statusWords[state]}</span>
+                          <IconChevronRight size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
                         </Link>
                       );
                     })}
@@ -92,14 +92,14 @@ export function Learn({ email, map, view, area, closedBook }: { email: string; m
             })}
           </section>
           <aside className={cn(panel, "h-fit p-5")}>
-            <small className="text-sm font-semibold text-quiet">Next</small>
+            <small className="text-sm font-semibold text-muted-foreground">Next</small>
             {view.next ? (
               <>
-                <h2 className="mt-[9px] text-[21px] font-bold tracking-[-0.5px]">{view.next.title}</h2>
-                <p className="mb-5 mt-1.5 text-[13px] text-muted-foreground">{view.next.area} · {view.next.chapter} · {statusWords[view.next.state]}</p>
+                <h2 className="mt-2.5 text-xl font-bold tracking-tight">{view.next.title}</h2>
+                <p className="mb-5 mt-1.5 text-xs text-muted-foreground">{view.next.area} · {view.next.chapter} · {statusWords[view.next.state]}</p>
                 <Button asChild className="w-full"><Link href={engineering.topic(view.next.id)}>Continue topic<IconArrowRight size={18} aria-hidden="true" /></Link></Button>
               </>
-            ) : <h2 className="mt-[9px] text-[21px] font-bold">Every topic proven</h2>}
+            ) : <h2 className="mt-2.5 text-xl font-bold">Every topic proven</h2>}
           </aside>
         </div>
       </div>

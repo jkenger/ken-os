@@ -29,7 +29,7 @@ function LevelsDialog({ careers }: { careers: Careers }) {
         </div>
       ))}
       <h3>Depth</h3>
-      <ul className="list-disc pl-5 leading-[1.9]">
+      <ul className="list-disc pl-5 leading-relaxed">
         <li><strong className="text-foreground">{depthWords.aware}</strong>: one topic of the chapter proven</li>
         <li><strong className="text-foreground">{depthWords.build}</strong>: every core topic proven</li>
         <li><strong className="text-foreground">{depthWords.run}</strong>: every topic proven, the deep ones too</li>
@@ -63,25 +63,25 @@ export function Direction({ email, careers, map, direction, weeklyHours }: { ema
 
   return (
     <WorkspaceShell email={email} active="lab" tab="profile">
-      <div className="mx-auto max-w-[1500px] px-3 pb-9 pt-6 md:px-5 md:pt-[30px]">
+      <div className="mx-auto max-w-7xl px-3 pb-9 pt-6 md:px-5 md:pt-7.5">
         <Back href={engineering.profile}>Profile</Back>
         <PageHeading title="Direction" />
         <FlowLayout>
-          <section className={cn(panel, "p-[23px] md:p-[30px]")}>
+          <section className={cn(panel, "p-6 md:p-7.5")}>
             <Label className={cn(fieldLabel, "mb-2")}>
               Target role
               <NativeSelect className="mt-2.5 w-full" value={role} onChange={(event) => setRole(event.target.value)}>
                 {careers.roles.map((item) => <NativeSelectOption key={item.id} value={item.id}>{item.title}</NativeSelectOption>)}
               </NativeSelect>
             </Label>
-            <p className="mb-[25px] text-[13px] text-muted-foreground">{chosen.summary}</p>
+            <p className="mb-6.5 text-xs text-muted-foreground">{chosen.summary}</p>
 
-            <h3 className="text-[13px] font-semibold">Required depth</h3>
-            <ul className="mb-[25px] mt-2.5">
+            <h3 className="text-xs font-semibold">Required depth</h3>
+            <ul className="mb-6.5 mt-2.5">
               {careers.areas.filter((area) => chosen.targets[area.id]).map((area) => {
                 const level = chosen.targets[area.id]!;
                 return (
-                  <li key={area.id} className="border-t border-border py-3 text-[13px]">
+                  <li key={area.id} className="border-t border-border py-3 text-xs">
                     <p className="font-semibold">{area.title} <span className="font-normal text-muted-foreground">· {careers.levels.find((item) => item.id === level)?.title}</span></p>
                     <ul className="mt-1.5 text-muted-foreground">
                       {requirementsUpTo(area, level).map(({ chapter, depth }) => (
@@ -93,7 +93,7 @@ export function Direction({ email, careers, map, direction, weeklyHours }: { ema
               })}
             </ul>
 
-            <Label className={cn(fieldLabel, "mb-[25px]")}>
+            <Label className={cn(fieldLabel, "mb-6.5")}>
               Hours per week
               <Input type="number" min={WEEKLY_HOURS.min} max={WEEKLY_HOURS.max} className={cn(field, "mt-2.5 max-w-[160px] py-0")} value={Number.isNaN(hours) ? "" : hours}
                 onChange={(event) => setHours(event.target.value === "" ? Number.NaN : Number(event.target.value))} />

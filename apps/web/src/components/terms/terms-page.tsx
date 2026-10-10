@@ -38,23 +38,23 @@ export function TermsPage({ email, terms }: { email: string; terms: SavedTerm[] 
 
   return (
     <WorkspaceShell email={email} active="terms">
-      <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-[1100px] px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-        <h1 className="text-[30px] font-[750] leading-[1.1] tracking-[-0.035em] md:text-[34px] xl:text-[40px] xl:leading-[1.05]">Terms</h1>
+      <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-6xl px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
+        <h1 className="text-3xl font-bold leading-none tracking-tight md:text-4xl xl:text-4xl xl:leading-none">Terms</h1>
 
         {terms.length > 0 && (
-          <InputGroup className="mt-6 max-w-[420px] rounded-full">
+          <InputGroup className="mt-6 max-w-md rounded-full">
             <InputGroupAddon><Search size={16} aria-hidden="true" /></InputGroupAddon>
             <InputGroupInput placeholder="Search terms" aria-label="Search terms" value={query} onChange={(event) => setQuery(event.target.value)} />
           </InputGroup>
         )}
 
         {terms.length ? (
-          <ul className="mt-6 divide-y divide-border rounded-xl bg-card shadow-panel">
+          <ul className="mt-6 divide-y divide-border rounded-xl bg-card border">
             {shown.map((term) => (
               <li key={term.id} className="grid gap-2 px-5 py-5 md:grid-cols-[200px_minmax(0,1fr)_auto] md:gap-6 md:px-6">
-                <p className="font-display text-lg font-semibold tracking-[-0.02em]">{term.term}</p>
+                <p className="font-heading text-lg font-semibold tracking-tight">{term.term}</p>
                 <div className="min-w-0">
-                  <p className="text-[15px] leading-6">{term.meaning}</p>
+                  <p className="text-sm leading-6">{term.meaning}</p>
                   <p className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
                     <Link href={term.foundAt} className="inline-flex items-center gap-1.5 underline-offset-4 hover:underline"><BookOpen size={14} aria-hidden="true" />{term.foundIn}</Link>
                     {term.source && <a className="inline-flex items-center gap-1.5 font-semibold underline-offset-4 hover:underline" href={term.source.url} target="_blank" rel="noopener noreferrer">{term.source.title}<ExternalLink size={12} aria-hidden="true" /></a>}
@@ -67,7 +67,7 @@ export function TermsPage({ email, terms }: { email: string; terms: SavedTerm[] 
             {!shown.length && <li className="px-5 py-5 text-sm text-muted-foreground md:px-6">No matches for &ldquo;{query}&rdquo;</li>}
           </ul>
         ) : (
-          <div className="mt-8 max-w-[620px] rounded-xl border border-dashed border-input p-6 text-[15px] leading-6">
+          <div className="mt-8 max-w-xl rounded-xl border border-dashed border-input p-6 text-sm leading-6">
             <p className="font-semibold">No terms yet</p>
             <p className="mt-1 text-muted-foreground">Select text on any page and press E</p>
           </div>
