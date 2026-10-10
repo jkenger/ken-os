@@ -1,216 +1,167 @@
-# Design system setup on the shadcn standard
+# Reset to the shadcn default setup
 
-Status: proposed, 10 Oct 2026. Not yet implemented. Written for a separate implementation session.
+Status: approved by the owner, 10 Oct 2026. Not yet implemented. Written for a separate implementation session.
 
 ## Decision
 
-Ken OS's styling setup is rebuilt on the standard shadcn/ui setup for a Next.js app (shadcn 4, Tailwind CSS v4, `next/font`). The Ken OS design system is then applied on top of that standard rather than beside it.
+Every visual value in Ken OS resets to shadcn's default for this project, and the owner builds Ken OS's own look on top of that later, one deliberate change at a time.
 
-Three layers, each in its own place:
+"Every value" means all of it: colours, Ken OS-only colours, status colours, fonts, radii, shadows, sizes, spacing, and the look tailored into the components in `components/ui`. Nothing from the Ken OS design system (Studio 1.0.0) survives as a value.
 
-| Layer | What it is | Where it lives |
-|---|---|---|
-| **1. Base** | Exactly what `shadcn init` produces for Next.js: file layout, token names, Tailwind wiring, font loading, base styles | `components.json`, `globals.css` structure, `layout.tsx`, `lib/utils.ts` |
-| **2. Adapt** | Ken OS values poured into shadcn's token names: colours, fonts, radius | Generated from the design system into `design-tokens.generated.css` and `fonts.generated.ts` |
-| **3. Build on top** | Everything Ken OS adds that shadcn doesn't have: extra colours, status colours, shadows, sizes, utilities, tailored components | A separate "Ken OS extensions" block in the generated CSS, plus `globals.css` utilities and `components/ui` |
+The default is what `shadcn init` produces for this project's `components.json` (style `radix-nova`, base colour `neutral`, icon library `lucide`), which is shadcn 4's **Nova** preset:
 
-The rule that follows: **a shadcn token name always means what shadcn means by it**, so any shadcn component or registry item works unchanged. Ken OS-only ideas get Ken OS names in layer 3.
-
-The design system on claude.ai stays the source of truth for values. `tokens.json` stays a word-for-word copy. Only the generator and the files around it change.
-
-## Why
-
-A question about fonts showed the setup has drifted from the standard:
-
-- Fonts load through a Google Fonts `@import` instead of `next/font`, so they aren't self-hosted, preloaded or size-adjusted, and they cost a request to Google on every visit.
-- Toasts ignore the app font. Sonner sets its own system font on the toaster, and nothing resets it.
-- There's no mono font token. Code text falls back to Tailwind's default, and the code editor hardcodes its own stack.
-- Ken OS uses `font-display` and `--font-body` where shadcn 4 uses `font-heading` and `--font-sans`. shadcn's CLI reads `--font-sans`, `--font-heading` and `--font-mono` when it adds fonts and components, so the current names fall outside what it understands.
-- Ken OS colours, extensions and shadcn's own tokens sit in one unlabelled `:root` block, so it isn't clear which tokens a shadcn component relies on.
-
-## 1. Where things stand today
-
-| Piece | shadcn standard | Ken OS today | Change |
-|---|---|---|---|
-| `components.json` | style, `cssVariables: true`, aliases, icon library | `radix-nova`, neutral, lucide, aliases set | Keep as is |
-| CSS imports | `tailwindcss`, `tw-animate-css`, `shadcn/tailwind.css` | Same, plus a Google Fonts `@import` first | Remove the Google Fonts `@import` |
-| Font loading | `next/font` in `layout.tsx`, variable on `<html>` | Google Fonts `@import`, no `next/font` | Switch to `next/font` (§3) |
-| Font tokens | `--font-sans`, `--font-heading`, `--font-mono` | `--font-body`, `--font-heading`, no mono | Rename to the shadcn names (§3) |
-| Font classes | `font-sans`, `font-heading`, `font-mono` | `font-sans`, `font-display` (12 files), `font-mono` with no token | `font-display` becomes `font-heading` |
-| Colour tokens | shadcn's set in `:root`, `.dark` overrides | shadcn's set plus 16 Ken OS colours and the size, spacing, radius and shadow tokens, light only | Split into shadcn block and extensions block (§2) |
-| Chart tokens | `--chart-1` to `--chart-5` | Missing | Add when the design system defines them (§2) |
-| Radius | `--radius` base, `--radius-sm` to `--radius-xl` derived from it | Named radii (item, menu, tab, panel) mapped onto sm to xl; no `--radius` | Add `--radius`, keep the named mapping (§4) |
-| Base layer | `* { border-border outline-ring/50 }`, `body { bg-background text-foreground }`, `html { font-sans }` | Similar, plus headings, focus outline, scrollbars | Restructure to the standard order, keep additions in layer 3 (§5) |
-| Dark mode | `.dark` block, `@custom-variant dark` | Variant declared, no `.dark` values | Leave as is; Ken OS is light only (§6) |
-| Toasts | shadcn `sonner.tsx` | Tailored, but leaks the system font | Fix in the tailored component (§5) |
-
-## 2. Colour tokens
-
-The generator writes two blocks in `design-tokens.generated.css`, in this order:
-
-```css
-/* shadcn tokens: values from the Ken OS design system. */
-:root { --radius: …; --background: …; … }
-
-/* Ken OS extensions: tokens shadcn doesn't define. */
-:root { --canvas: …; --signal: …; … }
-```
-
-### Block 1: shadcn tokens
-
-Every token below must exist, named exactly as shadcn names it. The value comes from the design system token of the same name.
-
-`--background`, `--foreground`, `--card`, `--card-foreground`, `--popover`, `--popover-foreground`, `--primary`, `--primary-foreground`, `--secondary`, `--secondary-foreground`, `--muted`, `--muted-foreground`, `--accent`, `--accent-foreground`, `--destructive`, `--border`, `--input`, `--ring`, `--sidebar`, `--sidebar-foreground`, `--sidebar-primary`, `--sidebar-primary-foreground`, `--sidebar-accent`, `--sidebar-accent-foreground`, `--sidebar-border`, `--sidebar-ring`, `--radius`.
-
-`--chart-1` to `--chart-5` join this block only when the design system defines them. Until then, no chart component is added.
-
-### Block 2: Ken OS extensions
-
-`--canvas`, `--quiet`, `--signal`, `--primary-hover`, `--tint`, `--table-head`, `--row-hover`, `--rail`, `--rail-lit`, `--rail-soft`, `--status-solid`, `--status-solid-surface`, `--status-partial`, `--status-partial-surface`, `--status-gap`, `--status-gap-surface`, plus the spacing, size, named radius and shadow tokens.
-
-### How the generator knows which block a token goes in
-
-A fixed list of shadcn names lives in the generator (`SHADCN_TOKENS` in `src/lib/design-tokens.ts`). Any design system token on that list goes in block 1; anything else goes in block 2. A shadcn name missing from the design system fails generation with the missing name, so the design system has to fill it.
-
-Colour values stay in the format the design system writes them (hex today). shadcn's oklch values are a default, not a requirement.
-
-### Tailwind mapping
-
-`globals.css` keeps one `@theme inline` block, in two labelled groups that mirror the two CSS blocks:
-
-1. **shadcn's standard mapping:** `--color-background: var(--background)` and so on, exactly as `shadcn init` writes it.
-2. **Ken OS extensions:** `--color-canvas`, `--color-signal`, `--color-status-*` and the rest.
-
-## 3. Fonts
-
-### Target setup (the shadcn 4 standard)
-
-- `layout.tsx` loads every family with `next/font/google`, each exposing a CSS variable: `--font-sans`, `--font-heading`, `--font-mono`.
-- The variables go on `<html>` together with `font-sans`, so every layer inherits the body font, portals included.
-- `globals.css` maps them for Tailwind:
-  ```css
-  @theme inline {
-    --font-sans: var(--font-sans);
-    --font-heading: var(--font-heading);
-    --font-mono: var(--font-mono);
-  }
-  ```
-- Base styles: `html { @apply font-sans; }`, and `h1, h2, h3 { @apply font-heading; }` as a Ken OS addition.
-
-### Keeping the design system in charge
-
-`next/font` needs literal function calls at build time, so the font names can't be read from CSS. The generator therefore writes a second file, **`src/app/fonts.generated.ts`**, from `tokens.json`:
-
-```ts
-// Generated from design-system/tokens.json. Do not edit.
-import { Bricolage_Grotesque, JetBrains_Mono, Public_Sans } from "next/font/google";
-
-export const fontSans = Public_Sans({ subsets: ["latin"], display: "swap", variable: "--font-sans" });
-export const fontHeading = Bricolage_Grotesque({ subsets: ["latin"], display: "swap", axes: ["opsz"], variable: "--font-heading" });
-export const fontMono = JetBrains_Mono({ subsets: ["latin"], display: "swap", variable: "--font-mono" });
-```
-
-`layout.tsx` imports these three and applies their `.variable` classes. A family change in the design system then reaches the app through the normal sync: pull, `design:generate`, PR.
-
-The mono family above is an example. The real one comes from the design system (see §7).
-
-Rules for the generated font module:
-
-- The family name in `tokens.json` must be a Google Fonts family. The generator turns it into the `next/font/google` import name (spaces become underscores) and fails if the design system names a family Google doesn't serve.
-- Use a variable font and no `weight` when one exists. Add `axes` only where the design system asks for an optical-size or similar axis.
-- The fallback part of the design system's stack (`Arial, sans-serif`) goes into the call's `fallback` option.
-- `design-tokens.generated.css` no longer writes `--font-*` variables; `next/font` owns them.
-
-### Renames in the app
-
-| Today | After |
+| Setting | Nova default |
 |---|---|
-| `--font-body` | `--font-sans` |
-| `--font-heading` (from the CSS) | `--font-heading` (from `next/font`) |
-| `font-display` class (12 files) | `font-heading` |
-| No mono token | `--font-mono`, class `font-mono` |
-| Code editor inline `fontFamily` ([code-editor.tsx:13](../../apps/web/src/components/ui/code-editor.tsx)) | `var(--font-mono)` |
+| Colours | Neutral theme, light and dark, in oklch |
+| Body font | Geist, loaded with `next/font` |
+| Heading font | Inherits the body font (Geist) |
+| Mono font | Geist Mono, loaded with `next/font` |
+| Radius | `--radius: 0.625rem`, with shadcn's derived sizes |
+| Charts | Neutral chart colours `--chart-1` to `--chart-5` |
+| Menus | Default colour, subtle accent |
+| Icons | Lucide |
 
-### Places that escape inheritance
+Two layers from now on:
 
-- **Toasts:** Sonner puts its own `font-family` on `[data-sonner-toaster]`. The tailored [sonner.tsx](../../apps/web/src/components/ui/sonner.tsx) sets `fontFamily: "var(--font-sans)"` in its `style` prop, with a one-line comment saying why.
-- **Code editor:** uses `--font-mono`, as above.
-- **Resume preview:** an iframe of Google's page; its fonts aren't the app's and stay that way.
+| Layer | What it is | Where |
+|---|---|---|
+| **Base** | shadcn's default output, unedited | `globals.css` (standard part), `layout.tsx` fonts, `components/ui` as the registry ships them |
+| **Build on top** | Anything the owner adds later | A labelled "Ken OS" section at the end of `globals.css`, and Ken OS components outside `components/ui` |
 
-## 4. Radius
+The build-on-top layer starts empty.
 
-shadcn derives its corner sizes from one `--radius`. Ken OS has four named radii chosen by the design system: item 6px, menu 8px, tab 10px, panel 14px.
+## What this replaces
 
-- Keep the named radii as the source and keep mapping them onto Tailwind's sizes: `--radius-sm` → item, `--radius-md` → menu, `--radius-lg` → tab, `--radius-xl` → panel.
-- Add `--radius` to block 1, set to the tab radius, so shadcn components and registry items that read `var(--radius)` directly get a Ken OS value.
-- Don't use shadcn's `calc()` multipliers; they would replace the design system's chosen sizes with derived ones. This is a deliberate difference from the standard; record it in the file comment.
+- The rule in `AGENTS.md` that the claude.ai design system is the source of truth for the app's look, and the token pipeline behind it: `design-system/tokens.json` → `design:generate` → `design-tokens.generated.css`.
+- The tailoring notes in `docs/design/component-language.md` and `docs/architecture/shadcn-audit.md`.
+- The look half of the `design-system-sync` skill.
 
-## 5. `globals.css` layout
+The claude.ai design system stays as the owner's reference for what to build on top. It no longer drives the app.
 
-Target order, with shadcn's standard parts first and Ken OS's additions labelled after them:
+## 1. How to get the exact default
 
-1. `@import "tailwindcss";`, `@import "tw-animate-css";`, `@import "shadcn/tailwind.css";`, `@import "./design-tokens.generated.css";`
-2. `@custom-variant dark (&:is(.dark *));`
-3. `@theme inline`: fonts, shadcn colour mapping, radius mapping, then a labelled "Ken OS extensions" group.
-4. `@layer base`, the standard part: `* { @apply border-border outline-ring/50; }`, `body { @apply bg-background text-foreground; }`, `html { @apply font-sans; }`.
-5. `@layer base`, the Ken OS part: headings use `font-heading`, `font-synthesis: none`, `scroll-smooth`, the focus outline rule, and thin scrollbars.
-6. Ken OS utilities: `shadow-panel`, `shadow-tab`, and `shadow-overlay` if it's in use.
+Don't hand-write the default. Generate it:
 
-Nothing in `globals.css` holds a raw value; values come from the generated files.
+1. In a scratch folder outside the repo, create a Next.js app and run `pnpm dlx shadcn@latest init` with the same settings as `apps/web/components.json`: Next.js, style `radix-nova`, base colour `neutral`, CSS variables on, lucide.
+2. Copy from that scratch app, word for word:
+   - its `globals.css` (imports, `@custom-variant dark`, `@theme inline`, `:root`, `.dark`, `@layer base`)
+   - its `layout.tsx` font setup (the `next/font` calls, the variables and classes on `<html>`)
+3. Re-add every primitive Ken OS uses from the registry with overwrite, so each one is the shipped default:
+   `pnpm dlx shadcn@latest add --overwrite badge button card collapsible command dialog input-group input label native-select separator sheet sidebar skeleton sonner switch table tabs textarea toggle-group toggle tooltip`
+
+Record the shadcn CLI version used in the PR description.
+
+## 2. Files
+
+| File | After the reset |
+|---|---|
+| `apps/web/src/app/globals.css` | The scratch app's `globals.css` exactly, followed by an empty `/* Ken OS: additions on top of the shadcn default */` section. Keep only the behavior rules that aren't look (see §4) |
+| `apps/web/src/app/layout.tsx` | The scratch app's font setup (Geist and Geist Mono via `next/font`), plus Ken OS metadata |
+| `apps/web/src/app/design-tokens.generated.css` | Deleted |
+| `apps/web/design-system/tokens.json` | Deleted (git history keeps it) |
+| `apps/web/scripts/generate-design-tokens.ts`, `src/lib/design-tokens.ts`, `src/lib/design-tokens.test.ts` | Deleted |
+| `apps/web/package.json` | Remove `design:generate` and its `--check` step from `check` |
+| `components/ui/*` registry primitives | Overwritten with the registry default (§1 step 3) |
+| `components/ui/code-editor.tsx`, `disclosure-summary.tsx`, `pill.tsx`, `toaster.tsx` | Not registry items. Keep their behavior; replace every Ken OS value in them with shadcn tokens or Tailwind defaults (§3) |
+| `components.json` | Unchanged |
+
+No `@import` of Google Fonts. Fonts come only from `next/font`.
+
+## 3. Replacing Ken OS classes in screens
+
+Screens outside `components/ui` use Ken OS-only tokens. Every one is replaced with a shadcn token or a Tailwind default, so no Ken OS value is left. Affected: 28 files in `components/engineering`, `components/lab`, `components/resume-workspace.tsx`, `components/workspace-shell.tsx`, and the UI files above.
+
+| Ken OS class or token | Uses | Replace with |
+|---|---|---|
+| `bg-canvas` | 3 | `bg-background` |
+| `text-quiet` | 21 | `text-muted-foreground` |
+| `signal` (`text-signal`, `bg-signal`, `border-signal`, `ring-signal`) | 32 | the same with `primary` |
+| `primary-hover` | 2 | `hover:bg-primary/90` (the shadcn button pattern) |
+| `bg-tint`, `bg-table-head` | 7 | `bg-muted` |
+| `bg-row-hover` / `hover:bg-row-hover` | 6 | `hover:bg-muted/50` (the shadcn table pattern) |
+| `bg-rail` | 14 | `bg-muted` |
+| `bg-rail-lit` | 2 | `bg-primary` |
+| `bg-rail-soft` | 4 | `bg-primary/40` |
+| `status-gap`, `status-gap-surface` | 8 | `text-destructive`, `bg-destructive/10` |
+| `status-solid`, `status-partial` and their surfaces | 27 | shadcn has no success or warning colour. Use the shadcn `Badge` variants for status: Solid → `default`, Partly there → `secondary`, Gap and Misconception → `destructive`, others → `outline`. Plain-text status uses `text-foreground`. The icon and the word carry the meaning, never colour alone |
+| `shadow-panel` | 20 | Remove. A `Card` brings shadcn's own border and shadow; anything else that needs a surface uses `Card` or `border bg-card` |
+| `shadow-tab` | 6 | Remove; `Tabs` brings its own active style |
+| `rounded-*` with Ken OS radii | all | Unchanged class names; they now resolve to shadcn's radius scale |
+| `font-display` | 29 in 12 files | `font-heading` (resolves to Geist, same as body) |
+| `font-[750]`, `font-[650]` | 9 | `font-bold`, `font-semibold` |
+| Fixed Ken OS sizes in class strings (`h-[44px]` for controls, `w-[208px]` section column, `h-[56px]` header and similar copied from the old size tokens) | many | The shadcn component's own size, or the nearest Tailwind default step |
+| Hardcoded hex colours, if any | | A shadcn token |
+
+After this, a search of `apps/web/src` for `canvas`, `quiet`, `signal`, `tint`, `table-head`, `row-hover`, `rail`, `status-`, `shadow-panel`, `shadow-tab`, `font-display`, `font-[`, and `#` colour literals returns nothing outside comments.
+
+## 4. Behavior rules that stay
+
+These aren't look, so they stay in the "Ken OS" section of `globals.css`:
+
+- `html { scroll-behavior: smooth; }`
+- The visible focus outline on `button, input, a, summary` only if the shadcn default doesn't already give those elements one. Check after the reset; shadcn's base gives `outline-ring/50` everywhere.
+
+The thin scrollbar rules go; they set colours and sizes.
+
+## 5. Fonts everywhere
+
+With Geist on `<html>` and shadcn's base styles, every page, dialog, popover and form control inherits it. Two places don't inherit and need a token, not a value:
+
+- **Toasts:** Sonner sets a system font on `[data-sonner-toaster]`. If the registry `sonner.tsx` still leaks after the overwrite, add `style={{ fontFamily: "var(--font-sans)" }}` with a one-line comment. This is the only allowed edit to a registry primitive in the reset.
+- **Code editor:** `code-editor.tsx` uses `var(--font-mono)` instead of its inline font list.
+
+The resume preview iframe shows Google's page in Google's fonts and stays that way.
 
 ## 6. Dark mode
 
-Ken OS is light only, by design system decision. Keep the `dark` variant so shadcn components compile unchanged, and write no `.dark` block. If the design system adds a dark theme later, the generator writes it as `.dark { … }` using the same two-block split.
+The default ships a `.dark` block, so it stays in `globals.css` as generated. Ken OS doesn't switch themes today; nothing adds the `dark` class. Turning dark mode on is a later build-on-top decision.
 
-## 7. Changes needed in the design system first
+## 7. Tests and checks
 
-These happen in the Ken OS design system on claude.ai, then come into the repo through the `design-system-sync` skill:
-
-1. **A mono family.** Add `type.families.mono` with a Google Fonts monospace family. This is a look decision for the owner; nothing in the repo picks it.
-2. **Family names map to shadcn's.** Either rename `type.families.body` to `sans`, or keep `body` and let the generator map `body → sans`. Recommended: keep `body` and map it, so the design system stays in its own words.
-3. **`--radius`.** Either add a `radius` token or let the generator set it from `radius-tab`. Recommended: let the generator set it; no design system change.
-4. **Optional axes.** If Bricolage Grotesque's optical size should stay on, say so in the family entry (today the CSS import asks for `opsz`). Recommended: keep `opsz` on.
-
-## 8. What changes in the repo
-
-| File | Change |
+| Test | After the reset |
 |---|---|
-| `apps/web/src/lib/design-tokens.ts` | Two-block CSS output; `SHADCN_TOKENS` list; generator fails on a missing shadcn token; `--radius` from the tab radius; no `--font-*` in CSS; new `fontModule()` that writes the font file |
-| `apps/web/scripts/generate-design-tokens.ts` | Writes and checks both `design-tokens.generated.css` and `fonts.generated.ts` |
-| `apps/web/src/app/fonts.generated.ts` | New, generated |
-| `apps/web/src/app/layout.tsx` | Imports the three fonts; `<html className={cn(fontSans.variable, fontHeading.variable, fontMono.variable, "font-sans")}>` |
-| `apps/web/src/app/globals.css` | Reordered as §5; Google Fonts `@import` removed; font mapping renamed; `--radius` mapped |
-| 12 files using `font-display` | `font-heading` |
-| `apps/web/src/components/ui/sonner.tsx` | Body font on the toaster |
-| `apps/web/src/components/ui/code-editor.tsx` | `var(--font-mono)` |
-| `apps/web/src/lib/design-tokens.test.ts` | New tests: every name in `SHADCN_TOKENS` is in the generated CSS; the font module names the same families as `tokens.json`; no `font-display` class anywhere in `src` |
-| `.agents/skills/design-system-sync/SKILL.md` | Step 4 regenerates both files; step 5 explains the two blocks and that a new font family arrives through `fonts.generated.ts` |
-| `AGENTS.md` | The design-system bullet names both generated files and this document |
-| `apps/web/design-system/components.ts` and `design:bundle` | Check the preview bundle still gets fonts: previews run outside Next, so `next/font` doesn't reach them. The bundle's CSS needs the families declared directly (`@font-face` or a Google Fonts link inside the preview only) |
+| `src/lib/design-tokens.test.ts` (contrast of Ken OS colours) | Deleted with the tokens. shadcn's neutral defaults are trusted as shipped |
+| `src/lib/shadcn-primitives.test.ts` (no raw controls outside `components/ui`) | Kept |
+| New `src/lib/shadcn-default.test.ts` | Fails if `apps/web/src` contains any Ken OS token name from §3, a `font-display` class, a Google Fonts URL, or a hex colour in a class string. Allows the empty "Ken OS" section in `globals.css` |
+| `pnpm check` | No longer runs the token generator |
 
-`tokens.json` doesn't change in the repo except through a sync.
+## 8. Design preview bundle
 
-## 9. Slices
+`design:bundle` builds the app's real components for the claude.ai design system's previews. Previews run outside Next, so `next/font` doesn't reach them. Either:
+
+- **(recommended)** keep the bundle and load Geist in the preview with a font link inside the preview only, or
+- pause `design:bundle` until the owner restarts the design system on top of the default.
+
+The `design-system-sync` skill keeps only its component direction (bundle and publish). Its token pull is removed, since there are no tokens to pull.
+
+## 9. Docs to update
+
+- `AGENTS.md`: the design-system bullet and the shadcn bullet say the app runs on shadcn's Nova default, `globals.css` holds it, Ken OS additions go in the labelled section, and the claude.ai design system is reference only. Remove "tailored to the Ken OS design system (the Studio look…)".
+- `docs/design/component-language.md`, `docs/architecture/shadcn-audit.md`: mark as superseded by this document.
+- `.agents/skills/design-system-sync/SKILL.md`: token steps removed (§8).
+- The owner's global `CLAUDE.md` design principles list "Untouched shadcn UI" (11) as something to avoid. This reset uses untouched shadcn on purpose, as the starting point to build on. Record that reason in `AGENTS.md` so later sessions don't "fix" it.
+
+## 10. Slices
 
 | # | Branch | Covers |
 |---|---|---|
-| 0 | (owner, in the design system) | §7: mono family, any family or axis decisions; then a sync PR |
-| 1 | `refactor/design-tokens-shadcn-blocks` | Generator split into shadcn and extension blocks, `SHADCN_TOKENS`, `--radius`, `globals.css` reorder, tests |
-| 2 | `refactor/next-font` | `fonts.generated.ts`, `layout.tsx`, remove the `@import`, rename `font-display` → `font-heading`, mono token, Sonner and code editor fixes, design preview bundle fonts |
-| 3 | `docs/design-system-shadcn-setup-done` | Sync skill and `AGENTS.md` updates; this file's status to Implemented |
+| 1 | `refactor/shadcn-default-base` | §1 and §2: scratch init, `globals.css`, `layout.tsx` fonts, delete the token pipeline, overwrite registry primitives, Sonner and code editor fonts |
+| 2 | `refactor/shadcn-default-screens` | §3: replace every Ken OS class in screens, the new test, `pnpm check` change |
+| 3 | `docs/shadcn-default-done` | §8 and §9: preview bundle fonts, skill and docs updates, this file's status to Implemented |
 
-Slice 2 can run before slice 0 lands. It then generates sans and heading only, and the mono step follows the sync.
+Slices 1 and 2 may need to land together if slice 1 alone breaks the build (removed tokens leave unknown classes). If so, do them as one PR with two commits.
 
-## 10. Done when
+## 11. Done when
 
-1. `shadcn add <any component>` drops in and renders in Ken OS's look with no edits to tokens.
-2. Every page, dialog, toast and popover renders body text in the design system's body family. Computed `font-family` checked in the browser on Overview, a dialog, a toast and the code editor.
-3. No request to `fonts.googleapis.com` from the app; fonts are served from the app's own origin.
-4. `pnpm test`, `pnpm check` and `pnpm build` pass; `design:generate --check` passes for both generated files.
-5. A family change in the design system reaches the app through one sync PR, without hand-editing `layout.tsx` or `globals.css`.
-6. The design system's live previews still show the right fonts.
+1. `globals.css` matches a fresh `shadcn init` for this `components.json`, plus an empty "Ken OS" section.
+2. Every primitive in `components/ui` that comes from the registry matches the registry default.
+3. No Ken OS value remains anywhere in `apps/web/src` (the new test passes).
+4. Every page, dialog, toast and the code editor render in Geist or Geist Mono. Computed `font-family` checked in the browser on Overview, a dialog, a toast and the code editor.
+5. No request to `fonts.googleapis.com`.
+6. `pnpm test`, `pnpm check`, `pnpm build` pass, and every module is opened locally and still works: Resume, Skills, Engineering, Terms, Project Memory.
+7. The owner has looked at the hosted app. A local build isn't proof of the hosted result.
 
 ## Open questions
 
-- **Mono family:** which one? It's the owner's pick in the design system.
-- **Previews:** load fonts in the preview bundle with `@font-face` files from the app build, or a Google Fonts link inside the preview only? Recommended: the Google Fonts link, since previews are owner-only and outside the app.
+- **Status colours:** the Badge-variant mapping in §3 drops green and amber entirely. If Solid versus Partly there needs colour back, that is the first build-on-top addition.
+- **Design preview bundle:** keep with a preview-only font link (recommended), or pause.
