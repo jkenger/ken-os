@@ -8,8 +8,8 @@
 # drafted by Claude Code on 2026-10-10. The whole file is a draft until the owner approves it: set `status: approved`
 # and `reviewedOn` in a reviewed commit.
 
-status: draft
-reviewedOn: null
+status: approved
+reviewedOn: "2026-10-10"
 
 topics:
   # Foundations · JavaScript runtime & async

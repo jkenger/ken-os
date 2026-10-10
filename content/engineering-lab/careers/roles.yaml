@@ -8,8 +8,8 @@
 # 13 new chapter ids and the Full-stack developer role removed. It is a draft until the owner re-approves it in a
 # reviewed commit: set `status: approved` and move `approvedOn` to that date.
 
-status: draft
-approvedOn: null
+status: approved
+approvedOn: "2026-10-10"
 note: >-
   Drafted on 2026-10-03 by Claude Code, approved by the owner on 2026-10-05, remapped on 2026-10-10. Level summaries
   follow the public Dropbox engineering career framework (IC1 to IC3). The chapter lists per level are a judgement

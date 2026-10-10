@@ -1,6 +1,6 @@
 # Engineering rebuild
 
-Status: approved by the owner, 10 Oct 2026. Built the same day in 8 stacked PRs (section 9). Waiting on: owner approval of `points.yaml` and `roles.yaml`, and a walk through the hosted app.
+Status: approved by the owner, 10 Oct 2026. Built the same day in 8 stacked PRs (section 9); `points.yaml` and `roles.yaml` re-approved the same day. Waiting on: a walk through the hosted app.
 
 ## Decision
 

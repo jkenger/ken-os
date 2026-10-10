@@ -1231,8 +1231,8 @@ export const topicMap: TopicMap = {
 };
 
 export const careers: Careers = {
-  "status": "draft",
-  "approvedOn": null,
+  "status": "approved",
+  "approvedOn": "2026-10-10",
   "note": "Drafted on 2026-10-03 by Claude Code, approved by the owner on 2026-10-05, remapped on 2026-10-10. Level summaries follow the public Dropbox engineering career framework (IC1 to IC3). The chapter lists per level are a judgement mapping those summaries onto this course, and the AI area has no published ladder behind it yet.",
   "definitions": {
     "developer": "Builds features well. Owns a feature from data to UI to deploy, and relies on someone else, or on luck, for how it behaves once real users and failures arrive.",
@@ -1619,7 +1619,7 @@ export const assessment: AssessmentSet = {
   ]
 };
 
-export const pointsReview = {"status":"draft","reviewedOn":null} as const;
+export const pointsReview = {"status":"approved","reviewedOn":"2026-10-10"} as const;
 
 export const labs: LabDefinition[] = [
   {
