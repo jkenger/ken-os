@@ -1,4 +1,4 @@
-import { activeRun } from "@/features/engineering-lab/run-state";
+import { activeRun } from "@/features/engineering-lab/assessment-store";
 import { text, termsRoute } from "@/features/terms/api";
 import { lookupTerm, TermInputError } from "@/features/terms/store";
 

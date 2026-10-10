@@ -1,33 +1,18 @@
 import { SOURCE_DOMAINS, type SourceGroup } from "./sources";
 import { AREAS, type Area } from "./topics";
 
-// Shapes for the career profile, the Guide conversation, daily practice and the radar.
-// Design: docs/architecture/engineering-lab-profile.md, sections 3, 5, 6 and 7.
+// Shapes for the intake, daily practice and the radar. Spec: docs/architecture/engineering-rebuild.md.
 
-/** What the intake records. It steers where questions start and the first pace estimate, and is never evidence. */
+/** The intake: three answers before the assessment. Never graded, never evidence. */
 export interface IntakeAnswers {
+  /** What you're building. */
   building: string;
-  stack: string;
-  aiWork: string;
+  /** The role you're aiming for, a role id from roles.yaml. */
+  role: string;
   weeklyHours: number;
-  /** A role id the owner leans toward before the baseline. Only a starting preference for the Guide: never a direction, never evidence. */
-  growToward?: string;
 }
 
-export interface GuideMessage {
-  role: "owner" | "guide";
-  text: string;
-  at: string;
-}
-
-/** A chapter the Guide suggested and the owner approved. It joins the outline unwritten. */
-export interface AddedChapter {
-  id: string;
-  title: string;
-  area: Area;
-  reason: string;
-  addedAt: string;
-}
+export const WEEKLY_HOURS = { min: 1, max: 40 } as const;
 
 export const RADAR_TAGS = ["learn", "experiment", "explore", "recheck"] as const;
 export type RadarTag = (typeof RADAR_TAGS)[number];
@@ -48,9 +33,12 @@ export function radarDomains(areas: Area[]): string[] {
 /** Radar items a week may hold, not counting automatic re-check flags. */
 export const RADAR_WEEKLY_LIMIT = 5;
 
-export type DailyItem =
-  | { type: "question"; topicId: string; assessmentId: string; itemIndex: number }
-  | { type: "lab"; topicId: string; labId: string };
+/** One item of a day's practice. The question is written when the set is made. */
+export interface DailyItem {
+  topicId: string;
+  reason: "due" | "changed" | "misconception" | "active";
+  questionId: string;
+}
 
 /** ISO week, like 2026-W40, so a radar run belongs to exactly one week. */
 export function isoWeek(date: Date): string {
@@ -64,10 +52,4 @@ export function isoWeek(date: Date): string {
 
 export function isArea(value: unknown): value is Area {
   return typeof value === "string" && (AREAS as readonly string[]).includes(value);
-}
-
-/** A stable id for an added chapter from its title, prefixed so it can never clash with a course chapter. */
-export function addedChapterId(title: string): string {
-  const slug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
-  return `added-${slug || "chapter"}`;
 }

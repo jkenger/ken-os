@@ -1,6 +1,0 @@
-id: rag-prompt
-title: Build a grounded prompt within budget
-topics: [ai.rag]
-modes: [implement]
-runner: browser
-timeoutMs: 2000

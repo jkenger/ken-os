@@ -1,17 +1,17 @@
-# Engineering Lab roles and levels. Design: docs/architecture/engineering-lab-profile.md, section 2.
+# Engineering roles and levels. Spec: docs/architecture/engineering-rebuild.md, section 5.
 #
 # A level, per area, is a set of chapters at a depth: aware, build (topic depth `working`) or run (also the `deep`
 # topics). Each level lists only what it adds; the levels below it still count. A role sets the level it needs in
-# each area it cares about. After editing, run `pnpm --filter @ken-os/web lab:generate`.
+# each area it cares about. Levels count Proven topics only. After editing, run `pnpm --filter @ken-os/web lab:generate`.
 #
-# Approved by the owner on 2026-10-05 and expected to change as goals and the course grow. Edit it in a reviewed
-# commit: keep `status: approved` and move `approvedOn` to the date of the change. Levels are recomputed from the
-# current file, so an edit can move a level up or down without any new answers.
+# Approved by the owner on 2026-10-05, then reopened by the Engineering rebuild on 2026-10-10: chapters remapped to the
+# 13 new chapter ids and the Full-stack developer role removed. It is a draft until the owner re-approves it in a
+# reviewed commit: set `status: approved` and move `approvedOn` to that date.
 
 status: approved
-approvedOn: "2026-10-05"
+approvedOn: "2026-10-10"
 note: >-
-  Drafted on 2026-10-03 by Claude Code and approved by the owner on 2026-10-05, open to revision. Level summaries
+  Drafted on 2026-10-03 by Claude Code, approved by the owner on 2026-10-05, remapped on 2026-10-10. Level summaries
   follow the public Dropbox engineering career framework (IC1 to IC3). The chapter lists per level are a judgement
   mapping those summaries onto this course, and the AI area has no published ladder behind it yet.
 
@@ -43,77 +43,73 @@ areas:
     summary: The JavaScript runtime, async code, HTTP and the browser. Every role needs these, and gaps here block the rest.
     levels:
       junior:
-        - { chapter: m1-js-runtime, depth: build }
-        - { chapter: m2-http-browser, depth: aware }
+        - { chapter: js-runtime, depth: build }
+        - { chapter: http-browser, depth: aware }
       mid:
-        - { chapter: m1-js-runtime, depth: run }
-        - { chapter: m2-http-browser, depth: build }
+        - { chapter: js-runtime, depth: run }
+        - { chapter: http-browser, depth: build }
       senior:
-        - { chapter: m2-http-browser, depth: run }
+        - { chapter: http-browser, depth: run }
 
   - id: frontend
     title: Frontend
     summary: How React renders and keeps the screen in sync with data.
     levels:
       junior:
-        - { chapter: m4-react, depth: aware }
+        - { chapter: react, depth: aware }
       mid:
-        - { chapter: m4-react, depth: build }
+        - { chapter: react, depth: build }
       senior:
-        - { chapter: m4-react, depth: run }
+        - { chapter: react, depth: run }
 
   - id: backend
-    title: Backend and data
+    title: Backend & Data
     summary: API boundaries, transactions, concurrency, indexes and safe retries.
     levels:
       junior:
-        - { chapter: m4-api-boundaries, depth: build }
-        - { chapter: m3-db-concurrency, depth: aware }
+        - { chapter: api-boundaries, depth: build }
+        - { chapter: databases, depth: aware }
       mid:
-        - { chapter: m3-db-concurrency, depth: build }
+        - { chapter: databases, depth: build }
       senior:
-        - { chapter: m3-db-concurrency, depth: run }
-        - { chapter: m4-api-boundaries, depth: run }
+        - { chapter: databases, depth: run }
+        - { chapter: api-boundaries, depth: run }
 
   - id: production
     title: Production
     summary: Testing, security, reliability, observability and scale. What keeps a product working with real users.
     levels:
       junior:
-        - { chapter: m5-testing-security, depth: aware }
+        - { chapter: testing-security, depth: aware }
       mid:
-        - { chapter: m5-testing-security, depth: build }
-        - { chapter: m6-production-reliability, depth: aware }
-        - { chapter: m7-observability, depth: aware }
+        - { chapter: testing-security, depth: build }
+        - { chapter: reliability, depth: aware }
+        - { chapter: observability, depth: aware }
       senior:
-        - { chapter: m6-production-reliability, depth: run }
-        - { chapter: m7-observability, depth: build }
-        - { chapter: m8-architecture-scale, depth: build }
+        - { chapter: reliability, depth: run }
+        - { chapter: observability, depth: build }
+        - { chapter: architecture, depth: build }
 
   - id: ai
     title: Applied AI
     summary: Building products on top of models. Retrieval, structured outputs, tools, agents, evals and cost. Not training models.
     levels:
       junior:
-        - { chapter: a2-model-interfaces, depth: build }
-        - { chapter: a1-retrieval, depth: aware }
+        - { chapter: model-interfaces, depth: build }
+        - { chapter: retrieval, depth: aware }
       mid:
-        - { chapter: a1-retrieval, depth: build }
-        - { chapter: a3-agents, depth: build }
-        - { chapter: a4-ai-production, depth: aware }
+        - { chapter: retrieval, depth: build }
+        - { chapter: agents, depth: build }
+        - { chapter: ai-production, depth: aware }
       senior:
-        - { chapter: a1-retrieval, depth: run }
-        - { chapter: a4-ai-production, depth: run }
+        - { chapter: retrieval, depth: run }
+        - { chapter: ai-production, depth: run }
 
 roles:
   - id: frontend-developer
     title: Frontend developer
     summary: Builds the parts of a product people see and touch, on top of someone else's backend.
     targets: { foundations: mid, frontend: senior, backend: junior }
-  - id: fullstack-developer
-    title: Full-stack developer
-    summary: Builds features across the whole stack, from database to screen.
-    targets: { foundations: mid, frontend: mid, backend: mid, production: junior }
   - id: fullstack-engineer
     title: Full-stack engineer
     summary: Owns whole systems across the stack, including how they fail and scale in production.

@@ -1,9 +1,7 @@
-import { isKnown, type TopicProgress } from "./mastery";
-import { AREAS, type Area, type ModuleInfo, type TopicMap } from "./topics";
-import { stageOne } from "./runs";
-import type { Label } from "./types";
+import { AREAS, type Area, type TopicMap } from "./topics";
 
-// Roles, levels and the career profile. Design: docs/architecture/engineering-lab-profile.md, section 2.
+// Roles, levels and the Profile rules. Spec: docs/architecture/engineering-rebuild.md, section 5.
+// Levels come only from Proven topics; the assessment never sets one.
 // Everything here is plain rules over progress, so the profile can be tested without a database or a browser.
 
 export const LEVELS = ["junior", "mid", "senior"] as const;
@@ -111,7 +109,7 @@ export function parseCareers(raw: unknown, map: TopicMap): Careers {
   });
   if (levels.map((level) => level.id).join() !== LEVELS.join()) fail("levels", `expected ${LEVELS.join(", ")} in order`);
 
-  const chapters = new Map(map.modules.map((module) => [module.id, module]));
+  const chapters = new Map(map.chapters.map((module) => [module.id, module]));
   const areas = list(input.areas, "areas").map((value, index): AreaLadder => {
     const item = value as Record<string, unknown>;
     const where = `areas[${index}]`;
@@ -161,56 +159,38 @@ export function parseCareers(raw: unknown, map: TopicMap): Careers {
   };
 }
 
-/** Labels from a chapter's screening questions, for chapters with no written topics. Voided answers left out. */
-export interface ChapterScreen {
-  chapterId: string;
-  labels: Label[];
+/** The topics a requirement counts, and how many of them must be proven. */
+export interface RequiredSlots {
+  chapter: string;
+  depth: Depth;
+  topicIds: string[];
+  need: number;
 }
 
-export interface ChapterState {
-  chapterId: string;
-  area: Area;
-  depth: ReachedDepth;
-  /** True when the depth rests on screening answers, or the chapter still has topics that aren't written. */
-  estimate: boolean;
-  written: number;
-  known: number;
-  planned: number;
+/**
+ * aware: any one topic of the chapter proven. build: every `working` topic proven (every topic, if none is `working`).
+ * run: every topic proven, the `deep` ones included.
+ */
+export function slotsFor(map: TopicMap, requirement: Requirement): RequiredSlots {
+  const topics = map.topics.filter((topic) => topic.chapter === requirement.chapter);
+  if (requirement.depth === "aware") return { ...requirement, topicIds: topics.map((topic) => topic.id), need: Math.min(1, topics.length) };
+  const working = topics.filter((topic) => topic.depth === "working");
+  const counted = requirement.depth === "run" || !working.length ? topics : working;
+  return { ...requirement, topicIds: counted.map((topic) => topic.id), need: counted.length };
 }
 
-const SCREEN_SCORE: Record<Label, number> = { solid: 2, partial: 1, rusty: 1, misconception: 0, gap: 0 };
+/** How many of a requirement's needed topics are proven. */
+export function provenIn(slots: RequiredSlots, proven: ReadonlySet<string>) {
+  return Math.min(slots.need, slots.topicIds.filter((id) => proven.has(id)).length);
+}
 
-/** How deep each chapter goes right now, from proofs and placements, or from screening answers when unwritten. */
-export function chapterStates(map: TopicMap, progress: TopicProgress[], screens: ChapterScreen[], extraChapters: ModuleInfo[] = []): ChapterState[] {
-  const byTopic = new Map(progress.map((item) => [item.topicId, item]));
-  return [...map.modules, ...extraChapters].map((module) => {
-    const topics = map.topics.filter((topic) => topic.module === module.id);
-    if (!topics.length) {
-      const labels = screens.filter((screen) => screen.chapterId === module.id).flatMap((screen) => screen.labels);
-      const score = labels.reduce((sum, label) => sum + SCREEN_SCORE[label], 0);
-      // Screening never shows "can run it": two questions can't show you keep something working in production.
-      const depth: ReachedDepth = labels.length >= 2 && score >= 4 ? "build" : score >= 2 ? "aware" : "none";
-      return { chapterId: module.id, area: module.area, depth, estimate: true, written: 0, known: 0, planned: module.planned.length };
-    }
-    const known = topics.filter((topic) => { const item = byTopic.get(topic.id); return item ? isKnown(item) : false; });
-    const knownIds = new Set(known.map((topic) => topic.id));
-    const working = topics.filter((topic) => topic.depth === "working");
-    const allKnown = known.length === topics.length;
-    const workingKnown = working.length ? working.every((topic) => knownIds.has(topic.id)) : allKnown;
-    const someSense = topics.some((topic) => {
-      const item = byTopic.get(topic.id);
-      if (!item) return false;
-      if (isKnown(item) || ["solid", "partial", "rusty"].includes(item.baselineLabel ?? "")) return true;
-      return Object.values(item.evidence).some((evidence) => evidence && ["solid", "partial", "rusty"].includes(evidence.label));
-    });
-    const fromTopics: ReachedDepth = allKnown ? "run" : workingKnown ? "build" : someSense ? "aware" : "none";
-    // A chapter cleared in stage 1 of a two-stage assessment counts as "can build it", as an estimate, until its topics
-    // are proven or placed. It never lowers what the topics already show.
-    const labels = screens.filter((screen) => screen.chapterId === module.id).flatMap((screen) => screen.labels);
-    const cleared = stageOne(labels) === "cleared" && (fromTopics === "none" || fromTopics === "aware");
-    const depth: ReachedDepth = cleared ? "build" : fromTopics;
-    return { chapterId: module.id, area: module.area, depth, estimate: module.planned.length > 0 || cleared, written: topics.length, known: known.length, planned: module.planned.length };
-  });
+/** The deepest depth a chapter has reached, from proven topics only. */
+export function chapterDepth(map: TopicMap, chapter: string, proven: ReadonlySet<string>): ReachedDepth {
+  for (const depth of [...DEPTHS].reverse()) {
+    const slots = slotsFor(map, { chapter, depth });
+    if (slots.need > 0 && provenIn(slots, proven) >= slots.need) return depth;
+  }
+  return "none";
 }
 
 /** Every requirement up to and including a level, keeping the deepest depth asked for each chapter. */
@@ -225,149 +205,129 @@ export function requirementsUpTo(ladder: AreaLadder, level: Level): Requirement[
   return [...merged].map(([chapter, depth]) => ({ chapter, depth }));
 }
 
-export interface MissingChapter {
-  chapter: string;
-  area: Area;
-  need: Depth;
-  have: ReachedDepth;
-}
-
-export interface AreaLevel {
-  area: Area;
-  /** Null until every junior requirement is met. */
-  level: Level | null;
-  estimate: boolean;
-  /** The next level up and what it still needs. Null at senior. */
-  next: null | {
-    level: Level;
-    /** Requirements this step adds over the current level (new chapters, or deeper ones), and how many are met. */
-    met: number;
-    total: number;
-    missing: MissingChapter[];
-  };
-}
-
-export function areaLevel(ladder: AreaLadder, states: ChapterState[]): AreaLevel {
-  const state = (chapter: string) => states.find((item) => item.chapterId === chapter);
-  let level: Level | null = null;
-  let estimate = false;
-  for (const step of LEVELS) {
-    const requirements = requirementsUpTo(ladder, step);
-    const missing = requirements.filter((requirement) => !depthAtLeast(state(requirement.chapter)?.depth ?? "none", requirement.depth));
-    if (missing.length) {
-      const below = level ? requirementsUpTo(ladder, level) : [];
-      const added = requirements.filter((requirement) => !below.some((item) => item.chapter === requirement.chapter && DEPTHS.indexOf(item.depth) >= DEPTHS.indexOf(requirement.depth)));
-      return {
-        area: ladder.id,
-        level,
-        estimate,
-        next: {
-          level: step,
-          met: added.length - missing.length,
-          total: added.length,
-          missing: missing.map((requirement) => ({ chapter: requirement.chapter, area: ladder.id, need: requirement.depth, have: state(requirement.chapter)?.depth ?? "none" })),
-        },
-      };
-    }
-    level = step;
-    estimate = estimate || requirements.some((requirement) => state(requirement.chapter)?.estimate);
-  }
-  return { area: ladder.id, level, estimate, next: null };
-}
-
 export function levelRank(level: Level | null) {
   return level === null ? -1 : LEVELS.indexOf(level);
 }
 
-export interface RoleDistance {
-  roleId: string;
-  /** The role's areas: what it needs and where you are. */
-  areas: { area: Area; target: Level; current: Level | null; estimate: boolean }[];
-  /** Your level for this role: the lowest of its areas, so one weak area caps it. */
-  overall: Level | null;
-  missing: MissingChapter[];
+/** Proven over needed, across a set of requirements. */
+export interface Coverage {
+  proven: number;
+  required: number;
 }
 
-export function roleDistance(role: RoleInfo, careers: Careers, states: ChapterState[]): RoleDistance {
-  const state = (chapter: string) => states.find((item) => item.chapterId === chapter);
-  const areas = (Object.entries(role.targets) as [Area, Level][]).map(([area, target]) => {
-    const current = areaLevel(careers.areas.find((item) => item.id === area)!, states);
-    return { area, target, current: current.level, estimate: current.estimate };
-  });
-  const missing: MissingChapter[] = [];
-  for (const { area, target } of areas) {
-    const ladder = careers.areas.find((item) => item.id === area)!;
-    for (const requirement of requirementsUpTo(ladder, target)) {
-      const have = state(requirement.chapter)?.depth ?? "none";
-      if (!depthAtLeast(have, requirement.depth)) missing.push({ chapter: requirement.chapter, area, need: requirement.depth, have });
-    }
+export function coverageOf(map: TopicMap, requirements: Requirement[], proven: ReadonlySet<string>): Coverage {
+  const slots = requirements.map((requirement) => slotsFor(map, requirement));
+  return { proven: slots.reduce((sum, slot) => sum + provenIn(slot, proven), 0), required: slots.reduce((sum, slot) => sum + slot.need, 0) };
+}
+
+/** The highest level whose requirements are all met, from proven topics only. Null means Developing. */
+export function evidenceLevel(map: TopicMap, ladder: AreaLadder, proven: ReadonlySet<string>): Level | null {
+  let level: Level | null = null;
+  for (const step of LEVELS) {
+    const { proven: have, required } = coverageOf(map, requirementsUpTo(ladder, step), proven);
+    if (required === 0 || have < required) break;
+    level = step;
   }
-  const lowest = areas.reduce<Level | null | undefined>((low, item) => low === undefined || levelRank(item.current) < levelRank(low) ? item.current : low, undefined);
-  return { roleId: role.id, areas, overall: lowest ?? null, missing };
+  return level;
 }
 
-export interface RoadmapStep extends MissingChapter {
-  /** The lowest level of the role that needs this chapter at this depth. */
-  forLevel: Level;
-  hours: number;
-  /** Weeks from now until this step should be done, at the given pace. */
-  doneByWeek: number;
-}
-
-const HOURS = { working: 3, deep: 5, planned: 4, aware: 1 } as const;
-
-/**
- * The role's missing chapters in learning order, as stages: a chapter the role needs at "can run it" shows up first at
- * the depth its lowest level needs, then again where a higher level needs it deeper. Order: what the lowest level
- * needs first, foundations before the areas built on them, then course order. Pace is an estimate from hours per
- * week, or from real history when there is some.
- */
-export function roadmap(role: RoleInfo, careers: Careers, states: ChapterState[], map: TopicMap, progress: TopicProgress[], weeklyHours: number, hoursPerTopic?: number): RoadmapStep[] {
-  const known = new Set(progress.filter(isKnown).map((item) => item.topicId));
-  const moduleOrder = new Map(map.modules.map((module, index) => [module.id, index]));
-  const state = (chapter: string) => states.find((item) => item.chapterId === chapter);
-  const stages: (MissingChapter & { forLevel: Level })[] = [];
-  for (const [area, target] of Object.entries(role.targets) as [Area, Level][]) {
-    const ladder = careers.areas.find((item) => item.id === area)!;
-    for (const level of LEVELS.slice(0, LEVELS.indexOf(target) + 1)) {
-      for (const requirement of requirementsUpTo(ladder, level)) {
-        const have = state(requirement.chapter)?.depth ?? "none";
-        if (depthAtLeast(have, requirement.depth)) continue;
-        if (stages.some((stage) => stage.chapter === requirement.chapter && DEPTHS.indexOf(stage.need) >= DEPTHS.indexOf(requirement.depth))) continue;
-        stages.push({ chapter: requirement.chapter, area, need: requirement.depth, have, forLevel: level });
-      }
-    }
+/** The topics still needed for a set of requirements, in course order. An aware requirement asks for its first topic. */
+export function missingTopics(map: TopicMap, requirements: Requirement[], proven: ReadonlySet<string>): string[] {
+  const missing = new Set<string>();
+  for (const requirement of requirements) {
+    const slots = slotsFor(map, requirement);
+    if (provenIn(slots, proven) >= slots.need) continue;
+    const open = slots.topicIds.filter((id) => !proven.has(id));
+    for (const id of requirement.depth === "aware" ? open.slice(0, 1) : open) missing.add(id);
   }
-  stages.sort((a, b) => LEVELS.indexOf(a.forLevel) - LEVELS.indexOf(b.forLevel)
-    || AREAS.indexOf(a.area) - AREAS.indexOf(b.area)
-    || (moduleOrder.get(a.chapter) ?? 99) - (moduleOrder.get(b.chapter) ?? 99));
-  const perWeek = Math.max(1, weeklyHours);
-  let total = 0;
-  return stages.map((stage, index) => {
-    const module = map.modules.find((entry) => entry.id === stage.chapter);
-    const earlier = stages.slice(0, index).filter((item) => item.chapter === stage.chapter);
-    // A deeper stage only counts what the earlier stage of the same chapter didn't.
-    const builtBefore = earlier.some((item) => item.need === "build");
-    const plannedBefore = earlier.some((item) => item.need !== "aware");
-    const topics = map.topics.filter((topic) => topic.module === stage.chapter && !known.has(topic.id)
-      && (stage.need === "run" ? !builtBefore || topic.depth === "deep" : topic.depth === "working"));
-    let hours = stage.need === "aware"
-      ? HOURS.aware
-      : topics.reduce((sum, topic) => sum + (hoursPerTopic ?? HOURS[topic.depth]), 0) + (plannedBefore ? 0 : (module?.planned.length ?? 0) * (hoursPerTopic ?? HOURS.planned));
-    hours = Math.max(Math.round(hours * 10) / 10, 1);
-    total += hours;
-    // The have of a later stage is what the earlier stage leaves you with.
-    const have = earlier.length ? earlier[earlier.length - 1].need : stage.have;
-    return { ...stage, have, hours, doneByWeek: Math.ceil(total / perWeek) };
+  return map.topics.map((topic) => topic.id).filter((id) => missing.has(id));
+}
+
+export interface AreaRow {
+  area: Area;
+  /** Null: Developing. */
+  level: Level | null;
+  /** The level the target role needs here, or null when the role doesn't need this area. */
+  target: Level | null;
+  /** Proven required topics over required topics, for the target level. Zero over zero without a target. */
+  coverage: Coverage;
+  /** Required topics for the target that aren't proven yet, in course order. */
+  remaining: string[];
+}
+
+/** One row per area for the Profile table. */
+export function areaRows(map: TopicMap, careers: Careers, role: RoleInfo | null, proven: ReadonlySet<string>): AreaRow[] {
+  return careers.areas.map((ladder) => {
+    const target = role?.targets[ladder.id] ?? null;
+    const requirements = target ? requirementsUpTo(ladder, target) : [];
+    return {
+      area: ladder.id,
+      level: evidenceLevel(map, ladder, proven),
+      target,
+      coverage: coverageOf(map, requirements, proven),
+      remaining: missingTopics(map, requirements, proven),
+    };
   });
 }
 
+/** The overall level for a role: the weakest of its required areas. Null when any of them is still Developing. */
+export function overallLevel(rows: AreaRow[]): Level | null {
+  const needed = rows.filter((row) => row.target);
+  if (!needed.length) return null;
+  return needed.reduce<Level | null>((low, row) => levelRank(row.level) < levelRank(low) ? row.level : low, needed[0].level);
+}
+
+export interface Milestone {
+  area: Area;
+  level: Level;
+  coverage: Coverage;
+  /** The next topic to prove for it. */
+  topicId: string;
+}
+
 /**
- * Hours a topic really takes, from history: average days from first answer to proven, times hours per day.
- * Null until three topics are proven, so a single quick topic can't set the pace.
+ * The next milestone: of the areas below their target, the next level up that is closest to done. Ties go to the area
+ * earlier in the course. Null when every target is met.
  */
-export function measuredHoursPerTopic(spans: { firstAt: string; provenAt: string }[], weeklyHours: number): number | null {
-  if (spans.length < 3) return null;
-  const days = spans.reduce((sum, span) => sum + Math.max(1, (new Date(span.provenAt).getTime() - new Date(span.firstAt).getTime()) / 86_400_000), 0) / spans.length;
-  return Math.round(days * (weeklyHours / 7) * 10) / 10;
+export function nextMilestone(map: TopicMap, careers: Careers, role: RoleInfo, proven: ReadonlySet<string>): Milestone | null {
+  let best: (Milestone & { ratio: number }) | null = null;
+  for (const ladder of careers.areas) {
+    const target = role.targets[ladder.id];
+    if (!target) continue;
+    const current = evidenceLevel(map, ladder, proven);
+    if (levelRank(current) >= levelRank(target)) continue;
+    const level = LEVELS[levelRank(current) + 1];
+    const requirements = requirementsUpTo(ladder, level);
+    const coverage = coverageOf(map, requirements, proven);
+    const topicId = missingTopics(map, requirements, proven)[0];
+    if (!topicId) continue;
+    const ratio = coverage.required ? coverage.proven / coverage.required : 0;
+    if (!best || ratio > best.ratio) best = { area: ladder.id, level, coverage, topicId, ratio };
+  }
+  if (!best) return null;
+  return { area: best.area, level: best.level, coverage: best.coverage, topicId: best.topicId };
+}
+
+/** The chapters a role needs at any level up to its targets. */
+export function chaptersForRole(careers: Careers, role: RoleInfo): Set<string> {
+  const chapters = new Set<string>();
+  for (const ladder of careers.areas) {
+    const target = role.targets[ladder.id];
+    if (target) for (const requirement of requirementsUpTo(ladder, target)) chapters.add(requirement.chapter);
+  }
+  return chapters;
+}
+
+/**
+ * My path: only the chapters the role needs, weakest area first, then course order. Area scores come from the
+ * assessment, lower is weaker; an area without a score sorts after the scored ones, in course order.
+ */
+export function pathChapters(map: TopicMap, careers: Careers, role: RoleInfo, areaScores: Partial<Record<Area, number>>): string[] {
+  const needed = chaptersForRole(careers, role);
+  const order = (area: Area) => areaScores[area] ?? Number.POSITIVE_INFINITY;
+  return map.chapters
+    .map((chapter, index) => ({ chapter, index }))
+    .filter(({ chapter }) => needed.has(chapter.id))
+    .sort((a, b) => order(a.chapter.area) - order(b.chapter.area) || AREAS.indexOf(a.chapter.area) - AREAS.indexOf(b.chapter.area) || a.index - b.index)
+    .map(({ chapter }) => chapter.id);
 }

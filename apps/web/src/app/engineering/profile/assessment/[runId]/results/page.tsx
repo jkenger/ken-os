@@ -1,21 +1,18 @@
 import { notFound, redirect } from "next/navigation";
-import { EngineeringAssessment } from "@/components/engineering/assessment";
-import { getRunView } from "@/features/engineering-lab/assessment-run";
-import { getProfileRow } from "@/features/engineering-lab/profile-store";
-import { completedBaseline } from "@/features/engineering-lab/run-state";
+import { Results } from "@/components/engineering/results";
+import { getRunEvidence } from "@/features/engineering-lab/assessment-store";
+import { careers, topicMap } from "@/features/engineering-lab/curriculum";
 import { engineering } from "@/features/engineering-lab/routes";
-import { careers } from "@/features/engineering-lab/curriculum";
 import { getSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
-/** A finished run's results at a stable address. An unfinished run goes back to the assessment, where it continues. */
 export default async function ResultsPage({ params }: { params: Promise<{ runId: string }> }) {
   const session = await getSession();
   if (!session) redirect("/");
-  const { runId } = await params;
-  const [run, profile, baselineRun] = await Promise.all([getRunView(session.userId, runId).catch(() => null), getProfileRow(session.userId), completedBaseline(session.userId)]);
+  const run = await getRunEvidence(session.userId, (await params).runId).catch(() => null);
   if (!run) notFound();
-  if (!run.completedAt) redirect(engineering.assessment({ run: run.id }));
-  return <EngineeringAssessment email={session.email} intake={profile?.intake ?? null} run={run} baselineDone={Boolean(baselineRun)} roles={careers.roles.map((role) => ({ id: role.id, title: role.title }))} />;
+  // Results only exist for a finished assessment; an open one goes back to its next question.
+  if (!run.completedAt) redirect(engineering.assessment);
+  return <Results email={session.email} runId={run.id} items={run.items} areas={topicMap.areas.map((area) => ({ id: area.id, title: area.title }))} />;
 }

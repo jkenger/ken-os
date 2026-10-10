@@ -1,6 +1,0 @@
-id: unique-signup
-title: One account per email, even under a double-click
-topics: [db.constraints]
-modes: [debug]
-runner: pglite
-timeoutMs: 20000

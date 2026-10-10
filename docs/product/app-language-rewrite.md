@@ -175,6 +175,8 @@ This is the one marketing page, so one tagline may stay.
 
 ## Slice 3: Lab home and profile
 
+> **Superseded on 10 Oct 2026** by [engineering-rebuild.md](../architecture/engineering-rebuild.md), which gives the Engineering wording. These screens no longer exist.
+
 ### `components/lab/lab-today.tsx`
 
 | Now | After |
@@ -279,6 +281,8 @@ This is the one marketing page, so one tagline may stay.
 
 ## Slice 4: Lab assessment (`components/lab/assessment/lab-assessment.tsx`)
 
+> **Superseded on 10 Oct 2026** by [engineering-rebuild.md](../architecture/engineering-rebuild.md), which gives the Engineering wording. These screens no longer exist.
+
 | Now | After |
 |---|---|
 | ENGINEERING LAB · (label) | remove |
@@ -311,6 +315,8 @@ This is the one marketing page, so one tagline may stay.
 ---
 
 ## Slice 5: Lab course, topic, practice
+
+> **Superseded on 10 Oct 2026** by [engineering-rebuild.md](../architecture/engineering-rebuild.md), which gives the Engineering wording. These screens no longer exist.
 
 ### `components/lab/lab-topics.tsx`
 

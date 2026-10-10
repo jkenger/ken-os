@@ -2,176 +2,104 @@
 
 import { Fragment, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { IconArrowRight, IconCheck, IconChevronDown, IconChevronRight, IconCircle, IconCircleDashed, IconSearch } from "@tabler/icons-react";
-import { isKnown, isUnassessed, type TopicMap, type TopicProgress } from "@ken-os/domain";
+import { IconArrowRight, IconCheck, IconChevronDown, IconChevronRight, IconCircle, IconCircleDot, IconSearch } from "@tabler/icons-react";
+import type { TopicMap, TopicState } from "@ken-os/domain";
 import { WorkspaceShell } from "@/components/workspace-shell";
-import { post } from "@/components/lab/topic/client";
 import { statusWords } from "@/components/lab/words";
-import { toast } from "@/components/ui/toaster";
-import { engineering, type TopicStep } from "@/features/engineering-lab/routes";
+import type { PathView } from "@/features/engineering-lab/path-store";
+import { engineering } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
 import { PageHeading, panel } from "./kit";
 import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
-// Learn, one to one with the selected 2026-10-06 prototype: My path / Gaps / All topics, search, chapters as cards
-// that open into topic rows, and the Planner's next topic beside them. Statuses are the existing progress rules.
+// Learn. Spec: docs/architecture/engineering-rebuild.md, section 3 (Learn).
 
-type Scope = "path" | "gaps" | "all";
-const scopes: [Scope, string][] = [["path", "My path"], ["gaps", "Gaps"], ["all", "All topics"]];
+type Scope = "path" | "all";
 
-/** Known for the outline: proven, placed, or rated solid by the baseline. */
-function knownHere(progress: TopicProgress) {
-  return isKnown(progress) || progress.baselineLabel === "solid";
+function StateIcon({ state }: { state: TopicState }) {
+  if (state === "PROVEN") return <IconCheck size={18} className="shrink-0 text-foreground" aria-hidden="true" />;
+  if (state === "NOT_STARTED") return <IconCircle size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />;
+  return <IconCircleDot size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />;
 }
 
-function statusOf(progress: TopicProgress, locked: boolean) {
-  if (progress.status === "VALIDATED") return "Proven";
-  if (knownHere(progress) && progress.status === "NOT_STARTED") return "Known";
-  if (isUnassessed(progress)) return "Not assessed";
-  if (locked) return "Needs prerequisites";
-  return statusWords[progress.status];
-}
-
-export function EngineeringLearn({ email, map, progress, assessable, path = null, upNext = null, closedBook = false }: {
-  email: string; map: TopicMap; progress: TopicProgress[]; assessable: string[];
-  /** Chapters the chosen direction needs. Null without a direction. */
-  path?: string[] | null;
-  upNext?: { topicId: string; title: string; step: TopicStep; reason: string } | null;
-  closedBook?: boolean;
-}) {
-  const router = useRouter();
-  const [scope, setScope] = useState<Scope>(path ? "path" : "all");
+export function Learn({ email, map, view, area, closedBook }: { email: string; map: TopicMap; view: PathView; area: string | null; closedBook: boolean }) {
+  const [scope, setScope] = useState<Scope>(view.path ? "path" : "all");
   const [query, setQuery] = useState("");
-  const [placing, setPlacing] = useState("");
-  const byId = new Map(progress.map((item) => [item.topicId, item]));
   const needle = query.trim().toLowerCase();
-  const options = path ? scopes : scopes.filter(([id]) => id !== "path");
 
-  // Chapters in book order (engineering-assessment-v2.md, A6); a chapter outside every book keeps its course order.
-  const inBooks = map.books.flatMap((book) => book.chapters);
-  const ordered = [...inBooks.map((id) => map.modules.find((module) => module.id === id)!).filter(Boolean), ...map.modules.filter((module) => !inBooks.includes(module.id))];
-  const chapters = ordered.map((module, index) => {
-    const book = map.books.find((item) => item.chapters.includes(module.id));
-    const track = book ? { title: book.title } : map.tracks.find((item) => item.id === module.track);
-    const topics = map.topics.filter((topic) => topic.module === module.id).map((topic) => {
-      const item = byId.get(topic.id)!;
-      const locked = item.status === "NOT_STARTED" && topic.requires.some((id) => !isKnown(byId.get(id)!));
-      return { topic, item, locked, status: statusOf(item, locked) };
-    });
-    return { module, number: index + 1, track: track?.title ?? "", bookId: book?.id ?? null, topics };
-  }).filter(({ module, topics, track }) => {
-    if (scope === "path" && path && !path.includes(module.id)) return false;
-    if (scope === "gaps" && topics.every(({ item }) => knownHere(item)) && module.planned.length === 0) return false;
-    if (!needle) return true;
-    return [module.title, track, ...topics.map(({ topic }) => topic.title)].join(" ").toLowerCase().includes(needle);
-  });
-
-  async function place(topicId: string) {
-    setPlacing(topicId);
-    try {
-      await post(`/api/lab/topics/${topicId}/assessment`, { kind: "placement" });
-      router.push(engineering.topic(topicId, "check"));
-    } catch (error) {
-      toast({ tone: "error", title: "Couldn't write the placement check. Try again", description: error instanceof Error ? error.message : undefined });
-      setPlacing("");
-    }
-  }
-
-  const openChapter = upNext ? map.topics.find((topic) => topic.id === upNext.topicId)?.module : undefined;
+  const order = scope === "path" && view.path ? view.path : map.chapters.map((chapter) => chapter.id);
+  const chapters = order
+    .map((id) => map.chapters.find((chapter) => chapter.id === id)!)
+    .filter((chapter) => !area || chapter.area === area)
+    .map((chapter) => {
+      const topics = map.topics.filter((topic) => topic.chapter === chapter.id);
+      const shown = needle ? topics.filter((topic) => topic.title.toLowerCase().includes(needle) || chapter.title.toLowerCase().includes(needle)) : topics;
+      return { chapter, topics, shown, proven: topics.filter((topic) => view.states[topic.id] === "PROVEN").length };
+    })
+    .filter((item) => item.shown.length);
 
   return (
     <WorkspaceShell email={email} active="lab" tab="learn" termLookup={!closedBook}>
-      <div className="mx-auto max-w-375 px-3 pb-9 pt-6 md:px-5 md:pt-7 min-[1500px]:pt-9">
-        <PageHeading title="Learn" description="Topics by chapter, each with a lesson, a prediction, a lab and proof" />
-
-        <div className="mx-1 mb-5 block justify-between gap-5 md:mx-3.5 md:mb-6 md:flex">
+      <div className="mx-auto max-w-7xl px-3 pb-9 pt-6 md:px-5 md:pt-7.5">
+        <PageHeading title="Learn" badge={area ? map.areas.find((item) => item.id === area)?.title : undefined} />
+        <div className="mx-1.5 mb-5 block justify-between gap-5 md:mx-3.5 md:mb-6.5 md:flex">
           <ToggleGroup type="single" spacing={1} value={scope} onValueChange={(next) => { if (next) setScope(next as Scope); }} aria-label="Topics shown" className="mb-3.5 rounded-md bg-secondary p-1 md:mb-0">
-            {options.map(([id, name]) => (
-              <ToggleGroupItem key={id} value={id} className="h-auto rounded-full px-3.5 py-2 text-sm font-normal text-muted-foreground hover:bg-transparent hover:text-foreground data-[state=on]:bg-card data-[state=on]:text-foreground">{name}</ToggleGroupItem>
+            {([["path", "My path"], ["all", "All topics"]] as const).map(([id, name]) => (
+              <ToggleGroupItem key={id} value={id} disabled={id === "path" && !view.path} className="h-auto rounded-full px-3.5 py-2 text-xs font-normal text-muted-foreground hover:bg-transparent hover:text-foreground data-[state=on]:bg-card data-[state=on]:text-foreground data-[state=on]:">{name}</ToggleGroupItem>
             ))}
           </ToggleGroup>
           <InputGroup className="h-11 rounded-full md:w-80">
             <InputGroupAddon><IconSearch size={18} aria-hidden="true" /></InputGroupAddon>
-            <InputGroupInput aria-label="Search topics" placeholder="Search topics or chapters" value={query} onChange={(event) => setQuery(event.target.value)} />
+            <InputGroupInput aria-label="Search topics" placeholder="Search topics" value={query} onChange={(event) => setQuery(event.target.value)} />
           </InputGroup>
         </div>
 
-        <div className="mx-1 grid grid-cols-1 gap-4 md:mx-3.5 md:grid-cols-[2fr_1fr] md:gap-5 lg:grid-cols-[minmax(0,2.4fr)_minmax(230px,1fr)] lg:gap-8">
+        <div className="mx-1.5 grid grid-cols-1 gap-4.5 md:mx-3.5 md:grid-cols-[2fr_1fr] md:gap-5 lg:grid-cols-[minmax(0,2.4fr)_minmax(230px,1fr)] lg:gap-8">
           <section className="min-w-0">
-            {chapters.map(({ module, number, track, bookId, topics }, position) => {
-              const book = bookId && chapters[position - 1]?.bookId !== bookId ? map.books.find((item) => item.id === bookId) : null;
-              const done = topics.filter(({ item }) => item.status === "VALIDATED").length;
-              const known = topics.filter(({ item }) => knownHere(item)).length;
-              const rows = scope === "gaps" ? topics.filter(({ item }) => !knownHere(item)) : topics;
+            {!chapters.length && (
+              <div className={cn(panel, "p-7 text-center")}>
+                <h2 className="text-base font-semibold">No topics found</h2>
+                <Button type="button" variant="outline" className="mt-4" onClick={() => setQuery("")}>Clear search</Button>
+              </div>
+            )}
+            {chapters.map(({ chapter, shown, topics, proven }, position) => {
+              const newArea = position === 0 || chapters[position - 1].chapter.area !== chapter.area;
               return (
-                <Fragment key={module.id}>
-                {book && (
-                  <div className={cn("mb-3.5", position > 0 && "mt-8")}>
-                    <h2 className="text-lg font-bold tracking-tight">{book.title}</h2>
-                    <p className="mt-0.5 text-sm text-muted-foreground">{book.summary}</p>
-                  </div>
-                )}
-                <details className={cn(panel, "group mb-3")} open={Boolean(needle) || module.id === openChapter}>
-                  <summary className="flex cursor-pointer list-none items-center gap-2 px-3.5 py-4 md:gap-5 md:px-5 md:py-5 [&::-webkit-details-marker]:hidden">
-                    <div className="min-w-0 flex-1">
-                      <small className="text-xs text-muted-foreground">{track} · Chapter {number}</small>
-                      <h3 className="mt-1 text-sm font-semibold md:text-sm">{module.title}</h3>
-                    </div>
-                    <span className="ml-auto shrink-0 text-xs text-muted-foreground md:text-xs">{topics.length ? `${done} / ${topics.length} proven${known > done ? ` · ${known - done} known` : ""}` : "Not written yet"}</span>
-                    <IconChevronDown size={18} className="shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
-                  </summary>
-                  {rows.map(({ topic, item, status }) => (
-                    <div key={topic.id} className="flex w-full items-center gap-2.5 border-t border-border px-3.5 py-3.5 text-left hover:bg-muted/50 md:gap-3 md:px-5 md:py-4">
-                      {item.status === "VALIDATED" || knownHere(item) ? <IconCheck size={18} className="shrink-0 text-foreground" aria-hidden="true" />
-                        : isUnassessed(item) ? <IconCircleDashed size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
-                          : <IconCircle size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />}
-                      <Link href={engineering.topic(topic.id)} className="min-w-0 flex-1 text-xs font-medium hover:text-primary md:text-sm">{topic.title}</Link>
-                      {isUnassessed(item) && assessable.includes(topic.id) && (
-                        <Button variant="link" size="xs" type="button" disabled={placing !== ""} onClick={() => void place(topic.id)} className="h-auto shrink-0 px-0 text-xs font-normal">
-                          {placing === topic.id ? "Writing questions…" : "Placement check"}
-                        </Button>
-                      )}
-                      <span className="ml-auto shrink-0 text-xs text-muted-foreground">{status}</span>
-                      <Link href={engineering.topic(topic.id)} aria-label={`Open ${topic.title}`} className="shrink-0 text-muted-foreground"><IconChevronRight size={18} aria-hidden="true" /></Link>
-                    </div>
-                  ))}
-                  {scope === "gaps" && rows.length === 0 && topics.length > 0 && <p className="border-t border-border px-5 py-4 text-xs text-muted-foreground">No gaps</p>}
-                  {module.planned.map((title) => (
-                    <div key={title} className="flex items-center gap-3 border-t border-border px-5 py-4 text-sm text-muted-foreground">
-                      <IconCircleDashed size={18} aria-hidden="true" /><span className="flex-1">{title}</span><span className="text-xs">Not written yet</span>
-                    </div>
-                  ))}
-                </details>
+                <Fragment key={chapter.id}>
+                  {newArea && <h2 className={cn("mb-3 text-lg font-bold tracking-tight", position > 0 && "mt-8")}>{map.areas.find((item) => item.id === chapter.area)?.title}</h2>}
+                  <details className={cn(panel, "group mb-3")} open={Boolean(needle) || shown.some((topic) => topic.id === view.next?.id)}>
+                    <summary className="flex cursor-pointer list-none items-center gap-2.5 px-4 py-4.5 md:gap-5 md:px-5 md:py-5 [&::-webkit-details-marker]:hidden">
+                      <h3 className="min-w-0 flex-1 text-sm font-semibold md:text-sm">{chapter.title}</h3>
+                      <span className="ml-auto shrink-0 text-xs text-muted-foreground md:text-xs">{proven} / {topics.length} proven</span>
+                      <IconChevronDown size={18} className="shrink-0 text-muted-foreground transition-transform group-open:rotate-180" aria-hidden="true" />
+                    </summary>
+                    {shown.map((topic) => {
+                      const state = view.states[topic.id] ?? "NOT_STARTED";
+                      return (
+                        <Link key={topic.id} href={engineering.topic(topic.id)} className="flex w-full items-center gap-2.5 border-t border-border px-4 py-4 text-left hover:bg-muted/50 md:gap-3.5 md:px-5.5 md:py-4">
+                          <StateIcon state={state} />
+                          <span className="min-w-0 flex-1 text-xs font-medium md:text-xs">{topic.title}</span>
+                          <span className="ml-auto shrink-0 text-xs text-muted-foreground">{statusWords[state]}</span>
+                          <IconChevronRight size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
+                        </Link>
+                      );
+                    })}
+                  </details>
                 </Fragment>
               );
             })}
-            {chapters.length === 0 && (
-              <div className={cn(panel, "p-9 text-center")}>
-                <h3 className="text-base font-semibold">No topics found</h3>
-                <p className="mb-4 mt-1.5 text-sm text-muted-foreground">Try a broader word</p>
-                <Button variant="outline" type="button" onClick={() => { setQuery(""); setScope("all"); }}>Clear search</Button>
-              </div>
-            )}
           </section>
-
-          <aside className="py-2.5 text-sm text-muted-foreground md:py-3.5">
-            <h3 className="text-base font-semibold text-foreground">Up next</h3>
-            {upNext ? (
+          <aside className={cn(panel, "h-fit p-5")}>
+            <small className="text-sm font-semibold text-muted-foreground">Next</small>
+            {view.next ? (
               <>
-                <p className="mb-4 mt-1.5 leading-relaxed"><strong className="font-semibold text-foreground">{upNext.title}</strong> · {upNext.reason}</p>
-                <Button asChild><Link href={engineering.topic(upNext.topicId, upNext.step)}>Continue topic<IconArrowRight size={18} aria-hidden="true" /></Link></Button>
+                <h2 className="mt-2.5 text-xl font-bold tracking-tight">{view.next.title}</h2>
+                <p className="mb-5 mt-1.5 text-xs text-muted-foreground">{view.next.area} · {view.next.chapter} · {statusWords[view.next.state]}</p>
+                <Button asChild className="w-full"><Link href={engineering.topic(view.next.id)}>Continue topic<IconArrowRight size={18} aria-hidden="true" /></Link></Button>
               </>
-            ) : <p className="mt-1.5">Nothing due</p>}
-            <hr className="my-6 border-border" />
-            <strong className="text-foreground">Statuses</strong>
-            <ul className="mt-2 list-disc space-y-1 pl-5 leading-loose">
-              <li>Proven: every required kind of question solid, one checked by code</li>
-              <li>Known: placed by an all-solid placement check or assessment</li>
-              <li>Opening a lesson never proves a topic</li>
-            </ul>
+            ) : <h2 className="mt-2.5 text-xl font-bold">Every topic proven</h2>}
           </aside>
         </div>
       </div>

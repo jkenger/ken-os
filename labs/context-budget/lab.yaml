@@ -1,6 +1,6 @@
 id: context-budget
 title: Fit the right context into the window
-topics: [ai.context_engineering]
+topics: [ai.cost_latency]
 modes: [implement]
 runner: browser
 timeoutMs: 2000

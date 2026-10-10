@@ -4,17 +4,17 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { IconExternalLink, IconX } from "@tabler/icons-react";
-import { post } from "@/components/lab/topic/client";
+import { post, send } from "@/components/lab/topic/client";
 import { radarTagWords } from "@/components/lab/words";
 import { toast } from "@/components/ui/toaster";
-import type { ProfileView } from "@/features/engineering-lab/profile-store";
+import type { RadarView } from "@/features/engineering-lab/radar-store";
 import { engineering } from "@/features/engineering-lab/routes";
 import { Badge } from "./kit";
 import { Dialog } from "./flow";
 import { Button } from "@/components/ui/button";
 
 /** The weekly radar in a dialog, as the prototype opens it from Overview: scan, items with sources, dismiss. */
-export function RadarDialog({ profile }: { profile: ProfileView }) {
+export function RadarDialog({ radar }: { radar: RadarView }) {
   const router = useRouter();
   const [busy, setBusy] = useState("");
   async function act(key: string, action: () => Promise<unknown>, success?: string) {
@@ -23,11 +23,10 @@ export function RadarDialog({ profile }: { profile: ProfileView }) {
     catch (error) { toast({ tone: "error", title: "Couldn't update the radar. Try again", description: error instanceof Error ? error.message : undefined }); }
     finally { setBusy(""); }
   }
-  const { radar } = profile;
   return (
     <Dialog title="Radar" trigger="View radar">
-      {!profile.direction ? (
-        <div className="py-6 text-center"><h3 className="!mt-0">No direction yet</h3><p>The radar scans for your direction</p><Button asChild variant="outline" className="mt-4"><Link href={engineering.direction()}>Choose direction</Link></Button></div>
+      {!radar.direction ? (
+        <div className="py-6 text-center"><h3 className="!mt-0">No direction yet</h3><p>Choose a target role first</p><Button asChild variant="outline" className="mt-4"><Link href={engineering.direction}>Choose direction</Link></Button></div>
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-3">
@@ -43,14 +42,14 @@ export function RadarDialog({ profile }: { profile: ProfileView }) {
                   <div className="min-w-0">
                     <p className="flex flex-wrap items-center gap-2 font-semibold text-foreground"><Badge>{radarTagWords[item.tag]}</Badge>{item.title}</p>
                     <p className="mt-1">{item.reason}</p>
-                    {item.topicId ? <Button asChild variant="link"><Link href={engineering.topic(item.topicId, "check")}>Re-check</Link></Button>
+                    {item.topicId ? <Button asChild variant="link"><Link href={engineering.topic(item.topicId)}>Re-check</Link></Button>
                       : item.sourceUrl && <Button asChild variant="link"><a href={item.sourceUrl} target="_blank" rel="noreferrer">Source<IconExternalLink size={14} aria-hidden="true" /></a></Button>}
                   </div>
-                  <Button variant="ghost" size="icon-sm" type="button" aria-label={`Dismiss ${item.title}`} disabled={Boolean(busy)} onClick={() => void act(item.id, () => post("/api/lab/profile", { action: "dismissRadar", id: item.id }))}><IconX size={16} aria-hidden="true" /></Button>
+                  <Button variant="ghost" size="icon-sm" type="button" aria-label={`Dismiss ${item.title}`} disabled={Boolean(busy)} onClick={() => void act(item.id, () => send("/api/lab/radar", "DELETE", { id: item.id }))}><IconX size={16} aria-hidden="true" /></Button>
                 </li>
               ))}
             </ul>
-          ) : <div className="py-6 text-center"><h3 className="!mt-0">No verified radar items yet</h3><p>Up to five changes a week from official sources, each tied to your direction</p></div>}
+          ) : <div className="py-6 text-center"><h3 className="!mt-0">No changes yet</h3><p>Checked weekly from official docs</p></div>}
         </>
       )}
     </Dialog>

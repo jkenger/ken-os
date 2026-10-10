@@ -1,0 +1,8 @@
+id: chunk-boundaries
+title: Split on meaning, not on characters
+topics: [ai.chunking]
+modes: [implement]
+runner: browser
+timeoutMs: 2000
+hint: >-
+  First split the text into sections at heading lines, then each section into sentences with `/(?<=[.!?])\s+/`. Pack sentences until the next one would pass `maxChars`, and start the next chunk from the last sentence you packed.

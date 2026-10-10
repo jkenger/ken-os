@@ -1,47 +1,28 @@
-import type { Mode, Topic } from "@ken-os/domain";
-import { careers, labs, topicMap } from "./generated/curriculum.generated";
+import type { LabDefinition, Topic } from "@ken-os/domain";
+import { assessment, authoredTopics, careers, labs, topicMap } from "./generated/curriculum.generated";
 
-export { careers, labs, topicMap };
+export { assessment, authoredTopics, careers, labs, topicMap };
 
 export function findChapter(chapterId: string) {
-  return topicMap.modules.find((module) => module.id === chapterId);
+  return topicMap.chapters.find((chapter) => chapter.id === chapterId);
 }
 
 export function findTopic(topicId: string): Topic | undefined {
   return topicMap.topics.find((topic) => topic.id === topicId);
 }
 
-/** Where a topic sits in the course, for breadcrumbs: its track and its chapter's number within that track. */
+/** Where a topic sits in the course: its area and chapter, for "Area · Chapter". */
 export function placeOf(topic: Topic) {
-  const chapter = topicMap.modules.find((item) => item.id === topic.module)!;
-  const inTrack = topicMap.modules.filter((item) => item.track === chapter.track);
-  const track = topicMap.tracks.find((item) => item.id === chapter.track);
-  return { track: track?.title ?? chapter.track, chapterNumber: inTrack.indexOf(chapter) + 1, chapterTitle: chapter.title };
-}
-
-export function labsForTopic(topicId: string) {
-  return labs.filter((lab) => lab.topics.includes(topicId));
+  const chapter = topicMap.chapters.find((item) => item.id === topic.chapter)!;
+  const area = topicMap.areas.find((item) => item.id === chapter.area)!;
+  return { area: area.title, chapter: chapter.title };
 }
 
 export function findLab(labId: string) {
   return labs.find((lab) => lab.id === labId);
 }
 
-/**
- * Modes the Assessor writes questions for. A mode an authored lab already proves with code is left to the lab,
- * so the Assessor never stands in for a test.
- */
-export function assessorModes(topic: Topic): Mode[] {
-  const labModes = new Set(labsForTopic(topic.id).flatMap((lab) => lab.modes));
-  return topic.prove.filter((mode) => !labModes.has(mode));
+/** A topic's one exercise. Every topic has exactly one; the generator checks it. */
+export function exerciseFor(topic: Topic): LabDefinition {
+  return findLab(topic.labs[0])!;
 }
-
-/**
- * Question types for a topic in the baseline assessment: the Assessor's types, and the same type twice when there is
- * only one, so every topic can get a follow-up without the Assessor standing in for a lab's test.
- */
-export function runModes(topic: Topic): Mode[] {
-  const modes = assessorModes(topic);
-  return modes.length === 1 ? [modes[0], modes[0]] : modes;
-}
-

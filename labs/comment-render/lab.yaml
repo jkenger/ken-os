@@ -1,6 +1,6 @@
 id: comment-render
 title: Render a comment without running it
-topics: [sec.xss]
+topics: [sec.injection]
 modes: [implement]
 runner: browser
 timeoutMs: 2000

@@ -1,22 +1,19 @@
 import { redirect } from "next/navigation";
-import { EngineeringAssessment } from "@/components/engineering/assessment";
-import { getRunView, latestRun } from "@/features/engineering-lab/assessment-run";
+import { Assessment, Intake } from "@/components/engineering/assessment";
+import { activeRun, getRunView } from "@/features/engineering-lab/assessment-store";
+import { careers, topicMap } from "@/features/engineering-lab/curriculum";
 import { getProfileRow } from "@/features/engineering-lab/profile-store";
-import { activeRun, completedBaseline } from "@/features/engineering-lab/run-state";
-import { careers } from "@/features/engineering-lab/curriculum";
 import { getSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
-export default async function AssessmentPage({ searchParams }: { searchParams: Promise<{ run?: string; chapter?: string; new?: string }> }) {
+// The open assessment, or the intake that starts a new one.
+export default async function AssessmentPage() {
   const session = await getSession();
   if (!session) redirect("/");
-  const { run: runParam, chapter, new: fresh } = await searchParams;
-  const [profile, open, baselineRun] = await Promise.all([getProfileRow(session.userId), activeRun(session.userId), completedBaseline(session.userId)]);
-  // An open run comes first; otherwise the run asked for, or the latest one. "?new=1" shows the start screen for a checkpoint.
-  const runId = runParam ?? open?.id ?? (fresh ? null : (await latestRun(session.userId))?.id ?? null);
-  const run = runId ? await getRunView(session.userId, runId, chapter).catch(() => null) : null;
-  return (
-    <EngineeringAssessment email={session.email} intake={profile?.intake ?? null} run={run} baselineDone={Boolean(baselineRun)} roles={careers.roles.map((role) => ({ id: role.id, title: role.title }))} />
-  );
+  const open = await activeRun(session.userId);
+  const areas = topicMap.areas.map((area) => ({ id: area.id, title: area.title }));
+  if (open) return <Assessment email={session.email} run={await getRunView(session.userId, open.id)} areas={areas} />;
+  const profile = await getProfileRow(session.userId);
+  return <Intake email={session.email} intake={profile?.intake ?? null} roles={careers.roles.map((role) => ({ id: role.id, title: role.title }))} />;
 }

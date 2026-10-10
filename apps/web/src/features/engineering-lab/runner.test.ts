@@ -3,7 +3,7 @@ import { test } from "node:test";
 import vm from "node:vm";
 import { PGlite } from "@electric-sql/pglite";
 import { scoreProbe } from "@ken-os/domain";
-import { labs } from "./generated/curriculum.generated";
+import { assessment, labs } from "./generated/curriculum.generated";
 import { labSolutions } from "./generated/lab-solutions.generated";
 import { buildLabScript, buildPredictScript, type WorkerMessage } from "./runner/harness";
 
@@ -84,6 +84,12 @@ test("predict scripts capture real event-loop order", async () => {
     console.log("D");
   `));
   assert.deepEqual(result, { type: "output", logs: ["A", "D", "C", "B"] });
+});
+
+test("every predict question in the assessment stores what its code really prints", async () => {
+  for (const question of assessment.questions.filter((item) => item.kind === "predict")) {
+    assert.deepEqual(await run(buildPredictScript(question.code!)), { type: "output", logs: question.expectedOutput }, question.id);
+  }
 });
 
 test("a syntax error is reported instead of hanging", async () => {

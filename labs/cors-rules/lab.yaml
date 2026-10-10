@@ -1,6 +1,6 @@
 id: cors-rules
 title: What another site may read
-topics: [web.cors]
+topics: [web.cookies_cors]
 modes: [predict]
 runner: probe
 probe: cors-rules

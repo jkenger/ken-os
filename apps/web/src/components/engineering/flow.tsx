@@ -1,21 +1,15 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
-import { IconArrowRight, IconCheck } from "@tabler/icons-react";
-import { parsePredictedLines, type PublicItem } from "@ken-os/domain";
-import { CodeBlock, Markdown } from "@/components/lab/markdown";
-import { realOutput } from "@/components/lab/topic/client";
+import { useState, type ReactNode } from "react";
+import { IconCheck } from "@tabler/icons-react";
 import { cn } from "@/lib/utils";
-import { eyebrow, Notice, panel } from "./kit";
+import { panel } from "./kit";
 import { Button } from "@/components/ui/button";
 import { Dialog as DialogRoot, DialogContent, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
-// The task flows of the selected 2026-10-06 prototype (intro, assessment, practice, direction): a form or question
-// panel beside a notes column, a session heading with a progress track, success views and dialogs. Sizes are the
-// prototype's; colours are the Ken OS tokens.
+// The task flows (intake, assessment, practice, direction): a form or question panel beside a notes column, a session
+// heading with a progress track, success views and dialogs.
 
 /** Spacing and size for a form control under its label; the control itself is the shadcn primitive. */
 export const field = "mt-2.5 py-3";
@@ -103,104 +97,7 @@ export function Confidence({ value, onChange, disabled }: { value: number | null
   );
 }
 
-export interface QuestionPayload {
-  selfRating: number;
-  text?: string;
-  lines?: string[];
-  why?: string;
-  actualOutput?: string[];
-}
-
 export const questionPanel = cn(panel, "p-6 md:p-7");
-
-/**
- * One question as the prototype lays it out: eyebrow, title, prompt, code, the answer box, confidence, then submit.
- * A prediction gets the printed lines (checked by running the code after you submit) and an optional, ungraded why.
- * After submitting, `after` replaces the button; the answer stays visible and locked.
- */
-export function QuestionPanel({ kicker, title, item, submitLabel = "Submit answer", onSubmit, after, locked = false, draftKey }: {
-  kicker: string; title: string; item: PublicItem; submitLabel?: string;
-  /** Keeps an unsent answer in this browser across a refresh, until it's submitted. A convenience, never evidence. */
-  draftKey?: string;
-  onSubmit: (payload: QuestionPayload) => Promise<void>;
-  /** Shown once the answer is in: feedback, the next action. */
-  after?: ReactNode;
-  locked?: boolean;
-}) {
-  const [answer, setAnswer] = useState("");
-  const [why, setWhy] = useState("");
-  const [rating, setRating] = useState<number | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [problem, setProblem] = useState("");
-  const [sent, setSent] = useState(false);
-  const done = locked || sent;
-  const predict = item.mode === "predict";
-  const storageKey = draftKey ? `ken-draft:${draftKey}` : null;
-
-  useEffect(() => {
-    if (!storageKey || locked) return;
-    try {
-      const saved = JSON.parse(window.localStorage.getItem(storageKey) ?? "null") as { answer?: string; why?: string } | null;
-      if (saved?.answer) setAnswer(saved.answer);
-      if (saved?.why) setWhy(saved.why);
-    } catch { /* storage unavailable: start empty */ }
-  }, [storageKey, locked]);
-
-  useEffect(() => {
-    if (!storageKey || done) return;
-    try {
-      if (answer || why) window.localStorage.setItem(storageKey, JSON.stringify({ answer, why }));
-      else window.localStorage.removeItem(storageKey);
-    } catch { /* storage unavailable: nothing to keep */ }
-  }, [storageKey, done, answer, why]);
-
-  async function submit() {
-    if (!rating) return;
-    setBusy(true); setProblem("");
-    try {
-      await onSubmit(predict
-        ? { selfRating: rating, lines: parsePredictedLines(answer), ...(why.trim() ? { why: why.trim() } : {}), actualOutput: await realOutput(item.code ?? "") }
-        : { selfRating: rating, text: answer });
-      setSent(true);
-      if (storageKey) { try { window.localStorage.removeItem(storageKey); } catch { /* nothing to clear */ } }
-    } catch (error) {
-      setProblem(error instanceof Error ? error.message : "Couldn't save. Try again");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <section className={questionPanel}>
-      <div className={eyebrow}>{kicker}</div>
-      <h2 className="my-3 text-2xl font-bold tracking-tight md:text-2xl">{title}</h2>
-      <div className="text-sm leading-relaxed md:text-base [&_p]:text-foreground"><Markdown text={item.prompt} /></div>
-      {item.code && <div className="mt-4"><CodeBlock code={item.code} label="Question code" /></div>}
-      {!locked && (
-        <>
-          <Label className={cn(fieldLabel, "mt-6")}>
-            {predict ? "Your answer · one line per log" : "Your answer"}
-            <Textarea className={cn(field, "min-h-28 resize-y leading-relaxed", predict && "font-mono")} spellCheck={!predict} value={answer} disabled={done}
-              placeholder={predict ? "What prints, in order" : "What you think happens and why"} onChange={(event) => setAnswer(event.target.value)} />
-          </Label>
-          {predict && (
-            <Label className={cn(fieldLabel, "mt-5")}>
-              Why <span className="font-normal text-muted-foreground">· optional, not graded</span>
-              <Textarea className={cn(field, "min-h-20 resize-y leading-relaxed")} value={why} disabled={done} onChange={(event) => setWhy(event.target.value)} />
-            </Label>
-          )}
-          <Confidence value={rating} onChange={setRating} disabled={done} />
-        </>
-      )}
-      {problem && <Notice tone="error"><strong className="font-semibold">Couldn&apos;t save</strong><p className="mt-1">{problem}. Your answer is still here</p></Notice>}
-      {done ? after : (
-        <Button type="button" disabled={busy || !answer.trim() || !rating} onClick={() => void submit()}>
-          {busy ? (predict ? "Running…" : "Grading…") : submitLabel}<IconArrowRight size={18} aria-hidden="true" />
-        </Button>
-      )}
-    </section>
-  );
-}
 
 /** The block under a submitted answer: a badge, a heading, a line or two, and the next action. */
 export function Feedback({ badge, title, children, action }: { badge?: ReactNode; title: string; children?: ReactNode; action?: ReactNode }) {

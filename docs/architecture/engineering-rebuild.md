@@ -1,6 +1,6 @@
 # Engineering rebuild
 
-Status: approved by the owner, 10 Oct 2026. Not yet implemented. Written for a separate implementation session.
+Status: approved by the owner, 10 Oct 2026. Built the same day in 8 stacked PRs (section 9); `points.yaml` and `roles.yaml` re-approved the same day. Waiting on: a walk through the hosted app.
 
 ## Decision
 
@@ -277,7 +277,7 @@ Hand-written from the reference, stored as the lesson for `rel.retry_backoff` so
 
 **Exercise** (`labs/retry-policy`, replaced to match)
 
-- File `retry-policy.js`, starter `export function retryDelay(attempt) { return 1000; }`
+- File `retry-policy.js`, starter `function retryDelay(attempt) { return 1000; }` (labs load as plain scripts, so no `export`)
 - Task: Return exponential delays starting at 1000 ms, capped at 30000 ms. Attempts start at zero.
 - Tests: attempt 0 → 1000, 1 → 2000, 2 → 4000, 8 → 30000. Browser worker, 2 s limit.
 - Hint: Use `2 ** attempt` to grow the delay, multiply by the first delay, cap with `Math.min`.
@@ -308,6 +308,21 @@ Start fresh. The owner's progress is deleted, not migrated.
 - **Schema follows the deploy rule:** add new columns first; drop `lab_chapter_screens`, `lab_progress_changes`, `lab_solution_reveals` and unused columns in a later release once nothing reads them.
 - **Progress status values** shrink to `NOT_STARTED`, `LEARNING`, `PRACTICING`, `PROVEN`. Rename or map `VALIDATED` to `PROVEN` and delete `NEEDS_REVISIT` in code.
 - **AI-use limit and its reset** are unchanged.
+
+### As built (slice 2, migration `0010_engineering_rebuild.sql`)
+
+The old tables were shaped around topic-by-topic placement, so the new flow got its own tables instead of reusing them. Old ones are emptied by the same migration and dropped later.
+
+| Table | Holds |
+|---|---|
+| `lab_runs` | One assessment, with its 5 questions copied in so a taken assessment never changes |
+| `lab_run_answers` | One locked answer per question; the grade fills in afterwards and stays empty while grading has failed |
+| `lab_questions` | Proof prompts and practice questions the Assessor wrote, with rubric and reference answer |
+| `lab_topic_events` | Lesson opened, exercise run, solution opened, proof, review. Topic state is rebuilt from these |
+| `lab_progress` | A cache of the rebuilt state; never the source of truth |
+| `lab_profile` | Intake, target role, and a new `weekly_hours` column |
+
+Kept as they were: `lab_source_packets`, `lab_lessons`, `lab_daily_sets`, `lab_radar_items`. Emptied now, dropped in a later release: `lab_assessment_runs`, `lab_assessments`, `lab_attempts`, `lab_chapter_screens`, `lab_solution_reveals`, `lab_progress_changes`, and `lab_profile.conversation` and `added_chapters`.
 
 ## 7. Removed from the build
 
@@ -352,6 +367,21 @@ One branch and one PR per slice, cut from up-to-date `main`. Each slice runs `pn
 | 8 | `docs/engineering-rebuild-done` | Word list update, AGENTS.md and architecture docs pointed here, old docs marked superseded |
 
 Slices 1 and 2 go first. Owner approval of `points.yaml` and `roles.yaml` is needed before slice 5 ships.
+
+### As built (10 Oct 2026)
+
+All 8 slices are built as stacked PRs, each on the one before: jkenger/ken-os#49 (curriculum, with this spec), #50 (reset), #52 (assessment), #53 (topic), #54 (profile), #55 (overview and learn), #56 (practice) and the docs slice. Merge them in order. While only some are merged, Engineering pages that aren't built yet are missing, so merge the stack together.
+
+Decisions made while building, within the spec:
+
+- **Predict question.** Question 1 has an Output field (one printed line each) next to Answer, so the printed lines can be compared in code before the Assessor reads the reason. The grade is the weaker of the two.
+- **Answers save without the AI.** Submitting an assessment answer never waits on an AI check; if grading fails the answer stays saved with Retry.
+- **Show solution.** Allowed any time behind a confirm. It resets the editor to the starter and closes Prove until the exercise passes again.
+- **Shared exercise.** A run of `event-loop-order` counts for both Promises and Event loop, and so does opening its solution.
+- **Lab starters are plain scripts,** so the Retry & backoff starter has no `export` (section 4).
+- **Lesson sources** are the packet sources the lesson cites; a hand-written lesson carries its own, checked on the date in its file.
+- **Practice questions** are written when the day's set is made (up to 4 AI uses) and stay the same all day.
+- **Retired words** (Known, Not assessed, Needs another look, Placement check, Checkpoint, Baseline, Estimate, Guide, Not yet junior) are on the app-language banned list, so they can't come back on a screen.
 
 ## 10. Done when
 

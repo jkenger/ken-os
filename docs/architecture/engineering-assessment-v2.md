@@ -1,5 +1,8 @@
 # Engineering assessment v2: two-stage, book-grounded
 
+> **Superseded on 10 Oct 2026** by [engineering-rebuild.md](engineering-rebuild.md). Kept as history; don't build from it.
+
+
 Status: **agreed with the owner on 2026-10-06; built on `feat/assessment-v2` (all five slices). Assessment points approved by the owner on 2026-10-06. The conversational screen (slice 5) was undone by the owner on 2026-10-08; the assessment is back to one question panel at a time.** It changes how the intro and the assessment run, before the owner takes the in-app baseline. It extends [engineering-lab-profile.md](engineering-lab-profile.md) section 4 and [engineering-redesign.md](engineering-redesign.md). The Oct 1 baseline was retired on 2026-10-06.
 
 ## Decisions (owner, 2026-10-06)

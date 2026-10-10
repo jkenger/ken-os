@@ -1,0 +1,8 @@
+id: service-split
+title: Stop reaching into another service's table
+topics: [arch.service_boundaries]
+modes: [implement]
+runner: browser
+timeoutMs: 2000
+hint: >-
+  Keep the Map inside `createInventory` and return only `available` and `reserve`. In `place`, await `inventory.reserve` inside try/catch.

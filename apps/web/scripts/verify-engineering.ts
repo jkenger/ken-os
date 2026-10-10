@@ -1,27 +1,22 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { config } from "dotenv";
-import { eq } from "drizzle-orm";
-import type { AssessmentItem } from "@ken-os/domain";
+import { and, eq } from "drizzle-orm";
 import { closeDb, db } from "../src/lib/db";
-import { answerStageOne } from "./stage-one";
-import { labAssessments, users } from "../src/lib/schema";
+import { labDailySets, labProgress, labQuestions, labRunAnswers, users } from "../src/lib/schema";
+import { ownerDay } from "../src/lib/day";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
 
-// Database check for the Engineering redesign's new read paths, with no AI calls: evidence links are owner-only,
-// results inside an unfinished assessment chapter stay hidden, and the Profile table agrees with the profile view.
-// Throwaway users keep the owner's record untouched. Design: docs/architecture/engineering-redesign.md.
+// Database check for Engineering, with no AI calls. Throwaway users keep the owner's record untouched.
+// Spec: docs/architecture/engineering-rebuild.md. Run with: pnpm --filter @ken-os/web test:db:engineering
 async function main() {
   const store = await import("../src/features/engineering-lab/store");
-  const runs = await import("../src/features/engineering-lab/assessment-run");
-  const state = await import("../src/features/engineering-lab/run-state");
+  const runs = await import("../src/features/engineering-lab/assessment-store");
   const profiles = await import("../src/features/engineering-lab/profile-store");
-  const evidence = await import("../src/features/engineering-lab/evidence");
-  const { capabilityRows, nextRequirement } = await import("../src/features/engineering-lab/capabilities");
-  const { careers, topicMap } = await import("../src/features/engineering-lab/curriculum");
-  const { labAttempts } = await import("../src/lib/schema");
+  const topics = await import("../src/features/engineering-lab/topic-store");
+  const practice = await import("../src/features/engineering-lab/practice-store");
 
   const owner = `engineering-check-${randomUUID()}`;
   const other = `engineering-check-${randomUUID()}`;
@@ -30,90 +25,169 @@ async function main() {
     { id: other, email: `${other}@example.invalid`, name: "Engineering check (other)" },
   ]);
   try {
-    await profiles.saveIntake(owner, profiles.validIntake({ building: "My own products", stack: "Next.js", aiWork: "Embeddings", weeklyHours: 6 }));
-    const started = await runs.startRun(owner, "baseline");
-    const run = (await state.activeRun(owner))!;
-    assert.equal(run.id, started.id);
+    // Topic states (section 2): Learning, Practicing, then Proven only after a passed exercise and a passed proof.
+    const topicId = "rel.retry_backoff";
+    assert.equal((await store.getProgress(owner, topicId)).state, "NOT_STARTED");
+    assert.equal((await topics.openLesson(owner, topicId)).state, "LEARNING");
+    assert.equal((await topics.openLesson(owner, topicId)).state, "LEARNING", "opening again changes nothing");
+    let { progress } = await store.recordEvent(owner, { topicId, kind: "exercise_run", labId: "retry-policy", passed: false });
+    assert.equal(progress.state, "PRACTICING");
+    assert.equal(progress.exercisePassed, false);
+    ({ progress } = await store.recordEvent(owner, { topicId, kind: "exercise_run", labId: "retry-policy", passed: true }));
+    assert.equal(progress.exercisePassed, true);
+    ({ progress } = await store.recordEvent(owner, { topicId, kind: "solution_opened", labId: "retry-policy" }));
+    assert.equal(progress.exercisePassed, false, "opening the solution closes Prove again");
+    ({ progress } = await store.recordEvent(owner, { topicId, kind: "proof", passed: true, label: "solid" }));
+    assert.equal(progress.state, "PRACTICING", "a proof without a standing exercise pass proves nothing");
+    ({ progress } = await store.recordEvent(owner, { topicId, kind: "exercise_run", labId: "retry-policy", passed: true }));
+    ({ progress } = await store.recordEvent(owner, { topicId, kind: "proof", passed: true, label: "solid" }));
+    assert.equal(progress.state, "PROVEN");
+    assert.ok(progress.nextReviewAt, "a proven topic gets its first review date");
+    ({ progress } = await store.recordEvent(owner, { topicId, kind: "review", label: "gap" }));
+    assert.equal(progress.state, "PROVEN", "a bad review never takes Proven away");
+    assert.equal(progress.reviewIntervalDays, 1, "it just comes back tomorrow");
+    const [cached] = await db().select().from(labProgress).where(and(eq(labProgress.userId, owner), eq(labProgress.topicId, topicId)));
+    assert.equal(cached.status, "PROVEN", "lab_progress caches the rebuilt state");
+    assert.deepEqual([...await store.provenTopics(owner)], [topicId]);
+    assert.equal((await store.getAllProgress(other)).find((item) => item.topicId === topicId)!.state, "NOT_STARTED", "progress is per owner");
+    console.log("ok - topic states follow lesson, exercise, solution and proof events");
 
-    // Stand-in for the Assessor: the first chapter's first topic gets two code-checked predictions.
-    const first = run.plan.chapters.find((chapter) => chapter.kind === "topics" && chapter.topicIds.length > 1);
-    assert.ok(first && first.kind === "topics");
-    const predict = (n: number): AssessmentItem => ({ mode: "predict", prompt: `What prints? (${n})`, code: `console.log(${n})`, expectedOutput: [String(n)] });
-    const setId = randomUUID();
-    await db().insert(labAssessments).values({ id: setId, userId: owner, topicId: first.topicIds[0], kind: "baseline", items: [predict(1), predict(2)], promptVersion: "check", model: "none", origin: "run", runId: run.id });
-    await assert.rejects(
-      store.submitAnswer(owner, { assessmentId: setId, itemIndex: 0, selfRating: 4, response: { lines: ["1"] }, actualOutput: ["1"] }),
-      /first two questions/, "topic questions wait for the chapter's two stage-1 questions",
-    );
-    // One chapter is cleared in stage 1; every other written chapter digs into its topics.
-    const cleared = run.plan.chapters.find((chapter) => chapter.chapterId === "m8-architecture-scale")!;
-    for (const chapter of run.plan.chapters) await answerStageOne(owner, run.id, chapter, chapter === cleared ? "clear" : "drill");
-    await store.submitAnswer(owner, { assessmentId: setId, itemIndex: 0, selfRating: 4, response: { lines: ["1"] }, actualOutput: ["1"] });
-    const clearedView = (await runs.getRunView(owner, run.id)).chapters.find((chapter) => chapter.chapterId === cleared.chapterId)!;
-    assert.equal(clearedView.status, "done");
-    assert.equal(clearedView.cleared, true);
-    assert.equal(clearedView.answers.length, 2, "stage-1 answers show in the run");
-    console.log("ok - two stages: topic questions wait for stage 1; a cleared chapter is done without topic questions");
-    const [attempt] = await db().select().from(labAttempts).where(eq(labAttempts.assessmentId, setId));
-    assert.ok(attempt);
+    await assert.rejects(store.recordEvent(owner, { topicId: "js.async_races", kind: "lesson_opened" }), /Unknown topic/);
+    console.log("ok - events for deleted topics are refused");
+    // Intake and assessment (section 3). No AI key here, so grading fails and the answer must stay saved.
+    await assert.rejects(runs.startRun(owner), /intake first/);
+    await assert.rejects(profiles.saveIntake(owner, { building: "A clinic booking app", role: "nobody", weeklyHours: 5 }), /Choose a role/);
+    await assert.rejects(profiles.saveIntake(owner, { building: "A clinic booking app", role: "fullstack-applied-ai", weeklyHours: 41 }), /1 to 40/);
+    await profiles.saveIntake(owner, { building: "A clinic booking app", role: "fullstack-applied-ai", weeklyHours: 6 });
+    const saved = await profiles.getProfileRow(owner);
+    assert.equal(saved?.direction, "fullstack-applied-ai", "the intake role is the first direction");
+    assert.equal(saved?.weeklyHours, 6);
+    const { id: runId } = await runs.startRun(owner);
+    assert.equal((await runs.startRun(owner)).id, runId, "starting again resumes the open assessment");
+    assert.ok(await runs.activeRun(owner), "an open run keeps lessons and lookups closed");
+    let view = await runs.getRunView(owner, runId);
+    assert.equal(view.questions.length, 5);
+    assert.ok(!("rubric" in view.questions[0]), "rubrics stay on the server");
+    await assert.rejects(runs.submitAnswer(owner, runId, { index: 1, answer: "Skipping ahead to the second one", selfRating: 3 }), /already answered/);
+    await assert.rejects(runs.submitAnswer(owner, runId, { index: 0, answer: "Because sync code first", selfRating: 3 }), /what prints/);
+    await assert.rejects(runs.submitAnswer(owner, runId, { index: 0, answer: "Because sync code first", output: "A C B", selfRating: 9 }), /confidence/);
+    const first = await runs.submitAnswer(owner, runId, { index: 0, answer: "Synchronous code runs before the promise microtask.", output: "A\nC\nB", selfRating: 4 });
+    assert.equal(first.graded, false, "no grader here");
+    assert.deepEqual(first.answer.output, ["A", "C", "B"]);
+    view = await runs.getRunView(owner, runId);
+    assert.deepEqual(view.position, { kind: "grading", index: 0 }, "the next question waits for the grade");
+    await assert.rejects(runs.submitAnswer(owner, runId, { index: 0, answer: "A second try at the same one", output: "A", selfRating: 2 }), /already answered/);
+    await assert.rejects(runs.submitAnswer(owner, runId, { index: 1, answer: "Cancel the stale request first", selfRating: 2 }), /already answered/);
+    console.log("ok - intake, start, order and locking hold; a failed grade keeps the answer");
 
-    const during = await evidence.getEvidence(owner, attempt.id);
-    assert.ok(during);
-    assert.equal(during.result.label, "solid", "grades show after every answer, also during the run (assessment v2, A3)");
-    assert.deepEqual(during.question.expectedOutput, ["1"]);
-    assert.equal(during.selfRating, 4, "confidence is recorded independently of the grade");
-    assert.equal(during.role, "placement");
-    assert.equal(during.source?.runKind, "baseline");
-    assert.equal((await evidence.recentEvidence(owner)).length, 1, "recent evidence includes answers from the open run");
-    console.log("ok - during the run: the evidence page shows the grade, and recent evidence lists the answer");
-
-    assert.equal(await evidence.getEvidence(other, attempt.id), null, "another owner's id reads as missing");
-    assert.equal(await evidence.getEvidence(owner, "no-such-attempt"), null);
-    console.log("ok - evidence links are owner-only");
-
-    // Finish the run: every full-stack topic solid twice, every AI topic wrong.
-    for (const chapter of run.plan.chapters) {
-      if (chapter.kind !== "topics" || chapter === cleared) continue;
-      const wrong = topicMap.modules.find((module) => module.id === chapter.chapterId)?.track === "ai";
-      for (const topicId of chapter.topicIds) {
-        const id = topicId === first.topicIds[0] ? setId : randomUUID();
-        if (id !== setId) {
-          await db().insert(labAssessments).values({ id, userId: owner, topicId, kind: "baseline", items: [predict(1), predict(2)], promptVersion: "check", model: "none", origin: "run", runId: run.id });
-          await store.submitAnswer(owner, { assessmentId: id, itemIndex: 0, selfRating: 3, response: { lines: wrong ? ["9"] : ["1"] }, actualOutput: ["1"] });
-        }
-        // A wrong line grades as partly there, which asks one probing question; that one is wrong too.
-        if (await state.nextRunItem(db(), { id, items: [predict(1), predict(2)] }) !== null) {
-          await store.submitAnswer(owner, { assessmentId: id, itemIndex: 1, selfRating: 3, response: { lines: wrong ? ["9"] : ["2"] }, actualOutput: ["2"] });
-        }
-      }
+    // Stand in for the grader, then finish the run.
+    const grade = (index: number, label: "solid" | "gap") => db().update(labRunAnswers).set({ label, feedback: "Checked.", rubric: [], graderVersion: "check", gradedAt: new Date() })
+      .where(and(eq(labRunAnswers.runId, runId), eq(labRunAnswers.questionIndex, index)));
+    await grade(0, "solid");
+    for (let index = 1; index < 5; index += 1) {
+      await runs.submitAnswer(owner, runId, { index, answer: `An answer for question ${index + 1}.`, selfRating: 3 });
+      await grade(index, index === 2 ? "gap" : "solid");
     }
-    assert.ok(await state.completedBaseline(owner), "the baseline finished");
+    await runs.retryGrade(owner, runId, 4);
+    view = await runs.getRunView(owner, runId);
+    assert.ok(view.completedAt, "the run finishes once every answer is graded");
+    assert.equal(await runs.activeRun(owner), null);
+    const history = await runs.listRuns(owner);
+    assert.deepEqual(history.map((run) => [run.answers, run.solid]), [[5, 4]]);
+    assert.deepEqual(await runs.latestAreaScores(owner), { foundations: 4, frontend: 4, backend: 0, production: 4, ai: 4 });
+    const second = await runs.startRun(owner);
+    assert.notEqual(second.id, runId, "a retake is a new row; the first never changes");
+    assert.equal((await runs.getRunView(owner, runId)).answers.length, 5);
+    await assert.rejects(runs.getRunView(other, runId), /not found/, "another owner cannot read it");
+    await profiles.saveDirection(owner, { role: "frontend-developer", weeklyHours: 3 });
+    assert.equal((await profiles.getProfileRow(owner))?.direction, "frontend-developer");
+    assert.equal((await runs.getRunView(owner, runId)).answers.length, 5, "a new direction never changes evidence");
+    console.log("ok - grades finish the run, history keeps every run, direction leaves evidence alone");
+    // Profile (section 5). A brand-new owner: Developing everywhere, no made-up levels.
+    const fresh = await profiles.getProfileView(other);
+    assert.equal(fresh.direction, null);
+    assert.equal(fresh.lastAssessed, null);
+    assert.ok(fresh.rows.every((row) => row.level === null && row.coverage.proven === 0));
+    assert.equal(fresh.milestone, null);
+    // The owner proved Retry & backoff and aims at Full-stack developer with applied AI.
+    await profiles.saveDirection(owner, { role: "fullstack-applied-ai", weeklyHours: 5 });
+    const mine = await profiles.getProfileView(owner);
+    assert.equal(mine.direction?.id, "fullstack-applied-ai");
+    assert.ok(mine.lastAssessed, "the finished assessment is the last assessed date");
+    assert.equal(mine.history.length, 2, "both assessments are in history, the open retake too");
+    assert.ok(mine.openRunId, "the retake is open");
+    const production = mine.rows.find((row) => row.area === "production")!;
+    assert.ok(production.coverage.proven <= 1);
+    assert.ok(mine.rows.every((row) => row.level === null), "one proven topic reaches no level, and the assessment never sets one");
+    assert.equal(mine.overall, null);
+    assert.ok(mine.milestone && mine.milestone.topicId, "the next milestone names a topic");
+    assert.ok(!production.remainingTopics.some((topic) => topic.id === "rel.retry_backoff"), "a proven topic is not remaining");
+    console.log("ok - Profile: Developing before evidence, levels only from proven topics, history and milestone");
+    // Practice (section 3). The owner's only topic is proven and not due yet: nothing to practice.
+    assert.deepEqual(await practice.practiceCandidates(owner), []);
+    await assert.rejects(practice.startPractice(owner), /Nothing to practice/);
+    // A changed source for a proven topic puts it back into Practice without changing its state.
+    await store.flagRecheck(owner, "rel.retry_backoff", { changedSinceLast: ["The guidance on jitter changed."], sources: [{ url: "https://aws.amazon.com/builders-library/" }] } as never);
+    assert.deepEqual(await practice.practiceCandidates(owner), [{ topicId: "rel.retry_backoff", reason: "changed" }]);
+    assert.equal((await store.getProgress(owner, "rel.retry_backoff")).state, "PROVEN");
+    // Stand in for the Assessor: one stored question and today's set.
+    const questionId = randomUUID();
+    await db().insert(labQuestions).values({ id: questionId, userId: owner, topicId: "rel.retry_backoff", kind: "review", prompt: "**Retry storm.** What spreads retries out?", rubric: ["Adds jitter"], referenceAnswer: "Jitter.", promptVersion: "check", model: "none" });
+    await db().insert(labDailySets).values({ userId: owner, day: ownerDay(), items: [{ topicId: "rel.retry_backoff", reason: "changed", questionId }] });
+    const today = await practice.getPractice(owner);
+    assert.equal(today?.items.length, 1);
+    assert.equal(today?.done, false);
+    assert.equal((await practice.startPractice(owner)).items[0].questionId, questionId, "the day's set stays the same");
+    await assert.rejects(practice.answerPractice(owner, { questionId, answer: "short", selfRating: 3 }), /at least a sentence/);
+    await assert.rejects(practice.answerPractice(owner, { questionId: "nope", answer: "Jitter spreads the retries.", selfRating: 3 }), /not in today/);
+    await store.recordEvent(owner, { topicId: "rel.retry_backoff", kind: "review", questionId, answer: "Jitter spreads the retries.", selfRating: 3, label: "solid", rubric: [], feedback: "Right." });
+    const after = await practice.getPractice(owner);
+    assert.equal(after?.done, true);
+    assert.ok(after?.items[0].answered?.nextReviewAt, "the grade sets the next review date");
+    await assert.rejects(practice.answerPractice(owner, { questionId, answer: "Jitter spreads the retries.", selfRating: 3 }), /Already answered/);
+    console.log("ok - Practice: candidates, re-check without a state change, stable daily set, one answer per item");
+    // Topic page (section 3, Topic). A fresh owner, so the run above doesn't keep lessons closed.
+    const learner = `engineering-check-${randomUUID()}`;
+    await db().insert(users).values({ id: learner, email: `${learner}@example.invalid`, name: "Engineering check (learner)" });
+    try {
+      const retry = "rel.retry_backoff";
+      const lesson = await topics.getLesson(learner, retry);
+      assert.equal(lesson?.authored, true, "Retry & backoff ships with its hand-written lesson");
+      await assert.rejects(topics.openLesson(learner, "js.closures"), /No lesson yet/, "no lesson, nothing to open");
+      await assert.rejects(topics.getOrWriteProof(learner, retry), /Pass the exercise first/);
+      await assert.rejects(topics.recordExerciseRun(learner, retry, { labId: "closure-loop", code: "", passed: 1, failed: 0, output: "" }), /another topic/);
+      let ran = await topics.recordExerciseRun(learner, retry, { labId: "retry-policy", code: "function retryDelay() { return 1000; }", passed: 1, failed: 3, output: "" });
+      assert.equal(ran.passed, false);
+      assert.equal(ran.progress.state, "PRACTICING");
+      ran = await topics.recordExerciseRun(learner, retry, { labId: "retry-policy", code: "...", passed: 4, failed: 0, output: "" });
+      assert.equal(ran.progress.exercisePassed, true);
+      const { solution } = await topics.openSolution(learner, retry, "retry-policy");
+      assert.match(solution, /Math\.min/);
+      await assert.rejects(topics.getOrWriteProof(learner, retry), /Pass the exercise first/, "opening the solution closes Prove");
+      await topics.recordExerciseRun(learner, retry, { labId: "retry-policy", code: "...", passed: 4, failed: 0, output: "" });
+      const proof = await topics.getOrWriteProof(learner, retry);
+      assert.match(proof.prompt, /The payment timed out/, "the hand-written proof needs no AI");
+      assert.equal((await topics.getOrWriteProof(learner, retry)).id, proof.id, "Try again reuses the prompt");
+      await assert.rejects(topics.submitProof(learner, retry, { questionId: proof.id, answer: "Too short", selfRating: 3 }), /at least 30/);
+      await assert.rejects(topics.submitProof(other, retry, { questionId: proof.id, answer: "x".repeat(40), selfRating: 3 }), /Pass the exercise first/);
+      const view = await topics.getTopicView(learner, retry);
+      assert.equal(view.proof?.id, proof.id);
+      assert.equal(view.evidence.filter((item) => item.kind === "exercise_run").length, 3);
+      assert.ok(view.sourcesCheckedAt);
 
-    const after = await evidence.getEvidence(owner, attempt.id);
-    assert.equal(after?.result?.label, "solid");
-    assert.equal(after?.result?.gradedBy, "code");
-    assert.deepEqual(after?.question.expectedOutput, ["1"]);
-    const recent = await evidence.recentEvidence(owner, 6);
-    assert.equal(recent.length, 6);
-    assert.ok(recent.every((item) => item.role === "placement"));
-    console.log("ok - after the run: grade, code check and answer key show, and recent evidence lists the run's answers");
+      // event-loop-order serves two topics: one run counts for both.
+      await topics.recordExerciseRun(learner, "js.promises", { labId: "event-loop-order", code: "...", passed: 3, failed: 0, output: "" });
+      assert.equal((await store.getProgress(learner, "js.event_loop")).exercisePassed, true);
 
-    await profiles.chooseDirection(owner, "fullstack-applied-ai");
-    const view = await profiles.getProfileView(owner);
-    const rows = capabilityRows({ careers, map: topicMap, progress: view.progress, states: view.chapterStates, baselineStates: view.baselineChapterStates, roleId: view.direction });
-    for (const row of rows) assert.equal(row.current, view.areas.find((area) => area.area === row.area)!.now.level, `${row.area} matches the profile view`);
-    const role = view.roles.find((item) => item.roleId === view.direction)!;
-    assert.equal(rows.filter((row) => row.target).reduce((sum, row) => sum + row.remaining, 0), role.missing.length, "the table counts the same gaps as the role distance");
-    assert.ok(role.missing.length > 0, "the AI chapters were answered wrong, so the direction still has gaps");
-    const next = nextRequirement(rows, view.direction);
-    assert.ok(next && rows.find((row) => row.area === next.area)?.target, "the next milestone comes from an area the direction needs");
-    assert.equal(rows.find((row) => row.area === "ai")!.current, null, "wrong answers never make an area junior");
-    assert.ok(rows.every((row) => row.atBaseline === row.current), "right after the baseline, now and at-baseline agree");
-    const architecture = view.chapterStates.find((state) => state.chapterId === "m8-architecture-scale")!;
-    assert.equal(architecture.depth, "build", "a cleared chapter counts as can build it");
-    assert.equal(architecture.estimate, true, "as an estimate");
-    assert.equal(architecture.known, 0, "and proves no topic");
-    console.log(`ok - Profile table agrees with levels and role distance (${role.missing.length} requirements left)`);
+      // An open assessment closes lessons.
+      await profiles.saveIntake(learner, { building: "A clinic booking app", role: "frontend-developer", weeklyHours: 4 });
+      await runs.startRun(learner);
+      assert.equal((await topics.getTopicView(learner, retry)).lesson, null);
+      await assert.rejects(topics.openLesson(learner, retry), /closed during the assessment/);
+      console.log("ok - topic page: exercise runs, shared exercise, solution, hand-written proof prompt, closed-book");
+    } finally {
+      await db().delete(users).where(eq(users.id, learner));
+    }
   } finally {
     await db().delete(users).where(eq(users.id, owner));
     await db().delete(users).where(eq(users.id, other));

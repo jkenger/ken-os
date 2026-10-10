@@ -1,6 +1,8 @@
 id: retry-policy
-title: Retry like a good neighbour
+title: Space out retries
 topics: [rel.retry_backoff]
 modes: [implement]
 runner: browser
 timeoutMs: 2000
+hint: >-
+  Use `2 ** attempt` to grow the delay, multiply by the first delay, and cap it with `Math.min`.
