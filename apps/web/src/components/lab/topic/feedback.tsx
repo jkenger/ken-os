@@ -19,10 +19,10 @@ export function PredictionDiff({ actual, predicted }: { actual: string[]; predic
   return (
     <div className="mt-4">
       <p className="text-sm font-semibold">Actual vs. predicted</p>
-      <ol className="mt-2 overflow-hidden rounded-lg bg-muted font-mono text-[13px] leading-6">
+      <ol className="mt-2 overflow-hidden rounded-lg bg-muted font-mono text-sm leading-6">
         {rows.map((row, index) => (
-          <li key={index} className={cn("flex items-center gap-3 px-3", row.kind === "missing" && "bg-status-gap-surface", row.kind === "extra" && "bg-status-partial-surface")}>
-            <span className="w-4 shrink-0" aria-hidden="true">{row.kind === "match" ? <Check size={13} className="text-status-solid" /> : row.kind === "missing" ? <Minus size={13} /> : <Plus size={13} />}</span>
+          <li key={index} className={cn("flex items-center gap-3 px-3", row.kind === "missing" && "bg-destructive/10", row.kind === "extra" && "bg-muted")}>
+            <span className="w-4 shrink-0" aria-hidden="true">{row.kind === "match" ? <Check size={13} className="text-foreground" /> : row.kind === "missing" ? <Minus size={13} /> : <Plus size={13} />}</span>
             <span className="min-w-0 flex-1 break-words">{row.text}</span>
             {row.kind !== "match" && <span className="shrink-0 font-sans text-xs font-semibold">{diffWords[row.kind][row.moved ? "moved" : "alone"]}</span>}
           </li>
@@ -61,9 +61,9 @@ export function RubricChecklist({ items }: { items: RubricResult[] }) {
 /** The one celebration in the module: a topic just turned proven. */
 export function ProvenBanner({ title, nextReviewAt, byCode }: { title: string; nextReviewAt: string | null; byCode: number }) {
   return (
-    <div className="rounded-xl bg-status-solid-surface p-6" role="status">
-      <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.14em] text-status-solid"><Sparkles size={15} aria-hidden="true" />Topic proven</p>
-      <p className="mt-2 font-display text-2xl font-semibold tracking-[-0.04em]">{title}</p>
+    <div className="rounded-xl bg-muted p-6" role="status">
+      <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-foreground"><Sparkles size={15} aria-hidden="true" />Topic proven</p>
+      <p className="mt-2 font-heading text-2xl font-semibold tracking-tight">{title}</p>
       <p className="mt-1 text-sm">
         All parts shown{byCode ? ` · ${byCode} by code` : ""}{nextReviewAt ? ` · first review ${formatDate(nextReviewAt)}` : ""}
       </p>

@@ -30,7 +30,7 @@ export function LessonReader({ lesson, sources, sourceCheckedAt, footer }: { les
           <div className="mt-3 divide-y divide-border border-y border-border">
             {lesson.deeper.map((item) => (
               <details key={item.title} className="group py-3">
-                <DisclosureSummary className="text-[15px] font-semibold">{item.title}</DisclosureSummary>
+                <DisclosureSummary className="text-sm font-semibold">{item.title}</DisclosureSummary>
                 <div className="mt-2 pl-6"><Markdown text={item.body} /></div>
               </details>
             ))}
@@ -40,7 +40,7 @@ export function LessonReader({ lesson, sources, sourceCheckedAt, footer }: { les
     });
   }
   if (lesson.noteSuggestions.length) {
-    sections.push({ id: "notes", title: "For your notes", body: <><p className="text-sm text-muted-foreground">Write up in Obsidian, in your own words</p><ul className="mt-2 list-disc pl-5 text-[15px]">{lesson.noteSuggestions.map((item) => <li key={item}>{item}</li>)}</ul></> });
+    sections.push({ id: "notes", title: "For your notes", body: <><p className="text-sm text-muted-foreground">Write up in Obsidian, in your own words</p><ul className="mt-2 list-disc pl-5 text-sm">{lesson.noteSuggestions.map((item) => <li key={item}>{item}</li>)}</ul></> });
   }
   const httpsSources = sources.filter((source) => source.url.startsWith("https://"));
   if (httpsSources.length) {
@@ -85,10 +85,10 @@ export function LessonReader({ lesson, sources, sourceCheckedAt, footer }: { les
           </ol>
         </div>
       </nav>
-      <article className="max-w-[680px] space-y-9">
+      <article className="max-w-2xl space-y-9">
         {sections.map((section) => (
-          <section key={section.id} id={`lesson-${section.id}`} className={cn("scroll-mt-32", section.tone === "gap" && "border-l-2 border-status-gap pl-4", section.tone === "panel" && "rounded-xl bg-muted p-5")}>
-            <h3 className="mb-2 font-display text-lg font-semibold tracking-[-0.02em]">{section.title}</h3>
+          <section key={section.id} id={`lesson-${section.id}`} className={cn("scroll-mt-32", section.tone === "gap" && "border-l-2 border-destructive pl-4", section.tone === "panel" && "rounded-xl bg-muted p-5")}>
+            <h3 className="mb-2 font-heading text-lg font-semibold tracking-tight">{section.title}</h3>
             {section.body}
           </section>
         ))}

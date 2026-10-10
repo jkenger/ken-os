@@ -97,7 +97,7 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
     <div className="grid items-start gap-6 xl:grid-cols-[minmax(300px,0.8fr)_minmax(400px,1.2fr)]">
       <section>
         <Card className="[--card-spacing:--spacing(6)]"><CardContent>
-        <h2 className="font-display text-2xl font-semibold tracking-[-0.04em]">Add skill</h2>
+        <h2 className="font-heading text-2xl font-semibold tracking-tight">Add skill</h2>
         <p className="mt-3 text-base leading-6 text-muted-foreground">
           <code>SKILL.md</code>, or a ZIP with <code>SKILL.md</code> and{" "}
           <code>references/*.md</code>
@@ -135,7 +135,7 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
         )}
         {skills.length === 0 ? (
           <Card className="[--card-spacing:--spacing(6)]"><CardContent>
-            <h2 className="font-display text-xl font-semibold tracking-[-0.04em]">No skills yet</h2>
+            <h2 className="font-heading text-xl font-semibold tracking-tight">No skills yet</h2>
             <p className="mt-3 text-base leading-6 text-muted-foreground">
               Markdown instructions the resume assistant can follow
             </p>
@@ -149,17 +149,17 @@ export function SkillManager({ skills }: { skills: StoredSkill[] }) {
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div className="flex min-w-0 items-center gap-2">
                   <span className="inline-flex size-7 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground"><FileText size={15} aria-hidden="true" /></span>
-                  <span className="truncate text-[11px] font-bold tracking-[0.1em] text-muted-foreground">{skill.slug} / v{skill.version}</span>
+                  <span className="truncate text-xs font-bold tracking-widest text-muted-foreground">{skill.slug} / v{skill.version}</span>
                 </div>
                 <span
-                  className={`shrink-0 rounded-md px-2 py-1 text-[10px] font-bold uppercase tracking-[0.1em] ${skill.enabled ? "bg-secondary text-foreground" : "bg-background text-muted-foreground"}`}
+                  className={`shrink-0 rounded-md px-2 py-1 text-xs font-bold uppercase tracking-widest ${skill.enabled ? "bg-secondary text-foreground" : "bg-background text-muted-foreground"}`}
                 >
                   {skill.enabled ? "On" : "Off"}
                 </span>
               </div>
-              <h2 className="font-display text-base font-semibold leading-6 tracking-[-0.035em]">{skill.name}</h2>
-              <p className="mt-0.5 text-sm leading-[21px] text-muted-foreground">{skill.description}</p>
-              <p className="mt-2 text-[13px] leading-5 text-muted-foreground">
+              <h2 className="font-heading text-base font-semibold leading-6 tracking-tight">{skill.name}</h2>
+              <p className="mt-0.5 text-sm leading-5 text-muted-foreground">{skill.description}</p>
+              <p className="mt-2 text-sm leading-5 text-muted-foreground">
                 {Object.keys(skill.files).length} Markdown file
                 {Object.keys(skill.files).length === 1 ? "" : "s"} · Uploaded{" "}
                 {new Date(skill.createdAt).toLocaleDateString()}

@@ -143,13 +143,13 @@ export function TermLookup({ module, children }: { module: string; children: Rea
         <Button type="button" size="sm" data-term-lookup title="Explain this term (E)" aria-keyshortcuts="E"
           className="fixed z-40 h-8 gap-1.5 rounded-lg px-3 text-xs font-semibold shadow-lg hover:shadow-xl"
           style={{ left: Math.max(16, pending.x - 44), top: pending.y + 8 }} onClick={() => explain(pending)}>
-          Explain <kbd className="rounded border border-primary-foreground/40 px-1 text-[10px]">E</kbd>
+          Explain <kbd className="rounded border border-primary-foreground/40 px-1 text-xs">E</kbd>
         </Button>
       )}
       {pending && open && (
-        <div data-term-lookup role="dialog" aria-label={`Meaning of ${pending.text}`} className="fixed z-40 w-[340px] max-w-[calc(100vw-32px)] rounded-xl bg-popover p-4 text-sm shadow-2xl ring-1 ring-foreground/5" style={{ left, top }}>
+        <div data-term-lookup role="dialog" aria-label={`Meaning of ${pending.text}`} className="fixed z-40 w-xs max-w-[calc(100vw-32px)] rounded-xl bg-popover p-4 text-sm shadow-2xl ring-1 ring-foreground/5" style={{ left, top }}>
           <div className="flex items-start justify-between gap-2">
-            <p className="font-display text-base font-semibold tracking-[-0.02em]">{job?.state === "done" ? job.answer.term : pending.text}</p>
+            <p className="font-heading text-base font-semibold tracking-tight">{job?.state === "done" ? job.answer.term : pending.text}</p>
             <Button type="button" variant="ghost" size="icon-xs" aria-label="Close" onClick={close}><X size={15} /></Button>
           </div>
           {(!job || job.state === "loading") && (

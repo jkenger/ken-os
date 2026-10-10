@@ -130,12 +130,12 @@ export function LabProfile({ email, view, initialPane, closedBook = false }: { e
         />
 
         {!baselineDone ? (
-          <div className="mt-4 rounded-xl bg-card shadow-panel p-5 text-sm">
+          <div className="mt-4 rounded-xl bg-card border p-5 text-sm">
             <p className="font-semibold">Available after the baseline</p>
             <Button asChild size="sm" className="mt-3"><Link href={engineering.assessment()}>{view.baseline.state === "in_progress" ? "Continue baseline" : "Start baseline"}</Link></Button>
           </div>
         ) : (
-          <div className="mt-4 grid grid-cols-1 gap-4 lg:h-[calc(100vh-232px)] lg:min-h-[540px] lg:grid-cols-[320px_minmax(0,1fr)]">
+          <div className="mt-4 grid grid-cols-1 gap-4 lg:h-[calc(100vh-232px)] lg:min-h-135 lg:grid-cols-[320px_minmax(0,1fr)]">
             <GuideChat
               className="lg:min-h-0"
               phase="direction" history={view.conversation}
@@ -144,7 +144,7 @@ export function LabProfile({ email, view, initialPane, closedBook = false }: { e
               footer={hasSuggestions ? suggestions : undefined}
             />
 
-            <section aria-label="Profile detail" className="flex min-h-[480px] min-w-0 flex-col rounded-xl bg-card shadow-panel lg:min-h-0">
+            <section aria-label="Profile detail" className="flex min-h-120 min-w-0 flex-col rounded-xl bg-card border lg:min-h-0">
               <Tabs value={pane} onValueChange={(next) => setPane(next as ProfilePane)} className="flex min-h-0 flex-1 flex-col gap-0">
               <TabsList variant="line" aria-label="Profile sections" className="w-full justify-start gap-0 overflow-x-auto rounded-none border-b border-border px-1 group-data-horizontal/tabs:h-auto [scrollbar-width:none]">
                 {(Object.keys(paneNames) as ProfilePane[]).map((id) => (
@@ -155,7 +155,7 @@ export function LabProfile({ email, view, initialPane, closedBook = false }: { e
               </TabsList>
               <TabsContent value={pane} className="min-h-0 overflow-y-auto p-5">
                 {pane === "shape" && (
-                  <div className="grid max-w-[760px] gap-8">
+                  <div className="grid max-w-3xl gap-8">
                     <Skyline areas={view.areas} targets={targets} compact />
                     {chosen && (
                       <div>

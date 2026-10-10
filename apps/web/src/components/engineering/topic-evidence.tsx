@@ -17,7 +17,7 @@ export function TopicEvidenceDialog({ prove, sources, attempts }: {
   return (
     <Dialog title="Evidence & sources" trigger="Evidence & sources">
       <h3 className="!mt-0">What you will prove</h3>
-      <ul className="list-disc pl-5 leading-[1.9]">
+      <ul className="list-disc pl-5 leading-loose">
         {prove.map((mode) => <li key={mode}>{modeWords[mode] ?? mode}, solid</li>)}
         <li>At least one checked by running code</li>
       </ul>

@@ -21,7 +21,7 @@ import { Button } from "@/components/ui/button";
 // a summary. Questions are graded for real and count as reviews; on a topic that isn't proven yet they never prove it.
 // Design: docs/architecture/engineering-lab-v1.md section 9.
 
-const page = "mx-auto max-w-[1500px] px-3 pb-9 pt-6 md:px-5 md:pt-[30px] min-[1500px]:pt-9";
+const page = "mx-auto max-w-375 px-3 pb-9 pt-6 md:px-5 md:pt-7 min-[1500px]:pt-9";
 
 function isDone(entry: DailyItemView) {
   return entry.type === "lab" ? entry.passedToday : Boolean(entry.answered);
@@ -74,18 +74,18 @@ export function EngineeringPractice({ email, daily, closedBook = false }: { emai
       <div className={page}>
         <PageHeading title="Today's practice" description="A mixed set from topics already learned; answers here never count as proof" />
         {closedBook ? (
-          <section className={cn(panel, "mx-[5px] max-w-[850px] p-[23px] md:mx-3.5 md:p-8")}>
+          <section className={cn(panel, "mx-1 max-w-4xl p-6 md:mx-3.5 md:p-8")}>
             <div className={eyebrow}>Practice</div>
-            <h2 className="my-3 text-[23px] font-bold tracking-[-0.6px] md:text-[25px]">Paused</h2>
-            <p className="mb-[18px] text-sm text-muted-foreground">Resumes after the assessment</p>
+            <h2 className="my-3 text-2xl font-bold tracking-tight md:text-2xl">Paused</h2>
+            <p className="mb-4 text-sm text-muted-foreground">Resumes after the assessment</p>
             <Button asChild variant="outline"><Link href={engineering.assessment()}>Back to assessment</Link></Button>
           </section>
         ) : !daily ? (
           <FlowLayout>
             <section className={questionPanel}>
               <div className={eyebrow}>Practice · Not started</div>
-              <h2 className="my-3 text-[23px] font-bold tracking-[-0.6px] md:text-[25px]">Mixed review</h2>
-              <p className="mb-[18px] text-sm leading-[1.55] text-muted-foreground">Recall, one small fix and an explanation · ~15 min</p>
+              <h2 className="my-3 text-2xl font-bold tracking-tight md:text-2xl">Mixed review</h2>
+              <p className="mb-4 text-sm leading-normal text-muted-foreground">Recall, one small fix and an explanation · ~15 min</p>
               {problem && <Notice tone="error">{problem}</Notice>}
               <Button type="button" disabled={busy} onClick={() => void write()}>{busy ? "Writing… ~20 s" : "Start practice"}<IconArrowRight size={18} aria-hidden="true" /></Button>
             </section>
@@ -98,12 +98,12 @@ export function EngineeringPractice({ email, daily, closedBook = false }: { emai
             {entry.type === "lab" ? (
               <section className={questionPanel}>
                 <div className={eyebrow}>{kicker}</div>
-                <h2 className="my-3 text-[23px] font-bold tracking-[-0.6px] md:text-[25px]">{entry.labTitle}</h2>
-                <p className="mb-[18px] text-[15px] leading-[1.6] text-muted-foreground">Lab fix · {entry.topicTitle} · from the starter code, without the solution</p>
+                <h2 className="my-3 text-2xl font-bold tracking-tight md:text-2xl">{entry.labTitle}</h2>
+                <p className="mb-4 text-sm leading-relaxed text-muted-foreground">Lab fix · {entry.topicTitle} · from the starter code, without the solution</p>
                 {entry.passedToday && <Notice tone="success">Passed today</Notice>}
                 <div className="flex flex-wrap items-center gap-5">
                   <Button asChild variant={entry.passedToday ? "outline" : "default"}><Link href={engineering.topic(entry.topicId, "lab")}>Open lab<IconArrowRight size={18} aria-hidden="true" /></Link></Button>
-                  <Button variant="text" type="button" onClick={next}>{entry.passedToday ? nextLabel : "Skip for now"}</Button>
+                  <Button variant="link" type="button" onClick={next}>{entry.passedToday ? nextLabel : "Skip for now"}</Button>
                 </div>
               </section>
             ) : entry.item ? (
@@ -143,8 +143,8 @@ function Notes({ items, index, onPick }: { items: DailyItemView[]; index: number
           {items.map((entry, position) => (
             <li key={position}>
               <Button variant="ghost" type="button" onClick={() => onPick?.(position)} aria-current={position === index ? "step" : undefined}
-                className={cn("h-auto w-full justify-start gap-3 rounded-none border-b border-border px-0 py-[13px] text-left text-[13px] font-normal hover:bg-transparent", position === index && "font-semibold text-foreground")}>
-                {isDone(entry) ? <IconCheck size={18} className="shrink-0 text-status-solid" aria-label="Done" /> : position === index ? <IconCircleDot size={18} className="shrink-0" aria-label="Current" /> : <IconCircle size={18} className="shrink-0" aria-hidden="true" />}
+                className={cn("h-auto w-full justify-start gap-3 rounded-none border-b border-border px-0 py-3 text-left text-sm font-normal hover:bg-transparent", position === index && "font-semibold text-foreground")}>
+                {isDone(entry) ? <IconCheck size={18} className="shrink-0 text-foreground" aria-label="Done" /> : position === index ? <IconCircleDot size={18} className="shrink-0" aria-label="Current" /> : <IconCircle size={18} className="shrink-0" aria-hidden="true" />}
                 <span className="min-w-0 flex-1 truncate">{entry.type === "lab" ? `Lab fix · ${entry.topicTitle}` : entry.topicTitle}</span>
               </Button>
             </li>
@@ -153,7 +153,7 @@ function Notes({ items, index, onPick }: { items: DailyItemView[]; index: number
       )}
       <p className="mt-4">Due reviews come first, then stale proofs, open misconceptions and a topic in progress.</p>
       <p className="mt-3">Confidence helps spot uncertainty. It never replaces evidence. No streaks; missing a day costs nothing.</p>
-      <Button asChild variant="text" className="mt-3"><Link href={engineering.overview}>Save & exit</Link></Button>
+      <Button asChild variant="link" className="mt-3"><Link href={engineering.overview}>Save & exit</Link></Button>
     </FlowNotes>
   );
 }
@@ -163,11 +163,11 @@ function Summary({ daily, onRestart }: { daily: DailyView; onRestart: () => void
   const answered = questions.filter((item) => item.answered);
   const solid = answered.filter((item) => item.answered!.label === "solid" && !item.answered!.voided).length;
   return (
-    <section className={cn(panel, "mx-[5px] max-w-[850px] p-[23px] md:mx-3.5 md:p-8")}>
+    <section className={cn(panel, "mx-1 max-w-4xl p-6 md:mx-3.5 md:p-8")}>
       <SuccessView title={daily.done ? "Today's practice complete" : "Practice saved"} action={<Button asChild><Link href={engineering.overview}>Back to overview<IconArrowRight size={18} aria-hidden="true" /></Link></Button>}>
         {answered.length} of {questions.length} answered · {solid} solid. Solid answers push the next review out; a slip brings the topic back.
       </SuccessView>
-      <Button variant="text" type="button" onClick={onRestart}>Review answers</Button>
+      <Button variant="link" type="button" onClick={onRestart}>Review answers</Button>
     </section>
   );
 }

@@ -65,13 +65,13 @@ export function EngineeringDirection({ email, view, closedBook = false }: { emai
 
   return (
     <WorkspaceShell email={email} active="lab" tab="profile" termLookup={!closedBook}>
-      <div className="mx-auto max-w-[1500px] px-3 pb-9 pt-6 md:px-5 md:pt-[30px] min-[1500px]:pt-9">
+      <div className="mx-auto max-w-375 px-3 pb-9 pt-6 md:px-5 md:pt-7 min-[1500px]:pt-9">
         <Back href={engineering.profile}>Profile</Back>
         <PageHeading title="Direction" description="Target role and what it requires, chosen with the Guide" badge={view.direction ? "Saved" : undefined} />
         <FlowLayout>
-          <section className={cn(panel, "p-[23px] md:p-[30px]")}>
+          <section className={cn(panel, "p-6 md:p-7")}>
             {!done && <Notice>Available after the baseline · <Link href={engineering.assessment()} className="font-semibold underline underline-offset-4">{view.baseline.state === "in_progress" ? "Continue baseline" : "Start baseline"}</Link></Notice>}
-            <Label className={cn(fieldLabel, "mb-[25px]")}>
+            <Label className={cn(fieldLabel, "mb-6")}>
               Target role
               <NativeSelect className="mt-2.5 w-full" value={roleId} disabled={!done} onChange={(event) => setRoleId(event.target.value)}>
                 {view.roles.map((item) => <NativeSelectOption key={item.roleId} value={item.roleId}>{item.title} · {item.missing.length ? `${item.missing.length} chapters away` : "ready"}</NativeSelectOption>)}
@@ -79,18 +79,18 @@ export function EngineeringDirection({ email, view, closedBook = false }: { emai
             </Label>
             {role && (
               <>
-                <h3 className="text-[17px] font-semibold">{role.title}</h3>
-                <p className="mb-[18px] mt-[7px] text-sm leading-[1.55] text-muted-foreground">{role.summary}</p>
-                <h4 className="mt-[22px] text-sm font-semibold">Required level</h4>
+                <h3 className="text-base font-semibold">{role.title}</h3>
+                <p className="mb-4 mt-1.5 text-sm leading-normal text-muted-foreground">{role.summary}</p>
+                <h4 className="mt-5 text-sm font-semibold">Required level</h4>
                 <div className="mt-2">
                   {role.areas.map((area) => (
-                    <div key={area.area} className="flex items-center justify-between gap-3 border-t border-border py-3 text-[13px]">
+                    <div key={area.area} className="flex items-center justify-between gap-3 border-t border-border py-3 text-sm">
                       <strong className="font-medium">{areaTitle(area.area)}</strong>
                       <span className="text-muted-foreground">{levelShort(area.target)} · now {levelShort(area.current)}{area.estimate ? " · estimate" : ""}</span>
                     </div>
                   ))}
                 </div>
-                <p className="mb-[18px] mt-3 text-xs text-muted-foreground">Ken OS&apos;s own framework, not an industry ladder · {role.missing.length ? `${role.missing.length} chapters to go` : "Nothing missing"}</p>
+                <p className="mb-4 mt-3 text-xs text-muted-foreground">Ken OS&apos;s own framework, not an industry ladder · {role.missing.length ? `${role.missing.length} chapters to go` : "Nothing missing"}</p>
               </>
             )}
             <div className="flex flex-wrap items-center gap-5">
@@ -126,7 +126,7 @@ export function EngineeringDirection({ email, view, closedBook = false }: { emai
         </FlowLayout>
 
         {(suggested.length > 0 || view.addedChapters.length > 0) && (
-          <section className="mx-[5px] my-[30px] md:mx-3.5 md:my-8">
+          <section className="mx-1 my-7 md:mx-3.5 md:my-8">
             <h3 className="mb-3.5 text-base font-semibold">Added chapters</h3>
             {suggested.map((chapter) => (
               <div key={chapter.title} className={cn(panel, "mb-3 p-5 text-sm")}>
@@ -135,7 +135,7 @@ export function EngineeringDirection({ email, view, closedBook = false }: { emai
                 <p className="mt-1 text-muted-foreground">{chapter.reason}</p>
                 <div className="mt-3 flex gap-3">
                   <Button variant="outline" type="button" disabled={busy !== ""} onClick={() => void act(chapter.title, () => post("/api/lab/profile", { action: "addChapter", chapter }), "Added · Not written yet", () => setSuggested((current) => current.filter((item) => item.title !== chapter.title)))}>Add chapter</Button>
-                  <Button variant="ghost" size="sm" type="button" className="text-[13px] font-normal text-muted-foreground" onClick={() => setSuggested((current) => current.filter((item) => item.title !== chapter.title))}>Dismiss</Button>
+                  <Button variant="ghost" size="sm" type="button" className="text-sm font-normal text-muted-foreground" onClick={() => setSuggested((current) => current.filter((item) => item.title !== chapter.title))}>Dismiss</Button>
                 </div>
               </div>
             ))}

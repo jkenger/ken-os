@@ -26,18 +26,18 @@ export function GradeTag({ label: grade, voided }: { label: string; voided: bool
 
 function Confidence({ value, onChange }: { value: number | null; onChange: (value: number) => void }) {
   return (
-    <fieldset className="my-[25px]">
-      <legend className="mb-1 text-[13px] font-semibold">How sure are you?</legend>
-      <p className="mb-[11px] text-xs text-muted-foreground">Not graded. Flags sure-but-wrong answers</p>
-      <ToggleGroup type="single" spacing={2.5} variant="outline" aria-label="How sure are you?" className="w-[270px] max-w-full"
+    <fieldset className="my-6">
+      <legend className="mb-1 text-sm font-semibold">How sure are you?</legend>
+      <p className="mb-2.5 text-xs text-muted-foreground">Not graded. Flags sure-but-wrong answers</p>
+      <ToggleGroup type="single" spacing={2.5} variant="outline" aria-label="How sure are you?" className="w-3xs max-w-full"
         value={value ? String(value) : ""} onValueChange={(next) => { if (next) onChange(Number(next)); }}>
         {[1, 2, 3, 4, 5].map((rating) => (
-          <ToggleGroupItem key={rating} value={String(rating)} className="h-10 w-[45px] border-input bg-card text-sm font-normal hover:bg-accent data-[state=on]:border-primary data-[state=on]:bg-secondary data-[state=on]:text-foreground">
+          <ToggleGroupItem key={rating} value={String(rating)} className="h-10 w-11 border-input bg-card text-sm font-normal hover:bg-accent data-[state=on]:border-primary data-[state=on]:bg-secondary data-[state=on]:text-foreground">
             {rating}
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
-      <small className="mt-2 flex w-[270px] max-w-full justify-between text-[11px] text-muted-foreground"><span>1 · Guessing</span><span>5 · Very sure</span></small>
+      <small className="mt-2 flex w-3xs max-w-full justify-between text-xs text-muted-foreground"><span>1 · Guessing</span><span>5 · Very sure</span></small>
     </fieldset>
   );
 }
@@ -48,12 +48,12 @@ function PredictInputs({ lines, why, onLines, onWhy, tall }: { lines: string; wh
     <>
       <Label className="mt-4 block">
         <span className="mb-2 block text-sm font-semibold">Predicted output · one line per log</span>
-        <Textarea className={cn(tall ? "min-h-[110px]" : "min-h-[80px]", "font-mono")} spellCheck={false} value={lines} onChange={(event) => onLines(event.target.value)} />
+        <Textarea className={cn(tall ? "min-h-28" : "min-h-20", "font-mono")} spellCheck={false} value={lines} onChange={(event) => onLines(event.target.value)} />
       </Label>
       <Label className="mt-3 block">
         <span className="block text-sm font-semibold">Why</span>
         <span className="mb-2 block text-sm text-muted-foreground">Optional · not graded</span>
-        <Textarea className={cn("min-h-[72px]")} value={why} onChange={(event) => onWhy(event.target.value)} />
+        <Textarea className={cn("min-h-16")} value={why} onChange={(event) => onWhy(event.target.value)} />
       </Label>
     </>
   );
@@ -63,7 +63,7 @@ export function YourAnswer({ answer, showLines = true }: { answer: SavedAnswer; 
   return (
     <div className="mt-3">
       {(showLines && answer.lines) || answer.text ? <p className="font-semibold">Answer</p> : null}
-      {showLines && answer.lines && <pre className="mt-1 whitespace-pre-wrap font-mono text-[13px] leading-5">{answer.lines.join("\n") || "(nothing)"}</pre>}
+      {showLines && answer.lines && <pre className="mt-1 whitespace-pre-wrap font-mono text-sm leading-5">{answer.lines.join("\n") || "(nothing)"}</pre>}
       {answer.text && <p className="mt-1 whitespace-pre-wrap leading-5">{answer.text}</p>}
       {answer.why && <p className="mt-2 whitespace-pre-wrap leading-5"><span className="font-semibold">Why: </span>{answer.why}</p>}
     </div>
@@ -137,7 +137,7 @@ export function Question({ assessment, index, onDone, heading, submitTo }: {
   }
 
   return (
-    <article className="rounded-xl bg-card shadow-panel p-5">
+    <article className="rounded-xl bg-card border p-5">
       <p className={label}>{heading ?? `Question ${index + 1} of ${assessment.items.length}`} · {modeWords[item.mode]}</p>
       <div className="mt-2"><Markdown text={item.prompt} /></div>
       {item.code && <div className="mt-3"><CodeBlock code={item.code} label={`Code for question ${index + 1}`} /></div>}
@@ -152,7 +152,7 @@ export function Question({ assessment, index, onDone, heading, submitTo }: {
           {item.mode === "predict" ? <PredictInputs lines={answer} why={why} onLines={setAnswer} onWhy={setWhy} tall /> : (
             <Label className="mt-4 block">
               <span className="mb-2 block text-sm font-semibold">Answer</span>
-              <Textarea className={cn("min-h-[130px]")} value={answer} onChange={(event) => setAnswer(event.target.value)} />
+              <Textarea className={cn("min-h-32")} value={answer} onChange={(event) => setAnswer(event.target.value)} />
             </Label>
           )}
           {problem && <p className="mt-3 rounded-lg bg-muted px-4 py-3 text-sm" role="alert">{problem}</p>}

@@ -29,7 +29,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 
 interface Graded { label: Label; feedback: string; rubric: RubricResult[] | null; voided?: boolean }
 
-const page = "mx-auto max-w-[1500px] px-3 pb-9 pt-6 md:px-5 md:pt-[30px] min-[1500px]:pt-9";
+const page = "mx-auto max-w-375 px-3 pb-9 pt-6 md:px-5 md:pt-7 min-[1500px]:pt-9";
 
 function Shell({ email, children }: { email: string; children: React.ReactNode }) {
   return <WorkspaceShell email={email} active="lab" tab="profile" termLookup={false}><div className={page}>{children}</div></WorkspaceShell>;
@@ -49,16 +49,16 @@ function RulesDialog() {
 function ChapterAnswers({ chapter }: { chapter: RunChapterView }) {
   return (
     <details className={cn(panel, "group mb-3")}>
-      <summary className="flex cursor-pointer list-none items-center gap-4 px-5 py-4 text-[13px] [&::-webkit-details-marker]:hidden">
+      <summary className="flex cursor-pointer list-none items-center gap-4 px-5 py-4 text-sm [&::-webkit-details-marker]:hidden">
         <strong className="flex-1 font-semibold text-foreground">{chapter.title}</strong>
         <span className="text-xs text-muted-foreground">{chapter.answers.length} answers{chapter.skipped.length ? ` · ${chapter.skipped.length} skipped as known` : ""}</span>
       </summary>
       <ul className="space-y-4 px-5 pb-5">
         {chapter.answers.map((answer, index) => (
-          <li key={index} className="border-t border-border pt-3 text-[13px]">
+          <li key={index} className="border-t border-border pt-3 text-sm">
             <p className="text-xs text-muted-foreground">{modeWords[answer.mode] ?? answer.mode}{answer.selfRating ? ` · Confidence ${answer.selfRating} of 5` : ""}</p>
             <p className="mt-1 font-semibold text-foreground">{answer.prompt}</p>
-            <blockquote className="my-2 whitespace-pre-wrap border-l-[3px] border-rail-soft pl-[15px] leading-[1.6]">{answer.answer || "(no text)"}</blockquote>
+            <blockquote className="my-2 whitespace-pre-wrap border-l-4 border-primary/40 pl-3.5 leading-relaxed">{answer.answer || "(no text)"}</blockquote>
             <div className="flex flex-wrap items-center gap-2"><Pill tone={toneFor(answer.voided ? "voided" : answer.label)}>{answer.voided ? "Discarded" : labelWords[answer.label]}</Pill><span>{answer.feedback}</span></div>
             {answer.rubric && <RubricChecklist items={answer.rubric} />}
           </li>
@@ -85,9 +85,9 @@ function Intro({ intake, kind, roles, onStart, busy, problem }: { intake: Intake
   const [values, setValues] = useState<IntakeAnswers>(intake ?? { building: "", stack: "", aiWork: "", weeklyHours: 5 });
   const valid = values.building.trim() && values.stack.trim() && values.aiWork.trim() && values.weeklyHours >= 1 && values.weeklyHours <= 80;
   const text = (key: "building" | "stack" | "aiWork", label: string, hint: string) => (
-    <FieldLabel className={cn(fieldLabel, "mb-[25px]")}>
+    <FieldLabel className={cn(fieldLabel, "mb-6")}>
       {label}
-      <Textarea className={cn(field, "min-h-[96px] resize-y leading-[1.6]")} placeholder={hint} value={values[key]} onChange={(event) => setValues({ ...values, [key]: event.target.value })} />
+      <Textarea className={cn(field, "min-h-24 resize-y leading-relaxed")} placeholder={hint} value={values[key]} onChange={(event) => setValues({ ...values, [key]: event.target.value })} />
     </FieldLabel>
   );
   return (
@@ -95,30 +95,30 @@ function Intro({ intake, kind, roles, onStart, busy, problem }: { intake: Intake
       <Back href={engineering.overview}>Engineering</Back>
       <PageHeading title={kind === "baseline" ? "Intro" : "Checkpoint"} />
       <FlowLayout>
-        <section className={cn(panel, "p-[23px] md:p-[30px]")}>
+        <section className={cn(panel, "p-6 md:p-7")}>
           <div className={eyebrow}>Intro · 1 of 2</div>
           {text("building", "What are you building?", "My own web products, a SaaS for clinics")}
           {text("stack", "What do you use day to day?", "Languages, frameworks, databases, hosting")}
           {text("aiWork", "What AI work have you started?", "Even partly: embeddings, RAG, agents, evals")}
-          <FieldLabel className={cn(fieldLabel, "mb-[25px]")}>
+          <FieldLabel className={cn(fieldLabel, "mb-6")}>
             What would you like to grow toward?
             <NativeSelect className="mt-2.5 w-full" value={values.growToward ?? ""} onChange={(event) => setValues({ ...values, growToward: event.target.value || undefined })}>
               <NativeSelectOption value="">Not sure yet</NativeSelectOption>
               {roles.map((role) => <NativeSelectOption key={role.id} value={role.id}>{role.title}</NativeSelectOption>)}
             </NativeSelect>
           </FieldLabel>
-          <FieldLabel className={cn(fieldLabel, "mb-[25px]")}>
+          <FieldLabel className={cn(fieldLabel, "mb-6")}>
             Hours per week you can comfortably spend
-            <Input type="number" min={1} max={80} className="mt-2.5 max-w-[160px]" value={values.weeklyHours} onChange={(event) => setValues({ ...values, weeklyHours: Number(event.target.value) })} />
+            <Input type="number" min={1} max={80} className="mt-2.5 max-w-40" value={values.weeklyHours} onChange={(event) => setValues({ ...values, weeklyHours: Number(event.target.value) })} />
           </FieldLabel>
-          <p className="mb-[18px] text-xs text-muted-foreground">A starting preference, never graded. Choose a direction after the assessment</p>
+          <p className="mb-4 text-xs text-muted-foreground">A starting preference, never graded. Choose a direction after the assessment</p>
           {problem && <Notice tone="error">{problem}</Notice>}
           <Button type="button" disabled={busy || !valid} onClick={() => onStart(values)}>
             {busy ? "Starting…" : "Continue to assessment"}<IconArrowRight size={18} aria-hidden="true" />
           </Button>
         </section>
         <FlowNotes title="Your starting point">
-          <p className="mt-[7px]">Thirteen chapters across five areas. Short predictions and practical scenarios.</p>
+          <p className="mt-1.5">Thirteen chapters across five areas. Short predictions and practical scenarios.</p>
           <NoteList items={["No timer or speed score", "Pause between questions", "Confidence is separate from the grade", "Proven topics are skipped"]} />
           <Notice>One question per written topic, a follow-up when needed. Length depends on your answers</Notice>
         </FlowNotes>
@@ -132,12 +132,12 @@ function ProgressColumn({ run, current }: { run: RunView; current: string | null
     <FlowNotes title="Your progress">
       <ol className="mt-2">
         {run.chapters.map((chapter) => (
-          <li key={chapter.chapterId} className={cn("flex items-center gap-3 border-b border-border py-[13px] text-[13px]", chapter.chapterId === current && "font-semibold text-foreground")} aria-current={chapter.chapterId === current ? "step" : undefined}>
-            {chapter.status === "done" ? <IconCheck size={18} className="shrink-0 text-status-solid" aria-label="Done" />
+          <li key={chapter.chapterId} className={cn("flex items-center gap-3 border-b border-border py-3 text-sm", chapter.chapterId === current && "font-semibold text-foreground")} aria-current={chapter.chapterId === current ? "step" : undefined}>
+            {chapter.status === "done" ? <IconCheck size={18} className="shrink-0 text-foreground" aria-label="Done" />
               : chapter.chapterId === current ? <IconCircleDot size={18} className="shrink-0" aria-label="Current" />
                 : <IconCircle size={18} className="shrink-0" aria-hidden="true" />}
             <span className="flex-1">{chapter.title}</span>
-            {chapter.status === "done" && chapter.kind === "topics" && <span className="text-[11px] font-normal">{chapter.cleared ? "Cleared · estimate" : `${chapter.topics.filter((topic) => topic.label === "solid").length + chapter.skipped.length} of ${chapter.topics.length + chapter.skipped.length} known`}</span>}
+            {chapter.status === "done" && chapter.kind === "topics" && <span className="text-xs font-normal">{chapter.cleared ? "Cleared · estimate" : `${chapter.topics.filter((topic) => topic.label === "solid").length + chapter.skipped.length} of ${chapter.topics.length + chapter.skipped.length} known`}</span>}
           </li>
         ))}
       </ol>
@@ -216,7 +216,7 @@ function Session({ run }: { run: RunView }) {
   return (
     <>
       <SessionHeading
-        left={<Link href={engineering.overview} className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground md:text-[13px]"><IconArrowLeft size={17} aria-hidden="true" />Save & exit</Link>}
+        left={<Link href={engineering.overview} className="inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground md:text-sm"><IconArrowLeft size={17} aria-hidden="true" />Save & exit</Link>}
         middle={`${name} · Chapter ${number} of ${run.chapters.length}`}
         right={<RulesDialog />}
       />
@@ -246,8 +246,8 @@ function Session({ run }: { run: RunView }) {
               <Notice tone="success"><strong className="font-semibold">{previous.title} done</strong> · {previous.kind === "topics" ? `${previous.topics.filter((item) => item.label === "solid").length} of ${previous.topics.length} solid` : "placement check saved"} · <EvidenceDialog run={run} trigger="See grades" /></Notice>
             )}
             <div className={eyebrow}>Chapter {number} of {run.chapters.length}</div>
-            <h2 className="my-3 text-[23px] font-bold tracking-[-0.6px] md:text-[25px]">{chapter.title}</h2>
-            <p className="mb-[18px] text-[15px] leading-[1.6] text-muted-foreground">
+            <h2 className="my-3 text-2xl font-bold tracking-tight md:text-2xl">{chapter.title}</h2>
+            <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
               {chapter.kind === "screen" ? "No lessons yet · placement check, 2 questions"
                 : chapter.stage === "topics" ? `Digging into ${chapter.topics.length} topics · 1 or 2 questions each`
                   : `2 chapter questions first · topic questions only if needed · ${chapter.topics.length} topics${chapter.skipped.length ? ` · ${chapter.skipped.length} skipped as known` : ""}`}
@@ -277,12 +277,12 @@ function Results({ run }: { run: RunView }) {
   return (
     <>
       <PageHeading title={`${name} complete`} />
-      <section className={cn(panel, "mx-[5px] max-w-[850px] p-[23px] md:mx-3.5 md:p-8")}>
+      <section className={cn(panel, "mx-1 max-w-4xl p-6 md:mx-3.5 md:p-8")}>
         <Badge>{name} · {run.completedAt ? formatDate(run.completedAt) : "In progress"}</Badge>
-        <h2 className="my-4 text-[23px] font-bold tracking-[-0.6px] md:text-[25px]">Your starting point</h2>
+        <h2 className="my-4 text-2xl font-bold tracking-tight md:text-2xl">Your starting point</h2>
         <div className="my-8 grid grid-cols-3 gap-5">
           {[[String(run.chapters.length), "Chapters"], [String(answers), "Answers graded"], [`${known} of ${topics}`, "Topics known"]].map(([value, label]) => (
-            <div key={label}><strong className="block text-xl font-bold md:text-[26px]">{value}</strong><small className="mt-2 block text-[11px] text-muted-foreground md:text-sm">{label}</small></div>
+            <div key={label}><strong className="block text-xl font-bold md:text-2xl">{value}</strong><small className="mt-2 block text-xs text-muted-foreground md:text-sm">{label}</small></div>
           ))}
         </div>
         <Notice>{run.kind === "baseline" ? "The baseline never changes. Later evidence updates the profile; a checkpoint is a new snapshot" : "Shown next to the baseline on the profile"}</Notice>
