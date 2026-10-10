@@ -1,6 +1,6 @@
 # Reset to the shadcn default setup
 
-Status: approved by the owner, 10 Oct 2026. Implemented on 10 Oct 2026 on branch `refactor/shadcn-default`, with shadcn CLI 4.21.4. Waiting on the owner's check of the hosted app (§11, point 7).
+Status: approved by the owner, 10 Oct 2026. Implemented on 10 Oct 2026 on branch `refactor/shadcn-default`, with shadcn CLI 4.21.4. The owner checked the hosted preview on 10 Oct 2026, so every point in §11 is met.
 
 Implementation notes:
 
