@@ -1,6 +1,6 @@
 id: request-anatomy
 title: What your browser adds to a request
-topics: [web.request_lifecycle]
+topics: [web.http_semantics]
 modes: [predict]
 runner: probe
 probe: request-anatomy

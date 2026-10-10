@@ -1,6 +1,0 @@
-id: shallow-copy
-title: Stop the copy from changing the original
-topics: [js.references_mutation]
-modes: [debug]
-runner: browser
-timeoutMs: 2000

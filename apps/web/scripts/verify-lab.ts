@@ -21,7 +21,7 @@ async function main() {
     assert.equal(today.progress.find((item) => item.topicId === "js.event_loop")?.baselineLabel, null, "the 1 Oct summary is retired: no baseline label before the in-app run");
     console.log("ok - fresh learner: plan and baseline");
 
-    const topicId = "js.references_mutation";
+    const topicId = "js.closures";
     const items: AssessmentItem[] = [
       { mode: "predict", prompt: "What prints?", code: "const a = { n: { v: 1 } }; const b = { ...a }; console.log(a === b); console.log(a.n === b.n);", expectedOutput: ["false", "true"], explanation: "Spread makes a new outer object but copies the nested reference." },
       { mode: "predict", prompt: "What prints?", code: "console.log(1)", expectedOutput: ["2"] },

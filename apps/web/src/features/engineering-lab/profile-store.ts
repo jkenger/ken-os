@@ -3,7 +3,7 @@ import { guideTurn } from "@ken-os/agents";
 import {
   addedChapterId, areaLevel, nextScreenQuestion, toPublicItem, chapterStates, computeProgress, isArea, isoWeek, measuredHoursPerTopic, roadmap, roleDistance,
   type AddedChapter, type Area, type AreaLevel, type AttemptRecord, type ChapterScreen, type ChapterState, type GuideMessage, type IntakeAnswers, type Label,
-  type ModuleInfo, type PublicItem, type RoadmapStep, type RoleDistance, type Status, type TopicProgress,
+  type ChapterInfo, type PublicItem, type RoadmapStep, type RoleDistance, type Status, type TopicProgress,
 } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { labAssessmentRuns, labAttempts, labChapterScreens, labLessons, labProfile, labRadarItems } from "@/lib/schema";
@@ -58,7 +58,7 @@ export async function addChapter(userId: string, input: { title: string; area: s
   const profile = await getProfileRow(userId);
   const added = profile?.addedChapters ?? [];
   const id = addedChapterId(title);
-  if (added.some((chapter) => chapter.id === id) || topicMap.modules.some((module) => module.title.toLowerCase() === title.toLowerCase())) {
+  if (added.some((chapter) => chapter.id === id) || topicMap.chapters.some((module) => module.title.toLowerCase() === title.toLowerCase())) {
     throw new LabInputError("That chapter is already in your outline.", 409);
   }
   const chapter: AddedChapter = { id, title, area: input.area, reason: input.reason.trim().slice(0, 300), addedAt: new Date().toISOString() };
@@ -81,7 +81,7 @@ export async function talkToGuide(userId: string, phase: "intake" | "direction",
     messages: [...history, owner],
     intake: profile?.intake ?? null,
     roles: careers.roles.map((role) => ({ id: role.id, title: role.title, summary: role.summary })),
-    chapters: [...topicMap.modules.map((module) => ({ id: module.id, title: module.title, area: module.area })), ...(profile?.addedChapters ?? []).map((chapter) => ({ id: chapter.id, title: chapter.title, area: chapter.area }))],
+    chapters: [...topicMap.chapters.map((module) => ({ id: module.id, title: module.title, area: module.area })), ...(profile?.addedChapters ?? []).map((chapter) => ({ id: chapter.id, title: chapter.title, area: chapter.area }))],
     shape: view ? { areas: view.areas.map((area) => ({ area: area.area, level: area.now.level, estimate: area.now.estimate })), roles: view.roles.map((role) => ({ id: role.roleId, title: role.title, overall: role.overall, chaptersAway: role.missing.length })) } : undefined,
   });
   const guide: GuideMessage = { role: "guide", text: reply.reply, at: new Date().toISOString() };
@@ -98,8 +98,8 @@ function toRecord(row: typeof labAttempts.$inferSelect): AttemptRecord {
   };
 }
 
-function addedAsModules(added: AddedChapter[]): ModuleInfo[] {
-  return added.map((chapter) => ({ id: chapter.id, title: chapter.title, track: chapter.area === "ai" ? "ai" : "fullstack", area: chapter.area, planned: [] }));
+function addedAsModules(added: AddedChapter[]): ChapterInfo[] {
+  return added.map((chapter) => ({ id: chapter.id, title: chapter.title, area: chapter.area }));
 }
 
 /** Screening labels per chapter, from the newest answered set at or before a moment. */
@@ -198,16 +198,16 @@ export async function getProfileView(userId: string): Promise<ProfileView> {
   const steps = chosen ? roadmap(chosen, careers, now, topicMap, progress, weeklyHours, hoursPerTopic ?? undefined) : [];
   const byTopic = new Map(progress.map((item) => [item.topicId, item]));
   const roadmapChapters: RoadmapChapter[] = steps.map((step) => {
-    const module = topicMap.modules.find((item) => item.id === step.chapter);
+    const module = topicMap.chapters.find((item) => item.id === step.chapter);
     const own = added.find((item) => item.id === step.chapter);
     return {
       ...step,
       title: module?.title ?? own?.title ?? step.chapter,
-      topics: topicMap.topics.filter((topic) => topic.module === step.chapter).map((topic) => {
+      topics: topicMap.topics.filter((topic) => topic.chapter === step.chapter).map((topic) => {
         const item = byTopic.get(topic.id)!;
         return { topicId: topic.id, title: topic.title, status: item.status, known: item.status === "VALIDATED" || item.placement === "passed" };
       }),
-      planned: module?.planned ?? [],
+      planned: [],
       added: Boolean(own),
     };
   });

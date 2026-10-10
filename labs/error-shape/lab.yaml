@@ -1,0 +1,8 @@
+id: error-shape
+title: One shape for every error
+topics: [api.error_contracts]
+modes: [implement]
+runner: browser
+timeoutMs: 2000
+hint: >-
+  Switch on `error.name`. Build every body as `{ error: { code, message } }`, add `fields` only for validation, and never copy the original message of an unknown error.

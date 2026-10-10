@@ -90,7 +90,7 @@ export function capabilityRows(input: {
     const requirements = scope ? requirementsUpTo(ladder, scope).map((requirement): RequirementRow => {
       const chapterState = state(requirement.chapter);
       const have = chapterState?.depth ?? "none";
-      const topics = map.topics.filter((topic) => topic.module === requirement.chapter);
+      const topics = map.topics.filter((topic) => topic.chapter === requirement.chapter);
       const working = topics.filter((topic) => topic.depth === "working");
       const neededIds = new Set((requirement.depth === "run" || !working.length ? topics : working).map((topic) => topic.id));
       const rows = topics.map((topic): RequirementTopic => {
@@ -100,7 +100,7 @@ export function capabilityRows(input: {
       const met = depthAtLeast(have, requirement.depth);
       return {
         chapterId: requirement.chapter,
-        title: map.modules.find((module) => module.id === requirement.chapter)?.title ?? input.extraTitles?.[requirement.chapter] ?? requirement.chapter,
+        title: map.chapters.find((module) => module.id === requirement.chapter)?.title ?? input.extraTitles?.[requirement.chapter] ?? requirement.chapter,
         level: introducedAt(careers, ladder.id, requirement.chapter, requirement.depth),
         need: requirement.depth,
         have,

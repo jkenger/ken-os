@@ -10,7 +10,7 @@ import { depthWords, levelWords } from "../words";
 // The detail behind the skyline; chosen for the profile page on 2026-10-03.
 
 function chapterTitle(id: string, profile: ProfileView) {
-  return topicMap.modules.find((module) => module.id === id)?.title ?? profile.addedChapters.find((chapter) => chapter.id === id)?.title ?? id;
+  return topicMap.chapters.find((module) => module.id === id)?.title ?? profile.addedChapters.find((chapter) => chapter.id === id)?.title ?? id;
 }
 
 export function LevelTable({ profile, targets }: { profile: ProfileView; targets: Partial<Record<string, Level>> }) {

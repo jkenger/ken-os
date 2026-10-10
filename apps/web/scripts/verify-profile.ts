@@ -103,7 +103,7 @@ async function main() {
     const view = await runs.getRunView(userId, run.id);
     assert.ok(view.completedAt);
     assert.ok(view.chapters.every((chapter) => chapter.status === "done"));
-    assert.ok(view.chapters.find((chapter) => chapter.chapterId === "m1-js-runtime")!.answers.length > 0, "every question and answer is visible once done");
+    assert.ok(view.chapters.find((chapter) => chapter.chapterId === "js-runtime")!.answers.length > 0, "every question and answer is visible once done");
     await assert.rejects(runs.startRun(userId, "baseline"), /already taken/);
     console.log("ok - the finished run shows every answer, and the baseline can't be taken twice");
 
@@ -136,7 +136,7 @@ async function main() {
     const checkpoint = await runs.startRun(userId, "checkpoint");
     assert.equal(checkpoint.resumed, false);
     const [checkpointRun] = await db().select().from((await import("../src/lib/schema")).labAssessmentRuns).where(and(eq((await import("../src/lib/schema")).labAssessmentRuns.id, checkpoint.id)));
-    const runtime = checkpointRun.plan.chapters.find((chapter) => chapter.chapterId === "m1-js-runtime");
+    const runtime = checkpointRun.plan.chapters.find((chapter) => chapter.chapterId === "js-runtime");
     assert.ok(runtime?.kind === "topics" && runtime.skipped.includes("js.call_stack"), "a checkpoint skips what's already known");
     assert.equal(await daily.getDailySet(userId), null);
     await assert.rejects(daily.generateDailySet(userId), /Finish your assessment/, "no daily practice during a run");

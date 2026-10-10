@@ -1,6 +1,0 @@
-id: llm-trace
-title: Turn an agent run's trace into cost and timing
-topics: [ai.observability]
-modes: [implement]
-runner: browser
-timeoutMs: 3000

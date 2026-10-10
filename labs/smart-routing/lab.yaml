@@ -1,6 +1,6 @@
 id: smart-routing
 title: Spend the big model only where it's needed
-topics: [ai.cost_latency]
+topics: [ai.model_routing]
 modes: [implement]
 runner: browser
 timeoutMs: 3000

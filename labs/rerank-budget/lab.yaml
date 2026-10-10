@@ -1,6 +1,0 @@
-id: rerank-budget
-title: Rerank the shortlist, not the whole catalogue
-topics: [ai.reranking]
-modes: [implement]
-runner: browser
-timeoutMs: 2000

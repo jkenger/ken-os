@@ -1,40 +1,28 @@
 import { SOURCE_DOMAINS, type FreshnessClass, type ResearchTarget, type SourceGroup } from "./sources";
 import { LABELS, MODES, type Label, type Mode } from "./types";
 
-export const TRACKS = ["fullstack", "ai"] as const;
-export type Track = (typeof TRACKS)[number];
-
 /** The five areas a level is measured in. Every chapter belongs to one. */
 export const AREAS = ["foundations", "frontend", "backend", "production", "ai"] as const;
 export type Area = (typeof AREAS)[number];
 
-export interface TrackInfo {
-  id: Track;
+export interface AreaInfo {
+  id: Area;
   title: string;
-  summary: string;
-}
-
-/** A chapter of the course. `planned` names topics in the outline that aren't written yet. */
-export interface ModuleInfo {
-  id: string;
-  title: string;
-  track: Track;
-  area: Area;
-  planned: string[];
-}
-
-/** A book groups chapters in reading order (assessment v2, A6). Areas stay on chapters, so levels don't change. */
-export interface BookInfo {
-  id: string;
-  title: string;
-  summary: string;
+  /** Chapter ids in course order. */
   chapters: string[];
+}
+
+/** A chapter of the course, in one area. */
+export interface ChapterInfo {
+  id: string;
+  title: string;
+  area: Area;
 }
 
 export interface Topic {
   id: string;
   title: string;
-  module: string;
+  chapter: string;
   requires: string[];
   freshness: FreshnessClass;
   sourceGroups: SourceGroup[];
@@ -49,9 +37,10 @@ export interface Topic {
 }
 
 export interface TopicMap {
-  tracks: TrackInfo[];
-  books: BookInfo[];
-  modules: ModuleInfo[];
+  areas: AreaInfo[];
+  /** Every chapter in course order, area by area. */
+  chapters: ChapterInfo[];
+  /** Every topic in course order, chapter by chapter. */
   topics: Topic[];
 }
 
@@ -85,42 +74,41 @@ function oneOf<T extends string>(value: unknown, options: readonly T[], where: s
   return value as T;
 }
 
-/** Validates the topic map: shapes, known ids, known labs, and no prerequisite loops. */
+/** Validates the topic map: shapes, known ids, one exercise per topic, and no prerequisite loops. */
 export function parseTopicMap(raw: unknown, knownLabs: ReadonlyMap<string, readonly Mode[]>): TopicMap {
-  if (!raw || typeof raw !== "object") fail("topics.yaml", "expected tracks, modules and topics");
-  const input = raw as { tracks?: unknown; books?: unknown; modules?: unknown; topics?: unknown };
-  const tracks = list(input.tracks, "tracks").map((value, index): TrackInfo => {
+  if (!raw || typeof raw !== "object") fail("topics.yaml", "expected areas and topics");
+  const input = raw as { areas?: unknown; topics?: unknown };
+  const chapters: ChapterInfo[] = [];
+  const areas = list(input.areas, "areas").map((value, index): AreaInfo => {
     const item = value as Record<string, unknown>;
-    const where = `tracks[${index}]`;
-    return { id: oneOf(item.id, TRACKS, `${where}.id`), title: text(item.title, `${where}.title`), summary: text(item.summary, `${where}.summary`) };
+    const where = `areas[${index}]`;
+    const id = oneOf(item.id, AREAS, `${where}.id`);
+    const own = list(item.chapters, `${where}.chapters`).map((entry, chapterIndex): ChapterInfo => {
+      const chapter = entry as Record<string, unknown>;
+      const at = `${where}.chapters[${chapterIndex}]`;
+      const chapterId = text(chapter.id, `${at}.id`);
+      if (!/^[a-z]+(-[a-z]+)*$/.test(chapterId)) fail(at, "chapter id must be kebab-case");
+      return { id: chapterId, title: text(chapter.title, `${at}.title`), area: id };
+    });
+    if (!own.length) fail(where, "an area needs at least one chapter");
+    chapters.push(...own);
+    return { id, title: text(item.title, `${where}.title`), chapters: own.map((chapter) => chapter.id) };
   });
-  if (new Set(tracks.map((track) => track.id)).size !== tracks.length) fail("tracks", "duplicate track id");
-  const modules = list(input.modules, "modules").map((value, index): ModuleInfo => {
-    const item = value as Record<string, unknown>;
-    const where = `modules[${index}]`;
-    const track = oneOf(item.track, TRACKS, `${where}.track`);
-    if (!tracks.some((entry) => entry.id === track)) fail(where, `track ${track} is not listed under tracks`);
-    return {
-      id: text(item.id, `${where}.id`),
-      title: text(item.title, `${where}.title`),
-      track,
-      area: oneOf(item.area, AREAS, `${where}.area`),
-      planned: list(item.planned, `${where}.planned`).map((title) => text(title, `${where}.planned`)),
-    };
-  });
-  const moduleIds = new Set(modules.map((item) => item.id));
-  if (moduleIds.size !== modules.length) fail("modules", "duplicate module id");
+  if (areas.map((area) => area.id).join() !== AREAS.join()) fail("areas", `expected ${AREAS.join(", ")} in order`);
+  const chapterIds = new Set(chapters.map((item) => item.id));
+  if (chapterIds.size !== chapters.length) fail("chapters", "duplicate chapter id");
 
   const topics = list(input.topics, "topics").map((value, index): Topic => {
     const item = value as Record<string, unknown>;
     const where = `topics[${index}] ${String(item?.id ?? "")}`.trim();
     const id = text(item.id, `${where}.id`);
     if (!/^[a-z]+(\.[a-z_]+)+$/.test(id)) fail(where, "id must look like area.name");
-    const module = text(item.module, `${where}.module`);
-    if (!moduleIds.has(module)) fail(where, `unknown module ${module}`);
+    const chapter = text(item.chapter, `${where}.chapter`);
+    if (!chapterIds.has(chapter)) fail(where, `unknown chapter ${chapter}`);
     const prove = list(item.prove, `${where}.prove`).map((mode) => oneOf(mode, MODES, `${where}.prove`));
     if (!prove.length) fail(where, "prove must list at least one mode");
     const labs = list(item.labs, `${where}.labs`).map((lab) => text(lab, `${where}.labs`));
+    if (labs.length !== 1) fail(where, "a topic has exactly one exercise");
     for (const lab of labs) if (!knownLabs.has(lab)) fail(where, `unknown lab ${lab}`);
     const sourceGroups = list(item.sourceGroups, `${where}.sourceGroups`).map((group) => oneOf(group, Object.keys(SOURCE_DOMAINS) as SourceGroup[], `${where}.sourceGroups`));
     if (!sourceGroups.length) fail(where, "sourceGroups must list at least one group");
@@ -129,7 +117,7 @@ export function parseTopicMap(raw: unknown, knownLabs: ReadonlyMap<string, reado
     return {
       id,
       title: text(item.title, `${where}.title`),
-      module,
+      chapter,
       requires: list(item.requires, `${where}.requires`).map((value) => text(value, `${where}.requires`)),
       freshness: oneOf(item.freshness, FRESHNESS, `${where}.freshness`),
       sourceGroups,
@@ -159,23 +147,13 @@ export function parseTopicMap(raw: unknown, knownLabs: ReadonlyMap<string, reado
     state.set(id, "done");
   };
   for (const topic of topics) visit(topic.id, []);
-  for (const module of modules) {
-    if (!module.planned.length && !topics.some((topic) => topic.module === module.id)) fail(module.id, "a chapter needs topics or planned topic names");
+  for (const chapter of chapters) {
+    if (!topics.some((topic) => topic.chapter === chapter.id)) fail(chapter.id, "a chapter needs at least one topic");
   }
-  const books = list(input.books, "books").map((value, index): BookInfo => {
-    const item = value as Record<string, unknown>;
-    const where = `books[${index}]`;
-    const chapters = list(item.chapters, `${where}.chapters`).map((chapter) => text(chapter, `${where}.chapters`));
-    for (const chapter of chapters) if (!moduleIds.has(chapter)) fail(where, `unknown chapter ${chapter}`);
-    if (!chapters.length) fail(where, "a book needs at least one chapter");
-    return { id: text(item.id, `${where}.id`), title: text(item.title, `${where}.title`), summary: text(item.summary, `${where}.summary`), chapters };
-  });
-  if (books.length) {
-    if (new Set(books.map((book) => book.id)).size !== books.length) fail("books", "duplicate book id");
-    const placed = books.flatMap((book) => book.chapters);
-    for (const module of modules) if (placed.filter((id) => id === module.id).length !== 1) fail("books", `chapter ${module.id} must be in exactly one book`);
-  }
-  return { tracks, books, modules, topics };
+  // Topics follow course order: chapter by chapter, in the order the YAML lists them within a chapter.
+  const chapterOrder = new Map(chapters.map((item, index) => [item.id, index]));
+  const ordered = topics.map((topic, index) => ({ topic, index })).sort((a, b) => chapterOrder.get(a.topic.chapter)! - chapterOrder.get(b.topic.chapter)! || a.index - b.index).map((entry) => entry.topic);
+  return { areas, chapters, topics: ordered };
 }
 
 export const POINTS_PER_TOPIC = { min: 4, max: 6 } as const;

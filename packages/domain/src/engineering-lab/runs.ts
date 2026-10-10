@@ -29,8 +29,8 @@ export const SCREEN_QUESTIONS = 2;
  */
 export function planRun(map: TopicMap, progress: TopicProgress[], extraChapters: { id: string }[] = []): RunPlan {
   const byTopic = new Map(progress.map((item) => [item.topicId, item]));
-  const chapters: RunChapter[] = map.modules.map((module) => {
-    const topics = map.topics.filter((topic) => topic.module === module.id);
+  const chapters: RunChapter[] = map.chapters.map((module) => {
+    const topics = map.topics.filter((topic) => topic.chapter === module.id);
     if (!topics.length) return { chapterId: module.id, kind: "screen" };
     const skipped = topics.filter((topic) => { const item = byTopic.get(topic.id); return item ? isKnown(item) : false; }).map((topic) => topic.id);
     const topicIds = topics.map((topic) => topic.id).filter((id) => !skipped.includes(id));

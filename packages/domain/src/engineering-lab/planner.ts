@@ -73,9 +73,9 @@ export function planNext({ map, progress, latestLabel, now }: PlanInput): PlanDe
     return decide(inProgress, "continue", `Pick up ${inProgress.title} where you left off.`);
   }
 
-  const moduleOrder = new Map(map.modules.map((module, index) => [module.id, index]));
+  const moduleOrder = new Map(map.chapters.map((module, index) => [module.id, index]));
   const next = [...map.topics]
-    .sort((a, b) => moduleOrder.get(a.module)! - moduleOrder.get(b.module)!)
+    .sort((a, b) => moduleOrder.get(a.chapter)! - moduleOrder.get(b.chapter)!)
     .find((topic) => status(topic.id) === "NOT_STARTED" && !known(topic.id) && topic.requires.every(known));
   if (!next) return null;
   const solid = entry(next.id)?.baselineLabel === "solid";

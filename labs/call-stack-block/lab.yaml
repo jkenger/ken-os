@@ -1,0 +1,8 @@
+id: call-stack-block
+title: Let the timer run
+topics: [js.call_stack]
+modes: [debug]
+runner: browser
+timeoutMs: 2000
+hint: >-
+  Do one chunk with a plain loop, then `await new Promise((resolve) => setTimeout(resolve, 0))` before the next.

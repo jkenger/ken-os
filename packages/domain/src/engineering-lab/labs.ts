@@ -25,6 +25,8 @@ export interface LabDefinition {
   modes: Mode[];
   runner: Runner;
   timeoutMs: number;
+  /** One line shown behind the Hint button. Optional. */
+  hint: string | null;
   readme: string;
   starter: string;
   tests: string;
@@ -34,7 +36,7 @@ export interface LabDefinition {
   probe: { id: string; questions: ProbeQuestion[] } | null;
 }
 
-export type LabMeta = Pick<LabDefinition, "id" | "title" | "topics" | "modes" | "runner" | "timeoutMs"> & { probeId: string | null };
+export type LabMeta = Pick<LabDefinition, "id" | "title" | "topics" | "modes" | "runner" | "timeoutMs" | "hint"> & { probeId: string | null };
 
 export function parseLabMeta(raw: unknown, folder: string): LabMeta {
   const item = (raw ?? {}) as Record<string, unknown>;
@@ -49,9 +51,11 @@ export function parseLabMeta(raw: unknown, folder: string): LabMeta {
   if (item.runner === "sandbox") throw new Error(`${where}: the sandbox runner is not available yet`);
   const timeoutMs = Number(item.timeoutMs ?? 2000);
   if (!Number.isInteger(timeoutMs) || timeoutMs < 100 || timeoutMs > 30_000) throw new Error(`${where}: timeoutMs must be 100 to 30000`);
+  if (item.hint !== undefined && (typeof item.hint !== "string" || !item.hint.trim())) throw new Error(`${where}: hint must be text`);
+  const hint = typeof item.hint === "string" ? item.hint.trim() : null;
   const probeId = item.runner === "probe" ? String(item.probe ?? "") : null;
   if (item.runner === "probe" && !probeId) throw new Error(`${where}: probe labs name their probe`);
-  return { id: folder, title: item.title.trim(), topics, modes: modes as Mode[], runner: item.runner as Runner, timeoutMs, probeId };
+  return { id: folder, title: item.title.trim(), topics, modes: modes as Mode[], runner: item.runner as Runner, timeoutMs, hint, probeId };
 }
 
 export function parseProbeQuestions(raw: unknown, folder: string): ProbeQuestion[] {

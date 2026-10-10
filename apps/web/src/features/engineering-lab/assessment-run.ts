@@ -38,7 +38,7 @@ async function profileOf(userId: string) {
 /** A chapter by id: a course chapter, or one you added through the Guide. */
 export function chapterInfo(chapterId: string, added: AddedChapter[] = []) {
   const course = findChapter(chapterId);
-  if (course) return { id: course.id, title: course.title, area: course.area, planned: course.planned };
+  if (course) return { id: course.id, title: course.title, area: course.area, planned: [] as string[] };
   const own = added.find((chapter) => chapter.id === chapterId);
   return own ? { id: own.id, title: own.title, area: own.area, planned: [] as string[] } : null;
 }

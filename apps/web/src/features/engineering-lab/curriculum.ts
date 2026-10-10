@@ -4,19 +4,18 @@ import { careers, labs, topicMap } from "./generated/curriculum.generated";
 export { careers, labs, topicMap };
 
 export function findChapter(chapterId: string) {
-  return topicMap.modules.find((module) => module.id === chapterId);
+  return topicMap.chapters.find((chapter) => chapter.id === chapterId);
 }
 
 export function findTopic(topicId: string): Topic | undefined {
   return topicMap.topics.find((topic) => topic.id === topicId);
 }
 
-/** Where a topic sits in the course, for breadcrumbs: its track and its chapter's number within that track. */
+/** Where a topic sits in the course, for breadcrumbs: its area and its chapter's number within that area. */
 export function placeOf(topic: Topic) {
-  const chapter = topicMap.modules.find((item) => item.id === topic.module)!;
-  const inTrack = topicMap.modules.filter((item) => item.track === chapter.track);
-  const track = topicMap.tracks.find((item) => item.id === chapter.track);
-  return { track: track?.title ?? chapter.track, chapterNumber: inTrack.indexOf(chapter) + 1, chapterTitle: chapter.title };
+  const chapter = topicMap.chapters.find((item) => item.id === topic.chapter)!;
+  const area = topicMap.areas.find((item) => item.id === chapter.area)!;
+  return { track: area.title, chapterNumber: area.chapters.indexOf(chapter.id) + 1, chapterTitle: chapter.title };
 }
 
 export function labsForTopic(topicId: string) {

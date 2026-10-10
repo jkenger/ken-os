@@ -1,0 +1,60 @@
+# The Engineering assessment: 5 fixed questions, one per area, asked in this order. Spec:
+# docs/architecture/engineering-rebuild.md, section 3 (Assessment). The Assessor grades each answer against its rubric;
+# a pass needs every rubric line. A predict question also lists the exact console output, which is compared first.
+#
+# Approved by the owner on 2026-10-10 by choosing the reference prototype's question set. Change it in a reviewed commit
+# and move reviewedOn. A retake uses the same questions.
+
+status: approved
+reviewedOn: "2026-10-10"
+
+questions:
+  - id: foundations-microtasks
+    area: foundations
+    kind: predict
+    prompt: What will this snippet print, in order?
+    code: |-
+      console.log("A");
+      Promise.resolve().then(() => console.log("B"));
+      console.log("C");
+    expectedOutput: [A, C, B]
+    rubric:
+      - Prints A, C, B
+      - Says synchronous code finishes before the promise microtask runs
+
+  - id: frontend-stale-response
+    area: frontend
+    kind: explain
+    prompt: >-
+      An effect fetches data whenever its dependency changes. How would you prevent an older response overwriting a
+      newer one?
+    rubric:
+      - Cancels the obsolete request or ignores its result
+      - Uses a request identity or cleanup to tell them apart
+
+  - id: backend-oversell
+    area: backend
+    kind: debug
+    prompt: >-
+      Two requests both see one remaining item and each complete a purchase. Where should the invariant be enforced?
+    rubric:
+      - Enforces it in the database transaction
+      - Uses an atomic conditional update or appropriate locking
+
+  - id: production-payment-timeout
+    area: production
+    kind: failure
+    prompt: A payment request times out. Is it safe to retry immediately? Explain your decision.
+    rubric:
+      - A timeout doesn't prove failure
+      - Uses an idempotency key or reconciles before repeating
+
+  - id: ai-irrelevant-chunks
+    area: ai
+    kind: explain
+    prompt: >-
+      Your retrieval returns semantically similar but irrelevant chunks. What would you inspect before changing the
+      LLM?
+    rubric:
+      - Inspects chunk boundaries, queries or metadata filters
+      - Measures with known relevant documents

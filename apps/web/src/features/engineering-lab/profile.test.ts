@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   areaLevel, chapterStates, computeProgress, isoWeek, measuredHoursPerTopic, nextScreenQuestion, nextTopicQuestion, parseCareers, planRun, stageOne,
-  roadmap, roleDistance, type AttemptRecord, type Label, type ModuleInfo, type Mode, type TopicProgress,
+  roadmap, roleDistance, type AttemptRecord, type Label, type ChapterInfo, type Mode, type TopicProgress,
 } from "@ken-os/domain";
 import { careers, findTopic, runModes, topicMap } from "./curriculum";
 import { pickDailyTopics } from "./daily";
@@ -24,7 +24,7 @@ function progressFor(attempts: AttemptRecord[]): TopicProgress[] {
 }
 
 // A chapter the owner added through the Guide: no written topics, so only placement checks can estimate it.
-const payments: ModuleInfo = { id: "added-payments", title: "Payments", track: "fullstack", area: "backend", planned: [] };
+const payments: ChapterInfo = { id: "added-payments", title: "Payments", area: "backend" };
 
 const placed = (ids: string[]) => ids.flatMap((id) => {
   const topic = findTopic(id)!;
@@ -33,18 +33,18 @@ const placed = (ids: string[]) => ids.flatMap((id) => {
 
 test("the roles file parses against the topic map and covers every area once", () => {
   assert.equal(careers.areas.length, 5);
-  assert.equal(careers.status, "approved", "the owner approved the roles on 2026-10-05");
-  assert.ok(careers.approvedOn, "an approved file carries its approval date");
+  // Reopened by the rebuild (2026-10-10) until the owner re-approves the remap.
+  assert.ok(careers.status !== "approved" || careers.approvedOn, "an approved file carries its approval date");
   assert.ok(careers.roles.some((role) => role.id === "fullstack-applied-ai"));
   assert.throws(() => parseCareers({ ...careers, areas: careers.areas.slice(1) }, topicMap), /exactly once/);
-  const wrongArea = { ...careers, areas: careers.areas.map((area) => area.id === "frontend" ? { ...area, levels: { ...area.levels, junior: [{ chapter: "m1-js-runtime", depth: "aware" }] } } : area) };
+  const wrongArea = { ...careers, areas: careers.areas.map((area) => area.id === "frontend" ? { ...area, levels: { ...area.levels, junior: [{ chapter: "js-runtime", depth: "aware" }] } } : area) };
   assert.throws(() => parseCareers(wrongArea, topicMap), /belongs to foundations/);
 });
 
 test("every chapter has an area, and React and API boundaries are now separate chapters", () => {
-  assert.ok(topicMap.modules.every((module) => module.area));
-  assert.equal(topicMap.modules.find((module) => module.id === "m4-react")?.area, "frontend");
-  assert.equal(topicMap.modules.find((module) => module.id === "m4-api-boundaries")?.area, "backend");
+  assert.ok(topicMap.chapters.every((module) => module.area));
+  assert.equal(topicMap.chapters.find((module) => module.id === "react")?.area, "frontend");
+  assert.equal(topicMap.chapters.find((module) => module.id === "api-boundaries")?.area, "backend");
 });
 
 test("a baseline answer counts like a placement: two solid answers place a topic", () => {
@@ -54,19 +54,19 @@ test("a baseline answer counts like a placement: two solid answers place a topic
 });
 
 test("a baseline label is solid only when every answer was", () => {
-  const attempts = [answer("db.indexes", "explain", "solid"), answer("db.indexes", "explain", "partial")];
-  const progress = progressFor(attempts).find((item) => item.topicId === "db.indexes")!;
+  const attempts = [answer("db.composite_indexes", "explain", "solid"), answer("db.composite_indexes", "explain", "partial")];
+  const progress = progressFor(attempts).find((item) => item.topicId === "db.composite_indexes")!;
   assert.equal(progress.baselineLabel, "partial");
   assert.equal(progress.placement, "failed");
 });
 
 test("a later checkpoint sitting replaces the baseline's placement result", () => {
   const attempts = [
-    answer("db.indexes", "explain", "gap"),
-    answer("db.indexes", "explain", "solid", { kind: "checkpoint", assessmentId: "later" }),
-    answer("db.indexes", "explain", "solid", { kind: "checkpoint", assessmentId: "later" }),
+    answer("db.composite_indexes", "explain", "gap"),
+    answer("db.composite_indexes", "explain", "solid", { kind: "checkpoint", assessmentId: "later" }),
+    answer("db.composite_indexes", "explain", "solid", { kind: "checkpoint", assessmentId: "later" }),
   ];
-  const progress = progressFor(attempts).find((item) => item.topicId === "db.indexes")!;
+  const progress = progressFor(attempts).find((item) => item.topicId === "db.composite_indexes")!;
   assert.equal(progress.placement, "passed");
   assert.equal(progress.baselineLabel, "gap", "the baseline label never moves");
 });
@@ -103,29 +103,29 @@ test("screening asks its two questions in order", () => {
 
 test("planning a run skips known topics and screens unwritten chapters", () => {
   const plan = planRun(topicMap, progressFor(placed(["js.call_stack"])), [payments]);
-  const runtime = plan.chapters.find((chapter) => chapter.chapterId === "m1-js-runtime");
+  const runtime = plan.chapters.find((chapter) => chapter.chapterId === "js-runtime");
   assert.ok(runtime?.kind === "topics" && runtime.skipped.includes("js.call_stack") && !runtime.topicIds.includes("js.call_stack"));
   assert.equal(plan.chapters.find((chapter) => chapter.chapterId === "added-payments")?.kind, "screen", "an added chapter gets a placement check");
-  const unwritten = topicMap.modules.filter((module) => !topicMap.topics.some((topic) => topic.module === module.id)).length;
+  const unwritten = topicMap.chapters.filter((module) => !topicMap.topics.some((topic) => topic.chapter === module.id)).length;
   assert.equal(plan.chapters.filter((chapter) => chapter.kind === "screen").length, unwritten + 1, "every chapter without written topics gets a placement check");
-  assert.equal(plan.chapters.find((chapter) => chapter.chapterId === "m4-api-boundaries")?.kind, "topics", "API boundaries now has written topics");
+  assert.equal(plan.chapters.find((chapter) => chapter.chapterId === "api-boundaries")?.kind, "topics", "API boundaries now has written topics");
 });
 
 test("chapter depth: build needs the working topics known, run needs all; screening tops out at build", () => {
-  const db = topicMap.topics.filter((topic) => topic.module === "m3-db-concurrency");
+  const db = topicMap.topics.filter((topic) => topic.chapter === "databases");
   const working = db.filter((topic) => topic.depth === "working").map((topic) => topic.id);
   const states = chapterStates(topicMap, progressFor(placed(working)), [{ chapterId: "added-payments", labels: ["solid", "solid"] }], [payments]);
-  assert.equal(states.find((state) => state.chapterId === "m3-db-concurrency")?.depth, "build");
+  assert.equal(states.find((state) => state.chapterId === "databases")?.depth, "build");
   assert.equal(states.find((state) => state.chapterId === "added-payments")?.depth, "build");
   assert.equal(states.find((state) => state.chapterId === "added-payments")?.estimate, true);
   const weak = chapterStates(topicMap, progressFor([]), [{ chapterId: "added-payments", labels: ["partial", "gap"] }], [payments]);
   assert.equal(weak.find((state) => state.chapterId === "added-payments")?.depth, "none");
-  const screenedWritten = chapterStates(topicMap, progressFor([]), [{ chapterId: "m3-db-concurrency", labels: ["solid", "solid"] }]);
+  const screenedWritten = chapterStates(topicMap, progressFor([]), [{ chapterId: "databases", labels: ["solid", "solid"] }]);
   // Assessment v2 (A2): a written chapter cleared in stage 1 counts as "can build it", as an estimate, never as proven.
-  assert.equal(screenedWritten.find((state) => state.chapterId === "m3-db-concurrency")?.depth, "build");
-  assert.equal(screenedWritten.find((state) => state.chapterId === "m3-db-concurrency")?.estimate, true);
+  assert.equal(screenedWritten.find((state) => state.chapterId === "databases")?.depth, "build");
+  assert.equal(screenedWritten.find((state) => state.chapterId === "databases")?.estimate, true);
   const all = chapterStates(topicMap, progressFor(placed(db.map((topic) => topic.id))), []);
-  assert.equal(all.find((state) => state.chapterId === "m3-db-concurrency")?.depth, "run");
+  assert.equal(all.find((state) => state.chapterId === "databases")?.depth, "run");
 });
 
 test("levels are per area, need every chapter of the level, and say how far the next step is", () => {
@@ -133,8 +133,8 @@ test("levels are per area, need every chapter of the level, and say how far the 
   const none = areaLevel(foundations, chapterStates(topicMap, progressFor([]), []));
   assert.equal(none.level, null);
   assert.equal(none.next?.level, "junior");
-  const m1 = topicMap.topics.filter((topic) => topic.module === "m1-js-runtime" && topic.depth === "working").map((topic) => topic.id);
-  const junior = areaLevel(foundations, chapterStates(topicMap, progressFor([...placed(m1), ...placed(["web.cors"]).slice(0, 1).map((item) => ({ ...item, label: "partial" as Label }))]), []));
+  const m1 = topicMap.topics.filter((topic) => topic.chapter === "js-runtime" && topic.depth === "working").map((topic) => topic.id);
+  const junior = areaLevel(foundations, chapterStates(topicMap, progressFor([...placed(m1), ...placed(["web.cookies_cors"]).slice(0, 1).map((item) => ({ ...item, label: "partial" as Label }))]), []));
   assert.equal(junior.level, "junior", "m1 at build and m2 at aware");
   assert.equal(junior.next?.level, "mid");
   assert.ok(junior.next!.total >= 2 && junior.next!.met < junior.next!.total);
@@ -144,7 +144,7 @@ test("a level resting on screening answers is marked as an estimate", () => {
   // A ladder whose junior step is the added chapter and whose mid step is a written chapter nobody has proven.
   const ladder = { id: "backend" as const, title: "Backend", summary: "", levels: {
     junior: [{ chapter: "added-payments", depth: "build" as const }],
-    mid: [{ chapter: "m3-db-concurrency", depth: "build" as const }],
+    mid: [{ chapter: "databases", depth: "build" as const }],
     senior: [],
   } };
   const level = areaLevel(ladder, chapterStates(topicMap, progressFor([]), [{ chapterId: "added-payments", labels: ["solid", "solid"] }], [payments]));
@@ -176,7 +176,7 @@ test("a chapter needed deeper by a higher level shows up again as its own stage"
   const role = careers.roles.find((item) => item.id === "fullstack-applied-ai")!;
   const progress = progressFor([]);
   const steps = roadmap(role, careers, chapterStates(topicMap, progress, []), topicMap, progress, 5);
-  const runtime = steps.filter((step) => step.chapter === "m1-js-runtime");
+  const runtime = steps.filter((step) => step.chapter === "js-runtime");
   assert.deepEqual(runtime.map((step) => [step.need, step.forLevel]), [["build", "junior"], ["run", "mid"]]);
   assert.equal(runtime[1].have, "build", "the deeper stage starts where the first one ends");
   assert.ok(runtime[1].hours < runtime[0].hours, "the deeper stage only counts the deep topics");
@@ -220,16 +220,16 @@ test("stage 1: both solid clears the chapter, anything else digs into topics", (
 
 test("a cleared chapter counts as can-build-it, as an estimate, and proves no topic", () => {
   const progress = progressFor([]);
-  const states = chapterStates(topicMap, progress, [{ chapterId: "m1-js-runtime", labels: ["solid", "solid"] }]);
-  const runtime = states.find((state) => state.chapterId === "m1-js-runtime")!;
+  const states = chapterStates(topicMap, progress, [{ chapterId: "js-runtime", labels: ["solid", "solid"] }]);
+  const runtime = states.find((state) => state.chapterId === "js-runtime")!;
   assert.equal(runtime.depth, "build");
   assert.equal(runtime.estimate, true);
   assert.equal(runtime.known, 0, "chapter questions never make a topic known");
-  const notCleared = chapterStates(topicMap, progress, [{ chapterId: "m1-js-runtime", labels: ["solid", "partial"] }]).find((state) => state.chapterId === "m1-js-runtime")!;
+  const notCleared = chapterStates(topicMap, progress, [{ chapterId: "js-runtime", labels: ["solid", "partial"] }]).find((state) => state.chapterId === "js-runtime")!;
   assert.equal(notCleared.depth, "none");
   // Placed topics already at "can run it" are never lowered by stage-1 answers.
-  const placedAll = progressFor(placed(topicMap.topics.filter((topic) => topic.module === "m1-js-runtime").map((topic) => topic.id)));
-  const run = chapterStates(topicMap, placedAll, [{ chapterId: "m1-js-runtime", labels: ["solid", "solid"] }]).find((state) => state.chapterId === "m1-js-runtime")!;
+  const placedAll = progressFor(placed(topicMap.topics.filter((topic) => topic.chapter === "js-runtime").map((topic) => topic.id)));
+  const run = chapterStates(topicMap, placedAll, [{ chapterId: "js-runtime", labels: ["solid", "solid"] }]).find((state) => state.chapterId === "js-runtime")!;
   assert.equal(run.depth, "run");
   assert.equal(run.estimate, false);
 });

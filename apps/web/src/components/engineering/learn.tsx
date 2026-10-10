@@ -50,13 +50,11 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
   const needle = query.trim().toLowerCase();
   const options = path ? scopes : scopes.filter(([id]) => id !== "path");
 
-  // Chapters in book order (engineering-assessment-v2.md, A6); a chapter outside every book keeps its course order.
-  const inBooks = map.books.flatMap((book) => book.chapters);
-  const ordered = [...inBooks.map((id) => map.modules.find((module) => module.id === id)!).filter(Boolean), ...map.modules.filter((module) => !inBooks.includes(module.id))];
-  const chapters = ordered.map((module, index) => {
-    const book = map.books.find((item) => item.chapters.includes(module.id));
-    const track = book ? { title: book.title } : map.tracks.find((item) => item.id === module.track);
-    const topics = map.topics.filter((topic) => topic.module === module.id).map((topic) => {
+  // Chapters in course order, grouped by area.
+  const chapters = map.chapters.map((module, index) => {
+    const book = map.areas.find((item) => item.id === module.area)!;
+    const track = { title: book.title };
+    const topics = map.topics.filter((topic) => topic.chapter === module.id).map((topic) => {
       const item = byId.get(topic.id)!;
       const locked = item.status === "NOT_STARTED" && topic.requires.some((id) => !isKnown(byId.get(id)!));
       return { topic, item, locked, status: statusOf(item, locked) };
@@ -64,7 +62,7 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
     return { module, number: index + 1, track: track?.title ?? "", bookId: book?.id ?? null, topics };
   }).filter(({ module, topics, track }) => {
     if (scope === "path" && path && !path.includes(module.id)) return false;
-    if (scope === "gaps" && topics.every(({ item }) => knownHere(item)) && module.planned.length === 0) return false;
+    if (scope === "gaps" && topics.every(({ item }) => knownHere(item))) return false;
     if (!needle) return true;
     return [module.title, track, ...topics.map(({ topic }) => topic.title)].join(" ").toLowerCase().includes(needle);
   });
@@ -80,7 +78,7 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
     }
   }
 
-  const openChapter = upNext ? map.topics.find((topic) => topic.id === upNext.topicId)?.module : undefined;
+  const openChapter = upNext ? map.topics.find((topic) => topic.id === upNext.topicId)?.chapter : undefined;
 
   return (
     <WorkspaceShell email={email} active="lab" tab="learn" termLookup={!closedBook}>
@@ -102,7 +100,7 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
         <div className="mx-[5px] grid grid-cols-1 gap-[18px] md:mx-3.5 md:grid-cols-[2fr_1fr] md:gap-5 lg:grid-cols-[minmax(0,2.4fr)_minmax(230px,1fr)] lg:gap-8">
           <section className="min-w-0">
             {chapters.map(({ module, number, track, bookId, topics }, position) => {
-              const book = bookId && chapters[position - 1]?.bookId !== bookId ? map.books.find((item) => item.id === bookId) : null;
+              const book = bookId && chapters[position - 1]?.bookId !== bookId ? map.areas.find((item) => item.id === bookId) : null;
               const done = topics.filter(({ item }) => item.status === "VALIDATED").length;
               const known = topics.filter(({ item }) => knownHere(item)).length;
               const rows = scope === "gaps" ? topics.filter(({ item }) => !knownHere(item)) : topics;
@@ -111,7 +109,6 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
                 {book && (
                   <div className={cn("mb-3.5", position > 0 && "mt-8")}>
                     <h2 className="text-lg font-bold tracking-[-0.3px]">{book.title}</h2>
-                    <p className="mt-0.5 text-[13px] text-muted-foreground">{book.summary}</p>
                   </div>
                 )}
                 <details className={cn(panel, "group mb-3")} open={Boolean(needle) || module.id === openChapter}>
@@ -139,11 +136,6 @@ export function EngineeringLearn({ email, map, progress, assessable, path = null
                     </div>
                   ))}
                   {scope === "gaps" && rows.length === 0 && topics.length > 0 && <p className="border-t border-border px-5 py-4 text-xs text-muted-foreground">No gaps</p>}
-                  {module.planned.map((title) => (
-                    <div key={title} className="flex items-center gap-[13px] border-t border-border px-[21px] py-4 text-[13px] text-muted-foreground">
-                      <IconCircleDashed size={18} aria-hidden="true" /><span className="flex-1">{title}</span><span className="text-[11px]">Not written yet</span>
-                    </div>
-                  ))}
                 </details>
                 </Fragment>
               );

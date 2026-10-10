@@ -46,7 +46,7 @@ async function main() {
       /first two questions/, "topic questions wait for the chapter's two stage-1 questions",
     );
     // One chapter is cleared in stage 1; every other written chapter digs into its topics.
-    const cleared = run.plan.chapters.find((chapter) => chapter.chapterId === "m8-architecture-scale")!;
+    const cleared = run.plan.chapters.find((chapter) => chapter.chapterId === "architecture")!;
     for (const chapter of run.plan.chapters) await answerStageOne(owner, run.id, chapter, chapter === cleared ? "clear" : "drill");
     await store.submitAnswer(owner, { assessmentId: setId, itemIndex: 0, selfRating: 4, response: { lines: ["1"] }, actualOutput: ["1"] });
     const clearedView = (await runs.getRunView(owner, run.id)).chapters.find((chapter) => chapter.chapterId === cleared.chapterId)!;
@@ -74,7 +74,7 @@ async function main() {
     // Finish the run: every full-stack topic solid twice, every AI topic wrong.
     for (const chapter of run.plan.chapters) {
       if (chapter.kind !== "topics" || chapter === cleared) continue;
-      const wrong = topicMap.modules.find((module) => module.id === chapter.chapterId)?.track === "ai";
+      const wrong = topicMap.chapters.find((item) => item.id === chapter.chapterId)?.area === "ai";
       for (const topicId of chapter.topicIds) {
         const id = topicId === first.topicIds[0] ? setId : randomUUID();
         if (id !== setId) {
@@ -109,7 +109,7 @@ async function main() {
     assert.ok(next && rows.find((row) => row.area === next.area)?.target, "the next milestone comes from an area the direction needs");
     assert.equal(rows.find((row) => row.area === "ai")!.current, null, "wrong answers never make an area junior");
     assert.ok(rows.every((row) => row.atBaseline === row.current), "right after the baseline, now and at-baseline agree");
-    const architecture = view.chapterStates.find((state) => state.chapterId === "m8-architecture-scale")!;
+    const architecture = view.chapterStates.find((state) => state.chapterId === "architecture")!;
     assert.equal(architecture.depth, "build", "a cleared chapter counts as can build it");
     assert.equal(architecture.estimate, true, "as an estimate");
     assert.equal(architecture.known, 0, "and proves no topic");

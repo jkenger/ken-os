@@ -201,7 +201,7 @@ async function freshPacket(userId: string, topicId: string) {
 /** A proven topic whose facts changed gets a re-check flag: the proof was earned against the old facts. */
 export async function flagRecheck(userId: string, topicId: string, packet: SourcePacket) {
   const topic = requireTopic(topicId);
-  const chapter = topicMap.modules.find((module) => module.id === topic.module)!;
+  const chapter = topicMap.chapters.find((module) => module.id === topic.chapter)!;
   await db().insert(labRadarItems).values({
     id: randomUUID(), userId, week: isoWeek(new Date()), area: chapter.area, tag: "recheck", topicId,
     title: `Re-check ${topic.title}`,

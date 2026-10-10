@@ -9,3 +9,4 @@ export * from "./labs";
 export * from "./careers";
 export * from "./runs";
 export * from "./profile";
+export * from "./assessment";

@@ -1,6 +1,0 @@
-id: read-through-cache
-title: A cache that doesn't stampede or go stale
-topics: [arch.caching]
-modes: [implement]
-runner: browser
-timeoutMs: 2000

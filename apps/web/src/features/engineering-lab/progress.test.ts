@@ -111,26 +111,22 @@ test("a later solid answer in the same mode clears a weakness", () => {
 
 test("the Assessor leaves lab-proven modes to the lab", () => {
   assert.deepEqual(assessorModes(eventLoop), ["predict", "explain"]);
-  assert.deepEqual(assessorModes(findTopic("js.async_races")!), ["explain"]);
+  assert.deepEqual(assessorModes(findTopic("rel.retry_backoff")!), ["explain"]);
 });
 
 test("the topic map rejects loops and proof that never touches code", () => {
   const known = new Map(labs.map((lab) => [lab.id, lab.modes]));
-  const base = { id: "js.a", title: "A", module: "m", freshness: "core_concept", sourceGroups: ["javascript"], gap: "x".repeat(30), prove: ["predict"] };
-  const tracks = [{ id: "fullstack", title: "Full-stack", summary: "Everything." }];
-  const modules = [{ id: "m", title: "M", track: "fullstack", area: "foundations" }];
-  assert.throws(() => parseTopicMap({ tracks, modules, topics: [{ ...base, requires: ["js.b"] }, { ...base, id: "js.b", requires: ["js.a"] }] }, known), /loop/);
-  assert.throws(() => parseTopicMap({ tracks, modules, topics: [{ ...base, prove: ["explain"] }] }, known), /code/);
-  assert.throws(() => parseTopicMap({ tracks: [], modules, topics: [] }, known), /not listed under tracks/);
-  assert.throws(() => parseTopicMap({ tracks, modules: [...modules, { id: "empty", title: "Empty", track: "fullstack", area: "foundations" }], topics: [base] }, known), /needs topics or planned/);
-});
-
-test("the course outline covers section 24 with planned topics", () => {
-  assert.deepEqual(topicMap.tracks.map((track) => track.id), ["fullstack", "ai"]);
-  const count = (track: string) => topicMap.modules.filter((module) => module.track === track)
-    .reduce((sum, module) => sum + module.planned.length + topicMap.topics.filter((topic) => topic.module === module.id).length, 0);
-  assert.equal(count("ai"), 15, "the AI track lists all 15 section 24 topics");
-  assert.ok(count("fullstack") >= 32, "full-stack covers the repair and production lists");
+  const base = { id: "js.a", title: "A", chapter: "m", freshness: "core_concept", sourceGroups: ["javascript"], gap: "x".repeat(30), prove: ["predict"], labs: ["closure-loop"] };
+  const areas = ["foundations", "frontend", "backend", "production", "ai"].map((id) => ({ id, title: id, chapters: [{ id: id === "foundations" ? "m" : `c-${id}`, title: "M" }] }));
+  const filler = areas.slice(1).map((area, index) => ({ ...base, id: `js.filler_${"abcd"[index]}`, chapter: area.chapters[0].id }));
+  const parse = (topics: object[], withAreas = areas) => parseTopicMap({ areas: withAreas, topics: [...topics, ...filler] }, known);
+  assert.doesNotThrow(() => parse([base]));
+  assert.throws(() => parse([{ ...base, requires: ["js.b"] }, { ...base, id: "js.b", requires: ["js.a"] }]), /loop/);
+  assert.throws(() => parse([{ ...base, prove: ["explain"] }]), /code/);
+  assert.throws(() => parse([{ ...base, labs: [] }]), /exactly one exercise/);
+  assert.throws(() => parse([{ ...base, labs: ["closure-loop", "event-loop-order"] }]), /exactly one exercise/);
+  assert.throws(() => parse([base], areas.slice(1)), /in order/);
+  assert.throws(() => parse([base], [{ ...areas[0], chapters: [...areas[0].chapters, { id: "empty", title: "Empty" }] }, ...areas.slice(1)]), /needs at least one topic/);
 });
 
 test("passing a placement check makes a topic known: it unlocks what builds on it and the Planner skips it", () => {

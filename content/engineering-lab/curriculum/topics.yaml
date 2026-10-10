@@ -1,104 +1,59 @@
-# Engineering Lab topic map. Rules: docs/architecture/engineering-lab-v0.md, section 3.
-# Each gap says what the topic teaches. Personal gaps come from the in-app baseline and later answers, never from here.
-# Validation needs every mode in `prove` to be solid, with at least one checked by code
-# (a predict question or a lab), so every topic lists predict or a lab that covers one of its modes.
+# Engineering topic map: 5 areas, 13 chapters, 40 topics. Spec: docs/architecture/engineering-rebuild.md, section 1.
+# Areas keep their ids; kept topics keep theirs so saved source packets still match. Each gap says what the topic
+# teaches; personal gaps come from answers, never from here.
 #
-# The outline covers the whole course from the handoff's section 24. A chapter's `planned` list names topics that
-# aren't written yet; they show in the Course outline, greyed, until they get a full entry under `topics`.
-#
-# Each chapter belongs to one area (foundations, frontend, backend, production, ai). Levels are measured per area;
-# see content/engineering-lab/careers/roles.yaml and docs/architecture/engineering-lab-profile.md.
+# Every topic has exactly one exercise (a lab under labs/). `prove` lists the modes the topic is checked in, and at
+# least one must be predict or a mode its lab covers, so proof always rests on code as well as words.
+# After editing, run `pnpm --filter @ken-os/web lab:generate`.
 
-tracks:
-  - id: fullstack
-    title: Full-stack
-    summary: From the JavaScript runtime to running a service in production.
+areas:
+  - id: foundations
+    title: Foundations
+    chapters:
+      - id: js-runtime
+        title: JavaScript runtime & async
+      - id: http-browser
+        title: HTTP & the browser
+  - id: frontend
+    title: Frontend
+    chapters:
+      - id: react
+        title: React
+  - id: backend
+    title: Backend & Data
+    chapters:
+      - id: api-boundaries
+        title: API boundaries
+      - id: databases
+        title: Databases
+  - id: production
+    title: Production
+    chapters:
+      - id: testing-security
+        title: Testing & security
+      - id: reliability
+        title: Reliability
+      - id: observability
+        title: Observability
+      - id: architecture
+        title: Architecture at scale
   - id: ai
-    title: AI Engineering
-    summary: Retrieval, structured outputs, agents and evals, built and measured.
-
-# Books group chapters in reading order (docs/architecture/engineering-assessment-v2.md, A6). Every chapter is in exactly
-# one book. Areas stay on chapters, so levels and roles don't change. Next.js foundations joins after the baseline (A7).
-books:
-  - id: web-foundations
-    title: Web foundations
-    summary: How JavaScript runs and how the browser talks to servers.
-    chapters: [m1-js-runtime, m2-http-browser]
-  - id: react-foundations
-    title: React foundations
-    summary: How React renders, and keeping effects in sync.
-    chapters: [m4-react]
-  - id: backend-data
-    title: Backend and data
-    summary: API boundaries, transactions, concurrency and indexes.
-    chapters: [m4-api-boundaries, m3-db-concurrency]
-  - id: production-engineering
-    title: Production engineering
-    summary: Testing, security, reliability, observability and scale.
-    chapters: [m5-testing-security, m6-production-reliability, m7-observability, m8-architecture-scale]
-  - id: ai-engineering
-    title: AI engineering
-    summary: Retrieval, model interfaces, agents, and running AI in production.
-    chapters: [a1-retrieval, a2-model-interfaces, a3-agents, a4-ai-production]
-
-modules:
-  - id: m1-js-runtime
-    title: JavaScript runtime and async
-    track: fullstack
-    area: foundations
-  - id: m2-http-browser
-    title: HTTP and the browser
-    track: fullstack
-    area: foundations
-  - id: m3-db-concurrency
-    title: Database transactions, concurrency and indexes
-    track: fullstack
-    area: backend
-  - id: m4-react
-    title: React
-    track: fullstack
-    area: frontend
-  - id: m4-api-boundaries
-    title: API boundaries
-    track: fullstack
-    area: backend
-  - id: m5-testing-security
-    title: Testing and web security
-    track: fullstack
-    area: production
-  - id: m6-production-reliability
-    title: Production reliability
-    track: fullstack
-    area: production
-  - id: m7-observability
-    title: Observability
-    track: fullstack
-    area: production
-  - id: m8-architecture-scale
-    title: Architecture at scale
-    track: fullstack
-    area: production
-  - id: a1-retrieval
-    title: Retrieval
-    track: ai
-    area: ai
-  - id: a2-model-interfaces
-    title: Model interfaces
-    track: ai
-    area: ai
-  - id: a3-agents
-    title: Agents
-    track: ai
-    area: ai
-  - id: a4-ai-production
-    title: AI in production
-    track: ai
-    area: ai
+    title: Applied AI
+    chapters:
+      - id: retrieval
+        title: Retrieval
+      - id: model-interfaces
+        title: Model interfaces
+      - id: agents
+        title: Agents
+      - id: ai-production
+        title: AI in production
 
 topics:
+  # Foundations · JavaScript runtime & async
   - id: js.call_stack
-    title: The call stack and run to completion
-    module: m1-js-runtime
+    title: Call stack
+    chapter: js-runtime
     requires: []
     freshness: core_concept
     sourceGroups: [javascript]
@@ -106,13 +61,26 @@ topics:
       What the call stack is, that a function runs to completion before anything else runs, and why a busy stack
       blocks every callback, timer and render.
     depth: working
+    prove: [predict, explain, debug]
+    labs: [call-stack-block]
+
+  - id: js.promises
+    title: Promises
+    chapter: js-runtime
+    requires: [js.call_stack]
+    freshness: web_platform
+    sourceGroups: [javascript]
+    gap: >-
+      When promise callbacks and code after await actually run, what an async function returns, and how errors and
+      Promise.all behave.
+    depth: working
     prove: [predict, explain]
-    labs: []
+    labs: [event-loop-order]
 
   - id: js.event_loop
-    title: Event loop, tasks and microtasks
-    module: m1-js-runtime
-    requires: [js.call_stack]
+    title: Event loop
+    chapter: js-runtime
+    requires: [js.promises]
     freshness: web_platform
     sourceGroups: [javascript]
     gap: >-
@@ -122,22 +90,9 @@ topics:
     prove: [predict, explain, debug]
     labs: [event-loop-order]
 
-  - id: js.promises
-    title: Promises and async/await ordering
-    module: m1-js-runtime
-    requires: [js.event_loop]
-    freshness: web_platform
-    sourceGroups: [javascript]
-    gap: >-
-      When promise callbacks and code after await actually run, what an async function returns, and how errors and
-      Promise.all behave.
-    depth: working
-    prove: [predict, explain]
-    labs: []
-
   - id: js.closures
-    title: Closures and captured variables
-    module: m1-js-runtime
+    title: Closures
+    chapter: js-runtime
     requires: [js.call_stack]
     freshness: core_concept
     sourceGroups: [javascript]
@@ -148,75 +103,37 @@ topics:
     prove: [predict, explain, debug]
     labs: [closure-loop]
 
-  - id: js.references_mutation
-    title: References, equality and shallow copies
-    module: m1-js-runtime
-    requires: []
-    freshness: core_concept
-    sourceGroups: [javascript]
-    gap: >-
-      How objects and arrays are shared by reference, what equality compares, and why spread makes only a shallow
-      copy.
-    depth: working
-    prove: [predict, explain, debug]
-    labs: [shallow-copy]
-
-  - id: js.async_races
-    title: Async request races and cancellation
-    module: m1-js-runtime
-    requires: [js.promises, js.closures]
-    freshness: web_platform
-    sourceGroups: [javascript, react]
-    gap: >-
-      Why responses can arrive out of order, how to ignore or cancel stale requests, and what AbortController does.
-    depth: working
-    prove: [explain, implement]
-    labs: [search-race]
-
-  # Module 2. Predictions are checked by probes that run real requests; the Assessor covers explain.
-  - id: web.request_lifecycle
-    title: From URL to response, including HTTPS
-    module: m2-http-browser
+  # Foundations · HTTP & the browser. Predictions are checked by probes that run real requests.
+  - id: web.http_semantics
+    title: HTTP semantics
+    chapter: http-browser
     requires: []
     freshness: web_platform
     sourceGroups: [web]
     gap: >-
-      What happens from typing a URL to getting a response: DNS, TCP, TLS, the request, status codes and the meaning
-      of HTTP methods.
+      What HTTP methods, status codes and headers mean, which methods are safe or idempotent, and what a client can
+      conclude from a response.
     depth: working
     prove: [explain, predict]
     labs: [request-anatomy]
 
-  - id: web.cookies_sessions
-    title: Cookies and sessions
-    module: m2-http-browser
-    requires: [web.request_lifecycle]
+  - id: web.cookies_cors
+    title: Cookies & CORS
+    chapter: http-browser
+    requires: [web.http_semantics]
     freshness: web_platform
     sourceGroups: [web]
     gap: >-
-      How cookies carry a session, what HttpOnly, Secure and SameSite do, and why cookie-authenticated writes need
-      CSRF protection.
-    depth: working
-    prove: [explain, predict]
-    labs: [cookie-rules]
-
-  - id: web.cors
-    title: CORS, and what it does not protect
-    module: m2-http-browser
-    requires: [web.cookies_sessions]
-    freshness: web_platform
-    sourceGroups: [web]
-    gap: >-
-      What the same-origin policy blocks, how CORS headers and preflights allow cross-origin reads, and why CORS is
-      not access control.
+      How cookies are scoped and sent, what the same-origin policy blocks, how CORS headers and preflights allow
+      cross-origin reads, and why CORS is not access control.
     depth: working
     prove: [explain, predict]
     labs: [cors-rules]
 
   - id: web.http_caching
-    title: Browser caching and HTTP cache headers
-    module: m2-http-browser
-    requires: [web.request_lifecycle]
+    title: HTTP caching
+    chapter: http-browser
+    requires: [web.http_semantics]
     freshness: web_platform
     sourceGroups: [web]
     gap: >-
@@ -226,112 +143,49 @@ topics:
     prove: [explain, predict]
     labs: [cache-rules]
 
-  # Module 3. Labs run on PGlite in the browser; concurrent calls interleave between queries, as real requests do.
-  - id: db.transactions
-    title: Transactions and all-or-nothing writes
-    module: m3-db-concurrency
-    requires: []
-    freshness: core_concept
-    sourceGroups: [database]
+  # Frontend · React
+  - id: react.render_model
+    title: State & rendering
+    chapter: react
+    requires: [js.closures]
+    freshness: framework
+    sourceGroups: [react]
     gap: >-
-      How a transaction makes several writes all-or-nothing, when to roll back, and why transactions should stay
-      short.
+      When React re-renders, how references in props affect it, when state updates apply, and why list keys matter.
     depth: working
     prove: [explain, implement]
-    labs: [transfer-rollback]
+    labs: [todo-updates]
 
-  - id: db.constraints
-    title: Constraints as the source of truth
-    module: m3-db-concurrency
-    requires: [db.transactions]
-    freshness: core_concept
-    sourceGroups: [database]
+  - id: react.effects
+    title: Effects & dependencies
+    chapter: react
+    requires: [react.render_model]
+    freshness: framework
+    sourceGroups: [react]
     gap: >-
-      Why unique, foreign key and check constraints are the real source of truth, and how to handle a violation as a
-      normal outcome.
-    depth: working
-    prove: [explain, debug]
-    labs: [unique-signup]
-
-  - id: db.lost_update
-    title: Lost updates
-    module: m3-db-concurrency
-    requires: [db.transactions]
-    freshness: core_concept
-    sourceGroups: [database]
-    gap: >-
-      How read-modify-write loses concurrent changes, and how atomic updates, row locks or version checks prevent
-      it.
-    depth: deep
-    prove: [explain, debug]
-    labs: [stock-race]
-
-  - id: db.atomic_updates
-    title: Atomic updates and conditional writes
-    module: m3-db-concurrency
-    requires: [db.lost_update]
-    freshness: core_concept
-    sourceGroups: [database]
-    gap: >-
-      How a single conditional statement checks and changes data together, and how to tell whether it took effect.
-    depth: working
-    prove: [explain, implement]
-    labs: [stock-race]
-
-  - id: db.indexes
-    title: What an index is and when Postgres uses it
-    module: m3-db-concurrency
-    requires: []
-    freshness: core_concept
-    sourceGroups: [database]
-    gap: >-
-      What an index is, when Postgres chooses it over a sequential scan, and what indexes cost on writes.
-    depth: working
-    prove: [explain, implement]
-    labs: [email-lookup]
-
-  - id: db.composite_indexes
-    title: Composite indexes and column order
-    module: m3-db-concurrency
-    requires: [db.indexes]
-    freshness: core_concept
-    sourceGroups: [database]
-    gap: >-
-      Which queries a composite index can serve, why column order matters, and how an index can also provide sort
-      order.
+      What effects are for, how to keep dependencies honest, how cleanup works, and how to handle stale fetch
+      responses.
     depth: deep
     prove: [explain, implement]
-    labs: [order-history-index]
+    labs: [chat-connection]
 
-  - id: db.query_plans
-    title: Reading query plans
-    module: m3-db-concurrency
-    requires: [db.indexes]
-    freshness: core_concept
-    sourceGroups: [database]
+  - id: react.component_boundaries
+    title: Component boundaries
+    chapter: react
+    requires: [react.render_model]
+    freshness: framework
+    sourceGroups: [react]
     gap: >-
-      How to read EXPLAIN and EXPLAIN ANALYZE, spot the expensive step, and tell when statistics or a missing index
-      are to blame.
-    depth: working
-    prove: [explain, debug]
-    labs: [order-history-index]
-
-  - id: api.idempotency_basics
-    title: Idempotent create requests
-    module: m3-db-concurrency
-    requires: [db.constraints, db.atomic_updates]
-    freshness: core_concept
-    sourceGroups: [web, database]
-    gap: >-
-      How an idempotency key lets the server recognise a retried create request and return the first result instead
-      of duplicating it.
+      Where to split a component, where each piece of state should live, and how lifting state up or passing children
+      keeps components small and predictable.
     depth: working
     prove: [explain, implement]
-    labs: [idempotent-payment]
+    labs: [component-split]
 
+  # Backend & Data · API boundaries
   - id: api.runtime_validation
-    title: Runtime validation at trust boundaries
-    module: m4-api-boundaries
+    title: Runtime validation
+    chapter: api-boundaries
     requires: []
     freshness: framework
     sourceGroups: [typescript, javascript, web]
@@ -342,22 +196,75 @@ topics:
     prove: [explain, implement]
     labs: [order-input]
 
-  - id: api.pagination
-    title: Offset and cursor pagination
-    module: m4-api-boundaries
-    requires: [db.indexes]
+  - id: sec.resource_authorization
+    title: Authorization
+    chapter: api-boundaries
+    requires: []
     freshness: core_concept
-    sourceGroups: [database, web]
+    sourceGroups: [operations, database, web]
     gap: >-
-      How offset and cursor pagination differ, why cursors stay stable while data changes, and how to build a
-      reliable cursor.
+      How to check ownership and tenant on every request on the server, and why hidden links are not authorization.
     depth: deep
     prove: [explain, implement]
-    labs: [feed-pages]
+    labs: [team-docs]
 
+  - id: api.error_contracts
+    title: Error contracts
+    chapter: api-boundaries
+    requires: [api.runtime_validation]
+    freshness: core_concept
+    sourceGroups: [web]
+    gap: >-
+      How an API reports every failure in one predictable shape, with the right status code, a stable machine-readable
+      code, and no internal details leaked to the caller.
+    depth: working
+    prove: [explain, implement]
+    labs: [error-shape]
+
+  # Backend & Data · Databases. Labs run on PGlite in the browser; concurrent calls interleave between queries.
+  - id: db.transactions
+    title: Transactions
+    chapter: databases
+    requires: []
+    freshness: core_concept
+    sourceGroups: [database]
+    gap: >-
+      How a transaction makes several writes all-or-nothing, when to roll back, and why transactions should stay
+      short.
+    depth: working
+    prove: [explain, implement]
+    labs: [transfer-rollback]
+
+  - id: db.composite_indexes
+    title: Composite indexes
+    chapter: databases
+    requires: []
+    freshness: core_concept
+    sourceGroups: [database]
+    gap: >-
+      What an index is and when Postgres uses it, which queries a composite index can serve, why column order
+      matters, and how to read the plan that proves it.
+    depth: deep
+    prove: [explain, implement]
+    labs: [order-history-index]
+
+  - id: db.concurrency
+    title: Concurrency
+    chapter: databases
+    requires: [db.transactions]
+    freshness: core_concept
+    sourceGroups: [database]
+    gap: >-
+      How read-modify-write loses concurrent changes, and how one conditional update, a row lock or a version check
+      keeps an invariant under concurrent requests.
+    depth: deep
+    prove: [explain, debug, implement]
+    labs: [stock-race]
+
+  # Production · Testing & security
   - id: test.strategy
-    title: Testing strategy and tests that catch bugs
-    module: m5-testing-security
+    title: Test boundaries
+    chapter: testing-security
     requires: []
     freshness: framework
     sourceGroups: [testing, javascript]
@@ -368,60 +275,37 @@ topics:
     prove: [explain, implement]
     labs: [discount-tests]
 
-  - id: sec.xss
-    title: XSS and output encoding
-    module: m5-testing-security
+  - id: sec.injection
+    title: Injection prevention
+    chapter: testing-security
     requires: []
     freshness: web_platform
-    sourceGroups: [web, operations, react]
+    sourceGroups: [web, operations, database, react]
     gap: >-
-      How untrusted text becomes script in a page, how context-aware output encoding prevents it, and what a Content
-      Security Policy adds.
+      How untrusted text turns into code, as SQL in a query or as script in a page, and how parameterized queries,
+      context-aware output encoding and a Content Security Policy prevent it.
     depth: working
     prove: [explain, implement]
     labs: [comment-render]
 
-  - id: sec.resource_authorization
-    title: Resource authorization, ownership and tenant scope
-    module: m5-testing-security
-    requires: [db.constraints]
-    freshness: core_concept
-    sourceGroups: [operations, database, web]
+  - id: sec.sessions
+    title: Session security
+    chapter: testing-security
+    requires: [web.cookies_cors]
+    freshness: web_platform
+    sourceGroups: [web, operations]
     gap: >-
-      How to check ownership and tenant on every request on the server, and why hidden links are not authorization.
-    depth: deep
-    prove: [explain, implement]
-    labs: [team-docs]
-
-  - id: react.render_model
-    title: How React renders, and why references matter
-    module: m4-react
-    requires: [js.references_mutation]
-    freshness: framework
-    sourceGroups: [react]
-    gap: >-
-      When React re-renders, how references in props affect it, when state updates apply, and why list keys matter.
+      How to issue, carry and end a session safely: opaque ids, HttpOnly, Secure and SameSite cookies, a new id on
+      sign-in, expiry, and CSRF protection for cookie-authenticated writes.
     depth: working
-    prove: [explain, implement]
-    labs: [todo-updates]
+    prove: [explain, predict]
+    labs: [cookie-rules]
 
-  - id: react.effects
-    title: Effects and synchronization
-    module: m4-react
-    requires: [react.render_model, js.closures]
-    freshness: framework
-    sourceGroups: [react]
-    gap: >-
-      What effects are for, how to keep dependencies honest, how cleanup works, and how to handle stale fetch
-      responses.
-    depth: deep
-    prove: [explain, implement]
-    labs: [chat-connection]
-
+  # Production · Reliability
   - id: rel.background_jobs
-    title: Background jobs and queues
-    module: m6-production-reliability
-    requires: [db.atomic_updates]
+    title: Background jobs
+    chapter: reliability
+    requires: [db.concurrency]
     freshness: core_concept
     sourceGroups: [database, operations]
     gap: >-
@@ -432,21 +316,21 @@ topics:
     labs: [job-queue]
 
   - id: rel.retry_backoff
-    title: Retry with backoff and jitter
-    module: m6-production-reliability
-    requires: [api.idempotency_basics]
+    title: Retry & backoff
+    chapter: reliability
+    requires: [web.http_semantics]
     freshness: core_concept
     sourceGroups: [operations, web]
     gap: >-
-      Which failures are worth retrying, and how exponential backoff, jitter, caps and Retry-After keep retries
-      safe.
+      Why a timeout is an uncertain outcome, when repeating an operation is safe, and how exponential backoff, a cap
+      and jitter keep retries bounded.
     depth: working
     prove: [explain, implement]
     labs: [retry-policy]
 
   - id: rel.timeouts
-    title: Timeouts and cancellation
-    module: m6-production-reliability
+    title: Timeouts
+    chapter: reliability
     requires: [js.promises]
     freshness: core_concept
     sourceGroups: [javascript, web, operations]
@@ -458,8 +342,8 @@ topics:
     labs: [request-timeout]
 
   - id: rel.partial_failures
-    title: Partial failures and compensation
-    module: m6-production-reliability
+    title: Partial failures
+    chapter: reliability
     requires: [db.transactions]
     freshness: core_concept
     sourceGroups: [operations, database]
@@ -470,22 +354,10 @@ topics:
     prove: [explain, implement]
     labs: [order-saga]
 
-  - id: rel.graceful_degradation
-    title: Graceful degradation and circuit breakers
-    module: m6-production-reliability
-    requires: [rel.timeouts]
-    freshness: core_concept
-    sourceGroups: [operations]
-    gap: >-
-      How to serve a reduced experience when a dependency fails, how circuit breakers work, and when to fail open or
-      closed.
-    depth: working
-    prove: [explain, implement]
-    labs: [circuit-breaker]
-
+  # Production · Observability
   - id: obs.logs
     title: Structured logs
-    module: m7-observability
+    chapter: observability
     requires: []
     freshness: core_concept
     sourceGroups: [operations]
@@ -496,21 +368,9 @@ topics:
     prove: [explain, implement]
     labs: [structured-logs]
 
-  - id: obs.metrics
-    title: Metrics, percentiles and histograms
-    module: m7-observability
-    requires: []
-    freshness: core_concept
-    sourceGroups: [operations]
-    gap: >-
-      How rates, errors and latency are measured, why percentiles beat averages, and how histograms and labels work.
-    depth: working
-    prove: [explain, implement]
-    labs: [latency-summary]
-
   - id: obs.traces
-    title: Traces and context propagation
-    module: m7-observability
+    title: Tracing
+    chapter: observability
     requires: [obs.logs]
     freshness: web_platform
     sourceGroups: [operations, web]
@@ -521,60 +381,49 @@ topics:
     prove: [explain, implement]
     labs: [trace-context]
 
-  - id: arch.caching
-    title: Caching strategy
-    module: m8-architecture-scale
-    requires: [web.http_caching]
-    freshness: core_concept
-    sourceGroups: [web, operations]
-    gap: >-
-      How to choose what to cache and for how long, keep it fresh with invalidation and TTLs, and avoid stampedes
-      and leaks.
-    depth: working
-    prove: [explain, implement]
-    labs: [read-through-cache]
-
-  - id: arch.scaling
-    title: Scaling, concurrency limits and load shedding
-    module: m8-architecture-scale
-    requires: [rel.timeouts]
+  - id: obs.metrics
+    title: Metrics
+    chapter: observability
+    requires: []
     freshness: core_concept
     sourceGroups: [operations]
     gap: >-
-      How stateless services scale out, why the database is the usual bottleneck, and how limits and load shedding
-      prevent cascades.
+      How rates, errors and latency are measured, why percentiles beat averages, and how histograms and labels work.
     depth: working
     prove: [explain, implement]
-    labs: [load-shedding]
+    labs: [latency-summary]
 
-  - id: arch.multi_tenancy
-    title: Multi-tenancy and tenant isolation
-    module: m8-architecture-scale
-    requires: [sec.resource_authorization]
+  # Production · Architecture at scale
+  - id: arch.failure_tradeoffs
+    title: Failure tradeoffs
+    chapter: architecture
+    requires: [rel.timeouts, rel.retry_backoff]
     freshness: core_concept
-    sourceGroups: [database, operations]
+    sourceGroups: [operations]
     gap: >-
-      How to keep every tenant's data separate, from mandatory query scoping to row-level security, and how to stop
-      noisy neighbours.
-    depth: deep
-    prove: [explain, implement]
-    labs: [tenant-keys]
-
-  - id: arch.evolution
-    title: System evolution and zero-downtime migrations
-    module: m8-architecture-scale
-    requires: [db.constraints]
-    freshness: core_concept
-    sourceGroups: [database]
-    gap: >-
-      How to change schemas and systems without downtime: expand and contract, batched backfills and feature flags.
+      How to keep serving when a dependency fails: circuit breakers, fallbacks, and deciding per feature whether to
+      fail open or fail closed.
     depth: working
     prove: [explain, implement]
-    labs: [expand-contract]
+    labs: [circuit-breaker]
 
+  - id: arch.service_boundaries
+    title: Service boundaries
+    chapter: architecture
+    requires: [rel.partial_failures]
+    freshness: core_concept
+    sourceGroups: [operations, database]
+    gap: >-
+      When splitting a service helps and when it only adds a network hop, how to draw the line around the data each
+      part owns, and how parts talk without reaching into each other's tables.
+    depth: working
+    prove: [explain, implement]
+    labs: [service-split]
+
+  # Applied AI · Retrieval
   - id: ai.semantic_search
-    title: Semantic search with embeddings
-    module: a1-retrieval
+    title: Embeddings
+    chapter: retrieval
     requires: []
     freshness: ai_ecosystem
     sourceGroups: [ai, database]
@@ -585,35 +434,23 @@ topics:
     prove: [explain, implement]
     labs: [vector-search]
 
-  - id: ai.retrieval_eval
-    title: Retrieval evaluation
-    module: a1-retrieval
+  - id: ai.chunking
+    title: Chunking
+    chapter: retrieval
     requires: [ai.semantic_search]
     freshness: ai_ecosystem
     sourceGroups: [ai]
     gap: >-
-      How to measure retrieval with known relevant passages and Recall@k, changing one thing at a time.
+      How documents are split for retrieval, why chunk size and overlap change what can be found, and how keeping
+      headings and sentence boundaries keeps chunks meaningful.
     depth: working
     prove: [explain, implement]
-    labs: [retrieval-metrics]
-
-  - id: ai.rag
-    title: Retrieval-augmented generation
-    module: a1-retrieval
-    requires: [ai.semantic_search]
-    freshness: ai_ecosystem
-    sourceGroups: [ai]
-    gap: >-
-      How retrieval-augmented generation grounds answers in retrieved context, how chunking affects it, and why
-      retrieval is usually the weak link.
-    depth: working
-    prove: [explain, implement]
-    labs: [rag-prompt]
+    labs: [chunk-boundaries]
 
   - id: ai.advanced_rag
-    title: Advanced RAG and hybrid search
-    module: a1-retrieval
-    requires: [ai.rag, ai.retrieval_eval]
+    title: Hybrid search
+    chapter: retrieval
+    requires: [ai.chunking]
     freshness: ai_ecosystem
     sourceGroups: [ai, database]
     gap: >-
@@ -623,21 +460,22 @@ topics:
     prove: [explain, implement]
     labs: [rank-fusion]
 
-  - id: ai.reranking
-    title: Reranking
-    module: a1-retrieval
-    requires: [ai.retrieval_eval]
+  - id: ai.retrieval_eval
+    title: RAG evaluation
+    chapter: retrieval
+    requires: [ai.semantic_search]
     freshness: ai_ecosystem
     sourceGroups: [ai]
     gap: >-
-      How rerankers rescore a wider candidate set more precisely, and how to check they earn their latency and cost.
+      How to measure retrieval with known relevant passages and Recall@k, changing one thing at a time.
     depth: working
     prove: [explain, implement]
-    labs: [rerank-budget]
+    labs: [retrieval-metrics]
 
+  # Applied AI · Model interfaces
   - id: ai.structured_outputs
     title: Structured outputs
-    module: a2-model-interfaces
+    chapter: model-interfaces
     requires: [api.runtime_validation]
     freshness: ai_ecosystem
     sourceGroups: [ai, typescript]
@@ -649,7 +487,7 @@ topics:
 
   - id: ai.tool_calling
     title: Tool calling
-    module: a2-model-interfaces
+    chapter: model-interfaces
     requires: [ai.structured_outputs]
     freshness: ai_ecosystem
     sourceGroups: [ai]
@@ -660,22 +498,10 @@ topics:
     prove: [explain, implement]
     labs: [tool-loop]
 
-  - id: ai.context_engineering
-    title: Context engineering
-    module: a2-model-interfaces
-    requires: [ai.rag]
-    freshness: ai_ecosystem
-    sourceGroups: [ai]
-    gap: >-
-      How to spend the context window well: structure, relevance, trimming long histories, and treating untrusted
-      content as data.
-    depth: working
-    prove: [explain, implement]
-    labs: [context-budget]
-
+  # Applied AI · Agents
   - id: ai.agent_patterns
-    title: Agent patterns
-    module: a3-agents
+    title: Agent loop
+    chapter: agents
     requires: [ai.tool_calling]
     freshness: ai_ecosystem
     sourceGroups: [ai]
@@ -687,9 +513,9 @@ topics:
     labs: [support-workflow]
 
   - id: ai.agent_memory
-    title: State and memory
-    module: a3-agents
-    requires: [ai.context_engineering]
+    title: State & memory
+    chapter: agents
+    requires: [ai.agent_patterns]
     freshness: ai_ecosystem
     sourceGroups: [ai]
     gap: >-
@@ -701,7 +527,7 @@ topics:
 
   - id: ai.mcp
     title: MCP
-    module: a3-agents
+    chapter: agents
     requires: [ai.tool_calling]
     freshness: ai_ecosystem
     sourceGroups: [ai]
@@ -712,9 +538,10 @@ topics:
     prove: [explain, implement]
     labs: [mcp-server]
 
+  # Applied AI · AI in production
   - id: ai.evals
     title: Evals
-    module: a4-ai-production
+    chapter: ai-production
     requires: [ai.retrieval_eval, test.strategy]
     freshness: ai_ecosystem
     sourceGroups: [ai, testing]
@@ -724,39 +551,28 @@ topics:
     prove: [explain, implement]
     labs: [eval-gate]
 
-  - id: ai.observability
-    title: AI observability
-    module: a4-ai-production
-    requires: [obs.traces, ai.tool_calling]
-    freshness: ai_ecosystem
-    sourceGroups: [ai, operations]
-    gap: >-
-      How to log and trace model calls so bad answers can be traced, fed back into evals and stored without personal
-      data.
-    depth: working
-    prove: [explain, implement]
-    labs: [llm-trace]
-
-  - id: ai.cost_latency
-    title: Cost and latency
-    module: a4-ai-production
-    requires: [ai.observability, arch.caching]
+  - id: ai.model_routing
+    title: Model routing
+    chapter: ai-production
+    requires: [ai.evals]
     freshness: ai_ecosystem
     sourceGroups: [ai]
     gap: >-
-      How tokens drive cost and latency, and how trimming, routing to smaller models and caching keep both down.
+      How to send each request to the cheapest model that handles it well, escalate when the small model isn't
+      confident, cache repeats, and stay inside a budget.
     depth: working
     prove: [explain, implement]
     labs: [smart-routing]
 
-  - id: ai.production_reliability
-    title: Production reliability for AI
-    module: a4-ai-production
-    requires: [rel.timeouts, rel.retry_backoff]
+  - id: ai.cost_latency
+    title: Cost & latency
+    chapter: ai-production
+    requires: [ai.model_routing]
     freshness: ai_ecosystem
-    sourceGroups: [ai, operations]
+    sourceGroups: [ai]
     gap: >-
-      How to run model calls reliably: timeouts, retries, output validation, budgets and pinned model versions.
+      How tokens drive cost and latency, and how a context budget, trimming history and limiting output keep both
+      down without dropping what the model needs.
     depth: working
     prove: [explain, implement]
-    labs: [provider-fallback]
+    labs: [context-budget]

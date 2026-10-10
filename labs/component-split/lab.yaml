@@ -1,0 +1,8 @@
+id: component-split
+title: One source for the search box
+topics: [react.component_boundaries]
+modes: [implement]
+runner: browser
+timeoutMs: 2000
+hint: >-
+  Keep `query` and `items` once, in the page. Let the box and the list read from it, and compute the summary when asked.

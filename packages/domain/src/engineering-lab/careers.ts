@@ -1,5 +1,5 @@
 import { isKnown, type TopicProgress } from "./mastery";
-import { AREAS, type Area, type ModuleInfo, type TopicMap } from "./topics";
+import { AREAS, type Area, type ChapterInfo, type TopicMap } from "./topics";
 import { stageOne } from "./runs";
 import type { Label } from "./types";
 
@@ -111,7 +111,7 @@ export function parseCareers(raw: unknown, map: TopicMap): Careers {
   });
   if (levels.map((level) => level.id).join() !== LEVELS.join()) fail("levels", `expected ${LEVELS.join(", ")} in order`);
 
-  const chapters = new Map(map.modules.map((module) => [module.id, module]));
+  const chapters = new Map(map.chapters.map((module) => [module.id, module]));
   const areas = list(input.areas, "areas").map((value, index): AreaLadder => {
     const item = value as Record<string, unknown>;
     const where = `areas[${index}]`;
@@ -181,16 +181,16 @@ export interface ChapterState {
 const SCREEN_SCORE: Record<Label, number> = { solid: 2, partial: 1, rusty: 1, misconception: 0, gap: 0 };
 
 /** How deep each chapter goes right now, from proofs and placements, or from screening answers when unwritten. */
-export function chapterStates(map: TopicMap, progress: TopicProgress[], screens: ChapterScreen[], extraChapters: ModuleInfo[] = []): ChapterState[] {
+export function chapterStates(map: TopicMap, progress: TopicProgress[], screens: ChapterScreen[], extraChapters: ChapterInfo[] = []): ChapterState[] {
   const byTopic = new Map(progress.map((item) => [item.topicId, item]));
-  return [...map.modules, ...extraChapters].map((module) => {
-    const topics = map.topics.filter((topic) => topic.module === module.id);
+  return [...map.chapters, ...extraChapters].map((module) => {
+    const topics = map.topics.filter((topic) => topic.chapter === module.id);
     if (!topics.length) {
       const labels = screens.filter((screen) => screen.chapterId === module.id).flatMap((screen) => screen.labels);
       const score = labels.reduce((sum, label) => sum + SCREEN_SCORE[label], 0);
       // Screening never shows "can run it": two questions can't show you keep something working in production.
       const depth: ReachedDepth = labels.length >= 2 && score >= 4 ? "build" : score >= 2 ? "aware" : "none";
-      return { chapterId: module.id, area: module.area, depth, estimate: true, written: 0, known: 0, planned: module.planned.length };
+      return { chapterId: module.id, area: module.area, depth, estimate: true, written: 0, known: 0, planned: 0 };
     }
     const known = topics.filter((topic) => { const item = byTopic.get(topic.id); return item ? isKnown(item) : false; });
     const knownIds = new Set(known.map((topic) => topic.id));
@@ -209,7 +209,7 @@ export function chapterStates(map: TopicMap, progress: TopicProgress[], screens:
     const labels = screens.filter((screen) => screen.chapterId === module.id).flatMap((screen) => screen.labels);
     const cleared = stageOne(labels) === "cleared" && (fromTopics === "none" || fromTopics === "aware");
     const depth: ReachedDepth = cleared ? "build" : fromTopics;
-    return { chapterId: module.id, area: module.area, depth, estimate: module.planned.length > 0 || cleared, written: topics.length, known: known.length, planned: module.planned.length };
+    return { chapterId: module.id, area: module.area, depth, estimate: cleared, written: topics.length, known: known.length, planned: 0 };
   });
 }
 
@@ -324,7 +324,7 @@ const HOURS = { working: 3, deep: 5, planned: 4, aware: 1 } as const;
  */
 export function roadmap(role: RoleInfo, careers: Careers, states: ChapterState[], map: TopicMap, progress: TopicProgress[], weeklyHours: number, hoursPerTopic?: number): RoadmapStep[] {
   const known = new Set(progress.filter(isKnown).map((item) => item.topicId));
-  const moduleOrder = new Map(map.modules.map((module, index) => [module.id, index]));
+  const moduleOrder = new Map(map.chapters.map((module, index) => [module.id, index]));
   const state = (chapter: string) => states.find((item) => item.chapterId === chapter);
   const stages: (MissingChapter & { forLevel: Level })[] = [];
   for (const [area, target] of Object.entries(role.targets) as [Area, Level][]) {
@@ -344,16 +344,14 @@ export function roadmap(role: RoleInfo, careers: Careers, states: ChapterState[]
   const perWeek = Math.max(1, weeklyHours);
   let total = 0;
   return stages.map((stage, index) => {
-    const module = map.modules.find((entry) => entry.id === stage.chapter);
     const earlier = stages.slice(0, index).filter((item) => item.chapter === stage.chapter);
     // A deeper stage only counts what the earlier stage of the same chapter didn't.
     const builtBefore = earlier.some((item) => item.need === "build");
-    const plannedBefore = earlier.some((item) => item.need !== "aware");
-    const topics = map.topics.filter((topic) => topic.module === stage.chapter && !known.has(topic.id)
+    const topics = map.topics.filter((topic) => topic.chapter === stage.chapter && !known.has(topic.id)
       && (stage.need === "run" ? !builtBefore || topic.depth === "deep" : topic.depth === "working"));
     let hours = stage.need === "aware"
       ? HOURS.aware
-      : topics.reduce((sum, topic) => sum + (hoursPerTopic ?? HOURS[topic.depth]), 0) + (plannedBefore ? 0 : (module?.planned.length ?? 0) * (hoursPerTopic ?? HOURS.planned));
+      : topics.reduce((sum, topic) => sum + (hoursPerTopic ?? HOURS[topic.depth]), 0);
     hours = Math.max(Math.round(hours * 10) / 10, 1);
     total += hours;
     // The have of a later stage is what the earlier stage leaves you with.

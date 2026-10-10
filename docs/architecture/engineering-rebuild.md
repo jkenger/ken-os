@@ -277,7 +277,7 @@ Hand-written from the reference, stored as the lesson for `rel.retry_backoff` so
 
 **Exercise** (`labs/retry-policy`, replaced to match)
 
-- File `retry-policy.js`, starter `export function retryDelay(attempt) { return 1000; }`
+- File `retry-policy.js`, starter `function retryDelay(attempt) { return 1000; }` (labs load as plain scripts, so no `export`)
 - Task: Return exponential delays starting at 1000 ms, capped at 30000 ms. Attempts start at zero.
 - Tests: attempt 0 → 1000, 1 → 2000, 2 → 4000, 8 → 30000. Browser worker, 2 s limit.
 - Hint: Use `2 ** attempt` to grow the delay, multiply by the first delay, cap with `Math.min`.
