@@ -33,7 +33,7 @@ The build-on-top layer starts empty.
 ## What this replaces
 
 - The rule in `AGENTS.md` that the claude.ai design system is the source of truth for the app's look, and the token pipeline behind it: `design-system/tokens.json` → `design:generate` → `design-tokens.generated.css`.
-- The tailoring notes in `docs/design/component-language.md` and `docs/architecture/shadcn-audit.md`.
+- The tailoring notes in `docs/architecture/shadcn-audit.md`.
 - The look half of the `design-system-sync` skill.
 
 The claude.ai design system stays as the owner's reference for what to build on top. It no longer drives the app.
@@ -137,7 +137,7 @@ The `design-system-sync` skill keeps only its component direction (bundle and pu
 ## 9. Docs to update
 
 - `AGENTS.md`: the design-system bullet and the shadcn bullet say the app runs on shadcn's Nova default, `globals.css` holds it, Ken OS additions go in the labelled section, and the claude.ai design system is reference only. Remove "tailored to the Ken OS design system (the Studio look…)".
-- `docs/design/component-language.md`, `docs/architecture/shadcn-audit.md`: mark as superseded by this document.
+- `docs/architecture/shadcn-audit.md`: mark as superseded by this document.
 - `.agents/skills/design-system-sync/SKILL.md`: token steps removed (§8).
 - The owner's global `CLAUDE.md` design principles list "Untouched shadcn UI" (11) as something to avoid. This reset uses untouched shadcn on purpose, as the starting point to build on. Record that reason in `AGENTS.md` so later sessions don't "fix" it.
 
