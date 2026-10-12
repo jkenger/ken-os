@@ -6,7 +6,6 @@ import { getGoogleAccessToken } from "@/lib/google";
 import { hasValidOrigin } from "@/lib/origin";
 import { getSelectedResume } from "@/lib/resume";
 import { getSession } from "@/lib/session";
-import { getEnabledSkills } from "@/lib/skills";
 import { messages } from "@/lib/messages";
 
 export const runtime = "nodejs";
@@ -27,11 +26,10 @@ export async function POST(request: Request) {
   }
   if (!process.env.OPENAI_API_KEY) return NextResponse.json({ error: "Resume assistant isn't set up" }, { status: 503 });
   try {
-    const enabledSkills = await getEnabledSkills(session.userId);
     const result = await askResumeAgent(question.trim(), async () => {
       const accessToken = await getGoogleAccessToken(session.userId);
       return getGoogleDocText(selection.fileId, accessToken);
-    }, enabledSkills);
+    });
     return NextResponse.json(result, { headers: { "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json({ error: "Couldn't answer. Try again" }, { status: 502 });

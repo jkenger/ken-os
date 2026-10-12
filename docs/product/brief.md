@@ -30,7 +30,7 @@ After signing in, the owner selects a resume from Google Drive once. The dashboa
 - Projects: repository status, decisions, tasks, and release notes. The proposed [Project Memory module](project-memory.md) starts with decisions and evidence-backed work receipts for Ken OS itself.
 - Knowledge: notes, bookmarks, and searchable personal context.
 - Automation: recurring checks, scheduled agent work, and an approval inbox.
-- Skills: private, versioned skill uploads that can be enabled for chosen agents; see [the proposal](skills.md).
+- Skills: the first build (an upload library for the resume assistant) was removed on 12 Oct 2026 because nothing else used it. Coding skills already live in Claude Code and Codex, which the hosted app can't install into. Revisit only when a Ken OS agent needs owner-written guidance; the likeliest shape then is a plain guidance field per agent, not an upload library. Writing agent skills could also be an Engineering topic.
 - Engineering (in progress, formerly Engineering Lab): a learning system for full-stack and AI engineering, rebuilt on 10 Oct 2026 to [engineering-rebuild.md](../architecture/engineering-rebuild.md), which is the module's source of truth. This brief stays the platform's.
 
 These are candidates, not MVP commitments. Each should prove a recurring personal workflow before it becomes a module.
