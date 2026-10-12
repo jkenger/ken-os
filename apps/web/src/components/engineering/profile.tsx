@@ -2,9 +2,11 @@ import Link from "next/link";
 import { IconArrowRight, IconChevronDown, IconChevronRight, IconCircle, IconCircleDot } from "@tabler/icons-react";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { formatDate, statusWords } from "@/components/lab/words";
+import type { Connection } from "@/features/connector/oauth-store";
 import type { ProfileView } from "@/features/engineering-lab/profile-store";
 import { engineering } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
+import { Connections } from "./connections";
 import { Coverage, Fact, levelShort, PageHeading, panel, Rail } from "./kit";
 import { Button } from "@/components/ui/button";
 
@@ -161,7 +163,7 @@ function Milestone({ view }: { view: ProfileView }) {
   );
 }
 
-export function Profile({ email, view }: { email: string; view: ProfileView }) {
+export function Profile({ email, view, connections }: { email: string; view: ProfileView; connections: Connection[] }) {
   const assessed = Boolean(view.lastAssessed);
   return (
     <WorkspaceShell email={email} active="lab" tab="profile" termLookup={!view.openRunId}>
@@ -187,6 +189,7 @@ export function Profile({ email, view }: { email: string; view: ProfileView }) {
           <div className="min-w-0">
             <CapabilityTable rows={view.rows} />
             <History view={view} />
+            <Connections connections={connections} />
           </div>
           {assessed ? (
             <Milestone view={view} />

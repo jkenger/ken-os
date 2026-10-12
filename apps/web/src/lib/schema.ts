@@ -621,3 +621,58 @@ export const kenTermLookups = pgTable(
     index("ken_term_lookups_user_key_idx").on(table.userId, table.termKey, table.createdAt),
   ],
 );
+
+// The Claude connector's sign-in (docs/architecture/engineering-claude-connector.md, section 3). Ken OS is its own
+// OAuth server for one owner. Codes and tokens are stored only as SHA-256 hashes.
+
+/** An app that may ask to connect: registered through /api/oauth/register, or a client metadata URL (CIMD). */
+export const oauthClients = pgTable("oauth_clients", {
+  /** A random id for a registered client, or the metadata document's https URL. */
+  id: text("id").primaryKey(),
+  kind: text("kind").$type<"registered" | "metadata">().notNull(),
+  name: text("name").notNull(),
+  redirectUris: jsonb("redirect_uris").$type<string[]>().notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  /** For a metadata client: when its document was last read. */
+  fetchedAt: timestamp("fetched_at", { withTimezone: true }),
+});
+
+/** One connection: what the owner allowed on the consent page. Disconnect revokes it and every token under it. */
+export const oauthGrants = pgTable(
+  "oauth_grants",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    clientId: text("client_id")
+      .notNull()
+      .references(() => oauthClients.id, { onDelete: "cascade" }),
+    scope: text("scope").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    lastUsedAt: timestamp("last_used_at", { withTimezone: true }),
+    /** When the newest refresh token expires. Past it, the connection has ended on its own. */
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    revokedAt: timestamp("revoked_at", { withTimezone: true }),
+  },
+  (table) => [index("oauth_grants_user_idx").on(table.userId, table.createdAt)],
+);
+
+/** Authorization codes, access tokens and refresh tokens. A code and a refresh token work once. */
+export const oauthTokens = pgTable(
+  "oauth_tokens",
+  {
+    hash: text("hash").primaryKey(),
+    kind: text("kind").$type<"code" | "access" | "refresh">().notNull(),
+    grantId: text("grant_id")
+      .notNull()
+      .references(() => oauthGrants.id, { onDelete: "cascade" }),
+    /** Codes only: the exact redirect URI and PKCE challenge the code was issued for. */
+    redirectUri: text("redirect_uri"),
+    codeChallenge: text("code_challenge"),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("oauth_tokens_grant_idx").on(table.grantId)],
+);
