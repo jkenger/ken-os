@@ -21,7 +21,7 @@ The next deployable process is a worker only when background jobs are needed. A 
 
 ## Data ownership
 
-`users` identifies the configured owner. `google_connections` stores an encrypted refresh token. `artifact_selections` maps a purpose such as `primary_resume` to a Drive file ID. `profiles` holds the owner's career details as JSON, and `profile_imports` keeps each read of the Drive resume (append only). Document bytes are fetched from Drive on demand. `skills` is left over from the removed Skills module and is dropped in a later migration. Drizzle owns schema definitions and migrations; its first migration safely baselines the original handwritten tables.
+`users` identifies the configured owner. `google_connections` stores an encrypted refresh token. `artifact_selections` maps a purpose such as `primary_resume` to a Drive file ID. `profiles` holds the owner's career details as JSON, and `profile_imports` keeps each read of the Drive resume (append only). Document bytes are fetched from Drive on demand. Drizzle owns schema definitions and migrations; its first migration safely baselines the original handwritten tables.
 
 ## Security boundary
 

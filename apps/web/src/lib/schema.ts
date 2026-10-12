@@ -50,23 +50,6 @@ export const profileImports = pgTable("profile_imports", {
   appliedAt: timestamp("applied_at", { withTimezone: true }),
 }, (table) => [index("profile_imports_user_created_idx").on(table.userId, table.createdAt)]);
 
-// The Skills module was removed on 12 Oct 2026. The table stays until a later migration drops it,
-// because hosted migrations run before the new code is live.
-export const skills = pgTable("skills", {
-  id: text("id").primaryKey(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  slug: text("slug").notNull(),
-  version: integer("version").notNull(),
-  name: text("name").notNull(),
-  description: text("description").notNull(),
-  files: jsonb("files").$type<Record<string, string>>().notNull(),
-  digest: text("digest").notNull(),
-  enabled: boolean("enabled").notNull().default(false),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-}, (table) => [
-  uniqueIndex("skills_owner_slug_version_unique").on(table.userId, table.slug, table.version),
-  uniqueIndex("skills_one_enabled_version_unique").on(table.userId, table.slug).where(sql`${table.enabled} = true`),
-]);
 
 export const memoryProjects = pgTable("memory_projects", {
   id: text("id").primaryKey(),
@@ -176,7 +159,6 @@ export const googleConnectionsRelations = relations(googleConnections, ({ one })
 export const artifactSelectionsRelations = relations(artifactSelections, ({ one }) => ({
   user: one(users, { fields: [artifactSelections.userId], references: [users.id] }),
 }));
-
 
 // Engineering. Spec: docs/architecture/engineering-rebuild.md, section 6. Everything except lab_progress and lab_profile
 // is append-only: runs, answers, questions and topic events are evidence, and progress is rebuilt from them.
