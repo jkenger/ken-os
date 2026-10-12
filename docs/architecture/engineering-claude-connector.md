@@ -1,6 +1,6 @@
 # Engineering with Claude: a connector between claude.ai and Ken OS
 
-Status: proposed, 12 Oct 2026. Not yet implemented. Written for a separate implementation session.
+Status: slice 1 built on 12 Oct 2026 (§10a). Slices 2 and 3 not yet built.
 
 ## Decision
 
@@ -163,6 +163,38 @@ Built only if option A disappoints: switching tabs feels clumsy, claude.ai can't
 | 1   | `feat/engineering-agent-tools` | `agent-tools.ts` with tests, exercise versions, checking and locking, autosave, the `claude` source. No connector yet; testable directly |
 | 2   | `feat/engineering-mcp`         | OAuth (metadata, authorize with consent, token, registration), `/api/mcp`, Connections on Profile, write limits                          |
 | 3   | `feat/engineering-ask-claude`  | The Ask Claude button, the Project instructions file, docs and rules updates                                                             |
+
+## 10a. Slice 1 as built
+
+Decisions made while building slice 1, 12 Oct 2026. Where they differ from the sections above, these win.
+
+**Where things are**
+
+| File                                                                | Holds                                                                                                                                                 |
+| ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `packages/domain/src/engineering-lab/exercises.ts`                  | Picking the current version, judging a check, point ids, the size caps                                                                                |
+| `apps/web/src/features/engineering-lab/agent-tools.ts`              | The 8 tools, their zod schemas, `callAgentTool(userId, name, input)`                                                                                  |
+| `apps/web/src/features/engineering-lab/exercise-store.ts`           | Exercise versions, the check, locking, Switch, autosave                                                                                               |
+| `topic-store.ts`                                                    | Claude's lessons and proof questions, versioned runs with per-test results                                                                            |
+| `drizzle/0012_nervous_princess_powerful.sql`                        | `lab_exercises`, `lab_exercise_drafts`, `source` on `lab_lessons`, `lab_questions` and `lab_topic_events`; `lab_lessons.source_packet_id` may be null |
+| `/api/lab/topics/[id]/draft`, `/exercise/check`, `/exercise/switch` | Autosave, storing the browser's check, Switch                                                                                                         |
+
+**Decisions**
+
+- **Point ids** are `p1`, `p2`, … in the order `points.yaml` lists a topic's points. `get_topic` lists them with their text. Reordering a topic's points changes its ids, which is fine because the file changes only in a reviewed commit.
+- **Only writes record an event.** Each write tool adds a `lesson_saved`, `exercise_saved` or `proof_question_saved` event with `source: "claude"`. Reads don't: `get_current_state` and `list_path` have no topic, and logging every read would bury the evidence. Progress ignores these three kinds entirely, including the last activity date.
+- **Switch** records an `exercise_switched` event. It closes Prove until the new version passes, like opening the solution.
+- **The current version** is the one the owner last ran or switched to. Without either, the newest valid version is the default, else the repo lab (the open question below, answered as recommended). A repo lab shared by two topics still counts for both.
+- **An open assessment closes the tools**, as it closes lessons. Only `get_current_state` (which reports `assessmentOpen`) and `list_path` answer.
+- **Hand-written lessons stay.** `save_lesson` refuses a topic with a hand-written lesson, the same as the Tutor.
+- **A Claude proof question** stores the named points as its rubric and "A solid answer shows: …" as its reference answer. The newest proof question is the one the owner answers.
+- **Claude's writes don't use Ken OS AI uses.** The daily count skips rows with `source: "claude"`.
+- **Claude's exercises** time out at 3 s in the browser runner and 20 s with PGlite, matching the repo labs. A starter that throws counts as failing.
+- **Autosave** keeps one row per owner and version (`lab_exercise_drafts`, keyed by the version's lab id), overwritten on each save. Code saved in the browser before autosave comes back once and then autosaves.
+
+**Left for slice 2:** the 40-writes-a-day limit, the OAuth tables, the owner check on each call, and the MCP endpoint. `callAgentTool` assumes its caller already checked who the owner is.
+
+**Verified:** `pnpm test` (`exercises.test.ts`, `agent-tools.test.ts`), `pnpm check`, `pnpm build`, and `pnpm --filter @ken-os/web test:db:engineering` against local Postgres. The topic page's check, notices and Saved status were not tried in a signed-in browser.
 
 ## 11. Done when
 

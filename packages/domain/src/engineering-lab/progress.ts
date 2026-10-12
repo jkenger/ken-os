@@ -9,9 +9,33 @@ export type TopicState = (typeof STATES)[number];
 /**
  * lesson_opened: the lesson was shown. exercise_run: the tests ran, passed or not. solution_opened: the solution was
  * shown; the exercise must then pass again before Prove opens. proof: a graded proof answer. review: a graded practice answer.
+ * exercise_switched: the owner moved to a newer exercise version, a fresh attempt that must pass before Prove opens.
+ * lesson_saved, exercise_saved, proof_question_saved: content Claude saved through the connector. They record who wrote
+ * what and never move a topic.
  */
-export const EVENT_KINDS = ["lesson_opened", "exercise_run", "solution_opened", "proof", "review"] as const;
+export const EVENT_KINDS = [
+  "lesson_opened",
+  "exercise_run",
+  "solution_opened",
+  "proof",
+  "review",
+  "exercise_switched",
+  "lesson_saved",
+  "exercise_saved",
+  "proof_question_saved",
+] as const;
 export type TopicEventKind = (typeof EVENT_KINDS)[number];
+
+/** Events that only record saved content. Progress ignores them, including the last activity date. */
+export const CONTENT_EVENT_KINDS: readonly TopicEventKind[] = [
+  "lesson_saved",
+  "exercise_saved",
+  "proof_question_saved",
+];
+
+/** Who wrote a lesson, a question or an event: Ken OS itself, or Claude through the connector. */
+export const CONTENT_SOURCES = ["ken-os", "claude"] as const;
+export type ContentSource = (typeof CONTENT_SOURCES)[number];
 
 export interface TopicEvent {
   id: string;
@@ -79,11 +103,13 @@ export function emptyProgress(topicId: string): TopicProgress {
  * - Proven when a proof passes while the exercise stands passed (a pass after the last solution opening). Reading or
  *   passing the exercise never proves a topic on its own, and Proven never goes back.
  * - Reviews only move the next review date.
+ * - Switching to a newer exercise version closes Prove until the new version passes.
+ * - Saved content (CONTENT_EVENT_KINDS) changes nothing.
  */
 export function computeProgress(topicId: string, events: readonly TopicEvent[]): TopicProgress {
   const progress = emptyProgress(topicId);
   const ordered = events
-    .filter((event) => event.topicId === topicId)
+    .filter((event) => event.topicId === topicId && !CONTENT_EVENT_KINDS.includes(event.kind))
     .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
   const rank = (state: TopicState) => STATES.indexOf(state);
   const atLeast = (state: TopicState) => {
@@ -98,6 +124,10 @@ export function computeProgress(topicId: string, events: readonly TopicEvent[]):
         progress.exercisePassed = true;
         progress.solutionOpened = false;
       }
+    }
+    if (event.kind === "exercise_switched") {
+      progress.exercisePassed = false;
+      progress.solutionOpened = false;
     }
     if (event.kind === "solution_opened") {
       progress.exercisePassed = false;

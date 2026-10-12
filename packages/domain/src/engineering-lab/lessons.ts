@@ -1,3 +1,5 @@
+import { isTrustedSourceUrl } from "../terms";
+import { CLAUDE_LIMITS } from "./exercises";
 import type { SourcePacket } from "./sources";
 import type { TopicQuestion } from "./types";
 
@@ -87,6 +89,70 @@ export function finalizeLesson(
     deeper,
     prove,
     sources: [...cited].map((url) => ({ title: allowed.get(url)!, url })),
+    rejected,
+  };
+}
+
+/**
+ * Keeps a lesson Claude saved inside the lesson rules: every part present, exactly 3 things to prove, at most
+ * CLAUDE_LIMITS.lesson characters, and only sources on the Researcher's trusted sites. Others are dropped and listed in
+ * `rejected`, which is reported back to Claude.
+ */
+export function finalizeClaudeLesson(
+  input: LessonContent,
+  meta: Pick<LessonSnapshot, "topicId" | "version">,
+): LessonSnapshot {
+  const prove = input.prove.map(clean).filter(Boolean);
+  if (prove.length !== 3) throw new Error("A lesson needs exactly 3 things to prove");
+  if (
+    ![input.heading, input.body, input.mentalModel, input.block.content, input.block.note, input.example].every(
+      (part) => clean(part),
+    )
+  ) {
+    throw new Error("A lesson needs a heading, body, mental model, block with a note, and a product example");
+  }
+  const deeper =
+    input.deeper && clean(input.deeper.title) && clean(input.deeper.body)
+      ? { title: clean(input.deeper.title), body: clean(input.deeper.body) }
+      : null;
+  const size = [
+    input.heading,
+    input.body,
+    input.mentalModel,
+    input.block.content,
+    input.block.note,
+    input.example,
+    deeper?.title ?? "",
+    deeper?.body ?? "",
+    ...prove,
+  ].reduce((sum, part) => sum + part.length, 0);
+  if (size > CLAUDE_LIMITS.lesson)
+    throw new Error(`Keep the lesson under ${CLAUDE_LIMITS.lesson} characters (it has ${size})`);
+  const rejected: string[] = [];
+  const sources: LessonSource[] = [];
+  for (const source of input.sources) {
+    const url = source.url.trim();
+    if (!isTrustedSourceUrl(url)) rejected.push(`Not on a trusted site: ${url}`);
+    else if (!sources.some((item) => item.url === url))
+      sources.push({ title: clean(source.title).slice(0, 200) || new URL(url).hostname, url });
+  }
+  if (!sources.length)
+    throw new Error(
+      `A lesson needs at least one source on a trusted site.${rejected.length ? ` Dropped: ${rejected.join("; ")}` : ""}`,
+    );
+  return {
+    ...meta,
+    sourcePacketId: null,
+    promptVersion: "claude",
+    model: "claude",
+    heading: clean(input.heading),
+    body: clean(input.body),
+    mentalModel: clean(input.mentalModel),
+    block: { kind: input.block.kind, content: input.block.content.replace(/\s+$/, ""), note: clean(input.block.note) },
+    example: clean(input.example),
+    deeper,
+    prove,
+    sources,
     rejected,
   };
 }

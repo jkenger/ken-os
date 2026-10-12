@@ -15,6 +15,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         passed: Number(body.passed),
         failed: Number(body.failed),
         output: typeof body.output === "string" ? body.output : "",
+        tests: body.tests,
       });
     },
     { write: true },
