@@ -7,7 +7,7 @@ TypeScript pnpm monorepo with one deployable Next.js application and small share
 ```text
 Browser → Next.js app → PostgreSQL
                  ↘ Google OAuth / Drive API / Picker
-                 ↘ OpenAI Agents SDK (read-only resume tool)
+                 ↘ OpenAI Agents SDK (Profile import, read only)
 ```
 
 ## Packages
@@ -21,17 +21,17 @@ The next deployable process is a worker only when background jobs are needed. A 
 
 ## Data ownership
 
-`users` identifies the configured owner. `google_connections` stores an encrypted refresh token. `artifact_selections` maps a purpose such as `primary_resume` to a Drive file ID. Document bytes are fetched from Drive on demand. `skills` is left over from the removed Skills module and is dropped in a later migration. Drizzle owns schema definitions and migrations; its first migration safely baselines the original handwritten tables.
+`users` identifies the configured owner. `google_connections` stores an encrypted refresh token. `artifact_selections` maps a purpose such as `primary_resume` to a Drive file ID. `profiles` holds the owner's career details as JSON, and `profile_imports` keeps each read of the Drive resume (append only). Document bytes are fetched from Drive on demand. `skills` is left over from the removed Skills module and is dropped in a later migration. Drizzle owns schema definitions and migrations; its first migration safely baselines the original handwritten tables.
 
 ## Security boundary
 
 - OAuth state and PKCE protect the sign-in callback.
-- The configured owner email gates the session. Sign-in asks only for `openid email profile`; Drive (`drive.file`) is a separate grant from the Resume page (`/api/auth/google/drive`). See `docs/architecture/auth-sign-in.md`.
+- The configured owner email gates the session. Sign-in asks only for `openid email profile`; Drive (`drive.file`) is a separate grant from the Profile page (`/api/auth/google/drive`). See `docs/architecture/auth-sign-in.md`.
 - Sessions roll: 30 days from last use, renewed at most daily by `src/proxy.ts`, never past 90 days from sign-in. The proxy only renews; pages call `requireSession`.
 - The Google refresh token is encrypted at rest with `TOKEN_ENCRYPTION_KEY`.
 - API routes validate the session and mutation origin.
 - Picker obtains a short-lived access token only after a valid session.
-- Agent tools can read selected resume content but cannot modify Drive.
+- The Profile import reads the chosen resume's text and returns fields for review; no agent can modify Drive.
 
 ## Future seams
 

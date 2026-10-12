@@ -1,6 +1,6 @@
 # Profile and resume builder
 
-Status: proposed, 12 Oct 2026. Replaces the Resume module. Decisions below were agreed with the owner in chat on 12 Oct 2026.
+Status: step 1 built 12 Oct 2026; steps 2 to 5 proposed. Replaces the Resume module. Decisions below were agreed with the owner in chat on 12 Oct 2026.
 
 ## The idea in one line
 
@@ -106,14 +106,15 @@ Each step ships on its own and leaves the app working.
 
 New tables, added only (the existing ones stay, per the migration rule):
 
-- `profiles`: one row per user. `user_id` (primary key), `details` jsonb typed as `ProfileDetails` from `@ken-os/domain`, `local_fields` boolean, `updated_at`.
-- `profile_imports`: append only. `id`, `user_id`, `drive_file_id`, `drive_modified_time`, `draft` jsonb (`ProfileDetails`), `prompt_version`, `model`, `status` (`pending`, `applied`, `dismissed`), `created_at`.
+- `profiles`: one row per user. `user_id` (primary key), `details` jsonb typed as `ProfileDetails` from `@ken-os/domain` (the local-fields switch is `details.local.enabled`), `updated_at`.
+- `profile_imports`: append only. `id`, `user_id`, `drive_file_id`, `drive_modified_time`, `draft` jsonb (`ProfileDetails`), `prompt_version`, `model`, `status` (`pending`, then `applied` when a save includes it), `created_at`, `applied_at`. Discarding a draft leaves it `pending`; step 5 reads the latest applied import.
 
 The picked file stays in `artifact_selections` (`purpose = primary_resume`), as it is today.
 
 ### Code
 
 - `packages/domain/src/profile.ts`: `ProfileDetails` type, empty profile, field limits.
+- `packages/domain/src/profile.ts` also holds `normalizeProfile` (one checker: `save` mode refuses bad input with the field name, `import` mode cleans AI output) and `mergeImport` (file values fill the form, sections the file lacks keep what was saved).
 - `packages/drive`: `getResumeText(file, token)`. Google Docs use the existing text export. PDF uses `unpdf`, DOCX uses `mammoth` (two new dependencies). Scanned PDFs with no text return a clear error.
 - `packages/agents/src/profile/import.ts`: the import agent and `PROFILE_IMPORT_PROMPT_VERSION`.
 - `apps/web/src/features/profile/`: `store.ts` (read, save, validate, imports), `api.ts` (route guard, same shape as Engineering's `labRoute`), `routes.ts`, pure tests.

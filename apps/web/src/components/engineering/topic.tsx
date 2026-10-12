@@ -385,7 +385,7 @@ function Prove({ topic, view, nextTopic }: { topic: Topic; view: TopicView; next
         <h2 className="mb-2 mt-4 text-2xl font-bold tracking-tight">Topic proven</h2>
         {last && <><p className="text-sm text-muted-foreground">{last.feedback}</p><MetList rubric={last.rubric} /></>}
         <div className="mt-6 flex flex-wrap items-center gap-5">
-          <Button asChild><Link href={engineering.profile}>Back to profile</Link></Button>
+          <Button asChild><Link href={engineering.profile}>Back to Standing</Link></Button>
           {nextTopic && <Button asChild variant="link"><Link href={engineering.topic(nextTopic.id)}>Next: {nextTopic.title}</Link></Button>}
         </div>
       </section>

@@ -27,7 +27,7 @@ export const engineering = {
 /** The four tabs, in order. */
 export const engineeringTabs = [
   { id: "overview", label: "Overview", href: engineering.overview },
-  { id: "profile", label: "Profile", href: engineering.profile },
+  { id: "profile", label: "Standing", href: engineering.profile },
   { id: "learn", label: "Learn", href: engineering.learn },
   { id: "practice", label: "Practice", href: engineering.practice },
 ] as const;

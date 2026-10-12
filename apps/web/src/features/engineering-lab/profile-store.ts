@@ -57,13 +57,6 @@ export async function saveDirection(userId: string, value: unknown) {
   return { direction, weeklyHours };
 }
 
-/** The Ken OS home's one-line Engineering card. */
-export async function labSummary(userId: string): Promise<{ headline: string; detail: string } | null> {
-  const profile = await getProfileRow(userId);
-  const target = careers.roles.find((item) => item.id === profile?.direction);
-  return { headline: target ? target.title : "Engineering", detail: "Open" };
-}
-
 export interface ProfileView {
   direction: { id: string; title: string } | null;
   /** When the latest assessment finished, or null before the first. */

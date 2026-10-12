@@ -17,7 +17,7 @@ export function Evidence({ email, completedAt, items, areas }: { email: string; 
   return (
     <WorkspaceShell email={email} active="lab" tab="profile">
       <div className="mx-auto max-w-4xl px-3 pb-9 pt-6 md:px-5 md:pt-7.5">
-        <Back href={engineering.profile}>Profile</Back>
+        <Back href={engineering.profile}>Standing</Back>
         <PageHeading title="Evidence" badge={completedAt ? formatDate(completedAt) : "In progress"} />
         <ol className="mx-1.5 space-y-4 md:mx-3.5">
           {items.map((item) => (

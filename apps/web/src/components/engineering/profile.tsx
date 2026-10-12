@@ -103,7 +103,7 @@ export function Profile({ email, view }: { email: string; view: ProfileView }) {
     <WorkspaceShell email={email} active="lab" tab="profile" termLookup={!view.openRunId}>
       <div className="mx-auto max-w-7xl px-3 pb-9 pt-6 md:px-5 md:pt-7.5">
         <PageHeading
-          title="Profile"
+          title="Standing"
           facts={<>
             <Fact label="Target role" first>
               <Link href={engineering.direction} className="flex items-center gap-2.5 text-left hover:text-primary">{view.direction?.title ?? "Choose direction"}<IconChevronDown size={16} aria-hidden="true" /></Link>

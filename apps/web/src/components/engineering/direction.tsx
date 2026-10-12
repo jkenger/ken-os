@@ -64,7 +64,7 @@ export function Direction({ email, careers, map, direction, weeklyHours }: { ema
   return (
     <WorkspaceShell email={email} active="lab" tab="profile">
       <div className="mx-auto max-w-7xl px-3 pb-9 pt-6 md:px-5 md:pt-7.5">
-        <Back href={engineering.profile}>Profile</Back>
+        <Back href={engineering.profile}>Standing</Back>
         <PageHeading title="Direction" />
         <FlowLayout>
           <section className={cn(panel, "p-6 md:p-7.5")}>

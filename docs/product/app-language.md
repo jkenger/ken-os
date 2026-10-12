@@ -40,7 +40,7 @@ Allowed to speak in sentences:
 
 - Lesson text, worked examples and Go deeper sections.
 - Feedback on an answer or a prediction ("Right lines, wrong order").
-- Resume assistant answers and term explanations.
+- Term explanations.
 - The signed-out page, which is the only marketing page.
 
 ## Word list
@@ -53,18 +53,23 @@ Module names are proper names in title case and appear the same in the sidebar, 
 
 | Use | Instead of |
 |---|---|
-| Resume | Resume hub, Your documents, Primary resume, 01 / Resume |
+| Profile | Resume (renamed 12 Oct 2026), Resume hub, Your documents, Primary resume |
 | Engineering | Engineering Lab, Lab (renamed 6 Oct 2026; code keeps `engineering-lab`) |
 | Terms | Saved terms, Words you looked up |
 | Project Memory | |
 | Writing Studio | Writing studio |
 
-### Resume
+### Profile
+
+Added 12 Oct 2026 ([profile-resume.md](profile-resume.md)).
 
 | Use | Meaning | Instead of |
 |---|---|---|
-| Resume assistant | The chat that answers questions about the resume | resume agent, current assistant |
+| Details | The Profile form: contact, experience, education and the rest | Career data, record, fields |
+| Drive file | The resume chosen in Google Drive | Source file, primary resume |
 | Choose resume | Open the Drive picker | Select from Drive, Pick the file, Replace resume |
+| Import into Profile | Read the Drive file into the form for review | Parse, sync, extract |
+| Local fields | Birthdate, civil status, nationality, address, references | Personal info, PH fields |
 | Refresh | Pull the latest version from Drive | Refresh resume |
 
 ### Engineering
@@ -75,13 +80,13 @@ Updated 10 Oct 2026 for the Engineering rebuild ([engineering-rebuild.md](../arc
 |---|---|---|
 | Assessment | The 5-question test, one question per area. The only test name; the first one is just the first row in history | Baseline, Checkpoint, Placement check, Intro |
 | Intake | The 3-field form before the assessment: what you're building, target role, hours per week. Never graded | Intro, a short talk |
-| Overview, Profile, Learn, Practice | The four Engineering tabs | Today, Course, Today's practice |
+| Overview, Standing, Learn, Practice | The four Engineering tabs. Standing was Profile until 12 Oct 2026; its URLs keep `/engineering/profile` | Profile, Today, Course, Today's practice |
 | Learn, Exercise, Prove | The three topic steps | Lesson, Predict, Lab, Check (as step names) |
 | Not started, Learning, Practicing, Proven | The four topic states | Known, Not assessed, Needs another look |
 | Developing | An area with no level met yet | Not yet junior |
 | Practice | The daily set of 4 short reviews | daily practice, today's set |
 | Review | A topic coming back in Practice | |
-| Direction | The target role and hours per week, and the page under Profile where they're chosen | shape, what do you want to become |
+| Direction | The target role and hours per week, and the page under Standing where they're chosen | shape, what do you want to become |
 | Radar | Weekly scan of official docs and release notes | This week on your radar |
 | AI uses | Calls to a model, with the day's limit | AI calls used, AI use today, AI generations |
 

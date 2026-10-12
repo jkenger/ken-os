@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BookMarked, ChevronRight, UserRound, BookOpenText, FileText, FlaskConical, LayoutDashboard, Library, ListTree, Repeat, Search, Sparkles, X } from "lucide-react";
+import { BookMarked, ChevronRight, Gauge, UserRound, BookOpenText, FileText, FlaskConical, LayoutDashboard, Library, ListTree, Repeat, Search, Sparkles, X } from "lucide-react";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { TermLookup } from "@/components/terms/term-lookup";
 import { Toaster } from "@/components/ui/toaster";
@@ -14,10 +14,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { engineering, tabForPath, type EngineeringTab } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
 
-type Module = "resume" | "memory" | "lab" | "terms";
+type Module = "profile" | "memory" | "lab" | "terms";
 
 const modules = [
-  { id: "resume" as const, label: "Resume", href: "/", icon: FileText },
+  { id: "profile" as const, label: "Profile", href: "/profile", icon: UserRound },
   { id: "memory" as const, label: "Project Memory", href: "/memory", icon: BookOpenText },
   { id: "lab" as const, label: "Engineering", href: engineering.overview, icon: FlaskConical },
   { id: "terms" as const, label: "Terms", href: "/terms", icon: BookMarked },
@@ -27,12 +27,11 @@ const moduleDetails: Record<Module, {
   title: string;
   sections: { label: string; href: string; icon: typeof FileText }[];
 }> = {
-  resume: {
-    title: "Resume",
+  profile: {
+    title: "Profile",
     sections: [
-      { label: "Overview", href: "/", icon: Library },
-      { label: "How it works", href: "/#how-it-works", icon: FileText },
-      { label: "Resume assistant", href: "/#resume-assistant", icon: Sparkles },
+      { label: "Details", href: "/profile", icon: UserRound },
+      { label: "Drive file", href: "/profile#drive-file", icon: FileText },
     ],
   },
   memory: {
@@ -49,7 +48,7 @@ const moduleDetails: Record<Module, {
     title: "Engineering",
     sections: [
       { label: "Overview", href: engineering.overview, icon: LayoutDashboard },
-      { label: "Profile", href: engineering.profile, icon: UserRound },
+      { label: "Standing", href: engineering.profile, icon: Gauge },
       { label: "Learn", href: engineering.learn, icon: ListTree },
       { label: "Practice", href: engineering.practice, icon: Repeat },
     ],
