@@ -14,5 +14,12 @@ export default async function ResultsPage({ params }: { params: Promise<{ runId:
   if (!run) notFound();
   // Results only exist for a finished assessment; an open one goes back to its next question.
   if (!run.completedAt) redirect(engineering.assessment);
-  return <Results email={session.email} runId={run.id} items={run.items} areas={topicMap.areas.map((area) => ({ id: area.id, title: area.title }))} />;
+  return (
+    <Results
+      email={session.email}
+      runId={run.id}
+      items={run.items}
+      areas={topicMap.areas.map((area) => ({ id: area.id, title: area.title }))}
+    />
+  );
 }

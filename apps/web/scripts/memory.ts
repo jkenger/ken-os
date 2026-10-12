@@ -26,7 +26,8 @@ function endpoint() {
 
 async function request(method: "GET" | "POST", body?: unknown) {
   const token = process.env.KEN_OS_MEMORY_TOKEN;
-  if (!token) throw new Error("Set KEN_OS_MEMORY_TOKEN in your untracked local environment before using memory capture.");
+  if (!token)
+    throw new Error("Set KEN_OS_MEMORY_TOKEN in your untracked local environment before using memory capture.");
   const response = await fetch(endpoint(), {
     method,
     headers: { Authorization: `Bearer ${token}`, ...(body ? { "Content-Type": "application/json" } : {}) },
@@ -34,7 +35,7 @@ async function request(method: "GET" | "POST", body?: unknown) {
     redirect: "error",
     signal: AbortSignal.timeout(15_000),
   });
-  const result = await response.json() as { error?: string; policyDigest?: string };
+  const result = (await response.json()) as { error?: string; policyDigest?: string };
   if (!response.ok) throw new Error(result.error ?? `Memory request failed (${response.status}).`);
   return result;
 }
@@ -42,17 +43,20 @@ async function request(method: "GET" | "POST", body?: unknown) {
 async function main() {
   assertPilotRepository();
   const command = process.argv[2];
-  if (command !== "context" && command !== "submit") throw new Error("Usage: memory:context or memory:submit -- <decision|receipt> <draft.json>");
+  if (command !== "context" && command !== "submit")
+    throw new Error("Usage: memory:context or memory:submit -- <decision|receipt> <draft.json>");
   const context = await request("GET");
   const localDigest = createHash("sha256").update(JSON.stringify(pilotPolicy)).digest("hex");
-  if (context.policyDigest !== localDigest) throw new Error("Memory policy digest mismatch. Review the remote policy before submitting content.");
+  if (context.policyDigest !== localDigest)
+    throw new Error("Memory policy digest mismatch. Review the remote policy before submitting content.");
   if (command === "context") {
     console.log(JSON.stringify(context, null, 2));
     return;
   }
   const kind = process.argv[3];
   const file = process.argv[4];
-  if ((kind !== "decision" && kind !== "receipt") || !file) throw new Error("Usage: memory:submit -- <decision|receipt> <draft.json>");
+  if ((kind !== "decision" && kind !== "receipt") || !file)
+    throw new Error("Usage: memory:submit -- <decision|receipt> <draft.json>");
   const input = JSON.parse(readFileSync(resolve(file), "utf8")) as unknown;
   const draft = kind === "decision" ? parseDecisionDraft(input) : parseReceiptDraft(input);
   const result = await request("POST", { kind, draft });

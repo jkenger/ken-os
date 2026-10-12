@@ -11,16 +11,37 @@ export const REFRESH_AFTER_DAYS: Record<FreshnessClass, number> = {
 };
 
 /** Source priority from the spec, highest first. */
-export const SOURCE_TIERS = ["specification", "official_docs", "provider_docs", "technical_reference", "community"] as const;
+export const SOURCE_TIERS = [
+  "specification",
+  "official_docs",
+  "provider_docs",
+  "technical_reference",
+  "community",
+] as const;
 export type SourceTier = (typeof SOURCE_TIERS)[number];
 
 /** Domains the Researcher may cite, grouped so a topic can pick only the ones that fit it. */
 export const SOURCE_DOMAINS = {
   javascript: ["developer.mozilla.org", "tc39.es", "html.spec.whatwg.org", "nodejs.org", "v8.dev"],
-  web: ["developer.mozilla.org", "fetch.spec.whatwg.org", "html.spec.whatwg.org", "httpwg.org", "rfc-editor.org", "datatracker.ietf.org", "web.dev"],
+  web: [
+    "developer.mozilla.org",
+    "fetch.spec.whatwg.org",
+    "html.spec.whatwg.org",
+    "httpwg.org",
+    "rfc-editor.org",
+    "datatracker.ietf.org",
+    "web.dev",
+  ],
   react: ["react.dev", "nextjs.org"],
   database: ["postgresql.org", "www.postgresql.org"],
-  ai: ["platform.openai.com", "developers.openai.com", "docs.anthropic.com", "docs.claude.com", "modelcontextprotocol.io", "ai-sdk.dev"],
+  ai: [
+    "platform.openai.com",
+    "developers.openai.com",
+    "docs.anthropic.com",
+    "docs.claude.com",
+    "modelcontextprotocol.io",
+    "ai-sdk.dev",
+  ],
   operations: ["opentelemetry.io", "owasp.org", "sre.google"],
   typescript: ["www.typescriptlang.org", "zod.dev"],
   testing: ["vitest.dev", "playwright.dev", "testing-library.com", "nodejs.org"],
@@ -119,7 +140,13 @@ export function finalizeSourcePacket(target: ResearchTarget, draft: ResearchDraf
       continue;
     }
     seen.add(url);
-    sources.push({ title: source.title.trim(), url, tier: source.tier, retrievedAt: checkedAt, whyItMatters: source.whyItMatters.trim() });
+    sources.push({
+      title: source.title.trim(),
+      url,
+      tier: source.tier,
+      retrievedAt: checkedAt,
+      whyItMatters: source.whyItMatters.trim(),
+    });
   }
 
   const claims: SourceClaim[] = [];
@@ -148,7 +175,9 @@ export function finalizeSourcePacket(target: ResearchTarget, draft: ResearchDraf
     misconceptionsToAddress: draft.misconceptionsToAddress.map((item) => item.trim()).filter(Boolean),
     openQuestions: draft.openQuestions.map((item) => item.trim()).filter(Boolean),
     rejected,
-    ...(draft.changedSinceLast ? { changedSinceLast: draft.changedSinceLast.map((item) => item.trim()).filter(Boolean) } : {}),
+    ...(draft.changedSinceLast
+      ? { changedSinceLast: draft.changedSinceLast.map((item) => item.trim()).filter(Boolean) }
+      : {}),
   };
 }
 

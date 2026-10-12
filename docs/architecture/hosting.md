@@ -19,10 +19,10 @@ The MVP-building workflow chooses a host early and can hand deployment work to t
 
 ## Provider branches to design and validate
 
-| Provider | Initial fit | Playbook concerns |
-| --- | --- | --- |
-| Vercel | Default for a compatible Next.js app | Project linking, framework/build settings, preview versus production env, managed Postgres connection, and a deliberate migration mechanism outside ordinary request handling. |
-| Fly.io | Container/Machine workload or runtime control | Docker image, `fly.toml`, secrets, health checks, database networking, and a one-off release command for migrations. |
-| Render | Persistent Node web service or static app | Web-service versus static-site choice, build/start commands, env and database wiring, health checks, and plan-dependent pre-deploy migration support. |
+| Provider | Initial fit                                   | Playbook concerns                                                                                                                                                              |
+| -------- | --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Vercel   | Default for a compatible Next.js app          | Project linking, framework/build settings, preview versus production env, managed Postgres connection, and a deliberate migration mechanism outside ordinary request handling. |
+| Fly.io   | Container/Machine workload or runtime control | Docker image, `fly.toml`, secrets, health checks, database networking, and a one-off release command for migrations.                                                           |
+| Render   | Persistent Node web service or static app     | Web-service versus static-site choice, build/start commands, env and database wiring, health checks, and plan-dependent pre-deploy migration support.                          |
 
 These are design branches, not provider-specific instructions ready to execute. Current provider documentation should decide exact syntax and available features: [Vercel environments](https://vercel.com/docs/deployments/environments), [Fly app configuration](https://fly.io/docs/reference/configuration/), [Render Next.js deployment](https://render.com/docs/deploy-nextjs-app), and [Render deploy steps](https://render.com/docs/deploys).

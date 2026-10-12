@@ -23,9 +23,16 @@ const production = { "process.env.NODE_ENV": '"production"' };
 const globals = (map: Record<string, string>): Plugin => ({
   name: "globals",
   setup(context) {
-    const filter = new RegExp(`^(${Object.keys(map).map((name) => name.replace(/[/\\^$*+?.()|[\]{}]/g, "\\$&")).join("|")})$`);
+    const filter = new RegExp(
+      `^(${Object.keys(map)
+        .map((name) => name.replace(/[/\\^$*+?.()|[\]{}]/g, "\\$&"))
+        .join("|")})$`,
+    );
     context.onResolve({ filter }, (args) => ({ path: args.path, namespace: "globals" }));
-    context.onLoad({ filter: /.*/, namespace: "globals" }, (args) => ({ contents: `module.exports = ${map[args.path]};`, loader: "js" }));
+    context.onLoad({ filter: /.*/, namespace: "globals" }, (args) => ({
+      contents: `module.exports = ${map[args.path]};`,
+      loader: "js",
+    }));
   },
 });
 
@@ -45,7 +52,17 @@ export default forwardRef(function Link({ href, prefetch, replace, scroll, shall
 };
 
 async function script(file: string, options: Parameters<typeof build>[0]) {
-  const result = await build({ bundle: true, minify: true, format: "iife", platform: "browser", target: "es2020", define: production, legalComments: "none", write: false, ...options });
+  const result = await build({
+    bundle: true,
+    minify: true,
+    format: "iife",
+    platform: "browser",
+    target: "es2020",
+    define: production,
+    legalComments: "none",
+    write: false,
+    ...options,
+  });
   if (!result.outputFiles?.length) throw new Error(`esbuild wrote nothing for ${file}`);
   let text = result.outputFiles[0].text;
   // Consumers inline these files in a <script>; neither sequence may appear in them.
@@ -60,7 +77,11 @@ async function main() {
     stdin: { contents: `import * as React from "react"; window.React = React;`, resolveDir: webRoot, loader: "js" },
   });
   sizes["lib/react-dom.js"] = await script("lib/react-dom.js", {
-    stdin: { contents: `import * as ReactDOM from "react-dom"; import * as Client from "react-dom/client"; window.ReactDOM = Object.assign({}, ReactDOM, Client);`, resolveDir: webRoot, loader: "js" },
+    stdin: {
+      contents: `import * as ReactDOM from "react-dom"; import * as Client from "react-dom/client"; window.ReactDOM = Object.assign({}, ReactDOM, Client);`,
+      resolveDir: webRoot,
+      loader: "js",
+    },
     plugins: [globals({ react: "window.React" })],
   });
 
@@ -72,7 +93,10 @@ async function main() {
     jsx: "automatic",
     tsconfig: resolve(webRoot, "tsconfig.json"),
     banner: { js: header.trimEnd() },
-    plugins: [globals({ react: "window.React", "react-dom": "window.ReactDOM", "react-dom/client": "window.ReactDOM" }), nextLink],
+    plugins: [
+      globals({ react: "window.React", "react-dom": "window.ReactDOM", "react-dom/client": "window.ReactDOM" }),
+      nextLink,
+    ],
   });
 
   // The app's stylesheet, scanning only what the bundle contains, with Geist set the way next/font would set it.
@@ -82,8 +106,13 @@ async function main() {
     // uses dark mode, which would switch on shadcn's built-in dark styles; point the variant at a class nothing sets.
     .replace("@custom-variant dark (&:is(.dark *));", "@custom-variant dark (&:is(.ken-os-dark-theme *));")
     .concat("\nhtml { color-scheme: light !important; }\n")
-    .concat(`\n:root { --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif; --font-mono: "Geist Mono", ui-monospace, monospace; }\nhtml { font-family: var(--font-sans); }\n`)
-    .replace(`@import "tailwindcss";`, `@import "tailwindcss" source(none);\n@source "../components/ui";\n@source "../components/engineering/kit.tsx";\n@source "../components/workspace-shell.tsx";`);
+    .concat(
+      `\n:root { --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif; --font-mono: "Geist Mono", ui-monospace, monospace; }\nhtml { font-family: var(--font-sans); }\n`,
+    )
+    .replace(
+      `@import "tailwindcss";`,
+      `@import "tailwindcss" source(none);\n@source "../components/ui";\n@source "../components/engineering/kit.tsx";\n@source "../components/workspace-shell.tsx";`,
+    );
   const plugin = tailwind({ optimize: { minify: true } }) as AcceptedPlugin;
   const css = await postcss([plugin]).process(source, { from: globalsPath });
   // The font link must be the first rule: an @import after any other rule is ignored.

@@ -2,8 +2,14 @@ import { randomUUID } from "node:crypto";
 import { and, desc, eq, gte, sql } from "drizzle-orm";
 import { researchTopic } from "@ken-os/agents";
 import {
-  computeProgress, emptyProgress, isPacketUsable, isoWeek, researchTargetFor,
-  type SourcePacket, type TopicEvent, type TopicProgress,
+  computeProgress,
+  emptyProgress,
+  isPacketUsable,
+  isoWeek,
+  researchTargetFor,
+  type SourcePacket,
+  type TopicEvent,
+  type TopicProgress,
 } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { labLessons, labProgress, labQuestions, labRadarItems, labSourcePackets, labTopicEvents } from "@/lib/schema";
@@ -31,7 +37,10 @@ export function requireTopic(topicId: string) {
 export async function generationsToday(userId: string) {
   const since = ownerDayStart();
   const count = async (table: typeof labSourcePackets | typeof labLessons | typeof labQuestions) => {
-    const [row] = await db().select({ n: sql<number>`count(*)::int` }).from(table).where(and(eq(table.userId, userId), gte(table.createdAt, since)));
+    const [row] = await db()
+      .select({ n: sql<number>`count(*)::int` })
+      .from(table)
+      .where(and(eq(table.userId, userId), gte(table.createdAt, since)));
     return row?.n ?? 0;
   };
   const counts = await Promise.all([count(labSourcePackets), count(labLessons), count(labQuestions)]);
@@ -41,17 +50,33 @@ export async function generationsToday(userId: string) {
 export async function assertBudget(userId: string, needed = 1) {
   const used = await generationsToday(userId);
   if (used + needed > DAILY_GENERATION_LIMIT) {
-    throw new LabInputError(`Out of AI uses for today (${DAILY_GENERATION_LIMIT}). Resets at midnight Manila time`, 429);
+    throw new LabInputError(
+      `Out of AI uses for today (${DAILY_GENERATION_LIMIT}). Resets at midnight Manila time`,
+      429,
+    );
   }
 }
 
-function toEvent(row: Pick<typeof labTopicEvents.$inferSelect, "id" | "topicId" | "kind" | "passed" | "label" | "createdAt">): TopicEvent {
-  return { id: row.id, topicId: row.topicId, kind: row.kind, passed: row.passed, label: row.label, createdAt: row.createdAt };
+function toEvent(
+  row: Pick<typeof labTopicEvents.$inferSelect, "id" | "topicId" | "kind" | "passed" | "label" | "createdAt">,
+): TopicEvent {
+  return {
+    id: row.id,
+    topicId: row.topicId,
+    kind: row.kind,
+    passed: row.passed,
+    label: row.label,
+    createdAt: row.createdAt,
+  };
 }
 
 const eventColumns = {
-  id: labTopicEvents.id, topicId: labTopicEvents.topicId, kind: labTopicEvents.kind,
-  passed: labTopicEvents.passed, label: labTopicEvents.label, createdAt: labTopicEvents.createdAt,
+  id: labTopicEvents.id,
+  topicId: labTopicEvents.topicId,
+  kind: labTopicEvents.kind,
+  passed: labTopicEvents.passed,
+  label: labTopicEvents.label,
+  createdAt: labTopicEvents.createdAt,
 };
 
 /** Every topic's progress, in course order, rebuilt from events. */
@@ -63,7 +88,10 @@ export async function getAllProgress(userId: string): Promise<TopicProgress[]> {
 
 export async function getProgress(userId: string, topicId: string): Promise<TopicProgress> {
   requireTopic(topicId);
-  const rows = await db().select(eventColumns).from(labTopicEvents).where(and(eq(labTopicEvents.userId, userId), eq(labTopicEvents.topicId, topicId)));
+  const rows = await db()
+    .select(eventColumns)
+    .from(labTopicEvents)
+    .where(and(eq(labTopicEvents.userId, userId), eq(labTopicEvents.topicId, topicId)));
   return computeProgress(topicId, rows.map(toEvent));
 }
 
@@ -77,11 +105,23 @@ export async function provenTopics(userId: string): Promise<Set<string>> {
  * read the old state.
  */
 async function recompute(tx: Transaction, userId: string, topicId: string) {
-  await tx.insert(labProgress).values({ userId, topicId, status: "NOT_STARTED", progress: emptyProgress(topicId) }).onConflictDoNothing();
-  await tx.select({ status: labProgress.status }).from(labProgress).where(and(eq(labProgress.userId, userId), eq(labProgress.topicId, topicId))).for("update");
-  const rows = await tx.select(eventColumns).from(labTopicEvents).where(and(eq(labTopicEvents.userId, userId), eq(labTopicEvents.topicId, topicId)));
+  await tx
+    .insert(labProgress)
+    .values({ userId, topicId, status: "NOT_STARTED", progress: emptyProgress(topicId) })
+    .onConflictDoNothing();
+  await tx
+    .select({ status: labProgress.status })
+    .from(labProgress)
+    .where(and(eq(labProgress.userId, userId), eq(labProgress.topicId, topicId)))
+    .for("update");
+  const rows = await tx
+    .select(eventColumns)
+    .from(labTopicEvents)
+    .where(and(eq(labTopicEvents.userId, userId), eq(labTopicEvents.topicId, topicId)));
   const progress = computeProgress(topicId, rows.map(toEvent));
-  await tx.update(labProgress).set({ status: progress.state, progress, updatedAt: new Date() })
+  await tx
+    .update(labProgress)
+    .set({ status: progress.state, progress, updatedAt: new Date() })
     .where(and(eq(labProgress.userId, userId), eq(labProgress.topicId, topicId)));
   return progress;
 }
@@ -100,17 +140,30 @@ export async function recordEvent(userId: string, event: EventInput, tx?: Transa
 }
 
 export async function latestPacket(userId: string, topicId: string) {
-  const [row] = await db().select().from(labSourcePackets)
-    .where(and(eq(labSourcePackets.userId, userId), eq(labSourcePackets.topicId, topicId))).orderBy(desc(labSourcePackets.generatedAt)).limit(1);
+  const [row] = await db()
+    .select()
+    .from(labSourcePackets)
+    .where(and(eq(labSourcePackets.userId, userId), eq(labSourcePackets.topicId, topicId)))
+    .orderBy(desc(labSourcePackets.generatedAt))
+    .limit(1);
   return row ?? null;
 }
 
 /** Saved source packets are never overwritten: a new one is a new row. */
 export async function savePacket(userId: string, packet: SourcePacket) {
   const id = randomUUID();
-  const inserted = await db().insert(labSourcePackets).values({
-    id, userId, topicId: packet.topicId, packet, refreshAfter: packet.refreshAfter, generatedAt: new Date(packet.generatedAt),
-  }).onConflictDoNothing().returning({ id: labSourcePackets.id });
+  const inserted = await db()
+    .insert(labSourcePackets)
+    .values({
+      id,
+      userId,
+      topicId: packet.topicId,
+      packet,
+      refreshAfter: packet.refreshAfter,
+      generatedAt: new Date(packet.generatedAt),
+    })
+    .onConflictDoNothing()
+    .returning({ id: labSourcePackets.id });
   return inserted[0]?.id ?? null;
 }
 
@@ -135,10 +188,17 @@ export async function freshPacket(userId: string, topicId: string) {
 export async function flagRecheck(userId: string, topicId: string, packet: SourcePacket) {
   const topic = requireTopic(topicId);
   const chapter = topicMap.chapters.find((item) => item.id === topic.chapter)!;
-  await db().insert(labRadarItems).values({
-    id: randomUUID(), userId, week: isoWeek(new Date()), area: chapter.area, tag: "recheck", topicId,
-    title: `Re-check ${topic.title}`,
-    reason: packet.changedSinceLast!.slice(0, 2).join(" "),
-    sourceUrl: packet.sources[0]?.url ?? null,
-  });
+  await db()
+    .insert(labRadarItems)
+    .values({
+      id: randomUUID(),
+      userId,
+      week: isoWeek(new Date()),
+      area: chapter.area,
+      tag: "recheck",
+      topicId,
+      title: `Re-check ${topic.title}`,
+      reason: packet.changedSinceLast!.slice(0, 2).join(" "),
+      sourceUrl: packet.sources[0]?.url ?? null,
+    });
 }

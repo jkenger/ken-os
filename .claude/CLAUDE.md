@@ -7,13 +7,13 @@
 - pnpm 10 workspace: `apps/web` (Next.js, React 19, Tailwind 4, shadcn/ui, Drizzle on PostgreSQL) and `packages/{domain,drive,agents}`.
 - Next.js is pinned to `latest` and differs from training data: read `apps/web/AGENTS.md` and `node_modules/next/dist/docs/` before writing Next code.
 - TypeScript `strict: true` in `apps/web/tsconfig.json`. `noUncheckedIndexedAccess` is off, so array and record reads are typed as always present; guard them yourself.
-- Tests use Node's built-in runner through `tsx --test`, not Vitest or Jest. No linter or formatter is configured.
+- Tests use Node's built-in runner through `tsx --test`, not Vitest or Jest. Prettier formats the repo (`.prettierrc`); no linter is configured.
 
 ## Quality gates
 
 Run from the repo root before a PR:
 
-1. `pnpm check`: generated lab content is current, then `tsc --noEmit`.
+1. `pnpm check`: every file is Prettier-formatted, generated lab content is current, then `tsc --noEmit`.
 2. `pnpm test`: unit tests, including the shadcn primitive and default-theme guards, and every lab starter fails while every solution passes.
 3. `pnpm build`: production build.
 
@@ -27,7 +27,7 @@ Database checks need `pnpm db:up` (Docker Postgres on `127.0.0.1:5435`) and `pnp
 
 After editing the curriculum YAML, a lesson or a lab, run `pnpm --filter @ken-os/web lab:generate` before `pnpm check`.
 
-A `.claude/settings.json` hook runs `pnpm check` after every `.ts` or `.tsx` edit.
+`.claude/settings.json` hooks run Prettier on every file Claude writes or edits, then `pnpm check` after every `.ts` or `.tsx` edit.
 
 ## CI and deploy
 

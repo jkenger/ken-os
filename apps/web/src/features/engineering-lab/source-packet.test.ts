@@ -9,7 +9,9 @@ const mdn = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Event_loop"
 
 function draft(overrides: Partial<ResearchDraft> = {}): ResearchDraft {
   return {
-    sources: [{ title: "The event loop", url: mdn, tier: "official_docs", whyItMatters: "Defines tasks and microtasks." }],
+    sources: [
+      { title: "The event loop", url: mdn, tier: "official_docs", whyItMatters: "Defines tasks and microtasks." },
+    ],
     claims: [{ statement: "Microtasks run before the next task.", sourceUrl: mdn }],
     misconceptionsToAddress: ["setTimeout(fn, 0) runs before promise callbacks"],
     openQuestions: [],
@@ -28,10 +30,14 @@ test("keeps allowlisted sources and stamps dates in code", () => {
 
 test("rejects sources outside the allowlist and claims that point at them", () => {
   const blog = "https://some-blog.example.com/event-loop";
-  const packet = finalizeSourcePacket(target, draft({
-    sources: [{ title: "Blog", url: blog, tier: "community", whyItMatters: "x" }],
-    claims: [{ statement: "Timers run first.", sourceUrl: blog }],
-  }), now);
+  const packet = finalizeSourcePacket(
+    target,
+    draft({
+      sources: [{ title: "Blog", url: blog, tier: "community", whyItMatters: "x" }],
+      claims: [{ statement: "Timers run first.", sourceUrl: blog }],
+    }),
+    now,
+  );
   assert.equal(packet.sources.length, 0);
   assert.equal(packet.claims.length, 0);
   assert.equal(packet.rejected.length, 2);
@@ -39,25 +45,41 @@ test("rejects sources outside the allowlist and claims that point at them", () =
 });
 
 test("rejects lookalike hosts, plain http, and claims citing an unlisted page", () => {
-  const packet = finalizeSourcePacket(target, draft({
-    sources: [
-      { title: "Fake", url: "https://developer.mozilla.org.evil.test/x", tier: "official_docs", whyItMatters: "x" },
-      { title: "Plain", url: "http://nodejs.org/en/learn", tier: "official_docs", whyItMatters: "x" },
-      { title: "MDN", url: `${mdn}#event_loop?utm_source=x`, tier: "official_docs", whyItMatters: "x" },
-    ],
-    claims: [
-      { statement: "Backed.", sourceUrl: mdn },
-      { statement: "Unlisted page.", sourceUrl: "https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick" },
-    ],
-  }), now);
-  assert.deepEqual(packet.sources.map((source) => source.title), ["MDN"]);
-  assert.deepEqual(packet.claims.map((claim) => claim.statement), ["Backed."]);
+  const packet = finalizeSourcePacket(
+    target,
+    draft({
+      sources: [
+        { title: "Fake", url: "https://developer.mozilla.org.evil.test/x", tier: "official_docs", whyItMatters: "x" },
+        { title: "Plain", url: "http://nodejs.org/en/learn", tier: "official_docs", whyItMatters: "x" },
+        { title: "MDN", url: `${mdn}#event_loop?utm_source=x`, tier: "official_docs", whyItMatters: "x" },
+      ],
+      claims: [
+        { statement: "Backed.", sourceUrl: mdn },
+        {
+          statement: "Unlisted page.",
+          sourceUrl: "https://nodejs.org/en/learn/asynchronous-work/event-loop-timers-and-nexttick",
+        },
+      ],
+    }),
+    now,
+  );
+  assert.deepEqual(
+    packet.sources.map((source) => source.title),
+    ["MDN"],
+  );
+  assert.deepEqual(
+    packet.claims.map((claim) => claim.statement),
+    ["Backed."],
+  );
   assert.equal(packet.rejected.length, 3);
 });
 
 test("caps a packet at five sources", () => {
   const sources = Array.from({ length: 7 }, (_, index) => ({
-    title: `Page ${index}`, url: `https://developer.mozilla.org/page-${index}`, tier: "official_docs" as const, whyItMatters: "x",
+    title: `Page ${index}`,
+    url: `https://developer.mozilla.org/page-${index}`,
+    tier: "official_docs" as const,
+    whyItMatters: "x",
   }));
   const packet = finalizeSourcePacket(target, draft({ sources, claims: [] }), now);
   assert.equal(packet.sources.length, 5);

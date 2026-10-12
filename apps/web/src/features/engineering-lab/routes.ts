@@ -20,7 +20,8 @@ export const engineering = {
   results: (runId: string) => `/engineering/profile/assessment/${encodeURIComponent(runId)}/results`,
   evidence: (runId: string) => `/engineering/profile/evidence/${encodeURIComponent(runId)}`,
   learn: "/engineering/learn",
-  topic: (topicId: string, step?: TopicStep | null) => withQuery(`/engineering/learn/${encodeURIComponent(topicId)}`, { step }),
+  topic: (topicId: string, step?: TopicStep | null) =>
+    withQuery(`/engineering/learn/${encodeURIComponent(topicId)}`, { step }),
   practice: "/engineering/practice",
 } as const;
 

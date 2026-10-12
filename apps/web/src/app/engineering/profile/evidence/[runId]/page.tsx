@@ -12,5 +12,12 @@ export default async function EvidencePage({ params }: { params: Promise<{ runId
   const session = await requireSession(engineering.evidence(runId));
   const run = await getRunEvidence(session.userId, runId).catch(() => null);
   if (!run) notFound();
-  return <Evidence email={session.email} completedAt={run.completedAt} items={run.items} areas={topicMap.areas.map((area) => ({ id: area.id, title: area.title }))} />;
+  return (
+    <Evidence
+      email={session.email}
+      completedAt={run.completedAt}
+      items={run.items}
+      areas={topicMap.areas.map((area) => ({ id: area.id, title: area.title }))}
+    />
+  );
 }

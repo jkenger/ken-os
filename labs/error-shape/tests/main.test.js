@@ -2,11 +2,20 @@ const named = (name, message, extra = {}) => Object.assign(new Error(message), {
 
 test("a validation error is a 400 that names the bad fields", () => {
   const error = named("ValidationError", "Check the highlighted fields", {
-    issues: [{ path: "email", message: "Enter an email address" }, { path: "quantity", message: "Must be at least 1" }],
+    issues: [
+      { path: "email", message: "Enter an email address" },
+      { path: "quantity", message: "Must be at least 1" },
+    ],
   });
   assert.deepEqual(toErrorResponse(error), {
     status: 400,
-    body: { error: { code: "invalid_input", message: "Check the highlighted fields", fields: { email: "Enter an email address", quantity: "Must be at least 1" } } },
+    body: {
+      error: {
+        code: "invalid_input",
+        message: "Check the highlighted fields",
+        fields: { email: "Enter an email address", quantity: "Must be at least 1" },
+      },
+    },
   });
 });
 
@@ -33,7 +42,12 @@ test("an unexpected error leaks nothing", () => {
 });
 
 test("every body has the same shape", () => {
-  for (const error of [named("ValidationError", "Bad", { issues: [] }), named("NotFoundError", "Gone"), named("ConflictError", "Taken"), new TypeError("x is undefined")]) {
+  for (const error of [
+    named("ValidationError", "Bad", { issues: [] }),
+    named("NotFoundError", "Gone"),
+    named("ConflictError", "Taken"),
+    new TypeError("x is undefined"),
+  ]) {
     const { body } = toErrorResponse(error);
     assert.deepEqual(Object.keys(body), ["error"]);
     assert.equal(typeof body.error.code, "string");

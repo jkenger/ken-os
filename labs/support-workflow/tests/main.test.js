@@ -3,12 +3,19 @@ function setup({ category = "refund", confidence = 0.95, eligible = true } = {})
   const deps = {
     classify: async () => ({ category, confidence }),
     draftReply: async (text) => `Reply to: ${text}`,
-    issueRefund: async (orderId, amount) => { refunds.push([orderId, amount]); },
-    refundPolicy: (order) => (eligible ? { eligible: true } : { eligible: false, reason: `Order ${order.id} is past the 30-day window` }),
+    issueRefund: async (orderId, amount) => {
+      refunds.push([orderId, amount]);
+    },
+    refundPolicy: (order) =>
+      eligible ? { eligible: true } : { eligible: false, reason: `Order ${order.id} is past the 30-day window` },
   };
   return { deps, refunds };
 }
-const ticket = (amount, text = "My order arrived broken, please refund it.") => ({ id: "t1", text, order: { id: "o9", amount } });
+const ticket = (amount, text = "My order arrived broken, please refund it.") => ({
+  id: "t1",
+  text,
+  order: { id: "o9", amount },
+});
 
 test("a small eligible refund is issued once, for the order's amount", async () => {
   const { deps, refunds } = setup();

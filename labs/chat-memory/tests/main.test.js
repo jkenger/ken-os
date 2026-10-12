@@ -26,10 +26,15 @@ test("older turns are folded into a summary and recent turns stay word for word"
   await fill(memory);
   const context = memory.context();
   assert.ok(calls.length >= 1, "summarize should be called when over budget");
-  const summary = context.find((message) => message.role === "system" && message.content.startsWith("Summary of earlier conversation:"));
+  const summary = context.find(
+    (message) => message.role === "system" && message.content.startsWith("Summary of earlier conversation:"),
+  );
   assert.ok(summary, "the context starts with the summary");
   assert.ok(summary.content.includes("Hello"), "the first turn survives in the summary");
-  assert.deepEqual(context.slice(-2).map((message) => message.content), turns.slice(-2));
+  assert.deepEqual(
+    context.slice(-2).map((message) => message.content),
+    turns.slice(-2),
+  );
 });
 
 test("the summary rolls forward instead of starting over", async () => {
@@ -61,5 +66,8 @@ test("under budget, nothing is summarized", async () => {
   const memory = createMemory({ maxTokens: 1000, keepRecent: 2, countTokens, summarize });
   await fill(memory);
   assert.equal(calls.length, 0);
-  assert.deepEqual(memory.context().map((message) => message.content), turns);
+  assert.deepEqual(
+    memory.context().map((message) => message.content),
+    turns,
+  );
 });

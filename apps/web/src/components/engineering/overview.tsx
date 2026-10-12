@@ -22,20 +22,32 @@ export interface OverviewAssessment {
   open: { answered: number; total: number } | null;
 }
 
-export interface OverviewArea { id: Area; title: string; summary: string }
+export interface OverviewArea {
+  id: Area;
+  title: string;
+  summary: string;
+}
 
 const card = cn(panel, "p-6 md:p-7");
-const row = "flex w-full flex-wrap items-center gap-3 border-t border-border py-4.5 text-left text-xs hover:bg-muted/50 md:flex-nowrap md:gap-5.5 md:text-xs";
+const row =
+  "flex w-full flex-wrap items-center gap-3 border-t border-border py-4.5 text-left text-xs hover:bg-muted/50 md:flex-nowrap md:gap-5.5 md:text-xs";
 
 function MainCard({ assessment, path }: { assessment: OverviewAssessment; path: PathView }) {
   if (!assessment.finished || assessment.open) {
-    const state = assessment.open ? `In progress · ${assessment.open.answered} of ${assessment.open.total}` : "Not started";
+    const state = assessment.open
+      ? `In progress · ${assessment.open.answered} of ${assessment.open.total}`
+      : "Not started";
     return (
       <section className={card}>
         <div className={eyebrow}>{state}</div>
         <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Assessment</h2>
         <p className="my-5 text-xs text-muted-foreground">5 questions · no timer</p>
-        <Button asChild><Link href={engineering.assessment}>{assessment.open ? "Resume assessment" : "Start assessment"}<IconArrowRight size={18} aria-hidden="true" /></Link></Button>
+        <Button asChild>
+          <Link href={engineering.assessment}>
+            {assessment.open ? "Resume assessment" : "Start assessment"}
+            <IconArrowRight size={18} aria-hidden="true" />
+          </Link>
+        </Button>
       </section>
     );
   }
@@ -44,16 +56,34 @@ function MainCard({ assessment, path }: { assessment: OverviewAssessment; path: 
     <section className={card}>
       {next ? (
         <>
-          <div className={eyebrow}>{next.area} · {next.chapter}</div>
-          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">{next.title} <Badge className="ml-2">{statusWords[next.state]}</Badge></h2>
-          <Button asChild className="mt-6"><Link href={engineering.topic(next.id)}>Continue<IconArrowRight size={18} aria-hidden="true" /></Link></Button>
+          <div className={eyebrow}>
+            {next.area} · {next.chapter}
+          </div>
+          <h2 className="text-2xl font-bold tracking-tight md:text-3xl">
+            {next.title} <Badge className="ml-2">{statusWords[next.state]}</Badge>
+          </h2>
+          <Button asChild className="mt-6">
+            <Link href={engineering.topic(next.id)}>
+              Continue
+              <IconArrowRight size={18} aria-hidden="true" />
+            </Link>
+          </Button>
         </>
-      ) : <h2 className="text-2xl font-bold">Every topic proven</h2>}
+      ) : (
+        <h2 className="text-2xl font-bold">Every topic proven</h2>
+      )}
     </section>
   );
 }
 
-export function Overview({ email, assessment, path, areas, radar, practice }: {
+export function Overview({
+  email,
+  assessment,
+  path,
+  areas,
+  radar,
+  practice,
+}: {
   email: string;
   assessment: OverviewAssessment;
   path: PathView;
@@ -64,7 +94,7 @@ export function Overview({ email, assessment, path, areas, radar, practice }: {
 }) {
   return (
     <WorkspaceShell email={email} active="lab" tab="overview" termLookup={!assessment.open}>
-      <div className="mx-auto max-w-7xl px-3 pb-9 pt-6 md:px-5 md:pt-7.5">
+      <div className="mx-auto max-w-7xl px-3 pt-6 pb-9 md:px-5 md:pt-7.5">
         <PageHeading title="Overview" />
         <div className="mx-1.5 grid grid-cols-1 gap-4.5 md:mx-3.5 md:grid-cols-[2fr_1fr] md:gap-5 lg:gap-8">
           <MainCard assessment={assessment} path={path} />
@@ -75,12 +105,18 @@ export function Overview({ email, assessment, path, areas, radar, practice }: {
           <SectionTitle title="Your path" />
           <div className={cn(panel, "px-5")}>
             {areas.map((area, index) => (
-              <Link key={area.id} href={`${engineering.learn}?area=${area.id}`} className={cn(row, index === 0 && "border-t-0")}>
+              <Link
+                key={area.id}
+                href={`${engineering.learn}?area=${area.id}`}
+                className={cn(row, index === 0 && "border-t-0")}
+              >
                 <div className="min-w-0 flex-1">
                   <strong className="font-semibold">{area.title}</strong>
                   <p className="mt-1 text-xs text-muted-foreground md:text-xs">{area.summary}</p>
                 </div>
-                {assessment.finished && <span className="shrink-0 text-xs text-muted-foreground">{levelShort(path.areaLevels[area.id])}</span>}
+                {assessment.finished && (
+                  <span className="shrink-0 text-xs text-muted-foreground">{levelShort(path.areaLevels[area.id])}</span>
+                )}
                 <IconChevronRight size={18} className="shrink-0 text-muted-foreground" aria-hidden="true" />
               </Link>
             ))}
@@ -98,8 +134,20 @@ export function Overview({ email, assessment, path, areas, radar, practice }: {
                     <strong className="font-semibold">{item.title}</strong>
                     <p className="mt-1 text-xs text-muted-foreground md:text-xs">{item.reason}</p>
                   </div>
-                  {item.topicId ? <Button asChild variant="link"><Link href={engineering.topic(item.topicId)}>Re-check</Link></Button>
-                    : item.sourceUrl && <Button asChild variant="link"><a href={item.sourceUrl} target="_blank" rel="noreferrer">Source<IconExternalLink size={14} aria-hidden="true" /></a></Button>}
+                  {item.topicId ? (
+                    <Button asChild variant="link">
+                      <Link href={engineering.topic(item.topicId)}>Re-check</Link>
+                    </Button>
+                  ) : (
+                    item.sourceUrl && (
+                      <Button asChild variant="link">
+                        <a href={item.sourceUrl} target="_blank" rel="noreferrer">
+                          Source
+                          <IconExternalLink size={14} aria-hidden="true" />
+                        </a>
+                      </Button>
+                    )
+                  )}
                 </div>
               ))}
             </div>
@@ -123,7 +171,9 @@ export function PracticeCard({ ready, done, minutes }: { ready: number; done: bo
       <h2 className="text-xl font-bold tracking-tight">Practice</h2>
       <p className="my-4 text-xs text-muted-foreground">~{minutes} min</p>
       <Button asChild variant="outline">
-        <Link href={done ? `${engineering.practice}?summary=1` : engineering.practice}>{done ? "View summary" : "Start practice"}</Link>
+        <Link href={done ? `${engineering.practice}?summary=1` : engineering.practice}>
+          {done ? "View summary" : "Start practice"}
+        </Link>
       </Button>
     </section>
   );

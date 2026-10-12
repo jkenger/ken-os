@@ -3,7 +3,7 @@ all amounts in cents:
 
 - `SAVE10` takes 10% off, rounded down to the cent, but only when the subtotal is at least 5000.
 - `FLAT500` takes 500 off, but never below 0.
-- Codes ignore case and surrounding spaces, so ` save10 ` works.
+- Codes ignore case and surrounding spaces, so `save10` works.
 - Any other code, or no code, leaves the price unchanged.
 
 Fill in `discountCases()` with cases, each `{ subtotal, code, expected }`. The lab runs your cases against the real

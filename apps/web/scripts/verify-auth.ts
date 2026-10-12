@@ -24,8 +24,14 @@ async function main() {
   const connection = () => db().select().from(googleConnections).where(eq(googleConnections.userId, userId));
   try {
     // signin: wrong account, unverified email and missing fields are refused without writing anything.
-    assert.deepEqual(await finishSignIn({ sub: userId, email: "someone@else.invalid", email_verified: true }), { ok: false, code: "wrong_account" });
-    assert.deepEqual(await finishSignIn({ sub: userId, email: owner, email_verified: false }), { ok: false, code: "unverified" });
+    assert.deepEqual(await finishSignIn({ sub: userId, email: "someone@else.invalid", email_verified: true }), {
+      ok: false,
+      code: "wrong_account",
+    });
+    assert.deepEqual(await finishSignIn({ sub: userId, email: owner, email_verified: false }), {
+      ok: false,
+      code: "unverified",
+    });
     assert.deepEqual(await finishSignIn({ email: owner, email_verified: true }), { ok: false, code: "google" });
     assert.equal((await db().select().from(users).where(eq(users.id, userId))).length, 0);
 
@@ -38,8 +44,14 @@ async function main() {
     // drive: refused for another Google account, without the Drive scope, or without a refresh token.
     const tokens = { access_token: "access", refresh_token: "refresh-1", scope: `openid email ${DRIVE_SCOPE}` };
     assert.deepEqual(await finishDriveGrant(userId, tokens, { sub: "someone-else" }), { ok: false, code: "google" });
-    assert.deepEqual(await finishDriveGrant(userId, { ...tokens, scope: "openid email" }, { sub: userId }), { ok: false, code: "scope" });
-    assert.deepEqual(await finishDriveGrant(userId, { ...tokens, refresh_token: undefined }, { sub: userId }), { ok: false, code: "google" });
+    assert.deepEqual(await finishDriveGrant(userId, { ...tokens, scope: "openid email" }, { sub: userId }), {
+      ok: false,
+      code: "scope",
+    });
+    assert.deepEqual(await finishDriveGrant(userId, { ...tokens, refresh_token: undefined }, { sub: userId }), {
+      ok: false,
+      code: "google",
+    });
     assert.equal((await connection()).length, 0);
 
     // drive: stores the refresh token encrypted against the stored user, and a reconnect replaces it.
@@ -47,7 +59,9 @@ async function main() {
     const [first] = await connection();
     assert.ok(first);
     assert.ok(!first.encryptedRefreshToken.includes("refresh-1"));
-    assert.deepEqual(await finishDriveGrant(userId, { ...tokens, refresh_token: "refresh-2" }, { sub: userId }), { ok: true });
+    assert.deepEqual(await finishDriveGrant(userId, { ...tokens, refresh_token: "refresh-2" }, { sub: userId }), {
+      ok: true,
+    });
     const [second] = await connection();
     assert.notEqual(second?.encryptedRefreshToken, first.encryptedRefreshToken);
 

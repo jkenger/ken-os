@@ -10,19 +10,19 @@ Audited and fixed on 2026-10-06 on branch `refactor/shadcn-audit`.
 
 Before the fix, outside `components/ui`:
 
-| Hand-built thing | Where | shadcn component it duplicated |
-|---|---|---|
-| 63 raw `<button>`s, plus 61 uses of the `primaryButton` / `secondaryButton` / `textButton` class strings | 19 files, mostly Engineering | Button |
-| 9 raw `<input>`, 27 `<textarea>`, 6 `<select>`, 48 `<label>` | 15 files | Input, Textarea, NativeSelect, Label, InputGroup |
-| A modal with its own focus trap and Escape handling | Engineering `flow.tsx`, Writing Studio preview | Dialog |
-| `role="tab"` button rows | Profile panes, lab panels, course tracks | Tabs |
-| `role="switch"` button | Course preview | Switch |
-| `aria-pressed` button rows | Learn scope filter, confidence 1 to 5 (twice) | ToggleGroup |
-| The app shell: its own sidebar cookie, Ctrl+B, focus trap and phone overlay | `workspace-shell.tsx` | Sidebar, Sheet |
-| Module search with its own overlay and focus trap | `workspace-shell.tsx` | Command (CommandDialog) |
-| Notifications with their own queue and timers | `ui/toaster.tsx` | Sonner |
-| Status labels | `ui/pill.tsx`, Engineering `kit.tsx` | Badge |
-| 5 raw tables | 4 files: lesson Markdown, level table, previews | Table |
+| Hand-built thing                                                                                         | Where                                           | shadcn component it duplicated                   |
+| -------------------------------------------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------ |
+| 63 raw `<button>`s, plus 61 uses of the `primaryButton` / `secondaryButton` / `textButton` class strings | 19 files, mostly Engineering                    | Button                                           |
+| 9 raw `<input>`, 27 `<textarea>`, 6 `<select>`, 48 `<label>`                                             | 15 files                                        | Input, Textarea, NativeSelect, Label, InputGroup |
+| A modal with its own focus trap and Escape handling                                                      | Engineering `flow.tsx`, Writing Studio preview  | Dialog                                           |
+| `role="tab"` button rows                                                                                 | Profile panes, lab panels, course tracks        | Tabs                                             |
+| `role="switch"` button                                                                                   | Course preview                                  | Switch                                           |
+| `aria-pressed` button rows                                                                               | Learn scope filter, confidence 1 to 5 (twice)   | ToggleGroup                                      |
+| The app shell: its own sidebar cookie, Ctrl+B, focus trap and phone overlay                              | `workspace-shell.tsx`                           | Sidebar, Sheet                                   |
+| Module search with its own overlay and focus trap                                                        | `workspace-shell.tsx`                           | Command (CommandDialog)                          |
+| Notifications with their own queue and timers                                                            | `ui/toaster.tsx`                                | Sonner                                           |
+| Status labels                                                                                            | `ui/pill.tsx`, Engineering `kit.tsx`            | Badge                                            |
+| 5 raw tables                                                                                             | 4 files: lesson Markdown, level table, previews | Table                                            |
 
 Only `button`, `card` and `input` existed as primitives before 2026-10-03, and `tooltip` was copied in by hand. The other files in `components/ui` (`pill`, `timeline`, `toaster`, `disclosure-summary`, `code-editor`) were written from scratch.
 
@@ -63,12 +63,12 @@ Nothing checked any of this. App language had a scan test; shadcn use had none.
 
 ## Kept on purpose
 
-| Thing | Why it stays |
-|---|---|
-| `<details>` with `DisclosureSummary` | Works without JavaScript, and find-in-page opens it. shadcn's Collapsible unmounts closed content. Already the project's chosen disclosure (2026-10-01). |
-| Term lookup card (`role="dialog"`) | Non-modal card anchored to a text selection. Popover would take focus and close on the mouseup that makes the selection. Listed in the test's allow list. |
-| `code-editor.tsx` | No shadcn equivalent; it lives in `components/ui` and uses shadcn tokens. (`timeline.tsx` was removed on 2026-10-07 when its last user, the lab mockups, went.) |
-| Section tabs in the shell header | They are page links with `aria-current`, not tab panels, so `Tabs` would be the wrong role. |
+| Thing                                | Why it stays                                                                                                                                                    |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<details>` with `DisclosureSummary` | Works without JavaScript, and find-in-page opens it. shadcn's Collapsible unmounts closed content. Already the project's chosen disclosure (2026-10-01).        |
+| Term lookup card (`role="dialog"`)   | Non-modal card anchored to a text selection. Popover would take focus and close on the mouseup that makes the selection. Listed in the test's allow list.       |
+| `code-editor.tsx`                    | No shadcn equivalent; it lives in `components/ui` and uses shadcn tokens. (`timeline.tsx` was removed on 2026-10-07 when its last user, the lab mockups, went.) |
+| Section tabs in the shell header     | They are page links with `aria-current`, not tab panels, so `Tabs` would be the wrong role.                                                                     |
 
 ## Follow-ups
 

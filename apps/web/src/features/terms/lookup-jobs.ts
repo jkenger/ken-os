@@ -15,8 +15,12 @@ const jobs = new Map<string, LookupJob>();
 const listeners = new Map<string, Set<(job: LookupJob) => void>>();
 
 async function send<T>(path: string, body: unknown): Promise<T> {
-  const response = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  const result = await response.json().catch(() => ({})) as T & { error?: string };
+  const response = await fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  const result = (await response.json().catch(() => ({}))) as T & { error?: string };
   if (!response.ok) throw new Error(result.error ?? "Lookup failed. Try again");
   return result;
 }
@@ -32,7 +36,9 @@ export function watchLookup(key: string, listener: (job: LookupJob) => void) {
   listeners.get(key)!.add(listener);
   const current = jobs.get(key);
   if (current) listener(current);
-  return () => { listeners.get(key)?.delete(listener); };
+  return () => {
+    listeners.get(key)?.delete(listener);
+  };
 }
 
 export function hasListeners(key: string) {
@@ -43,7 +49,10 @@ export function hasListeners(key: string) {
  * Starts a lookup, or joins one already running for the same term. onFinishedUnwatched runs when the answer arrives
  * and no popover is watching any more, so the caller can show a toast instead.
  */
-export function startLookup(input: { selection: string; context: string; place: string }, onFinishedUnwatched: (job: LookupJob) => void) {
+export function startLookup(
+  input: { selection: string; context: string; place: string },
+  onFinishedUnwatched: (job: LookupJob) => void,
+) {
   const key = termKey(input.selection);
   const existing = jobs.get(key);
   if (existing && existing.state !== "error") return key;
@@ -53,7 +62,14 @@ export function startLookup(input: { selection: string; context: string; place: 
       const { saved, ...answer } = result;
       update({ key, text: input.selection, state: "done", answer, saved });
     })
-    .catch((error: unknown) => update({ key, text: input.selection, state: "error", message: error instanceof Error ? error.message : "Lookup failed. Try again" }))
+    .catch((error: unknown) =>
+      update({
+        key,
+        text: input.selection,
+        state: "error",
+        message: error instanceof Error ? error.message : "Lookup failed. Try again",
+      }),
+    )
     .finally(() => {
       const job = jobs.get(key)!;
       if (!hasListeners(key)) onFinishedUnwatched(job);
@@ -69,5 +85,11 @@ export function markSaved(key: string) {
 }
 
 export async function saveLookup(answer: TermAnswer, place: { foundIn: string; foundAt: string }) {
-  await send("/api/terms", { term: answer.term, meaning: answer.meaning, sourceTitle: answer.source?.title ?? null, sourceUrl: answer.source?.url ?? null, ...place });
+  await send("/api/terms", {
+    term: answer.term,
+    meaning: answer.meaning,
+    sourceTitle: answer.source?.title ?? null,
+    sourceUrl: answer.source?.url ?? null,
+    ...place,
+  });
 }

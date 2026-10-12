@@ -1,5 +1,13 @@
 import { Agent, getDefaultModel, run } from "@openai/agents";
-import { LABELS, RUBRIC_RESULTS, type Grade, type QuestionUse, type SourcePacket, type Topic, type TopicQuestion } from "@ken-os/domain";
+import {
+  LABELS,
+  RUBRIC_RESULTS,
+  type Grade,
+  type QuestionUse,
+  type SourcePacket,
+  type Topic,
+  type TopicQuestion,
+} from "@ken-os/domain";
 import { z } from "zod";
 import { PLAIN_LANGUAGE } from "./plain";
 
@@ -15,11 +23,15 @@ const questionSchema = z.object({
   referenceAnswer: z.string(),
 });
 
-const questionInstructions = (use: QuestionUse) => `You are the Assessor for the owner's Engineering module. You write one question that independently tests whether they understand one topic. You are not the Tutor and you have not seen the lesson.
+const questionInstructions = (
+  use: QuestionUse,
+) => `You are the Assessor for the owner's Engineering module. You write one question that independently tests whether they understand one topic. You are not the Tutor and you have not seen the lesson.
 
-${use === "proof"
-  ? "This is the proof step, after the learner passed the topic's exercise. Ask them to explain their reasoning about a realistic product situation, in their own words, the way the reference does: \"**The payment timed out. What now?** A payment provider may have accepted the request before the connection timed out. Explain how you would retry safely, and how you'd avoid a retry storm.\""
-  : "This is a short practice review of a topic they studied earlier. Test recall and use in a small realistic scenario, answerable in a few sentences."}
+${
+  use === "proof"
+    ? "This is the proof step, after the learner passed the topic's exercise. Ask them to explain their reasoning about a realistic product situation, in their own words, the way the reference does: \"**The payment timed out. What now?** A payment provider may have accepted the request before the connection timed out. Explain how you would retry safely, and how you'd avoid a retry storm.\""
+    : "This is a short practice review of a topic they studied earlier. Test recall and use in a small realistic scenario, answerable in a few sentences."
+}
 
 Rules:
 - prompt: start with a short bold situation in Markdown, then one or two plain sentences asking what to do and why. Never put code in the prompt.
@@ -43,8 +55,14 @@ export interface QuestionWriteInput {
 }
 
 /** Writes one proof prompt or practice question with its rubric and a reference answer. */
-export async function writeTopicQuestion(input: QuestionWriteInput): Promise<{ question: TopicQuestion; model: string }> {
-  const agent = new Agent({ name: "Engineering assessor", instructions: questionInstructions(input.use), outputType: questionSchema });
+export async function writeTopicQuestion(
+  input: QuestionWriteInput,
+): Promise<{ question: TopicQuestion; model: string }> {
+  const agent = new Agent({
+    name: "Engineering assessor",
+    instructions: questionInstructions(input.use),
+    outputType: questionSchema,
+  });
   const payload = {
     topic: { id: input.topic.id, title: input.topic.title, gap: input.topic.gap, points: input.topic.points },
     focus: input.focus ?? null,
@@ -54,9 +72,21 @@ export async function writeTopicQuestion(input: QuestionWriteInput): Promise<{ q
   const result = await run(agent, JSON.stringify(payload), { maxTurns: 3 });
   const raw = result.finalOutput;
   if (!raw) throw new Error("The Assessor returned no question.");
-  const rubric = raw.rubric.map((line) => line.trim()).filter(Boolean).slice(0, 4);
-  if (!raw.prompt.trim() || rubric.length < 2 || !raw.referenceAnswer.trim()) throw new Error("The Assessor's question was incomplete.");
-  return { question: { prompt: raw.prompt.trim(), code: raw.code?.trim() ? raw.code : null, rubric, referenceAnswer: raw.referenceAnswer.trim() }, model: getDefaultModel() };
+  const rubric = raw.rubric
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .slice(0, 4);
+  if (!raw.prompt.trim() || rubric.length < 2 || !raw.referenceAnswer.trim())
+    throw new Error("The Assessor's question was incomplete.");
+  return {
+    question: {
+      prompt: raw.prompt.trim(),
+      code: raw.code?.trim() ? raw.code : null,
+      rubric,
+      referenceAnswer: raw.referenceAnswer.trim(),
+    },
+    model: getDefaultModel(),
+  };
 }
 
 export const GRADER_PROMPT_VERSION = "grader-v4";
@@ -98,7 +128,9 @@ export interface RubricGradeInput {
 }
 
 /** Grades one written answer against its rubric. Returns the grade with a result per rubric line, and the model used. */
-export async function gradeWithRubric(input: RubricGradeInput): Promise<Grade & { rubric: NonNullable<Grade["rubric"]>; model: string }> {
+export async function gradeWithRubric(
+  input: RubricGradeInput,
+): Promise<Grade & { rubric: NonNullable<Grade["rubric"]>; model: string }> {
   const agent = new Agent({ name: "Engineering grader", instructions: gradeInstructions, outputType: gradeSchema });
   const payload = {
     subject: input.subject,
@@ -112,7 +144,10 @@ export async function gradeWithRubric(input: RubricGradeInput): Promise<Grade & 
   if (!result.finalOutput) throw new Error("The grader returned no grade.");
   const { rubric: points, ...grade } = result.finalOutput;
   // Keep the rubric's own wording and order; a line the grader skipped is shown as missed rather than dropped.
-  const rubric = input.rubric.map((point, index) => ({ point, result: (points.find((entry) => entry.point.trim() === point.trim()) ?? points[index])?.result ?? "missed" as const }));
+  const rubric = input.rubric.map((point, index) => ({
+    point,
+    result:
+      (points.find((entry) => entry.point.trim() === point.trim()) ?? points[index])?.result ?? ("missed" as const),
+  }));
   return { by: "assessor", ...grade, rubric, model: getDefaultModel() };
 }
-

@@ -19,7 +19,12 @@ const order = { items: [{ sku: "ABC-1234", quantity: 1 }], total: 2500, address:
 
 test("a successful order returns every id and undoes nothing", async () => {
   const { log, services } = fakeServices();
-  assert.deepEqual(await placeOrder(services, order), { ok: true, reservationId: "res_1", chargeId: "ch_1", shipmentId: "sh_1" });
+  assert.deepEqual(await placeOrder(services, order), {
+    ok: true,
+    reservationId: "res_1",
+    chargeId: "ch_1",
+    shipmentId: "sh_1",
+  });
   assert.deepEqual(log, ["reserve", "charge", "ship"]);
 });
 
@@ -52,5 +57,9 @@ test("a failed undo doesn't stop the others or hide the real failure", async () 
   assert.equal(result.failedAt, "shipping");
   assert.equal(result.error, "ship failed");
   assert.deepEqual(result.compensationErrors, ["refund failed"]);
-  assert.deepEqual(log, ["reserve", "charge", "ship", "refund", "release"], "the release still runs after the refund fails");
+  assert.deepEqual(
+    log,
+    ["reserve", "charge", "ship", "refund", "release"],
+    "the release still runs after the refund fails",
+  );
 });

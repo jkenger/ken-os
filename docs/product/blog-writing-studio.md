@@ -21,12 +21,12 @@ The first successful outcome: the owner starts from a useful outline, writes a p
 
 The preset is a writing aid, not a content type or rigid document schema. Every new post can begin blank instead.
 
-| Preset | Narrative arc | Starter question | Useful follow-up |
-| --- | --- | --- | --- |
-| A shift in understanding | Earlier assumption → challenge → current view | What would I have said about this a month ago? | What evidence changed my mind, and what is still uncertain? |
-| An investigation | Question → trials and observations → open result | What was I curious enough to test? | Which result surprised me or contradicted my expectation? |
-| A build story | Problem and constraints → pivotal choices → result and tradeoffs | Which decision made this project interesting? | What did that choice cost, and what actually shipped? |
-| A retrospective | Intention → what happened → what I would change | Where did my process help or get in the way? | What will I try differently next time? |
+| Preset                   | Narrative arc                                                    | Starter question                               | Useful follow-up                                            |
+| ------------------------ | ---------------------------------------------------------------- | ---------------------------------------------- | ----------------------------------------------------------- |
+| A shift in understanding | Earlier assumption → challenge → current view                    | What would I have said about this a month ago? | What evidence changed my mind, and what is still uncertain? |
+| An investigation         | Question → trials and observations → open result                 | What was I curious enough to test?             | Which result surprised me or contradicted my expectation?   |
+| A build story            | Problem and constraints → pivotal choices → result and tradeoffs | Which decision made this project interesting?  | What did that choice cost, and what actually shipped?       |
+| A retrospective          | Intention → what happened → what I would change                  | Where did my process help or get in the way?   | What will I try differently next time?                      |
 
 Preset text appears as dismissible guidance beside or within an empty section, not as published filler. Switching presets changes guidance, not existing prose. The assistant uses the selected arc to choose relevant questions, but the owner can ask for a different angle.
 

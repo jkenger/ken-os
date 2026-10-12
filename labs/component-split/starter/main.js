@@ -1,8 +1,12 @@
 function createSearchPage(items) {
   const filterBox = {
     query: "",
-    type(text) { this.query = text; },
-    value() { return this.query; },
+    type(text) {
+      this.query = text;
+    },
+    value() {
+      return this.query;
+    },
   };
   const resultList = {
     query: "",
@@ -15,7 +19,11 @@ function createSearchPage(items) {
   return {
     filterBox,
     resultList,
-    addItem(item) { resultList.items.push(item); },
-    summary() { return `${shownCount} of ${resultList.items.length}`; },
+    addItem(item) {
+      resultList.items.push(item);
+    },
+    summary() {
+      return `${shownCount} of ${resultList.items.length}`;
+    },
   };
 }

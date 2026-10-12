@@ -1,4 +1,5 @@
-const close = (actual, expected, label) => assert.ok(Math.abs(actual - expected) < 1e-9, `${label}: expected ${expected}, got ${actual}`);
+const close = (actual, expected, label) =>
+  assert.ok(Math.abs(actual - expected) < 1e-9, `${label}: expected ${expected}, got ${actual}`);
 
 const results = {
   q1: ["a", "b", "c", "d"],

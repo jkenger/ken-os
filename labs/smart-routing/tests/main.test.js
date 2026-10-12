@@ -2,7 +2,9 @@ function setup(dailyBudgetUsd = 1) {
   const calls = [];
   const small = async (question) => {
     calls.push(["small", question]);
-    return /refund|contract/i.test(question) ? { text: "Not sure.", confident: false } : { text: `Small: ${question.trim()}`, confident: true };
+    return /refund|contract/i.test(question)
+      ? { text: "Not sure.", confident: false }
+      : { text: `Small: ${question.trim()}`, confident: true };
   };
   const large = async (question) => {
     calls.push(["large", question]);
@@ -16,7 +18,10 @@ test("an easy question stays on the small model", async () => {
   const { calls, answerer } = setup();
   const result = await answerer.answer("What are your hours?");
   assert.deepEqual(result, { text: "Small: What are your hours?", model: "small", costUsd: 0.01 });
-  assert.deepEqual(calls.map(([model]) => model), ["small"]);
+  assert.deepEqual(
+    calls.map(([model]) => model),
+    ["small"],
+  );
 });
 
 test("an unsure small answer escalates, and the cost includes both calls", async () => {

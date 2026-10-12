@@ -11,7 +11,10 @@ const input = {
   documents: [
     { id: "d1", text: "Orders in transit usually arrive within 5 business days." },
     { id: "d2", text: "Late orders can be refunded after 10 business days." },
-    { id: "d3", text: "Our warehouse closes on public holidays, which can delay shipping by one or two days in some regions." },
+    {
+      id: "d3",
+      text: "Our warehouse closes on public holidays, which can delay shipping by one or two days in some regions.",
+    },
   ],
   question: "Can I get a refund now?",
 };
@@ -33,8 +36,14 @@ test("over budget, the oldest history goes first and the question always stays",
   assert.ok(total(messages) <= roomy - 10);
   assert.equal(messages[messages.length - 1].content, "Can I get a refund now?");
   assert.equal(messages[0].role, "system");
-  assert.ok(!messages.some((message) => message.content === "Hi, my order is late."), "the oldest turn is dropped first");
-  assert.ok(messages.some((message) => message.content.includes("[d3]")), "documents are kept while history can still go");
+  assert.ok(
+    !messages.some((message) => message.content === "Hi, my order is late."),
+    "the oldest turn is dropped first",
+  );
+  assert.ok(
+    messages.some((message) => message.content.includes("[d3]")),
+    "documents are kept while history can still go",
+  );
 });
 
 test("when history is gone, the lowest-ranked documents go next", () => {

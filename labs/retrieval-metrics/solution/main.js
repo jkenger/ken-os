@@ -10,7 +10,11 @@ function evaluate(results, relevant, k) {
     const top = (results[id] || []).slice(0, k);
     const hits = top.filter((doc) => wanted.includes(doc)).length;
     const firstHit = top.findIndex((doc) => wanted.includes(doc));
-    perQuery[id] = { recall: hits / wanted.length, precision: hits / k, reciprocalRank: firstHit === -1 ? 0 : 1 / (firstHit + 1) };
+    perQuery[id] = {
+      recall: hits / wanted.length,
+      precision: hits / k,
+      reciprocalRank: firstHit === -1 ? 0 : 1 / (firstHit + 1),
+    };
   }
   const scores = Object.values(perQuery);
   const mean = (key) => (scores.length ? scores.reduce((sum, score) => sum + score[key], 0) / scores.length : 0);

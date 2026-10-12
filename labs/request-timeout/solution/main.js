@@ -14,8 +14,14 @@ function withTimeout(task, ms) {
     Promise.resolve()
       .then(() => task(controller.signal))
       .then(
-        (value) => { clearTimeout(timer); resolve(value); },
-        (error) => { clearTimeout(timer); reject(error); },
+        (value) => {
+          clearTimeout(timer);
+          resolve(value);
+        },
+        (error) => {
+          clearTimeout(timer);
+          reject(error);
+        },
       );
   });
 }

@@ -10,15 +10,16 @@ export interface ResumeSelection {
 }
 
 export async function getSelectedResume(userId: string): Promise<ResumeSelection | null> {
-  const rows = await db().select({
-    fileId: artifactSelections.externalId,
-    name: artifactSelections.name,
-    mimeType: artifactSelections.mimeType,
-    selectedAt: artifactSelections.updatedAt,
-  }).from(artifactSelections).where(and(
-    eq(artifactSelections.userId, userId),
-    eq(artifactSelections.purpose, "primary_resume"),
-  )).limit(1);
+  const rows = await db()
+    .select({
+      fileId: artifactSelections.externalId,
+      name: artifactSelections.name,
+      mimeType: artifactSelections.mimeType,
+      selectedAt: artifactSelections.updatedAt,
+    })
+    .from(artifactSelections)
+    .where(and(eq(artifactSelections.userId, userId), eq(artifactSelections.purpose, "primary_resume")))
+    .limit(1);
   if (!rows[0]) return null;
   return {
     fileId: rows[0].fileId,

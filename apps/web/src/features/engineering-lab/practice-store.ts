@@ -46,10 +46,24 @@ export async function practiceCandidates(userId: string) {
 
 async function viewOf(userId: string, day: string, items: DailyItem[]): Promise<PracticeView> {
   const ids = items.map((item) => item.questionId);
-  const [questions, answers] = ids.length ? await Promise.all([
-    db().select().from(labQuestions).where(and(eq(labQuestions.userId, userId), inArray(labQuestions.id, ids))),
-    db().select().from(labTopicEvents).where(and(eq(labTopicEvents.userId, userId), eq(labTopicEvents.kind, "review"), inArray(labTopicEvents.questionId, ids))),
-  ]) : [[], []];
+  const [questions, answers] = ids.length
+    ? await Promise.all([
+        db()
+          .select()
+          .from(labQuestions)
+          .where(and(eq(labQuestions.userId, userId), inArray(labQuestions.id, ids))),
+        db()
+          .select()
+          .from(labTopicEvents)
+          .where(
+            and(
+              eq(labTopicEvents.userId, userId),
+              eq(labTopicEvents.kind, "review"),
+              inArray(labTopicEvents.questionId, ids),
+            ),
+          ),
+      ])
+    : [[], []];
   const progress = await getAllProgress(userId);
   const view = items.map((item): PracticeItem => {
     const question = questions.find((row) => row.id === item.questionId)!;
@@ -61,10 +75,17 @@ async function viewOf(userId: string, day: string, items: DailyItem[]): Promise<
       questionId: item.questionId,
       prompt: question.prompt,
       code: question.code,
-      answered: answer ? {
-        answer: answer.answer ?? "", selfRating: answer.selfRating ?? 0, label: answer.label!, rubric: answer.rubric ?? [], feedback: answer.feedback ?? "",
-        referenceAnswer: question.referenceAnswer, nextReviewAt: progress.find((entry) => entry.topicId === item.topicId)?.nextReviewAt ?? null,
-      } : null,
+      answered: answer
+        ? {
+            answer: answer.answer ?? "",
+            selfRating: answer.selfRating ?? 0,
+            label: answer.label!,
+            rubric: answer.rubric ?? [],
+            feedback: answer.feedback ?? "",
+            referenceAnswer: question.referenceAnswer,
+            nextReviewAt: progress.find((entry) => entry.topicId === item.topicId)?.nextReviewAt ?? null,
+          }
+        : null,
     };
   });
   return { day, items: view, done: view.length > 0 && view.every((item) => item.answered) };
@@ -73,7 +94,11 @@ async function viewOf(userId: string, day: string, items: DailyItem[]): Promise<
 /** Today's set, or null if it hasn't been made yet. */
 export async function getPractice(userId: string): Promise<PracticeView | null> {
   const day = ownerDay();
-  const [row] = await db().select().from(labDailySets).where(and(eq(labDailySets.userId, userId), eq(labDailySets.day, day))).limit(1);
+  const [row] = await db()
+    .select()
+    .from(labDailySets)
+    .where(and(eq(labDailySets.userId, userId), eq(labDailySets.day, day)))
+    .limit(1);
   return row ? viewOf(userId, day, row.items) : null;
 }
 
@@ -88,17 +113,26 @@ export async function startPractice(userId: string): Promise<PracticeView> {
   for (const pick of picks) {
     const topic = requireTopic(pick.topicId);
     const progress = await getProgress(userId, topic.id);
-    const focus = pick.reason === "misconception" ? `The last answer on ${topic.title} showed a misconception (graded ${progress.lastLabel}).` : undefined;
+    const focus =
+      pick.reason === "misconception"
+        ? `The last answer on ${topic.title} showed a misconception (graded ${progress.lastLabel}).`
+        : undefined;
     const question = await writeQuestion(userId, topic, "review", focus);
     items.push({ ...pick, questionId: question.id });
   }
   const day = ownerDay();
-  await db().insert(labDailySets).values({ userId, day, items, warmUp: !items.some((item) => item.reason === "due" || item.reason === "changed") }).onConflictDoNothing();
+  await db()
+    .insert(labDailySets)
+    .values({ userId, day, items, warmUp: !items.some((item) => item.reason === "due" || item.reason === "changed") })
+    .onConflictDoNothing();
   return (await getPractice(userId))!;
 }
 
 /** Grades one practice answer against its rubric and sets the topic's next review date from the grade. */
-export async function answerPractice(userId: string, input: { questionId: string; answer: string; selfRating: number }) {
+export async function answerPractice(
+  userId: string,
+  input: { questionId: string; answer: string; selfRating: number },
+) {
   const practice = await getPractice(userId);
   const item = practice?.items.find((entry) => entry.questionId === input.questionId);
   if (!item) throw new LabInputError("Question not in today's practice. Reload the page", 404);
@@ -106,18 +140,36 @@ export async function answerPractice(userId: string, input: { questionId: string
   const answer = input.answer.trim();
   if (answer.length < 10) throw new LabInputError("Write at least a sentence");
   if (answer.length > 6000) throw new LabInputError("Keep the answer under 6000 characters");
-  if (!Number.isInteger(input.selfRating) || input.selfRating < 1 || input.selfRating > 5) throw new LabInputError("Choose a confidence from 1 to 5");
+  if (!Number.isInteger(input.selfRating) || input.selfRating < 1 || input.selfRating > 5)
+    throw new LabInputError("Choose a confidence from 1 to 5");
   const [question] = await db().select().from(labQuestions).where(eq(labQuestions.id, item.questionId)).limit(1);
-  const graded = await gradeWithRubric({ subject: item.topicTitle, prompt: question.prompt, code: question.code, rubric: question.rubric, answer });
+  const graded = await gradeWithRubric({
+    subject: item.topicTitle,
+    prompt: question.prompt,
+    code: question.code,
+    rubric: question.rubric,
+    answer,
+  });
   try {
     await recordEvent(userId, {
-      topicId: item.topicId, kind: "review", questionId: question.id, answer, selfRating: input.selfRating, label: graded.label,
-      passed: graded.rubric.every((line) => line.result === "covered"), rubric: graded.rubric, feedback: graded.feedback,
+      topicId: item.topicId,
+      kind: "review",
+      questionId: question.id,
+      answer,
+      selfRating: input.selfRating,
+      label: graded.label,
+      passed: graded.rubric.every((line) => line.result === "covered"),
+      rubric: graded.rubric,
+      feedback: graded.feedback,
       graderVersion: `${GRADER_PROMPT_VERSION} · ${graded.model}`,
     });
   } catch (error) {
     // The unique index turns a double submit into a clear message instead of a second review.
-    if (error instanceof Error && /lab_topic_events_review_unique/.test(error.message + String((error as { cause?: unknown }).cause ?? ""))) throw new LabInputError("Already answered", 409);
+    if (
+      error instanceof Error &&
+      /lab_topic_events_review_unique/.test(error.message + String((error as { cause?: unknown }).cause ?? ""))
+    )
+      throw new LabInputError("Already answered", 409);
     throw error;
   }
   return (await getPractice(userId))!;

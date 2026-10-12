@@ -39,7 +39,9 @@ test("the selected Drive ID yields refreshed metadata and latest PDF bytes", asy
     assert.equal(new TextDecoder().decode(updatedContent.bytes), "revision-2");
     assert.equal(updatedContent.filename, "My Resume.pdf");
     assert.ok(requests.every((url) => url.includes(`/files/${fileId}`)));
-    assert.ok(requests.filter((url) => url.includes("/export?")).every((url) => url.includes("mimeType=application%2Fpdf")));
+    assert.ok(
+      requests.filter((url) => url.includes("/export?")).every((url) => url.includes("mimeType=application%2Fpdf")),
+    );
   } finally {
     globalThis.fetch = originalFetch;
   }
