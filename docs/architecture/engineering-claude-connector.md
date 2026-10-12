@@ -144,7 +144,7 @@ The owner creates a Claude Project named "Ken OS Engineering", turns on the Ken 
 | `src/components/engineering/*` topic page | Ask Claude, the "Saved" status, new-exercise notice, invalid-exercise notice |
 | `src/components/engineering/profile.tsx` | Connections section |
 | `docs/product/claude-project-instructions.md` | New: §7 text |
-| `AGENTS.md`, `.claude/rules/untrusted-input.md` | Name the connector as another untrusted input, and its no-grading rule |
+| `AGENTS.md` | Name the connector as another untrusted input, and its no-grading rule |
 
 ## 9. Option B, kept on file: a chat panel inside Ken OS
 
