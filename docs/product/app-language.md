@@ -54,7 +54,6 @@ Module names are proper names in title case and appear the same in the sidebar, 
 | Use | Instead of |
 |---|---|
 | Resume | Resume hub, Your documents, Primary resume, 01 / Resume |
-| Skills | Agent skills, Agent capabilities, Skills library |
 | Engineering | Engineering Lab, Lab (renamed 6 Oct 2026; code keeps `engineering-lab`) |
 | Terms | Saved terms, Words you looked up |
 | Project Memory | |
@@ -67,14 +66,6 @@ Module names are proper names in title case and appear the same in the sidebar, 
 | Resume assistant | The chat that answers questions about the resume | resume agent, current assistant |
 | Choose resume | Open the Drive picker | Select from Drive, Pick the file, Replace resume |
 | Refresh | Pull the latest version from Drive | Refresh resume |
-
-### Skills
-
-| Use | Meaning | Instead of |
-|---|---|---|
-| Skill | An uploaded `SKILL.md`, with or without references | instructions, capability |
-| Add skill | Upload a skill | Upload instructions, Upload skill |
-| On / Off | Whether the resume assistant gets it | Enable for resume agent, enabled, disabled |
 
 ### Engineering
 

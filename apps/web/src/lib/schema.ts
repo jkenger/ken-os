@@ -28,6 +28,8 @@ export const artifactSelections = pgTable("artifact_selections", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [primaryKey({ columns: [table.userId, table.purpose] })]);
 
+// The Skills module was removed on 12 Oct 2026. The table stays until a later migration drops it,
+// because hosted migrations run before the new code is live.
 export const skills = pgTable("skills", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
@@ -142,7 +144,6 @@ export const memoryCredentials = pgTable("memory_credentials", {
 export const usersRelations = relations(users, ({ one, many }) => ({
   googleConnection: one(googleConnections),
   artifactSelections: many(artifactSelections),
-  skills: many(skills),
   memoryProjects: many(memoryProjects),
 }));
 
@@ -154,9 +155,6 @@ export const artifactSelectionsRelations = relations(artifactSelections, ({ one 
   user: one(users, { fields: [artifactSelections.userId], references: [users.id] }),
 }));
 
-export const skillsRelations = relations(skills, ({ one }) => ({
-  user: one(users, { fields: [skills.userId], references: [users.id] }),
-}));
 
 // Engineering. Spec: docs/architecture/engineering-rebuild.md, section 6. Everything except lab_progress and lab_profile
 // is append-only: runs, answers, questions and topic events are evidence, and progress is rebuilt from them.

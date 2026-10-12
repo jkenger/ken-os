@@ -14,11 +14,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { engineering, tabForPath, type EngineeringTab } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
 
-type Module = "resume" | "skills" | "memory" | "lab" | "terms";
+type Module = "resume" | "memory" | "lab" | "terms";
 
 const modules = [
   { id: "resume" as const, label: "Resume", href: "/", icon: FileText },
-  { id: "skills" as const, label: "Skills", href: "/skills", icon: Sparkles },
   { id: "memory" as const, label: "Project Memory", href: "/memory", icon: BookOpenText },
   { id: "lab" as const, label: "Engineering", href: engineering.overview, icon: FlaskConical },
   { id: "terms" as const, label: "Terms", href: "/terms", icon: BookMarked },
@@ -35,10 +34,6 @@ const moduleDetails: Record<Module, {
       { label: "How it works", href: "/#how-it-works", icon: FileText },
       { label: "Resume assistant", href: "/#resume-assistant", icon: Sparkles },
     ],
-  },
-  skills: {
-    title: "Skills",
-    sections: [{ label: "Library", href: "/skills", icon: Library }],
   },
   memory: {
     title: "Project Memory",

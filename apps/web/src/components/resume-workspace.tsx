@@ -67,7 +67,6 @@ export function ResumeWorkspace({ email, selection, file, error, drive: initialD
   const [message, setMessage] = useState<string | null>(null);
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState<string | null>(null);
-  const [answerSkills, setAnswerSkills] = useState<{ name: string; version: number }[]>([]);
   const [asking, setAsking] = useState(false);
 
   async function selectFile(fileId: string) {
@@ -82,7 +81,6 @@ export function ResumeWorkspace({ email, selection, file, error, drive: initialD
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Couldn't save your choice. Try again");
       setAnswer(null);
-      setAnswerSkills([]);
       router.refresh();
     } catch (cause) {
       setMessage(cause instanceof Error ? cause.message : "Couldn't save your choice. Try again");
@@ -137,7 +135,6 @@ export function ResumeWorkspace({ email, selection, file, error, drive: initialD
     if (!question.trim()) return;
     setAsking(true);
     setAnswer(null);
-    setAnswerSkills([]);
     try {
       const response = await fetch("/api/resume/ask", {
         method: "POST",
@@ -147,7 +144,6 @@ export function ResumeWorkspace({ email, selection, file, error, drive: initialD
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? "Couldn't answer. Try again");
       setAnswer(data.answer);
-      setAnswerSkills(data.availableSkills ?? []);
     } catch (cause) {
       setAnswer(cause instanceof Error ? cause.message : "Couldn't answer. Try again");
     } finally {
@@ -234,7 +230,7 @@ export function ResumeWorkspace({ email, selection, file, error, drive: initialD
             <Card className="h-full [--card-spacing:--spacing(6)]"><CardContent>
             <h3 className="font-heading text-lg font-semibold leading-7 tracking-tight">Resume assistant</h3>
             {canAsk ? <form className="mt-5 flex flex-wrap gap-2" onSubmit={ask}><Label htmlFor="question" className="sr-only">Question</Label><Input className="min-w-0 flex-1" id="question" value={question} onChange={(event) => setQuestion(event.target.value)} maxLength={2000} placeholder="What should I improve?"/><Button type="submit" disabled={asking}>{asking ? "Thinking…" : "Ask"}<ArrowUpRight data-icon="inline-end" aria-hidden="true" /></Button></form> : <p className="mt-2 text-sm leading-5 text-muted-foreground">{file?.mimeType === GOOGLE_DOC_MIME ? "Not set up" : "Works with Google Docs only"}</p>}
-            {answer && <><div className="mt-5 whitespace-pre-wrap rounded-lg bg-muted p-4 text-sm leading-6" role="status">{answer}</div>{answerSkills.length > 0 && <p className="mt-3 text-xs text-muted-foreground">Skills on for this answer: {answerSkills.map((skill) => `${skill.name} v${skill.version}`).join(", ")}</p>}</>}
+            {answer && <div className="mt-5 whitespace-pre-wrap rounded-lg bg-muted p-4 text-sm leading-6" role="status">{answer}</div>}
             </CardContent></Card>
           </section>
         </div>
