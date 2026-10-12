@@ -11,6 +11,7 @@ import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { shortDate } from "./dates";
 
 interface PickerBuilder {
   addView(view: unknown): PickerBuilder;
@@ -128,7 +129,7 @@ export function DriveFile({ state, importing, onImport }: { state: DriveFileStat
   const detail = !connected
     ? null
     : file
-      ? `${mimeNames[file.mimeType] ?? "Document"} · Updated ${file.modifiedTime ? new Date(file.modifiedTime).toLocaleString() : "in Drive"}`
+      ? `${mimeNames[file.mimeType] ?? "Document"} · Updated ${file.modifiedTime ? shortDate(file.modifiedTime) : "in Drive"}`
       : state.error ?? "Google Doc, PDF or Word file";
 
   return (
@@ -151,7 +152,7 @@ export function DriveFile({ state, importing, onImport }: { state: DriveFileStat
           ) : (
             <>
               {file && state.canImport && <Button type="button" onClick={onImport} disabled={importing}>{importing ? "Importing…" : "Import into Profile"}</Button>}
-              <Button type="button" variant={file ? "outline" : "default"} onClick={openPicker} disabled={busy}>{busy ? "Opening…" : file ? "Choose another" : "Choose resume"}</Button>
+              <Button type="button" variant={file ? "outline" : "default"} onClick={openPicker} disabled={busy}>{busy ? "Opening…" : "Choose resume"}</Button>
               {file && file.canDownload !== false && <Button asChild variant="outline"><a href="/api/resume/content?download=1">Download<Download data-icon="inline-end" aria-hidden="true" /></a></Button>}
               {file && <Button asChild variant="ghost"><a href={file.webViewLink ?? `https://drive.google.com/file/d/${encodeURIComponent(file.id)}/view`} target="_blank" rel="noopener noreferrer">Open in Drive<ArrowUpRight data-icon="inline-end" aria-hidden="true" /></a></Button>}
             </>
@@ -162,6 +163,7 @@ export function DriveFile({ state, importing, onImport }: { state: DriveFileStat
           <Collapsible>
             <CollapsibleTrigger asChild><Button type="button" variant="link" className="h-auto px-0">Preview</Button></CollapsibleTrigger>
             <CollapsibleContent>
+              {/* White on purpose: a PDF page is drawn on white whatever the theme. */}
               <iframe className="mt-2 h-160 w-full rounded-lg border bg-white" title="Resume preview" src={state.previewUrl} />
             </CollapsibleContent>
           </Collapsible>

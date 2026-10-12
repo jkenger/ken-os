@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { PROFILE_LIMITS, type ProfileDetails } from "@ken-os/domain";
 import { Button } from "@/components/ui/button";
@@ -43,6 +43,23 @@ function Lines({ id, label, value, onChange, helper = "One per line", rows = 4 }
     </Field>
   );
 }
+
+/** A comma-separated list. It keeps the text as typed, so a trailing comma can be deleted, and hands the parent the
+ *  split list. The form remounts when an import or Discard replaces it, which resets the text. */
+function CommaList({ id, label, value, onChange, placeholder }: { id: string; label: string; value: string[]; onChange: (value: string[]) => void; placeholder?: string }) {
+  const [text, setText] = useState(value.join(", "));
+  return (
+    <Field id={id} label={label} helper="Separate with commas">
+      <Input id={id} value={text} maxLength={PROFILE_LIMITS.line * 4} placeholder={placeholder} onChange={(event) => {
+        setText(event.target.value);
+        onChange(event.target.value.split(",").map((item) => item.trim()));
+      }} />
+    </Field>
+  );
+}
+
+/** Dates are typed as 2024-03, or 2024 alone: a month picker can't show a bare year, which imports often have. */
+const MONTH_HINT = "2024-03";
 
 function Section({ id, title, description, action, children }: { id: string; title: string; description?: string; action?: ReactNode; children: ReactNode }) {
   return (
@@ -119,8 +136,8 @@ export function DetailsForm({ details, edit }: { details: ProfileDetails; edit: 
             <Text id={`role-${index}-title`} label="Title" value={role.title} onChange={(value) => edit((d) => { d.experience[index].title = value; })} />
             <Text id={`role-${index}-company`} label="Company" value={role.company} onChange={(value) => edit((d) => { d.experience[index].company = value; })} />
             <Text id={`role-${index}-location`} label="Location" value={role.location} placeholder="Remote" className="sm:col-span-2" onChange={(value) => edit((d) => { d.experience[index].location = value; })} />
-            <Text id={`role-${index}-start`} label="Start" type="month" value={role.start} onChange={(value) => edit((d) => { d.experience[index].start = value; })} />
-            <Text id={`role-${index}-end`} label="End" type="month" value={role.end} helper="Empty for Present" onChange={(value) => edit((d) => { d.experience[index].end = value; })} />
+            <Text id={`role-${index}-start`} label="Start" placeholder={MONTH_HINT} value={role.start} onChange={(value) => edit((d) => { d.experience[index].start = value; })} />
+            <Text id={`role-${index}-end`} label="End" placeholder={MONTH_HINT} value={role.end} helper="Empty for Present" onChange={(value) => edit((d) => { d.experience[index].end = value; })} />
             <div className="sm:col-span-2"><Lines id={`role-${index}-bullets`} label="Bullet points" value={role.bullets} onChange={(value) => edit((d) => { d.experience[index].bullets = value; })} /></div>
           </>}
         </Entries>
@@ -132,8 +149,8 @@ export function DetailsForm({ details, edit }: { details: ProfileDetails; edit: 
             <Text id={`school-${index}-name`} label="School" value={school.school} className="sm:col-span-2" onChange={(value) => edit((d) => { d.education[index].school = value; })} />
             <Text id={`school-${index}-degree`} label="Degree" value={school.degree} placeholder="BS" onChange={(value) => edit((d) => { d.education[index].degree = value; })} />
             <Text id={`school-${index}-field`} label="Field" value={school.field} placeholder="Computer Science" onChange={(value) => edit((d) => { d.education[index].field = value; })} />
-            <Text id={`school-${index}-start`} label="Start" type="month" value={school.start} onChange={(value) => edit((d) => { d.education[index].start = value; })} />
-            <Text id={`school-${index}-end`} label="End" type="month" value={school.end} onChange={(value) => edit((d) => { d.education[index].end = value; })} />
+            <Text id={`school-${index}-start`} label="Start" placeholder={MONTH_HINT} value={school.start} onChange={(value) => edit((d) => { d.education[index].start = value; })} />
+            <Text id={`school-${index}-end`} label="End" placeholder={MONTH_HINT} value={school.end} onChange={(value) => edit((d) => { d.education[index].end = value; })} />
             <Text id={`school-${index}-notes`} label="Notes" value={school.notes} max={PROFILE_LIMITS.line} placeholder="Honors, thesis" className="sm:col-span-2" onChange={(value) => edit((d) => { d.education[index].notes = value; })} />
           </>}
         </Entries>
@@ -143,7 +160,7 @@ export function DetailsForm({ details, edit }: { details: ProfileDetails; edit: 
         <Entries items={details.skills} noun="group" empty="No skills yet" onRemove={(index) => edit((d) => { d.skills = without(d.skills, index); })}>
           {(group, index) => <>
             <Text id={`skills-${index}-name`} label="Group" value={group.name} placeholder="Languages" onChange={(value) => edit((d) => { d.skills[index].name = value; })} />
-            <Text id={`skills-${index}-items`} label="Skills" value={group.items.join(", ")} max={PROFILE_LIMITS.line * 4} placeholder="TypeScript, Go, SQL" helper="Separate with commas" onChange={(value) => edit((d) => { d.skills[index].items = value.split(/,\s*/); })} />
+            <CommaList id={`skills-${index}-items`} label="Skills" value={group.items} placeholder="TypeScript, Go, SQL" onChange={(value) => edit((d) => { d.skills[index].items = value; })} />
           </>}
         </Entries>
       </Section>
@@ -164,7 +181,7 @@ export function DetailsForm({ details, edit }: { details: ProfileDetails; edit: 
           {(cert, index) => <>
             <Text id={`cert-${index}-name`} label="Name" value={cert.name} className="sm:col-span-2" onChange={(value) => edit((d) => { d.certifications[index].name = value; })} />
             <Text id={`cert-${index}-issuer`} label="Issuer" value={cert.issuer} onChange={(value) => edit((d) => { d.certifications[index].issuer = value; })} />
-            <Text id={`cert-${index}-date`} label="Date" type="month" value={cert.date} onChange={(value) => edit((d) => { d.certifications[index].date = value; })} />
+            <Text id={`cert-${index}-date`} label="Date" placeholder={MONTH_HINT} value={cert.date} onChange={(value) => edit((d) => { d.certifications[index].date = value; })} />
           </>}
         </Entries>
       </Section>
@@ -182,7 +199,7 @@ export function DetailsForm({ details, edit }: { details: ProfileDetails; edit: 
         action={<div className="flex items-center gap-2"><Label htmlFor="local-enabled" className="text-sm font-normal">Show</Label><Switch id="local-enabled" checked={local.enabled} onCheckedChange={(checked) => edit((d) => { d.local.enabled = checked; })} /></div>}>
         {local.enabled ? (
           <div className="grid gap-4 sm:grid-cols-2">
-            <Text id="birthdate" label="Birthdate" type="date" value={local.birthdate} onChange={(value) => edit((d) => { d.local.birthdate = value; })} />
+            <Text id="birthdate" label="Birthdate" placeholder="1995-06-30" value={local.birthdate} onChange={(value) => edit((d) => { d.local.birthdate = value; })} />
             <Text id="civil-status" label="Civil status" value={local.civilStatus} onChange={(value) => edit((d) => { d.local.civilStatus = value; })} />
             <Text id="nationality" label="Nationality" value={local.nationality} onChange={(value) => edit((d) => { d.local.nationality = value; })} />
             <Text id="address" label="Address" value={local.address} max={PROFILE_LIMITS.line} onChange={(value) => edit((d) => { d.local.address = value; })} />

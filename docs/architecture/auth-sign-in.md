@@ -9,7 +9,7 @@ Status: implemented 10 Oct 2026 on `feat/auth-sign-in` (all three slices on one 
 - A Drive state mismatch, or a grant from a different Google account than the session, reports `drive_error=google`.
 - `signin` checks the owner email before `email_verified`, so an unverified stranger sees "doesn't have access", and an unverified owner address sees "isn't verified".
 - Tokens issued before this change have no `auth_time`; their issue time stands in for it, so existing sessions keep working.
-- `src/lib/google.ts` throws `DriveAccessError` (`not_connected` or `disconnected` on `invalid_grant`); the Resume page and the picker route use it to show Connect or Reconnect Google Drive.
+- `src/lib/google.ts` throws `DriveAccessError` (`not_connected` or `disconnected` on `invalid_grant`); the Profile page (formerly Resume) and the picker route use it to show Connect or Reconnect Google Drive.
 - "Not set up" also covers a missing `GOOGLE_CLIENT_SECRET` or `APP_URL`.
 
 ## Decision
@@ -99,7 +99,7 @@ Sign-in scopes become `openid email profile`. Drive is a second, incremental gra
 - **Shared callback.** A `ken_os_oauth_intent` cookie (`signin` or `drive`) tells `/api/auth/google/callback` which flow it's finishing.
   - `signin`: verify the owner, upsert the user, create the session. No Drive requirement.
   - `drive`: require an existing session for the same Google `sub`, require the `drive.file` scope and a refresh token, store it encrypted as today, then redirect to `next` (default `/`).
-  - Drive failures redirect to `next` with `?drive_error=<code>` (`cancelled`, `scope`, `google`), shown as an alert on the Resume page, never as JSON.
+  - Drive failures redirect to `next` with `?drive_error=<code>` (`cancelled`, `scope`, `google`), shown as an alert on the Profile page (formerly Resume), never as JSON. Profile connects Drive with `next=/profile`.
 - **Resume page.**
   - No Drive connection yet: the empty state reads "Google Drive not connected / Connect it to choose your resume", with **Connect Google Drive**.
   - A connection whose token Google rejects (revoked or expired): "Google Drive disconnected" with **Reconnect Google Drive**, which goes to `/api/auth/google/drive`, not to sign-in.

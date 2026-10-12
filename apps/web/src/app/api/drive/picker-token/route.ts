@@ -20,7 +20,7 @@ export async function GET() {
       {
         error:
           error instanceof Error ? error.message : "Couldn't reach Google Drive. Try again",
-        // Lets the Resume page switch to Connect or Reconnect Google Drive.
+        // Lets the Profile page switch to Connect or Reconnect Google Drive.
         drive: error instanceof DriveAccessError ? error.access : undefined,
       },
       { status: 502 },

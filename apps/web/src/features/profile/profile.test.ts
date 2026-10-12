@@ -56,6 +56,15 @@ test("an import fills from the file but never wipes what the file left out", () 
   assert.equal(merged.local.nationality, "Filipino", "and gaps are filled from the file");
 });
 
+test("blank lines and a trailing comma never count toward a limit", () => {
+  const bullets = [...Array.from({ length: PROFILE_LIMITS.lines }, (_, index) => `Bullet ${index}`), "", " "];
+  const skills = [...Array.from({ length: PROFILE_LIMITS.items }, (_, index) => `Skill ${index}`), ""];
+  const details = normalizeProfile({ experience: [{ title: "Dev", bullets }], skills: [{ name: "All", items: skills }] }, "save");
+  assert.equal(details.experience[0].bullets.length, PROFILE_LIMITS.lines);
+  assert.equal(details.skills[0].items.length, PROFILE_LIMITS.items);
+  assert.throws(() => normalizeProfile({ experience: [{ title: "Dev", bullets: [...bullets, "One more"] }] }, "save"), /up to 12 entries/);
+});
+
 test("an empty Profile round-trips through save", () => {
   assert.deepEqual(normalizeProfile(emptyProfile(), "save"), emptyProfile());
 });

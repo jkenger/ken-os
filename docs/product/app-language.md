@@ -183,6 +183,8 @@ Answer feedback ("Right lines, wrong order…") stays as written.
 
 ### 5. Resume (`app/page.tsx`, `resume-workspace.tsx`)
 
+Superseded on 12 Oct 2026: Resume became Profile ([profile-resume.md](profile-resume.md)) and the Resume assistant was removed. The Profile word list above decides its words.
+
 | Now | After |
 |---|---|
 | PRIMARY RESUME / Your latest work, ready when you are. / One selected source file… | Resume / From Google Drive · updated Oct 2 |

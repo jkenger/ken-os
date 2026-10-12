@@ -47,7 +47,7 @@ export function signInNotice(query: { error?: string; expired?: string; signed_o
   return null;
 }
 
-/** The Resume page alert for `?drive_error=`, or null. */
+/** The Profile page alert for `?drive_error=`, or null. */
 export function driveErrorText(code: string | undefined): string | null {
   if (code === undefined) return null;
   return driveErrors[isOneOf(driveErrorCodes, code) ? code : "google"];

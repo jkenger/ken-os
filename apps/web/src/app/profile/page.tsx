@@ -25,7 +25,7 @@ export default async function ProfilePage({ searchParams }: { searchParams: Prom
       }
     } catch (cause) {
       if (cause instanceof DriveAccessError) drive = cause.access;
-      else error = cause instanceof Error ? cause.message : "Couldn't reach Google Drive. Refresh to try again";
+      else error = "Couldn't reach Google Drive. Refresh to try again";
     }
   }
   const previewUrl =

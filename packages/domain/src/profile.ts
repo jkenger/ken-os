@@ -100,9 +100,11 @@ function url(value: unknown, field: string, mode: ProfileMode): string {
 }
 
 function list<T>(value: unknown, field: string, max: number, mode: ProfileMode, item: (entry: unknown) => T, keep: (entry: T) => boolean): T[] {
+  // Blank entries (an empty textarea line, a trailing comma) are dropped before counting, so they never hit the limit.
   const entries = Array.isArray(value) ? value : [];
-  if (entries.length > max && mode === "save") throw new ProfileFieldError(`${field}: up to ${max} entries`);
-  return entries.slice(0, max).map(item).filter(keep);
+  const kept = (mode === "import" ? entries.slice(0, max * 2) : entries).map(item).filter(keep);
+  if (kept.length > max && mode === "save") throw new ProfileFieldError(`${field}: up to ${max} entries`);
+  return kept.slice(0, max);
 }
 
 function lines(value: unknown, field: string, mode: ProfileMode, max: number = PROFILE_LIMITS.lines): string[] {
@@ -186,8 +188,8 @@ export function normalizeProfile(value: unknown, mode: ProfileMode): ProfileDeta
 }
 
 /**
- * Lays an imported draft over the saved Profile for review. Sections the file filled replace the saved ones; sections
- * it left empty keep what was saved, so importing a thin file never wipes details the owner typed. Local fields are
+ * Lays an imported draft over the form for review, including edits not saved yet. Sections the file filled replace the
+ * form's; sections it left empty keep what's there, so importing a thin file never wipes details the owner typed. Local fields are
  * the owner's choice and only fill gaps.
  */
 export function mergeImport(saved: ProfileDetails, draft: ProfileDetails): ProfileDetails {

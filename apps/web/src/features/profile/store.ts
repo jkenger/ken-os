@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { importProfile, PROFILE_IMPORT_PROMPT_VERSION } from "@ken-os/agents";
-import { emptyProfile, mergeImport, normalizeProfile, ProfileFieldError, type ProfileDetails } from "@ken-os/domain";
+import { emptyProfile, normalizeProfile, ProfileFieldError, type ProfileDetails } from "@ken-os/domain";
 import { DriveError, getDriveFile, getResumeText } from "@ken-os/drive";
 import { db } from "@/lib/db";
 import { DriveAccessError, getGoogleAccessToken } from "@/lib/google";
@@ -19,14 +19,14 @@ export class ProfileInputError extends Error {
 /** Below this many characters a file has no usable text, usually a scanned PDF. */
 const MIN_RESUME_TEXT = 50;
 
-export interface ProfileView {
+export interface ProfileState {
   details: ProfileDetails;
   /** When the owner last saved. Null before the first save, when the details are only prefilled. */
   savedAt: string | null;
 }
 
 /** The saved Profile, or before the first save, an empty one prefilled with the name and email from sign-in. */
-export async function getProfile(userId: string): Promise<ProfileView> {
+export async function getProfile(userId: string): Promise<ProfileState> {
   const [row] = await db().select().from(profiles).where(eq(profiles.userId, userId)).limit(1);
   if (row) return { details: normalizeProfile(row.details, "import"), savedAt: row.updatedAt.toISOString() };
   const [user] = await db().select({ name: users.name, email: users.email }).from(users).where(eq(users.id, userId)).limit(1);
@@ -74,9 +74,10 @@ async function readChosenResume(userId: string) {
 
 /**
  * Reads the chosen Drive resume into a draft for review. Nothing in the Profile changes until the owner saves; the
- * draft is kept as a `pending` import with the file's Drive version.
+ * draft is kept as a `pending` import with the file's Drive version. The page lays it over the form with `mergeImport`,
+ * so edits not saved yet survive.
  */
-export async function importFromDrive(userId: string): Promise<{ importId: string; details: ProfileDetails; fileName: string }> {
+export async function importFromDrive(userId: string): Promise<{ importId: string; draft: ProfileDetails; fileName: string }> {
   const { file, text } = await readChosenResume(userId);
   if (text.trim().length < MIN_RESUME_TEXT) throw new ProfileInputError("No text found in this file. Use a Google Doc or a text PDF", 422);
 
@@ -91,6 +92,5 @@ export async function importFromDrive(userId: string): Promise<{ importId: strin
     promptVersion: PROFILE_IMPORT_PROMPT_VERSION,
     model,
   });
-  const { details: saved } = await getProfile(userId);
-  return { importId, details: mergeImport(saved, draft), fileName: file.name };
+  return { importId, draft, fileName: file.name };
 }

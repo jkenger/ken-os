@@ -68,6 +68,8 @@ New test `apps/web/src/lib/app-language.test.ts`, picked up by the existing `src
 
 ## Slice 2: shell, signed-out page, Resume
 
+The Resume rows below are superseded: on 12 Oct 2026 Resume became Profile and the Resume assistant was removed ([profile-resume.md](profile-resume.md)).
+
 ### `components/workspace-shell.tsx`
 
 | Now | After |
