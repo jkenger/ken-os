@@ -21,7 +21,9 @@ async function main() {
   let skipped = 0;
   for (const folder of readdirSync(root, { withFileTypes: true }).filter((entry) => entry.isDirectory())) {
     for (const file of readdirSync(resolve(root, folder.name)).filter((name) => name.endsWith(".json"))) {
-      const raw = JSON.parse(readFileSync(resolve(root, folder.name, file), "utf8")) as SourcePacket & { skillId?: string };
+      const raw = JSON.parse(readFileSync(resolve(root, folder.name, file), "utf8")) as SourcePacket & {
+        skillId?: string;
+      };
       // Packets saved before the rename to "topic" used skillId. The files themselves are never rewritten.
       const packet: SourcePacket = { ...raw, topicId: raw.topicId ?? raw.skillId! };
       delete (packet as { skillId?: string }).skillId;

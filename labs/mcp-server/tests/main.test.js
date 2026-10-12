@@ -6,7 +6,10 @@ const server = createServer({
     add_note: {
       description: "Save a note",
       inputSchema: { type: "object", properties: { text: { type: "string" } }, required: ["text"] },
-      handler: async ({ text }) => { notes.push(text); return { saved: notes.length }; },
+      handler: async ({ text }) => {
+        notes.push(text);
+        return { saved: notes.length };
+      },
     },
     search_notes: {
       description: "Find notes containing a word",
@@ -21,11 +24,19 @@ const server = createServer({
 const call = (id, method, params) => server.handle({ jsonrpc: "2.0", id, method, params });
 
 test("initialize describes the server and echoes the protocol version", async () => {
-  const response = await call(1, "initialize", { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "test", version: "0" } });
+  const response = await call(1, "initialize", {
+    protocolVersion: "2025-06-18",
+    capabilities: {},
+    clientInfo: { name: "test", version: "0" },
+  });
   assert.deepEqual(response, {
     jsonrpc: "2.0",
     id: 1,
-    result: { protocolVersion: "2025-06-18", capabilities: { tools: {} }, serverInfo: { name: "notes", version: "1.0.0" } },
+    result: {
+      protocolVersion: "2025-06-18",
+      capabilities: { tools: {} },
+      serverInfo: { name: "notes", version: "1.0.0" },
+    },
   });
 });
 
@@ -39,7 +50,11 @@ test("tools/list includes descriptions and input schemas", async () => {
 
 test("tools/call wraps results as text content", async () => {
   const saved = await call(3, "tools/call", { name: "add_note", arguments: { text: "buy milk" } });
-  assert.deepEqual(saved, { jsonrpc: "2.0", id: 3, result: { content: [{ type: "text", text: "{\"saved\":1}" }], isError: false } });
+  assert.deepEqual(saved, {
+    jsonrpc: "2.0",
+    id: 3,
+    result: { content: [{ type: "text", text: '{"saved":1}' }], isError: false },
+  });
   const found = await call(4, "tools/call", { name: "search_notes", arguments: { word: "milk" } });
   assert.equal(found.result.content[0].text, "buy milk");
 });

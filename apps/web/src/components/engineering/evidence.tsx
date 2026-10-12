@@ -13,31 +13,70 @@ import type { ResultsItem } from "./results";
 // One assessment's evidence: each question, answer, confidence, grade, feedback, rubric and grader version.
 // Spec: docs/architecture/engineering-rebuild.md, section 3 (Profile). A taken assessment never changes.
 
-export function Evidence({ email, completedAt, items, areas }: { email: string; completedAt: string | null; items: ResultsItem[]; areas: AreaName[] }) {
+export function Evidence({
+  email,
+  completedAt,
+  items,
+  areas,
+}: {
+  email: string;
+  completedAt: string | null;
+  items: ResultsItem[];
+  areas: AreaName[];
+}) {
   return (
     <WorkspaceShell email={email} active="lab" tab="profile">
-      <div className="mx-auto max-w-4xl px-3 pb-9 pt-6 md:px-5 md:pt-7.5">
+      <div className="mx-auto max-w-4xl px-3 pt-6 pb-9 md:px-5 md:pt-7.5">
         <Back href={engineering.profile}>Profile</Back>
         <PageHeading title="Evidence" badge={completedAt ? formatDate(completedAt) : "In progress"} />
         <ol className="mx-1.5 space-y-4 md:mx-3.5">
           {items.map((item) => (
             <li key={item.index} className={cn(panel, "p-6 md:p-7")}>
-              <div className={eyebrow}>{areas.find((area) => area.id === item.question.area)?.title} · {QUESTION_KIND_LABELS[item.question.kind]}</div>
-              <div className="text-sm leading-relaxed [&_p]:text-foreground"><Markdown text={item.question.prompt} /></div>
-              {item.question.code && <div className="mt-3"><CodeBlock code={item.question.code} label="Question code" /></div>}
+              <div className={eyebrow}>
+                {areas.find((area) => area.id === item.question.area)?.title} ·{" "}
+                {QUESTION_KIND_LABELS[item.question.kind]}
+              </div>
+              <div className="text-sm leading-relaxed [&_p]:text-foreground">
+                <Markdown text={item.question.prompt} />
+              </div>
+              {item.question.code && (
+                <div className="mt-3">
+                  <CodeBlock code={item.question.code} label="Question code" />
+                </div>
+              )}
               {item.answer ? (
                 <>
-                  {item.answer.output && <><p className="mt-5 text-xs font-semibold">Output</p><pre className="mt-2 whitespace-pre-wrap rounded-lg bg-muted px-3 py-2 font-mono text-xs">{item.answer.output.join("\n")}</pre></>}
+                  {item.answer.output && (
+                    <>
+                      <p className="mt-5 text-xs font-semibold">Output</p>
+                      <pre className="mt-2 rounded-lg bg-muted px-3 py-2 font-mono text-xs whitespace-pre-wrap">
+                        {item.answer.output.join("\n")}
+                      </pre>
+                    </>
+                  )}
                   <p className="mt-5 text-xs font-semibold">Answer · Confidence {item.answer.selfRating} of 5</p>
-                  <blockquote className="mt-2 whitespace-pre-wrap border-l-[3px] border-primary/40 pl-4 text-sm leading-relaxed">{item.answer.answer}</blockquote>
+                  <blockquote className="mt-2 border-l-[3px] border-primary/40 pl-4 text-sm leading-relaxed whitespace-pre-wrap">
+                    {item.answer.answer}
+                  </blockquote>
                   <div className="mt-4 flex flex-wrap items-center gap-2.5">
-                    {item.answer.label ? <Pill tone={toneFor(item.answer.label)}>{labelWords[item.answer.label]}</Pill> : <Pill tone="neutral">Not graded</Pill>}
-                    {item.answer.feedback && <span className="text-sm text-muted-foreground">{item.answer.feedback}</span>}
+                    {item.answer.label ? (
+                      <Pill tone={toneFor(item.answer.label)}>{labelWords[item.answer.label]}</Pill>
+                    ) : (
+                      <Pill tone="neutral">Not graded</Pill>
+                    )}
+                    {item.answer.feedback && (
+                      <span className="text-sm text-muted-foreground">{item.answer.feedback}</span>
+                    )}
                   </div>
                   {item.answer.rubric && <RubricChecklist items={item.answer.rubric} />}
-                  <p className="mt-3 text-xs text-muted-foreground">Answered {formatDate(item.answer.answeredAt)}{item.answer.graderVersion ? ` · Grader ${item.answer.graderVersion}` : ""}</p>
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    Answered {formatDate(item.answer.answeredAt)}
+                    {item.answer.graderVersion ? ` · Grader ${item.answer.graderVersion}` : ""}
+                  </p>
                 </>
-              ) : <p className="mt-4 text-xs text-muted-foreground">No answer</p>}
+              ) : (
+                <p className="mt-4 text-xs text-muted-foreground">No answer</p>
+              )}
             </li>
           ))}
         </ol>

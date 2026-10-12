@@ -16,39 +16,39 @@ Status: proposed, 12 Oct 2026. The UI half of [engineering-claude-connector.md](
 
 Today's topic page: `PageHeading` (area · chapter, the topic name, a state badge, **Evidence & sources** on the right), then **Learn / Exercise / Prove** tabs.
 
-| Frame | What's new | Copy |
-|---|---|---|
-| A1 | **Ask Claude** button at the right end of the step tabs row (outline, small, a chat icon at the start). On a phone it moves under the heading, full width | Ask Claude |
-| A2 | Pressed: a toast, and a new tab opens (show the toast only) | Toast title "Copied. Paste it in Claude" |
-| A3 | Exercise step: an autosave status next to the editor's file name, in muted text | "Saving…" / "Saved" / "Couldn't save · Retry" |
+| Frame | What's new                                                                                                                                                | Copy                                          |
+| ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| A1    | **Ask Claude** button at the right end of the step tabs row (outline, small, a chat icon at the start). On a phone it moves under the heading, full width | Ask Claude                                    |
+| A2    | Pressed: a toast, and a new tab opens (show the toast only)                                                                                               | Toast title "Copied. Paste it in Claude"      |
+| A3    | Exercise step: an autosave status next to the editor's file name, in muted text                                                                           | "Saving…" / "Saved" / "Couldn't save · Retry" |
 
 ### B. Topic page: exercises from Claude
 
-| Frame | State | Copy |
-|---|---|---|
-| B1 | A new exercise version has arrived while the owner is on an older one they've already run. A notice above the editor | Title "New exercise from Claude", line "Switching starts a fresh attempt", buttons **Switch** and **Not now** |
-| B2 | A new version before the owner has run anything: it simply shows. The editor's meta line names the source | "From Claude · v3" (repo labs show nothing) |
-| B3 | Checking a new version in the browser before showing it. A skeleton editor with a status line | "Checking exercise…" |
-| B4 | The new version failed its check. A destructive notice; the previous version stays in the editor | Title "This exercise doesn't check out", line naming what failed, e.g. "The solution fails 1 of 4 tests", then "Using v2". No button; Claude sees it through the connector |
-| B5 | No exercise yet for the topic (rare: every topic has a repo lab today) | Empty state "No exercise yet" / "Ask Claude to write one", button **Ask Claude**. Ken OS has no built-in exercise writer |
+| Frame | State                                                                                                                | Copy                                                                                                                                                                       |
+| ----- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| B1    | A new exercise version has arrived while the owner is on an older one they've already run. A notice above the editor | Title "New exercise from Claude", line "Switching starts a fresh attempt", buttons **Switch** and **Not now**                                                              |
+| B2    | A new version before the owner has run anything: it simply shows. The editor's meta line names the source            | "From Claude · v3" (repo labs show nothing)                                                                                                                                |
+| B3    | Checking a new version in the browser before showing it. A skeleton editor with a status line                        | "Checking exercise…"                                                                                                                                                       |
+| B4    | The new version failed its check. A destructive notice; the previous version stays in the editor                     | Title "This exercise doesn't check out", line naming what failed, e.g. "The solution fails 1 of 4 tests", then "Using v2". No button; Claude sees it through the connector |
+| B5    | No exercise yet for the topic (rare: every topic has a repo lab today)                                               | Empty state "No exercise yet" / "Ask Claude to write one", button **Ask Claude**. Ken OS has no built-in exercise writer                                                   |
 
 ### C. Topic page: lesson and proof
 
-| Frame | State | Copy |
-|---|---|---|
-| C1 | A lesson written by Claude: the meta line under the lesson heading | "From Claude · Oct 12" |
-| C2 | Prove step: one helper line under the prompt, so grading's owner is clear | "Graded in Ken OS against this topic's points" |
-| C3 | Prove step with a question Claude wrote: the points it tests are listed under the prompt as small outline badges | Point titles, shortened |
+| Frame | State                                                                                                            | Copy                                           |
+| ----- | ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| C1    | A lesson written by Claude: the meta line under the lesson heading                                               | "From Claude · Oct 12"                         |
+| C2    | Prove step: one helper line under the prompt, so grading's owner is clear                                        | "Graded in Ken OS against this topic's points" |
+| C3    | Prove step with a question Claude wrote: the points it tests are listed under the prompt as small outline badges | Point titles, shortened                        |
 
 ### D. Connect Claude (consent page)
 
 Shown at `/oauth/authorize` when the owner adds the connector in claude.ai. Same frame as the sign-in page: a centered Card, nothing else.
 
-| Frame | State | Copy |
-|---|---|---|
-| D1 | Default | Wordmark "Ken OS"; title "Connect Claude"; a "Can" list with two lines, "Read your Engineering progress and code" and "Save lessons, exercises and proof questions"; a "Can't" list with one line, "Grade answers or mark topics proven"; buttons **Allow** (default) and **Deny** (outline) |
-| D2 | Bad or expired request | Destructive notice "This connection link isn't valid" / "Add the connector again in Claude". No buttons |
-| D3 | Signed out | Not a frame: the sign-in page appears first, then D1 |
+| Frame | State                  | Copy                                                                                                                                                                                                                                                                                         |
+| ----- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1    | Default                | Wordmark "Ken OS"; title "Connect Claude"; a "Can" list with two lines, "Read your Engineering progress and code" and "Save lessons, exercises and proof questions"; a "Can't" list with one line, "Grade answers or mark topics proven"; buttons **Allow** (default) and **Deny** (outline) |
+| D2    | Bad or expired request | Destructive notice "This connection link isn't valid" / "Add the connector again in Claude". No buttons                                                                                                                                                                                      |
+| D3    | Signed out             | Not a frame: the sign-in page appears first, then D1                                                                                                                                                                                                                                         |
 
 Show "Can" and "Can't" as two short lists with icons (check and cross) plus the words. Colour never carries the meaning on its own.
 
@@ -56,11 +56,11 @@ Show "Can" and "Can't" as two short lists with icons (check and cross) plus the 
 
 A new Card at the bottom of the Engineering Profile page.
 
-| Frame | State | Copy |
-|---|---|---|
-| E1 | Connected | Card title "Connections"; a row: "Claude", "Connected Oct 12 · Last used 2 min ago", and **Disconnect** (ghost, destructive text) |
-| E2 | Disconnect pressed: a dialog | Title "Disconnect Claude?", line "Claude loses access until you connect again", buttons **Cancel** and **Disconnect** (destructive) |
-| E3 | None | Empty state "No connections" / "Add Ken OS as a connector in Claude" |
+| Frame | State                        | Copy                                                                                                                                |
+| ----- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| E1    | Connected                    | Card title "Connections"; a row: "Claude", "Connected Oct 12 · Last used 2 min ago", and **Disconnect** (ghost, destructive text)   |
+| E2    | Disconnect pressed: a dialog | Title "Disconnect Claude?", line "Claude loses access until you connect again", buttons **Cancel** and **Disconnect** (destructive) |
+| E3    | None                         | Empty state "No connections" / "Add Ken OS as a connector in Claude"                                                                |
 
 ### F. Storyboard (illustrative)
 

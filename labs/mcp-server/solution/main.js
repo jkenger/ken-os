@@ -7,7 +7,10 @@
 function createServer({ name, version, tools }) {
   const ok = (id, result) => ({ jsonrpc: "2.0", id, result });
   const fail = (id, code, message) => ({ jsonrpc: "2.0", id, error: { code, message } });
-  const text = (value, isError) => ({ content: [{ type: "text", text: typeof value === "string" ? value : JSON.stringify(value) }], isError });
+  const text = (value, isError) => ({
+    content: [{ type: "text", text: typeof value === "string" ? value : JSON.stringify(value) }],
+    isError,
+  });
 
   async function callTool(params = {}) {
     const tool = Object.prototype.hasOwnProperty.call(tools, params.name) ? tools[params.name] : null;
@@ -25,9 +28,23 @@ function createServer({ name, version, tools }) {
   async function run(request) {
     switch (request.method) {
       case "initialize":
-        return { result: { protocolVersion: request.params?.protocolVersion, capabilities: { tools: {} }, serverInfo: { name, version } } };
+        return {
+          result: {
+            protocolVersion: request.params?.protocolVersion,
+            capabilities: { tools: {} },
+            serverInfo: { name, version },
+          },
+        };
       case "tools/list":
-        return { result: { tools: Object.entries(tools).map(([toolName, tool]) => ({ name: toolName, description: tool.description, inputSchema: tool.inputSchema })) } };
+        return {
+          result: {
+            tools: Object.entries(tools).map(([toolName, tool]) => ({
+              name: toolName,
+              description: tool.description,
+              inputSchema: tool.inputSchema,
+            })),
+          },
+        };
       case "tools/call":
         return callTool(request.params);
       default:

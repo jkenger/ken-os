@@ -3,6 +3,12 @@
   "version": "0.0.1",
   "private": true,
   "type": "module",
-  "exports": { ".": "./src/index.ts" },
-  "dependencies": { "@ken-os/domain": "workspace:*", "@openai/agents": "latest", "zod": "^4.0.0" }
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "dependencies": {
+    "@ken-os/domain": "workspace:*",
+    "@openai/agents": "latest",
+    "zod": "^4.0.0"
+  }
 }

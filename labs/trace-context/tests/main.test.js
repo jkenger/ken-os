@@ -1,5 +1,6 @@
 function counterIds() {
-  let traces = 0, spans = 0;
+  let traces = 0,
+    spans = 0;
   return {
     traceId: () => (++traces).toString(16).padStart(32, "a"),
     spanId: () => (++spans).toString(16).padStart(16, "b"),
@@ -13,10 +14,15 @@ test("a valid header is read", () => {
 
 test("invalid headers are rejected", () => {
   const bad = [
-    "", "nonsense", "01-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
-    "00-4BF92F3577B34DA6A3CE929D0E0E4736-00f067aa0ba902b7-01", "00-4bf92f35-00f067aa0ba902b7-01",
-    "00-00000000000000000000000000000000-00f067aa0ba902b7-01", "00-4bf92f3577b34da6a3ce929d0e0e4736-0000000000000000-01",
-    "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7", undefined,
+    "",
+    "nonsense",
+    "01-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01",
+    "00-4BF92F3577B34DA6A3CE929D0E0E4736-00f067aa0ba902b7-01",
+    "00-4bf92f35-00f067aa0ba902b7-01",
+    "00-00000000000000000000000000000000-00f067aa0ba902b7-01",
+    "00-4bf92f3577b34da6a3ce929d0e0e4736-0000000000000000-01",
+    "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7",
+    undefined,
   ];
   for (const header of bad) assert.equal(extract(header), null, `${JSON.stringify(header)} should be rejected`);
 });

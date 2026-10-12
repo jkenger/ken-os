@@ -11,5 +11,13 @@ export default async function LearnPage({ searchParams }: { searchParams: Promis
   const { area } = await searchParams;
   const session = await requireSession(engineering.learn, { area });
   const [view, open] = await Promise.all([getPathView(session.userId), activeRun(session.userId)]);
-  return <Learn email={session.email} map={topicMap} view={view} area={topicMap.areas.some((item) => item.id === area) ? area! : null} closedBook={Boolean(open)} />;
+  return (
+    <Learn
+      email={session.email}
+      map={topicMap}
+      view={view}
+      area={topicMap.areas.some((item) => item.id === area) ? area! : null}
+      closedBook={Boolean(open)}
+    />
+  );
 }

@@ -96,18 +96,25 @@ export function parseCareers(raw: unknown, map: TopicMap): Careers {
     return { id: text(item.id, `sources[${index}].id`), title: text(item.title, `sources[${index}].title`), url };
   });
   const sourceIds = new Set(sources.map((source) => source.id));
-  const knownSources = (value: unknown, where: string) => list(value, where).map((id) => {
-    const sourceId = text(id, where);
-    if (!sourceIds.has(sourceId)) fail(where, `unknown source ${sourceId}`);
-    return sourceId;
-  });
+  const knownSources = (value: unknown, where: string) =>
+    list(value, where).map((id) => {
+      const sourceId = text(id, where);
+      if (!sourceIds.has(sourceId)) fail(where, `unknown source ${sourceId}`);
+      return sourceId;
+    });
 
   const levels = list(input.levels, "levels").map((value, index): LevelInfo => {
     const item = value as Record<string, unknown>;
     const where = `levels[${index}]`;
-    return { id: oneOf(item.id, LEVELS, `${where}.id`), title: text(item.title, `${where}.title`), summary: text(item.summary, `${where}.summary`), sources: knownSources(item.sources, `${where}.sources`) };
+    return {
+      id: oneOf(item.id, LEVELS, `${where}.id`),
+      title: text(item.title, `${where}.title`),
+      summary: text(item.summary, `${where}.summary`),
+      sources: knownSources(item.sources, `${where}.sources`),
+    };
   });
-  if (levels.map((level) => level.id).join() !== LEVELS.join()) fail("levels", `expected ${LEVELS.join(", ")} in order`);
+  if (levels.map((level) => level.id).join() !== LEVELS.join())
+    fail("levels", `expected ${LEVELS.join(", ")} in order`);
 
   const chapters = new Map(map.chapters.map((module) => [module.id, module]));
   const areas = list(input.areas, "areas").map((value, index): AreaLadder => {
@@ -127,9 +134,20 @@ export function parseCareers(raw: unknown, map: TopicMap): Careers {
         return { chapter, depth: oneOf(requirement.depth, DEPTHS, `${at}.depth`) };
       });
     }
-    return { id, title: text(item.title, `${where}.title`), summary: text(item.summary, `${where}.summary`), levels: ladder };
+    return {
+      id,
+      title: text(item.title, `${where}.title`),
+      summary: text(item.summary, `${where}.summary`),
+      levels: ladder,
+    };
   });
-  if (areas.map((area) => area.id).sort().join() !== [...AREAS].sort().join()) fail("areas", `expected each of ${AREAS.join(", ")} exactly once`);
+  if (
+    areas
+      .map((area) => area.id)
+      .sort()
+      .join() !== [...AREAS].sort().join()
+  )
+    fail("areas", `expected each of ${AREAS.join(", ")} exactly once`);
 
   const roles = list(input.roles, "roles").map((value, index): RoleInfo => {
     const item = value as Record<string, unknown>;
@@ -139,7 +157,12 @@ export function parseCareers(raw: unknown, map: TopicMap): Careers {
       targets[oneOf(area, AREAS, `${where}.targets`)] = oneOf(level, LEVELS, `${where}.targets.${area}`);
     }
     if (!Object.keys(targets).length) fail(where, "a role needs at least one area target");
-    return { id: text(item.id, `${where}.id`), title: text(item.title, `${where}.title`), summary: text(item.summary, `${where}.summary`), targets };
+    return {
+      id: text(item.id, `${where}.id`),
+      title: text(item.title, `${where}.title`),
+      summary: text(item.summary, `${where}.summary`),
+      targets,
+    };
   });
   if (new Set(roles.map((role) => role.id)).size !== roles.length) fail("roles", "duplicate role id");
 
@@ -151,7 +174,10 @@ export function parseCareers(raw: unknown, map: TopicMap): Careers {
     status,
     approvedOn,
     note: text(input.note, "note"),
-    definitions: { developer: text(definitions.developer, "definitions.developer"), engineer: text(definitions.engineer, "definitions.engineer") },
+    definitions: {
+      developer: text(definitions.developer, "definitions.developer"),
+      engineer: text(definitions.engineer, "definitions.engineer"),
+    },
     levels,
     areas,
     roles,
@@ -173,7 +199,8 @@ export interface RequiredSlots {
  */
 export function slotsFor(map: TopicMap, requirement: Requirement): RequiredSlots {
   const topics = map.topics.filter((topic) => topic.chapter === requirement.chapter);
-  if (requirement.depth === "aware") return { ...requirement, topicIds: topics.map((topic) => topic.id), need: Math.min(1, topics.length) };
+  if (requirement.depth === "aware")
+    return { ...requirement, topicIds: topics.map((topic) => topic.id), need: Math.min(1, topics.length) };
   const working = topics.filter((topic) => topic.depth === "working");
   const counted = requirement.depth === "run" || !working.length ? topics : working;
   return { ...requirement, topicIds: counted.map((topic) => topic.id), need: counted.length };
@@ -199,7 +226,8 @@ export function requirementsUpTo(ladder: AreaLadder, level: Level): Requirement[
   for (const step of LEVELS.slice(0, LEVELS.indexOf(level) + 1)) {
     for (const requirement of ladder.levels[step]) {
       const current = merged.get(requirement.chapter);
-      if (!current || DEPTHS.indexOf(requirement.depth) > DEPTHS.indexOf(current)) merged.set(requirement.chapter, requirement.depth);
+      if (!current || DEPTHS.indexOf(requirement.depth) > DEPTHS.indexOf(current))
+        merged.set(requirement.chapter, requirement.depth);
     }
   }
   return [...merged].map(([chapter, depth]) => ({ chapter, depth }));
@@ -217,7 +245,10 @@ export interface Coverage {
 
 export function coverageOf(map: TopicMap, requirements: Requirement[], proven: ReadonlySet<string>): Coverage {
   const slots = requirements.map((requirement) => slotsFor(map, requirement));
-  return { proven: slots.reduce((sum, slot) => sum + provenIn(slot, proven), 0), required: slots.reduce((sum, slot) => sum + slot.need, 0) };
+  return {
+    proven: slots.reduce((sum, slot) => sum + provenIn(slot, proven), 0),
+    required: slots.reduce((sum, slot) => sum + slot.need, 0),
+  };
 }
 
 /** The highest level whose requirements are all met, from proven topics only. Null means Developing. */
@@ -256,7 +287,12 @@ export interface AreaRow {
 }
 
 /** One row per area for the Profile table. */
-export function areaRows(map: TopicMap, careers: Careers, role: RoleInfo | null, proven: ReadonlySet<string>): AreaRow[] {
+export function areaRows(
+  map: TopicMap,
+  careers: Careers,
+  role: RoleInfo | null,
+  proven: ReadonlySet<string>,
+): AreaRow[] {
   return careers.areas.map((ladder) => {
     const target = role?.targets[ladder.id] ?? null;
     const requirements = target ? requirementsUpTo(ladder, target) : [];
@@ -274,7 +310,10 @@ export function areaRows(map: TopicMap, careers: Careers, role: RoleInfo | null,
 export function overallLevel(rows: AreaRow[]): Level | null {
   const needed = rows.filter((row) => row.target);
   if (!needed.length) return null;
-  return needed.reduce<Level | null>((low, row) => levelRank(row.level) < levelRank(low) ? row.level : low, needed[0].level);
+  return needed.reduce<Level | null>(
+    (low, row) => (levelRank(row.level) < levelRank(low) ? row.level : low),
+    needed[0].level,
+  );
 }
 
 export interface Milestone {
@@ -289,7 +328,12 @@ export interface Milestone {
  * The next milestone: of the areas below their target, the next level up that is closest to done. Ties go to the area
  * earlier in the course. Null when every target is met.
  */
-export function nextMilestone(map: TopicMap, careers: Careers, role: RoleInfo, proven: ReadonlySet<string>): Milestone | null {
+export function nextMilestone(
+  map: TopicMap,
+  careers: Careers,
+  role: RoleInfo,
+  proven: ReadonlySet<string>,
+): Milestone | null {
   let best: (Milestone & { ratio: number }) | null = null;
   for (const ladder of careers.areas) {
     const target = role.targets[ladder.id];
@@ -322,12 +366,22 @@ export function chaptersForRole(careers: Careers, role: RoleInfo): Set<string> {
  * My path: only the chapters the role needs, weakest area first, then course order. Area scores come from the
  * assessment, lower is weaker; an area without a score sorts after the scored ones, in course order.
  */
-export function pathChapters(map: TopicMap, careers: Careers, role: RoleInfo, areaScores: Partial<Record<Area, number>>): string[] {
+export function pathChapters(
+  map: TopicMap,
+  careers: Careers,
+  role: RoleInfo,
+  areaScores: Partial<Record<Area, number>>,
+): string[] {
   const needed = chaptersForRole(careers, role);
   const order = (area: Area) => areaScores[area] ?? Number.POSITIVE_INFINITY;
   return map.chapters
     .map((chapter, index) => ({ chapter, index }))
     .filter(({ chapter }) => needed.has(chapter.id))
-    .sort((a, b) => order(a.chapter.area) - order(b.chapter.area) || AREAS.indexOf(a.chapter.area) - AREAS.indexOf(b.chapter.area) || a.index - b.index)
+    .sort(
+      (a, b) =>
+        order(a.chapter.area) - order(b.chapter.area) ||
+        AREAS.indexOf(a.chapter.area) - AREAS.indexOf(b.chapter.area) ||
+        a.index - b.index,
+    )
     .map(({ chapter }) => chapter.id);
 }

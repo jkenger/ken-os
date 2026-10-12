@@ -51,8 +51,11 @@ const cases = () => {
 
 test("every case passes against the real function", () => {
   for (const item of cases()) {
-    assert.equal(real(item.subtotal, item.code), item.expected,
-      `Your case { subtotal: ${item.subtotal}, code: ${JSON.stringify(item.code)} } expects ${item.expected}, but the rules give ${real(item.subtotal, item.code)}.`);
+    assert.equal(
+      real(item.subtotal, item.code),
+      item.expected,
+      `Your case { subtotal: ${item.subtotal}, code: ${JSON.stringify(item.code)} } expects ${item.expected}, but the rules give ${real(item.subtotal, item.code)}.`,
+    );
   }
 });
 

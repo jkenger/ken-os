@@ -31,7 +31,13 @@ export function gradePrediction(predicted: string[], actual: string[], expected:
       voided: true,
     };
   }
-  if (same(got, want)) return { by: "code", label: "solid", misconceptions: [], feedback: `Exactly right, every line in order: ${want.join(", ")}.` };
+  if (same(got, want))
+    return {
+      by: "code",
+      label: "solid",
+      misconceptions: [],
+      feedback: `Exactly right, every line in order: ${want.join(", ")}.`,
+    };
   const sameItems = got.length === want.length && [...got].sort().join("\n") === [...want].sort().join("\n");
   return {
     by: "code",
@@ -45,7 +51,8 @@ export function gradePrediction(predicted: string[], actual: string[], expected:
 export function gradeLabRun(run: CodeRun): Grade {
   const total = run.passed + run.failed;
   if (total === 0) return { by: "code", label: "gap", misconceptions: [], feedback: "No tests ran.", run };
-  if (run.failed === 0) return { by: "code", label: "solid", misconceptions: [], feedback: `All ${total} tests passed.`, run };
+  if (run.failed === 0)
+    return { by: "code", label: "solid", misconceptions: [], feedback: `All ${total} tests passed.`, run };
   return {
     by: "code",
     label: run.passed === 0 ? "gap" : "partial",

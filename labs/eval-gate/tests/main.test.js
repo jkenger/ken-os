@@ -13,8 +13,22 @@ const answers = (table) => async (input) => {
   if (answer instanceof Error) throw answer;
   return answer;
 };
-const oldPrompt = answers({ r1: "Yes, within 30 days.", r2: "No, sale items are final.", s1: "Yes.", s2: "Yes.", s3: "Yes, every day.", b1: "Yes." });
-const newPrompt = answers({ r1: "Yes, within 30 days.", r2: "No.", s1: "No, US only.", s2: "No.", s3: "No.", b1: new Error("model timed out") });
+const oldPrompt = answers({
+  r1: "Yes, within 30 days.",
+  r2: "No, sale items are final.",
+  s1: "Yes.",
+  s2: "Yes.",
+  s3: "Yes, every day.",
+  b1: "Yes.",
+});
+const newPrompt = answers({
+  r1: "Yes, within 30 days.",
+  r2: "No.",
+  s1: "No, US only.",
+  s2: "No.",
+  s3: "No.",
+  b1: new Error("model timed out"),
+});
 
 test("a case that throws is a failure, not a crash", async () => {
   const results = await runEval(cases, newPrompt, grade);
@@ -43,8 +57,19 @@ test("the gate names regressions and blocks a category that got worse", async ()
 });
 
 test("a small overall drop can still hide a broken category", async () => {
-  const many = [...cases, ...Array.from({ length: 20 }, (_, index) => ({ id: `g${index}`, input: `general ${index}`, expected: "yes", tags: ["general"] }))];
-  const all = (fail) => async (input) => (fail.some((word) => input.includes(word)) ? "no" : (cases.find((entry) => entry.input === input)?.expected ?? "yes"));
+  const many = [
+    ...cases,
+    ...Array.from({ length: 20 }, (_, index) => ({
+      id: `g${index}`,
+      input: `general ${index}`,
+      expected: "yes",
+      tags: ["general"],
+    })),
+  ];
+  const all = (fail) => async (input) =>
+    fail.some((word) => input.includes(word))
+      ? "no"
+      : (cases.find((entry) => entry.input === input)?.expected ?? "yes");
   const baseline = await runEval(many, all([]), grade);
   const candidate = await runEval(many, all(["PayPal"]), grade);
   const verdict = gate(baseline, candidate, { maxDrop: 0.1 });

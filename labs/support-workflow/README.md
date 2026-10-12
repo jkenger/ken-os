@@ -10,7 +10,7 @@ helps (reading the ticket, writing the reply) and keep the decisions in code:
 - `question`: return `{ status: "answered", reply }` with `reply` from `draftReply(text)`.
 - `refund`: `refundPolicy(order)` returns `{ eligible, reason }`. Not eligible returns `{ status: "declined", reason }`.
   Over 100 returns `{ status: "needs_approval" }` without refunding. Otherwise call `issueRefund(order.id,
-  order.amount)` once and return `{ status: "refunded", amount }`.
+order.amount)` once and return `{ status: "refunded", amount }`.
 
 Then explain the difference between a workflow (code picks the steps) and an agent (the model picks the steps), and
 when each is the better choice.

@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { canProve, computeProgress, isReviewDue, nextIntervalDays, type Label, type TopicEvent, type TopicEventKind } from "@ken-os/domain";
+import {
+  canProve,
+  computeProgress,
+  isReviewDue,
+  nextIntervalDays,
+  type Label,
+  type TopicEvent,
+  type TopicEventKind,
+} from "@ken-os/domain";
 
 // Topic states and review dates (docs/architecture/engineering-rebuild.md, sections 2 and 3).
 
@@ -8,7 +16,14 @@ const topicId = "rel.retry_backoff";
 let clock = Date.UTC(2026, 9, 10);
 function event(kind: TopicEventKind, extra: { passed?: boolean; label?: Label } = {}): TopicEvent {
   clock += 60_000;
-  return { id: String(clock), topicId, kind, passed: extra.passed ?? null, label: extra.label ?? null, createdAt: new Date(clock) };
+  return {
+    id: String(clock),
+    topicId,
+    kind,
+    passed: extra.passed ?? null,
+    label: extra.label ?? null,
+    createdAt: new Date(clock),
+  };
 }
 const states = (events: TopicEvent[]) => computeProgress(topicId, events).state;
 
@@ -26,11 +41,17 @@ test("a topic moves Not started, Learning, Practicing, Proven", () => {
 
 test("reading a lesson never proves a topic, and a proof needs the exercise passed first", () => {
   assert.equal(states([event("lesson_opened"), event("proof", { passed: true, label: "solid" })]), "LEARNING");
-  assert.equal(states([event("exercise_run", { passed: false }), event("proof", { passed: true, label: "solid" })]), "PRACTICING");
+  assert.equal(
+    states([event("exercise_run", { passed: false }), event("proof", { passed: true, label: "solid" })]),
+    "PRACTICING",
+  );
 });
 
 test("a missed proof keeps the topic where it was", () => {
-  const progress = computeProgress(topicId, [event("exercise_run", { passed: true }), event("proof", { passed: false, label: "partial" })]);
+  const progress = computeProgress(topicId, [
+    event("exercise_run", { passed: true }),
+    event("proof", { passed: false, label: "partial" }),
+  ]);
   assert.equal(progress.state, "PRACTICING");
   assert.equal(progress.lastLabel, "partial");
   assert.equal(canProve(progress), true, "Try again stays open");
@@ -42,7 +63,11 @@ test("opening the solution closes Prove until the exercise passes again", () => 
   const progress = computeProgress(topicId, [passed, solution]);
   assert.equal(canProve(progress), false);
   assert.equal(progress.solutionOpened, true);
-  assert.equal(states([passed, solution, event("proof", { passed: true, label: "solid" })]), "PRACTICING", "a proof after the solution doesn't count");
+  assert.equal(
+    states([passed, solution, event("proof", { passed: true, label: "solid" })]),
+    "PRACTICING",
+    "a proof after the solution doesn't count",
+  );
   const again = computeProgress(topicId, [passed, solution, event("exercise_run", { passed: true })]);
   assert.equal(canProve(again), true);
   assert.equal(again.solutionOpened, false);
@@ -69,7 +94,10 @@ test("review gaps come from the grade", () => {
 });
 
 test("a review is due once its date has passed", () => {
-  const progress = computeProgress(topicId, [event("exercise_run", { passed: true }), event("proof", { passed: true, label: "solid" })]);
+  const progress = computeProgress(topicId, [
+    event("exercise_run", { passed: true }),
+    event("proof", { passed: true, label: "solid" }),
+  ]);
   assert.equal(isReviewDue(progress, new Date(progress.provenAt!)), false);
   assert.equal(isReviewDue(progress, new Date(new Date(progress.provenAt!).getTime() + 4 * 86_400_000)), true);
 });

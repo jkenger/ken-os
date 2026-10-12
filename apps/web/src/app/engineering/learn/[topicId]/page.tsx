@@ -10,14 +10,22 @@ export const dynamic = "force-dynamic";
 
 const STEPS: TopicStep[] = ["learn", "exercise", "prove"];
 
-export default async function TopicRoute({ params, searchParams }: { params: Promise<{ topicId: string }>; searchParams: Promise<{ step?: string }> }) {
+export default async function TopicRoute({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ topicId: string }>;
+  searchParams: Promise<{ step?: string }>;
+}) {
   const [{ topicId }, { step }] = await Promise.all([params, searchParams]);
   const session = await requireSession(`/engineering/learn/${encodeURIComponent(topicId)}`, { step });
   const topic = findTopic(topicId);
   if (!topic) notFound();
   const [view, proven] = await Promise.all([getTopicView(session.userId, topicId), provenTopics(session.userId)]);
   // The next topic in course order that isn't proven yet.
-  const after = topicMap.topics.slice(topicMap.topics.indexOf(topic) + 1).concat(topicMap.topics.slice(0, topicMap.topics.indexOf(topic)));
+  const after = topicMap.topics
+    .slice(topicMap.topics.indexOf(topic) + 1)
+    .concat(topicMap.topics.slice(0, topicMap.topics.indexOf(topic)));
   const next = after.find((item) => !proven.has(item.id));
   return (
     <TopicPage

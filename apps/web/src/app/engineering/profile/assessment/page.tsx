@@ -14,5 +14,11 @@ export default async function AssessmentPage() {
   const areas = topicMap.areas.map((area) => ({ id: area.id, title: area.title }));
   if (open) return <Assessment email={session.email} run={await getRunView(session.userId, open.id)} areas={areas} />;
   const profile = await getProfileRow(session.userId);
-  return <Intake email={session.email} intake={profile?.intake ?? null} roles={careers.roles.map((role) => ({ id: role.id, title: role.title }))} />;
+  return (
+    <Intake
+      email={session.email}
+      intake={profile?.intake ?? null}
+      roles={careers.roles.map((role) => ({ id: role.id, title: role.title }))}
+    />
+  );
 }

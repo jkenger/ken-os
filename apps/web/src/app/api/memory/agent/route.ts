@@ -1,7 +1,12 @@
 import { hasValidOrigin } from "@/lib/origin";
 import { memoryResponse, readMemoryJson } from "@/features/project-memory/api";
 import { MemoryInputError, parseDecisionDraft, parseReceiptDraft } from "@/features/project-memory/contract";
-import { authorizeMemoryCredential, getMemoryOverview, submitDecision, submitReceipt } from "@/features/project-memory/store";
+import {
+  authorizeMemoryCredential,
+  getMemoryOverview,
+  submitDecision,
+  submitReceipt,
+} from "@/features/project-memory/store";
 import { messages } from "@/lib/messages";
 
 export const runtime = "nodejs";
@@ -15,9 +20,14 @@ export async function GET(request: Request) {
       policy: overview.policy,
       policyDigest: overview.policyDigest,
       approvedDecisions: overview.decisions.filter((item) => item.status === "approved"),
-      proposedDecisions: overview.decisions.filter((item) => item.status === "proposed").map((item) => ({ id: item.id, title: item.title, provenance: item.provenance })),
+      proposedDecisions: overview.decisions
+        .filter((item) => item.status === "proposed")
+        .map((item) => ({ id: item.id, title: item.title, provenance: item.provenance })),
       recentApprovedReceipts: overview.receipts.filter((item) => item.status === "approved").slice(0, 10),
-      openQuestions: overview.receipts.filter((item) => item.status === "approved").flatMap((item) => item.remaining).slice(0, 15),
+      openQuestions: overview.receipts
+        .filter((item) => item.status === "approved")
+        .flatMap((item) => item.remaining)
+        .slice(0, 15),
     };
   });
 }

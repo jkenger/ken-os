@@ -3,7 +3,10 @@ test("a plain comment renders as expected", () => {
     renderComment({ author: "Ana", text: "Nice post", website: "https://example.com" }),
     '<article class="comment"><a href="https://example.com" rel="nofollow noopener noreferrer">Ana</a><p>Nice post</p></article>',
   );
-  assert.equal(renderComment({ author: "Ana", text: "Hi" }), '<article class="comment"><span>Ana</span><p>Hi</p></article>');
+  assert.equal(
+    renderComment({ author: "Ana", text: "Hi" }),
+    '<article class="comment"><span>Ana</span><p>Hi</p></article>',
+  );
 });
 
 test("markup in the text is shown, not run", () => {
@@ -31,10 +34,17 @@ test("a website can't break out of its attribute", () => {
 });
 
 test("only http and https addresses become links", () => {
-  for (const website of ["javascript:alert(1)", " JavaScript:alert(1)", "data:text/html,<script>x()</script>", "vbscript:x"]) {
+  for (const website of [
+    "javascript:alert(1)",
+    " JavaScript:alert(1)",
+    "data:text/html,<script>x()</script>",
+    "vbscript:x",
+  ]) {
     const html = renderComment({ author: "Ana", text: "hi", website });
     assert.ok(!html.includes("<a "), `${website} must not become a link`);
     assert.ok(html.includes("<span>Ana</span>"));
   }
-  assert.ok(renderComment({ author: "Ana", text: "hi", website: "http://example.com" }).includes('href="http://example.com"'));
+  assert.ok(
+    renderComment({ author: "Ana", text: "hi", website: "http://example.com" }).includes('href="http://example.com"'),
+  );
 });

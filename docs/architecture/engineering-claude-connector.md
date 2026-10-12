@@ -10,23 +10,23 @@ The owner's feedback on the rebuilt loop: the topic editor is good, but the expe
 
 Owner decisions (12 Oct 2026):
 
-| Question | Decision |
-|---|---|
+| Question                     | Decision                                                                                                                     |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | Where the conversation lives | claude.ai, through a custom connector. The owner has Claude Pro. A chat panel inside Ken OS is kept on file as option B (§9) |
-| Who writes topic content | Claude, on demand, in the conversation. Ken OS's built-in writers stay as a fallback |
-| Practice | Stays in Ken OS as graded reviews. Quizzing in Claude is fine but records nothing |
+| Who writes topic content     | Claude, on demand, in the conversation. Ken OS's built-in writers stay as a fallback                                         |
+| Practice                     | Stays in Ken OS as graded reviews. Quizzing in Claude is fine but records nothing                                            |
 
 ## 1. The split
 
-| | Claude | Ken OS |
-|---|---|---|
-| Explaining, follow-up questions, "another way", examples | Yes | |
-| Writing a topic's lesson, exercise and proof question | Drafts and saves them through the connector | Stores, checks and shows them |
-| Writing and running code | | The editor and the isolated test runner |
-| Seeing the owner's code and test results | Reads them through the connector | Autosaves them |
-| Grading a proof, deciding Proven | Never | Only here, by its own Assessor |
-| Path, progress, history, what's due | Reads them | Owns them |
-| Practice grades and review dates | Never | Only here |
+|                                                          | Claude                                      | Ken OS                                  |
+| -------------------------------------------------------- | ------------------------------------------- | --------------------------------------- |
+| Explaining, follow-up questions, "another way", examples | Yes                                         |                                         |
+| Writing a topic's lesson, exercise and proof question    | Drafts and saves them through the connector | Stores, checks and shows them           |
+| Writing and running code                                 |                                             | The editor and the isolated test runner |
+| Seeing the owner's code and test results                 | Reads them through the connector            | Autosaves them                          |
+| Grading a proof, deciding Proven                         | Never                                       | Only here, by its own Assessor          |
+| Path, progress, history, what's due                      | Reads them                                  | Owns them                               |
+| Practice grades and review dates                         | Never                                       | Only here                               |
 
 ## 2. Three rules that keep progress honest
 
@@ -54,21 +54,21 @@ The tool layer lives in one module, `features/engineering-lab/agent-tools.ts`, s
 
 **Read**
 
-| Tool | Returns |
-|---|---|
-| `get_current_state` | Target role, current topic (chapter, step, state), next topics on the path, reviews due today, AI uses left |
-| `get_topic(topicId)` | Title, chapter, area, state, the approved assessment points, the current lesson (if any), the current exercise version's task, starter and tests (never the solution), and whether a proof question exists |
-| `get_my_work(topicId)` | The owner's latest autosaved code for the current exercise version, and the last test run: passed, failed, and each failing test's expected and actual output |
-| `get_history(topicId)` | Past runs (counts only), proof attempts with grade and feedback, open misconceptions from graded answers |
-| `list_path` | The owner's path: areas, chapters and topics with their states |
+| Tool                   | Returns                                                                                                                                                                                                    |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `get_current_state`    | Target role, current topic (chapter, step, state), next topics on the path, reviews due today, AI uses left                                                                                                |
+| `get_topic(topicId)`   | Title, chapter, area, state, the approved assessment points, the current lesson (if any), the current exercise version's task, starter and tests (never the solution), and whether a proof question exists |
+| `get_my_work(topicId)` | The owner's latest autosaved code for the current exercise version, and the last test run: passed, failed, and each failing test's expected and actual output                                              |
+| `get_history(topicId)` | Past runs (counts only), proof attempts with grade and feedback, open misconceptions from graded answers                                                                                                   |
+| `list_path`            | The owner's path: areas, chapters and topics with their states                                                                                                                                             |
 
 **Write** (content only)
 
-| Tool | Does |
-|---|---|
-| `save_lesson(topicId, lesson)` | Saves a new lesson version in the rebuild's lesson format: core idea, mental model, one formula, code or rule block, a product example, optional Go deeper, and sources. Sources must be on the Researcher's trusted sites; others are dropped and reported back |
-| `save_exercise(topicId, exercise)` | Saves a new exercise version: `runner` (`browser` or `pglite`), task line, `starter`, `tests`, `solution`, `hint`. Starts as **unchecked** (§4) |
-| `save_proof_question(topicId, prompt, pointIds)` | Saves a proof question that names the approved points it tests. Rejected if it names none or names a point not on that topic |
+| Tool                                             | Does                                                                                                                                                                                                                                                             |
+| ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `save_lesson(topicId, lesson)`                   | Saves a new lesson version in the rebuild's lesson format: core idea, mental model, one formula, code or rule block, a product example, optional Go deeper, and sources. Sources must be on the Researcher's trusted sites; others are dropped and reported back |
+| `save_exercise(topicId, exercise)`               | Saves a new exercise version: `runner` (`browser` or `pglite`), task line, `starter`, `tests`, `solution`, `hint`. Starts as **unchecked** (§4)                                                                                                                  |
+| `save_proof_question(topicId, prompt, pointIds)` | Saves a proof question that names the approved points it tests. Rejected if it names none or names a point not on that topic                                                                                                                                     |
 
 **Not available, by design:** submitting or grading a proof, marking Proven, recording a test run, changing Practice, the path, the target role or the profile, and anything in other modules (Resume, Skills, Project Memory, Terms).
 
@@ -133,18 +133,18 @@ The owner creates a Claude Project named "Ken OS Engineering", turns on the Ken 
 
 ## 8. Files
 
-| File | Change |
-|---|---|
-| `src/features/engineering-lab/agent-tools.ts` | New: the tool layer (§3), shared with option B |
-| `src/app/api/mcp/route.ts` | New: the MCP endpoint |
-| `src/app/.well-known/oauth-protected-resource/route.ts`, `.../oauth-authorization-server/route.ts` | New: OAuth metadata |
-| `src/app/oauth/authorize/page.tsx`, `src/app/api/oauth/token/route.ts`, `src/app/api/oauth/register/route.ts` | New: OAuth |
-| `src/lib/schema.ts` + migration | `lab_exercises`, `lab_exercise_drafts`, `oauth_clients`, `oauth_tokens` (hashed), `source` columns on lessons and proof questions. Add tables first, per the migration rule |
-| `src/features/engineering-lab/topic-store.ts` | Exercise versions, checking, locking, autosave, the `claude` source |
-| `src/components/engineering/*` topic page | Ask Claude, the "Saved" status, new-exercise notice, invalid-exercise notice |
-| `src/components/engineering/profile.tsx` | Connections section |
-| `docs/product/claude-project-instructions.md` | New: §7 text |
-| `AGENTS.md` | Name the connector as another untrusted input, and its no-grading rule |
+| File                                                                                                          | Change                                                                                                                                                                      |
+| ------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/features/engineering-lab/agent-tools.ts`                                                                 | New: the tool layer (§3), shared with option B                                                                                                                              |
+| `src/app/api/mcp/route.ts`                                                                                    | New: the MCP endpoint                                                                                                                                                       |
+| `src/app/.well-known/oauth-protected-resource/route.ts`, `.../oauth-authorization-server/route.ts`            | New: OAuth metadata                                                                                                                                                         |
+| `src/app/oauth/authorize/page.tsx`, `src/app/api/oauth/token/route.ts`, `src/app/api/oauth/register/route.ts` | New: OAuth                                                                                                                                                                  |
+| `src/lib/schema.ts` + migration                                                                               | `lab_exercises`, `lab_exercise_drafts`, `oauth_clients`, `oauth_tokens` (hashed), `source` columns on lessons and proof questions. Add tables first, per the migration rule |
+| `src/features/engineering-lab/topic-store.ts`                                                                 | Exercise versions, checking, locking, autosave, the `claude` source                                                                                                         |
+| `src/components/engineering/*` topic page                                                                     | Ask Claude, the "Saved" status, new-exercise notice, invalid-exercise notice                                                                                                |
+| `src/components/engineering/profile.tsx`                                                                      | Connections section                                                                                                                                                         |
+| `docs/product/claude-project-instructions.md`                                                                 | New: §7 text                                                                                                                                                                |
+| `AGENTS.md`                                                                                                   | Name the connector as another untrusted input, and its no-grading rule                                                                                                      |
 
 ## 9. Option B, kept on file: a chat panel inside Ken OS
 
@@ -158,11 +158,11 @@ Built only if option A disappoints: switching tabs feels clumsy, claude.ai can't
 
 ## 10. Slices
 
-| # | Branch | Covers |
-|---|---|---|
-| 1 | `feat/engineering-agent-tools` | `agent-tools.ts` with tests, exercise versions, checking and locking, autosave, the `claude` source. No connector yet; testable directly |
-| 2 | `feat/engineering-mcp` | OAuth (metadata, authorize with consent, token, registration), `/api/mcp`, Connections on Profile, write limits |
-| 3 | `feat/engineering-ask-claude` | The Ask Claude button, the Project instructions file, docs and rules updates |
+| #   | Branch                         | Covers                                                                                                                                   |
+| --- | ------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `feat/engineering-agent-tools` | `agent-tools.ts` with tests, exercise versions, checking and locking, autosave, the `claude` source. No connector yet; testable directly |
+| 2   | `feat/engineering-mcp`         | OAuth (metadata, authorize with consent, token, registration), `/api/mcp`, Connections on Profile, write limits                          |
+| 3   | `feat/engineering-ask-claude`  | The Ask Claude button, the Project instructions file, docs and rules updates                                                             |
 
 ## 11. Done when
 

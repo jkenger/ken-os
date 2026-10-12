@@ -35,7 +35,9 @@ function gate(baseline, candidate, { maxDrop }) {
   const after = report(candidate);
   const passRateChange = after.passRate - before.passRate;
   const passedBefore = new Set(baseline.filter((result) => result.pass).map((result) => result.id));
-  const regressions = candidate.filter((result) => !result.pass && passedBefore.has(result.id)).map((result) => result.id);
+  const regressions = candidate
+    .filter((result) => !result.pass && passedBefore.has(result.id))
+    .map((result) => result.id);
   const tagDrops = Object.keys(before.byTag).filter((tag) => {
     const now = after.byTag[tag] ? after.byTag[tag].passRate : 0;
     return before.byTag[tag].passRate - now > maxDrop + EPSILON;

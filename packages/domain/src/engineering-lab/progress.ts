@@ -59,7 +59,17 @@ export function nextIntervalDays(previous: number, label: Label): number {
 }
 
 export function emptyProgress(topicId: string): TopicProgress {
-  return { topicId, state: "NOT_STARTED", exercisePassed: false, solutionOpened: false, provenAt: null, lastActivityAt: null, lastLabel: null, nextReviewAt: null, reviewIntervalDays: 0 };
+  return {
+    topicId,
+    state: "NOT_STARTED",
+    exercisePassed: false,
+    solutionOpened: false,
+    provenAt: null,
+    lastActivityAt: null,
+    lastLabel: null,
+    nextReviewAt: null,
+    reviewIntervalDays: 0,
+  };
 }
 
 /**
@@ -72,15 +82,22 @@ export function emptyProgress(topicId: string): TopicProgress {
  */
 export function computeProgress(topicId: string, events: readonly TopicEvent[]): TopicProgress {
   const progress = emptyProgress(topicId);
-  const ordered = events.filter((event) => event.topicId === topicId).sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+  const ordered = events
+    .filter((event) => event.topicId === topicId)
+    .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
   const rank = (state: TopicState) => STATES.indexOf(state);
-  const atLeast = (state: TopicState) => { if (rank(progress.state) < rank(state)) progress.state = state; };
+  const atLeast = (state: TopicState) => {
+    if (rank(progress.state) < rank(state)) progress.state = state;
+  };
   for (const event of ordered) {
     progress.lastActivityAt = event.createdAt.toISOString();
     if (event.kind === "lesson_opened") atLeast("LEARNING");
     if (event.kind === "exercise_run") {
       atLeast("PRACTICING");
-      if (event.passed) { progress.exercisePassed = true; progress.solutionOpened = false; }
+      if (event.passed) {
+        progress.exercisePassed = true;
+        progress.solutionOpened = false;
+      }
     }
     if (event.kind === "solution_opened") {
       progress.exercisePassed = false;

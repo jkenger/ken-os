@@ -5,13 +5,15 @@ import { z } from "zod";
 export const RADAR_PROMPT_VERSION = "radar-v1";
 
 const radarSchema = z.object({
-  items: z.array(z.object({
-    area: z.enum(AREAS),
-    tag: z.enum(["learn", "experiment", "explore"]),
-    title: z.string(),
-    reason: z.string(),
-    sourceUrl: z.string(),
-  })),
+  items: z.array(
+    z.object({
+      area: z.enum(AREAS),
+      tag: z.enum(["learn", "experiment", "explore"]),
+      title: z.string(),
+      reason: z.string(),
+      sourceUrl: z.string(),
+    }),
+  ),
 });
 
 const instructions = `You are the weekly radar for the owner's Engineering Lab. The owner builds their own products as a full-stack developer
@@ -53,10 +55,18 @@ export async function scanRadar(input: RadarInput): Promise<{ items: RadarDraftI
   if (!result.finalOutput) throw new Error("The radar returned nothing.");
   const areaIds = new Set(input.areas.map((area) => area.id));
   const rejected: string[] = [];
-  const items = result.finalOutput.items.filter((item) => {
-    if (!hostAllowed(item.sourceUrl, input.allowedDomains)) { rejected.push(`Source outside allowlist: ${item.sourceUrl}`); return false; }
-    if (!areaIds.has(item.area)) { rejected.push(`Area outside your direction: ${item.title}`); return false; }
-    return true;
-  }).slice(0, RADAR_WEEKLY_LIMIT);
+  const items = result.finalOutput.items
+    .filter((item) => {
+      if (!hostAllowed(item.sourceUrl, input.allowedDomains)) {
+        rejected.push(`Source outside allowlist: ${item.sourceUrl}`);
+        return false;
+      }
+      if (!areaIds.has(item.area)) {
+        rejected.push(`Area outside your direction: ${item.title}`);
+        return false;
+      }
+      return true;
+    })
+    .slice(0, RADAR_WEEKLY_LIMIT);
   return { items, rejected };
 }

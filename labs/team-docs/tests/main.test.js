@@ -1,4 +1,7 @@
-const ana = { userId: 1 }, ben = { userId: 2 }, cy = { userId: 3 }, dee = { userId: 4 };
+const ana = { userId: 1 },
+  ben = { userId: 2 },
+  cy = { userId: 3 },
+  dee = { userId: 4 };
 const titleOf = async (id) => (await db.query("select title from documents where id = $1", [id])).rows[0].title;
 
 test("members read their organisation's documents", async () => {
@@ -15,7 +18,10 @@ test("an outsider gets null, exactly as for a document that doesn't exist", asyn
 });
 
 test("listing is limited to members", async () => {
-  assert.deepEqual((await listDocuments(db, ana, 1)).map((doc) => doc.title), ["Roadmap", "Pricing"]);
+  assert.deepEqual(
+    (await listDocuments(db, ana, 1)).map((doc) => doc.title),
+    ["Roadmap", "Pricing"],
+  );
   assert.deepEqual(await listDocuments(db, cy, 1), []);
   assert.deepEqual(await listDocuments(db, dee, 2), []);
 });

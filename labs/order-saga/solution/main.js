@@ -15,14 +15,26 @@ async function placeOrder(services, order) {
     }
   };
   try {
-    const reservationId = await run("inventory", () => services.inventory.reserve(order.items), (id) => services.inventory.release(id));
-    const chargeId = await run("payments", () => services.payments.charge(order.total), (id) => services.payments.refund(id));
+    const reservationId = await run(
+      "inventory",
+      () => services.inventory.reserve(order.items),
+      (id) => services.inventory.release(id),
+    );
+    const chargeId = await run(
+      "payments",
+      () => services.payments.charge(order.total),
+      (id) => services.payments.refund(id),
+    );
     const shipmentId = await run("shipping", () => services.shipping.create(order.address));
     return { ok: true, reservationId, chargeId, shipmentId };
   } catch (error) {
     const compensationErrors = [];
     for (const step of undo.reverse()) {
-      try { await step(); } catch (undoError) { compensationErrors.push(undoError.message); }
+      try {
+        await step();
+      } catch (undoError) {
+        compensationErrors.push(undoError.message);
+      }
     }
     return { ok: false, failedAt: error.step, error: error.message, compensationErrors };
   }

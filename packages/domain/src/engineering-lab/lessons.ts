@@ -56,7 +56,11 @@ function clean(text: string) {
 }
 
 /** Keeps only citations that point at a source in the packet, and turns them into the lesson's sources. */
-export function finalizeLesson(draft: LessonDraft, packet: Pick<SourcePacket, "sources">, meta: Pick<LessonSnapshot, "topicId" | "version" | "sourcePacketId" | "promptVersion" | "model">): LessonSnapshot {
+export function finalizeLesson(
+  draft: LessonDraft,
+  packet: Pick<SourcePacket, "sources">,
+  meta: Pick<LessonSnapshot, "topicId" | "version" | "sourcePacketId" | "promptVersion" | "model">,
+): LessonSnapshot {
   const allowed = new Map(packet.sources.map((source) => [source.url, source.title]));
   const rejected: string[] = [];
   const cited = new Set<string>();
@@ -67,8 +71,12 @@ export function finalizeLesson(draft: LessonDraft, packet: Pick<SourcePacket, "s
   if (!cited.size) throw new Error("The lesson cited none of its sources.");
   const prove = draft.prove.map(clean).filter(Boolean).slice(0, 3);
   if (prove.length !== 3) throw new Error("The lesson needs exactly 3 things to prove.");
-  if (![draft.heading, draft.body, draft.mentalModel, draft.block.content, draft.example].every((text) => clean(text))) throw new Error("The lesson is missing a part.");
-  const deeper = draft.deeper && clean(draft.deeper.title) && clean(draft.deeper.body) ? { title: clean(draft.deeper.title), body: clean(draft.deeper.body) } : null;
+  if (![draft.heading, draft.body, draft.mentalModel, draft.block.content, draft.example].every((text) => clean(text)))
+    throw new Error("The lesson is missing a part.");
+  const deeper =
+    draft.deeper && clean(draft.deeper.title) && clean(draft.deeper.body)
+      ? { title: clean(draft.deeper.title), body: clean(draft.deeper.body) }
+      : null;
   return {
     ...meta,
     heading: clean(draft.heading),
@@ -114,7 +122,8 @@ export function parseAuthoredTopic(raw: unknown, file: string): AuthoredTopic {
   const deeper = lesson.deeper as Record<string, unknown> | null | undefined;
   const proof = (input.proof ?? {}) as Record<string, unknown>;
   const kind = block.kind;
-  if (!LESSON_BLOCK_KINDS.includes(kind as LessonBlockKind)) fail(`${file} lesson.block.kind`, `expected one of ${LESSON_BLOCK_KINDS.join(", ")}`);
+  if (!LESSON_BLOCK_KINDS.includes(kind as LessonBlockKind))
+    fail(`${file} lesson.block.kind`, `expected one of ${LESSON_BLOCK_KINDS.join(", ")}`);
   const prove = texts(lesson.prove, `${file} lesson.prove`);
   if (prove.length !== 3) fail(`${file} lesson.prove`, "expected exactly 3 lines");
   const sources = (Array.isArray(lesson.sources) ? lesson.sources : []).map((value, index) => {
@@ -133,9 +142,18 @@ export function parseAuthoredTopic(raw: unknown, file: string): AuthoredTopic {
       heading: text(lesson.heading, `${file} lesson.heading`),
       body: text(lesson.body, `${file} lesson.body`),
       mentalModel: text(lesson.mentalModel, `${file} lesson.mentalModel`),
-      block: { kind: kind as LessonBlockKind, content: text(block.content, `${file} lesson.block.content`), note: text(block.note, `${file} lesson.block.note`) },
+      block: {
+        kind: kind as LessonBlockKind,
+        content: text(block.content, `${file} lesson.block.content`),
+        note: text(block.note, `${file} lesson.block.note`),
+      },
       example: text(lesson.example, `${file} lesson.example`),
-      deeper: deeper ? { title: text(deeper.title, `${file} lesson.deeper.title`), body: text(deeper.body, `${file} lesson.deeper.body`) } : null,
+      deeper: deeper
+        ? {
+            title: text(deeper.title, `${file} lesson.deeper.title`),
+            body: text(deeper.body, `${file} lesson.deeper.body`),
+          }
+        : null,
       prove,
       sources,
     },

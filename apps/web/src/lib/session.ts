@@ -44,13 +44,19 @@ export function sessionExpiry(authTime: number, now: number): number {
 }
 
 /** Whether a valid session should be re-signed now: `skip` under a day old, `refuse` past the 90-day cap. */
-export function renewalFor(claims: Pick<SessionClaims, "authTime" | "issuedAt">, now: number): "skip" | "renew" | "refuse" {
+export function renewalFor(
+  claims: Pick<SessionClaims, "authTime" | "issuedAt">,
+  now: number,
+): "skip" | "renew" | "refuse" {
   if (now - claims.authTime >= SESSION_MAX) return "refuse";
   if (now - claims.issuedAt < RENEW_AFTER) return "skip";
   return "renew";
 }
 
-export async function signSession(claims: Pick<SessionClaims, "sub" | "email" | "authTime">, now: number): Promise<{ token: string; maxAge: number }> {
+export async function signSession(
+  claims: Pick<SessionClaims, "sub" | "email" | "authTime">,
+  now: number,
+): Promise<{ token: string; maxAge: number }> {
   const expiresAt = sessionExpiry(claims.authTime, now);
   const token = await new SignJWT({ email: claims.email, auth_time: claims.authTime })
     .setProtectedHeader({ alg: "HS256" })
@@ -83,7 +89,10 @@ export async function readSessionToken(token: string, now = nowSeconds()): Promi
 }
 
 /** A fresh token for a valid session older than a day, or null when it should be left alone. Used by `src/proxy.ts`. */
-export async function renewSession(token: string, now = nowSeconds()): Promise<{ token: string; maxAge: number } | null> {
+export async function renewSession(
+  token: string,
+  now = nowSeconds(),
+): Promise<{ token: string; maxAge: number } | null> {
   const claims = await readSessionToken(token, now);
   if (!claims || renewalFor(claims, now) !== "renew") return null;
   return signSession(claims, now);
@@ -109,7 +118,9 @@ export async function getSession(): Promise<Session | null> {
 export async function requireSession(path: string, query: Record<string, string | undefined> = {}): Promise<Session> {
   const session = await getSession();
   if (session) return session;
-  const search = new URLSearchParams(Object.entries(query).filter((entry): entry is [string, string] => entry[1] !== undefined));
+  const search = new URLSearchParams(
+    Object.entries(query).filter((entry): entry is [string, string] => entry[1] !== undefined),
+  );
   const next = search.size ? `${path}?${search}` : path;
   const params = new URLSearchParams();
   if ((await cookies()).has(SESSION_COOKIE)) params.set("expired", "1");

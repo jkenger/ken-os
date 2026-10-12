@@ -1,6 +1,9 @@
 function planNodes(plan) {
   const nodes = [];
-  const walk = (node) => { nodes.push(node); (node.Plans ?? []).forEach(walk); };
+  const walk = (node) => {
+    nodes.push(node);
+    (node.Plans ?? []).forEach(walk);
+  };
   walk(plan);
   return nodes;
 }
@@ -32,7 +35,11 @@ test("recentOrders returns the newest orders for that user", async () => {
   assert.equal(rows.length, 20);
   assert.ok(rows.every((row) => row.user_id === 42));
   const times = rows.map((row) => new Date(row.created_at).getTime());
-  assert.deepEqual(times, [...times].sort((a, b) => b - a), "rows must be newest first");
+  assert.deepEqual(
+    times,
+    [...times].sort((a, b) => b - a),
+    "rows must be newest first",
+  );
   assert.equal((await recentOrders(db, 9999)).length, 3);
 });
 
@@ -41,7 +48,11 @@ test("the plan uses an index that starts with user_id", async () => {
   const scan = nodes.find((node) => node["Index Name"]);
   assert.ok(scan, `No index is used: ${nodes.map((node) => node["Node Type"]).join(" > ")}`);
   const leading = await firstColumn(scan["Index Name"]);
-  assert.equal(leading, "user_id", `The plan uses ${scan["Index Name"]}, which is sorted by ${leading} first, so one user's rows are spread through the whole index.`);
+  assert.equal(
+    leading,
+    "user_id",
+    `The plan uses ${scan["Index Name"]}, which is sorted by ${leading} first, so one user's rows are spread through the whole index.`,
+  );
 });
 
 test("the plan needs no separate sort and reads only a few pages", async () => {

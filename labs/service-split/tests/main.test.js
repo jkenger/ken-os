@@ -31,7 +31,12 @@ test("a refused reservation creates no order", async () => {
 });
 
 test("inventory being down creates no order", async () => {
-  const orders = createOrders({ available: async () => 0, reserve: async () => { throw new Error("ECONNREFUSED"); } });
+  const orders = createOrders({
+    available: async () => 0,
+    reserve: async () => {
+      throw new Error("ECONNREFUSED");
+    },
+  });
   assert.deepEqual(await orders.place("desk", 1), { ok: false, reason: "inventory_unavailable" });
   assert.deepEqual(orders.list(), []);
 });

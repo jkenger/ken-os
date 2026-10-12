@@ -4,7 +4,9 @@
 // search from always returning something. Nearest neighbours can still be confidently wrong: exact names, codes and
 // rare terms are where keyword search, or both combined, does better.
 function cosine(a, b) {
-  let dot = 0, lengthA = 0, lengthB = 0;
+  let dot = 0,
+    lengthA = 0,
+    lengthB = 0;
   for (let i = 0; i < a.length; i += 1) {
     dot += a[i] * b[i];
     lengthA += a[i] * a[i];

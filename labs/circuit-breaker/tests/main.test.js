@@ -7,8 +7,22 @@ function fakeService() {
   };
   return service;
 }
-function clock() { let time = 1000; return { now: () => time, advance: (ms) => { time += ms; } }; }
-const attempt = async (breaker) => { try { return await breaker.call("u1"); } catch (error) { return error; } };
+function clock() {
+  let time = 1000;
+  return {
+    now: () => time,
+    advance: (ms) => {
+      time += ms;
+    },
+  };
+}
+const attempt = async (breaker) => {
+  try {
+    return await breaker.call("u1");
+  } catch (error) {
+    return error;
+  }
+};
 
 test("it opens after the threshold and then fails fast", async () => {
   const service = fakeService();
@@ -25,9 +39,13 @@ test("it opens after the threshold and then fails fast", async () => {
 test("a success resets the count of failures", async () => {
   const service = fakeService();
   const breaker = createBreaker(service.fn, { failureThreshold: 3, now: clock().now });
-  await attempt(breaker); await attempt(breaker);
-  service.up = true; await attempt(breaker);
-  service.up = false; await attempt(breaker); await attempt(breaker);
+  await attempt(breaker);
+  await attempt(breaker);
+  service.up = true;
+  await attempt(breaker);
+  service.up = false;
+  await attempt(breaker);
+  await attempt(breaker);
   assert.equal(breaker.state(), "closed", "only failures in a row count");
 });
 
@@ -35,7 +53,8 @@ test("after the cooldown one trial call decides", async () => {
   const service = fakeService();
   const time = clock();
   const breaker = createBreaker(service.fn, { failureThreshold: 2, cooldownMs: 5000, now: time.now });
-  await attempt(breaker); await attempt(breaker);
+  await attempt(breaker);
+  await attempt(breaker);
   time.advance(4999);
   assert.equal((await attempt(breaker)).name, "BreakerOpenError", "still cooling down");
   time.advance(1);
