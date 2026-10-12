@@ -1,8 +1,8 @@
 import { relations, sql } from "drizzle-orm";
 import { boolean, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import type {
-  AssessmentQuestion, CodeRun, DailyItem, IntakeAnswers, Label, LessonSnapshot, QuestionUse, RadarTag, RubricResult, SourcePacket, TermAnswer,
-  TopicEventKind, TopicProgress, TopicState,
+  AssessmentQuestion, ClaudeRunner, CodeRun, ContentSource, DailyItem, ExerciseCheck, IntakeAnswers, Label, LessonSnapshot, QuestionUse, RadarTag,
+  RubricResult, SourcePacket, TermAnswer, TopicEventKind, TopicProgress, TopicState,
 } from "@ken-os/domain";
 
 export const users = pgTable("users", {
@@ -155,10 +155,48 @@ export const labLessons = pgTable("lab_lessons", {
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   topicId: text("topic_id").notNull(),
   version: integer("version").notNull(),
-  sourcePacketId: text("source_packet_id").notNull().references(() => labSourcePackets.id),
+  /** The Tutor's packet. Null for a lesson Claude saved through the connector, whose sources it gave itself. */
+  sourcePacketId: text("source_packet_id").references(() => labSourcePackets.id),
   snapshot: jsonb("snapshot").$type<LessonSnapshot>().notNull(),
+  source: text("source").$type<ContentSource>().notNull().default("ken-os"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [uniqueIndex("lab_lessons_version_unique").on(table.userId, table.topicId, table.version)]);
+
+/**
+ * Claude's exercise versions for a topic (docs/architecture/engineering-claude-connector.md, section 4). The repo lab is
+ * version 0 and isn't stored here. A row never changes after it is saved, except its check result and its lock: a
+ * changed exercise is a new version.
+ */
+export const labExercises = pgTable("lab_exercises", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  topicId: text("topic_id").notNull(),
+  version: integer("version").notNull(),
+  source: text("source").$type<"repo" | "claude">().notNull(),
+  runner: text("runner").$type<ClaudeRunner>().notNull(),
+  task: text("task").notNull(),
+  starter: text("starter").notNull(),
+  tests: text("tests").notNull(),
+  solution: text("solution").notNull(),
+  /** pglite: SQL run on a fresh database before the code. */
+  setup: text("setup").notNull().default(""),
+  hint: text("hint"),
+  checked: text("checked").$type<ExerciseCheck>().notNull().default("unchecked"),
+  checkProblem: text("check_problem"),
+  checkedAt: timestamp("checked_at", { withTimezone: true }),
+  /** The owner's first run. */
+  lockedAt: timestamp("locked_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [uniqueIndex("lab_exercises_version_unique").on(table.userId, table.topicId, table.version)]);
+
+/** The owner's code for one exercise version, autosaved as they type, so Claude can read it. */
+export const labExerciseDrafts = pgTable("lab_exercise_drafts", {
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  /** The repo lab's id or a lab_exercises id, the same lab id runs record. */
+  labId: text("lab_id").notNull(),
+  code: text("code").notNull(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [primaryKey({ columns: [table.userId, table.labId] })]);
 
 /** One assessment. It keeps the questions as they were when it started, so a taken assessment never changes. */
 export const labRuns = pgTable("lab_runs", {
@@ -200,6 +238,7 @@ export const labQuestions = pgTable("lab_questions", {
   referenceAnswer: text("reference_answer").notNull(),
   promptVersion: text("prompt_version").notNull(),
   model: text("model").notNull(),
+  source: text("source").$type<ContentSource>().notNull().default("ken-os"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [index("lab_questions_user_topic_idx").on(table.userId, table.topicId, table.createdAt)]);
 
@@ -221,6 +260,7 @@ export const labTopicEvents = pgTable("lab_topic_events", {
   rubric: jsonb("rubric").$type<RubricResult[]>(),
   feedback: text("feedback"),
   graderVersion: text("grader_version"),
+  source: text("source").$type<ContentSource>().notNull().default("ken-os"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
   index("lab_topic_events_user_topic_idx").on(table.userId, table.topicId, table.createdAt),

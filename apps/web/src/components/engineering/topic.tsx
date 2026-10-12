@@ -16,6 +16,7 @@ import { buildLabScript, PGLITE_URL, type TestResult } from "@/features/engineer
 import { PROBES } from "@/features/engineering-lab/runner/probes";
 import { runInWorker } from "@/features/engineering-lab/runner/run-in-worker";
 import { engineering, type TopicStep } from "@/features/engineering-lab/routes";
+import type { ExercisePanel } from "@/features/engineering-lab/exercise-store";
 import type { PublicQuestion, TopicLesson, TopicView } from "@/features/engineering-lab/topic-store";
 import { cn } from "@/lib/utils";
 import { Back, eyebrow, Notice, PageHeading, panel } from "./kit";
@@ -28,10 +29,11 @@ import { Textarea } from "@/components/ui/textarea";
 
 // A topic: Learn, Exercise, Prove. Spec: docs/architecture/engineering-rebuild.md, section 3 (Topic).
 // Reading never proves a topic, the exercise never advances on its own, and Prove opens only once the exercise passes.
-
-export interface ExerciseView extends LabDefinition { hasSolution: boolean }
+// Exercise versions from Claude are checked here, in the browser, before they show (engineering-claude-connector.md, section 4).
 
 const PROOF_MIN = 30;
+/** Autosave waits this long after typing stops. */
+const AUTOSAVE_MS = 2_000;
 const page = "mx-auto max-w-7xl px-3 pb-9 pt-6 md:px-5 md:pt-7.5";
 const twoColumns = "grid grid-cols-1 gap-4.5 md:grid-cols-[2fr_1fr] md:gap-5 lg:grid-cols-[minmax(0,2.4fr)_minmax(230px,1fr)] lg:gap-8";
 
@@ -185,30 +187,92 @@ function TestList({ results }: { results: TestResult[] }) {
 }
 
 type RunState = { kind: "idle" } | { kind: "running" } | { kind: "error"; message: string } | { kind: "results"; results: TestResult[] };
+type SaveState = "idle" | "saving" | "saved" | "failed";
+const saveWords: Record<SaveState, string> = { idle: "", saving: "Saving…", saved: "Saved", failed: "Not saved" };
 
-function Exercise({ topic, lab, view, onProve }: { topic: Topic; lab: ExerciseView; view: TopicView; onProve: () => void }) {
+/** Runs code against tests in the isolated worker, the same way a learner run does. */
+async function runTests(code: string, tests: string, options: { runner: string; setup: string; timeoutMs: number }) {
+  const script = buildLabScript(code, tests, { origin: window.location.origin, pglite: options.runner === "pglite" ? { url: PGLITE_URL, setup: options.setup } : undefined });
+  return runInWorker(script, options.timeoutMs + 1000);
+}
+
+/**
+ * Checks a new version from Claude once, quietly: its solution must pass every test and its starter must fail one.
+ * The server judges the two runs and keeps the current version in use until a version checks out.
+ */
+function useExerciseCheck(topicId: string, check: ExercisePanel["check"]) {
   const router = useRouter();
-  const storageKey = `ken-os-lab:${lab.id}`;
+  const started = useRef<string | null>(null);
+  const [checking, setChecking] = useState(false);
+  useEffect(() => {
+    if (!check || started.current === check.id) return;
+    started.current = check.id;
+    setChecking(true);
+    const asCheck = (outcome: Awaited<ReturnType<typeof runTests>>) => outcome.type === "tests" ? { results: outcome.results } : { error: outcome.type === "output" ? "No tests ran" : outcome.message };
+    void (async () => {
+      try {
+        const options = { runner: check.runner, setup: check.setup, timeoutMs: check.timeoutMs };
+        const solution = asCheck(await runTests(check.solution, check.tests, options));
+        const starter = asCheck(await runTests(check.starter, check.tests, options));
+        await post(`/api/lab/topics/${topicId}/exercise/check`, { labId: check.id, solution, starter });
+        router.refresh();
+      } catch {
+        started.current = null;
+      } finally {
+        setChecking(false);
+      }
+    })();
+  }, [check, topicId, router]);
+  return checking;
+}
+
+function Exercise({ topic, panel, view, onProve }: { topic: Topic; panel: ExercisePanel; view: TopicView; onProve: () => void }) {
+  const router = useRouter();
+  const lab = panel.exercise;
   const { task, details } = splitReadme(lab.readme);
-  const [code, setCode] = useState(lab.starter);
+  const [code, setCode] = useState(panel.draft?.code ?? lab.starter);
   const [state, setState] = useState<RunState>({ kind: "idle" });
+  const [saveState, setSaveState] = useState<SaveState>(panel.draft ? "saved" : "idle");
+  const [switching, setSwitching] = useState(false);
   const [solution, setSolution] = useState<string | null>(null);
   const [predicted, setPredicted] = useState<Record<string, string>>({});
+  const autosave = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const checking = useExerciseCheck(topic.id, panel.check);
   const probe = lab.runner === "probe" ? lab.probe! : null;
   const passed = view.progress.exercisePassed;
 
+  // Code saved only in this browser before autosave existed comes back once, then autosaves.
   useEffect(() => {
-    try { const saved = window.localStorage.getItem(storageKey); if (saved) setCode(saved); } catch { /* storage unavailable */ }
-  }, [storageKey]);
+    if (panel.draft || probe) return;
+    try {
+      const saved = window.localStorage.getItem(`ken-os-lab:${lab.id}`);
+      if (saved && saved !== lab.starter) update(saved);
+    } catch { /* storage unavailable */ }
+  }, []); // Once, on open.
+  useEffect(() => () => clearTimeout(autosave.current), []);
+
+  async function saveDraft(value: string) {
+    setSaveState("saving");
+    try { await post(`/api/lab/topics/${topic.id}/draft`, { labId: lab.id, code: value }); setSaveState("saved"); }
+    catch { setSaveState("failed"); }
+  }
   const update = (value: string) => {
     setCode(value);
-    try { window.localStorage.setItem(storageKey, value); } catch { /* storage unavailable */ }
+    clearTimeout(autosave.current);
+    autosave.current = setTimeout(() => void saveDraft(value), AUTOSAVE_MS);
   };
+
+  async function switchVersion(labId: string) {
+    setSwitching(true);
+    try { await post(`/api/lab/topics/${topic.id}/exercise/switch`, { labId }); router.refresh(); }
+    catch (error) { toast({ tone: "error", title: "Couldn't switch. Try again", description: error instanceof Error ? error.message : undefined }); }
+    finally { setSwitching(false); }
+  }
 
   async function save(results: TestResult[], submitted: string) {
     const ok = results.filter((item) => item.passed).length;
     const output = results.map((item) => `${item.passed ? "PASS" : "FAIL"} ${item.name}${item.error ? `: ${item.error}` : ""}`).join("\n");
-    await post(`/api/lab/topics/${topic.id}/exercise`, { labId: lab.id, code: submitted, passed: ok, failed: results.length - ok, output });
+    await post(`/api/lab/topics/${topic.id}/exercise`, { labId: lab.id, code: submitted, passed: ok, failed: results.length - ok, output, tests: results });
     router.refresh();
   }
 
@@ -223,8 +287,7 @@ function Exercise({ topic, lab, view, onProve }: { topic: Topic; lab: ExerciseVi
         await save(score.results, JSON.stringify(predicted));
         return;
       }
-      const script = buildLabScript(code, lab.tests, { origin: window.location.origin, pglite: lab.runner === "pglite" ? { url: PGLITE_URL, setup: lab.setup } : undefined });
-      const outcome = await runInWorker(script, lab.timeoutMs + 1000);
+      const outcome = await runTests(code, lab.tests, lab);
       if (outcome.type !== "tests") {
         setState({ kind: "error", message: outcome.type === "output" ? "No tests ran" : outcome.message });
         return;
@@ -254,8 +317,22 @@ function Exercise({ topic, lab, view, onProve }: { topic: Topic; lab: ExerciseVi
   return (
     <div className={twoColumns}>
       <section className={cn(panel, "min-w-0 p-6 md:p-7.5")}>
+        {panel.newer && (
+          <Notice>
+            <p className="font-semibold">New exercise from Claude</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">Version {panel.newer.version} · starts a fresh attempt</p>
+            <Button type="button" size="sm" className="mt-3" disabled={switching} onClick={() => void switchVersion(panel.newer!.id)}>{switching ? "Switching…" : "Switch"}</Button>
+          </Notice>
+        )}
+        {panel.invalid && (
+          <Notice tone="error">
+            <p className="font-semibold">This exercise doesn&apos;t check out</p>
+            <p className="mt-0.5 text-xs">Version {panel.invalid.version} · {panel.invalid.problem}</p>
+          </Notice>
+        )}
+        {checking && <p role="status" className="mb-4 text-xs text-muted-foreground">Checking new exercise from Claude…</p>}
         <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-          <span className="font-mono">{probe ? lab.id : `${lab.id}.js`}</span>
+          <span className="font-mono">{lab.source === "claude" ? `From Claude · version ${lab.version}` : probe ? lab.id : `${lab.id}.js`}</span>
           <span>{runnerNote(lab)}</span>
         </div>
         <div className="mt-3 text-sm font-semibold leading-relaxed [&_p]:text-foreground"><Markdown text={task} /></div>
@@ -282,7 +359,10 @@ function Exercise({ topic, lab, view, onProve }: { topic: Topic; lab: ExerciseVi
             ))}
           </ol>
         ) : (
-          <div className="mt-5"><CodeEditor value={code} onChange={update} label={`Your code for ${lab.title}`} minHeight={260} /></div>
+          <div className="mt-5">
+            <CodeEditor value={code} onChange={update} label={`Your code for ${lab.title}`} minHeight={260} />
+            <p role="status" className={cn("mt-1.5 min-h-4 text-right text-xs text-muted-foreground", saveState === "failed" && "text-destructive")}>{saveWords[saveState]}</p>
+          </div>
         )}
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <Button type="button" disabled={state.kind === "running" || Boolean(probe && !probe.questions.every((question) => predicted[question.id]))} onClick={() => void run()}>
@@ -436,11 +516,11 @@ function Prove({ topic, view, nextTopic }: { topic: Topic; view: TopicView; next
   );
 }
 
-export function TopicPage({ email, topic, place, lab, view, initialStep, nextTopic }: {
+export function TopicPage({ email, topic, place, exercise, view, initialStep, nextTopic }: {
   email: string;
   topic: Topic;
   place: { area: string; chapter: string };
-  lab: ExerciseView;
+  exercise: ExercisePanel;
   view: TopicView;
   initialStep: TopicStep;
   nextTopic: { id: string; title: string } | null;
@@ -467,7 +547,8 @@ export function TopicPage({ email, topic, place, lab, view, initialStep, nextTop
         </Tabs>
         <div className="mx-1.5 md:mx-3.5">
           {step === "learn" && <Learn topic={topic} view={view} onNext={() => go("exercise")} />}
-          {step === "exercise" && <Exercise topic={topic} lab={lab} view={view} onProve={() => go("prove")} />}
+          {/* A switched version starts from its own starter and draft. */}
+          {step === "exercise" && <Exercise key={exercise.exercise.id} topic={topic} panel={exercise} view={view} onProve={() => go("prove")} />}
           {step === "prove" && <Prove topic={topic} view={view} nextTopic={nextTopic} />}
         </div>
       </div>

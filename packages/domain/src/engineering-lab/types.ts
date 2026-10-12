@@ -11,6 +11,15 @@ export interface CodeRun {
   passed: number;
   failed: number;
   output: string;
+  /** Each test as it ran, so Claude can read a failing test's expected and actual output. Older runs have none. */
+  tests?: TestOutcome[];
+}
+
+export interface TestOutcome {
+  name: string;
+  passed: boolean;
+  /** For a failing test: what went wrong, usually "Expected …, got …". */
+  error?: string;
 }
 
 export interface Grade {

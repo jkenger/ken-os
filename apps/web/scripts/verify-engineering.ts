@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { config } from "dotenv";
 import { and, eq } from "drizzle-orm";
 import { closeDb, db } from "../src/lib/db";
-import { labDailySets, labProgress, labQuestions, labRunAnswers, users } from "../src/lib/schema";
+import { labDailySets, labExercises, labProgress, labQuestions, labRunAnswers, labTopicEvents, users } from "../src/lib/schema";
 import { ownerDay } from "../src/lib/day";
 
 config({ path: ".env.local" });
@@ -17,6 +17,8 @@ async function main() {
   const profiles = await import("../src/features/engineering-lab/profile-store");
   const topics = await import("../src/features/engineering-lab/topic-store");
   const practice = await import("../src/features/engineering-lab/practice-store");
+  const exercises = await import("../src/features/engineering-lab/exercise-store");
+  const tools = await import("../src/features/engineering-lab/agent-tools");
 
   const owner = `engineering-check-${randomUUID()}`;
   const other = `engineering-check-${randomUUID()}`;
@@ -187,6 +189,103 @@ async function main() {
       console.log("ok - topic page: exercise runs, shared exercise, solution, hand-written proof prompt, closed-book");
     } finally {
       await db().delete(users).where(eq(users.id, learner));
+    }
+
+    // Claude through the connector's tool layer (engineering-claude-connector.md, sections 2 to 5).
+    const viaClaude = `engineering-check-${randomUUID()}`;
+    await db().insert(users).values({ id: viaClaude, email: `${viaClaude}@example.invalid`, name: "Engineering check (Claude)" });
+    try {
+      const call = (name: string, input: unknown) => tools.callAgentTool(viaClaude, name, input) as Promise<Record<string, any>>;
+      const closures = "js.closures";
+      const trusted = { title: "MDN closures", url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures" };
+      const lessonInput = {
+        heading: "A closure keeps its scope", body: "A function remembers where it was made.", mentalModel: "A backpack of variables.",
+        block: { kind: "code", content: "const add = (a) => (b) => a + b;", note: "add(1) keeps a." }, example: "A click handler that keeps its row id.",
+        prove: ["Closures keep variables", "let makes one per loop", "Factories keep separate state"],
+        sources: [trusted, { title: "A blog", url: "https://example.com/closures" }],
+      };
+      const savedLesson = await call("save_lesson", { topicId: closures, lesson: lessonInput });
+      assert.deepEqual(savedLesson.droppedSources, ["Not on a trusted site: https://example.com/closures"]);
+      assert.equal((await topics.getLesson(viaClaude, closures))?.source, "claude");
+      assert.equal((await call("get_topic", { topicId: closures })).lesson.heading, "A closure keeps its scope");
+      await assert.rejects(call("save_lesson", { topicId: "rel.retry_backoff", lesson: lessonInput }), /written by hand/);
+      assert.equal(await store.generationsToday(viaClaude), 0, "Claude's writes don't use Ken OS AI uses");
+      console.log("ok - connector: Claude's lesson is saved with trusted sources only, hand-written lessons stay");
+
+      const exerciseInput = (starter: string) => ({
+        runner: "browser", task: "Make counter() count.", tests: "test('counts', () => { const c = counter(); c(); assert.equal(c(), 2); });",
+        starter, solution: "function counter() { let n = 0; return () => ++n; }",
+      });
+      const v1 = await call("save_exercise", { topicId: closures, exercise: exerciseInput("function counter() { return () => 2; }") });
+      assert.equal(v1.version, 1);
+      let topic = await call("get_topic", { topicId: closures });
+      assert.equal(topic.exercise.labId, "closure-loop", "an unchecked version never shows; the repo lab stays version 0");
+      assert.equal(topic.uncheckedExercise.labId, v1.labId);
+      assert.ok(!JSON.stringify(topic).includes("let n = 0"), "get_topic never returns a solution");
+      const closuresTopic = store.requireTopic(closures);
+      assert.equal((await exercises.getExercisePanel(viaClaude, closuresTopic)).check?.id, v1.labId, "the page checks it");
+      await assert.rejects(topics.recordExerciseRun(viaClaude, closures, { labId: v1.labId, code: "", passed: 1, failed: 0, output: "" }), /doesn't check out/);
+      const pass = [{ name: "counts", passed: true }];
+      const fail = [{ name: "counts", passed: false, error: "Expected 2, got 1" }];
+      await exercises.recordCheck(viaClaude, closures, v1.labId, { solution: { results: pass }, starter: { results: pass } });
+      topic = await call("get_topic", { topicId: closures });
+      assert.match(topic.invalidExercise.problem, /starter already passes/, "get_topic reports an invalid version so Claude can fix it");
+      assert.equal(topic.exercise.labId, "closure-loop");
+
+      const v2 = await call("save_exercise", { topicId: closures, exercise: exerciseInput("function counter() { return () => 0; }") });
+      await exercises.recordCheck(viaClaude, closures, v2.labId, { solution: { results: pass }, starter: { results: fail } });
+      await assert.rejects(exercises.recordCheck(viaClaude, closures, v2.labId, { solution: { results: fail }, starter: { results: fail } }), /already checked/);
+      topic = await call("get_topic", { topicId: closures });
+      assert.equal(topic.exercise.labId, v2.labId, "the newest valid version is the default");
+      assert.equal(topic.invalidExercise, null);
+      await exercises.saveDraft(viaClaude, closures, { labId: v2.labId, code: "function counter() { let n = 0; return () => n; }" });
+      let work = await call("get_my_work", { topicId: closures });
+      assert.match(work.code, /return \(\) => n;/, "Claude reads the autosaved code");
+      await topics.recordExerciseRun(viaClaude, closures, { labId: v2.labId, code: work.code, passed: 0, failed: 1, output: "FAIL counts", tests: fail });
+      work = await call("get_my_work", { topicId: closures });
+      assert.deepEqual(work.lastRun.failing, [{ name: "counts", error: "Expected 2, got 1" }], "and the failing test's expected and actual");
+      const [locked] = await db().select().from(labExercises).where(eq(labExercises.id, v2.labId));
+      assert.ok(locked.lockedAt, "the first run locks the version");
+      console.log("ok - connector: exercise versions are checked before they show, invalid ones are reported, the first run locks");
+
+      await topics.recordExerciseRun(viaClaude, closures, { labId: v2.labId, code: "...", passed: 1, failed: 0, output: "", tests: pass });
+      const v3 = await call("save_exercise", { topicId: closures, exercise: exerciseInput("function counter() {}") });
+      await exercises.recordCheck(viaClaude, closures, v3.labId, { solution: { results: pass }, starter: { error: "c is not a function" } });
+      topic = await call("get_topic", { topicId: closures });
+      assert.equal(topic.exercise.labId, v2.labId, "a version the owner ran stays theirs");
+      assert.equal(topic.newerExercise.labId, v3.labId);
+      assert.equal(topic.exercisePassed, true);
+      await assert.rejects(exercises.switchExercise(viaClaude, closures, v1.labId), /No newer exercise/);
+      assert.equal((await exercises.switchExercise(viaClaude, closures, v3.labId)).exercisePassed, false, "switching starts a fresh attempt");
+      assert.equal((await call("get_topic", { topicId: closures })).exercise.labId, v3.labId);
+      const history = await call("get_history", { topicId: closures });
+      assert.deepEqual(history.exerciseRuns, [{ labId: v2.labId, version: 2, runs: 2, passed: 1 }], "runs stay with their version");
+      console.log("ok - connector: a newer version waits for Switch, which starts a fresh attempt");
+
+      await assert.rejects(call("save_proof_question", { topicId: closures, prompt: "Why does let fix the loop?", pointIds: ["p9"] }), /Not a point on js.closures: p9/);
+      const question = await call("save_proof_question", { topicId: closures, prompt: "Why does let fix the loop?", pointIds: ["p2"] });
+      assert.deepEqual(question.tests, [closuresTopic.points[1]], "the rubric is the approved point it names");
+      await topics.recordExerciseRun(viaClaude, closures, { labId: v3.labId, code: "...", passed: 1, failed: 0, output: "" });
+      const claudeProof = await topics.getOrWriteProof(viaClaude, closures);
+      assert.equal(claudeProof.prompt, "Why does let fix the loop?", "Ken OS asks Claude's question and grades it itself");
+      assert.equal((await store.getProgress(viaClaude, closures)).state, "PRACTICING", "nothing Claude saves proves a topic");
+      const claudeEvents = await db().select({ kind: labTopicEvents.kind }).from(labTopicEvents).where(and(eq(labTopicEvents.userId, viaClaude), eq(labTopicEvents.source, "claude")));
+      assert.deepEqual([...new Set(claudeEvents.map((row) => row.kind))].sort(), ["exercise_saved", "lesson_saved", "proof_question_saved"]);
+      console.log("ok - connector: proof questions name approved points, Ken OS grades, every write is recorded as Claude's");
+
+      const state = await call("get_current_state", {});
+      assert.equal(state.current.topicId, closures, "the topic in progress is current");
+      assert.equal(state.current.step, "prove");
+      assert.equal(state.aiUsesLeft, store.DAILY_GENERATION_LIMIT);
+      assert.ok((await call("list_path", {})).chapters.length > 0);
+      await profiles.saveIntake(viaClaude, { building: "A clinic booking app", role: "frontend-developer", weeklyHours: 4 });
+      await runs.startRun(viaClaude);
+      assert.equal((await call("get_current_state", {})).assessmentOpen, true);
+      await assert.rejects(call("get_topic", { topicId: closures }), /assessment is open/);
+      await assert.rejects(call("save_exercise", { topicId: closures, exercise: exerciseInput("") }), /assessment is open/);
+      console.log("ok - connector: current state and path read; an open assessment closes the rest");
+    } finally {
+      await db().delete(users).where(eq(users.id, viaClaude));
     }
   } finally {
     await db().delete(users).where(eq(users.id, owner));

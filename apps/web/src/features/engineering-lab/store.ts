@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, desc, eq, gte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, ne, sql } from "drizzle-orm";
 import { researchTopic } from "@ken-os/agents";
 import {
   computeProgress, emptyProgress, isPacketUsable, isoWeek, researchTargetFor,
@@ -28,10 +28,12 @@ export function requireTopic(topicId: string) {
   return topic;
 }
 
+/** Ken OS's own AI writes today. Lessons and questions Claude saved cost Ken OS nothing and don't count. */
 export async function generationsToday(userId: string) {
   const since = ownerDayStart();
   const count = async (table: typeof labSourcePackets | typeof labLessons | typeof labQuestions) => {
-    const [row] = await db().select({ n: sql<number>`count(*)::int` }).from(table).where(and(eq(table.userId, userId), gte(table.createdAt, since)));
+    const own = "source" in table ? ne(table.source, "claude") : undefined;
+    const [row] = await db().select({ n: sql<number>`count(*)::int` }).from(table).where(and(eq(table.userId, userId), gte(table.createdAt, since), own));
     return row?.n ?? 0;
   };
   const counts = await Promise.all([count(labSourcePackets), count(labLessons), count(labQuestions)]);

@@ -2,15 +2,15 @@ import { randomUUID } from "node:crypto";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { ASSESSOR_PROMPT_VERSION, GRADER_PROMPT_VERSION, gradeWithRubric, TUTOR_PROMPT_VERSION, writeLesson, writeTopicQuestion } from "@ken-os/agents";
 import {
-  canProve, finalizeLesson,
-  type CodeRun, type Label, type LessonContent, type QuestionUse, type RubricResult, type Topic, type TopicProgress,
+  canProve, CLAUDE_LIMITS, finalizeClaudeLesson, finalizeLesson, pointsFor,
+  type CodeRun, type ContentSource, type Label, type LessonContent, type QuestionUse, type RubricResult, type TestOutcome, type Topic, type TopicProgress,
 } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { labLessons, labQuestions, labSourcePackets, labTopicEvents } from "@/lib/schema";
 import { activeRun } from "./assessment-store";
-import { authoredTopics, exerciseFor, findLab } from "./curriculum";
-import { labSolutions } from "./generated/lab-solutions.generated";
+import { authoredTopics } from "./curriculum";
 import { LabInputError } from "./errors";
+import { lockVersion, usableVersion } from "./exercise-store";
 import { assertBudget, freshPacket, getProgress, latestPacket, recordEvent, requireTopic } from "./store";
 
 // One topic: Learn, Exercise, Prove. Spec: docs/architecture/engineering-rebuild.md, section 3 (Topic) and section 4.
@@ -21,21 +21,42 @@ export const PROOF_MIN_LENGTH = 30;
 export interface TopicLesson extends LessonContent {
   /** Hand-written lessons are never regenerated. */
   authored: boolean;
+  /** Who wrote it: Ken OS (its Tutor, or by hand), or Claude through the connector. */
+  source: ContentSource;
   writtenAt: string | null;
 }
 
-async function closedBook(userId: string) {
+/** An open assessment closes lessons, and the connector with them. */
+export async function closedBook(userId: string) {
   return Boolean(await activeRun(userId));
 }
 
 /** The topic's lesson: the hand-written one, or the newest one the Tutor wrote. Null if none yet. */
 export async function getLesson(userId: string, topicId: string): Promise<TopicLesson | null> {
   const authored = authoredTopics[topicId];
-  if (authored) return { ...authored.lesson, authored: true, writtenAt: null };
+  if (authored) return { ...authored.lesson, authored: true, source: "ken-os", writtenAt: null };
   const [row] = await db().select().from(labLessons).where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId))).orderBy(desc(labLessons.version)).limit(1);
   if (!row) return null;
   const { heading, body, mentalModel, block, example, deeper, prove, sources } = row.snapshot;
-  return { heading, body, mentalModel, block, example, deeper, prove, sources, authored: false, writtenAt: row.createdAt.toISOString() };
+  return { heading, body, mentalModel, block, example, deeper, prove, sources, authored: false, source: row.source, writtenAt: row.createdAt.toISOString() };
+}
+
+/** Saves a lesson Claude wrote as the topic's next version. Hand-written lessons stay; sources off the trusted sites are dropped. */
+export async function saveClaudeLesson(userId: string, topicId: string, lesson: LessonContent) {
+  requireTopic(topicId);
+  if (authoredTopics[topicId]) throw new LabInputError("This lesson is written by hand", 409);
+  return db().transaction(async (tx) => {
+    const [last] = await tx.select({ version: labLessons.version }).from(labLessons)
+      .where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId))).orderBy(desc(labLessons.version)).limit(1);
+    const version = (last?.version ?? 0) + 1;
+    let snapshot;
+    try { snapshot = finalizeClaudeLesson(lesson, { topicId, version }); }
+    catch (error) { throw new LabInputError(error instanceof Error ? error.message : "The lesson isn't valid"); }
+    const id = randomUUID();
+    await tx.insert(labLessons).values({ id, userId, topicId, version, sourcePacketId: null, snapshot, source: "claude" });
+    await recordEvent(userId, { topicId, kind: "lesson_saved", source: "claude" }, tx);
+    return { id, version, droppedSources: snapshot.rejected };
+  });
 }
 
 /** Writes the lesson from trusted sources. Closed during an assessment; uses the day's AI allowance. */
@@ -67,24 +88,30 @@ export async function openLesson(userId: string, topicId: string) {
   return (await recordEvent(userId, { topicId, kind: "lesson_opened" })).progress;
 }
 
-function exerciseOf(topicId: string, labId: string) {
-  const topic = requireTopic(topicId);
-  const lab = exerciseFor(topic);
-  if (lab.id !== labId) throw new LabInputError("That exercise belongs to another topic", 409);
-  return lab;
+/** Keeps a run's per-test results small enough to store: at most 50 tests, short names and errors. */
+function testOutcomes(value: unknown): TestOutcome[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  return value.slice(0, 50).flatMap((item): TestOutcome[] => {
+    const test = (item ?? {}) as Record<string, unknown>;
+    if (typeof test.name !== "string" || typeof test.passed !== "boolean") return [];
+    return [{ name: test.name.slice(0, 300), passed: test.passed, ...(typeof test.error === "string" && !test.passed ? { error: test.error.slice(0, 1_000) } : {}) }];
+  });
 }
 
 /**
- * Records one run of the topic's exercise, passed only when every test passed. An exercise shared by two topics
- * counts for both.
+ * Records one run of an exercise version, passed only when every test passed. The first run locks a Claude version.
+ * A repo exercise shared by two topics counts for both.
  */
-export async function recordExerciseRun(userId: string, topicId: string, input: { labId: string; code: string; passed: number; failed: number; output: string }) {
-  const lab = exerciseOf(topicId, input.labId);
+export async function recordExerciseRun(userId: string, topicId: string, input: { labId: string; code: string; passed: number; failed: number; output: string; tests?: unknown }) {
+  const version = await usableVersion(userId, topicId, input.labId);
   if (![input.passed, input.failed].every((count) => Number.isInteger(count) && count >= 0)) throw new LabInputError("Run the tests again");
-  const results: CodeRun = { passed: input.passed, failed: input.failed, output: input.output.slice(0, 20_000) };
+  const tests = testOutcomes(input.tests);
+  const results: CodeRun = { passed: input.passed, failed: input.failed, output: input.output.slice(0, 20_000), ...(tests ? { tests } : {}) };
   const passed = input.failed === 0 && input.passed > 0;
+  const lab = version.lab;
   let progress: TopicProgress | null = null;
   await db().transaction(async (tx) => {
+    await lockVersion(tx, userId, version);
     for (const id of lab.topics) {
       const saved = await recordEvent(userId, { topicId: id, kind: "exercise_run", labId: lab.id, passed, code: input.code.slice(0, 50_000), results }, tx);
       if (id === topicId) progress = saved.progress;
@@ -95,8 +122,7 @@ export async function recordExerciseRun(userId: string, topicId: string, input: 
 
 /** Shows the solution. Allowed any time; the exercise must then pass again before Prove opens. */
 export async function openSolution(userId: string, topicId: string, labId: string) {
-  const lab = exerciseOf(topicId, labId);
-  const solution = labSolutions[lab.id];
+  const { lab, solution } = await usableVersion(userId, topicId, labId);
   if (!solution) throw new LabInputError("This exercise has no solution to show", 404);
   await db().transaction(async (tx) => {
     for (const id of lab.topics) await recordEvent(userId, { topicId: id, kind: "solution_opened", labId: lab.id }, tx);
@@ -136,6 +162,29 @@ export async function writeQuestion(userId: string, topic: Topic, use: QuestionU
   const id = randomUUID();
   await db().insert(labQuestions).values({ id, userId, topicId: topic.id, kind: use, prompt: question.prompt, code: question.code, rubric: question.rubric, referenceAnswer: question.referenceAnswer, promptVersion, model });
   return { id, prompt: question.prompt, code: question.code };
+}
+
+/**
+ * Saves a proof prompt Claude wrote. Its rubric is the approved points it names, never Claude's own, so the Assessor
+ * grades it like any other proof. The newest proof prompt is the one the owner answers.
+ */
+export async function saveClaudeProofQuestion(userId: string, topicId: string, input: { prompt: string; pointIds: string[] }) {
+  const topic = requireTopic(topicId);
+  const prompt = input.prompt.trim();
+  if (!prompt) throw new LabInputError("Write the proof prompt");
+  if (prompt.length > CLAUDE_LIMITS.proofPrompt) throw new LabInputError(`Keep the proof prompt under ${CLAUDE_LIMITS.proofPrompt} characters`);
+  let rubric: string[];
+  try { rubric = pointsFor(topic, input.pointIds); }
+  catch (error) { throw new LabInputError(error instanceof Error ? error.message : "Name the points it tests"); }
+  const id = randomUUID();
+  await db().transaction(async (tx) => {
+    await tx.insert(labQuestions).values({
+      id, userId, topicId, kind: "proof", prompt, code: null, rubric, referenceAnswer: `A solid answer shows: ${rubric.join("; ")}`,
+      promptVersion: "claude", model: "claude", source: "claude",
+    });
+    await recordEvent(userId, { topicId, kind: "proof_question_saved", questionId: id, source: "claude" }, tx);
+  });
+  return { id, rubric };
 }
 
 /** The proof prompt, written once the exercise has passed. Try again reuses it. */
@@ -224,23 +273,17 @@ export async function getTopicView(userId: string, topicId: string): Promise<Top
   }));
   const authored = authoredTopics[topicId];
   // A lesson's sources were checked when its packet was made; a hand-written one, when it was written.
-  const lessonPacket = lesson && !lesson.authored
+  const lessonPacket = lesson && !lesson.authored && lesson.source !== "claude"
     ? (await db().select({ checkedAt: labSourcePackets.generatedAt }).from(labSourcePackets).innerJoin(labLessons, eq(labLessons.sourcePacketId, labSourcePackets.id))
       .where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId))).orderBy(desc(labLessons.version)).limit(1))[0]
     : null;
   return {
     progress,
     lesson: open ? null : lesson,
-    sourcesCheckedAt: authored ? authored.checkedOn : lessonPacket?.checkedAt.toISOString() ?? packet?.generatedAt.toISOString() ?? null,
+    sourcesCheckedAt: authored ? authored.checkedOn : lesson?.source === "claude" ? lesson.writtenAt : lessonPacket?.checkedAt.toISOString() ?? packet?.generatedAt.toISOString() ?? null,
     closedBook: open,
     proof: proofRow && (canProve(progress) || progress.state === "PROVEN") ? { id: proofRow.id, prompt: proofRow.prompt, code: proofRow.code } : null,
     lastProof: evidence.find((item) => item.kind === "proof") ?? null,
     evidence,
   };
-}
-
-/** The exercise as the browser may see it: no solution. */
-export function exerciseView(topic: Topic) {
-  const lab = exerciseFor(topic);
-  return { ...lab, hasSolution: Boolean(findLab(lab.id) && labSolutions[lab.id]) };
 }
