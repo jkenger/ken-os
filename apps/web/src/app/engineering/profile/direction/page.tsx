@@ -9,5 +9,13 @@ export const dynamic = "force-dynamic";
 export default async function DirectionPage() {
   const session = await requireSession(engineering.direction);
   const profile = await getProfileRow(session.userId);
-  return <Direction email={session.email} careers={careers} map={topicMap} direction={profile?.direction ?? null} weeklyHours={profile?.weeklyHours ?? null} />;
+  return (
+    <Direction
+      email={session.email}
+      careers={careers}
+      map={topicMap}
+      direction={profile?.direction ?? null}
+      weeklyHours={profile?.weeklyHours ?? null}
+    />
+  );
 }

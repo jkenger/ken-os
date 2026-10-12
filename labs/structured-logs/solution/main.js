@@ -9,15 +9,22 @@ function clean(value) {
   if (value instanceof Error) return { name: value.name, message: value.message, stack: value.stack };
   if (Array.isArray(value)) return value.map(clean);
   if (value && typeof value === "object") {
-    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, SECRET_KEYS.has(key.toLowerCase()) ? "[redacted]" : clean(item)]));
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [
+        key,
+        SECRET_KEYS.has(key.toLowerCase()) ? "[redacted]" : clean(item),
+      ]),
+    );
   }
   return value;
 }
 
 function createLogger({ write, now, fields = {} }) {
-  const log = (level) => (message, extra = {}) => {
-    write(JSON.stringify({ time: now().toISOString(), level, msg: message, ...clean(fields), ...clean(extra) }));
-  };
+  const log =
+    (level) =>
+    (message, extra = {}) => {
+      write(JSON.stringify({ time: now().toISOString(), level, msg: message, ...clean(fields), ...clean(extra) }));
+    };
   return {
     info: log("info"),
     warn: log("warn"),

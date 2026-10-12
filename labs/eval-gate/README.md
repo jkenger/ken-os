@@ -7,7 +7,7 @@ lets a change through when a whole category of questions got worse.
   case with `error` set, not a crash.
 - `report(results)`: `{ total, passed, passRate, byTag }`, where `byTag[tag]` is `{ total, passed, passRate }`.
 - `gate(baseline, candidate, { maxDrop })` compares two result lists. Return `{ ok, passRateChange, regressions,
-  tagDrops }`:
+tagDrops }`:
   - `regressions`: ids that passed before and fail now.
   - `tagDrops`: tags whose pass rate fell by more than `maxDrop`.
   - `ok` only when the overall rate fell by no more than `maxDrop` and no tag did.

@@ -13,9 +13,10 @@ async function listDocuments(db, actor, orgId) {
 async function updateDocument(db, actor, docId, changes) {
   const doc = await getDocument(db, actor, docId);
   if (!doc) return null;
-  const { rows } = await db.query(
-    "update documents set title = $1, body = $2 where id = $3 returning *",
-    [changes.title, changes.body, docId],
-  );
+  const { rows } = await db.query("update documents set title = $1, body = $2 where id = $3 returning *", [
+    changes.title,
+    changes.body,
+    docId,
+  ]);
   return rows[0];
 }

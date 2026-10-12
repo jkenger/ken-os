@@ -1,7 +1,17 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { driveErrorCodes, driveErrorText, signInErrorCodes, signInNotice } from "./auth-errors";
-import { RENEW_AFTER, SESSION_IDLE, SESSION_MAX, readSessionToken, renewSession, renewalFor, safeNext, sessionExpiry, signSession } from "./session";
+import {
+  RENEW_AFTER,
+  SESSION_IDLE,
+  SESSION_MAX,
+  readSessionToken,
+  renewSession,
+  renewalFor,
+  safeNext,
+  sessionExpiry,
+  signSession,
+} from "./session";
 
 // docs/architecture/auth-sign-in.md §8.
 
@@ -16,7 +26,20 @@ test("safeNext keeps same-origin page paths", () => {
 });
 
 test("safeNext turns every other shape into /", () => {
-  for (const value of ["//evil.com", "/\\evil.com", "https://evil.com", "/api/x", "/api", "/sign-in", "/sign-in?next=/", "", undefined, null, "evil.com", "/\tevil"]) {
+  for (const value of [
+    "//evil.com",
+    "/\\evil.com",
+    "https://evil.com",
+    "/api/x",
+    "/api",
+    "/sign-in",
+    "/sign-in?next=/",
+    "",
+    undefined,
+    null,
+    "evil.com",
+    "/\tevil",
+  ]) {
     assert.equal(safeNext(value), "/", String(value));
   }
 });

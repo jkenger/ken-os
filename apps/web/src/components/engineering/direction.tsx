@@ -30,16 +30,34 @@ function LevelsDialog({ careers }: { careers: Careers }) {
       ))}
       <h3>Depth</h3>
       <ul className="list-disc pl-5 leading-relaxed">
-        <li><strong className="text-foreground">{depthWords.aware}</strong>: one topic of the chapter proven</li>
-        <li><strong className="text-foreground">{depthWords.build}</strong>: every core topic proven</li>
-        <li><strong className="text-foreground">{depthWords.run}</strong>: every topic proven, the deep ones too</li>
+        <li>
+          <strong className="text-foreground">{depthWords.aware}</strong>: one topic of the chapter proven
+        </li>
+        <li>
+          <strong className="text-foreground">{depthWords.build}</strong>: every core topic proven
+        </li>
+        <li>
+          <strong className="text-foreground">{depthWords.run}</strong>: every topic proven, the deep ones too
+        </li>
       </ul>
       <p className="mt-4">Overall level is capped by the weakest required area</p>
     </Dialog>
   );
 }
 
-export function Direction({ email, careers, map, direction, weeklyHours }: { email: string; careers: Careers; map: TopicMap; direction: string | null; weeklyHours: number | null }) {
+export function Direction({
+  email,
+  careers,
+  map,
+  direction,
+  weeklyHours,
+}: {
+  email: string;
+  careers: Careers;
+  map: TopicMap;
+  direction: string | null;
+  weeklyHours: number | null;
+}) {
   const router = useRouter();
   const [role, setRole] = useState(direction ?? careers.roles[0].id);
   const [hours, setHours] = useState<number>(weeklyHours ?? 5);
@@ -49,7 +67,8 @@ export function Direction({ email, careers, map, direction, weeklyHours }: { ema
   const valid = Number.isInteger(hours) && hours >= WEEKLY_HOURS.min && hours <= WEEKLY_HOURS.max;
 
   async function save() {
-    setBusy(true); setProblem("");
+    setBusy(true);
+    setProblem("");
     try {
       await send("/api/lab/direction", "PUT", { role, weeklyHours: hours });
       toast({ tone: "success", title: "Direction saved" });
@@ -63,7 +82,7 @@ export function Direction({ email, careers, map, direction, weeklyHours }: { ema
 
   return (
     <WorkspaceShell email={email} active="lab" tab="profile">
-      <div className="mx-auto max-w-7xl px-3 pb-9 pt-6 md:px-5 md:pt-7.5">
+      <div className="mx-auto max-w-7xl px-3 pt-6 pb-9 md:px-5 md:pt-7.5">
         <Back href={engineering.profile}>Profile</Back>
         <PageHeading title="Direction" />
         <FlowLayout>
@@ -71,39 +90,63 @@ export function Direction({ email, careers, map, direction, weeklyHours }: { ema
             <Label className={cn(fieldLabel, "mb-2")}>
               Target role
               <NativeSelect className="mt-2.5 w-full" value={role} onChange={(event) => setRole(event.target.value)}>
-                {careers.roles.map((item) => <NativeSelectOption key={item.id} value={item.id}>{item.title}</NativeSelectOption>)}
+                {careers.roles.map((item) => (
+                  <NativeSelectOption key={item.id} value={item.id}>
+                    {item.title}
+                  </NativeSelectOption>
+                ))}
               </NativeSelect>
             </Label>
             <p className="mb-6.5 text-xs text-muted-foreground">{chosen.summary}</p>
 
             <h3 className="text-xs font-semibold">Required depth</h3>
-            <ul className="mb-6.5 mt-2.5">
-              {careers.areas.filter((area) => chosen.targets[area.id]).map((area) => {
-                const level = chosen.targets[area.id]!;
-                return (
-                  <li key={area.id} className="border-t border-border py-3 text-xs">
-                    <p className="font-semibold">{area.title} <span className="font-normal text-muted-foreground">· {careers.levels.find((item) => item.id === level)?.title}</span></p>
-                    <ul className="mt-1.5 text-muted-foreground">
-                      {requirementsUpTo(area, level).map(({ chapter, depth }) => (
-                        <li key={chapter} className="flex justify-between gap-4"><span>{map.chapters.find((item) => item.id === chapter)?.title ?? chapter}</span><span>{depthWords[depth]}</span></li>
-                      ))}
-                    </ul>
-                  </li>
-                );
-              })}
+            <ul className="mt-2.5 mb-6.5">
+              {careers.areas
+                .filter((area) => chosen.targets[area.id])
+                .map((area) => {
+                  const level = chosen.targets[area.id]!;
+                  return (
+                    <li key={area.id} className="border-t border-border py-3 text-xs">
+                      <p className="font-semibold">
+                        {area.title}{" "}
+                        <span className="font-normal text-muted-foreground">
+                          · {careers.levels.find((item) => item.id === level)?.title}
+                        </span>
+                      </p>
+                      <ul className="mt-1.5 text-muted-foreground">
+                        {requirementsUpTo(area, level).map(({ chapter, depth }) => (
+                          <li key={chapter} className="flex justify-between gap-4">
+                            <span>{map.chapters.find((item) => item.id === chapter)?.title ?? chapter}</span>
+                            <span>{depthWords[depth]}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </li>
+                  );
+                })}
             </ul>
 
             <Label className={cn(fieldLabel, "mb-6.5")}>
               Hours per week
-              <Input type="number" min={WEEKLY_HOURS.min} max={WEEKLY_HOURS.max} className={cn(field, "mt-2.5 max-w-[160px] py-0")} value={Number.isNaN(hours) ? "" : hours}
-                onChange={(event) => setHours(event.target.value === "" ? Number.NaN : Number(event.target.value))} />
+              <Input
+                type="number"
+                min={WEEKLY_HOURS.min}
+                max={WEEKLY_HOURS.max}
+                className={cn(field, "mt-2.5 max-w-[160px] py-0")}
+                value={Number.isNaN(hours) ? "" : hours}
+                onChange={(event) => setHours(event.target.value === "" ? Number.NaN : Number(event.target.value))}
+              />
             </Label>
             {problem && <Notice tone="error">{problem}</Notice>}
-            <Button type="button" disabled={busy || !valid} onClick={() => void save()}>{busy ? "Saving…" : "Save direction"}</Button>
+            <Button type="button" disabled={busy || !valid} onClick={() => void save()}>
+              {busy ? "Saving…" : "Save direction"}
+            </Button>
           </section>
           <FlowNotes title="Levels">
             <p className="mt-2">Saving never changes evidence</p>
-            <div className="mt-3"><LevelsDialog careers={careers} /></div>
+            <div className="mt-3">
+              <LevelsDialog careers={careers} />
+            </div>
           </FlowNotes>
         </FlowLayout>
       </div>

@@ -19,6 +19,7 @@ The target direction is:
 The learning system should preserve existing strengths, repair weak mental models, and deepen production engineering while continuing AI Engineering in parallel.
 
 The learner prefers:
+
 - practical learning over generic curriculum lists
 - one main source of learning instead of many scattered resources
 - concise theory followed immediately by application
@@ -115,6 +116,7 @@ ADAPT
 ```
 
 Each major skill should eventually be validated through several modes:
+
 - **Explain** — explain concept without prompts
 - **Predict** — predict code/system behavior before execution
 - **Debug** — diagnose broken implementation
@@ -157,6 +159,7 @@ engineering-lab/
 ```
 
 Do not assume this structure is final. Start simple, but preserve explicit separation between:
+
 - curriculum
 - learner state
 - generated content
@@ -217,20 +220,17 @@ Suggested shape:
   "skill": "database.composite_indexes",
   "status": "PRACTICING",
   "mastery": 0.62,
-  "confidence": 0.40,
+  "confidence": 0.4,
   "last_attempt": "2026-10-01",
   "evidence": {
-    "explain": 0.70,
-    "predict": 0.80,
-    "debug": 0.50,
-    "implement": 0.60,
-    "review": 0.40,
-    "design": 0.50
+    "explain": 0.7,
+    "predict": 0.8,
+    "debug": 0.5,
+    "implement": 0.6,
+    "review": 0.4,
+    "design": 0.5
   },
-  "weaknesses": [
-    "index column order",
-    "query planner interpretation"
-  ],
+  "weaknesses": ["index column order", "query planner interpretation"],
   "next_review_at": null
 }
 ```
@@ -258,7 +258,9 @@ Do not begin with four separate deployed agents unless there is a strong impleme
 Implement these as distinct logical workflows/prompts:
 
 ## Planner
+
 Inputs:
+
 - mastery state
 - failed assessments
 - prerequisite graph
@@ -267,17 +269,21 @@ Inputs:
 - project-derived knowledge debt
 
 Output:
+
 - next skill
 - reason
 - target depth
 - required validation modes
 
 ## Researcher
+
 Purpose:
+
 - retrieve current authoritative information
 - produce a bounded source packet
 
 Source priority:
+
 1. standards/specifications where appropriate
 2. official documentation
 3. framework/provider official docs
@@ -287,13 +293,16 @@ Source priority:
 The Researcher should avoid noisy web-wide synthesis when official sources are sufficient.
 
 ## Tutor
+
 Inputs:
+
 - source packet
 - learner baseline
 - known misconceptions
 - prior attempts
 
 Output:
+
 - concise explanation
 - examples
 - analogies where useful
@@ -303,11 +312,14 @@ Output:
 The Tutor should not reteach material already demonstrated as solid.
 
 ## Assessor
+
 Purpose:
+
 - independently evaluate whether the learner understands the skill
 
 The Assessor should not optimize for encouragement.
 It should distinguish:
+
 - solid understanding
 - partial understanding
 - rusty recall
@@ -343,6 +355,7 @@ sources:
 ```
 
 Suggested freshness behavior:
+
 - core CS concepts: rare refresh
 - web platform: periodic refresh
 - frameworks: frequent refresh
@@ -375,6 +388,7 @@ Preferred structure:
 ```
 
 Example for composite indexes:
+
 - explain B-tree ordering
 - explain composite index ordering
 - predict whether index A serves query B
@@ -413,6 +427,7 @@ pnpm test
 ```
 
 Use:
+
 - Vitest / Node test runner
 - integration tests
 - Postgres test DB where appropriate
@@ -431,12 +446,14 @@ Create labs that contain real bugs.
 Priority labs, first written for the gaps the retired 2026-10-01 baseline found:
 
 ## JavaScript
+
 - event-loop ordering
 - Promise/microtask ordering
 - closure bugs
 - shallow-copy mutation
 
 ## React
+
 - stale effect
 - stale closure
 - request race
@@ -445,6 +462,7 @@ Priority labs, first written for the gaps the retired 2026-10-01 baseline found:
 - incorrect dependency arrays
 
 ## Browser / HTTP
+
 - cookie not being sent
 - CORS misconfiguration
 - stale cache
@@ -452,6 +470,7 @@ Priority labs, first written for the gaps the retired 2026-10-01 baseline found:
 - auth/session failure
 
 ## Backend
+
 - mass assignment
 - broken resource authorization
 - bad validation boundary
@@ -459,6 +478,7 @@ Priority labs, first written for the gaps the retired 2026-10-01 baseline found:
 - partial failure
 
 ## Database
+
 - missing index
 - wrong composite index
 - N+1 query
@@ -468,6 +488,7 @@ Priority labs, first written for the gaps the retired 2026-10-01 baseline found:
 - pagination degradation
 
 ## Reliability
+
 - provider timeout
 - retry storm
 - duplicate jobs
@@ -476,6 +497,7 @@ Priority labs, first written for the gaps the retired 2026-10-01 baseline found:
 - queue poison message
 
 ## Observability
+
 - insufficient logs
 - diagnose incident using logs
 - then add metrics
@@ -483,6 +505,7 @@ Priority labs, first written for the gaps the retired 2026-10-01 baseline found:
 - compare what each reveals
 
 ## AI
+
 - bad chunking
 - weak retrieval
 - irrelevant vector matches
@@ -502,6 +525,7 @@ After several skills, give integrated scenarios rather than isolated quizzes.
 Example Production Engineering Checkpoint:
 
 System symptoms:
+
 - inventory overselling
 - duplicate charges
 - slow order history
@@ -511,6 +535,7 @@ System symptoms:
 - poor logs
 
 Learner must:
+
 - inspect
 - prioritize
 - explain
@@ -546,6 +571,7 @@ Semantic Search
 ```
 
 The learner has already started:
+
 - vectors and dimensions
 - embeddings
 - sparse vs dense vectors
@@ -584,6 +610,7 @@ Validation:
 ```
 
 Example agent/tool module:
+
 - defined task dataset
 - expected tool usage
 - tool selection accuracy
@@ -620,6 +647,7 @@ This directly addresses the learner’s core concern:
 Do not necessarily block development; surface “knowledge debt” clearly.
 
 Potential inputs later:
+
 - local Git diff
 - GitHub PR
 - selected files
@@ -635,11 +663,13 @@ The app should be the main learning interface.
 External resources are supporting references.
 
 For each skill:
+
 - internal synthesized lesson
 - one or two authoritative references
 - optional deeper resources
 
 Avoid:
+
 - giant lists of links
 - multiple competing courses
 - random YouTube/tutorial hopping
@@ -680,6 +710,7 @@ Knowledge Debt:
 ```
 
 Core pages:
+
 - Today
 - Curriculum / Skill Graph
 - Labs
@@ -713,6 +744,7 @@ Suggested personal notes:
 The learner should write the final note in their own words.
 
 Optional later:
+
 - link to Obsidian note names
 - export lesson summary
 - export validated concept list
@@ -741,6 +773,7 @@ Git
 ```
 
 Possible later additions:
+
 - Postgres if starting on SQLite
 - pgvector
 - Redis
@@ -761,7 +794,9 @@ Do **not** generate the entire curriculum upfront.
 Build and validate the learning loop using three high-value modules:
 
 ## Module 1 — JavaScript Runtime & Async Mental Models
+
 Focus:
+
 - call stack
 - event loop
 - tasks vs microtasks
@@ -771,6 +806,7 @@ Focus:
 - async races
 
 Validation:
+
 - predict execution order
 - debug stale async behavior
 - explain closure lifetime
@@ -778,7 +814,9 @@ Validation:
 - small implementation
 
 ## Module 2 — HTTP / Browser Mental Model
+
 Focus:
+
 - DNS
 - TCP/TLS at conceptual level
 - HTTP request/response
@@ -791,6 +829,7 @@ Focus:
 - browser security boundaries
 
 Validation:
+
 - trace URL request lifecycle
 - diagnose cookie failure
 - diagnose CORS issue
@@ -798,7 +837,9 @@ Validation:
 - distinguish auth vs browser cross-origin policy
 
 ## Module 3 — Database Transactions, Concurrency & Indexing
+
 Focus:
+
 - transactions
 - constraints
 - lost updates
@@ -811,6 +852,7 @@ Focus:
 - idempotency foundation
 
 Validation:
+
 - reproduce overselling race
 - fix it
 - inspect slow query
@@ -821,6 +863,7 @@ Validation:
 - design retry-safe create flow
 
 After these three modules, evaluate:
+
 - whether the learning loop is effective
 - whether the UI helps
 - whether AI-generated lessons are coherent
@@ -834,6 +877,7 @@ Only then expand.
 # 24. Initial Skill Graph Priorities
 
 ## Full-stack Repair
+
 1. JS Runtime
 2. Closures / References
 3. Async behavior
@@ -852,6 +896,7 @@ Only then expand.
 16. Pagination
 
 ## Production Engineering
+
 1. Testing strategy
 2. Authorization depth
 3. XSS / web security
@@ -870,6 +915,7 @@ Only then expand.
 16. System evolution
 
 ## AI Engineering
+
 1. Semantic search
 2. Retrieval evaluation
 3. RAG
@@ -891,6 +937,7 @@ Only then expand.
 # 25. Non-Goals
 
 For v0, do not:
+
 - build a polished SaaS
 - support multiple learners
 - create a marketplace
@@ -952,6 +999,7 @@ Deliver:
 12. implementation order
 
 Constraints:
+
 - optimize for fast local iteration
 - minimal infrastructure
 - every major design choice should state why it exists

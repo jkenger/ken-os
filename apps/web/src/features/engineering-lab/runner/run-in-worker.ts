@@ -16,7 +16,14 @@ export function runInWorker(script: string, timeoutMs: number): Promise<RunOutco
       worker.terminate();
       resolve(outcome);
     };
-    const timer = setTimeout(() => finish({ type: "timeout", message: `Stopped after ${timeoutMs} ms. Look for an infinite loop or a promise that never settles.` }), timeoutMs);
+    const timer = setTimeout(
+      () =>
+        finish({
+          type: "timeout",
+          message: `Stopped after ${timeoutMs} ms. Look for an infinite loop or a promise that never settles.`,
+        }),
+      timeoutMs,
+    );
     worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
       if (event.data?.type === "error") return finish(event.data);
       if (event.data?.type === "tests" || event.data?.type === "output") finish(event.data);

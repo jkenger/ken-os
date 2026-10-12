@@ -12,9 +12,13 @@ export async function POST(request: Request) {
 
 /** Dismisses one radar item. */
 export async function DELETE(request: Request) {
-  return labRoute(request, async (session) => {
-    const { id } = await readJson(request);
-    if (typeof id !== "string" || !id) throw new LabInputError("Radar item not found. Reload the page", 404);
-    return dismissRadarItem(session.userId, id);
-  }, { write: true });
+  return labRoute(
+    request,
+    async (session) => {
+      const { id } = await readJson(request);
+      if (typeof id !== "string" || !id) throw new LabInputError("Radar item not found. Reload the page", 404);
+      return dismissRadarItem(session.userId, id);
+    },
+    { write: true },
+  );
 }

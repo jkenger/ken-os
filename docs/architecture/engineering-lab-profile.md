@@ -2,7 +2,6 @@
 
 > **Superseded on 10 Oct 2026** by [engineering-rebuild.md](engineering-rebuild.md). Kept as history; don't build from it.
 
-
 Status: **built on 2026-10-03, waiting on two owner steps** (see "As built" at the end): approving the role definitions, and taking the baseline. The retirement in section 8 happens after that. Every decision below was agreed with the owner in discussion on 2026-10-03. It extends the lab as built ([decisions](engineering-lab.md), [UI](engineering-lab-ui.md)) and slots in ahead of the [v1 proposal](engineering-lab-v1.md), reusing its daily practice (§9) and roadmap graph (§8).
 
 ## The short version
@@ -18,24 +17,24 @@ Status: **built on 2026-10-03, waiting on two owner steps** (see "As built" at t
 
 ## 1. What stays and what changes
 
-| Part | Today | After |
-|---|---|---|
-| Topics, lessons, labs, proofs, Planner, Course, Today | Built | **Unchanged** |
-| Where you're headed | Not written down | **New:** a chosen direction, from roles stored as data |
-| Where you started | `baseline.yaml`, copied from a chat on 1 Oct | **Replaced:** an in-app assessment with everything saved |
-| How senior you are | One sentence in the handoff | **New:** a level per area, from evidence |
-| The picture | Course outline | **New:** profile with levels, role distances and a roadmap |
-| Tech changes | Researcher refreshes sources per topic | **New:** a weekly radar for your role |
+| Part                                                  | Today                                        | After                                                      |
+| ----------------------------------------------------- | -------------------------------------------- | ---------------------------------------------------------- |
+| Topics, lessons, labs, proofs, Planner, Course, Today | Built                                        | **Unchanged**                                              |
+| Where you're headed                                   | Not written down                             | **New:** a chosen direction, from roles stored as data     |
+| Where you started                                     | `baseline.yaml`, copied from a chat on 1 Oct | **Replaced:** an in-app assessment with everything saved   |
+| How senior you are                                    | One sentence in the handoff                  | **New:** a level per area, from evidence                   |
+| The picture                                           | Course outline                               | **New:** profile with levels, role distances and a roadmap |
+| Tech changes                                          | Researcher refreshes sources per topic       | **New:** a weekly radar for your role                      |
 
 The old baseline feeds five places today. The new baseline takes over the same five, so nothing downstream needs redesigning:
 
-| Where | What it uses the baseline for | Code |
-|---|---|---|
-| Tutor | Doesn't reteach what you know; quotes your gap | `packages/agents/src/engineering-lab/tutor.ts` |
-| Planner | Skips the lesson when the baseline says solid | `packages/domain/src/engineering-lab/planner.ts` |
-| Course | "Known · skip" | `apps/web/src/components/lab/lab-topics.tsx` |
-| Topic page | "Baseline on 1 Oct: …" | `apps/web/src/components/lab/lab-topic.tsx` |
-| Today | "Your baseline is the starting point" | `apps/web/src/components/lab/lab-today.tsx` |
+| Where      | What it uses the baseline for                  | Code                                             |
+| ---------- | ---------------------------------------------- | ------------------------------------------------ |
+| Tutor      | Doesn't reteach what you know; quotes your gap | `packages/agents/src/engineering-lab/tutor.ts`   |
+| Planner    | Skips the lesson when the baseline says solid  | `packages/domain/src/engineering-lab/planner.ts` |
+| Course     | "Known · skip"                                 | `apps/web/src/components/lab/lab-topics.tsx`     |
+| Topic page | "Baseline on 1 Oct: …"                         | `apps/web/src/components/lab/lab-topic.tsx`      |
+| Today      | "Your baseline is the starting point"          | `apps/web/src/components/lab/lab-today.tsx`      |
 
 ## 2. Roles, areas and levels
 
@@ -43,13 +42,13 @@ The old baseline feeds five places today. The new baseline takes over the same f
 
 Every chapter belongs to one of five areas. Each area gets its own level.
 
-| Area | Chapters |
-|---|---|
-| Foundations | JavaScript runtime and async; HTTP and the browser |
-| Frontend | React and API boundaries (the React half) |
-| Backend and data | API boundaries; database transactions, concurrency and indexes |
-| Production | Testing and web security; reliability; observability; architecture at scale |
-| Applied AI | Retrieval; model interfaces; agents; AI in production |
+| Area             | Chapters                                                                    |
+| ---------------- | --------------------------------------------------------------------------- |
+| Foundations      | JavaScript runtime and async; HTTP and the browser                          |
+| Frontend         | React and API boundaries (the React half)                                   |
+| Backend and data | API boundaries; database transactions, concurrency and indexes              |
+| Production       | Testing and web security; reliability; observability; architecture at scale |
+| Applied AI       | Retrieval; model interfaces; agents; AI in production                       |
 
 Foundations is its own area because every role needs it and a gap there blocks everything above it. Five rather than more, so no area's level rests on a single chapter.
 
@@ -118,9 +117,9 @@ The conversation may also **suggest chapters the course doesn't have** (payments
 
 The assessment measures every area, because you haven't chosen a direction yet when you take it.
 
-| Part | What's asked | Counts as |
-|---|---|---|
-| The 18 written topics | Adaptive, one or two questions each | Real evidence: grades topics, can make them Known |
+| Part                     | What's asked                                                 | Counts as                                            |
+| ------------------------ | ------------------------------------------------------------ | ---------------------------------------------------- |
+| The 18 written topics    | Adaptive, one or two questions each                          | Real evidence: grades topics, can make them Known    |
 | The 9 unwritten chapters | Two screening questions each: one on the basics, one applied | Estimates only: ranks chapters, never proves a topic |
 
 Since 2026-10-05 every course chapter is written, so the second row applies only to chapters you add.
@@ -244,12 +243,12 @@ All new tables via `pnpm db:generate`, reviewed, then `pnpm db:migrate`.
 
 Each slice is usable on its own.
 
-| Slice | What ships | Done when |
-|---|---|---|
-| 1. Foundation | Areas on topics; `roles.yaml` drafted by the Researcher and approved; intake; the assessment; the cutover in section 8 | You've completed a baseline run and the five places read from it |
-| 2. Profile | The three pictures; the direction conversation; chapter suggestions; "How this was assessed"; the Ken OS home card | You've chosen a direction from real role distances |
-| 3. Daily practice | v1 §9 in the Today strip | A day's set is stable across visits and its answers update reviews |
-| 4. Radar | Weekly run, five items, re-check flags | A week's items appear with tags and sources, and a changed packet flags its proven topic |
+| Slice             | What ships                                                                                                             | Done when                                                                                |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| 1. Foundation     | Areas on topics; `roles.yaml` drafted by the Researcher and approved; intake; the assessment; the cutover in section 8 | You've completed a baseline run and the five places read from it                         |
+| 2. Profile        | The three pictures; the direction conversation; chapter suggestions; "How this was assessed"; the Ken OS home card     | You've chosen a direction from real role distances                                       |
+| 3. Daily practice | v1 §9 in the Today strip                                                                                               | A day's set is stable across visits and its answers update reviews                       |
+| 4. Radar          | Weekly run, five items, re-check flags                                                                                 | A week's items appear with tags and sources, and a changed packet flags its proven topic |
 
 The profile needs a baseline, and daily practice needs proven topics, so the order is fixed until slice 4, which nothing depends on.
 

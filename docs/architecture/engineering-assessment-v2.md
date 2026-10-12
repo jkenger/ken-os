@@ -2,21 +2,20 @@
 
 > **Superseded on 10 Oct 2026** by [engineering-rebuild.md](engineering-rebuild.md). Kept as history; don't build from it.
 
-
 Status: **agreed with the owner on 2026-10-06; built on `feat/assessment-v2` (all five slices). Assessment points approved by the owner on 2026-10-06. The conversational screen (slice 5) was undone by the owner on 2026-10-08; the assessment is back to one question panel at a time.** It changes how the intro and the assessment run, before the owner takes the in-app baseline. It extends [engineering-lab-profile.md](engineering-lab-profile.md) section 4 and [engineering-redesign.md](engineering-redesign.md). The Oct 1 baseline was retired on 2026-10-06.
 
 ## Decisions (owner, 2026-10-06)
 
-| # | Question | Decision |
-|---|---|---|
-| A1 | Rebuild or improve the intake and assessment? | **Improve.** Keep the run engine, adaptive rules, locking, code-checked predictions, separate grader, allowance and frozen baseline |
-| A2 | Baseline length | **Two stages.** Two chapter questions first; then topic questions only where the chapter wasn't solid |
-| A3 | When grades show | **After every answer**, as feedback under the question. Lessons and term lookup stay locked for the whole run |
-| A4 | Intro | **Add "What would you like to grow toward?"** A starting preference for the Guide, never a direction or evidence |
-| A5 | Feel | ~~Conversational, from an agent named "Assessor"~~. **Undone 2026-10-08:** the owner went back to the question panel. The agent that writes questions keeps the name Assessor |
-| A6 | Books | **Six books group the chapters**; each topic gets reviewed **assessment points** the Assessor writes from. Full book text comes later, section by section |
-| A7 | Next.js foundations | **A new book after the baseline**, joining through placement checks |
-| A8 | Smaller fixes | Write the next chapter's questions in the background; ground questions in a saved source packet when one exists; keep an unsent answer across a refresh; show questions left |
+| #   | Question                                      | Decision                                                                                                                                                                      |
+| --- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A1  | Rebuild or improve the intake and assessment? | **Improve.** Keep the run engine, adaptive rules, locking, code-checked predictions, separate grader, allowance and frozen baseline                                           |
+| A2  | Baseline length                               | **Two stages.** Two chapter questions first; then topic questions only where the chapter wasn't solid                                                                         |
+| A3  | When grades show                              | **After every answer**, as feedback under the question. Lessons and term lookup stay locked for the whole run                                                                 |
+| A4  | Intro                                         | **Add "What would you like to grow toward?"** A starting preference for the Guide, never a direction or evidence                                                              |
+| A5  | Feel                                          | ~~Conversational, from an agent named "Assessor"~~. **Undone 2026-10-08:** the owner went back to the question panel. The agent that writes questions keeps the name Assessor |
+| A6  | Books                                         | **Six books group the chapters**; each topic gets reviewed **assessment points** the Assessor writes from. Full book text comes later, section by section                     |
+| A7  | Next.js foundations                           | **A new book after the baseline**, joining through placement checks                                                                                                           |
+| A8  | Smaller fixes                                 | Write the next chapter's questions in the background; ground questions in a saved source packet when one exists; keep an unsent answer across a refresh; show questions left  |
 
 ## The framework stays fixed
 

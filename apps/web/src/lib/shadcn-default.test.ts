@@ -14,11 +14,21 @@ const marker = "/* Ken OS: additions on top of the shadcn default */";
 
 const kenToken = "canvas|quiet|signal|tint|table-head|row-hover|rail(?:-lit|-soft)?|status-[a-z-]+|primary-hover";
 const checks: { name: string; pattern: RegExp }[] = [
-  { name: "Ken OS colour class", pattern: new RegExp(`(?<![\\w-])(?:bg|text|border(?:-[trblxy])?|ring|outline|fill|stroke|decoration|from|to|via|divide|accent|caret|placeholder)-(?:${kenToken})(?![\\w-])`) },
+  {
+    name: "Ken OS colour class",
+    pattern: new RegExp(
+      `(?<![\\w-])(?:bg|text|border(?:-[trblxy])?|ring|outline|fill|stroke|decoration|from|to|via|divide|accent|caret|placeholder)-(?:${kenToken})(?![\\w-])`,
+    ),
+  },
   { name: "Ken OS shadow class", pattern: /(?<![\w-])shadow-(?:panel|tab)(?![\w-])/ },
   { name: "font-display class", pattern: /(?<![\w-])font-display(?![\w-])/ },
   { name: "arbitrary font weight", pattern: /(?<![\w-])font-\[/ },
-  { name: "Ken OS CSS variable", pattern: new RegExp(`--(?:color-)?(?:${kenToken}|shadow-panel|shadow-tab|font-display|font-body|radius-(?:item|menu|tab|panel))(?![\\w-])`) },
+  {
+    name: "Ken OS CSS variable",
+    pattern: new RegExp(
+      `--(?:color-)?(?:${kenToken}|shadow-panel|shadow-tab|font-display|font-body|radius-(?:item|menu|tab|panel))(?![\\w-])`,
+    ),
+  },
   { name: "Google Fonts link", pattern: /fonts\.(?:googleapis|gstatic)\.com/ },
   { name: "hex colour in a class", pattern: /-\[#[0-9a-fA-F]{3,8}\]/ },
 ];
@@ -41,7 +51,8 @@ test("no Ken OS design values remain in apps/web/src", () => {
   for (const file of sourceFiles()) {
     const lines = readFileSync(join(srcRoot, file), "utf8").split(/\r?\n/);
     lines.forEach((line, index) => {
-      for (const { name, pattern } of checks) if (pattern.test(line)) found.push(`${file}:${index + 1} ${name}: ${line.trim().slice(0, 120)}`);
+      for (const { name, pattern } of checks)
+        if (pattern.test(line)) found.push(`${file}:${index + 1} ${name}: ${line.trim().slice(0, 120)}`);
     });
   }
   assert.deepEqual(found, []);

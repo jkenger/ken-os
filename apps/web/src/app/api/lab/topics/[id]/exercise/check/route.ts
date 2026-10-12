@@ -12,15 +12,26 @@ function checkRun(value: unknown): ExerciseCheckRuns["solution"] {
   return {
     results: run.results.map((item) => {
       const test = (item ?? {}) as Record<string, unknown>;
-      return { name: String(test.name ?? "").slice(0, 300), passed: test.passed === true, ...(typeof test.error === "string" ? { error: test.error.slice(0, 500) } : {}) };
+      return {
+        name: String(test.name ?? "").slice(0, 300),
+        passed: test.passed === true,
+        ...(typeof test.error === "string" ? { error: test.error.slice(0, 500) } : {}),
+      };
     }),
   };
 }
 
 /** Stores the page's check of a new exercise version: its solution and starter, run in the browser. */
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  return labRoute(request, async (session) => {
-    const body = await readJson(request);
-    return recordCheck(session.userId, (await params).id, String(body.labId ?? ""), { solution: checkRun(body.solution), starter: checkRun(body.starter) });
-  }, { write: true });
+  return labRoute(
+    request,
+    async (session) => {
+      const body = await readJson(request);
+      return recordCheck(session.userId, (await params).id, String(body.labId ?? ""), {
+        solution: checkRun(body.solution),
+        starter: checkRun(body.starter),
+      });
+    },
+    { write: true },
+  );
 }

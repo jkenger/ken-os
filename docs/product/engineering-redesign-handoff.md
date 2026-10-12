@@ -17,6 +17,7 @@ This document authorizes design preparation, not production deployment, destruct
 ## 2. Authority, evidence and unresolved inputs
 
 Source bundle read for this handoff:
+
 - `engineering-lab.md`: current decisions, source packets, runners and 2026-10-05 content expansion.
 - `engineering-lab-v0.md`: original architecture and as-built corrections.
 - `engineering-lab-v1.md`: feature status as of 2026-10-06 and deferred proposals.
@@ -33,40 +34,41 @@ The generated mock is a visual target, not a factual learner profile. Its Mid/Ju
 
 The attachments report 52 topics, 13 chapters, two tracks and 48 authored labs. Verify those totals in the repository; do not infer one lab per topic, since labs may cover multiple topics. All current chapters are written; screening-only chapters now apply to newly approved additions.
 
-| Existing capability | Evidence in attachments | Redesign treatment |
-|---|---|---|
-| Owner auth, shared DB, agents package | Engineering already a Ken OS module | Reuse unchanged |
-| Topic map and authored labs | Full course reported built | Reuse IDs, prerequisites, test harnesses and starters |
-| Source packets and Tutor | Built | Reuse; expose sources within topic details |
-| Assessor, grader and executable predictions | Built | Reuse separate prompts, fingerprints and evidence records |
-| Deterministic progress and Planner | Built | Reuse; compose view models around outputs |
-| Placement checks | Built | Retain as contextual “Check what I know” action |
-| Profile, intake, baseline run | Built in profile branch; real baseline pending | Reconcile merge/deploy status and reskin; do not rebuild blindly |
-| Role definitions | Approval reported 2026-10-05 | Reuse approved requirements and disclosure notes |
-| Daily practice | Built, paused during assessment | Reuse scheduling, stored set and review submission |
-| Skyline home and tabbed Workbench | As-built UI | Replace presentation with selected light Profile and four tabs |
-| Roadmap rail and pace estimates | Built | Embed chapter path in Learn/Profile; no dedicated roadmap page |
-| Weekly radar | Profile document reports built; deployed verification uncertain | Surface verified existing service; no invented news |
-| Knowledge debt | Explicitly not built | Defer; local processing boundary retained |
-| Grade disputes and loop health | Not built | Small evidence feedback affordance later; diagnostics under Settings |
-| Chapter mixed checkpoints | Not built; checkpoint now means whole-profile retake | Do not add in this redesign |
-| Obsidian note export | Suggestions exist; copy action not built | Optional contextual export after core loop |
-| Real parallel DB lab service | Not required by current runners | Defer; no new paid infrastructure |
+| Existing capability                         | Evidence in attachments                                         | Redesign treatment                                                   |
+| ------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Owner auth, shared DB, agents package       | Engineering already a Ken OS module                             | Reuse unchanged                                                      |
+| Topic map and authored labs                 | Full course reported built                                      | Reuse IDs, prerequisites, test harnesses and starters                |
+| Source packets and Tutor                    | Built                                                           | Reuse; expose sources within topic details                           |
+| Assessor, grader and executable predictions | Built                                                           | Reuse separate prompts, fingerprints and evidence records            |
+| Deterministic progress and Planner          | Built                                                           | Reuse; compose view models around outputs                            |
+| Placement checks                            | Built                                                           | Retain as contextual “Check what I know” action                      |
+| Profile, intake, baseline run               | Built in profile branch; real baseline pending                  | Reconcile merge/deploy status and reskin; do not rebuild blindly     |
+| Role definitions                            | Approval reported 2026-10-05                                    | Reuse approved requirements and disclosure notes                     |
+| Daily practice                              | Built, paused during assessment                                 | Reuse scheduling, stored set and review submission                   |
+| Skyline home and tabbed Workbench           | As-built UI                                                     | Replace presentation with selected light Profile and four tabs       |
+| Roadmap rail and pace estimates             | Built                                                           | Embed chapter path in Learn/Profile; no dedicated roadmap page       |
+| Weekly radar                                | Profile document reports built; deployed verification uncertain | Surface verified existing service; no invented news                  |
+| Knowledge debt                              | Explicitly not built                                            | Defer; local processing boundary retained                            |
+| Grade disputes and loop health              | Not built                                                       | Small evidence feedback affordance later; diagnostics under Settings |
+| Chapter mixed checkpoints                   | Not built; checkpoint now means whole-profile retake            | Do not add in this redesign                                          |
+| Obsidian note export                        | Suggestions exist; copy action not built                        | Optional contextual export after core loop                           |
+| Real parallel DB lab service                | Not required by current runners                                 | Defer; no new paid infrastructure                                    |
 
 Deployment status is not fully established: v0 is reported live, profile branch historically not deployed, later decisions report it built. Verify commits, migrations and production state separately. “Built” does not mean merged, migrated or exercised end to end.
 
 ## 4. Product and route structure
 
-| Public surface | Responsibility | Secondary content |
-|---|---|---|
-| Overview | One useful next action | Practice summary, project gaps, relevant radar |
-| Profile | Current evidence, target and next milestone | Direction, evidence, assessment history, definitions |
-| Learn | Role-filtered chapter path and all topics | Topic workspace, prerequisites, sources |
-| Practice | Stable daily mixed review | Feedback, pause/resume and summary |
+| Public surface | Responsibility                              | Secondary content                                    |
+| -------------- | ------------------------------------------- | ---------------------------------------------------- |
+| Overview       | One useful next action                      | Practice summary, project gaps, relevant radar       |
+| Profile        | Current evidence, target and next milestone | Direction, evidence, assessment history, definitions |
+| Learn          | Role-filtered chapter path and all topics   | Topic workspace, prerequisites, sources              |
+| Practice       | Stable daily mixed review                   | Feedback, pause/resume and summary                   |
 
 Assessment is a Profile journey, not a fifth navigation item. Topic learning/exercise/proof is one workspace. Evidence, sources, history and role definitions are drawers/dialogs or nested detail routes. Heavy evidence detail must support a deep link, not depend exclusively on a transient modal.
 
 Proposed page routes:
+
 ```
 /engineering                         Overview
 /engineering/profile                 Profile
@@ -78,9 +80,11 @@ Proposed page routes:
 /engineering/learn/:topicId           Learn / Exercise / Prove
 /engineering/practice                Daily set / resume / summary
 ```
+
 Use the actual Next.js App Router segment conventions during implementation. Retain stable topic IDs in URLs, not display titles. Topic step belongs in a URL query such as `?step=exercise`; invalid or unavailable steps resolve to a valid session state. Use browser history and deep links; the prototype's state-only navigation is not suitable for integration.
 
 Legacy page mapping, after verifying actual paths:
+
 - `/lab` → `/engineering`
 - `/lab/profile` → `/engineering/profile`
 - `/lab/assessment` → `/engineering/profile/assessment`
@@ -92,19 +96,20 @@ Use temporary redirects during rollout; make them permanent only after rollback 
 
 ## 5. Architectural boundaries
 
-| Layer | Owns | Must not own |
-|---|---|---|
-| Repo content | Topic/chapter map, approved role requirements, authored labs/tests | Mutable learner progress |
-| Domain | Progress, known eligibility, depth, profile projection, prerequisite rules, daily selection | Model calls, SQL, UI state |
-| Agents | Research, teaching, independent assessment/grading, direction guidance | Direct level assignment, automatic curriculum edits |
-| Application services | Authorized operations, transactions, generation coordination, view-model assembly | Duplicate mastery formulas in React |
-| Persistence | Attempts/snapshots, runs, current projections and drafts | Invented proof inferred from navigation |
-| UI | Four surfaces, editing, feedback, inspectable evidence | Trusted scoring, manual real passes |
-| Browser runners | Execute bounded authored work and collect observations | Owner credentials, authoritative multi-user attestations |
+| Layer                | Owns                                                                                        | Must not own                                             |
+| -------------------- | ------------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| Repo content         | Topic/chapter map, approved role requirements, authored labs/tests                          | Mutable learner progress                                 |
+| Domain               | Progress, known eligibility, depth, profile projection, prerequisite rules, daily selection | Model calls, SQL, UI state                               |
+| Agents               | Research, teaching, independent assessment/grading, direction guidance                      | Direct level assignment, automatic curriculum edits      |
+| Application services | Authorized operations, transactions, generation coordination, view-model assembly           | Duplicate mastery formulas in React                      |
+| Persistence          | Attempts/snapshots, runs, current projections and drafts                                    | Invented proof inferred from navigation                  |
+| UI                   | Four surfaces, editing, feedback, inspectable evidence                                      | Trusted scoring, manual real passes                      |
+| Browser runners      | Execute bounded authored work and collect observations                                      | Owner credentials, authoritative multi-user attestations |
 
 Keep existing `packages/domain/src/engineering-lab` and `packages/agents/src/engineering-lab`. Add application adapters alongside the current feature/server conventions discovered in Ken OS. Compose reusable UI in the shared component system; do not import the prototype wholesale or create a second design system.
 
 Recommended application boundaries (names are proposals):
+
 - `getEngineeringOverview(owner, now)`
 - `getEngineeringProfile(owner, requirementVersion)`
 - `getLearningPath(owner, role, now)`
@@ -121,21 +126,22 @@ Use one current-progress calculation everywhere: dashboard, profile, prerequisit
 
 ### Presentation mapping
 
-| Internal value | UI label | Meaning |
-|---|---|---|
-| NOT_STARTED | Not started | No meaningful eligible work |
-| LEARNING | Learning | Learning needed based on state/evidence |
-| PRACTICING | Practicing | Partial evidence; proof incomplete |
-| VALIDATED | Proven | Requirements met under existing rules |
-| NEEDS_REVISIT | Review | A later review or source change needs attention |
-| solid | Strong | Answer satisfies its rubric |
-| partial / rusty | Partial / Needs review | Preserve exact distinction in evidence detail |
-| misconception | Misconception | Named incorrect mental model |
-| gap | Needs work | Missing evidence |
+| Internal value  | UI label               | Meaning                                         |
+| --------------- | ---------------------- | ----------------------------------------------- |
+| NOT_STARTED     | Not started            | No meaningful eligible work                     |
+| LEARNING        | Learning               | Learning needed based on state/evidence         |
+| PRACTICING      | Practicing             | Partial evidence; proof incomplete              |
+| VALIDATED       | Proven                 | Requirements met under existing rules           |
+| NEEDS_REVISIT   | Review                 | A later review or source change needs attention |
+| solid           | Strong                 | Answer satisfies its rubric                     |
+| partial / rusty | Partial / Needs review | Preserve exact distinction in evidence detail   |
+| misconception   | Misconception          | Named incorrect mental model                    |
+| gap             | Needs work             | Missing evidence                                |
 
 Retain internal enums and stored labels. The UI label Proven may include placement-derived Known status, but evidence detail must say “Established by placement assessment” rather than pretending an executable lab was completed. Placement and full proof remain distinct provenance.
 
 Hard invariants:
+
 1. A read/open click never grants proof. UI step completion is not topic mastery.
 2. Confidence is independent of grade. Require it for assessment/review; not for lessons or lab runs.
 3. Attempts, question/rubric snapshots, lessons and source packets are immutable evidence. Fixes append a correction/adjudication record; they do not silently edit history.
@@ -170,6 +176,7 @@ Create or resume one active run. Snapshot its curriculum and approved role-frame
 Generate chapter questions once within the existing allowance, persist before display, adapt per topic from grades and retain the question plan. Adaptive generation means total questions can change: show chapter progress and current item, not a fake fixed 54-question count. Full course now exceeds old 18-topic assumptions; compute scope from content. Do not promise 45–60 minutes without measured history.
 
 Submission sequence:
+
 1. Authorize owner, run/item ownership and active state; validate response and confidence.
 2. Lock submitted answer and persist a pending submission under an idempotency key.
 3. Execute/check predictions only after lock; assess explanations against the stored rubric.
@@ -198,13 +205,13 @@ Profile updates follow eligible evidence, not a final green UI animation. A succ
 These TypeScript shapes describe application projections, not new database schemas. Adapt naming to current types; avoid duplicating existing types.
 
 ```ts
-type EvidenceLevel = 'unknown' | 'junior' | 'mid' | 'senior';
-type EvidenceQualification = 'confirmed' | 'estimated' | 'incomplete';
+type EvidenceLevel = "unknown" | "junior" | "mid" | "senior";
+type EvidenceQualification = "confirmed" | "estimated" | "incomplete";
 interface RequirementView {
   id: string;
   chapterId: string;
-  requiredDepth: 'aware' | 'working' | 'deep';
-  state: 'met' | 'missing' | 'review';
+  requiredDepth: "aware" | "working" | "deep";
+  state: "met" | "missing" | "review";
   topicIds: string[];
   evidenceIds: string[];
   reason: string;
@@ -229,19 +236,19 @@ interface ProfileView {
   computedAt: string;
 }
 interface NextActionView {
-  kind: 'assessment' | 'review' | 'continue' | 'prerequisite' | 'new';
+  kind: "assessment" | "review" | "continue" | "prerequisite" | "new";
   topicId: string | null;
   runId: string | null;
-  step: 'learn' | 'exercise' | 'prove' | null;
+  step: "learn" | "exercise" | "prove" | null;
   reason: string;
   estimatedMinutes: number | null;
 }
 interface TopicSessionView {
   topicId: string;
-  uiStatus: 'Not started' | 'Learning' | 'Practicing' | 'Proven' | 'Review';
-  knownOrigin: 'proof' | 'placement' | 'inAppAssessment' | null;
+  uiStatus: "Not started" | "Learning" | "Practicing" | "Proven" | "Review";
+  knownOrigin: "proof" | "placement" | "inAppAssessment" | null;
   lessonId: string | null;
-  currentStep: 'learn' | 'exercise' | 'prove';
+  currentStep: "learn" | "exercise" | "prove";
   requiredEvidence: RequirementView[];
   assessmentModeLocked: boolean;
   revision: number;
@@ -256,14 +263,14 @@ Reuse `lab_source_packets`, `lab_lessons`, `lab_assessments`, `lab_attempts`, `l
 
 Proposed additions only if equivalent fields/tables do not already exist:
 
-| Need | Minimal representation | Retention/constraint |
-|---|---|---|
-| Immutable assessment profile | Run-linked JSON snapshot, stored on run or dedicated snapshot table | Unique run; include evidence cutoff and content/role versions |
-| Draft and resume across devices | `lab_session_drafts` or equivalent existing draft storage | Owner + scope + scopeId + itemId unique; optimistic revision |
-| Idempotent pending grading | Existing submission ledger, otherwise `lab_submissions` | Owner + idempotency key unique; pending/completed/failed; response hash |
-| Auditable source re-check | Existing change/flag record or additive record | Link old/new packet and affected topics; deduplicate flag |
-| Versioned direction | Existing profile version field; append change record only if history required | Direction writes compare expected revision |
-| Later knowledge debt | `lab_debt_items` | Deduplicate project/range/concept; source provenance retained |
+| Need                            | Minimal representation                                                        | Retention/constraint                                                    |
+| ------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| Immutable assessment profile    | Run-linked JSON snapshot, stored on run or dedicated snapshot table           | Unique run; include evidence cutoff and content/role versions           |
+| Draft and resume across devices | `lab_session_drafts` or equivalent existing draft storage                     | Owner + scope + scopeId + itemId unique; optimistic revision            |
+| Idempotent pending grading      | Existing submission ledger, otherwise `lab_submissions`                       | Owner + idempotency key unique; pending/completed/failed; response hash |
+| Auditable source re-check       | Existing change/flag record or additive record                                | Link old/new packet and affected topics; deduplicate flag               |
+| Versioned direction             | Existing profile version field; append change record only if history required | Direction writes compare expected revision                              |
+| Later knowledge debt            | `lab_debt_items`                                                              | Deduplicate project/range/concept; source provenance retained           |
 
 Draft shape: owner, scope (`assessment-answer` / `topic-code` / `topic-answer`), scope identity, item ID, payload, revision, updatedAt. Server session determines owner; clients cannot supply authoritative `user_id`. Debounced autosave shows Saving/Saved/Conflict. On conflict fetch current draft and offer compare/keep choice; do not overwrite newer work. Drafts are mutable and never evidence until submitted. Keep payload limits and retention from existing platform rules.
 
@@ -277,43 +284,45 @@ Daily date uses the owner's configured timezone (John: Asia/Manila), not server 
 
 Keep actual existing APIs and adapt their responses to the new UI wherever possible. The operations below are contracts to reconcile, not a mandate to create 20 new endpoints. Existing server actions are acceptable if they preserve the same validation, idempotency and error semantics.
 
-| Operation | Inputs | Output / side effect |
-|---|---|---|
-| Read Overview/Profile/Path | Authenticated owner, selected role/filter | Composed domain projections; no paid generation on GET |
-| Read topic/evidence/run | Stable identity, owner context | Authorized session or snapshot, no private answer-key leakage |
-| Save intake/direction | Validated context, approved role ID, weekly hours, expected revision | Profile preference update; no new evidence |
-| Start/resume run | baseline/checkpoint + idempotency key | Existing active run or new frozen scope |
-| Prepare chapter | Run ID, chapter ID, operation key | Persisted item set / pending generation / allowance error |
-| Save draft | Scope/item, payload, expected revision | New revision / conflict |
-| Submit answer | Run/item, response, confidence, idempotency key | Locked submission ID, processing state or persisted result |
-| Retry grade | Submission ID | Resume same locked response; audited retry |
-| Submit executable evidence | Topic/lab/version, response/code, bounded run observations, key | Validated attempt, provenance, updated projection |
-| Request independent proof | Topic ID, requested eligible modes, operation key | New stored questions with independent rubrics |
-| Daily set | Server-derived owner local date | Stable set; create generation only through explicit mutation |
-| Submit daily item | Set/item, response, confidence where required, key | Review attempt and updated review date |
-| Later ingest concepts | Scoped capture identity, repo alias, hashes, concept IDs | Suggestions/debt only; no raw code |
+| Operation                  | Inputs                                                               | Output / side effect                                          |
+| -------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Read Overview/Profile/Path | Authenticated owner, selected role/filter                            | Composed domain projections; no paid generation on GET        |
+| Read topic/evidence/run    | Stable identity, owner context                                       | Authorized session or snapshot, no private answer-key leakage |
+| Save intake/direction      | Validated context, approved role ID, weekly hours, expected revision | Profile preference update; no new evidence                    |
+| Start/resume run           | baseline/checkpoint + idempotency key                                | Existing active run or new frozen scope                       |
+| Prepare chapter            | Run ID, chapter ID, operation key                                    | Persisted item set / pending generation / allowance error     |
+| Save draft                 | Scope/item, payload, expected revision                               | New revision / conflict                                       |
+| Submit answer              | Run/item, response, confidence, idempotency key                      | Locked submission ID, processing state or persisted result    |
+| Retry grade                | Submission ID                                                        | Resume same locked response; audited retry                    |
+| Submit executable evidence | Topic/lab/version, response/code, bounded run observations, key      | Validated attempt, provenance, updated projection             |
+| Request independent proof  | Topic ID, requested eligible modes, operation key                    | New stored questions with independent rubrics                 |
+| Daily set                  | Server-derived owner local date                                      | Stable set; create generation only through explicit mutation  |
+| Submit daily item          | Set/item, response, confidence where required, key                   | Review attempt and updated review date                        |
+| Later ingest concepts      | Scoped capture identity, repo alias, hashes, concept IDs             | Suggestions/debt only; no raw code                            |
 
 Proposed response envelope:
+
 ```ts
 { data: T, revision?: number, operationId?: string }
 // or
 { error: { code: string, message: string, retryable: boolean,
            retryAfter?: string, submissionId?: string } }
 ```
+
 Error classes: invalid input, unauthenticated, forbidden, missing item, stale revision, duplicate payload mismatch, assessment active, generation exhausted, source preparation failed, runner result invalid, grading unavailable. Map to existing HTTP conventions; validation 400/422, ownership 403 or concealed 404 per platform, conflict 409, exhaustion 429, unavailable 503. A repeated identical idempotent submission returns its saved result, not a second grade. Reusing a key with a changed response is a conflict.
 
 Never send hidden solutions, rubric answer keys or private run records before the allowed feedback phase. Fetching another owner's IDs must fail at the service boundary even if all current access is owner-only.
 
 ## 11. Agents, costs and runner trust
 
-| Component | Inputs | Allowed output |
-|---|---|---|
-| Researcher | Topic + allowlisted source groups | Validated dated packet; no teaching/grading |
-| Tutor | Packet + actual evidence gaps and misconceptions | Lesson snapshot + cited content; no proof |
-| Assessor/generation | Topic + packet + prior-item fingerprints | Independent items and rubrics |
-| Grader | Locked response + stored item/rubric | Structured label/feedback, validated by code |
-| Direction Guide | Non-evidence context + computed role distances | Suggestions; explicit confirmed profile changes |
-| Planner/progress/profile/daily | Content + attempts + timestamps | Deterministic recommendations and projections |
+| Component                      | Inputs                                           | Allowed output                                  |
+| ------------------------------ | ------------------------------------------------ | ----------------------------------------------- |
+| Researcher                     | Topic + allowlisted source groups                | Validated dated packet; no teaching/grading     |
+| Tutor                          | Packet + actual evidence gaps and misconceptions | Lesson snapshot + cited content; no proof       |
+| Assessor/generation            | Topic + packet + prior-item fingerprints         | Independent items and rubrics                   |
+| Grader                         | Locked response + stored item/rubric             | Structured label/feedback, validated by code    |
+| Direction Guide                | Non-evidence context + computed role distances   | Suggestions; explicit confirmed profile changes |
+| Planner/progress/profile/daily | Content + attempts + timestamps                  | Deterministic recommendations and projections   |
 
 Retain Guide conversation from the profile architecture. The prototype's form is a fallback input mechanism, not a decision to remove guided intake/direction. Guide cannot grade or approve its own suggested chapter changes. Explicit user confirmation applies to direction/profile changes where current Guide rules require it; deterministic UI Save already expresses that confirmation.
 
@@ -330,45 +339,52 @@ Known concept missing eligible evidence → open suggestion; user queues it → 
 ## 13. Migration and rollback
 
 ### Phase A — repository reconciliation
+
 Read AGENTS, product brief, original module handoff and UI doc. Locate actual branches/commits, routes, schema and tests. Produce a concise reconciliation note covering deployed status, existing API equivalence, evidence/depth rules, budget ledgers, baseline status, role approval version and unresolved discrepancies. Run relevant existing checks once to establish a baseline. Do not code against obsolete proposal paths.
 
 ### Phase B — additive shell and projections
+
 Add `/engineering` pages behind the platform's existing feature-flag mechanism or minimal configuration switch. Reuse existing APIs/domain functions; compare old/new projection results for the same owner and attempts. Legacy pages remain accessible during verification. No evidence migration in this phase.
 
 ### Phase C — minimal additive persistence
+
 Only add missing draft, snapshot, submission/version fields after inspection. Generate and review Drizzle migrations; apply to staging first. Backfill hashes/version provenance deterministically where reconstructable. Mark unavailable historical versions unknown; do not fabricate them. Store backup and verification queries before production migration. Current implementation scope must authorize any actual deployment separately.
 
 ### Phase D — complete real vertical slice
+
 Reskin existing intake/assessment/profile; preserve run IDs, questions and submitted answers. Verify resumed pending runs remain valid. Complete a real baseline with owner participation; do not have an agent answer the owner's assessment. Then confirm the five baseline consumers use the new evidence: Tutor, Planner, Course/Learn, Topic, Overview.
 
 Only after completed baseline and verified consumers, perform the existing retirement follow-up: remove legacy baseline file/parser/generated imports; rewrite topic gap text as teaching goals; update source-of-truth references and AGENTS consistently. Keep real attempts since 1 Oct. Distinguish imported legacy summary records and exclude them from real proof; do not drop all `kind=baseline` rows. Historical baseline cleanup must be reviewed separately because the original documents contain preservation rules.
 
 ### Phase E — topic and retention surfaces
+
 Integrate existing Course/topic/runners/assessment components into Learn/Exercise/Prove, then daily practice and Overview. Reuse actual topic IDs and lab definitions, not the prototype's display-name arrays. Test legacy links and direct reload. A soft route migration does not alter attempt semantics.
 
 ### Phase F — switch navigation and stabilize
+
 Enable Engineering navigation for owner; observe real failures, disputed grades and review retention. Once stable, convert page redirects to permanent. Delete redundant UI only after no live imports/deep links depend on it. Keep domain/table names and old API handlers unless a later cleanup has a concrete benefit.
 
 Rollback: switch navigation/feature flag back to legacy pages. Additive schema and attempts remain usable by both presentations. Never roll back by deleting new owner evidence or restoring an older progress dump. Rebuild projections from retained attempts if needed. Delay destructive schema changes so rollback does not require data loss. UI rollback and legacy-baseline retirement are separate changes; retirement must not be casually undone by restoring context as proof.
 
 ## 14. Delivery slices and acceptance
 
-| Slice | Work | Acceptance gate |
-|---|---|---|
-| 0 · Reconcile | Actual code/status/constraints map | Existing capabilities located; contradictions documented |
-| 1 · Shell/Profile | Four tabs, profile projection, evidence details | Same real evidence produces same levels/depth as old UI; unknown shown honestly |
-| 2 · Assessment journey | Intake, resume, grading, results, direction | Durable progress; one answer per item; immutable real baseline; owner can finish across sessions |
-| 3 · Learn/Proof | Chapter path, placement, topic workspace, actual runners | Existing lab starter fails, solution passes; independent proof rules unchanged |
-| 4 · Practice/Overview | Stable daily set and next action composition | Reviews update retention, practice pauses during run, dominant action matches Planner |
-| 5 · Cutover | Legacy links, flag, baseline retirement when eligible | Old links work; rollback retains evidence; no imported context counts as proof |
-| 6 · Operate | Real-use loop review and verified radar | Grade/retention issues addressed before project-gap automation |
-| 7 · Knowledge debt | Local classification and concept ingestion | No raw code upload; suggestions resolve only from eligible evidence |
+| Slice                  | Work                                                     | Acceptance gate                                                                                  |
+| ---------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| 0 · Reconcile          | Actual code/status/constraints map                       | Existing capabilities located; contradictions documented                                         |
+| 1 · Shell/Profile      | Four tabs, profile projection, evidence details          | Same real evidence produces same levels/depth as old UI; unknown shown honestly                  |
+| 2 · Assessment journey | Intake, resume, grading, results, direction              | Durable progress; one answer per item; immutable real baseline; owner can finish across sessions |
+| 3 · Learn/Proof        | Chapter path, placement, topic workspace, actual runners | Existing lab starter fails, solution passes; independent proof rules unchanged                   |
+| 4 · Practice/Overview  | Stable daily set and next action composition             | Reviews update retention, practice pauses during run, dominant action matches Planner            |
+| 5 · Cutover            | Legacy links, flag, baseline retirement when eligible    | Old links work; rollback retains evidence; no imported context counts as proof                   |
+| 6 · Operate            | Real-use loop review and verified radar                  | Grade/retention issues addressed before project-gap automation                                   |
+| 7 · Knowledge debt     | Local classification and concept ingestion               | No raw code upload; suggestions resolve only from eligible evidence                              |
 
 Slices 1–2 are the first meaningful user release; do not build duplicate assessment services simply to fit this sequence. Where existing functionality works, reskin and integrate it.
 
 ## 15. Verification plan
 
 Domain regression cases:
+
 - Legacy summary solid does not satisfy prerequisites; eligible in-app all-solid answers do under placement rules.
 - Missing required executable evidence does not become full proof from explanation confidence.
 - A role/depth change affects requirements, not immutable attempts; unknown never becomes Junior by default.
@@ -377,6 +393,7 @@ Domain regression cases:
 - Source expiry is distinct from validated factual change; old proof remains dated and inspectable.
 
 Database/application cases:
+
 - Concurrent identical submissions create one result/change; mismatched duplicate key returns conflict.
 - Grading failure retains the locked answer; retry resumes, not resubmits.
 - One completed baseline, stable daily set under concurrent requests, owner timezone boundary.
@@ -386,6 +403,7 @@ Database/application cases:
 - No paid generation on reads; concurrent allowance reservations respect cap.
 
 Browser cases:
+
 - First use → intake → real assessment → results → direction → profile.
 - Partial run across refresh; existing proofs skipped/preserved; closed-book helpers disabled.
 - Learn → placement or lesson → failing exercise → fix → pass → independent proof → projection update.

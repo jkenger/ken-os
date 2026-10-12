@@ -12,26 +12,23 @@ export const dynamic = "force-dynamic";
 export default async function Home({ searchParams }: { searchParams: Promise<{ drive_error?: string | string[] }> }) {
   const session = await requireSession("/");
   const { drive_error } = await searchParams;
-  const [selection, connected] = await Promise.all([getSelectedResume(session.userId), hasDriveConnection(session.userId)]);
+  const [selection, connected] = await Promise.all([
+    getSelectedResume(session.userId),
+    hasDriveConnection(session.userId),
+  ]);
   let drive: DriveAccess = connected ? "connected" : "not_connected";
   let file: Artifact | null = null;
   let error: string | null = null;
   if (selection && connected) {
     try {
-      file = await getDriveFile(
-        selection.fileId,
-        await getGoogleAccessToken(session.userId),
-      );
+      file = await getDriveFile(selection.fileId, await getGoogleAccessToken(session.userId));
       if (file.trashed) {
         file = null;
         error = "In Drive trash. Choose another file";
       }
     } catch (cause) {
       if (cause instanceof DriveAccessError) drive = cause.access;
-      else error =
-        cause instanceof Error
-          ? cause.message
-          : "Couldn't reach Google Drive. Refresh to try again";
+      else error = cause instanceof Error ? cause.message : "Couldn't reach Google Drive. Refresh to try again";
     }
   }
   const previewUrl =
@@ -49,10 +46,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
       drive={drive}
       driveNotice={driveErrorText(Array.isArray(drive_error) ? drive_error[0] : drive_error)}
       previewUrl={previewUrl}
-      canAsk={
-        file?.mimeType === GOOGLE_DOC_MIME &&
-        Boolean(process.env.OPENAI_API_KEY)
-      }
+      canAsk={file?.mimeType === GOOGLE_DOC_MIME && Boolean(process.env.OPENAI_API_KEY)}
       labSummary={await labSummary(session.userId).catch(() => null)}
     />
   );

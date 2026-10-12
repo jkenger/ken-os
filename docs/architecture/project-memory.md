@@ -30,15 +30,15 @@ Suggested minimum rule: read current approved memory before substantial work; ch
 
 ## Data model (logical, not a migration)
 
-| Entity | Key fields and invariant |
-| --- | --- |
-| `memory_projects` | `id`, `owner_user_id`, `name`, normalized repository identity (optional), `sharing_mode`, status. Unique owner + repository identity when provided. |
-| `memory_policies` | `project_id`, monotonic version, document, digest, creator, timestamp. Immutable versions; project points to active version. |
-| `memory_decisions` | Stable ID, project, title, issue, choice, decider type, state (`proposed`, `approved`, `rejected`, `superseded`), created/updated timestamps. No inferred item is approved automatically. |
-| `memory_decision_revisions` | Decision ID, version, rationale, alternatives, uncertainty, editor, review action/time. Append-only correction history. |
-| `memory_receipts` | Stable ID, project, external task key if known, policy version, outcome, verification, remaining work, state, author/source adapter, created time, content digest, idempotency key. |
-| `memory_evidence` | Project, subject type/ID, kind, locator, optional revision/commit SHA, observed-at, availability, claim relation (`supports`, `context`, `contradicts`). Prefer pointers over copied content. |
-| Receipt/decision correlation | The pilot uses a shared `task_key` rather than a join table. A typed link table can follow when a real cross-session retrieval case requires it. |
+| Entity                       | Key fields and invariant                                                                                                                                                                      |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `memory_projects`            | `id`, `owner_user_id`, `name`, normalized repository identity (optional), `sharing_mode`, status. Unique owner + repository identity when provided.                                           |
+| `memory_policies`            | `project_id`, monotonic version, document, digest, creator, timestamp. Immutable versions; project points to active version.                                                                  |
+| `memory_decisions`           | Stable ID, project, title, issue, choice, decider type, state (`proposed`, `approved`, `rejected`, `superseded`), created/updated timestamps. No inferred item is approved automatically.     |
+| `memory_decision_revisions`  | Decision ID, version, rationale, alternatives, uncertainty, editor, review action/time. Append-only correction history.                                                                       |
+| `memory_receipts`            | Stable ID, project, external task key if known, policy version, outcome, verification, remaining work, state, author/source adapter, created time, content digest, idempotency key.           |
+| `memory_evidence`            | Project, subject type/ID, kind, locator, optional revision/commit SHA, observed-at, availability, claim relation (`supports`, `context`, `contradicts`). Prefer pointers over copied content. |
+| Receipt/decision correlation | The pilot uses a shared `task_key` rather than a join table. A typed link table can follow when a real cross-session retrieval case requires it.                                              |
 
 The pilot uses Drizzle schema and reviewed migrations `0002`–`0004`. Text is bounded and the server rejects obvious credential patterns; this is a guardrail, not complete secret detection. Full-text search and embeddings can wait until a small corpus proves retrieval needs. The handoff is a deterministic query over approved decisions and recent receipts, with a separately labeled proposal count. Open questions remain in proposed decisions and receipt remaining-work fields rather than a dedicated table.
 
@@ -64,17 +64,21 @@ An adapter-neutral draft payload should have this shape (illustrative fields, no
   "outcome": "What changed or was learned",
   "verification": [{ "result": "passed", "label": "relevant test" }],
   "remaining": ["Open question or follow-up"],
-  "claims": [{
-    "text": "Why a choice was made",
-    "provenance": "owner_stated",
-    "certainty": "stated",
-    "evidenceIds": ["evidence-1"]
-  }],
-  "evidence": [{
-    "id": "evidence-1",
-    "kind": "conversation",
-    "locator": "tool-specific reference, if available"
-  }]
+  "claims": [
+    {
+      "text": "Why a choice was made",
+      "provenance": "owner_stated",
+      "certainty": "stated",
+      "evidenceIds": ["evidence-1"]
+    }
+  ],
+  "evidence": [
+    {
+      "id": "evidence-1",
+      "kind": "conversation",
+      "locator": "tool-specific reference, if available"
+    }
+  ]
 }
 ```
 

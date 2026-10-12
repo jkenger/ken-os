@@ -14,12 +14,16 @@ const POLICIES = {
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const policy = url.searchParams.get("policy") as keyof typeof POLICIES | null;
-  if (!policy || !(policy in POLICIES)) return Response.json({ error: "policy must be max-age, no-cache or no-store" }, { status: 400 });
+  if (!policy || !(policy in POLICIES))
+    return Response.json({ error: "policy must be max-age, no-cache or no-store" }, { status: 400 });
   const etag = `"${createHash("sha256").update(url.search).digest("hex").slice(0, 16)}"`;
   const headers = new Headers({ "Cache-Control": POLICIES[policy], "Content-Type": "application/json" });
   if (policy === "no-cache") {
     headers.set("ETag", etag);
     if (request.headers.get("if-none-match") === etag) return new Response(null, { status: 304, headers });
   }
-  return new Response(JSON.stringify({ policy, servedBy: randomUUID(), padding: "x".repeat(20_000) }), { status: 200, headers });
+  return new Response(JSON.stringify({ policy, servedBy: randomUUID(), padding: "x".repeat(20_000) }), {
+    status: 200,
+    headers,
+  });
 }

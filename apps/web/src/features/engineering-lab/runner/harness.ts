@@ -86,7 +86,8 @@ export interface LabScriptOptions {
 
 /** Learner code plus the lab's tests. Each test runs in order; the worker reports every result. */
 export function buildLabScript(code: string, tests: string, options: LabScriptOptions = {}) {
-  const database = options.pglite ? `
+  const database = options.pglite
+    ? `
   try {
     const url = ${JSON.stringify(options.pglite.url)};
     if (url) {
@@ -97,7 +98,8 @@ export function buildLabScript(code: string, tests: string, options: LabScriptOp
   } catch (error) {
     __post({ type: "error", message: "The practice database could not start: " + String(error && error.message || error), logs: __logs });
     return;
-  }` : "";
+  }`
+    : "";
   return `${HARNESS}
 ${POST}
 globalThis.LAB_ORIGIN = ${JSON.stringify(options.origin ?? "")};

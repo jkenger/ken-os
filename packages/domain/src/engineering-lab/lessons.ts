@@ -58,7 +58,11 @@ function clean(text: string) {
 }
 
 /** Keeps only citations that point at a source in the packet, and turns them into the lesson's sources. */
-export function finalizeLesson(draft: LessonDraft, packet: Pick<SourcePacket, "sources">, meta: Pick<LessonSnapshot, "topicId" | "version" | "sourcePacketId" | "promptVersion" | "model">): LessonSnapshot {
+export function finalizeLesson(
+  draft: LessonDraft,
+  packet: Pick<SourcePacket, "sources">,
+  meta: Pick<LessonSnapshot, "topicId" | "version" | "sourcePacketId" | "promptVersion" | "model">,
+): LessonSnapshot {
   const allowed = new Map(packet.sources.map((source) => [source.url, source.title]));
   const rejected: string[] = [];
   const cited = new Set<string>();
@@ -69,8 +73,12 @@ export function finalizeLesson(draft: LessonDraft, packet: Pick<SourcePacket, "s
   if (!cited.size) throw new Error("The lesson cited none of its sources.");
   const prove = draft.prove.map(clean).filter(Boolean).slice(0, 3);
   if (prove.length !== 3) throw new Error("The lesson needs exactly 3 things to prove.");
-  if (![draft.heading, draft.body, draft.mentalModel, draft.block.content, draft.example].every((text) => clean(text))) throw new Error("The lesson is missing a part.");
-  const deeper = draft.deeper && clean(draft.deeper.title) && clean(draft.deeper.body) ? { title: clean(draft.deeper.title), body: clean(draft.deeper.body) } : null;
+  if (![draft.heading, draft.body, draft.mentalModel, draft.block.content, draft.example].every((text) => clean(text)))
+    throw new Error("The lesson is missing a part.");
+  const deeper =
+    draft.deeper && clean(draft.deeper.title) && clean(draft.deeper.body)
+      ? { title: clean(draft.deeper.title), body: clean(draft.deeper.body) }
+      : null;
   return {
     ...meta,
     heading: clean(draft.heading),
@@ -90,29 +98,62 @@ export function finalizeLesson(draft: LessonDraft, packet: Pick<SourcePacket, "s
  * CLAUDE_LIMITS.lesson characters, and only sources on the Researcher's trusted sites. Others are dropped and listed in
  * `rejected`, which is reported back to Claude.
  */
-export function finalizeClaudeLesson(input: LessonContent, meta: Pick<LessonSnapshot, "topicId" | "version">): LessonSnapshot {
+export function finalizeClaudeLesson(
+  input: LessonContent,
+  meta: Pick<LessonSnapshot, "topicId" | "version">,
+): LessonSnapshot {
   const prove = input.prove.map(clean).filter(Boolean);
   if (prove.length !== 3) throw new Error("A lesson needs exactly 3 things to prove");
-  if (![input.heading, input.body, input.mentalModel, input.block.content, input.block.note, input.example].every((part) => clean(part))) {
+  if (
+    ![input.heading, input.body, input.mentalModel, input.block.content, input.block.note, input.example].every(
+      (part) => clean(part),
+    )
+  ) {
     throw new Error("A lesson needs a heading, body, mental model, block with a note, and a product example");
   }
-  const deeper = input.deeper && clean(input.deeper.title) && clean(input.deeper.body) ? { title: clean(input.deeper.title), body: clean(input.deeper.body) } : null;
-  const size = [input.heading, input.body, input.mentalModel, input.block.content, input.block.note, input.example, deeper?.title ?? "", deeper?.body ?? "", ...prove]
-    .reduce((sum, part) => sum + part.length, 0);
-  if (size > CLAUDE_LIMITS.lesson) throw new Error(`Keep the lesson under ${CLAUDE_LIMITS.lesson} characters (it has ${size})`);
+  const deeper =
+    input.deeper && clean(input.deeper.title) && clean(input.deeper.body)
+      ? { title: clean(input.deeper.title), body: clean(input.deeper.body) }
+      : null;
+  const size = [
+    input.heading,
+    input.body,
+    input.mentalModel,
+    input.block.content,
+    input.block.note,
+    input.example,
+    deeper?.title ?? "",
+    deeper?.body ?? "",
+    ...prove,
+  ].reduce((sum, part) => sum + part.length, 0);
+  if (size > CLAUDE_LIMITS.lesson)
+    throw new Error(`Keep the lesson under ${CLAUDE_LIMITS.lesson} characters (it has ${size})`);
   const rejected: string[] = [];
   const sources: LessonSource[] = [];
   for (const source of input.sources) {
     const url = source.url.trim();
     if (!isTrustedSourceUrl(url)) rejected.push(`Not on a trusted site: ${url}`);
-    else if (!sources.some((item) => item.url === url)) sources.push({ title: clean(source.title).slice(0, 200) || new URL(url).hostname, url });
+    else if (!sources.some((item) => item.url === url))
+      sources.push({ title: clean(source.title).slice(0, 200) || new URL(url).hostname, url });
   }
-  if (!sources.length) throw new Error(`A lesson needs at least one source on a trusted site.${rejected.length ? ` Dropped: ${rejected.join("; ")}` : ""}`);
+  if (!sources.length)
+    throw new Error(
+      `A lesson needs at least one source on a trusted site.${rejected.length ? ` Dropped: ${rejected.join("; ")}` : ""}`,
+    );
   return {
-    ...meta, sourcePacketId: null, promptVersion: "claude", model: "claude",
-    heading: clean(input.heading), body: clean(input.body), mentalModel: clean(input.mentalModel),
+    ...meta,
+    sourcePacketId: null,
+    promptVersion: "claude",
+    model: "claude",
+    heading: clean(input.heading),
+    body: clean(input.body),
+    mentalModel: clean(input.mentalModel),
     block: { kind: input.block.kind, content: input.block.content.replace(/\s+$/, ""), note: clean(input.block.note) },
-    example: clean(input.example), deeper, prove, sources, rejected,
+    example: clean(input.example),
+    deeper,
+    prove,
+    sources,
+    rejected,
   };
 }
 
@@ -147,7 +188,8 @@ export function parseAuthoredTopic(raw: unknown, file: string): AuthoredTopic {
   const deeper = lesson.deeper as Record<string, unknown> | null | undefined;
   const proof = (input.proof ?? {}) as Record<string, unknown>;
   const kind = block.kind;
-  if (!LESSON_BLOCK_KINDS.includes(kind as LessonBlockKind)) fail(`${file} lesson.block.kind`, `expected one of ${LESSON_BLOCK_KINDS.join(", ")}`);
+  if (!LESSON_BLOCK_KINDS.includes(kind as LessonBlockKind))
+    fail(`${file} lesson.block.kind`, `expected one of ${LESSON_BLOCK_KINDS.join(", ")}`);
   const prove = texts(lesson.prove, `${file} lesson.prove`);
   if (prove.length !== 3) fail(`${file} lesson.prove`, "expected exactly 3 lines");
   const sources = (Array.isArray(lesson.sources) ? lesson.sources : []).map((value, index) => {
@@ -166,9 +208,18 @@ export function parseAuthoredTopic(raw: unknown, file: string): AuthoredTopic {
       heading: text(lesson.heading, `${file} lesson.heading`),
       body: text(lesson.body, `${file} lesson.body`),
       mentalModel: text(lesson.mentalModel, `${file} lesson.mentalModel`),
-      block: { kind: kind as LessonBlockKind, content: text(block.content, `${file} lesson.block.content`), note: text(block.note, `${file} lesson.block.note`) },
+      block: {
+        kind: kind as LessonBlockKind,
+        content: text(block.content, `${file} lesson.block.content`),
+        note: text(block.note, `${file} lesson.block.note`),
+      },
       example: text(lesson.example, `${file} lesson.example`),
-      deeper: deeper ? { title: text(deeper.title, `${file} lesson.deeper.title`), body: text(deeper.body, `${file} lesson.deeper.body`) } : null,
+      deeper: deeper
+        ? {
+            title: text(deeper.title, `${file} lesson.deeper.title`),
+            body: text(deeper.body, `${file} lesson.deeper.body`),
+          }
+        : null,
       prove,
       sources,
     },

@@ -51,7 +51,8 @@ function fail(where: string, message: string): never {
 }
 
 function text(value: unknown, where: string, min = 1): string {
-  if (typeof value !== "string" || value.trim().length < min) fail(where, `expected text of at least ${min} characters`);
+  if (typeof value !== "string" || value.trim().length < min)
+    fail(where, `expected text of at least ${min} characters`);
   return value.trim();
 }
 
@@ -102,10 +103,14 @@ export function parseTopicMap(raw: unknown, knownLabs: ReadonlyMap<string, reado
     const labs = list(item.labs, `${where}.labs`).map((lab) => text(lab, `${where}.labs`));
     if (labs.length !== 1) fail(where, "a topic has exactly one exercise");
     for (const lab of labs) if (!knownLabs.has(lab)) fail(where, `unknown lab ${lab}`);
-    const sourceGroups = list(item.sourceGroups, `${where}.sourceGroups`).map((group) => oneOf(group, Object.keys(SOURCE_DOMAINS) as SourceGroup[], `${where}.sourceGroups`));
+    const sourceGroups = list(item.sourceGroups, `${where}.sourceGroups`).map((group) =>
+      oneOf(group, Object.keys(SOURCE_DOMAINS) as SourceGroup[], `${where}.sourceGroups`),
+    );
     if (!sourceGroups.length) fail(where, "sourceGroups must list at least one group");
-    const codeChecked = prove.includes("predict") || labs.some((lab) => knownLabs.get(lab)!.some((mode) => prove.includes(mode)));
-    if (!codeChecked) fail(where, "prove must include predict, or a mode covered by one of its labs, so validation can rest on code");
+    const codeChecked =
+      prove.includes("predict") || labs.some((lab) => knownLabs.get(lab)!.some((mode) => prove.includes(mode)));
+    if (!codeChecked)
+      fail(where, "prove must include predict, or a mode covered by one of its labs, so validation can rest on code");
     return {
       id,
       title: text(item.title, `${where}.title`),
@@ -144,7 +149,10 @@ export function parseTopicMap(raw: unknown, knownLabs: ReadonlyMap<string, reado
   }
   // Topics follow course order: chapter by chapter, in the order the YAML lists them within a chapter.
   const chapterOrder = new Map(chapters.map((item, index) => [item.id, index]));
-  const ordered = topics.map((topic, index) => ({ topic, index })).sort((a, b) => chapterOrder.get(a.topic.chapter)! - chapterOrder.get(b.topic.chapter)! || a.index - b.index).map((entry) => entry.topic);
+  const ordered = topics
+    .map((topic, index) => ({ topic, index }))
+    .sort((a, b) => chapterOrder.get(a.topic.chapter)! - chapterOrder.get(b.topic.chapter)! || a.index - b.index)
+    .map((entry) => entry.topic);
   return { areas, chapters, topics: ordered };
 }
 
@@ -154,17 +162,25 @@ export const POINTS_PER_TOPIC = { min: 4, max: 6 } as const;
  * Attaches assessment points (content/engineering-lab/curriculum/points.yaml) to the topic map. Every written topic needs
  * 4 to 6; unknown topic ids fail. Returns the review status so the app can say whether the owner has approved them.
  */
-export function attachPoints(map: TopicMap, raw: unknown): { map: TopicMap; status: "draft" | "approved"; reviewedOn: string | null } {
+export function attachPoints(
+  map: TopicMap,
+  raw: unknown,
+): { map: TopicMap; status: "draft" | "approved"; reviewedOn: string | null } {
   const input = (raw ?? {}) as { status?: unknown; reviewedOn?: unknown; topics?: unknown };
   const status = oneOf(input.status ?? "draft", ["draft", "approved"] as const, "points.status");
-  const reviewedOn = input.reviewedOn === null || input.reviewedOn === undefined ? null : text(input.reviewedOn, "points.reviewedOn");
+  const reviewedOn =
+    input.reviewedOn === null || input.reviewedOn === undefined ? null : text(input.reviewedOn, "points.reviewedOn");
   if (status === "approved" && !reviewedOn) fail("points", "approved points need reviewedOn");
   const byTopic = (input.topics ?? {}) as Record<string, unknown>;
   const ids = new Set(map.topics.map((topic) => topic.id));
   for (const id of Object.keys(byTopic)) if (!ids.has(id)) fail("points", `unknown topic ${id}`);
   const topics = map.topics.map((topic) => {
     const points = list(byTopic[topic.id], `points.${topic.id}`).map((point) => text(point, `points.${topic.id}`, 10));
-    if (points.length < POINTS_PER_TOPIC.min || points.length > POINTS_PER_TOPIC.max) fail(`points.${topic.id}`, `expected ${POINTS_PER_TOPIC.min} to ${POINTS_PER_TOPIC.max} points, found ${points.length}`);
+    if (points.length < POINTS_PER_TOPIC.min || points.length > POINTS_PER_TOPIC.max)
+      fail(
+        `points.${topic.id}`,
+        `expected ${POINTS_PER_TOPIC.min} to ${POINTS_PER_TOPIC.max} points, found ${points.length}`,
+      );
     return { ...topic, points };
   });
   return { map: { ...map, topics }, status, reviewedOn };

@@ -19,23 +19,40 @@ export interface TermAnswer {
 
 /** One saved term per spelling: case, spacing and trailing punctuation don't make a new one. */
 export function termKey(term: string) {
-  return term.trim().toLowerCase().replace(/\s+/g, " ").replace(/^[\s"'`([{]+|[\s"'`)\]}.,:;!?]+$/g, "");
+  return term
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/^[\s"'`([{]+|[\s"'`)\]}.,:;!?]+$/g, "");
 }
 
 /** True only for an https link on a trusted site or one of its subdomains. */
 export function isTrustedSourceUrl(value: string) {
   let url: URL;
-  try { url = new URL(value); } catch { return false; }
+  try {
+    url = new URL(value);
+  } catch {
+    return false;
+  }
   if (url.protocol !== "https:") return false;
   const host = url.hostname.toLowerCase();
   return TRUSTED_LOOKUP_DOMAINS.some((domain) => host === domain || host.endsWith(`.${domain}`));
 }
 
 /** Keeps an AI answer inside the rules: a short meaning, and a link only if it is trusted. */
-export function finalizeTermAnswer(selected: string, draft: { term: string; meaning: string; sourceTitle: string | null; sourceUrl: string | null }): TermAnswer {
+export function finalizeTermAnswer(
+  selected: string,
+  draft: { term: string; meaning: string; sourceTitle: string | null; sourceUrl: string | null },
+): TermAnswer {
   const term = draft.term.trim().slice(0, TERM_MAX_LENGTH) || selected.trim();
   const meaning = draft.meaning.trim().replace(/\s+/g, " ").slice(0, 600);
-  const source = draft.sourceUrl && isTrustedSourceUrl(draft.sourceUrl) ? { title: (draft.sourceTitle ?? "").trim().slice(0, 120) || new URL(draft.sourceUrl).hostname, url: draft.sourceUrl } : null;
+  const source =
+    draft.sourceUrl && isTrustedSourceUrl(draft.sourceUrl)
+      ? {
+          title: (draft.sourceTitle ?? "").trim().slice(0, 120) || new URL(draft.sourceUrl).hostname,
+          url: draft.sourceUrl,
+        }
+      : null;
   return { term, meaning, source };
 }
 

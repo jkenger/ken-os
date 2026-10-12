@@ -14,7 +14,9 @@ async function main() {
   const topicId = process.argv[2];
   const topic = topicId ? findTopic(topicId) : undefined;
   if (!topic) {
-    console.error(`Usage: pnpm --filter @ken-os/web lab:research <topic>\nTopics: ${topicMap.topics.map((item) => item.id).join(", ")}`);
+    console.error(
+      `Usage: pnpm --filter @ken-os/web lab:research <topic>\nTopics: ${topicMap.topics.map((item) => item.id).join(", ")}`,
+    );
     process.exit(1);
   }
   if (!process.env.OPENAI_API_KEY) throw new Error("Set OPENAI_API_KEY in your untracked local environment.");

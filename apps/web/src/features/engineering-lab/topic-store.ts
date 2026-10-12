@@ -1,9 +1,28 @@
 import { randomUUID } from "node:crypto";
 import { and, desc, eq, inArray } from "drizzle-orm";
-import { ASSESSOR_PROMPT_VERSION, GRADER_PROMPT_VERSION, gradeWithRubric, TUTOR_PROMPT_VERSION, writeLesson, writeTopicQuestion } from "@ken-os/agents";
 import {
-  canProve, CLAUDE_LIMITS, finalizeClaudeLesson, finalizeLesson, pointsFor,
-  type CodeRun, type ContentSource, type Label, type LessonContent, type QuestionUse, type RubricResult, type TestOutcome, type Topic, type TopicProgress,
+  ASSESSOR_PROMPT_VERSION,
+  GRADER_PROMPT_VERSION,
+  gradeWithRubric,
+  TUTOR_PROMPT_VERSION,
+  writeLesson,
+  writeTopicQuestion,
+} from "@ken-os/agents";
+import {
+  canProve,
+  CLAUDE_LIMITS,
+  finalizeClaudeLesson,
+  finalizeLesson,
+  pointsFor,
+  type CodeRun,
+  type ContentSource,
+  type Label,
+  type LessonContent,
+  type QuestionUse,
+  type RubricResult,
+  type TestOutcome,
+  type Topic,
+  type TopicProgress,
 } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { labLessons, labQuestions, labSourcePackets, labTopicEvents } from "@/lib/schema";
@@ -35,10 +54,27 @@ export async function closedBook(userId: string) {
 export async function getLesson(userId: string, topicId: string): Promise<TopicLesson | null> {
   const authored = authoredTopics[topicId];
   if (authored) return { ...authored.lesson, authored: true, source: "ken-os", writtenAt: null };
-  const [row] = await db().select().from(labLessons).where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId))).orderBy(desc(labLessons.version)).limit(1);
+  const [row] = await db()
+    .select()
+    .from(labLessons)
+    .where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId)))
+    .orderBy(desc(labLessons.version))
+    .limit(1);
   if (!row) return null;
   const { heading, body, mentalModel, block, example, deeper, prove, sources } = row.snapshot;
-  return { heading, body, mentalModel, block, example, deeper, prove, sources, authored: false, source: row.source, writtenAt: row.createdAt.toISOString() };
+  return {
+    heading,
+    body,
+    mentalModel,
+    block,
+    example,
+    deeper,
+    prove,
+    sources,
+    authored: false,
+    source: row.source,
+    writtenAt: row.createdAt.toISOString(),
+  };
 }
 
 /** Saves a lesson Claude wrote as the topic's next version. Hand-written lessons stay; sources off the trusted sites are dropped. */
@@ -46,14 +82,23 @@ export async function saveClaudeLesson(userId: string, topicId: string, lesson: 
   requireTopic(topicId);
   if (authoredTopics[topicId]) throw new LabInputError("This lesson is written by hand", 409);
   return db().transaction(async (tx) => {
-    const [last] = await tx.select({ version: labLessons.version }).from(labLessons)
-      .where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId))).orderBy(desc(labLessons.version)).limit(1);
+    const [last] = await tx
+      .select({ version: labLessons.version })
+      .from(labLessons)
+      .where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId)))
+      .orderBy(desc(labLessons.version))
+      .limit(1);
     const version = (last?.version ?? 0) + 1;
     let snapshot;
-    try { snapshot = finalizeClaudeLesson(lesson, { topicId, version }); }
-    catch (error) { throw new LabInputError(error instanceof Error ? error.message : "The lesson isn't valid"); }
+    try {
+      snapshot = finalizeClaudeLesson(lesson, { topicId, version });
+    } catch (error) {
+      throw new LabInputError(error instanceof Error ? error.message : "The lesson isn't valid");
+    }
     const id = randomUUID();
-    await tx.insert(labLessons).values({ id, userId, topicId, version, sourcePacketId: null, snapshot, source: "claude" });
+    await tx
+      .insert(labLessons)
+      .values({ id, userId, topicId, version, sourcePacketId: null, snapshot, source: "claude" });
     await recordEvent(userId, { topicId, kind: "lesson_saved", source: "claude" }, tx);
     return { id, version, droppedSources: snapshot.rejected };
   });
@@ -63,15 +108,26 @@ export async function saveClaudeLesson(userId: string, topicId: string, lesson: 
 export async function generateLesson(userId: string, topicId: string) {
   const topic = requireTopic(topicId);
   if (authoredTopics[topicId]) throw new LabInputError("This lesson is written by hand", 409);
-  if (await closedBook(userId)) throw new LabInputError("Lessons are closed during the assessment. Finish it first", 409);
+  if (await closedBook(userId))
+    throw new LabInputError("Lessons are closed during the assessment. Finish it first", 409);
   const packet = await freshPacket(userId, topicId);
   await assertBudget(userId);
   const { draft, model } = await writeLesson({ topic, packet: packet.packet });
   return db().transaction(async (tx) => {
-    const [last] = await tx.select({ version: labLessons.version }).from(labLessons)
-      .where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId))).orderBy(desc(labLessons.version)).limit(1);
+    const [last] = await tx
+      .select({ version: labLessons.version })
+      .from(labLessons)
+      .where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId)))
+      .orderBy(desc(labLessons.version))
+      .limit(1);
     const version = (last?.version ?? 0) + 1;
-    const snapshot = finalizeLesson(draft, packet.packet, { topicId, version, sourcePacketId: packet.id, promptVersion: TUTOR_PROMPT_VERSION, model });
+    const snapshot = finalizeLesson(draft, packet.packet, {
+      topicId,
+      version,
+      sourcePacketId: packet.id,
+      promptVersion: TUTOR_PROMPT_VERSION,
+      model,
+    });
     const id = randomUUID();
     await tx.insert(labLessons).values({ id, userId, topicId, version, sourcePacketId: packet.id, snapshot });
     return { id, version };
@@ -81,7 +137,8 @@ export async function generateLesson(userId: string, topicId: string) {
 /** Opening a lesson moves the topic to Learning. Only once a lesson exists, and never during an assessment. */
 export async function openLesson(userId: string, topicId: string) {
   requireTopic(topicId);
-  if (await closedBook(userId)) throw new LabInputError("Lessons are closed during the assessment. Finish it first", 409);
+  if (await closedBook(userId))
+    throw new LabInputError("Lessons are closed during the assessment. Finish it first", 409);
   if (!(await getLesson(userId, topicId))) throw new LabInputError("No lesson yet", 409);
   const progress = await getProgress(userId, topicId);
   if (progress.state !== "NOT_STARTED") return progress;
@@ -94,7 +151,13 @@ function testOutcomes(value: unknown): TestOutcome[] | undefined {
   return value.slice(0, 50).flatMap((item): TestOutcome[] => {
     const test = (item ?? {}) as Record<string, unknown>;
     if (typeof test.name !== "string" || typeof test.passed !== "boolean") return [];
-    return [{ name: test.name.slice(0, 300), passed: test.passed, ...(typeof test.error === "string" && !test.passed ? { error: test.error.slice(0, 1_000) } : {}) }];
+    return [
+      {
+        name: test.name.slice(0, 300),
+        passed: test.passed,
+        ...(typeof test.error === "string" && !test.passed ? { error: test.error.slice(0, 1_000) } : {}),
+      },
+    ];
   });
 }
 
@@ -102,18 +165,32 @@ function testOutcomes(value: unknown): TestOutcome[] | undefined {
  * Records one run of an exercise version, passed only when every test passed. The first run locks a Claude version.
  * A repo exercise shared by two topics counts for both.
  */
-export async function recordExerciseRun(userId: string, topicId: string, input: { labId: string; code: string; passed: number; failed: number; output: string; tests?: unknown }) {
+export async function recordExerciseRun(
+  userId: string,
+  topicId: string,
+  input: { labId: string; code: string; passed: number; failed: number; output: string; tests?: unknown },
+) {
   const version = await usableVersion(userId, topicId, input.labId);
-  if (![input.passed, input.failed].every((count) => Number.isInteger(count) && count >= 0)) throw new LabInputError("Run the tests again");
+  if (![input.passed, input.failed].every((count) => Number.isInteger(count) && count >= 0))
+    throw new LabInputError("Run the tests again");
   const tests = testOutcomes(input.tests);
-  const results: CodeRun = { passed: input.passed, failed: input.failed, output: input.output.slice(0, 20_000), ...(tests ? { tests } : {}) };
+  const results: CodeRun = {
+    passed: input.passed,
+    failed: input.failed,
+    output: input.output.slice(0, 20_000),
+    ...(tests ? { tests } : {}),
+  };
   const passed = input.failed === 0 && input.passed > 0;
   const lab = version.lab;
   let progress: TopicProgress | null = null;
   await db().transaction(async (tx) => {
     await lockVersion(tx, userId, version);
     for (const id of lab.topics) {
-      const saved = await recordEvent(userId, { topicId: id, kind: "exercise_run", labId: lab.id, passed, code: input.code.slice(0, 50_000), results }, tx);
+      const saved = await recordEvent(
+        userId,
+        { topicId: id, kind: "exercise_run", labId: lab.id, passed, code: input.code.slice(0, 50_000), results },
+        tx,
+      );
       if (id === topicId) progress = saved.progress;
     }
   });
@@ -137,8 +214,12 @@ export interface PublicQuestion {
 }
 
 async function latestQuestion(userId: string, topicId: string, use: QuestionUse) {
-  const [row] = await db().select().from(labQuestions)
-    .where(and(eq(labQuestions.userId, userId), eq(labQuestions.topicId, topicId), eq(labQuestions.kind, use))).orderBy(desc(labQuestions.createdAt)).limit(1);
+  const [row] = await db()
+    .select()
+    .from(labQuestions)
+    .where(and(eq(labQuestions.userId, userId), eq(labQuestions.topicId, topicId), eq(labQuestions.kind, use)))
+    .orderBy(desc(labQuestions.createdAt))
+    .limit(1);
   return row ?? null;
 }
 
@@ -152,15 +233,37 @@ export async function writeQuestion(userId: string, topic: Topic, use: QuestionU
     await assertBudget(userId);
     const [packet, earlier] = await Promise.all([
       latestPacket(userId, topic.id),
-      db().select({ prompt: labQuestions.prompt }).from(labQuestions).where(and(eq(labQuestions.userId, userId), eq(labQuestions.topicId, topic.id))).orderBy(desc(labQuestions.createdAt)).limit(8),
+      db()
+        .select({ prompt: labQuestions.prompt })
+        .from(labQuestions)
+        .where(and(eq(labQuestions.userId, userId), eq(labQuestions.topicId, topic.id)))
+        .orderBy(desc(labQuestions.createdAt))
+        .limit(8),
     ]);
-    const written = await writeTopicQuestion({ topic, packet: packet?.packet ?? null, use, avoid: earlier.map((row) => row.prompt.slice(0, 160)), focus });
+    const written = await writeTopicQuestion({
+      topic,
+      packet: packet?.packet ?? null,
+      use,
+      avoid: earlier.map((row) => row.prompt.slice(0, 160)),
+      focus,
+    });
     question = written.question;
     model = written.model;
     promptVersion = ASSESSOR_PROMPT_VERSION;
   }
   const id = randomUUID();
-  await db().insert(labQuestions).values({ id, userId, topicId: topic.id, kind: use, prompt: question.prompt, code: question.code, rubric: question.rubric, referenceAnswer: question.referenceAnswer, promptVersion, model });
+  await db().insert(labQuestions).values({
+    id,
+    userId,
+    topicId: topic.id,
+    kind: use,
+    prompt: question.prompt,
+    code: question.code,
+    rubric: question.rubric,
+    referenceAnswer: question.referenceAnswer,
+    promptVersion,
+    model,
+  });
   return { id, prompt: question.prompt, code: question.code };
 }
 
@@ -168,19 +271,36 @@ export async function writeQuestion(userId: string, topic: Topic, use: QuestionU
  * Saves a proof prompt Claude wrote. Its rubric is the approved points it names, never Claude's own, so the Assessor
  * grades it like any other proof. The newest proof prompt is the one the owner answers.
  */
-export async function saveClaudeProofQuestion(userId: string, topicId: string, input: { prompt: string; pointIds: string[] }) {
+export async function saveClaudeProofQuestion(
+  userId: string,
+  topicId: string,
+  input: { prompt: string; pointIds: string[] },
+) {
   const topic = requireTopic(topicId);
   const prompt = input.prompt.trim();
   if (!prompt) throw new LabInputError("Write the proof prompt");
-  if (prompt.length > CLAUDE_LIMITS.proofPrompt) throw new LabInputError(`Keep the proof prompt under ${CLAUDE_LIMITS.proofPrompt} characters`);
+  if (prompt.length > CLAUDE_LIMITS.proofPrompt)
+    throw new LabInputError(`Keep the proof prompt under ${CLAUDE_LIMITS.proofPrompt} characters`);
   let rubric: string[];
-  try { rubric = pointsFor(topic, input.pointIds); }
-  catch (error) { throw new LabInputError(error instanceof Error ? error.message : "Name the points it tests"); }
+  try {
+    rubric = pointsFor(topic, input.pointIds);
+  } catch (error) {
+    throw new LabInputError(error instanceof Error ? error.message : "Name the points it tests");
+  }
   const id = randomUUID();
   await db().transaction(async (tx) => {
     await tx.insert(labQuestions).values({
-      id, userId, topicId, kind: "proof", prompt, code: null, rubric, referenceAnswer: `A solid answer shows: ${rubric.join("; ")}`,
-      promptVersion: "claude", model: "claude", source: "claude",
+      id,
+      userId,
+      topicId,
+      kind: "proof",
+      prompt,
+      code: null,
+      rubric,
+      referenceAnswer: `A solid answer shows: ${rubric.join("; ")}`,
+      promptVersion: "claude",
+      model: "claude",
+      source: "claude",
     });
     await recordEvent(userId, { topicId, kind: "proof_question_saved", questionId: id, source: "claude" }, tx);
   });
@@ -205,21 +325,50 @@ export interface ProofResult {
 }
 
 /** Grades a proof answer against its rubric. Every line met proves the topic, if the exercise still stands passed. */
-export async function submitProof(userId: string, topicId: string, input: { questionId: string; answer: string; selfRating: number }): Promise<ProofResult> {
+export async function submitProof(
+  userId: string,
+  topicId: string,
+  input: { questionId: string; answer: string; selfRating: number },
+): Promise<ProofResult> {
   const topic = requireTopic(topicId);
   if (!canProve(await getProgress(userId, topicId))) throw new LabInputError("Pass the exercise first", 409);
-  const [question] = await db().select().from(labQuestions)
-    .where(and(eq(labQuestions.id, input.questionId), eq(labQuestions.userId, userId), eq(labQuestions.topicId, topicId), eq(labQuestions.kind, "proof"))).limit(1);
+  const [question] = await db()
+    .select()
+    .from(labQuestions)
+    .where(
+      and(
+        eq(labQuestions.id, input.questionId),
+        eq(labQuestions.userId, userId),
+        eq(labQuestions.topicId, topicId),
+        eq(labQuestions.kind, "proof"),
+      ),
+    )
+    .limit(1);
   if (!question) throw new LabInputError("Proof prompt not found. Reload the page", 404);
   const answer = input.answer.trim();
   if (answer.length < PROOF_MIN_LENGTH) throw new LabInputError(`Write at least ${PROOF_MIN_LENGTH} characters`);
   if (answer.length > 6000) throw new LabInputError("Keep the answer under 6000 characters");
-  if (!Number.isInteger(input.selfRating) || input.selfRating < 1 || input.selfRating > 5) throw new LabInputError("Choose a confidence from 1 to 5");
-  const graded = await gradeWithRubric({ subject: topic.title, prompt: question.prompt, code: question.code, rubric: question.rubric, answer });
+  if (!Number.isInteger(input.selfRating) || input.selfRating < 1 || input.selfRating > 5)
+    throw new LabInputError("Choose a confidence from 1 to 5");
+  const graded = await gradeWithRubric({
+    subject: topic.title,
+    prompt: question.prompt,
+    code: question.code,
+    rubric: question.rubric,
+    answer,
+  });
   const passed = graded.rubric.length > 0 && graded.rubric.every((line) => line.result === "covered");
   const { progress } = await recordEvent(userId, {
-    topicId, kind: "proof", questionId: question.id, answer, selfRating: input.selfRating, passed, label: graded.label,
-    rubric: graded.rubric, feedback: graded.feedback, graderVersion: `${GRADER_PROMPT_VERSION} · ${graded.model}`,
+    topicId,
+    kind: "proof",
+    questionId: question.id,
+    answer,
+    selfRating: input.selfRating,
+    passed,
+    label: graded.label,
+    rubric: graded.rubric,
+    feedback: graded.feedback,
+    graderVersion: `${GRADER_PROMPT_VERSION} · ${graded.model}`,
   });
   return { passed, label: graded.label, rubric: graded.rubric, feedback: graded.feedback, progress };
 }
@@ -261,28 +410,67 @@ export async function getTopicView(userId: string, topicId: string): Promise<Top
     latestPacket(userId, topicId),
     closedBook(userId),
     latestQuestion(userId, topicId, "proof"),
-    db().select().from(labTopicEvents).where(and(eq(labTopicEvents.userId, userId), eq(labTopicEvents.topicId, topicId), inArray(labTopicEvents.kind, ["exercise_run", "proof", "review"])))
-      .orderBy(desc(labTopicEvents.createdAt)).limit(40),
+    db()
+      .select()
+      .from(labTopicEvents)
+      .where(
+        and(
+          eq(labTopicEvents.userId, userId),
+          eq(labTopicEvents.topicId, topicId),
+          inArray(labTopicEvents.kind, ["exercise_run", "proof", "review"]),
+        ),
+      )
+      .orderBy(desc(labTopicEvents.createdAt))
+      .limit(40),
   ]);
   const questionIds = [...new Set(rows.map((row) => row.questionId).filter((id): id is string => Boolean(id)))];
-  const prompts = questionIds.length ? await db().select({ id: labQuestions.id, prompt: labQuestions.prompt }).from(labQuestions).where(inArray(labQuestions.id, questionIds)) : [];
+  const prompts = questionIds.length
+    ? await db()
+        .select({ id: labQuestions.id, prompt: labQuestions.prompt })
+        .from(labQuestions)
+        .where(inArray(labQuestions.id, questionIds))
+    : [];
   const evidence = rows.map((row): TopicEvidence => ({
-    id: row.id, kind: row.kind, at: row.createdAt.toISOString(), passed: row.passed, label: row.label, results: row.results,
-    prompt: prompts.find((item) => item.id === row.questionId)?.prompt ?? null, answer: row.answer, selfRating: row.selfRating,
-    rubric: row.rubric, feedback: row.feedback, graderVersion: row.graderVersion,
+    id: row.id,
+    kind: row.kind,
+    at: row.createdAt.toISOString(),
+    passed: row.passed,
+    label: row.label,
+    results: row.results,
+    prompt: prompts.find((item) => item.id === row.questionId)?.prompt ?? null,
+    answer: row.answer,
+    selfRating: row.selfRating,
+    rubric: row.rubric,
+    feedback: row.feedback,
+    graderVersion: row.graderVersion,
   }));
   const authored = authoredTopics[topicId];
   // A lesson's sources were checked when its packet was made; a hand-written one, when it was written.
-  const lessonPacket = lesson && !lesson.authored && lesson.source !== "claude"
-    ? (await db().select({ checkedAt: labSourcePackets.generatedAt }).from(labSourcePackets).innerJoin(labLessons, eq(labLessons.sourcePacketId, labSourcePackets.id))
-      .where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId))).orderBy(desc(labLessons.version)).limit(1))[0]
-    : null;
+  const lessonPacket =
+    lesson && !lesson.authored && lesson.source !== "claude"
+      ? (
+          await db()
+            .select({ checkedAt: labSourcePackets.generatedAt })
+            .from(labSourcePackets)
+            .innerJoin(labLessons, eq(labLessons.sourcePacketId, labSourcePackets.id))
+            .where(and(eq(labLessons.userId, userId), eq(labLessons.topicId, topicId)))
+            .orderBy(desc(labLessons.version))
+            .limit(1)
+        )[0]
+      : null;
   return {
     progress,
     lesson: open ? null : lesson,
-    sourcesCheckedAt: authored ? authored.checkedOn : lesson?.source === "claude" ? lesson.writtenAt : lessonPacket?.checkedAt.toISOString() ?? packet?.generatedAt.toISOString() ?? null,
+    sourcesCheckedAt: authored
+      ? authored.checkedOn
+      : lesson?.source === "claude"
+        ? lesson.writtenAt
+        : (lessonPacket?.checkedAt.toISOString() ?? packet?.generatedAt.toISOString() ?? null),
     closedBook: open,
-    proof: proofRow && (canProve(progress) || progress.state === "PROVEN") ? { id: proofRow.id, prompt: proofRow.prompt, code: proofRow.code } : null,
+    proof:
+      proofRow && (canProve(progress) || progress.state === "PROVEN")
+        ? { id: proofRow.id, prompt: proofRow.prompt, code: proofRow.code }
+        : null,
     lastProof: evidence.find((item) => item.kind === "proof") ?? null,
     evidence,
   };

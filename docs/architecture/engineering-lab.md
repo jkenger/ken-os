@@ -50,12 +50,12 @@ Why it is built this way:
 
 Ken OS runs on Vercel, where a normal request cannot run a lab's tests. Every v0 lab runs in the learner's browser instead, for free.
 
-| Lab type | Runner | Used for |
-| --- | --- | --- |
-| Predict the output | The snippet runs in a Web Worker; its real output is the answer key | Module 1 practice and Assessor questions |
-| JavaScript exercises | A Web Worker started from a `data:` URL, with the lab's tests | Module 1 labs |
-| HTTP, cookies, CORS, caching | Probes: the page makes real requests to anonymous, data-free practice endpoints and records what happened | Module 2 labs |
-| Databases | PGlite (Postgres compiled to WebAssembly) inside the same worker, from a pinned CDN build | Module 3 labs |
+| Lab type                     | Runner                                                                                                    | Used for                                 |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| Predict the output           | The snippet runs in a Web Worker; its real output is the answer key                                       | Module 1 practice and Assessor questions |
+| JavaScript exercises         | A Web Worker started from a `data:` URL, with the lab's tests                                             | Module 1 labs                            |
+| HTTP, cookies, CORS, caching | Probes: the page makes real requests to anonymous, data-free practice endpoints and records what happened | Module 2 labs                            |
+| Databases                    | PGlite (Postgres compiled to WebAssembly) inside the same worker, from a pinned CDN build                 | Module 3 labs                            |
 
 The `data:` URL matters: it gives the worker an opaque origin, so lab code can't send the owner's cookies or pass the API's origin check, and `terminate()` stops infinite loops.
 

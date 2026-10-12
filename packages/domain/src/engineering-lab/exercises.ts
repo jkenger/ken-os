@@ -54,7 +54,10 @@ export interface ExerciseChoice<T extends ExerciseVersion> {
  * - With neither, the newest valid version is the default, else the repo lab.
  * - Unchecked and invalid versions are never current.
  */
-export function chooseExercise<T extends ExerciseVersion>(versions: readonly T[], selectedId: string | null): ExerciseChoice<T> {
+export function chooseExercise<T extends ExerciseVersion>(
+  versions: readonly T[],
+  selectedId: string | null,
+): ExerciseChoice<T> {
   const ordered = [...versions].sort((a, b) => a.version - b.version);
   const usable = ordered.filter((item) => item.source === "repo" || item.checked === "valid");
   if (!usable.length) throw new Error("A topic needs at least one usable exercise version.");
@@ -78,17 +81,25 @@ export interface ExerciseCheckRuns {
 }
 
 /** A version is valid when its solution passes every test and its starter fails at least one, like the repo labs. */
-export function judgeExerciseCheck(runs: ExerciseCheckRuns): { checked: Exclude<ExerciseCheck, "unchecked">; problem: string | null } {
-  if ("error" in runs.solution) return { checked: "invalid", problem: `The solution didn't run: ${runs.solution.error}` };
+export function judgeExerciseCheck(runs: ExerciseCheckRuns): {
+  checked: Exclude<ExerciseCheck, "unchecked">;
+  problem: string | null;
+} {
+  if ("error" in runs.solution)
+    return { checked: "invalid", problem: `The solution didn't run: ${runs.solution.error}` };
   const solution = runs.solution.results;
   if (!solution.length) return { checked: "invalid", problem: "No tests ran" };
   const failing = solution.filter((item) => !item.passed);
   if (failing.length) {
-    return { checked: "invalid", problem: `The solution fails ${failing.map((item) => `"${item.name}"${item.error ? ` (${item.error})` : ""}`).join(", ")}` };
+    return {
+      checked: "invalid",
+      problem: `The solution fails ${failing.map((item) => `"${item.name}"${item.error ? ` (${item.error})` : ""}`).join(", ")}`,
+    };
   }
   // A starter that throws counts as failing, which is what a starter should do.
   if ("error" in runs.starter) return { checked: "valid", problem: null };
-  if (runs.starter.results.every((item) => item.passed)) return { checked: "invalid", problem: "The starter already passes every test" };
+  if (runs.starter.results.every((item) => item.passed))
+    return { checked: "invalid", problem: "The starter already passes every test" };
   return { checked: "valid", problem: null };
 }
 
@@ -103,6 +114,9 @@ export function pointsFor(topic: Pick<Topic, "id" | "points">, pointIds: readonl
   const ids = [...new Set(pointIds)];
   if (!ids.length) throw new Error("Name at least one assessment point the question tests");
   const unknown = ids.filter((id) => !points.some((point) => point.id === id));
-  if (unknown.length) throw new Error(`Not a point on ${topic.id}: ${unknown.join(", ")}. Use ${points.map((point) => point.id).join(", ")}`);
+  if (unknown.length)
+    throw new Error(
+      `Not a point on ${topic.id}: ${unknown.join(", ")}. Use ${points.map((point) => point.id).join(", ")}`,
+    );
   return points.filter((point) => ids.includes(point.id)).map((point) => point.text);
 }

@@ -6,17 +6,17 @@ Status (2026-10-06): **partly built.** The course content, daily practice, place
 
 ## Where v1 stands (2026-10-06)
 
-| Part | Status | Where it went |
-|---|---|---|
-| 1. The gate: grade disputes, `/lab/health`, the review | **Not built.** The review waits on the owner taking the in-app baseline | |
-| 2. Knowledge debt | **Not built** | |
-| 3. Production reliability | **Built**, as five topics | Chapter `m6-production-reliability` |
-| 4. Observability | **Built**, as three topics | Chapter `m7-observability` |
-| 5. AI track, first module | **Built, and the whole AI track after it** | Chapters `a1-retrieval` to `a4-ai-production` |
-| 6. Module checkpoints (one mixed scenario per module) | **Not built.** "Checkpoint" now means a retake of the whole assessment instead | [engineering-lab-profile.md](engineering-lab-profile.md) |
-| 7. Smaller changes | **Not built**, apart from note suggestions shown in lessons | |
-| 8. Roadmap and full course | **Built**, the roadmap as a rail on the lab home rather than a graph page | [engineering-lab-profile.md](engineering-lab-profile.md) |
-| 9. Daily practice | **Built** | `daily.ts`, `/lab/practice` |
+| Part                                                   | Status                                                                         | Where it went                                            |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------ | -------------------------------------------------------- |
+| 1. The gate: grade disputes, `/lab/health`, the review | **Not built.** The review waits on the owner taking the in-app baseline        |                                                          |
+| 2. Knowledge debt                                      | **Not built**                                                                  |                                                          |
+| 3. Production reliability                              | **Built**, as five topics                                                      | Chapter `m6-production-reliability`                      |
+| 4. Observability                                       | **Built**, as three topics                                                     | Chapter `m7-observability`                               |
+| 5. AI track, first module                              | **Built, and the whole AI track after it**                                     | Chapters `a1-retrieval` to `a4-ai-production`            |
+| 6. Module checkpoints (one mixed scenario per module)  | **Not built.** "Checkpoint" now means a retake of the whole assessment instead | [engineering-lab-profile.md](engineering-lab-profile.md) |
+| 7. Smaller changes                                     | **Not built**, apart from note suggestions shown in lessons                    |                                                          |
+| 8. Roadmap and full course                             | **Built**, the roadmap as a rail on the lab home rather than a graph page      | [engineering-lab-profile.md](engineering-lab-profile.md) |
+| 9. Daily practice                                      | **Built**                                                                      | `daily.ts`, `/lab/practice`                              |
 
 The order changed from the plan below. The owner asked for a career profile and an in-app baseline on 2026-10-03, and for the whole course to be written on 2026-10-05, so the content and profile work went ahead of the gate. The gate's purpose still stands: once the baseline is taken, a few weeks of real use should show whether the loop works before knowledge debt or checkpoints are built.
 
@@ -39,13 +39,13 @@ The order changed from the plan below. The owner asked for a career profile and 
 
 The handoff asks five questions. v0 already records most of what answers them:
 
-| Question (§23) | How v1 answers it | Already recorded? |
-|---|---|---|
-| Is the learning loop effective? | Attempts until a topic is proven; how often a proven topic slips at review | Yes, attempts and status changes |
-| Does the UI help? | Your own notes, plus where you stopped mid-topic | Partly; add a one-line "what got in the way" note |
-| Are AI lessons coherent? | Lessons rewritten; citations rejected per lesson | Yes, `rejected` is stored on each lesson |
-| Is source grounding enough? | Researcher rejections; "open questions" left in packets | Yes, on each packet |
-| Does progress match real ability? | Grades you dispute; questions thrown out because the answer key was wrong | Thrown-out questions yes; disputes are new (below) |
+| Question (§23)                    | How v1 answers it                                                          | Already recorded?                                  |
+| --------------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------- |
+| Is the learning loop effective?   | Attempts until a topic is proven; how often a proven topic slips at review | Yes, attempts and status changes                   |
+| Does the UI help?                 | Your own notes, plus where you stopped mid-topic                           | Partly; add a one-line "what got in the way" note  |
+| Are AI lessons coherent?          | Lessons rewritten; citations rejected per lesson                           | Yes, `rejected` is stored on each lesson           |
+| Is source grounding enough?       | Researcher rejections; "open questions" left in packets                    | Yes, on each packet                                |
+| Does progress match real ability? | Grades you dispute; questions thrown out because the answer key was wrong  | Thrown-out questions yes; disputes are new (below) |
 
 **New in v1 for this:**
 
@@ -88,16 +88,16 @@ Anything not proven joins a "knowledge debt" list on Today. It never blocks your
 
 Baseline gaps: retries, timeouts, idempotency (beyond the basics), background jobs, partial failures and graceful degradation were all gap or partial (§3.3).
 
-| Topic | Lab idea | Runner |
-|---|---|---|
-| `rel.timeouts` | A call to a slow fake provider hangs a request; add a timeout with `AbortSignal.timeout` and a clear error | Browser worker |
-| `rel.retries` | A flaky fake provider; add bounded retries with exponential backoff and jitter, and respect `Retry-After` | Browser worker |
-| `rel.retry_storms` | Ten clients retry at once with no jitter; show the spike, then fix it | Browser worker |
-| `rel.idempotent_retries` | Retrying a payment call creates duplicates; make the retry safe with the key from Module 3 | PGlite |
-| `rel.background_jobs` | Email sent inside the request slows checkout; move it to a jobs table with a worker loop | PGlite |
-| `rel.outbox` | Order saved but the event is lost when the process dies; write both in one transaction, then deliver | PGlite |
-| `rel.partial_failure` | Order saved, CRM call fails, user sees an error; decide what is required versus what can be retried later | PGlite |
-| `rel.graceful_degradation` | The cache goes down and login breaks; decide per feature what should fail open or closed | Browser worker |
+| Topic                      | Lab idea                                                                                                   | Runner         |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------- | -------------- |
+| `rel.timeouts`             | A call to a slow fake provider hangs a request; add a timeout with `AbortSignal.timeout` and a clear error | Browser worker |
+| `rel.retries`              | A flaky fake provider; add bounded retries with exponential backoff and jitter, and respect `Retry-After`  | Browser worker |
+| `rel.retry_storms`         | Ten clients retry at once with no jitter; show the spike, then fix it                                      | Browser worker |
+| `rel.idempotent_retries`   | Retrying a payment call creates duplicates; make the retry safe with the key from Module 3                 | PGlite         |
+| `rel.background_jobs`      | Email sent inside the request slows checkout; move it to a jobs table with a worker loop                   | PGlite         |
+| `rel.outbox`               | Order saved but the event is lost when the process dies; write both in one transaction, then deliver       | PGlite         |
+| `rel.partial_failure`      | Order saved, CRM call fails, user sees an error; decide what is required versus what can be retried later  | PGlite         |
+| `rel.graceful_degradation` | The cache goes down and login breaks; decide per feature what should fail open or closed                   | Browser worker |
 
 Retries and timeouts need a fake clock so tests run in milliseconds. The harness gains a small `clock` helper; no new runner is needed.
 
@@ -227,17 +227,17 @@ Status (2026-10-06): steps 3, 5, 6, 7, 10 and 11 are built; steps 1, 2, 4, 8 and
 
 Each step ends with something you can use or check.
 
-1. **Gate tooling:** grade disputes and `/lab/health`. *Check: numbers match a hand count on your real data.*
+1. **Gate tooling:** grade disputes and `/lab/health`. _Check: numbers match a hand count on your real data._
 2. **Use v0 for two to three weeks, then hold the review.** Record the outcome in [engineering-lab.md](engineering-lab.md).
-3. **Daily practice** (section 9). It comes first after the review because it protects everything already proven, and it reuses existing parts. *Check: a day's set is stable across reloads, mixes topics, and a slip sets "needs another look".*
-4. **Knowledge debt:** the local command, the scoped key, `lab_debt_items`, and the list on Today. *Check: run it on ken-os's own recent commits.*
-5. **Module 4 labs**, with the fake clock in the harness. *Check: every starter fails and every solution passes.*
+3. **Daily practice** (section 9). It comes first after the review because it protects everything already proven, and it reuses existing parts. _Check: a day's set is stable across reloads, mixes topics, and a slip sets "needs another look"._
+4. **Knowledge debt:** the local command, the scoped key, `lab_debt_items`, and the list on Today. _Check: run it on ken-os's own recent commits._
+5. **Module 4 labs**, with the fake clock in the harness. _Check: every starter fails and every solution passes._
 6. **Module 5 labs.**
 7. **AI track: retrieval evaluation, then structured outputs.**
 8. **Checkpoints** for Modules 1 to 3, then 4 and 5.
 9. **Smaller changes**, as the review shows they matter.
-10. **After polish: the roadmap graph.** *Check: it matches the Topics page node for node, and the projection updates when a topic is proven.*
-11. **After polish: the full course**, one track at a time, with placement checks for topics you already know. *Check: every new lab's starter fails and its solution passes, and the Planner's order still puts baseline gaps first.*
+10. **After polish: the roadmap graph.** _Check: it matches the Topics page node for node, and the projection updates when a topic is proven._
+11. **After polish: the full course**, one track at a time, with placement checks for topics you already know. _Check: every new lab's starter fails and its solution passes, and the Planner's order still puts baseline gaps first._
 
 ## Not in v1
 

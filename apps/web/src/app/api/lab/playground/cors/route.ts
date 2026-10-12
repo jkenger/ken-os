@@ -12,7 +12,8 @@ function corsHeaders(variant: string, origin: string | null) {
     headers.set("Access-Control-Allow-Origin", origin ?? "null");
     headers.set("Vary", "Origin");
   }
-  if (variant === "echo-credentials" || variant === "star-credentials") headers.set("Access-Control-Allow-Credentials", "true");
+  if (variant === "echo-credentials" || variant === "star-credentials")
+    headers.set("Access-Control-Allow-Credentials", "true");
   if (variant === "preflight-allowed") {
     headers.set("Access-Control-Allow-Headers", "X-Lab-Token");
     headers.set("Access-Control-Allow-Methods", "GET");

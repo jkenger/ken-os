@@ -4,13 +4,13 @@ Status: design decision; a scaffold CLI and templates have not been implemented.
 
 ## Sequence and outputs
 
-| Gate | Decision | Artifact |
-| --- | --- | --- |
-| Scope | One complete user outcome, its source of truth, exclusions, and observable acceptance criteria | Short product brief |
-| Select | Framework, repository shape, data, UI, agent runtime, and host | Small decision record with reasons and rejected alternatives |
-| Architect | Data flow, ownership, trust boundaries, and the first feature path | Codebase map and integration preflight |
-| Scaffold | Generate only the selected baseline and verify it starts | Runnable app, example environment, tests, and local setup |
-| Ship | Implement the first vertical slice and test it in production | Live URL, smoke-test record, and remaining limitations |
+| Gate      | Decision                                                                                       | Artifact                                                     |
+| --------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------ |
+| Scope     | One complete user outcome, its source of truth, exclusions, and observable acceptance criteria | Short product brief                                          |
+| Select    | Framework, repository shape, data, UI, agent runtime, and host                                 | Small decision record with reasons and rejected alternatives |
+| Architect | Data flow, ownership, trust boundaries, and the first feature path                             | Codebase map and integration preflight                       |
+| Scaffold  | Generate only the selected baseline and verify it starts                                       | Runnable app, example environment, tests, and local setup    |
+| Ship      | Implement the first vertical slice and test it in production                                   | Live URL, smoke-test record, and remaining limitations       |
 
 The first three gates can be brief and iterative. Do not generate code until the choices that affect its structure are clear. Do not turn a design-only request into scaffolding or a deployment.
 

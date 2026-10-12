@@ -6,8 +6,12 @@ export const runtime = "nodejs";
 
 /** Saves the intake and opens the assessment. */
 export async function POST(request: Request) {
-  return labRoute(request, async (session) => {
-    await saveIntake(session.userId, await readJson(request));
-    return startRun(session.userId);
-  }, { write: true });
+  return labRoute(
+    request,
+    async (session) => {
+      await saveIntake(session.userId, await readJson(request));
+      return startRun(session.userId);
+    },
+    { write: true },
+  );
 }

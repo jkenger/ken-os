@@ -43,8 +43,18 @@ export interface TutorInput {
 export async function writeLesson(input: TutorInput): Promise<{ draft: LessonDraft; model: string }> {
   const agent = new Agent({ name: "Engineering tutor", instructions, outputType: draftSchema });
   const payload = {
-    topic: { id: input.topic.id, title: input.topic.title, gap: input.topic.gap, depth: input.topic.depth, points: input.topic.points },
-    packet: { sources: input.packet.sources, claims: input.packet.claims, misconceptionsToAddress: input.packet.misconceptionsToAddress },
+    topic: {
+      id: input.topic.id,
+      title: input.topic.title,
+      gap: input.topic.gap,
+      depth: input.topic.depth,
+      points: input.topic.points,
+    },
+    packet: {
+      sources: input.packet.sources,
+      claims: input.packet.claims,
+      misconceptionsToAddress: input.packet.misconceptionsToAddress,
+    },
   };
   const result = await run(agent, JSON.stringify(payload), { maxTurns: 3 });
   if (!result.finalOutput) throw new Error("The Tutor returned no lesson.");

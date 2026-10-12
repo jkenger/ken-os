@@ -1,11 +1,11 @@
 A team app keeps documents per organisation. People join organisations as a `viewer`, `editor` or `admin`:
 
-| User | Acme (org 1) | Globex (org 2) |
-|---|---|---|
-| Ana (1) | editor | |
-| Ben (2) | viewer | |
-| Cy (3) | | admin |
-| Dee (4) | | |
+| User    | Acme (org 1) | Globex (org 2) |
+| ------- | ------------ | -------------- |
+| Ana (1) | editor       |                |
+| Ben (2) | viewer       |                |
+| Cy (3)  |              | admin          |
+| Dee (4) |              |                |
 
 Acme has documents 1 and 2; Globex has document 3. `actor` is the signed-in user, `{ userId }`, or `null`.
 

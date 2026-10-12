@@ -1,5 +1,15 @@
 import { eq } from "drizzle-orm";
-import { areaRows, nextMilestone, overallLevel, WEEKLY_HOURS, type AreaRow, type IntakeAnswers, type Level, type Milestone, type TopicState } from "@ken-os/domain";
+import {
+  areaRows,
+  nextMilestone,
+  overallLevel,
+  WEEKLY_HOURS,
+  type AreaRow,
+  type IntakeAnswers,
+  type Level,
+  type Milestone,
+  type TopicState,
+} from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { labProfile } from "@/lib/schema";
 import { activeRun, listRuns, type RunSummary } from "./assessment-store";
@@ -16,18 +26,26 @@ export async function getProfileRow(userId: string) {
 }
 
 export async function upsertProfile(userId: string, values: Partial<Omit<typeof labProfile.$inferInsert, "userId">>) {
-  await db().insert(labProfile).values({ userId, ...values, updatedAt: new Date() })
+  await db()
+    .insert(labProfile)
+    .values({ userId, ...values, updatedAt: new Date() })
     .onConflictDoUpdate({ target: labProfile.userId, set: { ...values, updatedAt: new Date() } });
 }
 
 function role(value: unknown) {
-  if (typeof value !== "string" || !careers.roles.some((item) => item.id === value)) throw new LabInputError("Choose a role");
+  if (typeof value !== "string" || !careers.roles.some((item) => item.id === value))
+    throw new LabInputError("Choose a role");
   return value;
 }
 
 function hours(value: unknown) {
   const number = typeof value === "string" ? Number(value) : value;
-  if (typeof number !== "number" || !Number.isInteger(number) || number < WEEKLY_HOURS.min || number > WEEKLY_HOURS.max) {
+  if (
+    typeof number !== "number" ||
+    !Number.isInteger(number) ||
+    number < WEEKLY_HOURS.min ||
+    number > WEEKLY_HOURS.max
+  ) {
     throw new LabInputError(`Hours per week must be ${WEEKLY_HOURS.min} to ${WEEKLY_HOURS.max}`);
   }
   return number;
@@ -68,7 +86,11 @@ export interface ProfileView {
   direction: { id: string; title: string } | null;
   /** When the latest assessment finished, or null before the first. */
   lastAssessed: string | null;
-  rows: (AreaRow & { title: string; summary: string; remainingTopics: { id: string; title: string; state: TopicState }[] })[];
+  rows: (AreaRow & {
+    title: string;
+    summary: string;
+    remainingTopics: { id: string; title: string; state: TopicState }[];
+  })[];
   overall: Level | null;
   milestone: (Milestone & { areaTitle: string; topicTitle: string }) | null;
   history: RunSummary[];
@@ -78,7 +100,12 @@ export interface ProfileView {
 
 /** Everything on Profile. Levels come only from Proven topics; the assessment orders the path and is kept as history. */
 export async function getProfileView(userId: string): Promise<ProfileView> {
-  const [profile, progress, history, open] = await Promise.all([getProfileRow(userId), getAllProgress(userId), listRuns(userId), activeRun(userId)]);
+  const [profile, progress, history, open] = await Promise.all([
+    getProfileRow(userId),
+    getAllProgress(userId),
+    listRuns(userId),
+    activeRun(userId),
+  ]);
   const role = careers.roles.find((item) => item.id === profile?.direction) ?? null;
   const proven = new Set(progress.filter((item) => item.state === "PROVEN").map((item) => item.topicId));
   const state = new Map(progress.map((item) => [item.topicId, item.state]));
@@ -88,7 +115,11 @@ export async function getProfileView(userId: string): Promise<ProfileView> {
       ...row,
       title: topicMap.areas.find((area) => area.id === row.area)?.title ?? ladder.title,
       summary: ladder.summary,
-      remainingTopics: row.remaining.map((id) => ({ id, title: findTopic(id)?.title ?? id, state: state.get(id) ?? "NOT_STARTED" })),
+      remainingTopics: row.remaining.map((id) => ({
+        id,
+        title: findTopic(id)?.title ?? id,
+        state: state.get(id) ?? "NOT_STARTED",
+      })),
     };
   });
   const milestone = role ? nextMilestone(topicMap, careers, role, proven) : null;
@@ -98,7 +129,13 @@ export async function getProfileView(userId: string): Promise<ProfileView> {
     lastAssessed: finished[0]?.completedAt ?? null,
     rows,
     overall: role ? overallLevel(rows) : null,
-    milestone: milestone ? { ...milestone, areaTitle: rows.find((row) => row.area === milestone.area)!.title, topicTitle: findTopic(milestone.topicId)?.title ?? milestone.topicId } : null,
+    milestone: milestone
+      ? {
+          ...milestone,
+          areaTitle: rows.find((row) => row.area === milestone.area)!.title,
+          topicTitle: findTopic(milestone.topicId)?.title ?? milestone.topicId,
+        }
+      : null,
     history,
     openRunId: open?.id ?? null,
   };

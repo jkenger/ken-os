@@ -22,7 +22,9 @@ async function main() {
 
 main().catch((error: unknown) => {
   if (error instanceof Error && "code" in error && error.code === "ECONNREFUSED") {
-    console.error("Could not connect to PostgreSQL. Start your local database or set DATABASE_URL to a reachable hosted database.");
+    console.error(
+      "Could not connect to PostgreSQL. Start your local database or set DATABASE_URL to a reachable hosted database.",
+    );
   } else {
     console.error(error);
   }

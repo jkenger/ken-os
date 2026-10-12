@@ -6,11 +6,19 @@ function createSearchPage(items) {
   const visible = () => state.items.filter((item) => item.toLowerCase().includes(state.query.toLowerCase()));
   return {
     filterBox: {
-      type(text) { state.query = text; },
-      value() { return state.query; },
+      type(text) {
+        state.query = text;
+      },
+      value() {
+        return state.query;
+      },
     },
     resultList: { visible },
-    addItem(item) { state.items.push(item); },
-    summary() { return `${visible().length} of ${state.items.length}`; },
+    addItem(item) {
+      state.items.push(item);
+    },
+    summary() {
+      return `${visible().length} of ${state.items.length}`;
+    },
   };
 }

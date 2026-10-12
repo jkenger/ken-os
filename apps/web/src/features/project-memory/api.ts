@@ -16,8 +16,11 @@ export async function readMemoryJson(request: Request): Promise<unknown> {
   if (length > 32_768) throw new MemoryInputError("Memory draft is too large.", 413);
   const text = await request.text();
   if (text.length > 32_768) throw new MemoryInputError("Memory draft is too large.", 413);
-  try { return JSON.parse(text) as unknown; }
-  catch { throw new MemoryInputError(messages.invalidJson); }
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    throw new MemoryInputError(messages.invalidJson);
+  }
 }
 
 export async function memoryResponse<T>(operation: () => Promise<T>) {

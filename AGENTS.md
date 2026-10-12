@@ -39,6 +39,7 @@ For substantial Ken OS work, read `docs/memory/ken-os-adapter.md`. If a scoped l
 ## Local verification
 
 - `pnpm check` checks TypeScript; `pnpm build` checks the production build.
+- Code is formatted with Prettier; run `pnpm format` before committing, and `pnpm check` fails on unformatted files.
 - `pnpm db:up` starts local Docker PostgreSQL on `127.0.0.1:5435`; `pnpm db:migrate` initializes the schema.
 - Use `.env.example` to discover required variables. Keep real values in untracked environment files; never print credentials or tokens in diagnostics.
 - A successful local build is not proof of deployment. Report hosted verification separately.

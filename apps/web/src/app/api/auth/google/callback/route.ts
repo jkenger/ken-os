@@ -6,7 +6,8 @@ import { createSession, getSession, safeNext } from "@/lib/session";
 
 export const runtime = "nodejs";
 
-type Exchange = { ok: true; tokens: GoogleTokens; profile: GoogleProfile } | { ok: false; reason: "expired" | "google" };
+type Exchange =
+  { ok: true; tokens: GoogleTokens; profile: GoogleProfile } | { ok: false; reason: "expired" | "google" };
 
 async function exchange(code: string, verifier: string): Promise<Exchange> {
   const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {

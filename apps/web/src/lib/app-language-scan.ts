@@ -17,12 +17,59 @@ const excluded = [
 
 // JSX attributes whose values are never read as text.
 const nonTextAttributes = new Set([
-  "className", "href", "src", "id", "key", "type", "name", "value", "defaultValue", "role", "variant", "size",
-  "htmlFor", "method", "action", "target", "rel", "as", "side", "align", "mode", "autoComplete", "inputMode",
-  "accept", "pattern", "dir", "lang", "tabIndex", "form", "encType", "viewBox", "d", "points", "transform",
-  "fill", "stroke", "style", "sizes", "srcSet", "download", "step", "min", "max", "width", "height",
+  "className",
+  "href",
+  "src",
+  "id",
+  "key",
+  "type",
+  "name",
+  "value",
+  "defaultValue",
+  "role",
+  "variant",
+  "size",
+  "htmlFor",
+  "method",
+  "action",
+  "target",
+  "rel",
+  "as",
+  "side",
+  "align",
+  "mode",
+  "autoComplete",
+  "inputMode",
+  "accept",
+  "pattern",
+  "dir",
+  "lang",
+  "tabIndex",
+  "form",
+  "encType",
+  "viewBox",
+  "d",
+  "points",
+  "transform",
+  "fill",
+  "stroke",
+  "style",
+  "sizes",
+  "srcSet",
+  "download",
+  "step",
+  "min",
+  "max",
+  "width",
+  "height",
 ]);
-const textAriaAttributes = new Set(["aria-label", "aria-description", "aria-roledescription", "aria-placeholder", "aria-valuetext"]);
+const textAriaAttributes = new Set([
+  "aria-label",
+  "aria-description",
+  "aria-roledescription",
+  "aria-placeholder",
+  "aria-valuetext",
+]);
 
 export type CopyItem = { file: string; text: string; attribute?: string };
 export type Violation = { file: string; text: string; rules: string[] };
@@ -39,27 +86,54 @@ export function screenFiles(): string[] {
   };
   walk(srcRoot);
   return files
-    .filter((file) => file.endsWith(".tsx") || (file.startsWith("app/api/") && file.endsWith(".ts")) || /^features\/[^/]+\/api\.ts$/.test(file))
+    .filter(
+      (file) =>
+        file.endsWith(".tsx") ||
+        (file.startsWith("app/api/") && file.endsWith(".ts")) ||
+        /^features\/[^/]+\/api\.ts$/.test(file),
+    )
     .filter((file) => !excluded.some((pattern) => pattern.test(file)))
     .sort();
 }
 
 const clean = (text: string) => text.replace(/\s+/g, " ").trim();
 // Lowercase tokens with no spaces are values, keys and paths ("receipt", "outline", "/api/skills"), not copy.
-const codeLike = (text: string) => (/^[a-z0-9_./#:@?&=%+\-[\]]*$/.test(text) && /[a-z]/.test(text)) || /^\/\S*$/.test(text);
+const codeLike = (text: string) =>
+  (/^[a-z0-9_./#:@?&=%+\-[\]]*$/.test(text) && /[a-z]/.test(text)) || /^\/\S*$/.test(text);
 
 type Node = { type: string; [key: string]: unknown };
-const isNode = (value: unknown): value is Node => typeof value === "object" && value !== null && typeof (value as Node).type === "string";
-const skippedKeys = new Set(["loc", "start", "end", "range", "extra", "leadingComments", "trailingComments", "innerComments", "comments"]);
-const expressionTsNodes = new Set(["TSAsExpression", "TSSatisfiesExpression", "TSNonNullExpression", "TSInstantiationExpression", "TSParameterProperty"]);
+const isNode = (value: unknown): value is Node =>
+  typeof value === "object" && value !== null && typeof (value as Node).type === "string";
+const skippedKeys = new Set([
+  "loc",
+  "start",
+  "end",
+  "range",
+  "extra",
+  "leadingComments",
+  "trailingComments",
+  "innerComments",
+  "comments",
+]);
+const expressionTsNodes = new Set([
+  "TSAsExpression",
+  "TSSatisfiesExpression",
+  "TSNonNullExpression",
+  "TSInstantiationExpression",
+  "TSParameterProperty",
+]);
 
 function attributeName(node: Node): string {
   const name = node.name as Node;
-  return name.type === "JSXNamespacedName" ? `${(name.namespace as Node).name}:${(name.name as Node).name}` : String(name.name);
+  return name.type === "JSXNamespacedName"
+    ? `${(name.namespace as Node).name}:${(name.name as Node).name}`
+    : String(name.name);
 }
 
 function templateText(node: Node): string {
-  return (node.quasis as Node[]).map((quasi) => (quasi.value as { cooked?: string; raw: string }).cooked ?? (quasi.value as { raw: string }).raw).join("{}");
+  return (node.quasis as Node[])
+    .map((quasi) => (quasi.value as { cooked?: string; raw: string }).cooked ?? (quasi.value as { raw: string }).raw)
+    .join("{}");
 }
 
 /** Static text of an element's children, with `{}` for each dynamic part. */
@@ -78,7 +152,10 @@ function staticChildrenText(node: Node): string {
 }
 
 export function collectCopy(file: string, source: string): { copy: CopyItem[]; headings: string[] } {
-  const ast = parse(source, { sourceType: "module", plugins: file.endsWith(".tsx") ? ["typescript", "jsx"] : ["typescript"] });
+  const ast = parse(source, {
+    sourceType: "module",
+    plugins: file.endsWith(".tsx") ? ["typescript", "jsx"] : ["typescript"],
+  });
   const copy: CopyItem[] = [];
   const headings: string[] = [];
   const add = (raw: string, attribute: string | undefined, filterCode: boolean) => {
@@ -102,11 +179,17 @@ export function collectCopy(file: string, source: string): { copy: CopyItem[]; h
       case "ClassMethod":
         if (node.computed) visit(node.key as Node, attribute);
         if (node.value && isNode(node.value)) visit(node.value as Node, attribute);
-        for (const key of ["params", "body"]) if (isNode(node[key]) || Array.isArray(node[key])) visitValue(node[key], attribute);
+        for (const key of ["params", "body"])
+          if (isNode(node[key]) || Array.isArray(node[key])) visitValue(node[key], attribute);
         return;
       case "JSXAttribute": {
         const name = attributeName(node);
-        if (nonTextAttributes.has(name) || name.startsWith("data-") || (name.startsWith("aria-") && !textAriaAttributes.has(name))) return;
+        if (
+          nonTextAttributes.has(name) ||
+          name.startsWith("data-") ||
+          (name.startsWith("aria-") && !textAriaAttributes.has(name))
+        )
+          return;
         const value = node.value as Node | null;
         if (!value) return;
         if (value.type === "StringLiteral") add(value.value as string, name, true);

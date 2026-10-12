@@ -19,12 +19,13 @@ export async function POST(request: Request) {
   if (selection.mimeType !== GOOGLE_DOC_MIME) {
     return NextResponse.json({ error: "Works with Google Docs only" }, { status: 415 });
   }
-  const input = await request.json().catch(() => null) as { question?: unknown } | null;
+  const input = (await request.json().catch(() => null)) as { question?: unknown } | null;
   const question = input?.question;
   if (typeof question !== "string" || question.trim().length < 2 || question.length > 2000) {
     return NextResponse.json({ error: "Questions must be 2–2,000 characters" }, { status: 400 });
   }
-  if (!process.env.OPENAI_API_KEY) return NextResponse.json({ error: "Resume assistant isn't set up" }, { status: 503 });
+  if (!process.env.OPENAI_API_KEY)
+    return NextResponse.json({ error: "Resume assistant isn't set up" }, { status: 503 });
   try {
     const result = await askResumeAgent(question.trim(), async () => {
       const accessToken = await getGoogleAccessToken(session.userId);

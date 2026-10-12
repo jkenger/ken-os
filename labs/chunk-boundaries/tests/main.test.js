@@ -6,8 +6,17 @@ Store credit is offered when the card has expired. Contact support to start a re
 Orders ship within two business days. Express shipping costs extra. Tracking links arrive by email.`;
 
 const SECTIONS = {
-  Refunds: ["Refunds are issued within 14 days.", "The original payment method is credited.", "Store credit is offered when the card has expired.", "Contact support to start a refund."],
-  Shipping: ["Orders ship within two business days.", "Express shipping costs extra.", "Tracking links arrive by email."],
+  Refunds: [
+    "Refunds are issued within 14 days.",
+    "The original payment method is credited.",
+    "Store credit is offered when the card has expired.",
+    "Contact support to start a refund.",
+  ],
+  Shipping: [
+    "Orders ship within two business days.",
+    "Express shipping costs extra.",
+    "Tracking links arrive by email.",
+  ],
 };
 const sentencesOf = (chunk) => chunk.text.split(/(?<=[.!?])\s+/);
 const chunks = () => chunkDocument(ARTICLE, { maxChars: 100, overlap: 1 });
@@ -15,14 +24,16 @@ const chunks = () => chunkDocument(ARTICLE, { maxChars: 100, overlap: 1 });
 test("every chunk is whole sentences", () => {
   const all = Object.values(SECTIONS).flat();
   for (const chunk of chunks()) {
-    for (const sentence of sentencesOf(chunk)) assert.ok(all.includes(sentence), `"${sentence}" is not a whole sentence`);
+    for (const sentence of sentencesOf(chunk))
+      assert.ok(all.includes(sentence), `"${sentence}" is not a whole sentence`);
   }
 });
 
 test("a chunk stays inside one section and carries its heading", () => {
   for (const chunk of chunks()) {
     assert.ok(chunk.heading in SECTIONS, `unknown heading "${chunk.heading}"`);
-    for (const sentence of sentencesOf(chunk)) assert.ok(SECTIONS[chunk.heading].includes(sentence), `"${sentence}" is not under ${chunk.heading}`);
+    for (const sentence of sentencesOf(chunk))
+      assert.ok(SECTIONS[chunk.heading].includes(sentence), `"${sentence}" is not under ${chunk.heading}`);
   }
 });
 
@@ -46,5 +57,8 @@ test("every sentence is in some chunk, and chunks are numbered in order", () => 
   const list = chunks();
   const covered = new Set(list.flatMap(sentencesOf));
   for (const sentence of Object.values(SECTIONS).flat()) assert.ok(covered.has(sentence), `missing "${sentence}"`);
-  assert.deepEqual(list.map((chunk) => chunk.index), list.map((_, i) => i));
+  assert.deepEqual(
+    list.map((chunk) => chunk.index),
+    list.map((_, i) => i),
+  );
 });
