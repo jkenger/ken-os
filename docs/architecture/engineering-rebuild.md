@@ -1,5 +1,7 @@
 # Engineering rebuild
 
+> History since 13 Oct 2026: Engineering is now built from [engineering-claude-first.md](engineering-claude-first.md). Read this file for background only.
+
 Status: approved by the owner, 10 Oct 2026. Built the same day in 8 stacked PRs (section 9); `points.yaml` and `roles.yaml` re-approved the same day. Done: the owner walked the flow on the hosted app on 12 Oct 2026 (assessment, a proof, a written lesson and Practice), so every point in section 10 is met.
 
 ## Decision
