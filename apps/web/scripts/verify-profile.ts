@@ -69,6 +69,19 @@ async function main() {
     assert.ok(applied.appliedAt);
     console.log("ok - saving a reviewed import marks only your own import applied");
 
+    assert.deepEqual((await store.getProfile(userId)).resume, { template: "classic", paper: "letter" }, "defaults");
+    const before = (await store.getProfile(userId)).savedAt;
+    await store.saveResumeSettings(userId, { template: "technical", paper: "a4" });
+    assert.deepEqual((await store.getProfile(userId)).resume, { template: "technical", paper: "a4" });
+    assert.equal((await store.getProfile(userId)).savedAt, before, "choosing a template isn't a details save");
+    await assert.rejects(store.saveResumeSettings(userId, { template: "fancy", paper: "a4" }), /Choose a template/);
+    await assert.rejects(
+      store.saveResumeSettings(otherId, { template: "compact", paper: "letter" }),
+      (error: Error) => error instanceof store.ProfileInputError && error.status === 409,
+      "nothing to remember before details are saved",
+    );
+    console.log("ok - template and paper are remembered per user");
+
     await assert.rejects(
       store.importFromDrive(userId),
       (error: Error) => error instanceof store.ProfileInputError && /No resume chosen/.test(error.message),
