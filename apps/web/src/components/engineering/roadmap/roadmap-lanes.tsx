@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import type { RoadmapView } from "@/features/engineering-lab/roadmap-store";
+import { isChapterDone } from "@/features/engineering-lab/topic-steps";
 import { cn } from "@/lib/utils";
 import { StatusIcon, statusWords } from "./status";
 
@@ -27,7 +28,10 @@ export function RoadmapLanes({
               {index + 1} · {chapter.title}
             </h2>
             <p className="mb-2 text-xs text-muted-foreground">
-              {chapter.area} · {learned} of {chapter.topics.length} learned
+              {chapter.area} ·{" "}
+              {isChapterDone(chapter)
+                ? `Done · ${learned} of ${chapter.topics.length}`
+                : `${learned} of ${chapter.topics.length} learned`}
             </p>
             <ul className="grid gap-1.5">
               {chapter.topics.map((topic) => (

@@ -53,7 +53,7 @@ function ChapterNode({ data }: NodeProps<Node<Data>>) {
       variant="outline"
       onClick={chapter.onPick}
       aria-expanded={chapter.expanded}
-      aria-label={`${chapter.title}, ${chapter.learned} of ${chapter.total} learned`}
+      aria-label={`${chapter.title}, ${chapter.done ? "done, " : ""}${chapter.learned} of ${chapter.total} learned`}
       className={cn(
         "nodrag h-auto max-w-44 flex-col items-start gap-0 bg-card py-2 text-left text-xs whitespace-normal",
         chapter.expanded && "border-ring",
@@ -64,7 +64,9 @@ function ChapterNode({ data }: NodeProps<Node<Data>>) {
         {chapter.order} · {chapter.title}
       </span>
       <span className="text-muted-foreground">
-        {chapter.learned} of {chapter.total} learned
+        {chapter.done
+          ? `Done · ${chapter.learned} of ${chapter.total}`
+          : `${chapter.learned} of ${chapter.total} learned`}
       </span>
     </Button>
   );

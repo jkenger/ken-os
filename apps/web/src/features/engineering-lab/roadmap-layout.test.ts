@@ -59,3 +59,29 @@ test("the ring grows with more chapters", () => {
   assert.equal(chapterRadius(3), 220);
   assert.ok(chapterRadius(13) > chapterRadius(3));
 });
+
+test("a chapter is marked done when every topic is Learned or Skipped", () => {
+  const finished = {
+    ...input,
+    chapters: [
+      ...input.chapters,
+      {
+        id: "done",
+        title: "Done",
+        topics: [
+          { id: "done.a", title: "A", status: "learned" as const },
+          { id: "done.b", title: "B", status: "skipped" as const },
+        ],
+      },
+    ],
+  };
+  const done = layoutRoadmap(finished, new Set()).nodes.flatMap((node) =>
+    node.type === "chapter" ? [[node.data.chapterId, node.data.done]] : [],
+  );
+  assert.deepEqual(done, [
+    ["js", false],
+    ["react", false],
+    ["api", false],
+    ["done", true],
+  ]);
+});

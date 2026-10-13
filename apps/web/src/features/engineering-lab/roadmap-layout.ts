@@ -16,7 +16,16 @@ export type LayoutNode =
       type: "chapter";
       x: number;
       y: number;
-      data: { chapterId: string; title: string; order: number; learned: number; total: number; expanded: boolean };
+      data: {
+        chapterId: string;
+        title: string;
+        order: number;
+        learned: number;
+        total: number;
+        /** Every topic Learned or Skipped (engineering-progressive-flow.md, section 3). */
+        done: boolean;
+        expanded: boolean;
+      };
     }
   | { id: string; type: "topic"; x: number; y: number; data: { topicId: string; title: string; status: TopicStatus } };
 
@@ -60,6 +69,9 @@ export function layoutRoadmap(input: LayoutInput, expanded: ReadonlySet<string>)
         order: index + 1,
         learned: chapter.topics.filter((topic) => topic.status === "learned").length,
         total: chapter.topics.length,
+        done:
+          chapter.topics.length > 0 &&
+          chapter.topics.every((topic) => topic.status === "learned" || topic.status === "skipped"),
         expanded: open,
       },
     });

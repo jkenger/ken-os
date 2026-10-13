@@ -6,6 +6,11 @@ export function askClaudeMessage(topic: { id: string; title: string }) {
   return `Teach me ${topic.title} (Ken OS topic \`${topic.id}\`). Start by checking where I am.`;
 }
 
+/** Prove it, the topic's last step (docs/architecture/engineering-progressive-flow.md, section 2). */
+export function proveMessage(topic: { id: string; title: string }) {
+  return `Check me on ${topic.title} (Ken OS topic \`${topic.id}\`). Ask me to explain it in my own words.`;
+}
+
 /** The message that starts planning a roadmap in Claude (docs/architecture/engineering-claude-first.md, section 3). */
 export const PLAN_MESSAGE =
   "Plan a new Ken OS roadmap with me. Ask my goal and what I've worked on, propose chapters and topics from the topic map, and save it with save_roadmap once I agree.";

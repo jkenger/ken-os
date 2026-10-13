@@ -145,6 +145,7 @@ export function RoadmapPage({
         projectUrl={projectUrl}
         onClose={() => select(null)}
         onChanged={() => router.refresh()}
+        onSelect={select}
       />
     </WorkspaceShell>
   );
