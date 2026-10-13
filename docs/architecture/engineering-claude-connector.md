@@ -234,7 +234,7 @@ Built 13 Oct 2026 on `feat/engineering-mcp`. Where these differ from §3, these 
 
 **Verified:** `pnpm test` (`rules.test.ts`), `pnpm check`, `pnpm build`, `test:db:connector` (8 checks: registration, authorize, code exchange, `/api/mcp`, write limit, refresh and reuse, Disconnect, owner only) and `test:db:engineering`. On the local server: both metadata documents, the 401, the consent page, a real tool call with a token, and Disconnect on Profile stopping that token.
 
-**Hosted, 13 Oct 2026:** the owner added Ken OS as a custom connector in claude.ai, signed in through the consent page, and saw the 8 tools (§11, step 1).
+**Hosted, 13 Oct 2026:** the owner added Ken OS as a custom connector in claude.ai, signed in through the consent page, and saw the 8 tools (§11, step 1). Later that day, the starter message from Ask Claude, pasted into the owner's Project, made Claude call `get_current_state` (§11, step 2). Steps 3 to 6 are not yet tried on the hosted app.
 
 ## 10c. Slice 3 as built
 
