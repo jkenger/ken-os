@@ -705,3 +705,44 @@ export const labNotes = pgTable(
   },
   (table) => [index("lab_notes_user_topic_idx").on(table.userId, table.topicId, table.createdAt)],
 );
+
+/**
+ * A roadmap the owner agreed to in Claude (docs/architecture/engineering-claude-first.md, section 3). One is active at a
+ * time; a new one archives the old. Progress belongs to topics, so it carries across roadmaps.
+ */
+export const labRoadmaps = pgTable(
+  "lab_roadmaps",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    goal: text("goal").notNull(),
+    /** Chapters in order. A chapter is one from the topic map, or one Claude added (`custom.*`). */
+    chapters: jsonb("chapters").$type<{ id: string; title: string; topicIds: string[] }[]>().notNull(),
+    status: text("status").$type<"active" | "archived">().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    archivedAt: timestamp("archived_at", { withTimezone: true }),
+  },
+  (table) => [
+    index("lab_roadmaps_user_idx").on(table.userId, table.createdAt),
+    uniqueIndex("lab_roadmaps_one_active")
+      .on(table.userId)
+      .where(sql`${table.status} = 'active'`),
+  ],
+);
+
+/** A topic Claude added to a roadmap: a title and 3 to 5 lines the owner should be able to explain. Ids are `custom.*`. */
+export const labCustomTopics = pgTable(
+  "lab_custom_topics",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    id: text("id").notNull(),
+    title: text("title").notNull(),
+    lines: jsonb("lines").$type<string[]>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.id] })],
+);

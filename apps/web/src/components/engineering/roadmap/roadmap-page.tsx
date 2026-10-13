@@ -10,9 +10,12 @@ import { Progress } from "@/components/ui/progress";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Connection } from "@/features/connector/oauth-store";
+import { PLAN_MESSAGE } from "@/features/engineering-lab/ask-claude";
 import type { RoadmapView } from "@/features/engineering-lab/roadmap-store";
 import { engineering } from "@/features/engineering-lab/routes";
+import { AskClaude } from "../ask-claude";
 import { Connections } from "../connections";
+import { Notice } from "../kit";
 import { RoadmapGraph } from "./roadmap-graph";
 import { RoadmapLanes } from "./roadmap-lanes";
 import { TopicSheet } from "./topic-sheet";
@@ -23,7 +26,15 @@ import { TopicSheet } from "./topic-sheet";
 type Layout = "graph" | "lanes";
 const LAYOUT_KEY = "ken-os-roadmap-layout";
 
-function Settings({ view, connections }: { view: RoadmapView; connections: Connection[] }) {
+function Settings({
+  view,
+  connections,
+  projectUrl,
+}: {
+  view: RoadmapView;
+  connections: Connection[];
+  projectUrl: string | null;
+}) {
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -41,9 +52,15 @@ function Settings({ view, connections }: { view: RoadmapView; connections: Conne
           <section>
             <h3 className="mb-1 text-xs font-semibold text-muted-foreground">Goal</h3>
             <p>{view.goal?.title ?? "No goal"}</p>
-            <Button asChild variant="outline" size="sm" className="mt-2">
-              <Link href={engineering.direction}>Change goal</Link>
-            </Button>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {projectUrl && <AskClaude message={PLAN_MESSAGE} label="Plan new roadmap" projectUrl={projectUrl} />}
+              {/* Until Claude plans one, the roadmap is the target role's path, which Direction changes. */}
+              {!view.planned && (
+                <Button asChild variant="outline" size="sm">
+                  <Link href={engineering.direction}>Change role</Link>
+                </Button>
+              )}
+            </div>
           </section>
           <Connections connections={connections} />
         </div>
@@ -111,7 +128,7 @@ export function RoadmapPage({
                 <TabsTrigger value="lanes">Lanes</TabsTrigger>
               </TabsList>
             </Tabs>
-            <Settings view={view} connections={connections} />
+            <Settings view={view} connections={connections} projectUrl={projectUrl} />
           </div>
         </div>
         <div className="mx-1 mb-5 md:mx-3.5">
@@ -133,6 +150,21 @@ export function RoadmapPage({
             className="mt-2"
           />
         </div>
+        {!view.planned && (
+          <div className="mx-1 md:mx-3.5">
+            <Notice>
+              <p className="font-semibold">No roadmap</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {view.goal ? `Showing the ${view.goal.title} path` : "Showing every topic"} · plan yours with Claude
+              </p>
+              {projectUrl && (
+                <div className="mt-3">
+                  <AskClaude message={PLAN_MESSAGE} label="Plan with Claude" projectUrl={projectUrl} />
+                </div>
+              )}
+            </Notice>
+          </div>
+        )}
         <div className="mx-1 md:mx-3.5">
           {layout === "graph" ? (
             <RoadmapGraph view={view} selected={selected} onSelect={select} />

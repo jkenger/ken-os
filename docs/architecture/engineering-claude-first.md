@@ -173,6 +173,31 @@ Built 13 Oct 2026 on `feat/engineering-roadmap-page`. The new page lives beside 
 
 **Verified:** `pnpm test` (`roadmap-layout.test.ts` and the rest), `pnpm check`, `pnpm build`. On the local server, signed in: the graph renders and opens on the current chapter; a real click on a topic opens its panel and puts it in the address; Skipped saves and updates the panel, the progress line and the graph; Learned asks why first; a note adds and deletes; Try it in code opens the exercise with the editor; Lanes shows all chapters and is remembered; chapters expand and collapse. `test:db:engineering` (12 checks) and `test:db:connector` (8) pass.
 
+## 9c. Slice 3 as built
+
+Built 13 Oct 2026 on `feat/engineering-plan-with-claude`.
+
+| File                                        | Holds                                                                                                                                                                                      |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `drizzle/0015_adorable_forge.sql`           | `lab_roadmaps` (one active per owner, enforced by a partial unique index) and `lab_custom_topics`. Additive only                                                                           |
+| `features/engineering-lab/roadmap-plan.ts`  | Checks a plan Claude proposes: map chapters keep their reviewed titles, new chapters and topics get `custom.<slug>` ids, each new topic has 3 to 5 lines, no topic twice. Pure, with tests |
+| `features/engineering-lab/any-topic.ts`     | One lookup for a map topic or one Claude added, used by all the Claude-first code                                                                                                          |
+| `features/engineering-lab/roadmap-store.ts` | `saveRoadmap` (archives the old one), and the roadmap read from the saved plan, falling back to the target role's path                                                                     |
+| `save_roadmap` in `agent-tools.ts`          | The ninth tool                                                                                                                                                                             |
+
+**Decisions**
+
+- **Without a saved roadmap,** the page and Claude's tools still use the target role's path (or every chapter). The page shows "No roadmap" with **Plan with Claude**, and `get_current_state` returns `planned: false` so Claude can offer to plan.
+- **Plan with Claude** and Settings' **Plan new roadmap** open the Ask Claude dialog with a planning message. The dialog now takes any message.
+- **Change role** shows in Settings only while there's no saved roadmap, since the role only shapes the fallback path.
+- **Claude's topics** sit under "Added by Claude" and show their lines as "what to explain". They have no repo exercise: **Try it in code** says "No exercise yet" until Claude saves one, then runs the browser check in the panel before showing it.
+- **Claude's topic ids are per owner.** Another owner can't read them.
+- **Old screens stay map-only.** Events and progress accept `custom.*` ids; everything else on the old screens is removed in slice 4.
+- **A trap found on the way:** `tsc --noEmit` reuses `tsconfig.tsbuildinfo` and once reported no errors when there were some. `pnpm build` type-checks fresh and caught nothing wrong in earlier slices, but delete the file when a type check looks too clean.
+- **Don't run Prettier on `src` from inside `apps/web`.** `.prettierignore`'s paths are relative to the repo root, so from there it rewrites the generated files and the shadcn primitives. Run it from the repo root.
+
+**Verified:** `pnpm test` (175, including `roadmap-plan.test.ts`), `pnpm check`, `pnpm build`, `pnpm format:check`, `test:db:engineering` (14 checks, 2 new for planning) and `test:db:connector` (8). On the local server, signed in: "No roadmap" with Plan with Claude; after saving a test roadmap through `save_roadmap`, the goal as the title, counts for its 2 topics, a link opening Claude's topic with its lines, "No exercise yet", then a Claude exercise checked in the browser and shown as version 1; Settings with Plan new roadmap and no Change role. The test roadmap was archived afterwards.
+
 ## 10. Done when
 
 1. Claude plans a roadmap from a goal and a conversation about the owner's background, and it appears on `/engineering`.

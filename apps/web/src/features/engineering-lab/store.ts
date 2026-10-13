@@ -34,6 +34,14 @@ export function requireTopic(topicId: string) {
   return topic;
 }
 
+/**
+ * A map topic, or a topic Claude added (`custom.*`). Events and progress accept both; callers that take a custom id
+ * from outside check it exists first, with requireAnyTopic in any-topic.ts.
+ */
+function requireTopicId(topicId: string) {
+  if (!topicId.startsWith("custom.")) requireTopic(topicId);
+}
+
 /** Ken OS's own AI writes today. Lessons and questions Claude saved cost Ken OS nothing and don't count. */
 export async function generationsToday(userId: string) {
   const since = ownerDayStart();
@@ -89,7 +97,7 @@ export async function getAllProgress(userId: string): Promise<TopicProgress[]> {
 }
 
 export async function getProgress(userId: string, topicId: string): Promise<TopicProgress> {
-  requireTopic(topicId);
+  requireTopicId(topicId);
   const rows = await db()
     .select(eventColumns)
     .from(labTopicEvents)
@@ -132,7 +140,7 @@ export type EventInput = Omit<typeof labTopicEvents.$inferInsert, "id" | "userId
 
 /** Saves one event and returns the topic's new progress. */
 export async function recordEvent(userId: string, event: EventInput, tx?: Transaction) {
-  requireTopic(event.topicId);
+  requireTopicId(event.topicId);
   const write = async (inner: Transaction) => {
     const id = randomUUID();
     await inner.insert(labTopicEvents).values({ ...event, id, userId });
