@@ -27,6 +27,8 @@
     "@codemirror/lang-javascript": "^6.2.5",
     "@codemirror/state": "^6.7.6",
     "@codemirror/view": "^6.43.13",
+    "@hugeicons/core-free-icons": "^4.3.5",
+    "@hugeicons/react": "^1.1.10",
     "@ken-os/agents": "workspace:*",
     "@ken-os/domain": "workspace:*",
     "@ken-os/drive": "workspace:*",
@@ -62,7 +64,7 @@
     "drizzle-kit": "^0.31.11",
     "esbuild": "0.28.2",
     "postcss": "^8.5.28",
-    "shadcn": "^4.21.3",
+    "shadcn": "^4.21.4",
     "tailwindcss": "^4.3.3",
     "tsx": "latest",
     "typescript": "latest"
