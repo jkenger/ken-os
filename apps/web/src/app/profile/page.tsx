@@ -2,6 +2,7 @@ import { DOCX_MIME, type Artifact } from "@ken-os/domain";
 import { getDriveFile } from "@ken-os/drive";
 import { ProfileWorkspace } from "@/components/profile/profile-workspace";
 import { getProfile } from "@/features/profile/store";
+import { engineeringSummary } from "@/features/engineering-lab/roadmap-store";
 import { driveErrorText } from "@/lib/auth-errors";
 import { DriveAccessError, getGoogleAccessToken, hasDriveConnection, type DriveAccess } from "@/lib/google";
 import { getSelectedResume } from "@/lib/resume";
@@ -16,10 +17,12 @@ export default async function ProfilePage({
 }) {
   const session = await requireSession("/profile");
   const { drive_error } = await searchParams;
-  const [profile, selection, connected] = await Promise.all([
+  const [profile, selection, connected, engineering] = await Promise.all([
     getProfile(session.userId),
     getSelectedResume(session.userId),
     hasDriveConnection(session.userId),
+    // The Engineering line is a convenience; Profile still loads if it fails.
+    engineeringSummary(session.userId).catch(() => null),
   ]);
   let drive: DriveAccess = connected ? "connected" : "not_connected";
   let file: Artifact | null = null;
@@ -46,6 +49,7 @@ export default async function ProfilePage({
     <ProfileWorkspace
       email={session.email}
       profile={profile}
+      engineering={engineering}
       drive={{
         access: drive,
         selection,

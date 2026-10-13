@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import { AlertCircle, FileDown } from "lucide-react";
 import { mergeImport, type ProfileDetails } from "@ken-os/domain";
@@ -7,6 +8,8 @@ import { PageHeading } from "@/components/page-heading";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { engineering as engineeringRoutes } from "@/features/engineering-lab/routes";
 import { toast } from "@/components/ui/toaster";
 import type { ProfileState } from "@/features/profile/store";
 import { send } from "@/lib/api-client";
@@ -16,14 +19,35 @@ import { DriveFile, type DriveFileState } from "./drive-file";
 
 // Profile: the owner's career details and the Drive resume they can be imported from. Spec: docs/product/profile-resume.md.
 
+/** One line from Engineering: the goal and how many topics are learned, linking to the roadmap. */
+function EngineeringSummary({ headline, detail }: { headline: string; detail: string }) {
+  return (
+    <Link
+      href={engineeringRoutes.roadmap()}
+      className="rounded-xl focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+    >
+      <Card className="transition-colors hover:bg-muted/50">
+        <CardHeader>
+          <CardDescription>Engineering</CardDescription>
+          <CardTitle>{headline}</CardTitle>
+          <CardDescription>{detail}</CardDescription>
+        </CardHeader>
+      </Card>
+    </Link>
+  );
+}
+
 export function ProfileWorkspace({
   email,
   profile,
   drive,
+  engineering,
 }: {
   email: string;
   profile: ProfileState;
   drive: DriveFileState;
+  /** The Engineering goal and progress, linking to the roadmap. Null when it couldn't load. */
+  engineering: { headline: string; detail: string } | null;
 }) {
   const [saved, setSaved] = useState(profile.details);
   const [savedAt, setSavedAt] = useState(profile.savedAt);
@@ -114,6 +138,7 @@ export function ProfileWorkspace({
             </Alert>
           )}
 
+          {engineering && <EngineeringSummary {...engineering} />}
           <DriveFile state={drive} importing={importing} onImport={importDrive} />
           <DetailsForm key={formVersion} details={details} edit={edit} />
         </div>
