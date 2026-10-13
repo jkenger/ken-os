@@ -100,7 +100,7 @@ Each slice ships with tests (unit for the step and next-topic rules, `test:db:en
 
 ## 6a. Next: several roadmaps at once
 
-Asked for by the owner on 13 Oct 2026, to build after slice 3, once the path above shows where it fits. Not designed yet; it needs its own round of questions.
+Asked for by the owner on 13 Oct 2026, to build after slice 3. Designed on 14 Oct 2026 in [engineering-roadmaps.md](engineering-roadmaps.md), which now decides it; the notes below are what slices 1 to 3 kept in mind.
 
 - **Today** a new roadmap archives the old one (`save_roadmap`, one `active` row in `lab_roadmaps`).
 - **The idea:** create a roadmap alongside the existing ones, and keep several going together.
