@@ -1,0 +1,121 @@
+# Engineering: one path from setup to a finished roadmap
+
+Status: proposed, 13 Oct 2026. Builds on [engineering-claude-first.md](engineering-claude-first.md), which stays the source of truth for the screen, topic states, Claude's tools and data. Decided in chat with the owner on 13 Oct 2026.
+
+## Decision
+
+Today each stage works on its own: set up Claude, plan a roadmap, learn, practise, prove. Nothing leads from one to the next, and nothing happens when a chapter or the roadmap is done. This spec joins them into one path:
+
+| Stage       | Today                              | After                                                           |
+| ----------- | ---------------------------------- | --------------------------------------------------------------- |
+| 1. Set up   | Claude setup, if you find it       | A checklist at the top of the page until setup is done (§1)     |
+| 2. Plan     | "No roadmap" with Plan with Claude | The checklist's last item (§1)                                  |
+| 3. Learn    | Loose actions in the topic panel   | Steps in the panel: Learn → Practice → Prove (§2)               |
+| 4. Practice | Try it in code                     | Step 2, optional (§2)                                           |
+| 5. Prove    | Explain it to Claude               | Step 3 (§2)                                                     |
+| 6. Next     | "Now: X" in the progress line      | **Next topic** in the panel once a topic is Learned (§3)        |
+| 7. Finish   | Nothing                            | Chapter done in the panel and graph; a roadmap summary (§3, §4) |
+
+Not in scope: reminders to revisit old topics (the owner chose "not now"). `get_current_state` already lists Learned topics older than 60 days for Claude to offer.
+
+## 1. Setup checklist
+
+Shows at the top of `/engineering`, in place of the "No roadmap" box, until all four items are done. Each item is a row with its state and one action.
+
+| Item                 | Done when                                                | Action           |
+| -------------------- | -------------------------------------------------------- | ---------------- |
+| Connect Ken OS       | A connection exists (Claude setup, step 1)               | Claude setup     |
+| Project instructions | Claude reported the current instructions version (below) | Claude setup     |
+| Project link         | A Project link is saved, or the env fallback is set      | Claude setup     |
+| Plan roadmap         | A roadmap is saved (`planned`)                           | Plan with Claude |
+
+- **Order is a suggestion.** Every item's action works at any time; rows are numbered so the first visit reads top to bottom.
+- **Title:** "Set up" with a count ("2 of 4"). No sentences beyond a one-line helper per row.
+- **Once all four are done, it hides.** It doesn't come back. A later problem shows on the **Claude setup** button instead: a Badge "Update" when the instructions are out of date, "Not connected" when the last connection was removed.
+
+### Knowing the instructions were pasted
+
+Ken OS can't read the Claude Project, so the instructions report their own version.
+
+- `CLAUDE_INSTRUCTIONS_UPDATED` (already in `claude-instructions.ts`) becomes the version. The instructions text gains one line: call `get_current_state` with `instructionsVersion: "<that date>"`.
+- `get_current_state` takes an optional `instructionsVersion` (a `YYYY-MM-DD` string; anything else is ignored). Ken OS stores the last one seen and when.
+- States, shown in the checklist and in Claude setup step 2:
+  - **Pasted** when the stored version equals the current one.
+  - **Out of date** when it's older. The step shows "Copy instructions" as the main button.
+  - **Not yet** when none has been seen.
+- A test checks the instructions text names the same version as `CLAUDE_INSTRUCTIONS_UPDATED`, so the two can't drift.
+
+## 2. Steps inside a topic
+
+The topic panel shows the topic's own path under the title, the same one Claude follows in chat:
+
+| Step     | Done when                                        | Its action                                      |
+| -------- | ------------------------------------------------ | ----------------------------------------------- |
+| Learn    | The topic is In progress (Claude's first report) | **Ask Claude**, or **Continue chat** if linked  |
+| Practice | An exercise run passed all its tests             | **Try it in code**                              |
+| Prove    | The topic is Learned                             | **Prove it**: Ask Claude with a proving message |
+
+- **Practice is optional.** It shows "Optional", and Prove is open whether or not it's done. A topic with no usable exercise shows Practice as "No exercise yet" and skips to Prove.
+- **One main button:** the first step not done gets the filled button; the others stay outline. All stay usable.
+- **Prove it** opens the Ask Claude dialog with: "Check me on <title> (Ken OS topic `<id>`). Ask me to explain it in my own words." Claude already won't mark Learned without the owner's words.
+- **Skipped and Learned topics** show the steps as done or skipped; the main button moves to Next topic (§3).
+- Reports, notes, the state menu and Link chat stay where they are, below the steps.
+
+## 3. Next topic and chapter done
+
+- **Next topic** is the next topic in roadmap order that isn't Learned or Skipped, starting after this one and wrapping to earlier ones. Claude can still suggest something else in chat.
+- **When a topic is Learned,** its panel shows **Next topic: <title>** as the main button.
+- **When that topic finishes its chapter** (every topic in it Learned or Skipped), the panel shows "Chapter done" with the chapter name and count ("React · 3 of 3"), then **Next topic** from the next chapter. The chapter's node in the graph and its lane show "Done".
+- **Claude says it too.** `report_progress` returns `next` (id and title) and `chapterDone` (the chapter title, or null) when it sets Learned, so Claude can mark the moment in chat. The instructions gain one line for it.
+- No animation, no confetti: a state and a button.
+
+## 4. Roadmap summary
+
+When every topic on the roadmap is Learned or Skipped:
+
+- **The page** shows "Complete" where the progress line was, with the date of the last Learned topic.
+- **A summary** replaces the roadmap's top area: per chapter, each topic with its state, the date, and the owner's evidence line (the first sentence, with the full text in the topic panel). Counts at the top: learned, skipped, chapters, and the span from the first report to the last Learned.
+- **Plan next roadmap** is the main button. The graph and lanes stay below for browsing.
+- **Archived roadmaps** have no summary page in this spec. Their progress stays on the topics, as today. A list of past roadmaps can come later.
+
+## 5. Data
+
+| Change                            | How                                                                                                 |
+| --------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Instructions version seen         | Two nullable columns on `lab_profile`: `claude_instructions_version`, `claude_instructions_seen_at` |
+| Practice step                     | Read from existing `exercise_run` events (`passed`); no change                                      |
+| Next topic, chapter done, summary | Computed from the roadmap view; no change                                                           |
+
+One additive migration, per the migration rule in `AGENTS.md`.
+
+## 6. Slices
+
+| #   | Branch                             | Delivers                                                                                                                                                    |
+| --- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `feat/engineering-setup-checklist` | §1: the checklist, the instructions version through `get_current_state`, Claude setup badges                                                                |
+| 2   | `feat/engineering-topic-steps`     | §2 and §3: the steps in the topic panel, Prove it, Next topic, chapter done in panel, graph and lanes, `report_progress` returning `next` and `chapterDone` |
+| 3   | `feat/engineering-roadmap-summary` | §4: Complete, the summary and Plan next roadmap                                                                                                             |
+
+Each slice ships with tests (unit for the step and next-topic rules, `test:db:engineering` for the stored version and the summary), and is checked on the local server signed in, with screenshots.
+
+## 6a. Next: several roadmaps at once
+
+Asked for by the owner on 13 Oct 2026, to build after slice 3, once the path above shows where it fits. Not designed yet; it needs its own round of questions.
+
+- **Today** a new roadmap archives the old one (`save_roadmap`, one `active` row in `lab_roadmaps`).
+- **The idea:** create a roadmap alongside the existing ones, and keep several going together.
+- **What the slices above should keep in mind,** so they don't have to be redone:
+  - The checklist's "Plan roadmap" means "at least one roadmap", not "the" roadmap.
+  - Next topic and chapter done are computed per roadmap, never across all of them.
+  - The summary (§4) belongs to one roadmap, so it can later live at that roadmap's own address.
+  - Progress already belongs to topics, not roadmaps, so a topic on two roadmaps is Learned on both.
+- **Open questions for then:** how to switch between roadmaps on the page, what "Now" and the progress line show with several, whether Claude's tools take a roadmap id, and whether archiving stays.
+
+## 7. Done when
+
+1. A fresh account sees the checklist; after connecting, pasting the instructions, saving the link and planning, it's gone.
+2. Changing the instructions makes Claude setup show "Update" until Claude reports the new version.
+3. A topic's panel shows where it is in Learn → Practice → Prove, with the next step as the main button.
+4. Learning the last topic of a chapter shows Chapter done and the next topic, in the app and in Claude's reply.
+5. Finishing every topic shows the summary with the owner's evidence and Plan next roadmap.
+6. `pnpm test`, `pnpm check` and `pnpm build` pass, and steps 1 to 5 work on the hosted app.
