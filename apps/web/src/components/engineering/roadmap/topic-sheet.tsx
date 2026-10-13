@@ -303,7 +303,7 @@ export function TopicSheet({
   return (
     <>
       <Sheet open={Boolean(topicId)} onOpenChange={(open) => !open && onClose()}>
-        <SheetContent className="w-full gap-0 overflow-y-auto sm:max-w-md">
+        <SheetContent className="gap-0 overflow-y-auto data-[side=right]:w-full data-[side=right]:sm:max-w-md">
           <SheetHeader className="border-b">
             <SheetDescription>{panel ? `${panel.area} · ${panel.chapter}` : "Topic"}</SheetDescription>
             <SheetTitle className="text-xl">{panel?.title ?? " "}</SheetTitle>
