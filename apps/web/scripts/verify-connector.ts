@@ -139,11 +139,11 @@ async function main() {
       "get_current_state",
       "get_history",
       "get_my_work",
+      "get_roadmap",
       "get_topic",
-      "list_path",
+      "report_progress",
       "save_exercise",
-      "save_lesson",
-      "save_proof_question",
+      "save_note",
     ]);
     const state = await (
       await rpc(
@@ -160,36 +160,32 @@ async function main() {
           id: 4,
           method: "tools/call",
           params: {
-            name: "save_proof_question",
-            arguments: { topicId: "js.closures", prompt: "Why?", pointIds: ["p99"] },
+            name: "report_progress",
+            arguments: { topicId: "js.closures", summary: "Got it", status: "learned" },
           },
         },
         tokens.access_token,
       )
     ).json();
     assert.equal(bad.result.isError, true, "a refused write is a tool error Claude can read");
-    console.log("ok - /api/mcp answers 401 with resource_metadata, then lists and runs the 8 tools");
+    console.log("ok - /api/mcp answers 401 with resource_metadata, then lists and runs the tools");
 
-    // Write limit: 40 saves a day across the write tools.
+    // Write limit: 40 saves a day across the write tools, reports and notes together.
     await db()
       .insert(labTopicEvents)
       .values(
-        Array.from({ length: tools.CLAUDE_WRITE_LIMIT }, () => ({
+        Array.from({ length: tools.CLAUDE_WRITE_LIMIT - 1 }, () => ({
           id: randomUUID(),
           userId: owner,
           topicId: "js.closures",
-          kind: "lesson_saved" as const,
+          kind: "report" as const,
           source: "claude" as const,
+          summary: "Checked in",
         })),
       );
-    await assert.rejects(
-      tools.callAgentTool(owner, "save_proof_question", {
-        topicId: "js.closures",
-        prompt: "Why does let fix it?",
-        pointIds: ["p2"],
-      }),
-      /Out of writes for today \(40\)/,
-    );
+    const note = { topicId: "js.closures", body: "Say it captures the variable" };
+    assert.ok(await tools.callAgentTool(owner, "save_note", note), "the 40th write works");
+    await assert.rejects(tools.callAgentTool(owner, "save_note", note), /Out of writes for today \(40\)/);
     assert.ok(await tools.callAgentTool(owner, "get_current_state", {}), "reads still work");
     console.log("ok - the 41st write of the day is refused; reads continue");
 

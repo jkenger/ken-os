@@ -27,6 +27,7 @@ async function main() {
   const practice = await import("../src/features/engineering-lab/practice-store");
   const exercises = await import("../src/features/engineering-lab/exercise-store");
   const tools = await import("../src/features/engineering-lab/agent-tools");
+  const statuses = await import("../src/features/engineering-lab/status-store");
 
   const owner = `engineering-check-${randomUUID()}`;
   const other = `engineering-check-${randomUUID()}`;
@@ -365,29 +366,21 @@ async function main() {
       const call = (name: string, input: unknown) =>
         tools.callAgentTool(viaClaude, name, input) as Promise<Record<string, any>>;
       const closures = "js.closures";
-      const trusted = {
-        title: "MDN closures",
-        url: "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Closures",
-      };
-      const lessonInput = {
-        heading: "A closure keeps its scope",
-        body: "A function remembers where it was made.",
-        mentalModel: "A backpack of variables.",
-        block: { kind: "code", content: "const add = (a) => (b) => a + b;", note: "add(1) keeps a." },
-        example: "A click handler that keeps its row id.",
-        prove: ["Closures keep variables", "let makes one per loop", "Factories keep separate state"],
-        sources: [trusted, { title: "A blog", url: "https://example.com/closures" }],
-      };
-      const savedLesson = await call("save_lesson", { topicId: closures, lesson: lessonInput });
-      assert.deepEqual(savedLesson.droppedSources, ["Not on a trusted site: https://example.com/closures"]);
-      assert.equal((await topics.getLesson(viaClaude, closures))?.source, "claude");
-      assert.equal((await call("get_topic", { topicId: closures })).lesson.heading, "A closure keeps its scope");
-      await assert.rejects(
-        call("save_lesson", { topicId: "rel.retry_backoff", lesson: lessonInput }),
-        /written by hand/,
+      // Reports and notes (engineering-claude-first.md, sections 2 and 4).
+      assert.equal((await call("get_topic", { topicId: closures })).status, "not_started");
+      const first = await call("report_progress", { topicId: closures, summary: "Asked what a closure keeps" });
+      assert.equal(first.status, "in_progress", "the first report starts the topic");
+      await call("save_note", { topicId: closures, body: "Say it captures the variable, not its value" });
+      const ownerNote = await statuses.addNote(viaClaude, closures, "owner", "let vs var still fuzzy");
+      const started = await call("get_topic", { topicId: closures });
+      assert.equal(started.reports[0].summary, "Asked what a closure keeps");
+      assert.deepEqual(started.notes.map((note: { author: string }) => note.author).sort(), ["claude", "owner"]);
+      assert.equal(
+        (await statuses.editNote(viaClaude, ownerNote.id, "let makes a new binding per loop")).body,
+        "let makes a new binding per loop",
       );
       assert.equal(await store.generationsToday(viaClaude), 0, "Claude's writes don't use Ken OS AI uses");
-      console.log("ok - connector: Claude's lesson is saved with trusted sources only, hand-written lessons stay");
+      console.log("ok - connector: a report starts the topic, notes are kept per author");
 
       const exerciseInput = (starter: string) => ({
         runner: "browser",
@@ -493,7 +486,7 @@ async function main() {
       topic = await call("get_topic", { topicId: closures });
       assert.equal(topic.exercise.labId, v2.labId, "a version the owner ran stays theirs");
       assert.equal(topic.newerExercise.labId, v3.labId);
-      assert.equal(topic.exercisePassed, true);
+      assert.equal((await store.getProgress(viaClaude, closures)).exercisePassed, true);
       await assert.rejects(exercises.switchExercise(viaClaude, closures, v1.labId), /No newer exercise/);
       assert.equal(
         (await exercises.switchExercise(viaClaude, closures, v3.labId)).exercisePassed,
@@ -509,52 +502,69 @@ async function main() {
       );
       console.log("ok - connector: a newer version waits for Switch, which starts a fresh attempt");
 
+      const evidence = {
+        explanation:
+          "A closure keeps access to the variables of the scope where it was made, not copies of their values.",
+        note: "Unaided, after the exercise",
+      };
       await assert.rejects(
-        call("save_proof_question", { topicId: closures, prompt: "Why does let fix the loop?", pointIds: ["p9"] }),
-        /Not a point on js.closures: p9/,
+        call("report_progress", { topicId: closures, summary: "Got it", status: "learned" }),
+        /Learned needs evidence/,
       );
-      const question = await call("save_proof_question", {
+      await assert.rejects(
+        call("report_progress", {
+          topicId: closures,
+          summary: "Got it",
+          status: "learned",
+          evidence: { explanation: "It keeps vars", note: "Unaided" },
+        }),
+        /Learned needs evidence/,
+        "a few words aren't an explanation",
+      );
+      const learned = await call("report_progress", {
         topicId: closures,
-        prompt: "Why does let fix the loop?",
-        pointIds: ["p2"],
+        summary: "Explained closures unaided",
+        status: "learned",
+        evidence,
       });
-      assert.deepEqual(question.tests, [closuresTopic.points[1]], "the rubric is the approved point it names");
-      await topics.recordExerciseRun(viaClaude, closures, {
-        labId: v3.labId,
-        code: "...",
-        passed: 1,
-        failed: 0,
-        output: "",
-      });
-      const claudeProof = await topics.getOrWriteProof(viaClaude, closures);
-      assert.equal(
-        claudeProof.prompt,
-        "Why does let fix the loop?",
-        "Ken OS asks Claude's question and grades it itself",
+      assert.equal(learned.status, "learned");
+      assert.match((await statuses.listReports(viaClaude, closures))[0].evidence!, /not copies of their values/);
+      assert.equal((await store.getProgress(viaClaude, closures)).state, "PRACTICING", "the old progress is untouched");
+      await assert.rejects(statuses.setStatus(viaClaude, closures, "learned"), /one line on why/);
+      assert.equal((await statuses.setStatus(viaClaude, closures, "not_started")).setBy, "owner", "the owner can undo");
+      await assert.rejects(
+        call("report_progress", { topicId: closures, summary: "Explained again", status: "learned", evidence }),
+        /Only they can change it/,
       );
       assert.equal(
-        (await store.getProgress(viaClaude, closures)).state,
-        "PRACTICING",
-        "nothing Claude saves proves a topic",
+        (await call("report_progress", { topicId: closures, summary: "Back on closures" })).status,
+        "in_progress",
+        "a fresh report restarts a reset topic",
       );
+      await statuses.setStatus(viaClaude, closures, "skipped");
+      await assert.rejects(
+        call("report_progress", { topicId: closures, summary: "Learned", status: "learned", evidence }),
+        /Only they can change it/,
+      );
+      assert.equal((await statuses.deleteNote(viaClaude, ownerNote.id)).deleted, true);
       const claudeEvents = await db()
         .select({ kind: labTopicEvents.kind })
         .from(labTopicEvents)
         .where(and(eq(labTopicEvents.userId, viaClaude), eq(labTopicEvents.source, "claude")));
-      assert.deepEqual([...new Set(claudeEvents.map((row) => row.kind))].sort(), [
-        "exercise_saved",
-        "lesson_saved",
-        "proof_question_saved",
-      ]);
+      assert.deepEqual([...new Set(claudeEvents.map((row) => row.kind))].sort(), ["exercise_saved", "report"]);
       console.log(
-        "ok - connector: proof questions name approved points, Ken OS grades, every write is recorded as Claude's",
+        "ok - connector: Learned needs the owner's words, the owner's status stays theirs, every write is Claude's",
       );
 
       const state = await call("get_current_state", {});
-      assert.equal(state.current.topicId, closures, "the topic in progress is current");
-      assert.equal(state.current.step, "prove");
-      assert.equal(state.aiUsesLeft, store.DAILY_GENERATION_LIMIT);
-      assert.ok((await call("list_path", {})).chapters.length > 0);
+      assert.equal(
+        state.current.topicId,
+        "js.call_stack",
+        "with nothing in progress, the first topic not started is current",
+      );
+      assert.equal(state.current.status, "not_started");
+      assert.equal(state.counts.skipped, 1);
+      assert.ok((await call("get_roadmap", {})).chapters.length > 0);
       await profiles.saveIntake(viaClaude, {
         building: "A clinic booking app",
         role: "frontend-developer",

@@ -18,6 +18,7 @@ import type {
   TopicEventKind,
   TopicProgress,
   TopicState,
+  TopicStatus,
 } from "@ken-os/domain";
 
 export const users = pgTable("users", {
@@ -368,6 +369,14 @@ export const labTopicEvents = pgTable(
     feedback: text("feedback"),
     graderVersion: text("grader_version"),
     source: text("source").$type<ContentSource>().notNull().default("ken-os"),
+    /** report and status_set: the status set, if any (docs/architecture/engineering-claude-first.md, section 2). */
+    status: text("status").$type<TopicStatus>(),
+    /** report: Claude's one-line summary of the session. status_set: the owner's reason, for Learned. */
+    summary: text("summary"),
+    /** report setting Learned: the owner's own explanation, word for word. */
+    evidence: text("evidence"),
+    /** report setting Learned: Claude's note on how the owner got there, such as hints given. */
+    evidenceNote: text("evidence_note"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [
@@ -675,4 +684,24 @@ export const oauthTokens = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("oauth_tokens_grant_idx").on(table.grantId)],
+);
+
+/**
+ * Notes on a topic (docs/architecture/engineering-claude-first.md, section 4). The owner adds, edits and deletes any
+ * note; Claude only adds.
+ */
+export const labNotes = pgTable(
+  "lab_notes",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    topicId: text("topic_id").notNull(),
+    author: text("author").$type<"owner" | "claude">().notNull(),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("lab_notes_user_topic_idx").on(table.userId, table.topicId, table.createdAt)],
 );

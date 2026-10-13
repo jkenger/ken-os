@@ -23,6 +23,8 @@ export const EVENT_KINDS = [
   "lesson_saved",
   "exercise_saved",
   "proof_question_saved",
+  "report",
+  "status_set",
 ] as const;
 export type TopicEventKind = (typeof EVENT_KINDS)[number];
 
@@ -32,6 +34,12 @@ export const CONTENT_EVENT_KINDS: readonly TopicEventKind[] = [
   "exercise_saved",
   "proof_question_saved",
 ];
+
+/**
+ * Events of the Claude-first status (docs/architecture/engineering-claude-first.md, section 2): a report from Claude,
+ * and a status set by the owner. The old progress above ignores them; `computeTopicStatus` reads them.
+ */
+export const STATUS_EVENT_KINDS: readonly TopicEventKind[] = ["report", "status_set"];
 
 /** Who wrote a lesson, a question or an event: Ken OS itself, or Claude through the connector. */
 export const CONTENT_SOURCES = ["ken-os", "claude"] as const;
@@ -109,7 +117,12 @@ export function emptyProgress(topicId: string): TopicProgress {
 export function computeProgress(topicId: string, events: readonly TopicEvent[]): TopicProgress {
   const progress = emptyProgress(topicId);
   const ordered = events
-    .filter((event) => event.topicId === topicId && !CONTENT_EVENT_KINDS.includes(event.kind))
+    .filter(
+      (event) =>
+        event.topicId === topicId &&
+        !CONTENT_EVENT_KINDS.includes(event.kind) &&
+        !STATUS_EVENT_KINDS.includes(event.kind),
+    )
     .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
   const rank = (state: TopicState) => STATES.indexOf(state);
   const atLeast = (state: TopicState) => {
