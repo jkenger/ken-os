@@ -15,6 +15,7 @@ import { toast } from "@/components/ui/toaster";
 import { buildLabScript, PGLITE_URL, type TestResult } from "@/features/engineering-lab/runner/harness";
 import { PROBES } from "@/features/engineering-lab/runner/probes";
 import { runInWorker } from "@/features/engineering-lab/runner/run-in-worker";
+import { askClaudeMessage } from "@/features/engineering-lab/ask-claude";
 import { engineering, type TopicStep } from "@/features/engineering-lab/routes";
 import type { ExercisePanel } from "@/features/engineering-lab/exercise-store";
 import type { PublicQuestion, TopicLesson, TopicView } from "@/features/engineering-lab/topic-store";
@@ -808,6 +809,29 @@ function Prove({
   );
 }
 
+/**
+ * Ask Claude: copies a starter message naming the topic, then opens the owner's Claude Project in a new tab, where the
+ * connector reads the topic. The tab opens first, inside the click, so the browser doesn't block it.
+ */
+function AskClaude({ topic, projectUrl }: { topic: Topic; projectUrl: string }) {
+  async function ask() {
+    window.open(projectUrl, "_blank", "noopener,noreferrer");
+    const message = askClaudeMessage(topic);
+    try {
+      await navigator.clipboard.writeText(message);
+      toast({ tone: "success", title: "Copied. Paste it in Claude" });
+    } catch {
+      toast({ tone: "error", title: "Couldn't copy. Paste this in Claude", description: message });
+    }
+  }
+  return (
+    <Button type="button" variant="outline" size="sm" onClick={() => void ask()}>
+      Ask Claude
+      <IconExternalLink size={15} aria-hidden="true" />
+    </Button>
+  );
+}
+
 export function TopicPage({
   email,
   topic,
@@ -816,6 +840,7 @@ export function TopicPage({
   view,
   initialStep,
   nextTopic,
+  claudeProjectUrl,
 }: {
   email: string;
   topic: Topic;
@@ -824,6 +849,8 @@ export function TopicPage({
   view: TopicView;
   initialStep: TopicStep;
   nextTopic: { id: string; title: string } | null;
+  /** The owner's Claude Project. Null hides Ask Claude. */
+  claudeProjectUrl: string | null;
 }) {
   const ready = view.progress.exercisePassed || view.progress.state === "PROVEN";
   const [step, setStep] = useState<TopicStep>(initialStep === "prove" && !ready ? "exercise" : initialStep);
@@ -847,22 +874,25 @@ export function TopicPage({
             </div>
           }
         />
-        <Tabs value={step} onValueChange={(next) => go(next as TopicStep)} className="mx-1.5 mb-6 md:mx-3.5">
-          <TabsList aria-label="Topic steps">
-            <TabsTrigger value="learn" className="px-4">
-              Learn
-            </TabsTrigger>
-            <TabsTrigger value="exercise" className="px-4">
-              {view.progress.exercisePassed || view.progress.state === "PROVEN" ? (
-                <IconCheck size={15} aria-label="Passed" />
-              ) : null}
-              Exercise
-            </TabsTrigger>
-            <TabsTrigger value="prove" className="px-4" disabled={!ready}>
-              Prove
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <div className="mx-1.5 mb-6 flex flex-wrap items-center justify-between gap-3 md:mx-3.5">
+          <Tabs value={step} onValueChange={(next) => go(next as TopicStep)}>
+            <TabsList aria-label="Topic steps">
+              <TabsTrigger value="learn" className="px-4">
+                Learn
+              </TabsTrigger>
+              <TabsTrigger value="exercise" className="px-4">
+                {view.progress.exercisePassed || view.progress.state === "PROVEN" ? (
+                  <IconCheck size={15} aria-label="Passed" />
+                ) : null}
+                Exercise
+              </TabsTrigger>
+              <TabsTrigger value="prove" className="px-4" disabled={!ready}>
+                Prove
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+          {claudeProjectUrl && <AskClaude topic={topic} projectUrl={claudeProjectUrl} />}
+        </div>
         <div className="mx-1.5 md:mx-3.5">
           {step === "learn" && <Learn topic={topic} view={view} onNext={() => go("exercise")} />}
           {/* A switched version starts from its own starter and draft. */}
