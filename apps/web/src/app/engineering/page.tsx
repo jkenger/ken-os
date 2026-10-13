@@ -3,7 +3,7 @@ import { listConnections } from "@/features/connector/oauth-store";
 import { mcpUrl } from "@/features/connector/rules";
 import { getInstructionsSeen, getProjectUrl } from "@/features/engineering-lab/claude-links";
 import { instructionsState } from "@/features/engineering-lab/claude-setup";
-import { getRoadmap } from "@/features/engineering-lab/roadmap-store";
+import { getRoadmap, getRoadmapSummary } from "@/features/engineering-lab/roadmap-store";
 import { engineering } from "@/features/engineering-lab/routes";
 import { appUrl } from "@/lib/config";
 import { requireSession } from "@/lib/session";
@@ -20,12 +20,14 @@ export default async function RoadmapRoute({ searchParams }: { searchParams: Pro
     getProjectUrl(session.userId),
     getInstructionsSeen(session.userId),
   ]);
+  const summary = await getRoadmapSummary(session.userId, view);
   // A link may name any topic on the roadmap, including ones Claude added.
   const onRoadmap = view.chapters.some((chapter) => chapter.topics.some((item) => item.id === topic));
   return (
     <RoadmapPage
       email={session.email}
       view={view}
+      summary={summary}
       connections={connections}
       projectUrl={projectUrl}
       mcpUrl={mcpUrl(appUrl())}

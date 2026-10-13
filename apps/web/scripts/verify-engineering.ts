@@ -503,6 +503,29 @@ async function main() {
       assert.deepEqual(judgePanel.chapterDone, { title: "Evals again", learned: 1, total: 2 });
       assert.equal(judgePanel.next, null);
       console.log("ok - steps: the panel knows the Practice step, Next topic and chapter done, and so does Claude");
+
+      // The summary of a finished roadmap (engineering-progressive-flow.md, section 4): "Evals again" is now done.
+      const finished = await roadmaps.getRoadmapSummary(planner, await roadmaps.getRoadmap(planner));
+      assert.ok(finished, "every topic is Learned or Skipped");
+      assert.deepEqual(finished.counts, { learned: 1, skipped: 1, chapters: 1 });
+      assert.deepEqual(
+        finished.chapters[0].topics.map((item) => [item.id, item.status, item.words]),
+        [
+          [
+            "custom.llm_as_judge",
+            "learned",
+            "A judge model scores answers against a rubric, and you calibrate it on cases you graded yourself.",
+          ],
+          ["custom.llm_as_judge_2", "skipped", null],
+        ],
+      );
+      assert.ok(finished.startedAt && finished.finishedAt && finished.startedAt <= finished.finishedAt);
+      assert.equal(
+        await roadmaps.getRoadmapSummary(other, await roadmaps.getRoadmap(other)),
+        null,
+        "an unfinished roadmap has none",
+      );
+      console.log("ok - summary: a finished roadmap lists each topic with the owner's words");
     } finally {
       await db().delete(users).where(eq(users.id, planner));
     }
