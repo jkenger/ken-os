@@ -2,22 +2,19 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { IconSettings } from "@tabler/icons-react";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Connection } from "@/features/connector/oauth-store";
 import { PLAN_MESSAGE } from "@/features/engineering-lab/ask-claude";
 import type { RoadmapView } from "@/features/engineering-lab/roadmap-store";
 import { engineering } from "@/features/engineering-lab/routes";
 import { AskClaude } from "../ask-claude";
-import { Connections } from "../connections";
 import { Notice } from "../kit";
 import { RoadmapGraph } from "./roadmap-graph";
 import { RoadmapLanes } from "./roadmap-lanes";
-import { ClaudeLinkField } from "./claude-link-field";
+import { ClaudeSetup } from "./claude-setup";
 import { TopicSheet } from "./topic-sheet";
 
 // The Claude-first Engineering page (docs/architecture/engineering-claude-first.md, section 1): the goal and progress,
@@ -26,66 +23,19 @@ import { TopicSheet } from "./topic-sheet";
 type Layout = "graph" | "lanes";
 const LAYOUT_KEY = "ken-os-roadmap-layout";
 
-function Settings({
-  view,
-  connections,
-  projectUrl,
-}: {
-  view: RoadmapView;
-  connections: Connection[];
-  projectUrl: string | null;
-}) {
-  const router = useRouter();
-  return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button type="button" variant="outline" size="sm">
-          <IconSettings aria-hidden="true" />
-          Settings
-        </Button>
-      </SheetTrigger>
-      <SheetContent className="gap-0 overflow-y-auto data-[side=right]:w-full data-[side=right]:sm:max-w-md">
-        <SheetHeader className="border-b">
-          <SheetDescription>Roadmap</SheetDescription>
-          <SheetTitle className="text-xl">Settings</SheetTitle>
-        </SheetHeader>
-        <div className="grid gap-6 p-4 text-sm">
-          <section>
-            <h3 className="mb-1 text-xs font-semibold text-muted-foreground">Goal</h3>
-            <p>{view.goal?.title ?? "No goal"}</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {projectUrl && <AskClaude message={PLAN_MESSAGE} label="Plan new roadmap" projectUrl={projectUrl} />}
-            </div>
-          </section>
-          <section>
-            <ClaudeLinkField
-              label="Claude Project"
-              value={projectUrl}
-              endpoint="/api/lab/settings/project"
-              placeholder="https://claude.ai/project/…"
-              helper="Opened by Ask Claude on every topic"
-              savedTitle="Claude Project saved"
-              onSaved={() => router.refresh()}
-            />
-          </section>
-          <Connections connections={connections} />
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
-}
-
 export function RoadmapPage({
   email,
   view,
   connections,
   projectUrl,
+  mcpUrl,
   initialTopic,
 }: {
   email: string;
   view: RoadmapView;
   connections: Connection[];
   projectUrl: string | null;
+  mcpUrl: string;
   initialTopic: string | null;
 }) {
   const router = useRouter();
@@ -127,14 +77,17 @@ export function RoadmapPage({
               {view.goal?.title ?? "Roadmap"}
             </h1>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <Tabs value={layout} onValueChange={(next) => changeLayout(next as Layout)}>
               <TabsList aria-label="Roadmap layout">
                 <TabsTrigger value="graph">Graph</TabsTrigger>
                 <TabsTrigger value="lanes">Lanes</TabsTrigger>
               </TabsList>
             </Tabs>
-            <Settings view={view} connections={connections} projectUrl={projectUrl} />
+            {view.planned && projectUrl && (
+              <AskClaude message={PLAN_MESSAGE} label="Plan new roadmap" projectUrl={projectUrl} />
+            )}
+            <ClaudeSetup mcpUrl={mcpUrl} connections={connections} projectUrl={projectUrl} />
           </div>
         </div>
         <div className="mx-1 mb-5 md:mx-3.5">
@@ -163,11 +116,13 @@ export function RoadmapPage({
               <p className="mt-0.5 text-xs text-muted-foreground">
                 {view.goal ? `Showing the ${view.goal.title} path` : "Showing every topic"} · plan yours with Claude
               </p>
-              {projectUrl && (
-                <div className="mt-3">
+              <div className="mt-3">
+                {projectUrl ? (
                   <AskClaude message={PLAN_MESSAGE} label="Plan with Claude" projectUrl={projectUrl} />
-                </div>
-              )}
+                ) : (
+                  <ClaudeSetup mcpUrl={mcpUrl} connections={connections} projectUrl={projectUrl} />
+                )}
+              </div>
             </Notice>
           </div>
         )}

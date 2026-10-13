@@ -1,8 +1,10 @@
 import { RoadmapPage } from "@/components/engineering/roadmap/roadmap-page";
 import { listConnections } from "@/features/connector/oauth-store";
+import { mcpUrl } from "@/features/connector/rules";
 import { getProjectUrl } from "@/features/engineering-lab/claude-links";
 import { getRoadmap } from "@/features/engineering-lab/roadmap-store";
 import { engineering } from "@/features/engineering-lab/routes";
+import { appUrl } from "@/lib/config";
 import { requireSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +26,7 @@ export default async function RoadmapRoute({ searchParams }: { searchParams: Pro
       view={view}
       connections={connections}
       projectUrl={projectUrl}
+      mcpUrl={mcpUrl(appUrl())}
       initialTopic={topic && onRoadmap ? topic : null}
     />
   );
