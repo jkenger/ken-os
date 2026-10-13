@@ -8,10 +8,12 @@ import {
   BookOpenText,
   FileText,
   FlaskConical,
+  FolderOpen,
   Map as MapIcon,
   Library,
   Search,
   Sparkles,
+  UserRound,
   X,
 } from "lucide-react";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
@@ -47,10 +49,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { engineering, tabForPath, type EngineeringTab } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
 
-type Module = "resume" | "memory" | "lab" | "terms";
+type Module = "profile" | "memory" | "lab" | "terms";
 
 const modules = [
-  { id: "resume" as const, label: "Resume", href: "/", icon: FileText },
+  { id: "profile" as const, label: "Profile", href: "/profile", icon: UserRound },
   { id: "memory" as const, label: "Project Memory", href: "/memory", icon: BookOpenText },
   { id: "lab" as const, label: "Engineering", href: engineering.roadmap(), icon: FlaskConical },
   { id: "terms" as const, label: "Terms", href: "/terms", icon: BookMarked },
@@ -63,12 +65,12 @@ const moduleDetails: Record<
     sections: { label: string; href: string; icon: typeof FileText }[];
   }
 > = {
-  resume: {
-    title: "Resume",
+  profile: {
+    title: "Profile",
     sections: [
-      { label: "Overview", href: "/", icon: Library },
-      { label: "How it works", href: "/#how-it-works", icon: FileText },
-      { label: "Resume assistant", href: "/#resume-assistant", icon: Sparkles },
+      { label: "Details", href: "/profile", icon: UserRound },
+      { label: "Resume", href: "/profile/resume", icon: FileText },
+      { label: "Drive file", href: "/profile#drive-file", icon: FolderOpen },
     ],
   },
   memory: {

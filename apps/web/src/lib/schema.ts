@@ -6,6 +6,9 @@ import type {
   ContentSource,
   ExerciseCheck,
   Label,
+  PaperSize,
+  ProfileDetails,
+  ResumeTemplate,
   RubricResult,
   TermAnswer,
   TopicEventKind,
@@ -43,6 +46,39 @@ export const artifactSelections = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [primaryKey({ columns: [table.userId, table.purpose] })],
+);
+
+/** The owner's career details, one row per person. Every resume is a view of these. Spec: docs/product/profile-resume.md. */
+export const profiles = pgTable("profiles", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  details: jsonb("details").$type<ProfileDetails>().notNull(),
+  /** The resume template and paper size last chosen on the Resume page. */
+  template: text("template").$type<ResumeTemplate>().notNull().default("classic"),
+  paper: text("paper").$type<PaperSize>().notNull().default("letter"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** Each read of a Drive resume into Profile fields. Append-only: a draft is `pending` until the owner saves it, then
+ *  `applied`. `drive_modified_time` is the file's version at import, for spotting later Drive edits. */
+export const profileImports = pgTable(
+  "profile_imports",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    driveFileId: text("drive_file_id").notNull(),
+    driveModifiedTime: text("drive_modified_time"),
+    draft: jsonb("draft").$type<ProfileDetails>().notNull(),
+    status: text("status").$type<"pending" | "applied">().notNull().default("pending"),
+    promptVersion: text("prompt_version").notNull(),
+    model: text("model").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    appliedAt: timestamp("applied_at", { withTimezone: true }),
+  },
+  (table) => [index("profile_imports_user_created_idx").on(table.userId, table.createdAt)],
 );
 
 export const memoryProjects = pgTable("memory_projects", {

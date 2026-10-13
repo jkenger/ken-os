@@ -166,7 +166,7 @@ Slices 1 and 2 may need to land together if slice 1 alone breaks the build (remo
 3. No Ken OS value remains anywhere in `apps/web/src` (the new test passes).
 4. Every page, dialog, toast and the code editor render in Geist or Geist Mono. Computed `font-family` checked in the browser on Overview, a dialog, a toast and the code editor.
 5. No request to `fonts.googleapis.com`.
-6. `pnpm test`, `pnpm check`, `pnpm build` pass, and every module is opened locally and still works: Resume, Skills, Engineering, Terms, Project Memory.
+6. `pnpm test`, `pnpm check`, `pnpm build` pass, and every module is opened locally and still works: Profile (formerly Resume), Skills, Engineering, Terms, Project Memory.
 7. The owner has looked at the hosted app. A local build isn't proof of the hosted result.
 
 ## Open questions

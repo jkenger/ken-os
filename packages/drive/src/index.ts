@@ -58,3 +58,17 @@ export async function getGoogleDocText(fileId: string, accessToken: string): Pro
   const url = `${BASE}/${encodeURIComponent(fileId)}/export?${new URLSearchParams({ mimeType: "text/plain" })}`;
   return (await driveFetch(url, accessToken)).text();
 }
+
+/** The resume's plain text: Google's own export for a Doc, and local extraction for a PDF or Word file. A scanned PDF
+ *  has no text layer, so it comes back empty; the caller decides what to say. */
+export async function getResumeText(file: Artifact, accessToken: string): Promise<string> {
+  if (file.mimeType === GOOGLE_DOC_MIME) return getGoogleDocText(file.id, accessToken);
+  const { bytes, mimeType } = await getResumeBytes(file, accessToken);
+  if (mimeType === PDF_MIME) {
+    const { extractText, getDocumentProxy } = await import("unpdf");
+    const { text } = await extractText(await getDocumentProxy(new Uint8Array(bytes)), { mergePages: true });
+    return text;
+  }
+  const mammoth = await import("mammoth");
+  return (await mammoth.extractRawText({ buffer: Buffer.from(bytes) })).value;
+}

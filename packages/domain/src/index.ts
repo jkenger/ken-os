@@ -21,3 +21,5 @@ export interface Artifact {
 }
 export * from "./engineering-lab";
 export * from "./terms";
+export * from "./profile";
+export * from "./resume";

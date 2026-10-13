@@ -40,7 +40,7 @@ Allowed to speak in sentences:
 
 - Lesson text, worked examples and Go deeper sections.
 - Feedback on an answer or a prediction ("Right lines, wrong order").
-- Resume assistant answers and term explanations.
+- Term explanations.
 - The signed-out page, which is the only marketing page.
 
 ## Word list
@@ -51,21 +51,30 @@ One name per thing. Code keeps its own identifiers; this list decides what the s
 
 Module names are proper names in title case and appear the same in the sidebar, page title and search.
 
-| Use            | Instead of                                                              |
-| -------------- | ----------------------------------------------------------------------- |
-| Resume         | Resume hub, Your documents, Primary resume, 01 / Resume                 |
-| Engineering    | Engineering Lab, Lab (renamed 6 Oct 2026; code keeps `engineering-lab`) |
-| Terms          | Saved terms, Words you looked up                                        |
-| Project Memory |                                                                         |
-| Writing Studio | Writing studio                                                          |
+| Use            | Instead of                                                               |
+| -------------- | ------------------------------------------------------------------------ |
+| Profile        | Resume (renamed 12 Oct 2026), Resume hub, Your documents, Primary resume |
+| Engineering    | Engineering Lab, Lab (renamed 6 Oct 2026; code keeps `engineering-lab`)  |
+| Terms          | Saved terms, Words you looked up                                         |
+| Project Memory |                                                                          |
+| Writing Studio | Writing studio                                                           |
 
-### Resume
+### Profile
 
-| Use              | Meaning                                          | Instead of                                       |
-| ---------------- | ------------------------------------------------ | ------------------------------------------------ |
-| Resume assistant | The chat that answers questions about the resume | resume agent, current assistant                  |
-| Choose resume    | Open the Drive picker                            | Select from Drive, Pick the file, Replace resume |
-| Refresh          | Pull the latest version from Drive               | Refresh resume                                   |
+Added 12 Oct 2026 ([profile-resume.md](profile-resume.md)).
+
+| Use                         | Meaning                                                       | Instead of                                       |
+| --------------------------- | ------------------------------------------------------------- | ------------------------------------------------ |
+| Details                     | The Profile form: contact, experience, education and the rest | Career data, record, fields                      |
+| Drive file                  | The resume chosen in Google Drive                             | Source file, primary resume                      |
+| Choose resume               | Open the Drive picker                                         | Select from Drive, Pick the file, Replace resume |
+| Import into Profile         | Read the Drive file into the form for review                  | Parse, sync, extract                             |
+| Local fields                | Birthdate, civil status, nationality, address, references     | Personal info, PH fields                         |
+| Refresh                     | Pull the latest version from Drive                            | Refresh resume                                   |
+| Resume                      | The Profile section that prints saved details as a PDF        | CV, Export, Generate                             |
+| Classic, Compact, Technical | The three templates                                           | Modern, Creative, ATS template                   |
+| Letter, A4                  | Paper sizes                                                   | Short bond, US Letter                            |
+| Download PDF                | Save the resume file                                          | Export, Generate PDF                             |
 
 ### Engineering
 
@@ -177,6 +186,8 @@ Answer feedback ("Right lines, wrong order…") stays as written.
 | Upload failed.                                                           | Upload failed. (with the server's reason)                                         |
 
 ### 5. Resume (`app/page.tsx`, `resume-workspace.tsx`)
+
+Superseded on 12 Oct 2026: Resume became Profile ([profile-resume.md](profile-resume.md)) and the Resume assistant was removed. The Profile word list above decides its words.
 
 | Now                                                                                | After                                                                |
 | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
