@@ -8,14 +8,15 @@ import { ProfileInputError } from "./store";
 export async function profileRoute(
   request: Request,
   handler: (session: Session, body: Record<string, unknown>) => Promise<unknown>,
-  options: { write: boolean; ai?: boolean },
+  /** `ai` names the AI step (Import, Rewrite) for its errors, and needs OPENAI_API_KEY. */
+  options: { write: boolean; ai?: "Import" | "Rewrite" },
 ) {
   if (options.write && !hasValidOrigin(request))
     return NextResponse.json({ error: messages.invalidOrigin }, { status: 403 });
   const session = await getSession();
   if (!session) return NextResponse.json({ error: messages.signedOut }, { status: 401 });
   if (options.ai && !process.env.OPENAI_API_KEY)
-    return NextResponse.json({ error: "Import isn't set up" }, { status: 503 });
+    return NextResponse.json({ error: `${options.ai} isn't set up` }, { status: 503 });
   try {
     const body = options.write ? await request.json().catch(() => null) : {};
     if (!body || typeof body !== "object" || Array.isArray(body))
@@ -28,7 +29,7 @@ export async function profileRoute(
       return NextResponse.json({ error: error.message }, { status: error.status });
     console.error("profile route failed", error instanceof Error ? error.message : error);
     return NextResponse.json(
-      { error: options.ai ? "Import failed. Nothing saved. Try again" : "Couldn't save. Try again" },
+      { error: options.ai ? `${options.ai} failed. Nothing saved. Try again` : "Couldn't save. Try again" },
       { status: 502 },
     );
   }

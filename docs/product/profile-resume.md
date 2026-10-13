@@ -1,6 +1,6 @@
 # Profile and resume builder
 
-Status: step 1 built 12 Oct 2026, step 2 built 13 Oct 2026; steps 3 to 5 proposed. Replaces the Resume module. Decisions below were agreed with the owner in chat on 12 Oct 2026.
+Status: step 1 built 12 Oct 2026, step 2 built 13 Oct 2026, step 3 built 14 Oct 2026; steps 4 and 5 proposed. Replaces the Resume module. Decisions below were agreed with the owner in chat on 12 Oct 2026.
 
 ## The idea in one line
 
@@ -93,6 +93,18 @@ Two one-way paths, never a loop.
 5. **Drive sync.** Change detection and review, saving to Drive.
 
 Each step ships on its own and leaves the app working.
+
+## Step 3 design
+
+Agreed 14 Oct 2026: summary and bullets only, one pass with inline review, an optional target role, and tips instead of invented numbers.
+
+- **Where:** an Improve writing card on Details, above the form, with an optional Target role field (placeholder: the headline).
+- **What it changes:** the summary (it writes one when empty) and each experience and project bullet. Names, titles, dates, skills and everything else stay as typed.
+- **Review:** one list of suggestions, each with where it sits, the old line struck through, the new line, and Accept or Undo; Accept all for the rest. Accepted lines go into the form like typing would; nothing is stored until Save. A line edited since the rewrite isn't overwritten: it shows "Line changed since".
+- **Facts only:** the prompt forbids new tools, results, purposes or numbers. `checkRewrite` in `packages/domain/src/rewrite.ts` then drops any suggestion with a number that appears nowhere in the Profile (dates count). Where a number or result would help, a tip says what to add.
+- **Tense:** present for a current role, past for the rest.
+- **Record:** each run is kept in `profile_rewrites` (append-only, migration `0021_profile_rewrites`) with the target role, suggestions, prompt version and model.
+- **API:** `POST /api/profile/rewrite` with the form's details (unsaved edits included) and the target role. It needs experience or a project, and checks the details like a save before any AI call.
 
 ## Step 2 design
 

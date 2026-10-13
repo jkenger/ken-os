@@ -83,6 +83,19 @@ async function main() {
     console.log("ok - template and paper are remembered per user");
 
     await assert.rejects(
+      store.rewriteFromForm(userId, { details: emptyProfile(), targetRole: "" }),
+      (error: Error) => error instanceof store.ProfileInputError && error.status === 422,
+      "nothing to rewrite without experience or a project",
+    );
+    await assert.rejects(store.rewriteFromForm(userId, { details, targetRole: "x".repeat(121) }), /Target role/);
+    await assert.rejects(
+      store.rewriteFromForm(userId, { details: { ...details, experience: [{ title: "Dev", start: "soon" }] } }),
+      /Start/,
+      "the form is checked like a save before any AI call",
+    );
+    console.log("ok - rewrite checks its input before calling the AI");
+
+    await assert.rejects(
       store.importFromDrive(userId),
       (error: Error) => error instanceof store.ProfileInputError && /No resume chosen/.test(error.message),
     );

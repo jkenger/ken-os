@@ -9,6 +9,7 @@ import type {
   PaperSize,
   ProfileDetails,
   ResumeTemplate,
+  RewriteSuggestion,
   RubricResult,
   TermAnswer,
   TopicEventKind,
@@ -79,6 +80,24 @@ export const profileImports = pgTable(
     appliedAt: timestamp("applied_at", { withTimezone: true }),
   },
   (table) => [index("profile_imports_user_created_idx").on(table.userId, table.createdAt)],
+);
+
+/** Each AI rewrite run: the suggestions it made, after the number check. Append-only; what the owner accepts lands
+ *  in `profiles` only when they save. */
+export const profileRewrites = pgTable(
+  "profile_rewrites",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    targetRole: text("target_role").notNull().default(""),
+    suggestions: jsonb("suggestions").$type<RewriteSuggestion[]>().notNull(),
+    promptVersion: text("prompt_version").notNull(),
+    model: text("model").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("profile_rewrites_user_created_idx").on(table.userId, table.createdAt)],
 );
 
 export const memoryProjects = pgTable("memory_projects", {

@@ -1,12 +1,19 @@
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
-import { importProfile, PROFILE_IMPORT_PROMPT_VERSION } from "@ken-os/agents";
+import {
+  importProfile,
+  PROFILE_IMPORT_PROMPT_VERSION,
+  PROFILE_REWRITE_PROMPT_VERSION,
+  rewriteProfile,
+} from "@ken-os/agents";
 import {
   emptyProfile,
   isPaperSize,
   isResumeTemplate,
   normalizeProfile,
   ProfileFieldError,
+  REWRITE_TARGET_ROLE_MAX,
+  type RewriteSuggestion,
   type PaperSize,
   type ProfileDetails,
   type ResumeTemplate,
@@ -15,7 +22,7 @@ import { DriveError, getDriveFile, getResumeText } from "@ken-os/drive";
 import { db } from "@/lib/db";
 import { DriveAccessError, getGoogleAccessToken } from "@/lib/google";
 import { getSelectedResume } from "@/lib/resume";
-import { profileImports, profiles, users } from "@/lib/schema";
+import { profileImports, profileRewrites, profiles, users } from "@/lib/schema";
 
 // The Profile: the owner's career details, typed in or imported from the Drive resume. Spec: docs/product/profile-resume.md.
 
@@ -76,13 +83,7 @@ export async function saveProfile(
   input: unknown,
   importId: string | null,
 ): Promise<{ savedAt: string }> {
-  let details: ProfileDetails;
-  try {
-    details = normalizeProfile(input, "save");
-  } catch (error) {
-    if (error instanceof ProfileFieldError) throw new ProfileInputError(error.message);
-    throw error;
-  }
+  const details = formDetails(input);
   const now = new Date();
   await db().transaction(async (tx) => {
     await tx
@@ -128,6 +129,39 @@ export async function saveResumeSettings(userId: string, input: Record<string, u
     .returning({ userId: profiles.userId });
   if (!updated.length) throw new ProfileInputError("No details saved. Save them first", 409);
   return { template, paper };
+}
+
+/** Checks details sent from the form, which may hold edits not saved yet, and names the field that's wrong. */
+function formDetails(input: unknown): ProfileDetails {
+  try {
+    return normalizeProfile(input, "save");
+  } catch (error) {
+    if (error instanceof ProfileFieldError) throw new ProfileInputError(error.message);
+    throw error;
+  }
+}
+
+/**
+ * Suggests a better summary and bullets for the form as it is now, unsaved edits included. Nothing changes until the
+ * owner accepts suggestions and saves; the run is kept with its prompt version.
+ */
+export async function rewriteFromForm(
+  userId: string,
+  input: Record<string, unknown>,
+): Promise<{ rewriteId: string; suggestions: RewriteSuggestion[] }> {
+  const details = formDetails(input.details);
+  const targetRole = typeof input.targetRole === "string" ? input.targetRole.trim() : "";
+  if (targetRole.length > REWRITE_TARGET_ROLE_MAX)
+    throw new ProfileInputError(`Target role: up to ${REWRITE_TARGET_ROLE_MAX} characters`);
+  if (!details.experience.length && !details.projects.length)
+    throw new ProfileInputError("Add experience or a project first", 422);
+
+  const { suggestions, model } = await rewriteProfile(details, targetRole);
+  const rewriteId = randomUUID();
+  await db()
+    .insert(profileRewrites)
+    .values({ id: rewriteId, userId, targetRole, suggestions, promptVersion: PROFILE_REWRITE_PROMPT_VERSION, model });
+  return { rewriteId, suggestions };
 }
 
 /**
