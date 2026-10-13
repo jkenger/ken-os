@@ -42,7 +42,7 @@ function Settings({
           Settings
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full gap-0 overflow-y-auto sm:max-w-md">
+      <SheetContent className="gap-0 overflow-y-auto data-[side=right]:w-full data-[side=right]:sm:max-w-md">
         <SheetHeader className="border-b">
           <SheetDescription>Roadmap</SheetDescription>
           <SheetTitle className="text-xl">Settings</SheetTitle>

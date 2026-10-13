@@ -18,7 +18,7 @@ export function RoadmapLanes({
   onSelect: (topicId: string) => void;
 }) {
   return (
-    <div className="grid grid-cols-1 gap-4 md:auto-cols-[minmax(13rem,1fr)] md:grid-flow-col md:overflow-x-auto md:pb-2">
+    <div className="grid grid-cols-1 gap-4 md:auto-cols-[minmax(13rem,1fr)] md:grid-flow-col md:grid-cols-none md:overflow-x-auto md:pb-2">
       {view.chapters.map((chapter, index) => {
         const learned = chapter.topics.filter((topic) => topic.status === "learned").length;
         return (

@@ -24,8 +24,9 @@ import { Notice, panel } from "./kit";
 
 /** Autosave waits this long after typing stops. */
 const AUTOSAVE_MS = 2_000;
+/** Two columns once the space holding the exercise is wide enough, whether that's a page or the Try it in code panel. */
 const twoColumns =
-  "grid grid-cols-1 gap-4.5 md:grid-cols-[2fr_1fr] md:gap-5 lg:grid-cols-[minmax(0,2.4fr)_minmax(230px,1fr)] lg:gap-8";
+  "grid grid-cols-1 gap-4.5 @2xl:grid-cols-[minmax(0,2fr)_minmax(14rem,1fr)] @2xl:gap-5 @4xl:grid-cols-[minmax(0,2.4fr)_minmax(15rem,1fr)] @4xl:gap-8";
 
 function runnerNote(lab: LabDefinition) {
   if (lab.runner === "pglite") return "Postgres in the page";
@@ -246,164 +247,167 @@ export function Exercise({
   const results = state.kind === "results" ? state.results : null;
   const allPassed = Boolean(results && results.length && results.every((item) => item.passed));
   return (
-    <div className={twoColumns}>
-      <section className={cn(panel, "min-w-0 p-6 md:p-7.5")}>
-        {data.newer && (
-          <Notice>
-            <p className="font-semibold">New exercise from Claude</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">
-              Version {data.newer.version} · starts a fresh attempt
+    <div className="@container">
+      <div className={twoColumns}>
+        <section className={cn(panel, "min-w-0 p-5 @2xl:p-7.5")}>
+          {data.newer && (
+            <Notice>
+              <p className="font-semibold">New exercise from Claude</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                Version {data.newer.version} · starts a fresh attempt
+              </p>
+              <Button
+                type="button"
+                size="sm"
+                className="mt-3"
+                disabled={switching}
+                onClick={() => void switchVersion(data.newer!.id)}
+              >
+                {switching ? "Switching…" : "Switch"}
+              </Button>
+            </Notice>
+          )}
+          {data.invalid && (
+            <Notice tone="error">
+              <p className="font-semibold">This exercise doesn&apos;t check out</p>
+              <p className="mt-0.5 text-xs">
+                Version {data.invalid.version} · {data.invalid.problem}
+              </p>
+            </Notice>
+          )}
+          {checking && (
+            <p role="status" className="mb-4 text-xs text-muted-foreground">
+              Checking new exercise from Claude…
             </p>
-            <Button
-              type="button"
-              size="sm"
-              className="mt-3"
-              disabled={switching}
-              onClick={() => void switchVersion(data.newer!.id)}
-            >
-              {switching ? "Switching…" : "Switch"}
-            </Button>
-          </Notice>
-        )}
-        {data.invalid && (
-          <Notice tone="error">
-            <p className="font-semibold">This exercise doesn&apos;t check out</p>
-            <p className="mt-0.5 text-xs">
-              Version {data.invalid.version} · {data.invalid.problem}
-            </p>
-          </Notice>
-        )}
-        {checking && (
-          <p role="status" className="mb-4 text-xs text-muted-foreground">
-            Checking new exercise from Claude…
-          </p>
-        )}
-        <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-          <span className="font-mono">
-            {lab.source === "claude" ? `From Claude · version ${lab.version}` : probe ? lab.id : `${lab.id}.js`}
-          </span>
-          <span>{runnerNote(lab)}</span>
-        </div>
-        <div className="mt-3 text-sm leading-relaxed font-semibold [&_p]:text-foreground">
-          <Markdown text={task} />
-        </div>
-        {details && (
-          <details className="mt-3">
-            <summary className="cursor-pointer text-xs font-semibold">Details</summary>
-            <div className="mt-2 text-sm leading-relaxed text-muted-foreground">
-              <Markdown text={details} />
+          )}
+          <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+            <span className="font-mono">
+              {lab.source === "claude" ? `From Claude · version ${lab.version}` : probe ? lab.id : `${lab.id}.js`}
+            </span>
+            <span>{runnerNote(lab)}</span>
+          </div>
+          <div className="mt-3 text-sm leading-relaxed font-semibold [&_p]:text-foreground">
+            <Markdown text={task} />
+          </div>
+          {details && (
+            <details className="mt-3">
+              <summary className="cursor-pointer text-xs font-semibold">Details</summary>
+              <div className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                <Markdown text={details} />
+              </div>
+            </details>
+          )}
+          {probe ? (
+            <ol className="mt-5 space-y-4">
+              {probe.questions.map((question, index) => (
+                <li key={question.id}>
+                  <fieldset>
+                    <legend className="text-sm font-semibold">
+                      {index + 1}. {question.prompt}
+                    </legend>
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {question.options.map((option) => (
+                        <Button
+                          key={option}
+                          type="button"
+                          size="sm"
+                          variant={predicted[question.id] === option ? "default" : "outline"}
+                          aria-pressed={predicted[question.id] === option}
+                          onClick={() => setPredicted((current) => ({ ...current, [question.id]: option }))}
+                        >
+                          {option}
+                        </Button>
+                      ))}
+                    </div>
+                  </fieldset>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <div className="mt-5">
+              <CodeEditor value={code} onChange={update} label={`Your code for ${lab.title}`} minHeight={260} />
+              <p
+                role="status"
+                className={cn(
+                  "mt-1.5 min-h-4 text-right text-xs text-muted-foreground",
+                  saveState === "failed" && "text-destructive",
+                )}
+              >
+                {saveWords[saveState]}
+              </p>
             </div>
-          </details>
-        )}
-        {probe ? (
-          <ol className="mt-5 space-y-4">
-            {probe.questions.map((question, index) => (
-              <li key={question.id}>
-                <fieldset>
-                  <legend className="text-sm font-semibold">
-                    {index + 1}. {question.prompt}
-                  </legend>
-                  <div className="mt-2 flex flex-wrap gap-1.5">
-                    {question.options.map((option) => (
-                      <Button
-                        key={option}
-                        type="button"
-                        size="sm"
-                        variant={predicted[question.id] === option ? "default" : "outline"}
-                        aria-pressed={predicted[question.id] === option}
-                        onClick={() => setPredicted((current) => ({ ...current, [question.id]: option }))}
-                      >
-                        {option}
-                      </Button>
-                    ))}
-                  </div>
-                </fieldset>
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <div className="mt-5">
-            <CodeEditor value={code} onChange={update} label={`Your code for ${lab.title}`} minHeight={260} />
-            <p
-              role="status"
-              className={cn(
-                "mt-1.5 min-h-4 text-right text-xs text-muted-foreground",
-                saveState === "failed" && "text-destructive",
-              )}
-            >
-              {saveWords[saveState]}
-            </p>
-          </div>
-        )}
-        <div className="mt-4 flex flex-wrap items-center gap-3">
-          <Button
-            type="button"
-            disabled={
-              state.kind === "running" || Boolean(probe && !probe.questions.every((question) => predicted[question.id]))
-            }
-            onClick={() => void run()}
-          >
-            {state.kind === "running" ? "Running…" : "Run tests"}
-          </Button>
-          {!probe && (
+          )}
+          <div className="mt-4 flex flex-wrap items-center gap-3">
             <Button
               type="button"
-              variant="outline"
-              onClick={() => {
-                update(lab.starter);
-                setState({ kind: "idle" });
-              }}
+              disabled={
+                state.kind === "running" ||
+                Boolean(probe && !probe.questions.every((question) => predicted[question.id]))
+              }
+              onClick={() => void run()}
             >
-              Reset code
+              {state.kind === "running" ? "Running…" : "Run tests"}
+            </Button>
+            {!probe && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  update(lab.starter);
+                  setState({ kind: "idle" });
+                }}
+              >
+                Reset code
+              </Button>
+            )}
+            {lab.hint && (
+              <Dialog title="Hint" trigger="Hint">
+                <Markdown text={lab.hint} />
+              </Dialog>
+            )}
+            {lab.hasSolution && !solution && (
+              <Dialog title="Show solution?" trigger="Show solution">
+                {(close) => (
+                  <>
+                    <p>The exercise must pass again from the starter before Prove opens</p>
+                    <Button type="button" className="mt-5" onClick={() => void showSolution(close)}>
+                      Show solution
+                    </Button>
+                  </>
+                )}
+              </Dialog>
+            )}
+          </div>
+          {solution && (
+            <div className="mt-5">
+              <p className="mb-2 text-xs font-semibold">Solution</p>
+              <CodeBlock code={solution} label={`Solution for ${lab.title}`} />
+            </div>
+          )}
+        </section>
+        <aside className={cn(panel, "h-fit p-6")}>
+          <h3 className="text-sm font-semibold">Results</h3>
+          <div className="mt-3 text-xs text-muted-foreground">
+            {state.kind === "idle" && <p>Run your code to see results</p>}
+            {state.kind === "running" && <p>Running…</p>}
+            {state.kind === "error" && (
+              <p role="alert" className="text-destructive">
+                {state.message}
+              </p>
+            )}
+            {results && <TestList results={results} />}
+          </div>
+          {progress.solutionOpened && (
+            <p className="mt-4 text-xs text-muted-foreground">Solution opened · pass again from the starter</p>
+          )}
+          {onProve && (allPassed || passed) && (
+            <Button type="button" className="mt-5" onClick={onProve}>
+              Continue to proof
+              <IconArrowRight size={18} aria-hidden="true" />
             </Button>
           )}
-          {lab.hint && (
-            <Dialog title="Hint" trigger="Hint">
-              <Markdown text={lab.hint} />
-            </Dialog>
-          )}
-          {lab.hasSolution && !solution && (
-            <Dialog title="Show solution?" trigger="Show solution">
-              {(close) => (
-                <>
-                  <p>The exercise must pass again from the starter before Prove opens</p>
-                  <Button type="button" className="mt-5" onClick={() => void showSolution(close)}>
-                    Show solution
-                  </Button>
-                </>
-              )}
-            </Dialog>
-          )}
-        </div>
-        {solution && (
-          <div className="mt-5">
-            <p className="mb-2 text-xs font-semibold">Solution</p>
-            <CodeBlock code={solution} label={`Solution for ${lab.title}`} />
-          </div>
-        )}
-      </section>
-      <aside className={cn(panel, "h-fit p-6")}>
-        <h3 className="text-sm font-semibold">Results</h3>
-        <div className="mt-3 text-xs text-muted-foreground">
-          {state.kind === "idle" && <p>Run your code to see results</p>}
-          {state.kind === "running" && <p>Running…</p>}
-          {state.kind === "error" && (
-            <p role="alert" className="text-destructive">
-              {state.message}
-            </p>
-          )}
-          {results && <TestList results={results} />}
-        </div>
-        {progress.solutionOpened && (
-          <p className="mt-4 text-xs text-muted-foreground">Solution opened · pass again from the starter</p>
-        )}
-        {onProve && (allPassed || passed) && (
-          <Button type="button" className="mt-5" onClick={onProve}>
-            Continue to proof
-            <IconArrowRight size={18} aria-hidden="true" />
-          </Button>
-        )}
-      </aside>
+        </aside>
+      </div>
     </div>
   );
 }

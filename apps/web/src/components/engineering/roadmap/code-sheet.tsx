@@ -69,7 +69,7 @@ export function CodeSheet({
 
   return (
     <Sheet open={open} onOpenChange={(next) => !next && (onClose(), onChanged())}>
-      <SheetContent className="w-full gap-0 overflow-y-auto sm:max-w-5xl">
+      <SheetContent className="gap-0 overflow-y-auto data-[side=right]:w-full data-[side=right]:sm:max-w-5xl">
         <SheetHeader className="border-b">
           <SheetDescription>Try it in code</SheetDescription>
           <SheetTitle className="text-xl">{topic.title}</SheetTitle>
