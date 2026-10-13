@@ -9,6 +9,7 @@ import { WorkspaceShell } from "@/components/workspace-shell";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import type { EngineeringLine } from "@/features/engineering-lab/roadmap-store";
 import { engineering as engineeringRoutes } from "@/features/engineering-lab/routes";
 import { toast } from "@/components/ui/toaster";
 import type { ProfileState } from "@/features/profile/store";
@@ -20,11 +21,11 @@ import { RewritePanel } from "./rewrite-panel";
 
 // Profile: the owner's career details and the Drive resume they can be imported from. Spec: docs/product/profile-resume.md.
 
-/** One line from Engineering: the goal and how many topics are learned, linking to the roadmap. */
-function EngineeringSummary({ headline, detail }: { headline: string; detail: string }) {
+/** One line per Engineering roadmap: the goal and how many topics are learned, linking to that roadmap. */
+function EngineeringSummary({ roadmapId, headline, detail }: EngineeringLine) {
   return (
     <Link
-      href={engineeringRoutes.roadmap()}
+      href={engineeringRoutes.roadmap(null, roadmapId)}
       className="rounded-xl focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
     >
       <Card className="transition-colors hover:bg-muted/50">
@@ -48,7 +49,7 @@ export function ProfileWorkspace({
   profile: ProfileState;
   drive: DriveFileState;
   /** The Engineering goal and progress, linking to the roadmap. Null when it couldn't load. */
-  engineering: { headline: string; detail: string } | null;
+  engineering: EngineeringLine[] | null;
 }) {
   const [saved, setSaved] = useState(profile.details);
   const [savedAt, setSavedAt] = useState(profile.savedAt);
@@ -140,7 +141,9 @@ export function ProfileWorkspace({
             </Alert>
           )}
 
-          {engineering && <EngineeringSummary {...engineering} />}
+          {engineering?.map((line) => (
+            <EngineeringSummary key={line.roadmapId ?? "path"} {...line} />
+          ))}
           <DriveFile state={drive} importing={importing} onImport={importDrive} />
           <RewritePanel key={`rewrite-${formVersion}`} details={details} setDetails={setDetails} />
           <DetailsForm key={formVersion} details={details} edit={edit} />

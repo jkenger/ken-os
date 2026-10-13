@@ -465,6 +465,30 @@ async function main() {
         state.roadmaps.map((item: { goal: string }) => item.goal),
         ["Frontend engineer", "AI engineer v2"],
       );
+      // The Archived list in the switcher, newest first, and the Profile lines (engineering-roadmaps.md, section 1).
+      assert.deepEqual(
+        (await roadmaps.archivedRoadmaps(planner)).map((item) => [item.goal, item.replacedBy]),
+        [
+          ["Third", null],
+          ["Fourth", null],
+          ["AI engineer", first.id],
+        ],
+      );
+      assert.deepEqual(await roadmaps.archivedRoadmaps(other), [], "archived roadmaps are per owner");
+      assert.equal((await roadmaps.getRoadmap(planner, third.id)).archivedAt !== null, true);
+      assert.deepEqual(
+        (await roadmaps.engineeringSummary(planner)).map((line) => [line.roadmapId, line.headline]),
+        [
+          [second.id, "Frontend engineer"],
+          [first.id, "AI engineer v2"],
+        ],
+        "one Profile line per active roadmap, opened last first",
+      );
+      assert.deepEqual(
+        (await roadmaps.engineeringSummary(other)).map((line) => line.roadmapId),
+        [null],
+        "before any roadmap, one line for the role's path",
+      );
       await assert.rejects(call("get_topic", { topicId: "custom.not_mine" }), /Unknown topic/);
       await assert.rejects(
         tools.callAgentTool(other, "get_topic", { topicId: "custom.llm_as_judge" }),

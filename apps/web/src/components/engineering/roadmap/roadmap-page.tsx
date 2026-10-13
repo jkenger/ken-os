@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { post } from "@/components/lab/topic/client";
 import { formatDate } from "@/components/lab/words";
+import { toast } from "@/components/ui/toaster";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -18,7 +19,9 @@ import { AskClaude } from "../ask-claude";
 import { RoadmapGraph } from "./roadmap-graph";
 import { RoadmapLanes } from "./roadmap-lanes";
 import { RoadmapSummary } from "./roadmap-summary";
-import { NewRoadmapDialog, RoadmapSwitcher, type RoadmapChoice } from "./roadmap-switcher";
+import { canAddRoadmap, ROADMAP_LIMIT } from "@/features/engineering-lab/roadmaps";
+import { Notice } from "../kit";
+import { NewRoadmapDialog, RoadmapSwitcher, type ArchivedChoice, type RoadmapChoice } from "./roadmap-switcher";
 import { ClaudeSetup } from "./claude-setup";
 import { SetupChecklist } from "./setup-checklist";
 import { TopicSheet } from "./topic-sheet";
@@ -35,6 +38,7 @@ export function RoadmapPage({
   email,
   view,
   roadmaps,
+  archived,
   summary,
   connections,
   projectUrl,
@@ -46,6 +50,8 @@ export function RoadmapPage({
   view: RoadmapView;
   /** The active roadmaps, opened last first; empty before the first is saved. */
   roadmaps: RoadmapChoice[];
+  /** Archived roadmaps, newest first, for the switcher. */
+  archived: ArchivedChoice[];
   /** Set once every topic is Learned or Skipped. */
   summary: Summary | null;
   connections: Connection[];
@@ -96,6 +102,44 @@ export function RoadmapPage({
     [roadmapId],
   );
 
+  const goal = view.goal?.title ?? "Roadmap";
+
+  // Archive the roadmap shown, then open the one opened last (or the role's path when none is left).
+  async function archive() {
+    if (!roadmapId) return;
+    try {
+      await post(`/api/lab/roadmaps/${encodeURIComponent(roadmapId)}/archive`);
+      toast({ tone: "success", title: `Archived ${goal}` });
+      router.push(engineering.roadmap());
+      router.refresh();
+    } catch (error) {
+      toast({
+        tone: "error",
+        title: "Couldn't archive. Try again",
+        description: error instanceof Error ? error.message : undefined,
+      });
+    }
+  }
+
+  async function restore() {
+    if (!roadmapId) return;
+    if (!canAddRoadmap(roadmaps.length)) {
+      toast({ tone: "error", title: `${roadmaps.length} of ${ROADMAP_LIMIT} active · archive one first` });
+      return;
+    }
+    try {
+      await post(`/api/lab/roadmaps/${encodeURIComponent(roadmapId)}/restore`);
+      toast({ tone: "success", title: `Restored ${goal}` });
+      router.refresh();
+    } catch (error) {
+      toast({
+        tone: "error",
+        title: "Couldn't restore. Try again",
+        description: error instanceof Error ? error.message : undefined,
+      });
+    }
+  }
+
   const { counts, current } = view;
   const facts = {
     connected: connections.length > 0,
@@ -109,13 +153,15 @@ export function RoadmapPage({
         <div className="mx-1 mb-5 flex flex-wrap items-start justify-between gap-4 md:mx-3.5">
           <div className="min-w-0">
             <p className="text-xs font-semibold text-muted-foreground">Engineering</p>
-            {roadmaps.length > 0 ? (
+            {roadmaps.length > 0 || archived.length > 0 ? (
               <RoadmapSwitcher
-                title={view.goal?.title ?? "Roadmap"}
+                title={goal}
                 currentId={roadmapId}
                 roadmaps={roadmaps}
+                archived={archived}
                 projectUrl={projectUrl}
                 onNew={() => setNewOpen(true)}
+                onArchive={roadmapId && view.active ? () => void archive() : null}
               />
             ) : (
               <h1 className="text-3xl leading-tight font-bold tracking-tight md:text-4xl">
@@ -182,6 +228,23 @@ export function RoadmapPage({
             className="mt-2"
           />
         </div>
+        {!view.active && (
+          <div className="mx-1 mb-5 md:mx-3.5">
+            <Notice>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="font-semibold">Archived</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {view.archivedAt ? `Since ${formatDate(view.archivedAt)} · ` : ""}read only
+                  </p>
+                </div>
+                <Button type="button" size="sm" onClick={() => void restore()}>
+                  Restore
+                </Button>
+              </div>
+            </Notice>
+          </div>
+        )}
         {setupChecklist(facts).show && (
           <div className="mx-1 mb-5 md:mx-3.5">
             <SetupChecklist facts={facts} projectUrl={projectUrl} onOpenSetup={() => setSetupOpen(true)} />
@@ -189,7 +252,12 @@ export function RoadmapPage({
         )}
         {summary && (
           <div className="mx-1 mb-5 md:mx-3.5">
-            <RoadmapSummary summary={summary} onNew={() => setNewOpen(true)} onSelect={select} />
+            <RoadmapSummary
+              summary={summary}
+              onNew={() => setNewOpen(true)}
+              onArchive={view.active && roadmapId ? () => void archive() : null}
+              onSelect={select}
+            />
           </div>
         )}
         <div className="mx-1 md:mx-3.5">
@@ -204,6 +272,7 @@ export function RoadmapPage({
       <TopicSheet
         topicId={selected}
         roadmapId={roadmapId}
+        roadmapActive={view.active}
         projectUrl={projectUrl}
         onClose={() => select(null)}
         onChanged={() => router.refresh()}

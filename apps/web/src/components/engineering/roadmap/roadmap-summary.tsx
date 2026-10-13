@@ -20,11 +20,14 @@ function span(summary: Summary) {
 export function RoadmapSummary({
   summary,
   onNew,
+  onArchive,
   onSelect,
 }: {
   summary: Summary;
   /** Plan next roadmap: New roadmap, which checks the limit first. */
   onNew: () => void;
+  /** Archives this roadmap; null when it's already archived. */
+  onArchive: (() => void) | null;
   onSelect: (topicId: string) => void;
 }) {
   const facts = [
@@ -39,9 +42,16 @@ export function RoadmapSummary({
         <h2 id="summary-title" className="font-semibold">
           Summary
         </h2>
-        <Button type="button" size="sm" onClick={onNew}>
-          Plan next roadmap
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          {onArchive && (
+            <Button type="button" size="sm" variant="outline" onClick={onArchive}>
+              Archive
+            </Button>
+          )}
+          <Button type="button" size="sm" onClick={onNew}>
+            Plan next roadmap
+          </Button>
+        </div>
       </div>
       <dl className="grid grid-cols-2 gap-px border-b bg-border sm:grid-cols-4">
         {facts.map(([label, value]) => (

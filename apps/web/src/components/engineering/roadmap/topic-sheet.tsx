@@ -268,6 +268,7 @@ function Notes({ topicId, notes, onSaved }: { topicId: string; notes: NoteView[]
 export function TopicSheet({
   topicId,
   roadmapId,
+  roadmapActive,
   projectUrl,
   onClose,
   onChanged,
@@ -276,6 +277,8 @@ export function TopicSheet({
   topicId: string | null;
   /** The roadmap it's opened on, for Next topic and chapter done. */
   roadmapId: string | null;
+  /** False on an archived roadmap: the steps show, but not Next topic. */
+  roadmapActive: boolean;
   projectUrl: string | null;
   onClose: () => void;
   /** Opens another topic, for Next topic. */
@@ -344,6 +347,7 @@ export function TopicSheet({
                 projectUrl={projectUrl}
                 onPractice={() => setCoding(true)}
                 onSelect={onSelect}
+                showNext={roadmapActive}
               />
               <StatusMenu panel={panel} onSaved={saved} />
               <div className="flex flex-wrap gap-2">
