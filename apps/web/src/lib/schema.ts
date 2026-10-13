@@ -1,19 +1,12 @@
 import { relations, sql } from "drizzle-orm";
 import { boolean, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 import type {
-  AssessmentQuestion,
   ClaudeRunner,
   CodeRun,
   ContentSource,
-  DailyItem,
   ExerciseCheck,
-  IntakeAnswers,
   Label,
-  LessonSnapshot,
-  QuestionUse,
-  RadarTag,
   RubricResult,
-  SourcePacket,
   TermAnswer,
   TopicEventKind,
   TopicProgress,
@@ -200,6 +193,10 @@ export const artifactSelectionsRelations = relations(artifactSelections, ({ one 
 // Engineering. Spec: docs/architecture/engineering-rebuild.md, section 6. Everything except lab_progress and lab_profile
 // is append-only: runs, answers, questions and topic events are evidence, and progress is rebuilt from them.
 
+// Retired with the old Engineering screens (engineering-claude-first.md, section 9d): lab_source_packets, lab_lessons,
+// lab_runs, lab_run_answers, lab_questions, lab_daily_sets and lab_radar_items. Nothing reads or writes them; they are
+// kept until a later release drops them, so their JSON columns are untyped.
+
 export const labSourcePackets = pgTable(
   "lab_source_packets",
   {
@@ -208,7 +205,7 @@ export const labSourcePackets = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     topicId: text("topic_id").notNull(),
-    packet: jsonb("packet").$type<SourcePacket>().notNull(),
+    packet: jsonb("packet").$type<unknown>().notNull(),
     refreshAfter: text("refresh_after").notNull(),
     generatedAt: timestamp("generated_at", { withTimezone: true }).notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -227,7 +224,7 @@ export const labLessons = pgTable(
     version: integer("version").notNull(),
     /** The Tutor's packet. Null for a lesson Claude saved through the connector, whose sources it gave itself. */
     sourcePacketId: text("source_packet_id").references(() => labSourcePackets.id),
-    snapshot: jsonb("snapshot").$type<LessonSnapshot>().notNull(),
+    snapshot: jsonb("snapshot").$type<unknown>().notNull(),
     source: text("source").$type<ContentSource>().notNull().default("ken-os"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -290,7 +287,7 @@ export const labRuns = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    questions: jsonb("questions").$type<AssessmentQuestion[]>().notNull(),
+    questions: jsonb("questions").$type<unknown[]>().notNull(),
     startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
     completedAt: timestamp("completed_at", { withTimezone: true }),
   },
@@ -333,7 +330,7 @@ export const labQuestions = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     topicId: text("topic_id").notNull(),
-    kind: text("kind").$type<QuestionUse>().notNull(),
+    kind: text("kind").notNull(),
     prompt: text("prompt").notNull(),
     code: text("code"),
     rubric: jsonb("rubric").$type<string[]>().notNull(),
@@ -395,7 +392,8 @@ export const labProfile = pgTable("lab_profile", {
     .references(() => users.id, { onDelete: "cascade" }),
   /** The target role id. */
   direction: text("direction"),
-  intake: jsonb("intake").$type<IntakeAnswers>(),
+  /** Retired with the old Engineering screens. Kept until a later release drops it. */
+  intake: jsonb("intake").$type<unknown>(),
   weeklyHours: integer("weekly_hours"),
   /** Retired with the Guide. Always empty; dropped in a later release. */
   conversation: jsonb("conversation").$type<unknown[]>().notNull().default([]),
@@ -413,7 +411,7 @@ export const labDailySets = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     day: text("day").notNull(),
-    items: jsonb("items").$type<DailyItem[]>().notNull(),
+    items: jsonb("items").$type<unknown[]>().notNull(),
     warmUp: boolean("warm_up").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -429,7 +427,7 @@ export const labRadarItems = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     week: text("week").notNull(),
     area: text("area").notNull(),
-    tag: text("tag").$type<RadarTag>().notNull(),
+    tag: text("tag").notNull(),
     title: text("title").notNull(),
     reason: text("reason").notNull(),
     sourceUrl: text("source_url"),

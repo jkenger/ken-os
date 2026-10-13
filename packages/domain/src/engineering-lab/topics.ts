@@ -1,4 +1,4 @@
-import { SOURCE_DOMAINS, type FreshnessClass, type ResearchTarget, type SourceGroup } from "./sources";
+import { SOURCE_DOMAINS, type FreshnessClass, type SourceGroup } from "./sources";
 import { MODES, type Mode } from "./types";
 
 /** The five areas a level is measured in. Every chapter belongs to one. */
@@ -184,9 +184,4 @@ export function attachPoints(
     return { ...topic, points };
   });
   return { map: { ...map, topics }, status, reviewedOn };
-}
-
-export function researchTargetFor(topic: Topic): ResearchTarget {
-  const allowedDomains = [...new Set(topic.sourceGroups.flatMap((group) => SOURCE_DOMAINS[group]))];
-  return { topicId: topic.id, title: topic.title, gap: topic.gap, freshness: topic.freshness, allowedDomains };
 }

@@ -211,7 +211,7 @@ Built 13 Oct 2026 on `chore/engineering-retire-old-screens`.
 - **The default roadmap** without a saved one is the target role's chapters in course order (no assessment scores to reorder them), or every chapter. The role can't be changed in the app any more; plan a roadmap with Claude instead.
 - **The home page's Engineering line** shows the goal and "N of M learned".
 - **Tables stay.** The old assessment, practice, radar, lesson, question and source packet tables are unread but kept, as the owner asked, until a later release drops them.
-- **Left for later:** the Engineering agents in `packages/agents`, the lesson and assessment content in `content/engineering-lab`, and the domain functions only the removed screens used. Nothing calls them; removing them is its own cleanup.
+- **Dead code removed (13 Oct 2026, `chore/remove-engineering-dead-code`):** the Researcher, Tutor, Assessor and radar agents in `packages/agents`; the hand-written lesson, the 5 assessment questions and the saved source packet in `content/engineering-lab`, with their `authoredTopics` and `assessment` exports; and the domain code only the removed screens used (assessment, practice, grading, lessons, profile levels, radar, source packets). The old tables' JSON columns are untyped in `schema.ts` now; no table or column changed.
 
 **Verified:** `pnpm test` (172), `pnpm check`, `pnpm build`, `pnpm format:check`, `test:db:engineering` (8 sections, rebuilt around what's left) and `test:db:connector` (8).
 

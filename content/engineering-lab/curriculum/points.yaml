@@ -1,5 +1,5 @@
-# Assessment points: what a solid answer to each topic must show. The Assessor writes proof prompts, practice
-# questions and their rubrics from these, so grades rest on reviewed statements instead of the model alone. Each topic
+# Assessment points: what a solid answer to each topic must show. Claude reads them through the connector's
+# get_topic and writes exercises against them, so checks rest on reviewed statements instead of the model alone. Each topic
 # needs 4 to 6 points; `lab:generate` checks them. Points describe what to show, never personal history.
 #
 # Approved by the owner on 2026-10-06, then reopened by the Engineering rebuild (docs/architecture/engineering-rebuild.md,
