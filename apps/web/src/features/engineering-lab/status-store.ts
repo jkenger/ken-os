@@ -14,7 +14,8 @@ import { ownerDayStart } from "@/lib/day";
 import { labNotes, labTopicEvents } from "@/lib/schema";
 import { topicMap } from "./curriculum";
 import { LabInputError } from "./errors";
-import { recordEvent, requireTopic } from "./store";
+import { requireAnyTopic } from "./any-topic";
+import { recordEvent } from "./store";
 
 // Topic statuses, Claude's reports and notes. Spec: docs/architecture/engineering-claude-first.md, sections 2 and 4.
 // Statuses are rebuilt from lab_topic_events, the same events the old progress reads, so old work carries over.
@@ -48,11 +49,13 @@ export async function topicStatuses(userId: string): Promise<Map<string, TopicSt
     .from(labTopicEvents)
     .where(eq(labTopicEvents.userId, userId))) as StatusRow[];
   const grouped = byTopic(rows);
-  return new Map(topicMap.topics.map((topic) => [topic.id, computeTopicStatus(grouped.get(topic.id) ?? [])]));
+  // Every map topic, plus any topic Claude added that has events.
+  const ids = new Set([...topicMap.topics.map((topic) => topic.id), ...grouped.keys()]);
+  return new Map([...ids].map((id) => [id, computeTopicStatus(grouped.get(id) ?? [])]));
 }
 
 export async function topicStatus(userId: string, topicId: string): Promise<TopicStatusView> {
-  requireTopic(topicId);
+  await requireAnyTopic(userId, topicId);
   const rows = (await db()
     .select(statusColumns)
     .from(labTopicEvents)
@@ -107,7 +110,7 @@ export async function reportProgress(userId: string, topicId: string, input: Rep
 
 /** The owner sets a status from the topic panel. Learned asks for one line on why. */
 export async function setStatus(userId: string, topicId: string, status: TopicStatus, reason?: string) {
-  requireTopic(topicId);
+  await requireAnyTopic(userId, topicId);
   const why = reason?.trim().slice(0, SUMMARY_MAX) ?? "";
   if (status === "learned" && !why) throw new LabInputError("Add one line on why");
   await recordEvent(userId, { topicId, kind: "status_set", source: "ken-os", status, summary: why || null });
@@ -183,7 +186,7 @@ function noteBody(body: string) {
 
 /** Adds a note. The owner and Claude both can. */
 export async function addNote(userId: string, topicId: string, author: "owner" | "claude", body: string) {
-  requireTopic(topicId);
+  await requireAnyTopic(userId, topicId);
   const [row] = await db()
     .insert(labNotes)
     .values({ id: randomUUID(), userId, topicId, author, body: noteBody(body) })

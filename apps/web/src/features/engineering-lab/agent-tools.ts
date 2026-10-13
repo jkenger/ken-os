@@ -6,18 +6,17 @@ import {
   CLAUDE_STATUSES,
   CONTENT_EVENT_KINDS,
   EVIDENCE_MIN_LENGTH,
-  topicPoints,
   type CodeRun,
-  type Topic,
   type TopicStatusView,
 } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { ownerDayStart } from "@/lib/day";
 import { labTopicEvents } from "@/lib/schema";
-import { placeOf } from "./curriculum";
+import { requireAnyTopic, type AnyTopic } from "./any-topic";
 import { LabInputError } from "./errors";
 import { exerciseChoice, exerciseVersions, getDraft, saveClaudeExercise } from "./exercise-store";
-import { alsoInProgress, getRoadmap, toRefresh } from "./roadmap-store";
+import { alsoInProgress, chapterOnRoadmap, getRoadmap, saveRoadmap, toRefresh } from "./roadmap-store";
+import { PLAN_LIMITS } from "./roadmap-plan";
 import {
   addNote,
   claudeNotesToday,
@@ -29,7 +28,6 @@ import {
   SUMMARY_MAX,
   topicStatus,
 } from "./status-store";
-import { requireTopic } from "./store";
 import { closedBook } from "./topic-store";
 
 // The tools Claude uses on the owner's Engineering roadmap. Spec: docs/architecture/engineering-claude-first.md,
@@ -96,6 +94,41 @@ export const toolInputs = {
         .describe("Required for learned, refused otherwise"),
     })
     .strict(),
+  save_roadmap: z
+    .object({
+      goal: text(PLAN_LIMITS.goal).describe("What the owner wants to become or be able to do, in their words"),
+      chapters: z
+        .array(
+          z
+            .object({
+              chapterId: z.string().max(100).optional().describe("A chapter id from get_roadmap or the topic map"),
+              title: text(PLAN_LIMITS.title).optional().describe("Only for a new chapter that isn't in the topic map"),
+              topics: z
+                .array(
+                  z.union([
+                    z.string().min(1).max(100).describe("A topic id from get_roadmap"),
+                    z
+                      .object({
+                        title: text(PLAN_LIMITS.title),
+                        explain: z
+                          .array(text(PLAN_LIMITS.line))
+                          .min(3)
+                          .max(5)
+                          .describe("3 to 5 things the owner should be able to explain"),
+                      })
+                      .strict()
+                      .describe("A new topic, only when the topic map has nothing close"),
+                  ]),
+                )
+                .min(1)
+                .max(PLAN_LIMITS.topicsPerChapter),
+            })
+            .strict(),
+        )
+        .min(1)
+        .max(PLAN_LIMITS.chapters),
+    })
+    .strict(),
   save_note: z
     .object({
       topicId,
@@ -116,8 +149,21 @@ export interface AgentTool<N extends ToolName = ToolName> {
   run(userId: string, input: z.infer<(typeof toolInputs)[N]>): Promise<unknown>;
 }
 
-function topicSummary(topic: Topic, status: TopicStatusView) {
-  return { topicId: topic.id, title: topic.title, ...placeOf(topic), status: status.status, statusSetBy: status.setBy };
+function topicSummary(topic: AnyTopic, status: TopicStatusView) {
+  return {
+    topicId: topic.id,
+    title: topic.title,
+    area: topic.area,
+    chapter: topic.chapter,
+    addedByClaude: topic.custom,
+    status: status.status,
+    statusSetBy: status.setBy,
+  };
+}
+
+/** The topic, with the chapter it sits in on the roadmap when Claude added it. */
+async function roadmapTopic(userId: string, topicId: string) {
+  return requireAnyTopic(userId, topicId, await chapterOnRoadmap(userId, topicId));
 }
 
 function runSummary(results: CodeRun | null) {
@@ -147,6 +193,8 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
       const { current } = roadmap;
       return {
         goal: roadmap.goal,
+        // False means the roadmap is the target role's default path: offer to plan one with save_roadmap.
+        planned: roadmap.planned,
         assessmentOpen,
         current: current
           ? {
@@ -184,11 +232,17 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
       const roadmap = await getRoadmap(userId);
       return {
         goal: roadmap.goal,
+        planned: roadmap.planned,
         chapters: roadmap.chapters.map((chapter) => ({
           chapterId: chapter.id,
           title: chapter.title,
           area: chapter.area,
-          topics: chapter.topics.map((topic) => ({ topicId: topic.id, title: topic.title, status: topic.status })),
+          topics: chapter.topics.map((topic) => ({
+            topicId: topic.id,
+            title: topic.title,
+            status: topic.status,
+            addedByClaude: topic.custom,
+          })),
         })),
       };
     },
@@ -201,21 +255,30 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
       "One topic: its place and status, what the owner should be able to explain (p1, p2, …), the latest reports, the owner's and your notes, and the current exercise's task, starter and tests (never the solution).",
     kind: "read",
     async run(userId, { topicId: id }) {
-      const topic = requireTopic(id);
+      const topic = await roadmapTopic(userId, id);
       const [status, choice, reports, notes] = await Promise.all([
         topicStatus(userId, id),
         exerciseChoice(userId, topic),
         listReports(userId, id, 5),
         listNotes(userId, id),
       ]);
+      const summary = {
+        ...topicSummary(topic, status),
+        gap: topic.gap,
+        points: topic.points.map((text, index) => ({ id: `p${index + 1}`, text })),
+        reports,
+        notes,
+      };
+      if (!choice)
+        return {
+          ...summary,
+          exercise: null,
+          next: "No exercise yet. Write one with save_exercise if the owner wants to practise in code",
+        };
       const { current } = choice;
       const lab = current.lab;
       return {
-        ...topicSummary(topic, status),
-        gap: topic.gap,
-        points: topicPoints(topic),
-        reports,
-        notes,
+        ...summary,
         exercise: {
           labId: current.id,
           version: current.version,
@@ -248,8 +311,9 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
       "The owner's latest autosaved code for the current exercise version, and its last test run: passed, failed, and each failing test's error (usually expected and actual).",
     kind: "read",
     async run(userId, { topicId: id }) {
-      const topic = requireTopic(id);
-      const { current } = await exerciseChoice(userId, topic);
+      const choice = await exerciseChoice(userId, await requireAnyTopic(userId, id));
+      if (!choice) return { labId: null, code: null, lastRun: null, next: "No exercise yet" };
+      const { current } = choice;
       const [draft, [run]] = await Promise.all([
         getDraft(userId, current.id),
         db()
@@ -288,7 +352,7 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
       "A topic's past: every report and status change with its evidence, every note, and exercise runs per version (counts only).",
     kind: "read",
     async run(userId, { topicId: id }) {
-      const topic = requireTopic(id);
+      const topic = await requireAnyTopic(userId, id);
       const [versions, reports, notes, runs] = await Promise.all([
         exerciseVersions(userId, topic),
         listReports(userId, id),
@@ -327,7 +391,7 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
       "Saves a new exercise version. It starts unchecked: the owner's browser runs the solution (must pass every test) and the starter (must fail one) the next time the topic's exercise opens. Versions the owner already ran never change.",
     kind: "write",
     async run(userId, { topicId: id, exercise }) {
-      requireTopic(id);
+      await requireAnyTopic(userId, id);
       if (exercise.runner === "browser" && exercise.setup?.trim())
         throw new LabInputError("Setup SQL is for the pglite runner only");
       const saved = await saveClaudeExercise(userId, id, {
@@ -352,8 +416,18 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
       "Records what happened on a topic, shown to the owner in Ken OS. The first report starts the topic. Set status learned only after the owner explains the idea in their own words without hints, and pass that explanation word for word as evidence. Set skipped when the owner says they already know it. You can't change a status the owner set.",
     kind: "write",
     async run(userId, { topicId: id, summary, status, evidence }) {
-      requireTopic(id);
       return { saved: true, ...(await reportProgress(userId, id, { summary, status, evidence })) };
+    },
+  },
+
+  save_roadmap: {
+    name: "save_roadmap",
+    title: "Save roadmap",
+    description:
+      "Saves a roadmap the owner agreed to: their goal and chapters in order, each with topics. Use chapter and topic ids from get_roadmap where they fit; add a new topic only when nothing in the topic map is close, with 3 to 5 lines the owner should be able to explain. The old roadmap is archived and every topic keeps its progress. Ask before saving.",
+    kind: "write",
+    async run(userId, plan) {
+      return { saved: true, ...(await saveRoadmap(userId, plan)) };
     },
   },
 

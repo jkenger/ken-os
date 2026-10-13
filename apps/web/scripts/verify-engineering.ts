@@ -6,6 +6,7 @@ import { closeDb, db } from "../src/lib/db";
 import {
   labDailySets,
   labExercises,
+  labRoadmaps,
   labProgress,
   labQuestions,
   labRunAnswers,
@@ -28,6 +29,8 @@ async function main() {
   const exercises = await import("../src/features/engineering-lab/exercise-store");
   const tools = await import("../src/features/engineering-lab/agent-tools");
   const statuses = await import("../src/features/engineering-lab/status-store");
+  const roadmaps = await import("../src/features/engineering-lab/roadmap-store");
+  const anyTopic = await import("../src/features/engineering-lab/any-topic");
 
   const owner = `engineering-check-${randomUUID()}`;
   const other = `engineering-check-${randomUUID()}`;
@@ -580,6 +583,115 @@ async function main() {
       console.log("ok - connector: current state and path read; an open assessment closes the rest");
     } finally {
       await db().delete(users).where(eq(users.id, viaClaude));
+    }
+
+    // Planning with Claude (engineering-claude-first.md, section 3).
+    const planner = `engineering-check-${randomUUID()}`;
+    await db()
+      .insert(users)
+      .values({ id: planner, email: `${planner}@example.invalid`, name: "Engineering check (planner)" });
+    try {
+      const call = (name: string, input: unknown) =>
+        tools.callAgentTool(planner, name, input) as Promise<Record<string, any>>;
+      assert.equal((await call("get_current_state", {})).planned, false, "no roadmap yet: the default path");
+      await call("report_progress", { topicId: "react.effects", summary: "Started effects" });
+      await assert.rejects(
+        call("save_roadmap", { goal: "AI engineer", chapters: [{ chapterId: "nope", topics: ["react.effects"] }] }),
+        /no chapter "nope"/,
+      );
+      const judge = {
+        title: "LLM as judge",
+        explain: ["What a judge model scores", "Why it drifts", "How to calibrate it"],
+      };
+      const first = await call("save_roadmap", {
+        goal: "AI engineer",
+        chapters: [
+          { chapterId: "react", topics: ["react.effects"] },
+          { title: "Evals in practice", topics: [judge] },
+        ],
+      });
+      assert.deepEqual(first.addedTopics, [{ topicId: "custom.llm_as_judge", title: "LLM as judge" }]);
+      let roadmap = await call("get_roadmap", {});
+      assert.equal(roadmap.planned, true);
+      assert.equal(roadmap.goal.title, "AI engineer");
+      assert.deepEqual(
+        roadmap.chapters.map((chapter: { title: string; topics: { topicId: string; status: string }[] }) => [
+          chapter.title,
+          chapter.topics.map((topic) => `${topic.topicId}:${topic.status}`),
+        ]),
+        [
+          ["React", ["react.effects:in_progress"]],
+          ["Evals in practice", ["custom.llm_as_judge:not_started"]],
+        ],
+        "progress from before the plan carries over",
+      );
+      const added = await call("get_topic", { topicId: "custom.llm_as_judge" });
+      assert.equal(added.addedByClaude, true);
+      assert.equal(added.chapter, "Evals in practice");
+      assert.equal(added.points[0].text, "What a judge model scores");
+      assert.equal(added.exercise, null, "Claude's topics start without an exercise");
+      assert.equal((await call("get_my_work", { topicId: "custom.llm_as_judge" })).labId, null);
+      await call("report_progress", { topicId: "custom.llm_as_judge", summary: "Talked through judges" });
+      await call("save_note", { topicId: "custom.llm_as_judge", body: "Say rubric, not vibe check" });
+      const panel = await roadmaps.getTopicPanel(planner, "custom.llm_as_judge");
+      assert.equal(panel.status.status, "in_progress");
+      assert.equal(panel.notes.length, 1);
+      const saved = await call("save_exercise", {
+        topicId: "custom.llm_as_judge",
+        exercise: {
+          runner: "browser",
+          task: "Score two answers.",
+          starter: "function score() { return 0; }",
+          tests: "test('scores', () => { assert.equal(score(), 1); });",
+          solution: "function score() { return 1; }",
+        },
+      });
+      const judgeTopic = await anyTopic.requireAnyTopic(planner, "custom.llm_as_judge");
+      assert.equal(
+        (await exercises.getCodePanel(planner, judgeTopic)).pending?.id,
+        saved.labId,
+        "the page checks it first",
+      );
+      await exercises.recordCheck(planner, "custom.llm_as_judge", saved.labId, {
+        solution: { results: [{ name: "scores", passed: true }] },
+        starter: { results: [{ name: "scores", passed: false }] },
+      });
+      assert.equal((await exercises.getCodePanel(planner, judgeTopic)).exercise?.exercise.id, saved.labId);
+      await topics.recordExerciseRun(planner, "custom.llm_as_judge", {
+        labId: saved.labId,
+        code: "...",
+        passed: 1,
+        failed: 0,
+        output: "",
+      });
+      assert.equal((await store.getProgress(planner, "custom.llm_as_judge")).exercisePassed, true);
+      console.log(
+        "ok - planning: Claude saves a roadmap with its own topic, which takes reports, notes and an exercise",
+      );
+
+      const second = await call("save_roadmap", {
+        goal: "Frontend engineer",
+        chapters: [{ title: "Evals again", topics: ["custom.llm_as_judge", judge] }],
+      });
+      assert.deepEqual(second.addedTopics, [{ topicId: "custom.llm_as_judge_2", title: "LLM as judge" }]);
+      roadmap = await call("get_roadmap", {});
+      assert.equal(roadmap.goal.title, "Frontend engineer");
+      assert.equal(roadmap.chapters[0].topics[0].status, "in_progress", "a topic keeps its progress across roadmaps");
+      const archived = await db().select().from(labRoadmaps).where(eq(labRoadmaps.userId, planner));
+      assert.deepEqual(
+        archived.map((row) => row.status).sort(),
+        ["active", "archived"],
+        "the old roadmap is archived, not deleted",
+      );
+      await assert.rejects(call("get_topic", { topicId: "custom.not_mine" }), /Unknown topic/);
+      await assert.rejects(
+        tools.callAgentTool(other, "get_topic", { topicId: "custom.llm_as_judge" }),
+        /Unknown topic/,
+        "Claude's topics are per owner",
+      );
+      console.log("ok - planning: a new roadmap archives the old one, and topics keep their progress");
+    } finally {
+      await db().delete(users).where(eq(users.id, planner));
     }
   } finally {
     await db().delete(users).where(eq(users.id, owner));

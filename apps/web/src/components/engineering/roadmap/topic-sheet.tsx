@@ -317,7 +317,17 @@ export function TopicSheet({
           )}
           {panel && (
             <div className="grid gap-6 p-4">
-              <p className="text-sm text-muted-foreground">{panel.gap}</p>
+              {panel.gap && <p className="text-sm text-muted-foreground">{panel.gap}</p>}
+              {panel.custom && (
+                <section>
+                  <h3 className={sectionTitle}>Added by Claude · what to explain</h3>
+                  <ul className="list-disc space-y-1 pl-5 text-sm">
+                    {panel.points.map((line) => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ul>
+                </section>
+              )}
               <StatusMenu panel={panel} onSaved={saved} />
               <div className="flex flex-wrap gap-2">
                 {projectUrl && <AskClaude topic={panel} projectUrl={projectUrl} />}

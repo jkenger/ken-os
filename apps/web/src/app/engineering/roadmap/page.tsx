@@ -1,7 +1,6 @@
 import { RoadmapPage } from "@/components/engineering/roadmap/roadmap-page";
 import { listConnections } from "@/features/connector/oauth-store";
 import { claudeProjectUrl } from "@/features/engineering-lab/ask-claude";
-import { findTopic } from "@/features/engineering-lab/curriculum";
 import { getRoadmap } from "@/features/engineering-lab/roadmap-store";
 import { engineering } from "@/features/engineering-lab/routes";
 import { requireSession } from "@/lib/session";
@@ -13,13 +12,15 @@ export default async function RoadmapRoute({ searchParams }: { searchParams: Pro
   const { topic } = await searchParams;
   const session = await requireSession(engineering.roadmap(topic));
   const [view, connections] = await Promise.all([getRoadmap(session.userId), listConnections(session.userId)]);
+  // A link may name any topic on the roadmap, including ones Claude added.
+  const onRoadmap = view.chapters.some((chapter) => chapter.topics.some((item) => item.id === topic));
   return (
     <RoadmapPage
       email={session.email}
       view={view}
       connections={connections}
       projectUrl={claudeProjectUrl()}
-      initialTopic={topic && findTopic(topic) ? topic : null}
+      initialTopic={topic && onRoadmap ? topic : null}
     />
   );
 }

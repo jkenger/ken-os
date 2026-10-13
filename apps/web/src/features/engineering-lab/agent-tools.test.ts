@@ -6,14 +6,14 @@ import { agentTools, callAgentTool, toolInputs } from "./agent-tools";
 // The connector's tool layer (docs/architecture/engineering-claude-first.md, section 5). Database behaviour is in
 // scripts/verify-engineering.ts and scripts/verify-connector.ts; these check the rules that need no database.
 
-test("the tools are the five reads and three writes of slice 1", () => {
+test("the tools are five reads and four writes", () => {
   assert.deepEqual(
     agentTools.filter((tool) => tool.kind === "read").map((tool) => tool.name),
     ["get_current_state", "get_roadmap", "get_topic", "get_my_work", "get_history"],
   );
   assert.deepEqual(
     agentTools.filter((tool) => tool.kind === "write").map((tool) => tool.name),
-    ["save_exercise", "report_progress", "save_note"],
+    ["save_exercise", "report_progress", "save_roadmap", "save_note"],
   );
 });
 
@@ -59,6 +59,26 @@ test("inputs are checked before anything runs", async () => {
     toolInputs.report_progress.safeParse({ ...report, status: "learned", evidence: { explanation: "x" } }).success,
     false,
     "evidence needs Claude's note",
+  );
+  assert.equal(
+    toolInputs.save_roadmap.safeParse({ goal: "AI engineer", chapters: [] }).success,
+    false,
+    "a roadmap has chapters",
+  );
+  assert.equal(
+    toolInputs.save_roadmap.safeParse({
+      goal: "AI engineer",
+      chapters: [{ title: "Evals", topics: [{ title: "Judges", explain: ["One"] }] }],
+    }).success,
+    false,
+    "a new topic needs 3 to 5 lines",
+  );
+  assert.equal(
+    toolInputs.save_roadmap.safeParse({
+      goal: "AI engineer",
+      chapters: [{ chapterId: "react", topics: ["react.effects"] }],
+    }).success,
+    true,
   );
   assert.equal(toolInputs.save_note.safeParse({ topicId: "react.effects", body: "" }).success, false);
   assert.equal(toolInputs.save_note.safeParse({ topicId: "react.effects", body: "x".repeat(2_001) }).success, false);

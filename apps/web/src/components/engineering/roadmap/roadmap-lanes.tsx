@@ -36,7 +36,7 @@ export function RoadmapLanes({
                     type="button"
                     variant="outline"
                     onClick={() => onSelect(topic.id)}
-                    aria-label={`${topic.title}, ${statusWords[topic.status]}`}
+                    aria-label={`${topic.title}, ${statusWords[topic.status]}${topic.custom ? ", added by Claude" : ""}`}
                     aria-pressed={topic.id === selected}
                     className={cn(
                       "h-auto w-full justify-start gap-2 py-2 text-left text-xs whitespace-normal",
@@ -45,7 +45,8 @@ export function RoadmapLanes({
                     )}
                   >
                     <StatusIcon status={topic.status} size={14} />
-                    {topic.title}
+                    <span className="min-w-0 flex-1">{topic.title}</span>
+                    {topic.custom && <span className="text-muted-foreground">Claude</span>}
                   </Button>
                 </li>
               ))}

@@ -150,12 +150,11 @@ export function RoadmapGraph({
     };
   }, [view, expanded, selected, onSelect]);
 
-  // Open on the goal and the current chapter's topics, readable; the rest of the ring is a drag or a zoom away.
+  // Open on the current chapter and its topics, readable; the goal and the rest of the ring are a drag or a zoom away.
   const [focus] = useState(() =>
     nodes
       .filter(
         (node) =>
-          node.type === "goal" ||
           node.type === "topic" ||
           (node.type === "chapter" && expanded.has((node.data as { chapterId: string }).chapterId)),
       )

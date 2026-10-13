@@ -82,7 +82,8 @@ async function runTests(code: string, tests: string, options: { runner: string; 
  * Checks a new version from Claude once, quietly: its solution must pass every test and its starter must fail one.
  * The server judges the two runs and keeps the current version in use until a version checks out.
  */
-function useExerciseCheck(topicId: string, check: ExercisePanel["check"]) {
+/** `onChecked` runs after the result is stored; without it the page reloads its server data. */
+export function useExerciseCheck(topicId: string, check: ExercisePanel["check"], onChecked?: () => void) {
   const router = useRouter();
   const started = useRef<string | null>(null);
   const [checking, setChecking] = useState(false);
@@ -100,14 +101,15 @@ function useExerciseCheck(topicId: string, check: ExercisePanel["check"]) {
         const solution = asCheck(await runTests(check.solution, check.tests, options));
         const starter = asCheck(await runTests(check.starter, check.tests, options));
         await post(`/api/lab/topics/${topicId}/exercise/check`, { labId: check.id, solution, starter });
-        router.refresh();
+        if (onChecked) onChecked();
+        else router.refresh();
       } catch {
         started.current = null;
       } finally {
         setChecking(false);
       }
     })();
-  }, [check, topicId, router]);
+  }, [check, topicId, router, onChecked]);
   return checking;
 }
 
@@ -116,6 +118,7 @@ export function Exercise({
   data,
   progress,
   onProve,
+  onRefresh,
 }: {
   topic: Pick<Topic, "id">;
   data: ExercisePanel;
@@ -123,8 +126,11 @@ export function Exercise({
   progress: { exercisePassed: boolean; solutionOpened: boolean };
   /** Shown once the exercise passes. Omitted where there's no proof step. */
   onProve?: () => void;
+  /** Reloads this exercise's data after a run, a check, a switch or the solution. Defaults to reloading the page. */
+  onRefresh?: () => void;
 }) {
   const router = useRouter();
+  const refresh = onRefresh ?? (() => router.refresh());
   const lab = data.exercise;
   const { task, details } = splitReadme(lab.readme);
   const [code, setCode] = useState(data.draft?.code ?? lab.starter);
@@ -134,7 +140,7 @@ export function Exercise({
   const [solution, setSolution] = useState<string | null>(null);
   const [predicted, setPredicted] = useState<Record<string, string>>({});
   const autosave = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
-  const checking = useExerciseCheck(topic.id, data.check);
+  const checking = useExerciseCheck(topic.id, data.check, onRefresh);
   const probe = lab.runner === "probe" ? lab.probe! : null;
   const passed = progress.exercisePassed;
 
@@ -169,7 +175,7 @@ export function Exercise({
     setSwitching(true);
     try {
       await post(`/api/lab/topics/${topic.id}/exercise/switch`, { labId });
-      router.refresh();
+      refresh();
     } catch (error) {
       toast({
         tone: "error",
@@ -194,7 +200,7 @@ export function Exercise({
       output,
       tests: results,
     });
-    router.refresh();
+    refresh();
   }
 
   async function run() {
@@ -227,7 +233,7 @@ export function Exercise({
       update(lab.starter);
       setState({ kind: "idle" });
       close();
-      router.refresh();
+      refresh();
     } catch (error) {
       toast({
         tone: "error",

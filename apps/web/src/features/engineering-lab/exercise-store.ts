@@ -12,13 +12,19 @@ import {
 } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { labExerciseDrafts, labExercises, labTopicEvents } from "@/lib/schema";
+import { fromMap, requireAnyTopic, type AnyTopic } from "./any-topic";
 import { exerciseFor } from "./curriculum";
 import { LabInputError } from "./errors";
 import { labSolutions } from "./generated/lab-solutions.generated";
-import { recordEvent, requireTopic, type Transaction } from "./store";
+import { recordEvent, type Transaction } from "./store";
 
 // Exercise versions, their browser check, locking and autosave. Spec: docs/architecture/engineering-claude-connector.md,
-// sections 4 and 5. The repo lab is version 0; Claude's versions are rows in lab_exercises.
+// sections 4 and 5. The repo lab is version 0; Claude's versions are rows in lab_exercises. A topic Claude added to the
+// roadmap (docs/architecture/engineering-claude-first.md, section 3) has no repo lab, only Claude's versions.
+
+/** A map topic, or any roadmap topic. */
+type ExerciseTopic = Topic | AnyTopic;
+const asAny = (topic: ExerciseTopic): AnyTopic => ("mapTopic" in topic ? topic : fromMap(topic));
 
 /** Run limits for Claude's exercises, matching the slowest repo labs of each runner. */
 const TIMEOUT_MS: Record<ClaudeRunner, number> = { browser: 3_000, pglite: 20_000 };
@@ -72,7 +78,7 @@ function repoVersion(topic: Topic): StoredVersion {
   };
 }
 
-function claudeVersion(topic: Topic, row: typeof labExercises.$inferSelect): StoredVersion {
+function claudeVersion(topic: { id: string; title: string }, row: typeof labExercises.$inferSelect): StoredVersion {
   return {
     id: row.id,
     version: row.version,
@@ -100,13 +106,14 @@ function claudeVersion(topic: Topic, row: typeof labExercises.$inferSelect): Sto
 }
 
 /** Every version of a topic's exercise, oldest first. */
-export async function exerciseVersions(userId: string, topic: Topic): Promise<StoredVersion[]> {
+export async function exerciseVersions(userId: string, topic: ExerciseTopic): Promise<StoredVersion[]> {
+  const any = asAny(topic);
   const rows = await db()
     .select()
     .from(labExercises)
     .where(and(eq(labExercises.userId, userId), eq(labExercises.topicId, topic.id)))
     .orderBy(labExercises.version);
-  return [repoVersion(topic), ...rows.map((row) => claudeVersion(topic, row))];
+  return [...(any.mapTopic ? [repoVersion(any.mapTopic)] : []), ...rows.map((row) => claudeVersion(any, row))];
 }
 
 /** The version the owner last ran or switched to on this topic, if any. */
@@ -127,10 +134,28 @@ async function selectedId(userId: string, topicId: string) {
   return row?.labId ?? null;
 }
 
-/** Which version the owner is on, plus any newer, invalid or still-unchecked one. */
-export async function exerciseChoice(userId: string, topic: Topic) {
+const usable = (version: StoredVersion) => version.source === "repo" || version.checked === "valid";
+
+/**
+ * Which version the owner is on, plus any newer, invalid or still-unchecked one. Null when the topic has no usable
+ * version yet: a topic Claude added, before any of its exercises checks out.
+ */
+export async function exerciseChoice(userId: string, topic: ExerciseTopic) {
   const [versions, selected] = await Promise.all([exerciseVersions(userId, topic), selectedId(userId, topic.id)]);
-  return chooseExercise(versions, selected);
+  return versions.some(usable) ? chooseExercise(versions, selected) : null;
+}
+
+function checkOf(version: StoredVersion): ExercisePanel["check"] {
+  return {
+    id: version.id,
+    version: version.version,
+    runner: version.lab.runner as ClaudeRunner,
+    starter: version.lab.starter,
+    tests: version.lab.tests,
+    solution: version.solution ?? "",
+    setup: version.lab.setup,
+    timeoutMs: version.lab.timeoutMs,
+  };
 }
 
 export function publicExercise(version: StoredVersion): ExerciseView {
@@ -146,8 +171,9 @@ export async function getDraft(userId: string, labId: string) {
   return row ? { code: row.code, updatedAt: row.updatedAt.toISOString() } : null;
 }
 
-export async function getExercisePanel(userId: string, topic: Topic): Promise<ExercisePanel> {
+export async function getExercisePanel(userId: string, topic: ExerciseTopic): Promise<ExercisePanel> {
   const choice = await exerciseChoice(userId, topic);
+  if (!choice) throw new LabInputError("No exercise yet. Ask Claude to write one", 404);
   const { current, unchecked } = choice;
   return {
     exercise: publicExercise(current),
@@ -155,25 +181,27 @@ export async function getExercisePanel(userId: string, topic: Topic): Promise<Ex
     invalid: choice.invalid
       ? { version: choice.invalid.version, problem: choice.invalid.checkProblem ?? "It failed its check" }
       : null,
-    check: unchecked
-      ? {
-          id: unchecked.id,
-          version: unchecked.version,
-          runner: unchecked.lab.runner as ClaudeRunner,
-          starter: unchecked.lab.starter,
-          tests: unchecked.lab.tests,
-          solution: unchecked.solution ?? "",
-          setup: unchecked.lab.setup,
-          timeoutMs: unchecked.lab.timeoutMs,
-        }
-      : null,
+    check: unchecked ? checkOf(unchecked) : null,
     draft: await getDraft(userId, current.id),
   };
 }
 
+/**
+ * Try it in code on the roadmap: the exercise, or, for a topic with no usable version yet, the newest version still
+ * waiting for its browser check. Both null means there's no exercise yet.
+ */
+export async function getCodePanel(userId: string, topic: AnyTopic) {
+  const choice = await exerciseChoice(userId, topic);
+  if (choice) return { exercise: await getExercisePanel(userId, topic), pending: null };
+  const waiting = (await exerciseVersions(userId, topic)).filter((version) => version.checked === "unchecked").at(-1);
+  return { exercise: null, pending: waiting ? checkOf(waiting) : null };
+}
+
 /** A version of this topic's exercise the owner may run: the repo lab, or one of Claude's that checked out. */
 export async function usableVersion(userId: string, topicId: string, labId: string): Promise<StoredVersion> {
-  const version = (await exerciseVersions(userId, requireTopic(topicId))).find((item) => item.id === labId);
+  const version = (await exerciseVersions(userId, await requireAnyTopic(userId, topicId))).find(
+    (item) => item.id === labId,
+  );
   if (!version) throw new LabInputError("That exercise belongs to another topic", 409);
   if (version.source === "claude" && version.checked !== "valid")
     throw new LabInputError("This exercise doesn't check out", 409);
@@ -206,7 +234,7 @@ export async function saveDraft(userId: string, topicId: string, input: { labId:
 
 /** Stores the browser's check of an unchecked version. A version is checked once; later reports change nothing. */
 export async function recordCheck(userId: string, topicId: string, exerciseId: string, runs: ExerciseCheckRuns) {
-  requireTopic(topicId);
+  await requireAnyTopic(userId, topicId);
   const verdict = judgeExerciseCheck(runs);
   const updated = await db()
     .update(labExercises)
@@ -226,10 +254,10 @@ export async function recordCheck(userId: string, topicId: string, exerciseId: s
 
 /** Moves the owner to a newer valid version. A fresh attempt: Prove closes until the new version passes. */
 export async function switchExercise(userId: string, topicId: string, exerciseId: string) {
-  const topic = requireTopic(topicId);
+  const topic = await requireAnyTopic(userId, topicId);
   const choice = await exerciseChoice(userId, topic);
   const target = (await exerciseVersions(userId, topic)).find((item) => item.id === exerciseId);
-  if (!target || target.checked !== "valid" || target.version <= choice.current.version)
+  if (!choice || !target || target.checked !== "valid" || target.version <= choice.current.version)
     throw new LabInputError("No newer exercise to switch to. Reload the page", 409);
   return (await recordEvent(userId, { topicId, kind: "exercise_switched", labId: target.id })).progress;
 }
@@ -246,7 +274,7 @@ export interface ClaudeExerciseInput {
 
 /** Saves Claude's exercise as the topic's next version, unchecked until the owner's browser checks it. */
 export async function saveClaudeExercise(userId: string, topicId: string, input: ClaudeExerciseInput) {
-  requireTopic(topicId);
+  await requireAnyTopic(userId, topicId);
   return db().transaction(async (tx) => {
     const [last] = await tx
       .select({ version: labExercises.version })

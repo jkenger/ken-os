@@ -27,8 +27,19 @@ const copyWords: Record<CopyState, string> = {
   failed: "Couldn't copy · select the message and copy it",
 };
 
-export function AskClaude({ topic, projectUrl }: { topic: Pick<Topic, "id" | "title">; projectUrl: string }) {
-  const message = askClaudeMessage(topic);
+/** Opens the dialog for a starter message. Pass `topic` for the usual "teach me" message, or `message` for another. */
+export function AskClaude({
+  topic,
+  message: given,
+  label = "Ask Claude",
+  projectUrl,
+}: {
+  topic?: Pick<Topic, "id" | "title">;
+  message?: string;
+  label?: string;
+  projectUrl: string;
+}) {
+  const message = given ?? askClaudeMessage(topic!);
   const [state, setState] = useState<CopyState>("copying");
 
   async function copy() {
@@ -50,12 +61,12 @@ export function AskClaude({ topic, projectUrl }: { topic: Pick<Topic, "id" | "ti
     >
       <DialogTrigger asChild>
         <Button type="button" variant="outline" size="sm">
-          Ask Claude
+          {label}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>Ask Claude</DialogTitle>
+          <DialogTitle>{label}</DialogTitle>
           <DialogDescription role="status" className={state === "failed" ? "text-destructive" : undefined}>
             {copyWords[state]}
           </DialogDescription>
