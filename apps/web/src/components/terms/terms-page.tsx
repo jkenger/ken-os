@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BookOpen, ExternalLink, Search, Trash2 } from "lucide-react";
@@ -8,6 +8,7 @@ import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toaster";
 import type { SavedTerm } from "@/features/terms/store";
+import { reloadSavedTerms } from "@/features/terms/saved-terms";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
 
 function saved(value: string) {
@@ -19,6 +20,16 @@ export function TermsPage({ email, terms }: { email: string; terms: SavedTerm[] 
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [removing, setRemoving] = useState("");
+  // The term a link opened, such as Open in Terms on a page's hover card. Read from the address, because moving
+  // between pages inside the app doesn't set the browser's :target.
+  const [opened, setOpened] = useState("");
+
+  useEffect(() => {
+    const update = () => setOpened(decodeURIComponent(window.location.hash.slice(1)));
+    update();
+    window.addEventListener("hashchange", update);
+    return () => window.removeEventListener("hashchange", update);
+  }, []);
   const shown = terms.filter((term) =>
     `${term.term} ${term.meaning}`.toLowerCase().includes(query.trim().toLowerCase()),
   );
@@ -33,6 +44,7 @@ export function TermsPage({ email, terms }: { email: string; terms: SavedTerm[] 
           ((await response.json().catch(() => ({}))) as { error?: string }).error ?? "Couldn't remove. Try again",
         );
       toast({ tone: "success", title: `Removed "${term.term}"` });
+      void reloadSavedTerms();
       router.refresh();
     } catch (error) {
       toast({
@@ -67,11 +79,12 @@ export function TermsPage({ email, terms }: { email: string; terms: SavedTerm[] 
         )}
 
         {terms.length ? (
-          <ul className="mt-6 divide-y divide-border rounded-xl border bg-card">
+          <ul data-term-skip className="mt-6 divide-y divide-border rounded-xl border bg-card">
             {shown.map((term) => (
               <li
                 key={term.id}
-                className="grid gap-2 px-5 py-5 md:grid-cols-[200px_minmax(0,1fr)_auto] md:gap-6 md:px-6"
+                id={`term-${term.id}`}
+                className={`grid scroll-mt-24 gap-2 px-5 py-5 md:grid-cols-[200px_minmax(0,1fr)_auto] md:gap-6 md:px-6 ${opened === `term-${term.id}` ? "bg-muted" : ""}`}
               >
                 <p className="font-heading text-lg font-semibold tracking-tight">{term.term}</p>
                 <div className="min-w-0">

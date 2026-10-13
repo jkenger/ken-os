@@ -26,6 +26,38 @@ export function termKey(term: string) {
     .replace(/^[\s"'`([{]+|[\s"'`)\]}.,:;!?]+$/g, "");
 }
 
+export interface TermMatch {
+  /** Which of the texts the match is in. */
+  index: number;
+  start: number;
+  end: number;
+  /** The saved term's key, from termKey. */
+  key: string;
+}
+
+/**
+ * Where saved terms first appear in a page's texts, given in reading order. Whole words only, any case, and a plural
+ * ("closures", "classes") matches its saved singular. Each term is matched once, at its first appearance; where saved
+ * terms overlap ("call stack" and "stack"), the longer one wins.
+ */
+export function firstTermMatches(texts: readonly string[], keys: readonly string[]): TermMatch[] {
+  const wanted = [...new Set(keys.map(termKey).filter(Boolean))].sort((a, b) => b.length - a.length);
+  if (!wanted.length) return [];
+  const words = wanted.map((key) => key.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/ /g, "\\s+")).join("|");
+  const pattern = new RegExp(`(?<![\\p{L}\\p{N}_])(${words})(?:e?s)?(?![\\p{L}\\p{N}_])`, "giu");
+  const found = new Set<string>();
+  const matches: TermMatch[] = [];
+  texts.forEach((text, index) => {
+    for (const match of text.matchAll(pattern)) {
+      const key = match[1].toLowerCase().replace(/\s+/g, " ");
+      if (found.has(key)) continue;
+      found.add(key);
+      matches.push({ index, start: match.index, end: match.index + match[0].length, key });
+    }
+  });
+  return matches;
+}
+
 /** True only for an https link on a trusted site or one of its subdomains. */
 export function isTrustedSourceUrl(value: string) {
   let url: URL;

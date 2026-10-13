@@ -1,6 +1,7 @@
 "use client";
 
 import { termKey, type TermAnswer } from "@ken-os/domain";
+import { reloadSavedTerms } from "./saved-terms";
 
 // Term lookups as background jobs in the browser. A lookup keeps running when the popover closes or you move to another
 // Ken OS page; whoever is still listening gets the result, and nobody listening means a toast. The server also keeps
@@ -92,4 +93,5 @@ export async function saveLookup(answer: TermAnswer, place: { foundIn: string; f
     sourceUrl: answer.source?.url ?? null,
     ...place,
   });
+  void reloadSavedTerms();
 }

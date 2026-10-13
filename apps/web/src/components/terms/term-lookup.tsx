@@ -5,6 +5,7 @@ import { BookmarkCheck, BookmarkPlus, ExternalLink, LoaderCircle, X } from "luci
 import { TERM_MAX_LENGTH, type TermAnswer } from "@ken-os/domain";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toaster";
+import { SavedTermMarks } from "@/components/terms/saved-term-marks";
 import { markSaved, saveLookup, startLookup, watchLookup, type LookupJob } from "@/features/terms/lookup-jobs";
 
 interface Pending {
@@ -204,6 +205,7 @@ export function TermLookup({ module, children }: { module: string; children: Rea
   return (
     <div ref={root}>
       {children}
+      <SavedTermMarks root={root} />
       {pending && !open && (
         <Button
           type="button"

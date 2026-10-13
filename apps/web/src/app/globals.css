@@ -133,3 +133,9 @@
 @layer base {
   html { scroll-behavior: smooth; }
 }
+
+/* Saved terms on any page (components/terms/saved-term-marks.tsx): a dotted underline, painted without changing the text. */
+::highlight(ken-term) {
+  text-decoration: underline dotted 1.5px var(--muted-foreground);
+}
+[data-term-hover] { cursor: help; }
