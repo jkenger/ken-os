@@ -5,7 +5,7 @@ import { driveErrorText } from "@/lib/auth-errors";
 import { DriveAccessError, getGoogleAccessToken, hasDriveConnection, type DriveAccess } from "@/lib/google";
 import { getSelectedResume } from "@/lib/resume";
 import { requireSession } from "@/lib/session";
-import { labSummary } from "@/features/engineering-lab/profile-store";
+import { engineeringSummary } from "@/features/engineering-lab/roadmap-store";
 
 export const dynamic = "force-dynamic";
 
@@ -47,7 +47,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ d
       driveNotice={driveErrorText(Array.isArray(drive_error) ? drive_error[0] : drive_error)}
       previewUrl={previewUrl}
       canAsk={file?.mimeType === GOOGLE_DOC_MIME && Boolean(process.env.OPENAI_API_KEY)}
-      labSummary={await labSummary(session.userId).catch(() => null)}
+      labSummary={await engineeringSummary(session.userId).catch(() => null)}
     />
   );
 }

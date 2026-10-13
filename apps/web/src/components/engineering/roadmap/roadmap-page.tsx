@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { IconSettings } from "@tabler/icons-react";
 import { WorkspaceShell } from "@/components/workspace-shell";
@@ -54,12 +53,6 @@ function Settings({
             <p>{view.goal?.title ?? "No goal"}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {projectUrl && <AskClaude message={PLAN_MESSAGE} label="Plan new roadmap" projectUrl={projectUrl} />}
-              {/* Until Claude plans one, the roadmap is the target role's path, which Direction changes. */}
-              {!view.planned && (
-                <Button asChild variant="outline" size="sm">
-                  <Link href={engineering.direction}>Change role</Link>
-                </Button>
-              )}
             </div>
           </section>
           <Connections connections={connections} />

@@ -37,13 +37,6 @@ test("no tool records a run, opens a solution, or changes the role or the profil
   assert.ok(!/from "(next|@modelcontextprotocol)/.test(source), "the tool layer never imports route or MCP code");
 });
 
-test("only the state and roadmap tools answer during an open assessment", () => {
-  assert.deepEqual(
-    agentTools.filter((tool) => tool.openDuringAssessment).map((tool) => tool.name),
-    ["get_current_state", "get_roadmap"],
-  );
-});
-
 test("inputs are checked before anything runs", async () => {
   await assert.rejects(callAgentTool("nobody", "save_lesson", {}), /Unknown tool/, "lessons left Ken OS");
   await assert.rejects(callAgentTool("nobody", "save_proof_question", {}), /Unknown tool/, "so did graded proofs");

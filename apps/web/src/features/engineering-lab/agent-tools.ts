@@ -28,7 +28,6 @@ import {
   SUMMARY_MAX,
   topicStatus,
 } from "./status-store";
-import { closedBook } from "./topic-store";
 
 // The tools Claude uses on the owner's Engineering roadmap. Spec: docs/architecture/engineering-claude-first.md,
 // section 5. One module for every caller: the MCP endpoint today, an in-app chat panel later. It never imports route or
@@ -39,7 +38,6 @@ import { closedBook } from "./topic-store";
 // - Claude never changes a status the owner set, and never edits or deletes the owner's notes.
 // - No tool records a test run, opens a solution, or changes the role or the profile.
 // - Everything Claude sends is untrusted: each input is checked against its schema and the size caps.
-// - An open assessment closes every tool except get_current_state and get_roadmap, until the assessment is retired.
 // - Claude may save at most CLAUDE_WRITE_LIMIT times a day.
 
 const topicId = z.string().min(1).max(100).describe("A Ken OS topic id, for example js.call_stack");
@@ -144,8 +142,6 @@ export interface AgentTool<N extends ToolName = ToolName> {
   title: string;
   description: string;
   kind: "read" | "write";
-  /** Answers during an open assessment, so Claude can say why the others are closed. */
-  openDuringAssessment?: boolean;
   run(userId: string, input: z.infer<(typeof toolInputs)[N]>): Promise<unknown>;
 }
 
@@ -187,15 +183,13 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     description:
       "Where the owner is: their goal, the topic in progress, counts of learned and skipped topics, the next topics, and learned topics old enough to refresh. Call this first.",
     kind: "read",
-    openDuringAssessment: true,
     async run(userId) {
-      const [roadmap, assessmentOpen] = await Promise.all([getRoadmap(userId), closedBook(userId)]);
+      const roadmap = await getRoadmap(userId);
       const { current } = roadmap;
       return {
         goal: roadmap.goal,
         // False means the roadmap is the target role's default path: offer to plan one with save_roadmap.
         planned: roadmap.planned,
-        assessmentOpen,
         current: current
           ? {
               topicId: current.id,
@@ -227,7 +221,6 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     description:
       "The owner's roadmap: chapters in order with their area and each topic's status (not_started, in_progress, learned, skipped).",
     kind: "read",
-    openDuringAssessment: true,
     async run(userId) {
       const roadmap = await getRoadmap(userId);
       return {
@@ -455,15 +448,13 @@ function describeIssues(error: z.ZodError) {
 
 /**
  * Runs one tool for the owner. The caller has already checked who the owner is; this checks the input, the open
- * assessment and the topic. Problems come back as LabInputError with a message Claude can act on.
+ * topic. Problems come back as LabInputError with a message Claude can act on.
  */
 export async function callAgentTool(userId: string, name: string, input: unknown) {
   const tool = (tools as Record<string, AgentTool>)[name];
   if (!tool) throw new LabInputError(`Unknown tool: ${name}`, 404);
   const parsed = toolInputs[tool.name].safeParse(input ?? {});
   if (!parsed.success) throw new LabInputError(`Invalid input. ${describeIssues(parsed.error)}`);
-  if (!tool.openDuringAssessment && (await closedBook(userId)))
-    throw new LabInputError("An assessment is open in Ken OS. Topics are closed until the owner finishes it", 409);
   if (tool.kind === "write" && (await claudeWritesToday(userId)) >= CLAUDE_WRITE_LIMIT) {
     throw new LabInputError(`Out of writes for today (${CLAUDE_WRITE_LIMIT}). Resets at midnight Manila time`, 429);
   }

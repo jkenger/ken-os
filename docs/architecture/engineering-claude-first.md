@@ -1,6 +1,6 @@
 # Engineering, Claude first
 
-Status: approved by the owner, 13 Oct 2026, after a design review in chat. Not yet built. This is the source of truth for the Engineering module from now on. `engineering-rebuild.md` and `engineering-claude-connector.md` are history; where they disagree with this file, this file wins.
+Status: approved by the owner, 13 Oct 2026, after a design review in chat. All four slices built on 13 Oct 2026 (§9a to §9d). This is the source of truth for the Engineering module from now on. `engineering-rebuild.md` and `engineering-claude-connector.md` are history; where they disagree with this file, this file wins.
 
 ## Decision
 
@@ -197,6 +197,23 @@ Built 13 Oct 2026 on `feat/engineering-plan-with-claude`.
 - **Don't run Prettier on `src` from inside `apps/web`.** `.prettierignore`'s paths are relative to the repo root, so from there it rewrites the generated files and the shadcn primitives. Run it from the repo root.
 
 **Verified:** `pnpm test` (175, including `roadmap-plan.test.ts`), `pnpm check`, `pnpm build`, `pnpm format:check`, `test:db:engineering` (14 checks, 2 new for planning) and `test:db:connector` (8). On the local server, signed in: "No roadmap" with Plan with Claude; after saving a test roadmap through `save_roadmap`, the goal as the title, counts for its 2 topics, a link opening Claude's topic with its lines, "No exercise yet", then a Claude exercise checked in the browser and shown as version 1; Settings with Plan new roadmap and no Change role. The test roadmap was archived afterwards.
+
+## 9d. Slice 4 as built
+
+Built 13 Oct 2026 on `chore/engineering-retire-old-screens`.
+
+- **Engineering is one page,** at `/engineering`. The roadmap page moved there from `/engineering/roadmap`.
+- **Redirects** live in one list, `engineeringRedirects` in `routes.ts`, served from `next.config.ts`: `/engineering/roadmap`, every old Engineering page, and `/lab`. A topic's old address (`/engineering/learn/<id>`, `/lab/topics/<id>`) opens that topic's panel. All are temporary (307), tested in `routes.test.ts`. The `/lab` redirect pages and `legacy-redirect.ts` are gone.
+- **Removed:** Overview, Profile, Learn, Practice, Intake, the assessment and its results, Direction, the evidence page and the old topic page; their API routes (`direction`, `intake`, `practice`, `radar`, `runs`, and a topic's `lesson`, `opened` and `proof`); and the assessment, practice, radar and path stores. The topic store keeps only test runs and Show solution; the shared store keeps only events and exercise progress.
+- **Kept:** the exercise routes (runs, check, switch, draft, solution), the probe playground routes, and the new page's routes.
+- **No OpenAI in Engineering.** Nothing in Engineering imports `@ken-os/agents`; the AI-use limit, source packets and the Researcher scripts (`lab:research`, `lab:import-sources`) are gone. Terms still uses OpenAI.
+- **No assessment gate.** Claude's tools and Terms lookups no longer close during an assessment, since there is none.
+- **The default roadmap** without a saved one is the target role's chapters in course order (no assessment scores to reorder them), or every chapter. The role can't be changed in the app any more; plan a roadmap with Claude instead.
+- **The home page's Engineering line** shows the goal and "N of M learned".
+- **Tables stay.** The old assessment, practice, radar, lesson, question and source packet tables are unread but kept, as the owner asked, until a later release drops them.
+- **Left for later:** the Engineering agents in `packages/agents`, the lesson and assessment content in `content/engineering-lab`, and the domain functions only the removed screens used. Nothing calls them; removing them is its own cleanup.
+
+**Verified:** `pnpm test` (172), `pnpm check`, `pnpm build`, `pnpm format:check`, `test:db:engineering` (8 sections, rebuilt around what's left) and `test:db:connector` (8).
 
 ## 10. Done when
 
