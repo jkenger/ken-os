@@ -190,46 +190,8 @@ export const artifactSelectionsRelations = relations(artifactSelections, ({ one 
   user: one(users, { fields: [artifactSelections.userId], references: [users.id] }),
 }));
 
-// Engineering. Spec: docs/architecture/engineering-rebuild.md, section 6. Everything except lab_progress and lab_profile
-// is append-only: runs, answers, questions and topic events are evidence, and progress is rebuilt from them.
-
-// Retired with the old Engineering screens (engineering-claude-first.md, section 9d): lab_source_packets, lab_lessons,
-// lab_runs, lab_run_answers, lab_questions, lab_daily_sets and lab_radar_items. Nothing reads or writes them; they are
-// kept until a later release drops them, so their JSON columns are untyped.
-
-export const labSourcePackets = pgTable(
-  "lab_source_packets",
-  {
-    id: text("id").primaryKey(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    topicId: text("topic_id").notNull(),
-    packet: jsonb("packet").$type<unknown>().notNull(),
-    refreshAfter: text("refresh_after").notNull(),
-    generatedAt: timestamp("generated_at", { withTimezone: true }).notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  },
-  (table) => [uniqueIndex("lab_source_packets_generated_unique").on(table.userId, table.topicId, table.generatedAt)],
-);
-
-export const labLessons = pgTable(
-  "lab_lessons",
-  {
-    id: text("id").primaryKey(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    topicId: text("topic_id").notNull(),
-    version: integer("version").notNull(),
-    /** The Tutor's packet. Null for a lesson Claude saved through the connector, whose sources it gave itself. */
-    sourcePacketId: text("source_packet_id").references(() => labSourcePackets.id),
-    snapshot: jsonb("snapshot").$type<unknown>().notNull(),
-    source: text("source").$type<ContentSource>().notNull().default("ken-os"),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  },
-  (table) => [uniqueIndex("lab_lessons_version_unique").on(table.userId, table.topicId, table.version)],
-);
+// Engineering. Spec: docs/architecture/engineering-claude-first.md. Topic events are append-only evidence; statuses and
+// lab_progress are rebuilt from them. The old screens' tables were dropped in migration 0016.
 
 /**
  * Claude's exercise versions for a topic (docs/architecture/engineering-claude-connector.md, section 4). The repo lab is
@@ -279,70 +241,6 @@ export const labExerciseDrafts = pgTable(
   (table) => [primaryKey({ columns: [table.userId, table.labId] })],
 );
 
-/** One assessment. It keeps the questions as they were when it started, so a taken assessment never changes. */
-export const labRuns = pgTable(
-  "lab_runs",
-  {
-    id: text("id").primaryKey(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    questions: jsonb("questions").$type<unknown[]>().notNull(),
-    startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
-    completedAt: timestamp("completed_at", { withTimezone: true }),
-  },
-  (table) => [index("lab_runs_user_idx").on(table.userId, table.startedAt)],
-);
-
-/** An answer locks on submit. The grade is filled in afterwards; it stays null while grading has failed. */
-export const labRunAnswers = pgTable(
-  "lab_run_answers",
-  {
-    id: text("id").primaryKey(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    runId: text("run_id")
-      .notNull()
-      .references(() => labRuns.id, { onDelete: "cascade" }),
-    questionIndex: integer("question_index").notNull(),
-    answer: text("answer").notNull(),
-    /** Predict questions: the printed lines you predicted. */
-    output: jsonb("output").$type<string[]>(),
-    selfRating: integer("self_rating").notNull(),
-    label: text("label").$type<Label>(),
-    rubric: jsonb("rubric").$type<RubricResult[]>(),
-    feedback: text("feedback"),
-    /** The Assessor's prompt version and model, for the evidence page. */
-    graderVersion: text("grader_version"),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    gradedAt: timestamp("graded_at", { withTimezone: true }),
-  },
-  (table) => [uniqueIndex("lab_run_answers_question_unique").on(table.runId, table.questionIndex)],
-);
-
-/** A proof prompt or a practice question the Assessor wrote for one topic, from its assessment points. */
-export const labQuestions = pgTable(
-  "lab_questions",
-  {
-    id: text("id").primaryKey(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    topicId: text("topic_id").notNull(),
-    kind: text("kind").notNull(),
-    prompt: text("prompt").notNull(),
-    code: text("code"),
-    rubric: jsonb("rubric").$type<string[]>().notNull(),
-    referenceAnswer: text("reference_answer").notNull(),
-    promptVersion: text("prompt_version").notNull(),
-    model: text("model").notNull(),
-    source: text("source").$type<ContentSource>().notNull().default("ken-os"),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  },
-  (table) => [index("lab_questions_user_topic_idx").on(table.userId, table.topicId, table.createdAt)],
-);
-
 /** Everything that moves a topic: a lesson opened, an exercise run, the solution opened, a proof or a review answer. */
 export const labTopicEvents = pgTable(
   "lab_topic_events",
@@ -358,7 +256,7 @@ export const labTopicEvents = pgTable(
     passed: boolean("passed"),
     code: text("code"),
     results: jsonb("results").$type<CodeRun>(),
-    questionId: text("question_id").references(() => labQuestions.id),
+    questionId: text("question_id"),
     answer: text("answer"),
     selfRating: integer("self_rating"),
     label: text("label").$type<Label>(),
@@ -385,59 +283,15 @@ export const labTopicEvents = pgTable(
   ],
 );
 
-/** One row per person: the intake, the target role and hours per week. */
+/** One row per person: the target role, which shapes the default roadmap until Claude plans one. */
 export const labProfile = pgTable("lab_profile", {
   userId: text("user_id")
     .primaryKey()
     .references(() => users.id, { onDelete: "cascade" }),
   /** The target role id. */
   direction: text("direction"),
-  /** Retired with the old Engineering screens. Kept until a later release drops it. */
-  intake: jsonb("intake").$type<unknown>(),
-  weeklyHours: integer("weekly_hours"),
-  /** Retired with the Guide. Always empty; dropped in a later release. */
-  conversation: jsonb("conversation").$type<unknown[]>().notNull().default([]),
-  /** Retired with the Guide. Always empty; dropped in a later release. */
-  addedChapters: jsonb("added_chapters").$type<unknown[]>().notNull().default([]),
-  radarCheckedWeek: text("radar_checked_week"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
-
-/** A day's practice set, stored so it stays the same if you leave and come back. */
-export const labDailySets = pgTable(
-  "lab_daily_sets",
-  {
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    day: text("day").notNull(),
-    items: jsonb("items").$type<unknown[]>().notNull(),
-    warmUp: boolean("warm_up").notNull().default(false),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  },
-  (table) => [primaryKey({ columns: [table.userId, table.day] })],
-);
-
-export const labRadarItems = pgTable(
-  "lab_radar_items",
-  {
-    id: text("id").primaryKey(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    week: text("week").notNull(),
-    area: text("area").notNull(),
-    tag: text("tag").notNull(),
-    title: text("title").notNull(),
-    reason: text("reason").notNull(),
-    sourceUrl: text("source_url"),
-    /** For a re-check flag: the proven topic whose facts changed. */
-    topicId: text("topic_id"),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    dismissedAt: timestamp("dismissed_at", { withTimezone: true }),
-  },
-  (table) => [index("lab_radar_items_user_week_idx").on(table.userId, table.week)],
-);
 
 /** Rebuilt from lab_topic_events on every change; never the source of truth. */
 export const labProgress = pgTable(
@@ -452,140 +306,6 @@ export const labProgress = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [primaryKey({ columns: [table.userId, table.topicId] })],
-);
-
-// Retired by the rebuild (2026-10-10). Emptied by migration 0010 and read by nothing; dropped in a later release, once
-// no deployed code can still reach them. Columns stay exactly as they were so no migration touches them until then.
-
-export const labAssessmentRuns = pgTable(
-  "lab_assessment_runs",
-  {
-    id: text("id").primaryKey(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    kind: text("kind").notNull(),
-    plan: jsonb("plan").notNull(),
-    generations: integer("generations").notNull().default(0),
-    startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
-    completedAt: timestamp("completed_at", { withTimezone: true }),
-  },
-  (table) => [
-    index("lab_assessment_runs_user_idx").on(table.userId, table.startedAt),
-    uniqueIndex("lab_assessment_runs_one_baseline")
-      .on(table.userId)
-      .where(sql`${table.kind} = 'baseline'`),
-  ],
-);
-
-export const labAssessments = pgTable(
-  "lab_assessments",
-  {
-    id: text("id").primaryKey(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    topicId: text("topic_id").notNull(),
-    kind: text("kind").notNull(),
-    items: jsonb("items").notNull(),
-    promptVersion: text("prompt_version").notNull(),
-    model: text("model").notNull(),
-    origin: text("origin").notNull().default("topic"),
-    runId: text("run_id").references(() => labAssessmentRuns.id, { onDelete: "cascade" }),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  },
-  (table) => [index("lab_assessments_user_topic_idx").on(table.userId, table.topicId, table.createdAt)],
-);
-
-export const labChapterScreens = pgTable(
-  "lab_chapter_screens",
-  {
-    id: text("id").primaryKey(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    setId: text("set_id").notNull(),
-    runId: text("run_id").references(() => labAssessmentRuns.id, { onDelete: "cascade" }),
-    chapterId: text("chapter_id").notNull(),
-    itemIndex: integer("item_index").notNull(),
-    item: jsonb("item").notNull(),
-    promptVersion: text("prompt_version").notNull(),
-    model: text("model").notNull(),
-    response: jsonb("response"),
-    selfRating: integer("self_rating"),
-    label: text("label"),
-    misconceptions: jsonb("misconceptions"),
-    feedback: text("feedback"),
-    rubric: jsonb("rubric"),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-    answeredAt: timestamp("answered_at", { withTimezone: true }),
-  },
-  (table) => [
-    uniqueIndex("lab_chapter_screens_item_unique").on(table.setId, table.chapterId, table.itemIndex),
-    index("lab_chapter_screens_user_idx").on(table.userId, table.chapterId),
-  ],
-);
-
-export const labAttempts = pgTable(
-  "lab_attempts",
-  {
-    id: text("id").primaryKey(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    topicId: text("topic_id").notNull(),
-    kind: text("kind").notNull(),
-    mode: text("mode").notNull(),
-    lessonId: text("lesson_id").references(() => labLessons.id),
-    assessmentId: text("assessment_id").references(() => labAssessments.id),
-    itemIndex: integer("item_index"),
-    labId: text("lab_id"),
-    item: jsonb("item").notNull(),
-    response: jsonb("response").notNull(),
-    selfRating: integer("self_rating"),
-    label: text("label").notNull(),
-    gradedBy: text("graded_by").notNull(),
-    voided: boolean("voided").notNull().default(false),
-    misconceptions: jsonb("misconceptions").notNull(),
-    feedback: text("feedback").notNull(),
-    run: jsonb("run"),
-    rubric: jsonb("rubric"),
-    solutionSeen: boolean("solution_seen").notNull().default(false),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  },
-  (table) => [
-    index("lab_attempts_user_topic_idx").on(table.userId, table.topicId, table.createdAt),
-    uniqueIndex("lab_attempts_item_unique").on(table.assessmentId, table.itemIndex),
-  ],
-);
-
-export const labSolutionReveals = pgTable(
-  "lab_solution_reveals",
-  {
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    labId: text("lab_id").notNull(),
-    revealedAt: timestamp("revealed_at", { withTimezone: true }).notNull().defaultNow(),
-  },
-  (table) => [primaryKey({ columns: [table.userId, table.labId] })],
-);
-
-export const labProgressChanges = pgTable(
-  "lab_progress_changes",
-  {
-    id: text("id").primaryKey(),
-    userId: text("user_id")
-      .notNull()
-      .references(() => users.id, { onDelete: "cascade" }),
-    topicId: text("topic_id").notNull(),
-    fromStatus: text("from_status").notNull(),
-    toStatus: text("to_status").notNull(),
-    attemptId: text("attempt_id").references(() => labAttempts.id),
-    reason: text("reason").notNull(),
-    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  },
-  (table) => [index("lab_progress_changes_user_idx").on(table.userId, table.createdAt)],
 );
 
 // Ken OS-wide term lookup. A saved term is one per spelling (term_key); lookups are logged only to enforce the daily limit.
