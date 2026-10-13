@@ -25,13 +25,13 @@ export function tabForPath(_pathname: string): EngineeringTab {
 
 /**
  * Where old Engineering and /lab addresses go: a topic's page opens that topic on the roadmap, everything else opens
- * the roadmap. Temporary (307) until the owner makes them permanent. Used by next.config.ts.
+ * the roadmap. Permanent (308) since 13 Oct 2026, at the owner's call. Used by next.config.ts.
  */
 export const engineeringRedirects = [
-  { source: "/engineering/roadmap", destination: "/engineering", permanent: false },
-  { source: "/engineering/learn/:topicId", destination: "/engineering?topic=:topicId", permanent: false },
-  { source: "/engineering/:path+", destination: "/engineering", permanent: false },
-  { source: "/lab/topics/:topicId", destination: "/engineering?topic=:topicId", permanent: false },
-  { source: "/lab", destination: "/engineering", permanent: false },
-  { source: "/lab/:path+", destination: "/engineering", permanent: false },
+  { source: "/engineering/roadmap", destination: "/engineering", permanent: true },
+  { source: "/engineering/learn/:topicId", destination: "/engineering?topic=:topicId", permanent: true },
+  { source: "/engineering/:path+", destination: "/engineering", permanent: true },
+  { source: "/lab/topics/:topicId", destination: "/engineering?topic=:topicId", permanent: true },
+  { source: "/lab", destination: "/engineering", permanent: true },
+  { source: "/lab/:path+", destination: "/engineering", permanent: true },
 ];

@@ -31,7 +31,7 @@ test("old Engineering and /lab pages land on the roadmap, topics on their panel"
   assert.equal(land("/lab/topics/js.closures"), "/engineering?topic=js.closures");
   assert.equal(land("/lab/profile"), "/engineering");
   assert.ok(
-    engineeringRedirects.every((rule) => !rule.permanent),
-    "temporary until the owner decides",
+    engineeringRedirects.every((rule) => rule.permanent),
+    "permanent, as the owner decided",
   );
 });
