@@ -35,3 +35,13 @@ test("old Engineering and /lab pages land on the roadmap, topics on their panel"
     "permanent, as the owner decided",
   );
 });
+
+test("each roadmap has its own address, and a topic opens on it", () => {
+  assert.equal(engineering.roadmap(null, "rm-1"), "/engineering?roadmap=rm-1");
+  assert.equal(engineering.roadmap("react.effects", "rm-1"), "/engineering?roadmap=rm-1&topic=react.effects");
+  assert.equal(
+    engineering.roadmap("react.effects", null),
+    "/engineering?topic=react.effects",
+    "the role's path has none",
+  );
+});

@@ -15,6 +15,11 @@ export function proveMessage(topic: { id: string; title: string }) {
 export const PLAN_MESSAGE =
   "Plan a new Ken OS roadmap with me. Ask my goal and what I've worked on, propose chapters and topics from the topic map, and save it with save_roadmap once I agree.";
 
+/** Re-plan one roadmap in place (docs/architecture/engineering-roadmaps.md, section 1): the id tells Claude which. */
+export function replanMessage(roadmap: { id: string; goal: string }) {
+  return `Re-plan my roadmap ${roadmap.goal} (Ken OS roadmap \`${roadmap.id}\`). Start by checking where I am.`;
+}
+
 /**
  * The owner's Claude Project from KEN_OS_CLAUDE_PROJECT_URL: the fallback until a link is saved in Settings.
  * Anything that isn't a Claude link (unset, a typo, another site) hides the button rather than opening it.

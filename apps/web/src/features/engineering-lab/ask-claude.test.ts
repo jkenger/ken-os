@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { askClaudeMessage, claudeLink, claudeProjectUrl } from "./ask-claude";
+import { askClaudeMessage, claudeLink, claudeProjectUrl, replanMessage } from "./ask-claude";
 
 // Ask Claude (docs/architecture/engineering-claude-connector.md, section 6).
 
@@ -39,4 +39,11 @@ test("Project and chat links are https claude.ai links only", () => {
   ]) {
     assert.equal(claudeLink(bad), null, String(bad));
   }
+});
+
+test("Re-plan names the roadmap and its id, so Claude replaces that one", () => {
+  assert.equal(
+    replanMessage({ id: "rm-1", goal: "System design interviews" }),
+    "Re-plan my roadmap System design interviews (Ken OS roadmap `rm-1`). Start by checking where I am.",
+  );
 });

@@ -92,3 +92,17 @@ Built 14 Oct 2026 on `feat/engineering-roadmaps-data`.
 - **Until slice 2,** the page has no switcher: it shows the roadmap opened last, which is the newest one Claude saved. Older active roadmaps are kept and Claude can read them, but the page can't switch to them yet.
 
 **Verified:** `pnpm test` (189, 3 new in `roadmaps.test.ts`), `pnpm check`, `pnpm build`, `test:db:engineering` (12 sections; the planning section now checks two roadmaps side by side, opening by id, per-owner ids, re-plan in place with its archived copy, the limit, archive and restore, and the order in `get_current_state`; the steps section checks `report_progress` on a topic that sits on two roadmaps) and `test:db:connector` (8). On the local server, the page loads with no errors and still shows the role's path when no roadmap is saved. Two stray test reports left on Call stack by slice 3's first script run were found and removed.
+
+## 8. Slice 2 as built
+
+Built 14 Oct 2026 on `feat/engineering-roadmap-switcher`.
+
+- **The switcher** (`components/engineering/roadmap/roadmap-switcher.tsx`) is a button beside the page title, not the title itself: a two-line goal as one big button read as a heavy pill. It opens a menu of the active roadmaps with "5 of 14", a check on the one shown, and **New roadmap**. Before the first roadmap is saved, the title is plain text as before. The menu is the registry's `dropdown-menu`, added unchanged.
+- **Addresses:** `engineering.roadmap(topicId, roadmapId)` gives `/engineering?roadmap=<id>&topic=<id>`. Opening a topic keeps the roadmap in the address. A roadmap id that isn't the owner's, or no longer exists, falls back to plain `/engineering`, keeping the topic.
+- **Opened last:** the page posts to `/api/lab/roadmaps/[id]/open` when an active roadmap opens. It isn't recorded during the page render, so a prefetched link can't count as opening one.
+- **New roadmap** copies the planning message (`PLAN_MESSAGE`) through the Ask Claude dialog, now able to open from a menu item. At 3 active it says "3 of 3 active · archive one first"; without a Project link it points to Claude setup. A finished roadmap's **Plan next roadmap** uses the same dialog.
+- **Re-plan** replaces Plan new roadmap in the header, for an active, unfinished roadmap. Its message is `replanMessage`, naming the roadmap and its id.
+- **The topic panel** reads Next topic and chapter done on the roadmap it was opened on (`?roadmap=` on the panel request).
+- No migration. Archive and Restore on screen, the archived view and the Profile lines are slice 3.
+
+**Verified:** `pnpm test` (191, 2 new), `pnpm check`, `pnpm build`, `test:db:engineering` and `test:db:connector`. On the local server, signed in, with 3 test roadmaps saved by a script acting as Claude: the menu with progress and the current one checked; switching by clicking, with the address following; Re-plan and New roadmap copying their messages; plain `/engineering` opening the roadmap opened last; New roadmap at 3 of 3 showing the limit; a topic link loading its panel for that roadmap; a bad roadmap id falling back. The test roadmaps and link were removed afterwards.

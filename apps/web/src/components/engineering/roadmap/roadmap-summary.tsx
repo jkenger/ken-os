@@ -2,9 +2,7 @@
 
 import { formatDate } from "@/components/lab/words";
 import { Button } from "@/components/ui/button";
-import { PLAN_MESSAGE } from "@/features/engineering-lab/ask-claude";
 import type { RoadmapSummary as Summary } from "@/features/engineering-lab/roadmap-summary";
-import { AskClaude } from "../ask-claude";
 import { panel } from "../kit";
 import { StatusIcon, statusWords } from "./status";
 
@@ -21,11 +19,12 @@ function span(summary: Summary) {
 
 export function RoadmapSummary({
   summary,
-  projectUrl,
+  onNew,
   onSelect,
 }: {
   summary: Summary;
-  projectUrl: string | null;
+  /** Plan next roadmap: New roadmap, which checks the limit first. */
+  onNew: () => void;
   onSelect: (topicId: string) => void;
 }) {
   const facts = [
@@ -40,9 +39,9 @@ export function RoadmapSummary({
         <h2 id="summary-title" className="font-semibold">
           Summary
         </h2>
-        {projectUrl && (
-          <AskClaude message={PLAN_MESSAGE} label="Plan next roadmap" projectUrl={projectUrl} variant="default" />
-        )}
+        <Button type="button" size="sm" onClick={onNew}>
+          Plan next roadmap
+        </Button>
       </div>
       <dl className="grid grid-cols-2 gap-px border-b bg-border sm:grid-cols-4">
         {facts.map(([label, value]) => (

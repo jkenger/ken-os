@@ -333,7 +333,12 @@ export interface TopicPanelView {
 }
 
 /** Everything the roadmap's topic panel shows, except the code exercise, which loads when opened. */
-export async function getTopicPanel(userId: string, topicId: string): Promise<TopicPanelView> {
+/** Next topic and chapter done are worked out on `roadmapId`, else on the roadmap opened last. */
+export async function getTopicPanel(
+  userId: string,
+  topicId: string,
+  roadmapId?: string | null,
+): Promise<TopicPanelView> {
   const topic = await requireAnyTopic(userId, topicId, await chapterOnRoadmap(userId, topicId));
   const [status, reports, notes, chatUrl, practice, roadmap] = await Promise.all([
     topicStatus(userId, topicId),
@@ -341,7 +346,7 @@ export async function getTopicPanel(userId: string, topicId: string): Promise<To
     listNotes(userId, topicId),
     getTopicChat(userId, topicId),
     practiceState(userId, topic),
-    getRoadmap(userId),
+    getRoadmap(userId, roadmapId),
   ]);
   const { id, title, custom, area, chapter, gap, points } = topic;
   return {
