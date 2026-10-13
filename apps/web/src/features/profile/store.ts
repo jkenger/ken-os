@@ -1,7 +1,16 @@
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { importProfile, PROFILE_IMPORT_PROMPT_VERSION } from "@ken-os/agents";
-import { emptyProfile, normalizeProfile, ProfileFieldError, type ProfileDetails } from "@ken-os/domain";
+import {
+  emptyProfile,
+  isPaperSize,
+  isResumeTemplate,
+  normalizeProfile,
+  ProfileFieldError,
+  type PaperSize,
+  type ProfileDetails,
+  type ResumeTemplate,
+} from "@ken-os/domain";
 import { DriveError, getDriveFile, getResumeText } from "@ken-os/drive";
 import { db } from "@/lib/db";
 import { DriveAccessError, getGoogleAccessToken } from "@/lib/google";
@@ -26,12 +35,30 @@ export interface ProfileState {
   details: ProfileDetails;
   /** When the owner last saved. Null before the first save, when the details are only prefilled. */
   savedAt: string | null;
+  /** The template and paper size last chosen on the Resume page. */
+  resume: ResumeSettings;
 }
+
+export interface ResumeSettings {
+  template: ResumeTemplate;
+  paper: PaperSize;
+}
+
+const DEFAULT_RESUME: ResumeSettings = { template: "classic", paper: "letter" };
 
 /** The saved Profile, or before the first save, an empty one prefilled with the name and email from sign-in. */
 export async function getProfile(userId: string): Promise<ProfileState> {
   const [row] = await db().select().from(profiles).where(eq(profiles.userId, userId)).limit(1);
-  if (row) return { details: normalizeProfile(row.details, "import"), savedAt: row.updatedAt.toISOString() };
+  if (row) {
+    return {
+      details: normalizeProfile(row.details, "import"),
+      savedAt: row.updatedAt.toISOString(),
+      resume: {
+        template: isResumeTemplate(row.template) ? row.template : DEFAULT_RESUME.template,
+        paper: isPaperSize(row.paper) ? row.paper : DEFAULT_RESUME.paper,
+      },
+    };
+  }
   const [user] = await db()
     .select({ name: users.name, email: users.email })
     .from(users)
@@ -40,7 +67,7 @@ export async function getProfile(userId: string): Promise<ProfileState> {
   const details = emptyProfile();
   details.contact.fullName = user?.name ?? "";
   details.contact.email = user?.email ?? "";
-  return { details, savedAt: null };
+  return { details, savedAt: null, resume: DEFAULT_RESUME };
 }
 
 /** Saves what the owner typed. With an `importId`, it also marks that Drive import as applied. */
@@ -87,6 +114,20 @@ async function readChosenResume(userId: string) {
     if (error instanceof DriveError) throw new ProfileInputError("Couldn't open the Drive file. Choose it again", 409);
     throw error;
   }
+}
+
+/** Remembers the Resume page's template and paper size. Needs saved details, since there's nothing to print before. */
+export async function saveResumeSettings(userId: string, input: Record<string, unknown>): Promise<ResumeSettings> {
+  const { template, paper } = input;
+  if (!isResumeTemplate(template)) throw new ProfileInputError("Choose a template");
+  if (!isPaperSize(paper)) throw new ProfileInputError("Choose Letter or A4");
+  const updated = await db()
+    .update(profiles)
+    .set({ template, paper })
+    .where(eq(profiles.userId, userId))
+    .returning({ userId: profiles.userId });
+  if (!updated.length) throw new ProfileInputError("No details saved. Save them first", 409);
+  return { template, paper };
 }
 
 /**

@@ -8,6 +8,7 @@ import {
   BookOpenText,
   FileText,
   FlaskConical,
+  FolderOpen,
   Map as MapIcon,
   Library,
   Search,
@@ -68,7 +69,8 @@ const moduleDetails: Record<
     title: "Profile",
     sections: [
       { label: "Details", href: "/profile", icon: UserRound },
-      { label: "Drive file", href: "/profile#drive-file", icon: FileText },
+      { label: "Resume", href: "/profile/resume", icon: FileText },
+      { label: "Drive file", href: "/profile#drive-file", icon: FolderOpen },
     ],
   },
   memory: {

@@ -1,6 +1,6 @@
 # Profile and resume builder
 
-Status: step 1 built 12 Oct 2026; steps 2 to 5 proposed. Replaces the Resume module. Decisions below were agreed with the owner in chat on 12 Oct 2026.
+Status: step 1 built 12 Oct 2026, step 2 built 13 Oct 2026; steps 3 to 5 proposed. Replaces the Resume module. Decisions below were agreed with the owner in chat on 12 Oct 2026.
 
 ## The idea in one line
 
@@ -93,6 +93,18 @@ Two one-way paths, never a loop.
 5. **Drive sync.** Change detection and review, saving to Drive.
 
 Each step ships on its own and leaves the app working.
+
+## Step 2 design
+
+Agreed 13 Oct 2026: server-made PDF, Letter or A4, saved details only, its own page.
+
+- **Page:** `/profile/resume`, the Resume section under Profile. Template switch (Classic, Compact, Technical), paper switch (Letter, A4), the PDF preview, and Download PDF. Before the first save it shows "No details saved" with Add details.
+- **One renderer:** `@react-pdf/renderer` draws the PDF on the server (`apps/web/src/features/profile/resume-pdf.tsx`). The preview is that same PDF in a frame, so preview and download can't differ.
+- **Saved details only:** the PDF reads the saved Profile. Unsaved form edits don't show until Save.
+- **Remembered choice:** `profiles.template` and `profiles.paper` (migration `0018_resume_settings`, defaults `classic` and `letter`). Choosing doesn't count as saving details.
+- **Print rules** in `packages/domain/src/resume.ts`: section order per template, standard headings, one date format ("Apr 2023 – Present"), the contact line in the body, links as plain addresses, and the download name ("Name Resume.pdf"). Local fields are never printed.
+- **API:** `GET /api/profile/resume?template=&paper=&download=1` returns the PDF; `PUT /api/profile/resume` saves the choice.
+- **Tests:** `resume.test.ts` renders every template on both paper sizes and reads the text back as an ATS would. @react-pdf publishes some files for `import` only, so the test bundles `resume-pdf.tsx` to ESM with esbuild before loading it.
 
 ## Step 1 design
 

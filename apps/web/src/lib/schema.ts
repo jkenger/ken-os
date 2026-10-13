@@ -6,7 +6,9 @@ import type {
   ContentSource,
   ExerciseCheck,
   Label,
+  PaperSize,
   ProfileDetails,
+  ResumeTemplate,
   RubricResult,
   TermAnswer,
   TopicEventKind,
@@ -52,6 +54,9 @@ export const profiles = pgTable("profiles", {
     .primaryKey()
     .references(() => users.id, { onDelete: "cascade" }),
   details: jsonb("details").$type<ProfileDetails>().notNull(),
+  /** The resume template and paper size last chosen on the Resume page. */
+  template: text("template").$type<ResumeTemplate>().notNull().default("classic"),
+  paper: text("paper").$type<PaperSize>().notNull().default("letter"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
