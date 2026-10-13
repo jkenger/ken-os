@@ -14,12 +14,12 @@ This reverses the connector spec's first rule ("Claude never decides Proven"). I
 
 One page, `/engineering`. Eleven screens become one.
 
-| Part           | What it shows                                                                                              |
-| -------------- | ---------------------------------------------------------------------------------------------------------- |
-| Header         | The goal, the progress line ("5 of 14 learned · Now: Effects & dependencies") over a bar, and **Settings** |
-| Roadmap        | Goal → chapters → topics. A graph by default, with **Lanes** as the other view                             |
-| Topic panel    | Opens when a topic is clicked (below)                                                                      |
-| Settings panel | The goal with **Plan new roadmap with Claude**, and Connections with Disconnect                            |
+| Part         | What it shows                                                                                                                       |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Header       | The goal, the progress line ("5 of 14 learned · Now: Effects & dependencies") over a bar, **Plan new roadmap** and **Claude setup** |
+| Roadmap      | Goal → chapters → topics. A graph by default, with **Lanes** as the other view                                                      |
+| Topic panel  | Opens when a topic is clicked (below)                                                                                               |
+| Claude setup | Connect Ken OS, the Project instructions and the Project link (9f)                                                                  |
 
 **The graph** shows only the current chapter's topics. Other chapters are single nodes with a count ("React · 1 of 3") and expand on click. Zoom and drag move around the rest. Use a maintained graph library, not hand-built layout. **Lanes** shows chapters as columns, in order, with topics stacked as cards; on a phone the columns stack.
 
@@ -214,6 +214,33 @@ Built 13 Oct 2026 on `chore/engineering-retire-old-screens`.
 - **Dead code removed (13 Oct 2026, `chore/remove-engineering-dead-code`):** the Researcher, Tutor, Assessor and radar agents in `packages/agents`; the hand-written lesson, the 5 assessment questions and the saved source packet in `content/engineering-lab`, with their `authoredTopics` and `assessment` exports; and the domain code only the removed screens used (assessment, practice, grading, lessons, profile levels, radar, source packets). The old tables were kept until the next entry dropped them.
 
 **Verified:** `pnpm test` (172), `pnpm check`, `pnpm build`, `pnpm format:check`, `test:db:engineering` (8 sections, rebuilt around what's left) and `test:db:connector` (8).
+
+## 9e. Claude links in the app
+
+Built 13 Oct 2026 on `feat/claude-links-in-app`, at the owner's request.
+
+- **The Claude Project link** is set in Settings (**Claude Project**) and stored in `lab_profile.claude_project_url`. `KEN_OS_CLAUDE_PROJECT_URL` is only a fallback until one is saved; clearing the field falls back to it again. Without either, Ask Claude stays hidden.
+- **A chat per topic, optional.** **Link chat** in the topic panel takes the chat's address; **Continue chat** then opens it, and **Change chat** replaces or clears it. Stored in `lab_topic_chats`, one per topic, per owner. Claude can't know its own chat's address, so only the owner sets it; Ask Claude stays for starting fresh.
+- **One rule for both links:** https on `claude.ai` (`claudeLink` in `ask-claude.ts`), checked on the server; anything else is refused with "Use an https claude.ai link".
+- **Recall in Claude:** the Project instructions now ask Claude to call `get_history` first whenever a topic comes up, so a fresh chat knows what was covered, explained and noted, linked chat or not.
+- **Migration** `0019_rainy_wong.sql` only adds the column and the table.
+
+**Verified:** `pnpm test`, `pnpm check`, `pnpm build`, `pnpm format:check`; `test:db:engineering` (9 sections, 1 new for links) and `test:db:connector` (8). On the local server with no env link: no Ask Claude; a non-Claude link refused in Settings; a saved Project link brings Ask Claude back; Link chat saves and shows Continue chat opening that chat in a new tab. The pane was minimized, so these ran through the page script and form input rather than real clicks. Test links were cleared afterwards.
+
+## 9f. Claude setup
+
+Built 13 Oct 2026 on `feat/claude-links-in-app`, at the owner's request: everything Claude needs, in one place in the app.
+
+- **One panel, three steps.** **Claude setup** in the header opens it. Each step shows its state as a badge:
+  1. **Connect Ken OS:** the connector address (`<app>/api/mcp`) with **Copy**, the path in Claude, and the connections with **Disconnect**. State: Connected or Not connected.
+  2. **Project instructions:** **Copy instructions**, **Show all**, and the date they last changed. State: Updated with the date.
+  3. **Project link:** the field from 9e, plus **Open Project**. State: Saved or Not set.
+- **Settings is gone.** Connections and the Project link moved into Claude setup, and **Plan new roadmap** into the header (shown once a roadmap is saved). Without a Project link, the "No roadmap" notice offers Claude setup instead of Plan with Claude.
+- **The instructions have one source:** `CLAUDE_PROJECT_INSTRUCTIONS` in `features/engineering-lab/claude-instructions.ts`, with `CLAUDE_INSTRUCTIONS_UPDATED`. `docs/product/claude-project-instructions.md` points there. Change them in a reviewed commit and update the date, so the owner knows to paste them again. `claude-instructions.test.ts` checks that every tool they name exists, that the ones the flow relies on are named, and that there are no em dashes.
+- **Ken OS can't tell** whether the Project has the latest instructions, since claude.ai doesn't expose them. The date is the signal.
+- No new tables or routes.
+
+**Verified:** `pnpm test` (149, including `claude-instructions.test.ts`), `pnpm check`, `pnpm build`, `pnpm format:check`, `test:db:engineering` and `test:db:connector`. On the local server at phone width, with real clicks: the panel with all three steps, Copy on the address, Show all, a saved Project link turning step 3 to Saved with Open Project, and the "No roadmap" notice switching from Claude setup to Plan with Claude. Plan new roadmap in the header wasn't seen, since the local database has no saved roadmap. The test link was cleared afterwards.
 
 ## 10. Done when
 

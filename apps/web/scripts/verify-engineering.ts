@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { config } from "dotenv";
 import { and, eq } from "drizzle-orm";
 import { closeDb, db } from "../src/lib/db";
-import { labExercises, labProgress, labRoadmaps, labTopicEvents, users } from "../src/lib/schema";
+import { labExercises, labProfile, labProgress, labRoadmaps, labTopicEvents, users } from "../src/lib/schema";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
@@ -400,6 +400,54 @@ async function main() {
         "Claude's topics are per owner",
       );
       console.log("ok - planning: a new roadmap archives the old one, and topics keep their progress");
+
+      // Links into Claude, set in the app (section 9e).
+      const links = await import("../src/features/engineering-lab/claude-links");
+      const savedEnv = process.env.KEN_OS_CLAUDE_PROJECT_URL;
+      process.env.KEN_OS_CLAUDE_PROJECT_URL = "https://claude.ai/project/from-env";
+      try {
+        assert.equal(
+          await links.getProjectUrl(planner),
+          "https://claude.ai/project/from-env",
+          "the env link is the fallback",
+        );
+        await assert.rejects(links.setProjectUrl(planner, "https://evil.example/p"), /https claude.ai link/);
+        await links.setProjectUrl(planner, "https://claude.ai/code/project/chan_1");
+        assert.equal(
+          await links.getProjectUrl(planner),
+          "https://claude.ai/code/project/chan_1",
+          "the saved link wins",
+        );
+        assert.equal((await db().select().from(labProfile).where(eq(labProfile.userId, planner)))[0].direction, null);
+        await links.setProjectUrl(planner, "");
+        assert.equal(
+          await links.getProjectUrl(planner),
+          "https://claude.ai/project/from-env",
+          "clearing falls back again",
+        );
+      } finally {
+        process.env.KEN_OS_CLAUDE_PROJECT_URL = savedEnv;
+      }
+      await assert.rejects(
+        links.setTopicChat(planner, "react.effects", "https://chat.openai.com/c/1"),
+        /https claude.ai link/,
+      );
+      await assert.rejects(links.setTopicChat(planner, "custom.not_mine", "https://claude.ai/chat/1"), /Unknown topic/);
+      await links.setTopicChat(planner, "custom.llm_as_judge", "https://claude.ai/chat/judge-1");
+      assert.equal(
+        (await roadmaps.getTopicPanel(planner, "custom.llm_as_judge")).chatUrl,
+        "https://claude.ai/chat/judge-1",
+      );
+      await links.setTopicChat(planner, "custom.llm_as_judge", "https://claude.ai/chat/judge-2");
+      assert.equal(
+        await links.getTopicChat(planner, "custom.llm_as_judge"),
+        "https://claude.ai/chat/judge-2",
+        "relinking replaces it",
+      );
+      assert.equal(await links.getTopicChat(other, "custom.llm_as_judge"), null, "chat links are per owner");
+      await links.setTopicChat(planner, "custom.llm_as_judge", "");
+      assert.equal(await links.getTopicChat(planner, "custom.llm_as_judge"), null);
+      console.log("ok - links: the Project link is saved in the app over the env, and each topic can link a chat");
     } finally {
       await db().delete(users).where(eq(users.id, planner));
     }
