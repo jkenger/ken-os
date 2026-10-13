@@ -3,6 +3,7 @@ import { TopicPage } from "@/components/engineering/topic";
 import { findTopic, placeOf, topicMap } from "@/features/engineering-lab/curriculum";
 import type { TopicStep } from "@/features/engineering-lab/routes";
 import { provenTopics } from "@/features/engineering-lab/store";
+import { claudeProjectUrl } from "@/features/engineering-lab/ask-claude";
 import { getExercisePanel } from "@/features/engineering-lab/exercise-store";
 import { getTopicView } from "@/features/engineering-lab/topic-store";
 import { requireSession } from "@/lib/session";
@@ -41,6 +42,7 @@ export default async function TopicRoute({
       view={view}
       initialStep={STEPS.find((item) => item === step) ?? "learn"}
       nextTopic={next ? { id: next.id, title: next.title } : null}
+      claudeProjectUrl={claudeProjectUrl()}
     />
   );
 }

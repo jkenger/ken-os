@@ -1,6 +1,6 @@
 # Engineering with Claude: a connector between claude.ai and Ken OS
 
-Status: slice 1 built on 12 Oct 2026 (§10a), slice 2 on 13 Oct 2026 (§10b). Slice 3 not yet built.
+Status: all three slices built, 12 and 13 Oct 2026 (§10a to §10c). The connector works on the hosted app: added in claude.ai, signed in, 8 tools listed (13 Oct 2026).
 
 ## Decision
 
@@ -234,7 +234,16 @@ Built 13 Oct 2026 on `feat/engineering-mcp`. Where these differ from §3, these 
 
 **Verified:** `pnpm test` (`rules.test.ts`), `pnpm check`, `pnpm build`, `test:db:connector` (8 checks: registration, authorize, code exchange, `/api/mcp`, write limit, refresh and reuse, Disconnect, owner only) and `test:db:engineering`. On the local server: both metadata documents, the 401, the consent page, a real tool call with a token, and Disconnect on Profile stopping that token.
 
-**Not verified:** the real claude.ai "Add custom connector" flow (§11, steps 1 and 2). claude.ai can't reach a local server, so this needs the hosted app after merge.
+**Hosted, 13 Oct 2026:** the owner added Ken OS as a custom connector in claude.ai, signed in through the consent page, and saw the 8 tools (§11, step 1).
+
+## 10c. Slice 3 as built
+
+Built 13 Oct 2026 on `feat/engineering-ask-claude`.
+
+- **Ask Claude** sits beside the step tabs on every topic page (`components/engineering/topic.tsx`). It opens the Project in a new tab first, inside the click so the browser doesn't block it, then copies the starter message and shows "Copied. Paste it in Claude". If copying fails, the error toast shows the message to copy by hand.
+- **`KEN_OS_CLAUDE_PROJECT_URL`** must be an https link on `claude.ai`; anything else hides the button, like leaving it unset (`features/engineering-lab/ask-claude.ts`, tested in `ask-claude.test.ts`).
+- **Project instructions** are in `docs/product/claude-project-instructions.md`, with set-up steps. One sentence was added to §7's text: name the assessment points when writing a proof question.
+- **`AGENTS.md`** names the connector, its no-grading rule, and `test:db:connector`.
 
 ## 11. Done when
 
@@ -248,5 +257,5 @@ Built 13 Oct 2026 on `feat/engineering-mcp`. Where these differ from §3, these 
 
 ## Open questions
 
-- **claude.ai's exact OAuth behaviour** (which client option it uses, its callback URL) must be confirmed against the real "Add custom connector" flow during slice 2. The spec supports both client options so either works.
-- **Repo exercises versus Claude's:** once Claude writes a valid exercise for a topic, should it replace the repo lab as the default, or should the repo lab stay first? Recommended: the newest valid version is the default, and repo labs remain version 0.
+- ~~**claude.ai's exact OAuth behaviour**~~ Answered 13 Oct 2026: both client options are supported and the real flow works (§10b).
+- ~~**Repo exercises versus Claude's**~~ Answered in slice 1 as recommended: the newest valid version is the default, and repo labs stay version 0 (§10a).
