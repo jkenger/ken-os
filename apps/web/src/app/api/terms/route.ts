@@ -1,7 +1,18 @@
 import { text, termsRoute } from "@/features/terms/api";
-import { saveTerm } from "@/features/terms/store";
+import { listTerms, saveTerm } from "@/features/terms/store";
 
 export const runtime = "nodejs";
+
+/** Saved terms for the page marker: each page underlines them and shows the saved meaning on hover. */
+export async function GET(request: Request) {
+  return termsRoute(
+    request,
+    async (session) => ({
+      terms: (await listTerms(session.userId)).map(({ id, term, meaning, source }) => ({ id, term, meaning, source })),
+    }),
+    { write: false },
+  );
+}
 
 export async function POST(request: Request) {
   return termsRoute(

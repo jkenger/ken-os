@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { finalizeTermAnswer, isTrustedSourceUrl, safeReturnPath, termKey } from "@ken-os/domain";
+import { finalizeTermAnswer, firstTermMatches, isTrustedSourceUrl, safeReturnPath, termKey } from "@ken-os/domain";
 
 test("one saved term per spelling: case, spacing and trailing punctuation don't count", () => {
   assert.equal(termKey("  Microtask. "), "microtask");
@@ -37,4 +37,40 @@ test("the link back to where a term was found stays on Ken OS", () => {
   assert.equal(safeReturnPath("//evil.example/x"), "/");
   assert.equal(safeReturnPath("https://evil.example/"), "/");
   assert.equal(safeReturnPath("javascript:alert(1)"), "/");
+});
+
+test("a saved term is marked once per page, at its first whole-word match", () => {
+  const texts = ["The microtask queue runs.", "Another microtask later.", "Microtasks again."];
+  assert.deepEqual(firstTermMatches(texts, ["microtask"]), [{ index: 0, start: 4, end: 13, key: "microtask" }]);
+});
+
+test("a plural matches its saved singular, and case doesn't matter", () => {
+  assert.deepEqual(firstTermMatches(["Two Closures here"], ["closure"]), [
+    { index: 0, start: 4, end: 12, key: "closure" },
+  ]);
+  assert.deepEqual(firstTermMatches(["Many classes"], ["class"]), [{ index: 0, start: 5, end: 12, key: "class" }]);
+});
+
+test("a term never matches inside another word", () => {
+  assert.deepEqual(firstTermMatches(["Indexes and reindexing", "subclass"], ["index", "class"]), [
+    { index: 0, start: 0, end: 7, key: "index" },
+  ]);
+});
+
+test("a phrase matches across extra spaces, and the longer saved term wins", () => {
+  assert.deepEqual(firstTermMatches(["The call\n  stack grows"], ["call stack", "stack", "call"]), [
+    { index: 0, start: 4, end: 16, key: "call stack" },
+  ]);
+});
+
+test("terms with symbols are matched literally", () => {
+  assert.deepEqual(firstTermMatches(["Use C++ or Node.js, not aXb."], ["c++", "node.js", "a.b"]), [
+    { index: 0, start: 4, end: 7, key: "c++" },
+    { index: 0, start: 11, end: 18, key: "node.js" },
+  ]);
+});
+
+test("no saved terms means no matches", () => {
+  assert.deepEqual(firstTermMatches(["anything"], []), []);
+  assert.deepEqual(firstTermMatches(["anything"], ["", "  "]), []);
 });
