@@ -55,7 +55,7 @@ Don't hand-write the default. Generate it:
    - its `globals.css` (imports, `@custom-variant dark`, `@theme inline`, `:root`, `.dark`, `@layer base`)
    - its `layout.tsx` font setup (the `next/font` calls, the variables and classes on `<html>`)
 3. Re-add every primitive Ken OS uses from the registry with overwrite, so each one is the shipped default:
-   `pnpm dlx shadcn@latest add --overwrite badge button card collapsible command dialog input-group input label native-select separator sheet sidebar skeleton sonner switch table tabs textarea toggle-group toggle tooltip`
+   `pnpm dlx shadcn@latest add --overwrite badge button card collapsible command dialog dropdown-menu input-group input label native-select separator sheet sidebar skeleton sonner switch table tabs textarea toggle-group toggle tooltip`
 
 Record the shadcn CLI version used in the PR description.
 

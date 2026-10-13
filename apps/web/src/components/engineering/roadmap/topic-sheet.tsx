@@ -25,8 +25,9 @@ import { TopicSteps } from "./topic-steps";
 const sectionTitle = "mb-2 text-xs font-semibold text-muted-foreground";
 const errorText = (error: unknown, fallback: string) => (error instanceof Error ? error.message : fallback);
 
-async function load(topicId: string): Promise<TopicPanelView> {
-  const response = await fetch(`/api/lab/topics/${encodeURIComponent(topicId)}/panel`);
+async function load(topicId: string, roadmapId: string | null): Promise<TopicPanelView> {
+  const query = roadmapId ? `?roadmap=${encodeURIComponent(roadmapId)}` : "";
+  const response = await fetch(`/api/lab/topics/${encodeURIComponent(topicId)}/panel${query}`);
   const body = (await response.json().catch(() => ({}))) as TopicPanelView & { error?: string };
   if (!response.ok) throw new Error(body.error ?? "Couldn't load the topic. Try again");
   return body;
@@ -266,12 +267,15 @@ function Notes({ topicId, notes, onSaved }: { topicId: string; notes: NoteView[]
 
 export function TopicSheet({
   topicId,
+  roadmapId,
   projectUrl,
   onClose,
   onChanged,
   onSelect,
 }: {
   topicId: string | null;
+  /** The roadmap it's opened on, for Next topic and chapter done. */
+  roadmapId: string | null;
   projectUrl: string | null;
   onClose: () => void;
   /** Opens another topic, for Next topic. */
@@ -286,13 +290,13 @@ export function TopicSheet({
 
   const refresh = useCallback(
     (id: string) =>
-      load(id)
+      load(id, roadmapId)
         .then((next) => {
           setPanel(next);
           setProblem("");
         })
         .catch((error: unknown) => setProblem(errorText(error, "Couldn't load the topic. Try again"))),
-    [],
+    [roadmapId],
   );
 
   useEffect(() => {

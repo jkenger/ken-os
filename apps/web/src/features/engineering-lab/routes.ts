@@ -10,8 +10,12 @@ function withQuery(path: string, query: Record<string, string | undefined | null
 }
 
 export const engineering = {
-  /** The roadmap. `topic` opens that topic's panel. */
-  roadmap: (topicId?: string | null) => withQuery("/engineering", { topic: topicId }),
+  /**
+   * A roadmap: the one named, else the one opened last (docs/architecture/engineering-roadmaps.md, section 1). `topic`
+   * opens that topic's panel.
+   */
+  roadmap: (topicId?: string | null, roadmapId?: string | null) =>
+    withQuery("/engineering", { roadmap: roadmapId, topic: topicId }),
 } as const;
 
 /** Engineering's one section. */

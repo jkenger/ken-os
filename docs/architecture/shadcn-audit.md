@@ -52,7 +52,7 @@ Nothing checked any of this. App language had a scan test; shadcn use had none.
 
 ## What changed
 
-- Added from the registry and tailored to the contract: textarea, label, native-select, input-group, dialog, sheet, tabs, switch, toggle, toggle-group, badge, collapsible, table, sidebar, separator, skeleton, command, sonner.
+- Added from the registry and tailored to the contract: textarea, label, native-select, input-group, dialog, sheet, tabs, switch, toggle, toggle-group, badge, collapsible, dropdown-menu (14 Oct 2026, for the roadmap switcher), table, sidebar, separator, skeleton, command, sonner.
 - `Button` now matches the contract (44px, medium label, `primary-hover`) and has a `text` variant, so `kit.tsx` no longer defines buttons.
 - The shell runs on `SidebarProvider`, the nested icon sidebar and `SidebarInset`; module search is `CommandDialog`. Measured against the old shell at 1440px: same 49px rail, 208px section column and inset position. Under 1024px the column hides and section tabs show; under 768px the sidebar's own sheet holds both lists at 18rem.
 - `toast()` keeps its signature and now shows through Sonner, pinned to the light theme (Ken OS has no dark theme, so `next-themes` was removed).

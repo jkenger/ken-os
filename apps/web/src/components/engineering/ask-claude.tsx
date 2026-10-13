@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IconExternalLink } from "@tabler/icons-react";
 import type { Topic } from "@ken-os/domain";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,8 @@ export function AskClaude({
   label = "Ask Claude",
   projectUrl,
   variant = "outline",
+  open,
+  onOpenChange,
 }: {
   topic?: Pick<Topic, "id" | "title">;
   message?: string;
@@ -41,7 +43,11 @@ export function AskClaude({
   projectUrl: string;
   /** "default" when it is the next thing to do. */
   variant?: "default" | "outline";
+  /** Opened from elsewhere, such as a menu item: no button of its own. */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }) {
+  const controlled = open !== undefined;
   const message = given ?? askClaudeMessage(topic!);
   const [state, setState] = useState<CopyState>("copying");
 
@@ -55,18 +61,27 @@ export function AskClaude({
     }
   }
 
+  // Opened from elsewhere: copy right after the click that opened it, while the browser still allows it.
+  useEffect(() => {
+    if (controlled && open) void copy();
+  }, [controlled, open]);
+
   return (
     <Dialog
-      onOpenChange={(open) => {
+      open={open}
+      onOpenChange={(next) => {
         // Copy inside the click that opened the dialog, while the browser still allows it.
-        if (open) void copy();
+        if (next && !controlled) void copy();
+        onOpenChange?.(next);
       }}
     >
-      <DialogTrigger asChild>
-        <Button type="button" variant={variant} size="sm">
-          {label}
-        </Button>
-      </DialogTrigger>
+      {!controlled && (
+        <DialogTrigger asChild>
+          <Button type="button" variant={variant} size="sm">
+            {label}
+          </Button>
+        </DialogTrigger>
+      )}
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{label}</DialogTitle>
