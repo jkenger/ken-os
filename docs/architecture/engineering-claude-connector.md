@@ -240,7 +240,9 @@ Built 13 Oct 2026 on `feat/engineering-mcp`. Where these differ from §3, these 
 
 Built 13 Oct 2026 on `feat/engineering-ask-claude`.
 
-- **Ask Claude** sits beside the step tabs on every topic page (`components/engineering/topic.tsx`). It opens the Project in a new tab first, inside the click so the browser doesn't block it, then copies the starter message and shows "Copied. Paste it in Claude". If copying fails, the error toast shows the message to copy by hand.
+- **Ask Claude** sits beside the step tabs on every topic page (`components/engineering/ask-claude.tsx`). Changed on 13 Oct 2026 to a dialog: opening it copies the starter message and shows it with "Copied · paste it in Claude", **Copy again** and **Open Claude**. The first version opened Claude straight away, so its "Copied" toast showed on the tab the owner had just left and the step felt silent.
+- **No pre-fill:** claude.ai doesn't fill a Project's input from a link. The owner tried `?q=` and `?prompt=` on 13 Oct 2026 and neither worked, so pasting stays.
+- **Project links** may be `claude.ai/project/…` or `claude.ai/code/project/…`; any https `claude.ai` link works.
 - **`KEN_OS_CLAUDE_PROJECT_URL`** must be an https link on `claude.ai`; anything else hides the button, like leaving it unset (`features/engineering-lab/ask-claude.ts`, tested in `ask-claude.test.ts`).
 - **Project instructions** are in `docs/product/claude-project-instructions.md`, with set-up steps. One sentence was added to §7's text: name the assessment points when writing a proof question.
 - **`AGENTS.md`** names the connector, its no-grading rule, and `test:db:connector`.

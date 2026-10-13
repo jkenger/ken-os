@@ -15,7 +15,7 @@ import { toast } from "@/components/ui/toaster";
 import { buildLabScript, PGLITE_URL, type TestResult } from "@/features/engineering-lab/runner/harness";
 import { PROBES } from "@/features/engineering-lab/runner/probes";
 import { runInWorker } from "@/features/engineering-lab/runner/run-in-worker";
-import { askClaudeMessage } from "@/features/engineering-lab/ask-claude";
+import { AskClaude } from "./ask-claude";
 import { engineering, type TopicStep } from "@/features/engineering-lab/routes";
 import type { ExercisePanel } from "@/features/engineering-lab/exercise-store";
 import type { PublicQuestion, TopicLesson, TopicView } from "@/features/engineering-lab/topic-store";
@@ -806,29 +806,6 @@ function Prove({
         </>
       )}
     </section>
-  );
-}
-
-/**
- * Ask Claude: copies a starter message naming the topic, then opens the owner's Claude Project in a new tab, where the
- * connector reads the topic. The tab opens first, inside the click, so the browser doesn't block it.
- */
-function AskClaude({ topic, projectUrl }: { topic: Topic; projectUrl: string }) {
-  async function ask() {
-    window.open(projectUrl, "_blank", "noopener,noreferrer");
-    const message = askClaudeMessage(topic);
-    try {
-      await navigator.clipboard.writeText(message);
-      toast({ tone: "success", title: "Copied. Paste it in Claude" });
-    } catch {
-      toast({ tone: "error", title: "Couldn't copy. Paste this in Claude", description: message });
-    }
-  }
-  return (
-    <Button type="button" variant="outline" size="sm" onClick={() => void ask()}>
-      Ask Claude
-      <IconExternalLink size={15} aria-hidden="true" />
-    </Button>
   );
 }
 
