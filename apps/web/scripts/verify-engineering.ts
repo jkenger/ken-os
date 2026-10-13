@@ -385,13 +385,85 @@ async function main() {
       });
       assert.deepEqual(second.addedTopics, [{ topicId: "custom.llm_as_judge_2", title: "LLM as judge" }]);
       roadmap = await call("get_roadmap", {});
-      assert.equal(roadmap.goal.title, "Frontend engineer");
+      assert.equal(roadmap.goal.title, "Frontend engineer", "the newest roadmap opens");
+      assert.equal(roadmap.roadmapId, second.id);
       assert.equal(roadmap.chapters[0].topics[0].status, "in_progress", "a topic keeps its progress across roadmaps");
-      const archived = await db().select().from(labRoadmaps).where(eq(labRoadmaps.userId, planner));
+      const rowsOf = async () =>
+        (await db().select().from(labRoadmaps).where(eq(labRoadmaps.userId, planner)))
+          .map((row) => `${row.goal}:${row.status}`)
+          .sort();
       assert.deepEqual(
-        archived.map((row) => row.status).sort(),
-        ["active", "archived"],
-        "the old roadmap is archived, not deleted",
+        await rowsOf(),
+        ["AI engineer:active", "Frontend engineer:active"],
+        "a new roadmap is added next to the first (engineering-roadmaps.md)",
+      );
+      assert.equal((await call("get_roadmap", { roadmapId: first.id })).goal.title, "AI engineer");
+      await assert.rejects(call("get_roadmap", { roadmapId: "nope" }), /Unknown roadmap/);
+      await assert.rejects(
+        tools.callAgentTool(other, "get_roadmap", { roadmapId: first.id }),
+        /Unknown roadmap/,
+        "roadmaps are per owner",
+      );
+      let state = await call("get_current_state", {});
+      assert.deepEqual(
+        state.roadmaps.map((item: { goal: string }) => item.goal),
+        ["Frontend engineer", "AI engineer"],
+        "every active roadmap, opened last first",
+      );
+      assert.equal(state.roadmapId, second.id);
+
+      // Re-plan in place: same id, the old version kept as an archived copy.
+      const replanned = await call("save_roadmap", {
+        roadmapId: first.id,
+        goal: "AI engineer v2",
+        chapters: [
+          { chapterId: "react", topics: ["react.effects"] },
+          { title: "Evals in practice", topics: ["custom.llm_as_judge"] },
+        ],
+      });
+      assert.equal(replanned.id, first.id);
+      assert.equal(replanned.replanned, true);
+      assert.equal((await call("get_roadmap", { roadmapId: first.id })).goal.title, "AI engineer v2");
+      const copies = await db().select().from(labRoadmaps).where(eq(labRoadmaps.replacedBy, first.id));
+      assert.deepEqual(
+        copies.map((row) => [row.goal, row.status]),
+        [["AI engineer", "archived"]],
+        "the replaced version is archived, not lost",
+      );
+
+      // Up to 3 active; archive and restore.
+      const third = await call("save_roadmap", {
+        goal: "Third",
+        chapters: [{ chapterId: "react", topics: ["react.effects"] }],
+      });
+      await assert.rejects(
+        call("save_roadmap", { goal: "Fourth", chapters: [{ chapterId: "react", topics: ["react.effects"] }] }),
+        /archive one first/,
+      );
+      await assert.rejects(
+        call("save_roadmap", {
+          roadmapId: copies[0].id,
+          goal: "x",
+          chapters: [{ chapterId: "react", topics: ["react.effects"] }],
+        }),
+        /No active roadmap/,
+        "only an active roadmap can be re-planned",
+      );
+      await roadmaps.archiveRoadmap(planner, third.id);
+      assert.equal((await call("get_roadmap", { roadmapId: third.id })).active, false, "archived roadmaps still read");
+      const fourth = await call("save_roadmap", {
+        goal: "Fourth",
+        chapters: [{ chapterId: "react", topics: ["react.effects"] }],
+      });
+      await assert.rejects(roadmaps.restoreRoadmap(planner, third.id), /archive one first/);
+      await roadmaps.archiveRoadmap(planner, fourth.id);
+      assert.equal((await roadmaps.restoreRoadmap(planner, third.id)).status, "active");
+      await roadmaps.archiveRoadmap(planner, third.id);
+      await roadmaps.markRoadmapOpened(planner, second.id);
+      state = await call("get_current_state", {});
+      assert.deepEqual(
+        state.roadmaps.map((item: { goal: string }) => item.goal),
+        ["Frontend engineer", "AI engineer v2"],
       );
       await assert.rejects(call("get_topic", { topicId: "custom.not_mine" }), /Unknown topic/);
       await assert.rejects(
@@ -399,7 +471,7 @@ async function main() {
         /Unknown topic/,
         "Claude's topics are per owner",
       );
-      console.log("ok - planning: a new roadmap archives the old one, and topics keep their progress");
+      console.log("ok - roadmaps: several at once, up to 3, re-plan in place, archive and restore");
 
       // Links into Claude, set in the app (section 9e).
       const links = await import("../src/features/engineering-lab/claude-links");
@@ -488,17 +560,34 @@ async function main() {
           note: "Unaided",
         },
       });
-      assert.deepEqual(learnedReport.next, { id: "custom.llm_as_judge_2", title: "LLM as judge" });
-      assert.equal(learnedReport.chapterDone, null, "the chapter still has a topic to go");
+      assert.deepEqual(
+        learnedReport.roadmaps,
+        [
+          {
+            roadmapId: second.id,
+            goal: "Frontend engineer",
+            next: { id: "custom.llm_as_judge_2", title: "LLM as judge" },
+            chapterDone: null,
+          },
+          {
+            roadmapId: first.id,
+            goal: "AI engineer v2",
+            next: { id: "react.effects", title: "Effects & dependencies" },
+            chapterDone: "Evals in practice",
+          },
+        ],
+        "Next topic and chapter done on each roadmap with the topic",
+      );
       const plainReport = await call("report_progress", { topicId: "custom.llm_as_judge_2", summary: "Started" });
-      assert.equal("next" in plainReport, false, "only Learned and Skipped reports carry what's next");
+      assert.equal("roadmaps" in plainReport, false, "only Learned and Skipped reports carry what's next");
       const skippedReport = await call("report_progress", {
         topicId: "custom.llm_as_judge_2",
         summary: "Already knows it",
         status: "skipped",
       });
-      assert.equal(skippedReport.next, null, "every topic on the roadmap is done");
-      assert.equal(skippedReport.chapterDone, "Evals again");
+      assert.deepEqual(skippedReport.roadmaps, [
+        { roadmapId: second.id, goal: "Frontend engineer", next: null, chapterDone: "Evals again" },
+      ]);
       judgePanel = await roadmaps.getTopicPanel(planner, "custom.llm_as_judge_2");
       assert.deepEqual(judgePanel.chapterDone, { title: "Evals again", learned: 1, total: 2 });
       assert.equal(judgePanel.next, null);

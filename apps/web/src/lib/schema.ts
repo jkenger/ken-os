@@ -518,13 +518,13 @@ export const labRoadmaps = pgTable(
     status: text("status").$type<"active" | "archived">().notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
+    /** When the owner last opened it; the page and Claude start from the most recent (engineering-roadmaps.md). */
+    lastOpenedAt: timestamp("last_opened_at", { withTimezone: true }),
+    /** On an archived copy made by Re-plan: the roadmap it was replaced in. */
+    replacedBy: text("replaced_by"),
   },
-  (table) => [
-    index("lab_roadmaps_user_idx").on(table.userId, table.createdAt),
-    uniqueIndex("lab_roadmaps_one_active")
-      .on(table.userId)
-      .where(sql`${table.status} = 'active'`),
-  ],
+  // Up to 3 active per owner (ROADMAP_LIMIT in roadmaps.ts), enforced in code.
+  (table) => [index("lab_roadmaps_user_idx").on(table.userId, table.createdAt)],
 );
 
 /** A topic Claude added to a roadmap: a title and 3 to 5 lines the owner should be able to explain. Ids are `custom.*`. */

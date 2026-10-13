@@ -79,3 +79,16 @@ Slice 1 ships first because Claude would otherwise keep replacing roadmaps. Unti
 5. Archive and Restore work from the switcher; an archived roadmap opens read-only.
 6. `/engineering` and the Profile line follow the roadmap opened last, on any device.
 7. `pnpm test`, `pnpm check` and `pnpm build` pass, and steps 1 to 6 work on the hosted app.
+
+## 7. Slice 1 as built
+
+Built 14 Oct 2026 on `feat/engineering-roadmaps-data`.
+
+- **Rules** in `features/engineering-lab/roadmaps.ts`: `ROADMAP_LIMIT` (3), `canAddRoadmap`, `orderRoadmaps` (last opened first, else newest) and `progressOnRoadmaps`, tested in `roadmaps.test.ts`.
+- **Store** (`roadmap-store.ts`): `getRoadmap(userId, roadmapId?)` opens the named roadmap (active or archived, the owner's only), else the one opened last, else the role's path. `getRoadmaps` returns every active roadmap with one status query. `saveRoadmap(userId, plan, roadmapId?)` adds or re-plans; `archiveRoadmap`, `restoreRoadmap` and `markRoadmapOpened` are ready for slices 2 and 3. A new or re-planned roadmap counts as just opened, so it's the one that shows next. `RoadmapView` gains `id` and `active`.
+- **Claude's tools:** `get_current_state` adds `roadmaps` (every active one, opened last first) and `roadmapId`; its other fields still describe the roadmap opened last. `get_roadmap` and `save_roadmap` take an optional `roadmapId`. `report_progress` on Learned or Skipped now returns `roadmaps` (one entry per active roadmap with the topic) in place of slice 2's single `next` and `chapterDone`.
+- **Instructions:** one line on adding versus re-planning; `CLAUDE_INSTRUCTIONS_UPDATED` is now `2026-10-14`.
+- **Migration** `0022_opposite_scrambler.sql`: drops `lab_roadmaps_one_active`, adds `last_opened_at` and `replaced_by`.
+- **Until slice 2,** the page has no switcher: it shows the roadmap opened last, which is the newest one Claude saved. Older active roadmaps are kept and Claude can read them, but the page can't switch to them yet.
+
+**Verified:** `pnpm test` (189, 3 new in `roadmaps.test.ts`), `pnpm check`, `pnpm build`, `test:db:engineering` (12 sections; the planning section now checks two roadmaps side by side, opening by id, per-owner ids, re-plan in place with its archived copy, the limit, archive and restore, and the order in `get_current_state`; the steps section checks `report_progress` on a topic that sits on two roadmaps) and `test:db:connector` (8). On the local server, the page loads with no errors and still shows the role's path when no roadmap is saved. Two stray test reports left on Call stack by slice 3's first script run were found and removed.
