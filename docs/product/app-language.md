@@ -75,6 +75,10 @@ Added 12 Oct 2026 ([profile-resume.md](profile-resume.md)).
 | Classic, Compact, Technical | The three templates                                           | Modern, Creative, ATS template                   |
 | Letter, A4                  | Paper sizes                                                   | Short bond, US Letter                            |
 | Download PDF                | Save the resume file                                          | Export, Generate PDF                             |
+| Improve writing             | The AI pass over the summary and bullets                      | Rewrite with AI, Enhance, Magic, Polish          |
+| Target role                 | The optional role the wording aims at                         | Job target, Desired position                     |
+| Accept, Undo, Accept all    | Take or put back one suggestion, or take the rest             | Apply, Reject, Revert                            |
+| Line changed since          | A suggestion for a line edited after the rewrite              | Conflict, Stale                                  |
 
 ### Engineering
 

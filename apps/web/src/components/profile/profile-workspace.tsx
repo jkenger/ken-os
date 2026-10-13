@@ -16,6 +16,7 @@ import { send } from "@/lib/api-client";
 import { shortDate } from "./dates";
 import { DetailsForm } from "./details-form";
 import { DriveFile, type DriveFileState } from "./drive-file";
+import { RewritePanel } from "./rewrite-panel";
 
 // Profile: the owner's career details and the Drive resume they can be imported from. Spec: docs/product/profile-resume.md.
 
@@ -52,7 +53,8 @@ export function ProfileWorkspace({
   const [saved, setSaved] = useState(profile.details);
   const [savedAt, setSavedAt] = useState(profile.savedAt);
   const [details, setDetails] = useState(profile.details);
-  /** Bumped when the whole form is replaced (import, discard), so fields that keep their own typing state reset. */
+  /** Bumped when the whole form is replaced (import, discard), so fields that keep their own typing state and
+   *  rewrite suggestions made for the old form reset. */
   const [formVersion, setFormVersion] = useState(0);
   /** The Drive import under review, until it's saved or discarded. */
   const [review, setReview] = useState<{ importId: string; fileName: string } | null>(null);
@@ -140,6 +142,7 @@ export function ProfileWorkspace({
 
           {engineering && <EngineeringSummary {...engineering} />}
           <DriveFile state={drive} importing={importing} onImport={importDrive} />
+          <RewritePanel key={`rewrite-${formVersion}`} details={details} setDetails={setDetails} />
           <DetailsForm key={formVersion} details={details} edit={edit} />
         </div>
       </div>
