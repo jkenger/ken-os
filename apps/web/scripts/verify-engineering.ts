@@ -469,6 +469,40 @@ async function main() {
       assert.equal((await links.getInstructionsSeen(other)).version, null, "versions are per owner");
       await assert.rejects(call("get_current_state", { instructionsVersion: "x".repeat(21) }), /instructionsVersion/);
       console.log("ok - setup: get_current_state keeps the instructions version Claude reports");
+
+      // Steps, Next topic and chapter done (engineering-progressive-flow.md, sections 2 and 3). The active roadmap is
+      // "Evals again": the judge topic (In progress, a passing run) and its copy (Not started, no exercise).
+      let judgePanel = await roadmaps.getTopicPanel(planner, "custom.llm_as_judge");
+      assert.equal(judgePanel.practice, "passed");
+      assert.deepEqual(judgePanel.next, { id: "custom.llm_as_judge_2", title: "LLM as judge" });
+      assert.equal(judgePanel.chapterDone, null);
+      assert.equal((await roadmaps.getTopicPanel(planner, "custom.llm_as_judge_2")).practice, "none");
+      assert.equal((await roadmaps.getTopicPanel(planner, "js.closures")).practice, "not_tried", "a repo lab, not run");
+      const learnedReport = await call("report_progress", {
+        topicId: "custom.llm_as_judge",
+        summary: "Explained judges",
+        status: "learned",
+        evidence: {
+          explanation:
+            "A judge model scores answers against a rubric, and you calibrate it on cases you graded yourself.",
+          note: "Unaided",
+        },
+      });
+      assert.deepEqual(learnedReport.next, { id: "custom.llm_as_judge_2", title: "LLM as judge" });
+      assert.equal(learnedReport.chapterDone, null, "the chapter still has a topic to go");
+      const plainReport = await call("report_progress", { topicId: "custom.llm_as_judge_2", summary: "Started" });
+      assert.equal("next" in plainReport, false, "only Learned and Skipped reports carry what's next");
+      const skippedReport = await call("report_progress", {
+        topicId: "custom.llm_as_judge_2",
+        summary: "Already knows it",
+        status: "skipped",
+      });
+      assert.equal(skippedReport.next, null, "every topic on the roadmap is done");
+      assert.equal(skippedReport.chapterDone, "Evals again");
+      judgePanel = await roadmaps.getTopicPanel(planner, "custom.llm_as_judge_2");
+      assert.deepEqual(judgePanel.chapterDone, { title: "Evals again", learned: 1, total: 2 });
+      assert.equal(judgePanel.next, null);
+      console.log("ok - steps: the panel knows the Practice step, Next topic and chapter done, and so does Claude");
     } finally {
       await db().delete(users).where(eq(users.id, planner));
     }

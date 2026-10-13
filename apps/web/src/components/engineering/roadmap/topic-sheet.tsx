@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { IconCode, IconExternalLink, IconLink, IconPencil, IconTrash } from "@tabler/icons-react";
+import { IconLink, IconPencil, IconTrash } from "@tabler/icons-react";
 import { TOPIC_STATUSES, type TopicStatus } from "@ken-os/domain";
 import { post, send } from "@/components/lab/topic/client";
 import { formatDate } from "@/components/lab/words";
@@ -13,13 +13,14 @@ import { toast } from "@/components/ui/toaster";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { TopicPanelView } from "@/features/engineering-lab/roadmap-store";
 import type { NoteView, ReportView } from "@/features/engineering-lab/status-store";
-import { AskClaude } from "../ask-claude";
 import { ClaudeLinkField } from "./claude-link-field";
 import { CodeSheet } from "./code-sheet";
 import { StatusIcon, StatusLabel, statusWords } from "./status";
+import { TopicSteps } from "./topic-steps";
 
-// The roadmap's topic panel (docs/architecture/engineering-claude-first.md, section 1): the status, with a menu to change
-// it; Ask Claude; Try it in code; Claude's reports; and notes. The owner can set any status and edit or delete any note.
+// The roadmap's topic panel (docs/architecture/engineering-claude-first.md, section 1): the topic's steps, Learn →
+// Practice → Prove, with Next topic once it's done (engineering-progressive-flow.md, sections 2 and 3); the status, with a
+// menu to change it; Link chat; Claude's reports; and notes. The owner can set any status and edit or delete any note.
 
 const sectionTitle = "mb-2 text-xs font-semibold text-muted-foreground";
 const errorText = (error: unknown, fallback: string) => (error instanceof Error ? error.message : fallback);
@@ -268,10 +269,13 @@ export function TopicSheet({
   projectUrl,
   onClose,
   onChanged,
+  onSelect,
 }: {
   topicId: string | null;
   projectUrl: string | null;
   onClose: () => void;
+  /** Opens another topic, for Next topic. */
+  onSelect: (topicId: string) => void;
   /** Called after a change, so the roadmap can show the new status. */
   onChanged: () => void;
 }) {
@@ -331,21 +335,14 @@ export function TopicSheet({
                   </ul>
                 </section>
               )}
+              <TopicSteps
+                panel={panel}
+                projectUrl={projectUrl}
+                onPractice={() => setCoding(true)}
+                onSelect={onSelect}
+              />
               <StatusMenu panel={panel} onSaved={saved} />
               <div className="flex flex-wrap gap-2">
-                {panel.chatUrl && (
-                  <Button asChild size="sm">
-                    <a href={panel.chatUrl} target="_blank" rel="noopener noreferrer">
-                      Continue chat
-                      <IconExternalLink aria-hidden="true" />
-                    </a>
-                  </Button>
-                )}
-                {projectUrl && <AskClaude topic={panel} projectUrl={projectUrl} />}
-                <Button type="button" variant="outline" size="sm" onClick={() => setCoding(true)}>
-                  <IconCode aria-hidden="true" />
-                  Try it in code
-                </Button>
                 <Button
                   type="button"
                   variant="ghost"

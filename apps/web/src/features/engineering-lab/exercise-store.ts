@@ -17,6 +17,7 @@ import { exerciseFor } from "./curriculum";
 import { LabInputError } from "./errors";
 import { labSolutions } from "./generated/lab-solutions.generated";
 import { recordEvent, type Transaction } from "./store";
+import type { PracticeState } from "./topic-steps";
 
 // Exercise versions, their browser check, locking and autosave. Spec: docs/architecture/engineering-claude-connector.md,
 // sections 4 and 5. The repo lab is version 0; Claude's versions are rows in lab_exercises. A topic Claude added to the
@@ -288,4 +289,27 @@ export async function saveClaudeExercise(userId: string, topicId: string, input:
     await recordEvent(userId, { topicId, kind: "exercise_saved", labId: id, source: "claude" }, tx);
     return { id, version, checked: "unchecked" as const };
   });
+}
+
+/**
+ * The Practice step (docs/architecture/engineering-progressive-flow.md, section 2): a run passed, the owner ran it,
+ * not yet, or the topic has no usable exercise.
+ */
+export async function practiceState(userId: string, topic: ExerciseTopic): Promise<PracticeState> {
+  const [choice, runs] = await Promise.all([
+    exerciseChoice(userId, topic),
+    db()
+      .select({ passed: labTopicEvents.passed })
+      .from(labTopicEvents)
+      .where(
+        and(
+          eq(labTopicEvents.userId, userId),
+          eq(labTopicEvents.topicId, topic.id),
+          eq(labTopicEvents.kind, "exercise_run"),
+        ),
+      ),
+  ]);
+  if (runs.some((run) => run.passed)) return "passed";
+  if (!choice) return "none";
+  return runs.length ? "tried" : "not_tried";
 }

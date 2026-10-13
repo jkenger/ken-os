@@ -5,11 +5,13 @@ import { db } from "@/lib/db";
 import { labCustomTopics, labRoadmaps } from "@/lib/schema";
 import { customTopics, requireAnyTopic } from "./any-topic";
 import { getTopicChat } from "./claude-links";
+import { practiceState } from "./exercise-store";
 import { careers, topicMap } from "./curriculum";
 import { LabInputError } from "./errors";
 import { getProfileRow } from "./profile-store";
 import { normalizePlan, PlanError, type PlanInput } from "./roadmap-plan";
 import { listNotes, listReports, topicStatus, topicStatuses, type NoteView, type ReportView } from "./status-store";
+import { chapterDone, nextTopic, type PracticeState } from "./topic-steps";
 
 // The owner's roadmap with every topic's status: what the roadmap page draws and what Claude's state tools read.
 // Spec: docs/architecture/engineering-claude-first.md, sections 1 to 3. The roadmap is the one Claude planned and the
@@ -209,19 +211,30 @@ export interface TopicPanelView {
   notes: NoteView[];
   /** The Claude chat this topic was learned in, if the owner linked one. */
   chatUrl: string | null;
+  /** The Practice step (engineering-progressive-flow.md, section 2). */
+  practice: PracticeState;
+  /** The next unfinished topic on the roadmap, and this topic's chapter when it's done (section 3). */
+  next: { id: string; title: string } | null;
+  chapterDone: { title: string; learned: number; total: number } | null;
 }
 
 /** Everything the roadmap's topic panel shows, except the code exercise, which loads when opened. */
 export async function getTopicPanel(userId: string, topicId: string): Promise<TopicPanelView> {
   const topic = await requireAnyTopic(userId, topicId, await chapterOnRoadmap(userId, topicId));
-  const [status, reports, notes, chatUrl] = await Promise.all([
+  const [status, reports, notes, chatUrl, practice, roadmap] = await Promise.all([
     topicStatus(userId, topicId),
     listReports(userId, topicId, 20),
     listNotes(userId, topicId),
     getTopicChat(userId, topicId),
+    practiceState(userId, topic),
+    getRoadmap(userId),
   ]);
   const { id, title, custom, area, chapter, gap, points } = topic;
-  return { id, title, custom, area, chapter, gap, points, status, reports, notes, chatUrl };
+  return {
+    ...{ id, title, custom, area, chapter, gap, points, status, reports, notes, chatUrl, practice },
+    next: nextTopic(roadmap.chapters, topicId),
+    chapterDone: chapterDone(roadmap.chapters, topicId),
+  };
 }
 
 /** The Engineering line on the Ken OS home page: the goal and how many topics are learned. */

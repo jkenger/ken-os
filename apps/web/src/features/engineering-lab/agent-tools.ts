@@ -18,6 +18,7 @@ import { LabInputError } from "./errors";
 import { exerciseChoice, exerciseVersions, getDraft, saveClaudeExercise } from "./exercise-store";
 import { alsoInProgress, chapterOnRoadmap, getRoadmap, saveRoadmap, toRefresh } from "./roadmap-store";
 import { PLAN_LIMITS } from "./roadmap-plan";
+import { chapterDone, nextTopic } from "./topic-steps";
 import {
   addNote,
   claudeNotesToday,
@@ -418,7 +419,16 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
       "Records what happened on a topic, shown to the owner in Ken OS. The first report starts the topic. Set status learned only after the owner explains the idea in their own words without hints, and pass that explanation word for word as evidence. Set skipped when the owner says they already know it. You can't change a status the owner set.",
     kind: "write",
     async run(userId, { topicId: id, summary, status, evidence }) {
-      return { saved: true, ...(await reportProgress(userId, id, { summary, status, evidence })) };
+      const saved = await reportProgress(userId, id, { summary, status, evidence });
+      if (status !== "learned" && status !== "skipped") return { saved: true, ...saved };
+      // Engineering-progressive-flow.md, section 3: so Claude can mark a finished chapter and offer what's next.
+      const roadmap = await getRoadmap(userId);
+      return {
+        saved: true,
+        ...saved,
+        next: nextTopic(roadmap.chapters, id),
+        chapterDone: chapterDone(roadmap.chapters, id)?.title ?? null,
+      };
     },
   },
 
