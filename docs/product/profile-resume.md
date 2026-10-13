@@ -13,7 +13,7 @@ Today Ken OS stores a pointer to one Drive file. After this change it stores the
 | Question                    | Decision                                                                                                                                                                         |
 | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Where it lives              | A top-level **Profile** module replaces the Resume module.                                                                                                                       |
-| Engineering's "Profile" tab | Renamed **Standing** on screen. URLs (`/engineering/profile/...`), code names and the `lab_profile` table stay.                                                                  |
+| Engineering's "Profile" tab | Dropped. Engineering became one roadmap page on 13 Oct 2026, so it has no Profile tab and nothing to rename.                                                                     |
 | Job market                  | International fields by default. Optional local fields (photo, birthdate, civil status, nationality, full address) are off unless turned on, and ATS templates never print them. |
 | Flow order                  | Details first, then the AI pass, then preview with a template switcher. Switching templates never reruns the AI.                                                                 |
 | Drive reading               | The picked Drive file is read only. When it changes, Ken OS shows what changed and the owner approves before anything is overwritten.                                            |
@@ -100,7 +100,7 @@ Each step ships on its own and leaves the app working.
 
 - Profile lives at `/profile`. `/` redirects to `/profile`, so old bookmarks and the brand link keep working.
 - The shell's `resume` module becomes `profile` (label Profile, sections: Details, Drive file).
-- The Engineering tab label, page title and back links change from Profile to Standing. `docs/product/app-language.md` gets a Profile word list and the Engineering row updated.
+- `docs/product/app-language.md` gets a Profile word list.
 
 ### Data
 
