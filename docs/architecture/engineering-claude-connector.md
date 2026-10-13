@@ -1,5 +1,7 @@
 # Engineering with Claude: a connector between claude.ai and Ken OS
 
+> History since 13 Oct 2026: Engineering is now built from [engineering-claude-first.md](engineering-claude-first.md). Read this file for background only.
+
 Status: all three slices built, 12 and 13 Oct 2026 (§10a to §10c). The connector works on the hosted app: added in claude.ai, signed in, 8 tools listed (13 Oct 2026).
 
 ## Decision
