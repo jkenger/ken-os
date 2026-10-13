@@ -1,8 +1,9 @@
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
   CLAUDE_LIMITS,
   CLAUDE_RUNNERS,
+  CONTENT_EVENT_KINDS,
   isReviewDue,
   LESSON_BLOCK_KINDS,
   topicPoints,
@@ -13,6 +14,7 @@ import {
   type TopicProgress,
 } from "@ken-os/domain";
 import { db } from "@/lib/db";
+import { ownerDayStart } from "@/lib/day";
 import { labQuestions, labTopicEvents } from "@/lib/schema";
 import { careers, placeOf, topicMap } from "./curriculum";
 import { LabInputError } from "./errors";
@@ -30,7 +32,8 @@ import { closedBook, getLesson, saveClaudeLesson, saveClaudeProofQuestion } from
 //   profile. Ken OS's Assessor and the owner's browser do those.
 // - Write tools save content only. A proof question's rubric is always the approved points it names.
 // - Everything Claude sends is untrusted: each input is checked against its schema and the size caps.
-// - An open assessment closes every tool except get_current_state, as it closes lessons.
+// - An open assessment closes every tool except get_current_state and list_path, as it closes lessons.
+// - Claude may save at most CLAUDE_WRITE_LIMIT times a day.
 
 const topicId = z.string().min(1).max(100).describe("A Ken OS topic id, for example js.call_stack");
 const text = (max: number) => z.string().trim().min(1).max(max);
@@ -458,5 +461,27 @@ export async function callAgentTool(userId: string, name: string, input: unknown
   if (!parsed.success) throw new LabInputError(`Invalid input. ${describeIssues(parsed.error)}`);
   if (!tool.openDuringAssessment && (await closedBook(userId)))
     throw new LabInputError("An assessment is open in Ken OS. Topics are closed until the owner finishes it", 409);
+  if (tool.kind === "write" && (await claudeWritesToday(userId)) >= CLAUDE_WRITE_LIMIT) {
+    throw new LabInputError(`Out of writes for today (${CLAUDE_WRITE_LIMIT}). Resets at midnight Manila time`, 429);
+  }
   return tool.run(userId, parsed.data as never);
+}
+
+/** Saves Claude may make per day, across every write tool. Claude's writes cost Ken OS nothing; this stops a runaway loop. */
+export const CLAUDE_WRITE_LIMIT = 40;
+
+/** Each write records one event with source "claude", so the events are the count. */
+export async function claudeWritesToday(userId: string) {
+  const [row] = await db()
+    .select({ n: sql<number>`count(*)::int` })
+    .from(labTopicEvents)
+    .where(
+      and(
+        eq(labTopicEvents.userId, userId),
+        eq(labTopicEvents.source, "claude"),
+        inArray(labTopicEvents.kind, [...CONTENT_EVENT_KINDS]),
+        gte(labTopicEvents.createdAt, ownerDayStart()),
+      ),
+    );
+  return row?.n ?? 0;
 }

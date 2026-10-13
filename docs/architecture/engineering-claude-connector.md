@@ -1,6 +1,6 @@
 # Engineering with Claude: a connector between claude.ai and Ken OS
 
-Status: slice 1 built on 12 Oct 2026 (§10a). Slices 2 and 3 not yet built.
+Status: slice 1 built on 12 Oct 2026 (§10a), slice 2 on 13 Oct 2026 (§10b). Slice 3 not yet built.
 
 ## Decision
 
@@ -192,9 +192,49 @@ Decisions made while building slice 1, 12 Oct 2026. Where they differ from the s
 - **Claude's exercises** time out at 3 s in the browser runner and 20 s with PGlite, matching the repo labs. A starter that throws counts as failing.
 - **Autosave** keeps one row per owner and version (`lab_exercise_drafts`, keyed by the version's lab id), overwritten on each save. Code saved in the browser before autosave comes back once and then autosaves.
 
-**Left for slice 2:** the 40-writes-a-day limit, the OAuth tables, the owner check on each call, and the MCP endpoint. `callAgentTool` assumes its caller already checked who the owner is.
+**Left for slice 2:** the 40-writes-a-day limit, the OAuth tables, the owner check on each call, and the MCP endpoint. All built in §10b.
 
-**Verified:** `pnpm test` (`exercises.test.ts`, `agent-tools.test.ts`), `pnpm check`, `pnpm build`, and `pnpm --filter @ken-os/web test:db:engineering` against local Postgres. The topic page's check, notices and Saved status were not tried in a signed-in browser.
+**Verified:** `pnpm test` (`exercises.test.ts`, `agent-tools.test.ts`), `pnpm check`, `pnpm build`, and `pnpm --filter @ken-os/web test:db:engineering` against local Postgres. Autosave and "Saved" were checked signed in on the local server on 12 Oct 2026.
+
+## 10b. Slice 2 as built
+
+Built 13 Oct 2026 on `feat/engineering-mcp`. Where these differ from §3, these win.
+
+**Where things are**
+
+| File                                                                                                   | Holds                                                                                                            |
+| ------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| `apps/web/src/features/connector/rules.ts`                                                             | Metadata documents, the 401, redirect and metadata-URL checks, PKCE, token hashing                               |
+| `apps/web/src/features/connector/oauth-store.ts`                                                       | Registration, metadata clients, consent codes, token exchange, refresh, the token check, Connections, Disconnect |
+| `apps/web/src/features/connector/mcp-server.ts`                                                        | The MCP server: the 8 tools from `agent-tools.ts`, built fresh per request                                       |
+| `src/app/api/mcp/route.ts`                                                                             | `POST` only, stateless, JSON responses. `GET` and `DELETE` answer 405                                            |
+| `src/app/.well-known/oauth-protected-resource/route.ts` and `.../api/mcp/route.ts`                     | RFC 9728 metadata, at both paths claude.ai tries                                                                 |
+| `src/app/.well-known/oauth-authorization-server/route.ts`                                              | RFC 8414 metadata                                                                                                |
+| `src/app/oauth/authorize/page.tsx`, `src/components/connector/consent.tsx`                             | The consent page                                                                                                 |
+| `src/app/api/oauth/authorize/route.ts`                                                                 | Allow and Deny. Checks the request again from scratch                                                            |
+| `src/app/api/oauth/token/route.ts`, `.../register/route.ts`                                            | Token endpoint (form-encoded) and registration                                                                   |
+| `src/app/api/oauth/connections/[id]/disconnect/route.ts`, `src/components/engineering/connections.tsx` | Connections on Profile                                                                                           |
+| `drizzle/0013_tan_warpath.sql`                                                                         | `oauth_clients`, `oauth_grants`, `oauth_tokens`. Additive only                                                   |
+| `scripts/verify-connector.ts`                                                                          | `pnpm --filter @ken-os/web test:db:connector`                                                                    |
+
+**Decisions**
+
+- **SDK:** `@modelcontextprotocol/sdk` 1.32.1, with its web-standard Streamable HTTP transport, so the route handler passes the `Request` straight in. No adapter.
+- **claude.ai's requirements**, from [Authentication for connectors](https://claude.com/docs/connectors/building/authentication): the callback is `https://claude.ai/api/mcp/auth_callback`; it uses a client metadata URL only when the server metadata lists `client_id_metadata_document_supported` and the method `none`, otherwise it registers itself; it needs S256 PKCE and a real `401` with `resource_metadata`. Both client options work.
+- **One table per idea:** a connection (grant) is what the owner allowed once. Codes, access tokens and refresh tokens are rows in `oauth_tokens` under it, stored only as SHA-256 hashes.
+- **Metadata URLs are fetched only on allowed hosts** (`MCP_ALLOWED_REDIRECT_HOSTS`, default `claude.ai,claude.com`), with a 5 s timeout, a 10 KB cap and no redirects, and kept for a day. Nothing else is ever fetched, so the URL can't be used to reach internal addresses.
+- **Registration** takes public clients only, with redirect URIs on the allowed hosts, and at most 20 a day, since the endpoint is public.
+- **The consent page names the app by host**, never by the name it gave itself, and shows where it returns to.
+- **Refresh tokens rotate.** Using an old one again revokes the whole connection, since it means the token leaked.
+- **Every call re-checks** the token, the connection and that its user is still `OWNER_EMAIL`. Disconnect takes effect on the next call.
+- **One scope**, `engineering`. `offline_access` is accepted and ignored; a refresh token is always issued.
+- **Write limit:** `CLAUDE_WRITE_LIMIT = 40` saves a day in `agent-tools.ts`, counted from the `source: "claude"` events, so the in-app chat (option B) gets it too. Reads are never limited.
+- **Connections** lists connections that were exchanged for tokens and haven't expired or been disconnected.
+- **Not supported:** Claude Code's loopback redirects (`http://localhost:<port>/callback`). The spec allows only claude.ai and claude.com. Adding Claude Code later means a port-agnostic loopback match.
+
+**Verified:** `pnpm test` (`rules.test.ts`), `pnpm check`, `pnpm build`, `test:db:connector` (8 checks: registration, authorize, code exchange, `/api/mcp`, write limit, refresh and reuse, Disconnect, owner only) and `test:db:engineering`. On the local server: both metadata documents, the 401, the consent page, a real tool call with a token, and Disconnect on Profile stopping that token.
+
+**Not verified:** the real claude.ai "Add custom connector" flow (§11, steps 1 and 2). claude.ai can't reach a local server, so this needs the hosted app after merge.
 
 ## 11. Done when
 
