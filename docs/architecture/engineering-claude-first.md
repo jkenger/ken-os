@@ -113,6 +113,32 @@ Every old Engineering URL redirects to `/engineering`: `/engineering/learn/<topi
 | 3   | `feat/engineering-plan-with-claude`    | `get_resume`, `save_roadmap`, Claude's added topics, the empty state and Settings                                                         |
 | 4   | `chore/engineering-retire-old-screens` | Redirects (§8), old screens and OpenAI use removed, docs and Project instructions updated                                                 |
 
+## 9a. Slice 1 as built
+
+Built 13 Oct 2026 on `feat/engineering-reports-notes`. Where these differ from the sections above, these win.
+
+| File                                                    | Holds                                                                                                  |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `packages/domain/src/engineering-lab/status.ts`         | The four statuses, rebuilt from events; who may change them; the 60-day refresh list                   |
+| `apps/web/src/features/engineering-lab/status-store.ts` | Statuses for every topic, `reportProgress`, the owner's `setStatus`, reports, notes                    |
+| `apps/web/src/features/engineering-lab/agent-tools.ts`  | The slice 1 tools (below)                                                                              |
+| `drizzle/0014_faithful_chronomancer.sql`                | `lab_notes`, and `status`, `summary`, `evidence`, `evidence_note` on `lab_topic_events`. Additive only |
+
+**Decisions**
+
+- **Event kinds** are `report` (Claude) and `status_set` (the owner), not `state_set`. The old progress ignores both, so today's screens are unchanged.
+- **The carry-over needs no data migration.** Statuses are computed from all of a topic's events, old kinds included: any old activity is In progress, and a proof passed while the exercise stood passed is Learned.
+- **Claude never changes a status the owner set,** with one exception: a report may restart a topic the owner reset to Not started. Claude can't set Not started at all.
+- **Evidence** for Learned is at least 40 characters of the owner's own words plus Claude's note on how they got there. The tool refuses Learned without both, and refuses evidence on any other status.
+- **The current topic** is the most recently changed In progress topic, else the first Not started topic on the roadmap.
+- **The write limit** counts Claude's reports and notes with its saved exercises: 40 a day together.
+- **Roadmap tables** (`lab_roadmaps`, `lab_custom_topics`) move to slice 3, where they're first used. Until then the roadmap is the target role's path, as before.
+- **Tools in slice 1** (8): `get_current_state`, `get_roadmap`, `get_topic`, `get_my_work`, `get_history`, `save_exercise`, `report_progress`, `save_note`. `get_resume` and `save_roadmap` come in slice 3. `save_lesson` and `save_proof_question` are gone; the store functions behind them stay until slice 4 removes the old screens.
+- **The owner's status menu and note editing** exist in `status-store.ts` but have no routes yet; slice 2 adds them with the screen.
+- **Project instructions** were updated for reports, evidence and notes (`docs/product/claude-project-instructions.md`).
+
+**Verified:** `pnpm test` (`status.test.ts`, `agent-tools.test.ts`), `pnpm check`, `pnpm build`, `test:db:engineering` (14 checks) and `test:db:connector` (8 checks) against local Postgres.
+
 ## 10. Done when
 
 1. Claude plans a roadmap from a goal and the resume, and it appears on `/engineering`.

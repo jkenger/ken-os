@@ -6,9 +6,10 @@ import { LabInputError } from "@/features/engineering-lab/errors";
 // each request; nothing is kept between requests. Spec: docs/architecture/engineering-claude-connector.md, section 3.
 
 const INSTRUCTIONS =
-  "Ken OS is the owner's Engineering path. Call get_current_state first and get_topic before teaching a topic. " +
-  "Ken OS alone grades proofs and decides Proven; no tool here can. Saved exercises are checked in the owner's browser " +
-  "before they show. Never reveal a solution before the owner has tried.";
+  "Ken OS is the owner's Engineering roadmap. Call get_current_state first and get_topic before teaching a topic. " +
+  "Report what happens with report_progress, and save tips for the owner with save_note. Mark a topic learned only " +
+  "after the owner explains it in their own words without hints, and pass that explanation word for word as evidence. " +
+  "Saved exercises are checked in the owner's browser before they show. Never reveal a solution before the owner has tried.";
 
 /** A tool result: compact JSON text for the model, plus the same object as structured content. */
 function result(value: unknown) {

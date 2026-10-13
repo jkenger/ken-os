@@ -3,36 +3,48 @@ import { z } from "zod";
 import {
   CLAUDE_LIMITS,
   CLAUDE_RUNNERS,
+  CLAUDE_STATUSES,
   CONTENT_EVENT_KINDS,
-  isReviewDue,
-  LESSON_BLOCK_KINDS,
+  EVIDENCE_MIN_LENGTH,
+  staleLearned,
   topicPoints,
   type CodeRun,
-  type Label,
-  type RubricResult,
   type Topic,
-  type TopicProgress,
+  type TopicStatusView,
 } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { ownerDayStart } from "@/lib/day";
-import { labQuestions, labTopicEvents } from "@/lib/schema";
+import { labTopicEvents } from "@/lib/schema";
 import { careers, placeOf, topicMap } from "./curriculum";
 import { LabInputError } from "./errors";
 import { exerciseChoice, exerciseVersions, getDraft, saveClaudeExercise } from "./exercise-store";
 import { getPathView } from "./path-store";
 import { getProfileRow } from "./profile-store";
-import { DAILY_GENERATION_LIMIT, generationsToday, getAllProgress, getProgress, requireTopic } from "./store";
-import { closedBook, getLesson, saveClaudeLesson, saveClaudeProofQuestion } from "./topic-store";
+import {
+  addNote,
+  claudeNotesToday,
+  EVIDENCE_MAX,
+  listNotes,
+  listReports,
+  NOTE_MAX,
+  reportProgress,
+  SUMMARY_MAX,
+  topicStatus,
+  topicStatuses,
+} from "./status-store";
+import { requireTopic } from "./store";
+import { closedBook } from "./topic-store";
 
-// The tools Claude uses on the owner's Engineering path. Spec: docs/architecture/engineering-claude-connector.md, section 3.
-// One module for every caller: the MCP endpoint today, an in-app chat panel later. It never imports route or MCP code.
+// The tools Claude uses on the owner's Engineering roadmap. Spec: docs/architecture/engineering-claude-first.md,
+// section 5. One module for every caller: the MCP endpoint today, an in-app chat panel later. It never imports route or
+// MCP code.
 //
-// The rules that keep progress honest live here, not in the caller:
-// - No tool grades, submits a proof, marks a topic Proven, records a run, or changes Practice, the path, the role or the
-//   profile. Ken OS's Assessor and the owner's browser do those.
-// - Write tools save content only. A proof question's rubric is always the approved points it names.
+// The rules that keep progress honest live here and in status-store.ts, not in the caller:
+// - Claude can mark a topic Learned only with the owner's own explanation, word for word, as evidence.
+// - Claude never changes a status the owner set, and never edits or deletes the owner's notes.
+// - No tool records a test run, opens a solution, or changes the role or the profile.
 // - Everything Claude sends is untrusted: each input is checked against its schema and the size caps.
-// - An open assessment closes every tool except get_current_state and list_path, as it closes lessons.
+// - An open assessment closes every tool except get_current_state and get_roadmap, until the assessment is retired.
 // - Claude may save at most CLAUDE_WRITE_LIMIT times a day.
 
 const topicId = z.string().min(1).max(100).describe("A Ken OS topic id, for example js.call_stack");
@@ -41,40 +53,10 @@ const file = z.string().max(CLAUDE_LIMITS.exerciseFile);
 
 export const toolInputs = {
   get_current_state: z.object({}).strict(),
+  get_roadmap: z.object({}).strict(),
   get_topic: z.object({ topicId }).strict(),
   get_my_work: z.object({ topicId }).strict(),
   get_history: z.object({ topicId }).strict(),
-  list_path: z.object({}).strict(),
-  save_lesson: z
-    .object({
-      topicId,
-      lesson: z
-        .object({
-          heading: text(200),
-          body: text(CLAUDE_LIMITS.lesson),
-          mentalModel: text(CLAUDE_LIMITS.lesson),
-          block: z
-            .object({ kind: z.enum(LESSON_BLOCK_KINDS), content: text(CLAUDE_LIMITS.lesson), note: text(2_000) })
-            .strict(),
-          example: text(CLAUDE_LIMITS.lesson),
-          deeper: z
-            .object({ title: text(200), body: text(CLAUDE_LIMITS.lesson) })
-            .strict()
-            .nullable()
-            .optional(),
-          prove: z
-            .array(text(300))
-            .length(3)
-            .describe("Exactly 3 short lines, drawn from the topic's assessment points"),
-          sources: z
-            .array(z.object({ title: text(200), url: z.string().url().max(2_000) }).strict())
-            .min(1)
-            .max(10)
-            .describe("https links on the Researcher's trusted sites. Others are dropped and reported back"),
-        })
-        .strict(),
-    })
-    .strict(),
   save_exercise: z
     .object({
       topicId,
@@ -97,15 +79,30 @@ export const toolInputs = {
         .strict(),
     })
     .strict(),
-  save_proof_question: z
+  report_progress: z
     .object({
       topicId,
-      prompt: text(CLAUDE_LIMITS.proofPrompt),
-      pointIds: z
-        .array(z.string().regex(/^p\d+$/))
-        .min(1)
-        .max(6)
-        .describe("The assessment points it tests, as get_topic lists them: p1, p2, …"),
+      summary: text(SUMMARY_MAX).describe("One line on what happened, such as 'Explained cleanup; exercise next'"),
+      status: z
+        .enum(CLAUDE_STATUSES)
+        .optional()
+        .describe("Only to change the status. The first report on a topic sets in_progress by itself"),
+      evidence: z
+        .object({
+          explanation: text(EVIDENCE_MAX).describe(
+            `The owner's own explanation, copied word for word, given without hints. At least ${EVIDENCE_MIN_LENGTH} characters`,
+          ),
+          note: text(SUMMARY_MAX).describe("How they got there: unaided, or after which hints"),
+        })
+        .strict()
+        .optional()
+        .describe("Required for learned, refused otherwise"),
+    })
+    .strict(),
+  save_note: z
+    .object({
+      topicId,
+      body: text(NOTE_MAX).describe("A short note for the owner, such as a sharper way to say the idea"),
     })
     .strict(),
 } as const;
@@ -117,20 +114,13 @@ export interface AgentTool<N extends ToolName = ToolName> {
   title: string;
   description: string;
   kind: "read" | "write";
-  /** Answers during an open assessment. Only get_current_state does, so Claude can say why the others are closed. */
+  /** Answers during an open assessment, so Claude can say why the others are closed. */
   openDuringAssessment?: boolean;
   run(userId: string, input: z.infer<(typeof toolInputs)[N]>): Promise<unknown>;
 }
 
-function stepOf(progress: TopicProgress) {
-  if (progress.state === "PROVEN") return "proven";
-  if (progress.exercisePassed) return "prove";
-  if (progress.state === "PRACTICING") return "exercise";
-  return "learn";
-}
-
-function topicSummary(topic: Topic, progress: TopicProgress) {
-  return { topicId: topic.id, title: topic.title, ...placeOf(topic), state: progress.state, step: stepOf(progress) };
+function topicSummary(topic: Topic, status: TopicStatusView) {
+  return { topicId: topic.id, title: topic.title, ...placeOf(topic), status: status.status, statusSetBy: status.setBy };
 }
 
 async function targetRole(userId: string) {
@@ -139,14 +129,11 @@ async function targetRole(userId: string) {
   return role ? { id: role.id, title: role.title } : null;
 }
 
-const runVersionLabel = (versions: { id: string; version: number }[], labId: string | null) =>
-  versions.find((item) => item.id === labId)?.version ?? null;
-
-/** A graded answer's misses: the rubric lines it didn't fully meet. */
-const misses = (rubric: RubricResult[] | null) =>
-  (rubric ?? [])
-    .filter((line) => line.result !== "covered")
-    .map((line) => ({ point: line.point, result: line.result }));
+/** The roadmap's chapters in order: the target role's path, or every chapter in course order without one. */
+async function roadmapChapters(userId: string) {
+  const path = await getPathView(userId);
+  return path.path ?? topicMap.chapters.map((chapter) => chapter.id);
+}
 
 function runSummary(results: CodeRun | null) {
   if (!results) return null;
@@ -167,39 +154,71 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     name: "get_current_state",
     title: "Current state",
     description:
-      "Where the owner is: target role, the current topic and its step, the next topics on the path, reviews due today, and Ken OS AI uses left. Call this first.",
+      "Where the owner is: their goal, the topic in progress, counts of learned and skipped topics, the next topics, and learned topics old enough to refresh. Call this first.",
     kind: "read",
     openDuringAssessment: true,
     async run(userId) {
-      const [role, path, progress, used, assessmentOpen] = await Promise.all([
+      const [role, chapters, statuses, assessmentOpen] = await Promise.all([
         targetRole(userId),
-        getPathView(userId),
-        getAllProgress(userId),
-        generationsToday(userId),
+        roadmapChapters(userId),
+        topicStatuses(userId),
         closedBook(userId),
       ]);
-      const byId = new Map(progress.map((item) => [item.topicId, item]));
-      const order = (path.path ?? topicMap.chapters.map((chapter) => chapter.id)).flatMap((chapter) =>
-        topicMap.topics.filter((topic) => topic.chapter === chapter),
-      );
-      const current = path.next ? requireTopic(path.next.id) : null;
-      const now = new Date();
+      const topics = chapters.flatMap((chapter) => topicMap.topics.filter((topic) => topic.chapter === chapter));
+      const withStatus = topics.map((topic) => ({ topic, ...statuses.get(topic.id)! }));
+      const inProgress = withStatus
+        .filter((item) => item.status === "in_progress")
+        .sort((a, b) => (b.changedAt ?? "").localeCompare(a.changedAt ?? ""));
+      const current = inProgress[0] ?? withStatus.find((item) => item.status === "not_started") ?? null;
+      const count = (status: string) => withStatus.filter((item) => item.status === status).length;
       return {
-        targetRole: role,
+        goal: role,
         assessmentOpen,
-        current: current ? topicSummary(current, byId.get(current.id)!) : null,
-        nextTopics: order
-          .filter((topic) => topic.id !== current?.id && byId.get(topic.id)!.state !== "PROVEN")
+        current: current ? topicSummary(current.topic, current) : null,
+        counts: {
+          learned: count("learned"),
+          skipped: count("skipped"),
+          inProgress: count("in_progress"),
+          total: topics.length,
+        },
+        alsoInProgress: inProgress.slice(1, 4).map((item) => ({ topicId: item.topic.id, title: item.topic.title })),
+        nextTopics: withStatus
+          .filter((item) => item.status === "not_started" && item.topic.id !== current?.topic.id)
           .slice(0, 3)
-          .map((topic) => ({ topicId: topic.id, title: topic.title, state: byId.get(topic.id)!.state })),
-        reviewsDue: progress
-          .filter((item) => item.state === "PROVEN" && isReviewDue(item, now))
-          .map((item) => ({
-            topicId: item.topicId,
-            title: requireTopic(item.topicId).title,
-            nextReviewAt: item.nextReviewAt,
-          })),
-        aiUsesLeft: Math.max(0, DAILY_GENERATION_LIMIT - used),
+          .map((item) => ({ topicId: item.topic.id, title: item.topic.title })),
+        toRefresh: staleLearned(withStatus, new Date())
+          .slice(0, 5)
+          .map((item) => ({ topicId: item.topic.id, title: item.topic.title, learnedAt: item.learnedAt })),
+      };
+    },
+  },
+
+  get_roadmap: {
+    name: "get_roadmap",
+    title: "Roadmap",
+    description:
+      "The owner's roadmap: chapters in order with their area and each topic's status (not_started, in_progress, learned, skipped).",
+    kind: "read",
+    openDuringAssessment: true,
+    async run(userId) {
+      const [role, chapters, statuses] = await Promise.all([
+        targetRole(userId),
+        roadmapChapters(userId),
+        topicStatuses(userId),
+      ]);
+      return {
+        goal: role,
+        chapters: chapters.map((chapterId) => {
+          const chapter = topicMap.chapters.find((item) => item.id === chapterId)!;
+          return {
+            chapterId,
+            title: chapter.title,
+            area: topicMap.areas.find((item) => item.id === chapter.area)!.title,
+            topics: topicMap.topics
+              .filter((topic) => topic.chapter === chapterId)
+              .map((topic) => ({ topicId: topic.id, title: topic.title, status: statuses.get(topic.id)!.status })),
+          };
+        }),
       };
     },
   },
@@ -208,42 +227,24 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     name: "get_topic",
     title: "Topic",
     description:
-      "One topic: its place, state, approved assessment points (p1, p2, …), the current lesson, the current exercise's task, starter and tests (never the solution), any newer or failed exercise version, and whether a proof question exists.",
+      "One topic: its place and status, what the owner should be able to explain (p1, p2, …), the latest reports, the owner's and your notes, and the current exercise's task, starter and tests (never the solution).",
     kind: "read",
     async run(userId, { topicId: id }) {
       const topic = requireTopic(id);
-      const [progress, lesson, choice, proof] = await Promise.all([
-        getProgress(userId, id),
-        getLesson(userId, id),
+      const [status, choice, reports, notes] = await Promise.all([
+        topicStatus(userId, id),
         exerciseChoice(userId, topic),
-        db()
-          .select({ id: labQuestions.id, source: labQuestions.source })
-          .from(labQuestions)
-          .where(and(eq(labQuestions.userId, userId), eq(labQuestions.topicId, id), eq(labQuestions.kind, "proof")))
-          .orderBy(desc(labQuestions.createdAt))
-          .limit(1),
+        listReports(userId, id, 5),
+        listNotes(userId, id),
       ]);
       const { current } = choice;
       const lab = current.lab;
       return {
-        ...topicSummary(topic, progress),
+        ...topicSummary(topic, status),
         gap: topic.gap,
-        exercisePassed: progress.exercisePassed,
-        solutionOpened: progress.solutionOpened,
         points: topicPoints(topic),
-        lesson: lesson
-          ? {
-              source: lesson.authored ? "hand-written" : lesson.source,
-              heading: lesson.heading,
-              body: lesson.body,
-              mentalModel: lesson.mentalModel,
-              block: lesson.block,
-              example: lesson.example,
-              deeper: lesson.deeper,
-              prove: lesson.prove,
-              sources: lesson.sources,
-            }
-          : null,
+        reports,
+        notes,
         exercise: {
           labId: current.id,
           version: current.version,
@@ -265,7 +266,6 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
         invalidExercise: choice.invalid
           ? { labId: choice.invalid.id, version: choice.invalid.version, problem: choice.invalid.checkProblem }
           : null,
-        proofQuestion: proof[0] ? { exists: true, source: proof[0].source } : { exists: false },
       };
     },
   },
@@ -314,92 +314,38 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     name: "get_history",
     title: "History",
     description:
-      "A topic's past: exercise runs (counts only) per version, proof attempts with grade and feedback, practice reviews, and the points the latest graded answer missed.",
+      "A topic's past: every report and status change with its evidence, every note, and exercise runs per version (counts only).",
     kind: "read",
     async run(userId, { topicId: id }) {
       const topic = requireTopic(id);
-      const [versions, rows] = await Promise.all([
+      const [versions, reports, notes, runs] = await Promise.all([
         exerciseVersions(userId, topic),
+        listReports(userId, id),
+        listNotes(userId, id),
         db()
-          .select()
+          .select({ labId: labTopicEvents.labId, passed: labTopicEvents.passed })
           .from(labTopicEvents)
           .where(
             and(
               eq(labTopicEvents.userId, userId),
               eq(labTopicEvents.topicId, id),
-              inArray(labTopicEvents.kind, ["exercise_run", "proof", "review", "solution_opened"]),
+              eq(labTopicEvents.kind, "exercise_run"),
             ),
-          )
-          .orderBy(desc(labTopicEvents.createdAt))
-          .limit(200),
+          ),
       ]);
-      const runs = new Map<string, { labId: string; version: number | null; runs: number; passed: number }>();
-      for (const row of rows.filter((item) => item.kind === "exercise_run" && item.labId)) {
-        const entry = runs.get(row.labId!) ?? {
-          labId: row.labId!,
-          version: runVersionLabel(versions, row.labId),
+      const counts = new Map<string, { labId: string; version: number | null; runs: number; passed: number }>();
+      for (const run of runs.filter((item) => item.labId)) {
+        const entry = counts.get(run.labId!) ?? {
+          labId: run.labId!,
+          version: versions.find((item) => item.id === run.labId)?.version ?? null,
           runs: 0,
           passed: 0,
         };
         entry.runs += 1;
-        if (row.passed) entry.passed += 1;
-        runs.set(row.labId!, entry);
+        if (run.passed) entry.passed += 1;
+        counts.set(run.labId!, entry);
       }
-      const graded = (kind: "proof" | "review") =>
-        rows
-          .filter((row) => row.kind === kind && row.label)
-          .slice(0, 10)
-          .map((row) => ({
-            at: row.createdAt.toISOString(),
-            label: row.label as Label,
-            passed: row.passed,
-            feedback: row.feedback,
-            missed: misses(row.rubric),
-          }));
-      const latest = rows.find((row) => (row.kind === "proof" || row.kind === "review") && row.label);
-      return {
-        exerciseRuns: [...runs.values()],
-        solutionOpenedTimes: rows.filter((row) => row.kind === "solution_opened").length,
-        proofs: graded("proof"),
-        reviews: graded("review"),
-        openGaps: latest ? misses(latest.rubric) : [],
-      };
-    },
-  },
-
-  list_path: {
-    name: "list_path",
-    title: "Path",
-    description:
-      "The owner's path: chapters in path order (weakest area first) with their area and topics' states. Without a target role, every chapter in course order.",
-    kind: "read",
-    openDuringAssessment: true,
-    async run(userId) {
-      const [role, path] = await Promise.all([targetRole(userId), getPathView(userId)]);
-      const chapters = (path.path ?? topicMap.chapters.map((chapter) => chapter.id)).map((chapterId) => {
-        const chapter = topicMap.chapters.find((item) => item.id === chapterId)!;
-        return {
-          chapterId,
-          title: chapter.title,
-          area: topicMap.areas.find((item) => item.id === chapter.area)!.title,
-          topics: topicMap.topics
-            .filter((topic) => topic.chapter === chapterId)
-            .map((topic) => ({ topicId: topic.id, title: topic.title, state: path.states[topic.id] })),
-        };
-      });
-      return { targetRole: role, chapters };
-    },
-  },
-
-  save_lesson: {
-    name: "save_lesson",
-    title: "Save lesson",
-    description:
-      "Saves a new lesson version for a topic: heading, body, mental model, one code, formula or rule block with a note, a product example, optional Go deeper, exactly 3 things to prove, and sources on trusted sites. Hand-written lessons can't be replaced.",
-    kind: "write",
-    async run(userId, { topicId: id, lesson }) {
-      const saved = await saveClaudeLesson(userId, id, { ...lesson, deeper: lesson.deeper ?? null });
-      return { saved: true, version: saved.version, droppedSources: saved.droppedSources };
+      return { reports, notes, exerciseRuns: [...counts.values()] };
     },
   },
 
@@ -407,7 +353,7 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     name: "save_exercise",
     title: "Save exercise",
     description:
-      "Saves a new exercise version. It starts unchecked: the owner's browser runs the solution (must pass every test) and the starter (must fail one) the next time the topic's Exercise opens. Versions the owner already ran never change.",
+      "Saves a new exercise version. It starts unchecked: the owner's browser runs the solution (must pass every test) and the starter (must fail one) the next time the topic's exercise opens. Versions the owner already ran never change.",
     kind: "write",
     async run(userId, { topicId: id, exercise }) {
       requireTopic(id);
@@ -423,20 +369,32 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
         labId: saved.id,
         version: saved.version,
         checked: saved.checked,
-        next: "Open the topic's Exercise in Ken OS to check it",
+        next: "Open the topic's exercise in Ken OS to check it",
       };
     },
   },
 
-  save_proof_question: {
-    name: "save_proof_question",
-    title: "Save proof question",
+  report_progress: {
+    name: "report_progress",
+    title: "Report progress",
     description:
-      "Saves a proof question for a topic. It must name which approved assessment points it tests (p1, p2, … from get_topic); Ken OS grades the answer against those points. Claude never grades it.",
+      "Records what happened on a topic, shown to the owner in Ken OS. The first report starts the topic. Set status learned only after the owner explains the idea in their own words without hints, and pass that explanation word for word as evidence. Set skipped when the owner says they already know it. You can't change a status the owner set.",
     kind: "write",
-    async run(userId, { topicId: id, prompt, pointIds }) {
-      const saved = await saveClaudeProofQuestion(userId, id, { prompt, pointIds });
-      return { saved: true, tests: saved.rubric };
+    async run(userId, { topicId: id, summary, status, evidence }) {
+      requireTopic(id);
+      return { saved: true, ...(await reportProgress(userId, id, { summary, status, evidence })) };
+    },
+  },
+
+  save_note: {
+    name: "save_note",
+    title: "Save note",
+    description:
+      "Adds a note to a topic for the owner, such as a sharper way to explain the idea or a term to use. You can add notes but never change or delete them.",
+    kind: "write",
+    async run(userId, { topicId: id, body }) {
+      const note = await addNote(userId, id, "claude", body);
+      return { saved: true, noteId: note.id };
     },
   },
 };
@@ -470,18 +428,21 @@ export async function callAgentTool(userId: string, name: string, input: unknown
 /** Saves Claude may make per day, across every write tool. Claude's writes cost Ken OS nothing; this stops a runaway loop. */
 export const CLAUDE_WRITE_LIMIT = 40;
 
-/** Each write records one event with source "claude", so the events are the count. */
+/** Claude's saved content and reports are events with source "claude"; its notes are rows in lab_notes. */
 export async function claudeWritesToday(userId: string) {
-  const [row] = await db()
-    .select({ n: sql<number>`count(*)::int` })
-    .from(labTopicEvents)
-    .where(
-      and(
-        eq(labTopicEvents.userId, userId),
-        eq(labTopicEvents.source, "claude"),
-        inArray(labTopicEvents.kind, [...CONTENT_EVENT_KINDS]),
-        gte(labTopicEvents.createdAt, ownerDayStart()),
+  const [[events], notes] = await Promise.all([
+    db()
+      .select({ n: sql<number>`count(*)::int` })
+      .from(labTopicEvents)
+      .where(
+        and(
+          eq(labTopicEvents.userId, userId),
+          eq(labTopicEvents.source, "claude"),
+          inArray(labTopicEvents.kind, [...CONTENT_EVENT_KINDS, "report"]),
+          gte(labTopicEvents.createdAt, ownerDayStart()),
+        ),
       ),
-    );
-  return row?.n ?? 0;
+    claudeNotesToday(userId),
+  ]);
+  return (events?.n ?? 0) + notes;
 }

@@ -99,6 +99,13 @@
       "when": 1791844198789,
       "tag": "0013_tan_warpath",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791861516038,
+      "tag": "0014_faithful_chronomancer",
+      "breakpoints": true
     }
   ]
 }
