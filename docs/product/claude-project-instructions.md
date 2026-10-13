@@ -7,7 +7,8 @@ The instructions for the owner's Claude Project, "Ken OS Engineering". Changes h
 1. In claude.ai, create a Project named "Ken OS Engineering".
 2. Turn on the Ken OS connector for it.
 3. Paste the text below into the Project's instructions.
-4. Copy the Project's URL into `KEN_OS_CLAUDE_PROJECT_URL` in Vercel (Production), then redeploy. Ask Claude appears on every topic page.
+4. Copy the Project's URL into `KEN_OS_CLAUDE_PROJECT_URL` in Vercel (Production), then redeploy. Ask Claude appears on every topic page. The URL may be `https://claude.ai/project/…` or `https://claude.ai/code/project/…`.
+5. Check once that Claude in the Project calls `get_current_state` when you paste the starter message. If it answers without a Ken OS tool call, the connector isn't on for that Project.
 
 ## Instructions
 
