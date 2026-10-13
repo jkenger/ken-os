@@ -137,7 +137,32 @@ Built 13 Oct 2026 on `feat/engineering-reports-notes`. Where these differ from t
 - **The owner's status menu and note editing** exist in `status-store.ts` but have no routes yet; slice 2 adds them with the screen.
 - **Project instructions** were updated for reports, evidence and notes (`docs/product/claude-project-instructions.md`).
 
-**Verified:** `pnpm test` (`status.test.ts`, `agent-tools.test.ts`), `pnpm check`, `pnpm build`, `test:db:engineering` (14 checks) and `test:db:connector` (8 checks) against local Postgres.
+**Verified:** `pnpm test` (`status.test.ts`, `agent-tools.test.ts`), `pnpm check`, `pnpm build`, `test:db:engineering` (12 checks) and `test:db:connector` (8 checks) against local Postgres.
+
+## 9b. Slice 2 as built
+
+Built 13 Oct 2026 on `feat/engineering-roadmap-page`. The new page lives beside the old screens until slice 4.
+
+| File                                                                                     | Holds                                                                                                               |
+| ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `src/app/engineering/roadmap/page.tsx`                                                   | The page, at `/engineering/roadmap`. `?topic=<id>` opens that topic's panel                                         |
+| `src/components/engineering/roadmap/`                                                    | The page shell, the graph, the lanes, the topic panel, the code panel, and status labels                            |
+| `src/components/engineering/exercise.tsx`                                                | The exercise editor, moved out of `topic.tsx` so both pages use it                                                  |
+| `src/features/engineering-lab/roadmap-store.ts`                                          | The roadmap with statuses, the current topic and counts. Claude's `get_current_state` and `get_roadmap` read it too |
+| `src/features/engineering-lab/roadmap-layout.ts`                                         | Where each graph node sits, as a pure function with tests                                                           |
+| `/api/lab/topics/[id]/panel`, `/status`, `/notes`, `/code` and `/api/lab/notes/[noteId]` | The panel's data, the owner's status menu, notes, and the code panel                                                |
+
+**Decisions**
+
+- **Graph library:** `@xyflow/react` 12.12.0 (React Flow, MIT). Its attribution link stays visible, as its authors ask of non-subscribers. Themed with Ken OS tokens, so it follows light and dark mode.
+- **The graph opens zoomed on the goal and the current chapter's topics,** readable at once. With 13 chapters the whole ring at once was too small to read. The fit button shows everything.
+- **Graph nodes must stay selectable** in React Flow's sense, or React Flow turns off pointer events and clicks never reach the buttons. Selection shows nothing.
+- **The layout choice** (Graph or Lanes) is kept in this browser only.
+- **Settings** shows the goal with **Change goal** (the existing Direction page until slice 3) and Connections. The resume and **Plan new roadmap with Claude** arrive in slice 3.
+- **A bug fixed on the way:** the exercise editor's data prop was named `panel`, the same as the card style it imports, so the editor had lost its card border since the connector work. It's now `data`.
+- **The sidebar** has Roadmap first, above the old four, until slice 4 removes them.
+
+**Verified:** `pnpm test` (`roadmap-layout.test.ts` and the rest), `pnpm check`, `pnpm build`. On the local server, signed in: the graph renders and opens on the current chapter; a real click on a topic opens its panel and puts it in the address; Skipped saves and updates the panel, the progress line and the graph; Learned asks why first; a note adds and deletes; Try it in code opens the exercise with the editor; Lanes shows all chapters and is remembered; chapters expand and collapse. `test:db:engineering` (12 checks) and `test:db:connector` (8) pass.
 
 ## 10. Done when
 

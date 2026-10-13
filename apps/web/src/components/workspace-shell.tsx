@@ -10,6 +10,7 @@ import {
   FileText,
   FlaskConical,
   LayoutDashboard,
+  Map as MapIcon,
   Library,
   ListTree,
   Repeat,
@@ -87,6 +88,7 @@ const moduleDetails: Record<
   lab: {
     title: "Engineering",
     sections: [
+      { label: "Roadmap", href: engineering.roadmap(), icon: MapIcon },
       { label: "Overview", href: engineering.overview, icon: LayoutDashboard },
       { label: "Profile", href: engineering.profile, icon: UserRound },
       { label: "Learn", href: engineering.learn, icon: ListTree },
