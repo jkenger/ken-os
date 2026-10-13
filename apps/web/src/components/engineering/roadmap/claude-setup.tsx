@@ -15,6 +15,7 @@ import {
   CLAUDE_INSTRUCTIONS_UPDATED,
   CLAUDE_PROJECT_INSTRUCTIONS,
 } from "@/features/engineering-lab/claude-instructions";
+import type { InstructionsState } from "@/features/engineering-lab/claude-setup";
 import { Connections } from "../connections";
 import { ClaudeLinkField } from "./claude-link-field";
 
@@ -62,23 +63,39 @@ function Step({
   );
 }
 
+const instructionsWords: Record<InstructionsState, string> = {
+  pasted: "Pasted",
+  out_of_date: "Out of date",
+  not_yet: "Not yet",
+};
+
 export function ClaudeSetup({
   mcpUrl,
   connections,
   projectUrl,
+  instructions,
+  alert,
+  open,
+  onOpenChange,
 }: {
   mcpUrl: string;
   connections: Connection[];
   projectUrl: string | null;
+  instructions: InstructionsState;
+  /** A word for the button once setup is done: "Not connected" or "Update" (setupAlert). */
+  alert: string | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }) {
   const router = useRouter();
   const connected = connections.length > 0;
   const updated = formatDate(`${CLAUDE_INSTRUCTIONS_UPDATED}T12:00:00`);
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
         <Button type="button" variant="outline" size="sm">
           Claude setup
+          {alert && <Badge variant="destructive">{alert}</Badge>}
         </Button>
       </SheetTrigger>
       <SheetContent className="gap-0 overflow-y-auto data-[side=right]:w-full data-[side=right]:sm:max-w-md">
@@ -100,8 +117,15 @@ export function ClaudeSetup({
           </div>
           <Connections connections={connections} />
         </Step>
-        <Step number={2} title="Project instructions" state={`Updated ${updated}`} done={false}>
-          <p className="text-xs text-muted-foreground">Paste into the Project&apos;s instructions in Claude</p>
+        <Step
+          number={2}
+          title="Project instructions"
+          state={instructionsWords[instructions]}
+          done={instructions === "pasted"}
+        >
+          <p className="text-xs text-muted-foreground">
+            Version {updated} · paste into the Project&apos;s instructions
+          </p>
           <Collapsible className="grid gap-2">
             <div className="flex flex-wrap gap-2">
               <Button type="button" size="sm" onClick={() => void copy(CLAUDE_PROJECT_INSTRUCTIONS, "Instructions")}>

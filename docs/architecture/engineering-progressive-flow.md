@@ -119,3 +119,17 @@ Asked for by the owner on 13 Oct 2026, to build after slice 3, once the path abo
 4. Learning the last topic of a chapter shows Chapter done and the next topic, in the app and in Claude's reply.
 5. Finishing every topic shows the summary with the owner's evidence and Plan next roadmap.
 6. `pnpm test`, `pnpm check` and `pnpm build` pass, and steps 1 to 5 work on the hosted app.
+
+## 8. Slice 1 as built
+
+Built 13 Oct 2026 on `feat/engineering-setup-checklist`.
+
+- **The rules** are pure functions in `features/engineering-lab/claude-setup.ts`: `instructionsState`, `setupChecklist` and `setupAlert`, shared by the page and `claude-setup.test.ts`.
+- **When the checklist hides,** without storing a flag: once Claude has reported any instructions version, a Project link exists and a roadmap is saved. A lost connection or newer instructions after that show on the Claude setup button ("Not connected" first, then "Update"), not as the checklist again. Clearing the Project link or having no roadmap brings it back, since those undo setup.
+- **The version** goes through `get_current_state({ instructionsVersion })`, max 20 characters; only `YYYY-MM-DD` is kept, and an unchanged version isn't written again (`recordInstructionsVersion` in `claude-links.ts`). The instructions text now names it, built from `CLAUDE_INSTRUCTIONS_UPDATED`, so the two can't drift.
+- **Rows 1 to 3** open Claude setup; row 4 is Plan with Claude once a Project link exists, else "Needs the Project link". The first row not done gets the filled button. The checklist replaces the old "No roadmap" box.
+- **Claude setup step 2** shows Pasted, Out of date or Not yet, with "Version Oct 13" in its helper line.
+- **Migration** `0020_equal_annihilus.sql` adds the two nullable columns to `lab_profile`.
+- **The owner pastes the instructions once more** after merge: the current text is the first to carry the version line, so the checklist shows Not yet until then.
+
+**Verified:** `pnpm test` (164, 7 new in `claude-setup.test.ts`), `pnpm check`, `pnpm build`, `test:db:engineering` (10 sections, 1 new: the version is kept, junk and over-long values are refused or ignored, unchanged versions aren't rewritten, versions are per owner) and `test:db:connector` (8). On the local server, signed in: the checklist at 0 of 4; a row opening Claude setup with Not connected, Not yet and Not set; a saved Project link turning row 3 Done and row 4 to Plan with Claude; a script acting as Claude reporting an older version (Out of date) and then the current one (2 of 4); a saved test roadmap hiding the checklist, with Plan new roadmap and a "Not connected" badge in the header. The "Update" badge needs a live connection, so it's covered by the unit test only. Another session held port 3000, so this ran on 3001; one Project link save went through a page request after the pane resized mid-click. Test data was removed afterwards.

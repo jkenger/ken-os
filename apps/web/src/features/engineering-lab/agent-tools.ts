@@ -13,6 +13,7 @@ import { db } from "@/lib/db";
 import { ownerDayStart } from "@/lib/day";
 import { labTopicEvents } from "@/lib/schema";
 import { requireAnyTopic, type AnyTopic } from "./any-topic";
+import { recordInstructionsVersion } from "./claude-links";
 import { LabInputError } from "./errors";
 import { exerciseChoice, exerciseVersions, getDraft, saveClaudeExercise } from "./exercise-store";
 import { alsoInProgress, chapterOnRoadmap, getRoadmap, saveRoadmap, toRefresh } from "./roadmap-store";
@@ -45,7 +46,15 @@ const text = (max: number) => z.string().trim().min(1).max(max);
 const file = z.string().max(CLAUDE_LIMITS.exerciseFile);
 
 export const toolInputs = {
-  get_current_state: z.object({}).strict(),
+  get_current_state: z
+    .object({
+      instructionsVersion: z
+        .string()
+        .max(20)
+        .optional()
+        .describe("The version line from the Project instructions, as YYYY-MM-DD, so Ken OS knows they are current"),
+    })
+    .strict(),
   get_roadmap: z.object({}).strict(),
   get_topic: z.object({ topicId }).strict(),
   get_my_work: z.object({ topicId }).strict(),
@@ -181,10 +190,10 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     name: "get_current_state",
     title: "Current state",
     description:
-      "Where the owner is: their goal, the topic in progress, counts of learned and skipped topics, the next topics, and learned topics old enough to refresh. Call this first.",
+      "Where the owner is: their goal, the topic in progress, counts of learned and skipped topics, the next topics, and learned topics old enough to refresh. Call this first, with the instructions version.",
     kind: "read",
-    async run(userId) {
-      const roadmap = await getRoadmap(userId);
+    async run(userId, { instructionsVersion }) {
+      const [roadmap] = await Promise.all([getRoadmap(userId), recordInstructionsVersion(userId, instructionsVersion)]);
       const { current } = roadmap;
       return {
         goal: roadmap.goal,
