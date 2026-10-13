@@ -1,0 +1,35 @@
+import { NextResponse } from "next/server";
+import { hasValidOrigin } from "@/lib/origin";
+import { getSession, type Session } from "@/lib/session";
+import { messages } from "@/lib/messages";
+import { ProfileInputError } from "./store";
+
+/** Owner session always, origin check on writes, plain errors out. Same guard as the Engineering and Terms routes. */
+export async function profileRoute(
+  request: Request,
+  handler: (session: Session, body: Record<string, unknown>) => Promise<unknown>,
+  options: { write: boolean; ai?: boolean },
+) {
+  if (options.write && !hasValidOrigin(request))
+    return NextResponse.json({ error: messages.invalidOrigin }, { status: 403 });
+  const session = await getSession();
+  if (!session) return NextResponse.json({ error: messages.signedOut }, { status: 401 });
+  if (options.ai && !process.env.OPENAI_API_KEY)
+    return NextResponse.json({ error: "Import isn't set up" }, { status: 503 });
+  try {
+    const body = options.write ? await request.json().catch(() => null) : {};
+    if (!body || typeof body !== "object" || Array.isArray(body))
+      return NextResponse.json({ error: messages.invalidJson }, { status: 400 });
+    return NextResponse.json(await handler(session, body as Record<string, unknown>), {
+      headers: { "Cache-Control": "no-store" },
+    });
+  } catch (error) {
+    if (error instanceof ProfileInputError)
+      return NextResponse.json({ error: error.message }, { status: error.status });
+    console.error("profile route failed", error instanceof Error ? error.message : error);
+    return NextResponse.json(
+      { error: options.ai ? "Import failed. Nothing saved. Try again" : "Couldn't save. Try again" },
+      { status: 502 },
+    );
+  }
+}

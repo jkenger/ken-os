@@ -1,13 +1,14 @@
 # Ken OS repository guidance
 
-Ken OS is the owner's private, hosted platform; each workflow is a module under it. The first shipped module is a canonical resume selected from Google Drive. Engineering (formerly Engineering Lab; code, tables and `/api/lab` keep the `engineering-lab` and `lab` names), a learning system for full-stack and AI engineering, is in progress. Do not relate this project to Haven.
+Ken OS is the owner's private, hosted platform; each workflow is a module under it. The first shipped module is Profile (formerly Resume): the owner's career details as fields, typed in or imported from a resume chosen in Google Drive (`docs/product/profile-resume.md`). Engineering (formerly Engineering Lab; code, tables and `/api/lab` keep the `engineering-lab` and `lab` names), a learning system for full-stack and AI engineering, is in progress. Do not relate this project to Haven.
 
 ## Where things live
 
 - `apps/web`: Next.js UI, API routes, Google OAuth, sessions, and database access.
 - `packages/domain`: shared artifact types and format rules.
 - `packages/drive`: Google Drive adapter.
-- `packages/agents`: the read-only resume assistant and the term lookup. Engineering has no OpenAI agents; Claude teaches through the connector.
+- `packages/agents`: the Profile import and the term lookup. Engineering has no OpenAI agents; Claude teaches through the connector.
+- `apps/web/src/features/profile/`, `components/profile/` and `app/profile/`: the Profile module. `/` redirects to `/profile`. `pnpm --filter @ken-os/web test:db:profile` checks its store against local Postgres.
 - `apps/web/src/features/connector/`, `features/engineering-lab/agent-tools.ts`, `/api/mcp` and `/oauth/authorize`: the Claude connector (`docs/architecture/engineering-claude-first.md`, section 5). Claude reads Engineering, reports progress, and saves exercises and notes; everything it saves is untrusted input, like Terms selections. Claude marks a topic Learned only with the owner's own words as evidence, never changes a status the owner set, never edits or deletes the owner's notes, and no tool records a run, opens a solution, or changes the role or the profile; `agent-tools.test.ts` and `status.test.ts` enforce it. Tools live only in `agent-tools.ts`, which never imports route or MCP code. Claude's exercises run only in the browser runner, after the page checks them. `pnpm --filter @ken-os/web test:db:connector` checks sign-in and `/api/mcp` against local Postgres. The Project's instructions are `docs/product/claude-project-instructions.md`.
 - `apps/web/src/features/terms/` and `components/terms/`: Ken OS-wide term lookup (select text, press Explain or E) and the Terms page. Selected text is untrusted data; links must be on the trusted sites in `packages/domain` (`SOURCE_DOMAINS`). `pnpm --filter @ken-os/web test:db:terms` checks it against local Postgres.
 - `docs/product/brief.md`: platform-wide scope and acceptance criteria.
@@ -24,7 +25,7 @@ Read the relevant docs when changing their area; do not load every document for 
 
 ## Current implementation and boundaries
 
-- Google Drive owns resume content. The database stores the selected file ID and metadata; never silently replace the selection based on a filename.
+- The chosen Drive resume is read only. The database stores its file ID and metadata; never silently replace the selection based on a filename. Profile details are stored in Ken OS, and an import never changes them until the owner saves.
 - The app allows only the configured owner. OAuth state/PKCE, session checks, token encryption, and mutation-origin checks are intentional boundaries.
 - Agent access to the resume is read-only. Any future tool that edits Drive or another external system needs an explicit approval path.
 - PostgreSQL queries use Drizzle. `apps/web/drizzle/0000_baseline.sql` safely records the original three handwritten tables for existing installations; generate new migrations with `pnpm db:generate`, review them, then run `pnpm db:migrate` locally. Hosted migrations run on their own: `apps/web/vercel.json` runs `db:migrate:deploy` after every production build, so merging to `main` applies them. Preview deploys skip it and never change the schema. Never run `db:migrate` against the hosted database by hand. Because the schema changes slightly before the new code goes live, every migration must work with the code already deployed: add tables and columns first, and remove old ones in a later release.

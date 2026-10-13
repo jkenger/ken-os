@@ -120,6 +120,13 @@
       "when": 1791887032074,
       "tag": "0016_drop_old_engineering_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1791889834784,
+      "tag": "0017_profiles",
+      "breakpoints": true
     }
   ]
 }
