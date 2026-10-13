@@ -8,13 +8,14 @@ import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Connection } from "@/features/connector/oauth-store";
 import { PLAN_MESSAGE } from "@/features/engineering-lab/ask-claude";
+import { setupAlert, setupChecklist, type InstructionsState } from "@/features/engineering-lab/claude-setup";
 import type { RoadmapView } from "@/features/engineering-lab/roadmap-store";
 import { engineering } from "@/features/engineering-lab/routes";
 import { AskClaude } from "../ask-claude";
-import { Notice } from "../kit";
 import { RoadmapGraph } from "./roadmap-graph";
 import { RoadmapLanes } from "./roadmap-lanes";
 import { ClaudeSetup } from "./claude-setup";
+import { SetupChecklist } from "./setup-checklist";
 import { TopicSheet } from "./topic-sheet";
 
 // The Claude-first Engineering page (docs/architecture/engineering-claude-first.md, section 1): the goal and progress,
@@ -29,6 +30,7 @@ export function RoadmapPage({
   connections,
   projectUrl,
   mcpUrl,
+  instructions,
   initialTopic,
 }: {
   email: string;
@@ -36,11 +38,13 @@ export function RoadmapPage({
   connections: Connection[];
   projectUrl: string | null;
   mcpUrl: string;
+  instructions: InstructionsState;
   initialTopic: string | null;
 }) {
   const router = useRouter();
   const [layout, setLayout] = useState<Layout>("graph");
   const [selected, setSelected] = useState<string | null>(initialTopic);
+  const [setupOpen, setSetupOpen] = useState(false);
 
   // The layout you picked last time, kept in this browser only.
   useEffect(() => {
@@ -67,6 +71,12 @@ export function RoadmapPage({
   }, []);
 
   const { counts, current } = view;
+  const facts = {
+    connected: connections.length > 0,
+    instructions,
+    projectLinked: Boolean(projectUrl),
+    planned: view.planned,
+  };
   return (
     <WorkspaceShell email={email} active="lab" tab="roadmap">
       <div className="mx-auto max-w-7xl px-3 pt-6 pb-9 md:px-5 md:pt-7.5">
@@ -87,7 +97,15 @@ export function RoadmapPage({
             {view.planned && projectUrl && (
               <AskClaude message={PLAN_MESSAGE} label="Plan new roadmap" projectUrl={projectUrl} />
             )}
-            <ClaudeSetup mcpUrl={mcpUrl} connections={connections} projectUrl={projectUrl} />
+            <ClaudeSetup
+              mcpUrl={mcpUrl}
+              connections={connections}
+              projectUrl={projectUrl}
+              instructions={instructions}
+              alert={setupAlert(facts)}
+              open={setupOpen}
+              onOpenChange={setSetupOpen}
+            />
           </div>
         </div>
         <div className="mx-1 mb-5 md:mx-3.5">
@@ -109,21 +127,9 @@ export function RoadmapPage({
             className="mt-2"
           />
         </div>
-        {!view.planned && (
-          <div className="mx-1 md:mx-3.5">
-            <Notice>
-              <p className="font-semibold">No roadmap</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">
-                {view.goal ? `Showing the ${view.goal.title} path` : "Showing every topic"} · plan yours with Claude
-              </p>
-              <div className="mt-3">
-                {projectUrl ? (
-                  <AskClaude message={PLAN_MESSAGE} label="Plan with Claude" projectUrl={projectUrl} />
-                ) : (
-                  <ClaudeSetup mcpUrl={mcpUrl} connections={connections} projectUrl={projectUrl} />
-                )}
-              </div>
-            </Notice>
+        {setupChecklist(facts).show && (
+          <div className="mx-1 mb-5 md:mx-3.5">
+            <SetupChecklist facts={facts} projectUrl={projectUrl} onOpenSetup={() => setSetupOpen(true)} />
           </div>
         )}
         <div className="mx-1 md:mx-3.5">

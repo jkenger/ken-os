@@ -448,6 +448,27 @@ async function main() {
       await links.setTopicChat(planner, "custom.llm_as_judge", "");
       assert.equal(await links.getTopicChat(planner, "custom.llm_as_judge"), null);
       console.log("ok - links: the Project link is saved in the app over the env, and each topic can link a chat");
+
+      // The instructions version Claude reports (engineering-progressive-flow.md, section 1).
+      assert.deepEqual(await links.getInstructionsSeen(planner), { version: null, seenAt: null }, "none reported yet");
+      await call("get_current_state", { instructionsVersion: "not a date" });
+      assert.equal((await links.getInstructionsSeen(planner)).version, null, "only a YYYY-MM-DD version is kept");
+      await call("get_current_state", { instructionsVersion: "2026-10-01" });
+      const reported = await links.getInstructionsSeen(planner);
+      assert.equal(reported.version, "2026-10-01");
+      assert.ok(reported.seenAt);
+      await call("get_current_state", {});
+      await call("get_current_state", { instructionsVersion: "2026-10-01" });
+      assert.deepEqual(
+        await links.getInstructionsSeen(planner),
+        reported,
+        "no version or the same one changes nothing",
+      );
+      await call("get_current_state", { instructionsVersion: "2026-10-13" });
+      assert.equal((await links.getInstructionsSeen(planner)).version, "2026-10-13", "a new paste replaces it");
+      assert.equal((await links.getInstructionsSeen(other)).version, null, "versions are per owner");
+      await assert.rejects(call("get_current_state", { instructionsVersion: "x".repeat(21) }), /instructionsVersion/);
+      console.log("ok - setup: get_current_state keeps the instructions version Claude reports");
     } finally {
       await db().delete(users).where(eq(users.id, planner));
     }

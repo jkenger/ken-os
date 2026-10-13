@@ -33,11 +33,14 @@ export function AskClaude({
   message: given,
   label = "Ask Claude",
   projectUrl,
+  variant = "outline",
 }: {
   topic?: Pick<Topic, "id" | "title">;
   message?: string;
   label?: string;
   projectUrl: string;
+  /** "default" when it is the next thing to do. */
+  variant?: "default" | "outline";
 }) {
   const message = given ?? askClaudeMessage(topic!);
   const [state, setState] = useState<CopyState>("copying");
@@ -60,7 +63,7 @@ export function AskClaude({
       }}
     >
       <DialogTrigger asChild>
-        <Button type="button" variant="outline" size="sm">
+        <Button type="button" variant={variant} size="sm">
           {label}
         </Button>
       </DialogTrigger>

@@ -3,11 +3,13 @@ import { db } from "@/lib/db";
 import { labProfile, labTopicChats } from "@/lib/schema";
 import { requireAnyTopic } from "./any-topic";
 import { claudeLink, claudeProjectUrl } from "./ask-claude";
+import { instructionsVersion } from "./claude-setup";
 import { LabInputError } from "./errors";
 import { getProfileRow } from "./profile-store";
 
 // The owner's links into Claude, set in the app (docs/architecture/engineering-claude-first.md, section 9e): the Claude
-// Project that Ask Claude opens, and optionally the chat each topic was learned in, for Continue chat.
+// Project that Ask Claude opens, optionally the chat each topic was learned in, for Continue chat, and the instructions
+// version Claude last reported.
 
 const NOT_A_CLAUDE_LINK = "Use an https claude.ai link";
 
@@ -56,4 +58,28 @@ export async function setTopicChat(userId: string, topicId: string, value: strin
     .values({ userId, topicId, url, updatedAt })
     .onConflictDoUpdate({ target: [labTopicChats.userId, labTopicChats.topicId], set: { url, updatedAt } });
   return { url };
+}
+
+/** The Project instructions version Claude last reported, and when it first reported it. */
+export async function getInstructionsSeen(userId: string) {
+  const profile = await getProfileRow(userId);
+  return { version: profile?.claudeInstructionsVersion ?? null, seenAt: profile?.claudeInstructionsSeenAt ?? null };
+}
+
+/**
+ * Keeps the instructions version Claude sent to get_current_state (docs/architecture/engineering-progressive-flow.md,
+ * section 1). Anything but a YYYY-MM-DD date is ignored, and an unchanged version isn't written again.
+ */
+export async function recordInstructionsVersion(userId: string, value: string | undefined) {
+  const version = instructionsVersion(value);
+  if (!version) return null;
+  const seen = await getInstructionsSeen(userId);
+  if (seen.version === version) return version;
+  const now = new Date();
+  const set = { claudeInstructionsVersion: version, claudeInstructionsSeenAt: now, updatedAt: now };
+  await db()
+    .insert(labProfile)
+    .values({ userId, ...set })
+    .onConflictDoUpdate({ target: labProfile.userId, set });
+  return version;
 }

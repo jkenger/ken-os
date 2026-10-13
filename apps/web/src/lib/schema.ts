@@ -328,6 +328,9 @@ export const labProfile = pgTable("lab_profile", {
   direction: text("direction"),
   /** The owner's Claude Project, opened by Ask Claude. An https claude.ai link, set in Settings. */
   claudeProjectUrl: text("claude_project_url"),
+  /** The Project instructions version Claude last reported through get_current_state, as YYYY-MM-DD, and when. */
+  claudeInstructionsVersion: text("claude_instructions_version"),
+  claudeInstructionsSeenAt: timestamp("claude_instructions_seen_at", { withTimezone: true }),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
