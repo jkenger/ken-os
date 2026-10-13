@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { pathChapters, staleLearned, type TopicStatus, type TopicStatusView } from "@ken-os/domain";
 import { db } from "@/lib/db";
-import { labCustomTopics, labRoadmaps } from "@/lib/schema";
+import { labCustomTopics, labRoadmaps, labTopicEvents } from "@/lib/schema";
 import { customTopics, requireAnyTopic } from "./any-topic";
 import { getTopicChat } from "./claude-links";
 import { practiceState } from "./exercise-store";
@@ -10,6 +10,7 @@ import { careers, topicMap } from "./curriculum";
 import { LabInputError } from "./errors";
 import { getProfileRow } from "./profile-store";
 import { normalizePlan, PlanError, type PlanInput } from "./roadmap-plan";
+import { isComplete, roadmapSummary } from "./roadmap-summary";
 import { listNotes, listReports, topicStatus, topicStatuses, type NoteView, type ReportView } from "./status-store";
 import { chapterDone, nextTopic, type PracticeState } from "./topic-steps";
 
@@ -235,6 +236,36 @@ export async function getTopicPanel(userId: string, topicId: string): Promise<To
     next: nextTopic(roadmap.chapters, topicId),
     chapterDone: chapterDone(roadmap.chapters, topicId),
   };
+}
+
+/**
+ * The summary of a finished roadmap (docs/architecture/engineering-progressive-flow.md, section 4), from its topics'
+ * reports and status changes. Null until every topic is Learned or Skipped.
+ */
+export async function getRoadmapSummary(userId: string, view: RoadmapView) {
+  if (!isComplete(view.chapters)) return null;
+  const topicIds = view.chapters.flatMap((chapter) => chapter.topics.map((topic) => topic.id));
+  const rows = await db()
+    .select({
+      topicId: labTopicEvents.topicId,
+      at: labTopicEvents.createdAt,
+      status: labTopicEvents.status,
+      summary: labTopicEvents.summary,
+      evidence: labTopicEvents.evidence,
+    })
+    .from(labTopicEvents)
+    .where(
+      and(
+        eq(labTopicEvents.userId, userId),
+        inArray(labTopicEvents.topicId, topicIds),
+        inArray(labTopicEvents.kind, ["report", "status_set"]),
+      ),
+    )
+    .orderBy(asc(labTopicEvents.createdAt));
+  return roadmapSummary(
+    view.chapters,
+    rows.map((row) => ({ ...row, at: row.at.toISOString() })),
+  );
 }
 
 /** The Engineering line on the Ken OS home page: the goal and how many topics are learned. */

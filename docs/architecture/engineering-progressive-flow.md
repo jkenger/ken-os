@@ -148,3 +148,16 @@ Built 14 Oct 2026 on `feat/engineering-topic-steps`.
 - No migration.
 
 **Verified:** `pnpm test` (177, 7 new across `topic-steps.test.ts` and `roadmap-layout.test.ts`), `pnpm check`, `pnpm build`, `test:db:engineering` (11 sections, 1 new: the Practice step for a passing run, a repo lab not yet run and no exercise; Next topic and chapter done in the panel and in `report_progress` for Learned and Skipped, and not for a plain report) and `test:db:connector` (8). On the local server, signed in, with real clicks: a new topic with Learn as the main button; In progress moving it to Try it in code; Learned on the last topic of a chapter showing Chapter done with Next topic, which opened that topic; Lanes reading "Done · 4 of 4" with the page no longer scrolling sideways. The chapter's other three topics were set Learned through a page request to save time. Test statuses were set back to Not started and the test link cleared; their reports stay in the local database's history.
+
+## 10. Slice 3 as built
+
+Built 14 Oct 2026 on `feat/engineering-roadmap-summary`.
+
+- **The rules** are pure functions in `features/engineering-lab/roadmap-summary.ts`: `isComplete`, `roadmapSummary` and `firstSentence`, tested in `roadmap-summary.test.ts`. `getRoadmapSummary` in `roadmap-store.ts` feeds them the roadmap topics' reports and status changes in one query, and only once the roadmap is complete.
+- **Each topic's words** come from its latest Learned event: Claude's evidence (the owner's explanation), or the owner's own reason when they marked it themselves. Skipped topics show no words. The line is the first sentence, cut at 160 characters; the full text stays in the topic panel.
+- **Dates:** a topic's date is its latest Learned or Skipped event. The span runs from the first report on any of the roadmap's topics to the last Learned, so it includes work from before this roadmap was planned.
+- **On the page:** "Complete · <date> · 2 of 3 learned" replaces the progress line, and the bar fills. The summary sits above the graph or lanes, with **Plan next roadmap** as its main button; the header's Plan new roadmap hides while it shows. Topic names in the summary open their panels.
+- **It works for the role's default path too,** since it reads whatever roadmap the page shows.
+- No migration, and no change to Claude's tools.
+
+**Verified:** `pnpm test` (182, 5 new in `roadmap-summary.test.ts`), `pnpm check`, `pnpm build`, `test:db:engineering` (12 sections, 1 new: a finished roadmap's counts and words, and none for an unfinished one) and `test:db:connector` (8). On the local server, signed in: a test roadmap saved and finished by a script acting as Claude (two Learned with evidence, one Skipped) showed Complete with the date, the summary with counts, dates and first sentences, Plan next roadmap, and a topic opening from it with Chapter done and "Every topic on the roadmap is done". The test roadmap, its events and the test link were removed afterwards.
