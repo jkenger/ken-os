@@ -1,33 +1,26 @@
-import { Overview, PracticeCard } from "@/components/engineering/overview";
-import { activeRun, getRunView, listRuns } from "@/features/engineering-lab/assessment-store";
-import { careers, topicMap } from "@/features/engineering-lab/curriculum";
-import { getPathView } from "@/features/engineering-lab/path-store";
-import { getPractice, practiceCandidates, PRACTICE_MINUTES } from "@/features/engineering-lab/practice-store";
-import { getRadarView } from "@/features/engineering-lab/radar-store";
-import { requireSession } from "@/lib/session";
+import { RoadmapPage } from "@/components/engineering/roadmap/roadmap-page";
+import { listConnections } from "@/features/connector/oauth-store";
+import { claudeProjectUrl } from "@/features/engineering-lab/ask-claude";
+import { getRoadmap } from "@/features/engineering-lab/roadmap-store";
 import { engineering } from "@/features/engineering-lab/routes";
+import { requireSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
-export default async function EngineeringPage() {
-  const session = await requireSession(engineering.overview);
-  const [runs, open, path, radar] = await Promise.all([listRuns(session.userId), activeRun(session.userId), getPathView(session.userId), getRadarView(session.userId)]);
-  const openView = open ? await getRunView(session.userId, open.id) : null;
-  const finished = runs.some((run) => run.completedAt);
-  const practice = finished ? await getPractice(session.userId) : null;
-  const ready = practice ? practice.items.filter((item) => !item.answered).length : finished ? (await practiceCandidates(session.userId)).length : 0;
-  const areas = topicMap.areas.map((area) => ({ id: area.id, title: area.title, summary: careers.areas.find((ladder) => ladder.id === area.id)?.summary ?? "" }));
+/** The Claude-first roadmap (docs/architecture/engineering-claude-first.md). `?topic=` opens that topic's panel. */
+export default async function RoadmapRoute({ searchParams }: { searchParams: Promise<{ topic?: string }> }) {
+  const { topic } = await searchParams;
+  const session = await requireSession(engineering.roadmap(topic));
+  const [view, connections] = await Promise.all([getRoadmap(session.userId), listConnections(session.userId)]);
+  // A link may name any topic on the roadmap, including ones Claude added.
+  const onRoadmap = view.chapters.some((chapter) => chapter.topics.some((item) => item.id === topic));
   return (
-    <Overview
+    <RoadmapPage
       email={session.email}
-      assessment={{
-        finished,
-        open: openView ? { answered: openView.answers.filter((answer) => answer.label).length, total: openView.questions.length } : null,
-      }}
-      path={path}
-      areas={areas}
-      radar={radar}
-      practice={finished ? <PracticeCard ready={ready} done={Boolean(practice?.done)} minutes={PRACTICE_MINUTES} /> : undefined}
+      view={view}
+      connections={connections}
+      projectUrl={claudeProjectUrl()}
+      initialTopic={topic && onRoadmap ? topic : null}
     />
   );
 }

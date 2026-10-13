@@ -25,7 +25,8 @@ const allowed: { file: string; pattern: RegExp; reason: string }[] = [
 ];
 
 const rawControl = /<(button|input|select|textarea|option|label|table|dialog)(?=[\s>/])/g;
-const widgetRole = /role="(dialog|alertdialog|tablist|tab|tabpanel|switch|menu|menuitem|listbox|combobox|tooltip|checkbox|radiogroup)"/g;
+const widgetRole =
+  /role="(dialog|alertdialog|tablist|tab|tabpanel|switch|menu|menuitem|listbox|combobox|tooltip|checkbox|radiogroup)"/g;
 const directRadix = /from "(radix-ui|@radix-ui\/[^"]+)"/g;
 
 function screenFiles() {
@@ -41,7 +42,10 @@ function screenFiles() {
   return files.filter((file) => !file.startsWith("components/ui/")).sort();
 }
 
-export function findBypasses(files = screenFiles(), read = (file: string) => readFileSync(join(srcRoot, file), "utf8")) {
+export function findBypasses(
+  files = screenFiles(),
+  read = (file: string) => readFileSync(join(srcRoot, file), "utf8"),
+) {
   const found: string[] = [];
   for (const file of files) {
     const source = read(file);
@@ -65,10 +69,13 @@ test("the scan catches raw controls, widget roles and direct Radix imports", () 
     `import { Dialog } from "radix-ui";`,
     `export const A = () => <div role="tablist"><button type="button">Go</button><Button>Ok</Button><input /></div>;`,
   ].join("\n");
-  assert.deepEqual(findBypasses(["components/example.tsx"], () => source), [
-    "components/example.tsx:2 <button",
-    "components/example.tsx:2 <input",
-    "components/example.tsx:2 role=\"tablist\"",
-    "components/example.tsx:1 from \"radix-ui\"",
-  ]);
+  assert.deepEqual(
+    findBypasses(["components/example.tsx"], () => source),
+    [
+      "components/example.tsx:2 <button",
+      "components/example.tsx:2 <input",
+      'components/example.tsx:2 role="tablist"',
+      'components/example.tsx:1 from "radix-ui"',
+    ],
+  );
 });

@@ -23,13 +23,25 @@ const profileSchema = z.object({
     links: z.array(z.object({ label: z.string(), url: z.string() })),
   }),
   summary: z.string(),
-  experience: z.array(z.object({ company: z.string(), title: z.string(), location: z.string(), ...dated, bullets: z.array(z.string()) })),
-  education: z.array(z.object({ school: z.string(), degree: z.string(), field: z.string(), ...dated, notes: z.string() })),
+  experience: z.array(
+    z.object({ company: z.string(), title: z.string(), location: z.string(), ...dated, bullets: z.array(z.string()) }),
+  ),
+  education: z.array(
+    z.object({ school: z.string(), degree: z.string(), field: z.string(), ...dated, notes: z.string() }),
+  ),
   skills: z.array(z.object({ name: z.string(), items: z.array(z.string()) })),
-  projects: z.array(z.object({ name: z.string(), link: z.string(), description: z.string(), bullets: z.array(z.string()) })),
+  projects: z.array(
+    z.object({ name: z.string(), link: z.string(), description: z.string(), bullets: z.array(z.string()) }),
+  ),
   certifications: z.array(z.object({ name: z.string(), issuer: z.string(), date: z.string() })),
   languages: z.array(z.object({ name: z.string(), level: z.string() })),
-  local: z.object({ birthdate: z.string(), civilStatus: z.string(), nationality: z.string(), address: z.string(), references: z.array(z.string()) }),
+  local: z.object({
+    birthdate: z.string(),
+    civilStatus: z.string(),
+    nationality: z.string(),
+    address: z.string(),
+    references: z.array(z.string()),
+  }),
 });
 
 const instructions = `You copy one resume into structured fields for its owner to review. You are a careful data entry clerk, not a writer.
@@ -51,6 +63,9 @@ export async function importProfile(resumeText: string): Promise<{ draft: Profil
   const agent = new Agent({ name: "Profile import", instructions, outputType: profileSchema });
   const result = await run(agent, JSON.stringify({ resume: resumeText.slice(0, MAX_TEXT) }), { maxTurns: 2 });
   if (!result.finalOutput) throw new Error("The import returned no fields.");
-  const draft = normalizeProfile({ ...result.finalOutput, local: { ...result.finalOutput.local, enabled: false } }, "import");
+  const draft = normalizeProfile(
+    { ...result.finalOutput, local: { ...result.finalOutput.local, enabled: false } },
+    "import",
+  );
   return { draft, model: getDefaultModel() };
 }

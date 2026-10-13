@@ -18,23 +18,23 @@ Every visual value in Ken OS resets to shadcn's default for this project, and th
 
 The default is what `shadcn init` produces for this project's `components.json` (style `radix-nova`, base colour `neutral`, icon library `lucide`), which is shadcn 4's **Nova** preset:
 
-| Setting | Nova default |
-|---|---|
-| Colours | Neutral theme, light and dark, in oklch |
-| Body font | Geist, loaded with `next/font` |
-| Heading font | Inherits the body font (Geist) |
-| Mono font | Geist Mono, loaded with `next/font` |
-| Radius | `--radius: 0.625rem`, with shadcn's derived sizes |
-| Charts | Neutral chart colours `--chart-1` to `--chart-5` |
-| Menus | Default colour, subtle accent |
-| Icons | Lucide |
+| Setting      | Nova default                                      |
+| ------------ | ------------------------------------------------- |
+| Colours      | Neutral theme, light and dark, in oklch           |
+| Body font    | Geist, loaded with `next/font`                    |
+| Heading font | Inherits the body font (Geist)                    |
+| Mono font    | Geist Mono, loaded with `next/font`               |
+| Radius       | `--radius: 0.625rem`, with shadcn's derived sizes |
+| Charts       | Neutral chart colours `--chart-1` to `--chart-5`  |
+| Menus        | Default colour, subtle accent                     |
+| Icons        | Lucide                                            |
 
 Two layers from now on:
 
-| Layer | What it is | Where |
-|---|---|---|
-| **Base** | shadcn's default output, unedited | `globals.css` (standard part), `layout.tsx` fonts, `components/ui` as the registry ships them |
-| **Build on top** | Anything the owner adds later | A labelled "Ken OS" section at the end of `globals.css`, and Ken OS components outside `components/ui` |
+| Layer            | What it is                        | Where                                                                                                  |
+| ---------------- | --------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| **Base**         | shadcn's default output, unedited | `globals.css` (standard part), `layout.tsx` fonts, `components/ui` as the registry ships them          |
+| **Build on top** | Anything the owner adds later     | A labelled "Ken OS" section at the end of `globals.css`, and Ken OS components outside `components/ui` |
 
 The build-on-top layer starts empty.
 
@@ -61,17 +61,17 @@ Record the shadcn CLI version used in the PR description.
 
 ## 2. Files
 
-| File | After the reset |
-|---|---|
-| `apps/web/src/app/globals.css` | The scratch app's `globals.css` exactly, followed by an empty `/* Ken OS: additions on top of the shadcn default */` section. Keep only the behavior rules that aren't look (see §4) |
-| `apps/web/src/app/layout.tsx` | The scratch app's font setup (Geist and Geist Mono via `next/font`), plus Ken OS metadata |
-| `apps/web/src/app/design-tokens.generated.css` | Deleted |
-| `apps/web/design-system/tokens.json` | Deleted (git history keeps it) |
-| `apps/web/scripts/generate-design-tokens.ts`, `src/lib/design-tokens.ts`, `src/lib/design-tokens.test.ts` | Deleted |
-| `apps/web/package.json` | Remove `design:generate` and its `--check` step from `check` |
-| `components/ui/*` registry primitives | Overwritten with the registry default (§1 step 3) |
-| `components/ui/code-editor.tsx`, `disclosure-summary.tsx`, `pill.tsx`, `toaster.tsx` | Not registry items. Keep their behavior; replace every Ken OS value in them with shadcn tokens or Tailwind defaults (§3) |
-| `components.json` | Unchanged |
+| File                                                                                                      | After the reset                                                                                                                                                                      |
+| --------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `apps/web/src/app/globals.css`                                                                            | The scratch app's `globals.css` exactly, followed by an empty `/* Ken OS: additions on top of the shadcn default */` section. Keep only the behavior rules that aren't look (see §4) |
+| `apps/web/src/app/layout.tsx`                                                                             | The scratch app's font setup (Geist and Geist Mono via `next/font`), plus Ken OS metadata                                                                                            |
+| `apps/web/src/app/design-tokens.generated.css`                                                            | Deleted                                                                                                                                                                              |
+| `apps/web/design-system/tokens.json`                                                                      | Deleted (git history keeps it)                                                                                                                                                       |
+| `apps/web/scripts/generate-design-tokens.ts`, `src/lib/design-tokens.ts`, `src/lib/design-tokens.test.ts` | Deleted                                                                                                                                                                              |
+| `apps/web/package.json`                                                                                   | Remove `design:generate` and its `--check` step from `check`                                                                                                                         |
+| `components/ui/*` registry primitives                                                                     | Overwritten with the registry default (§1 step 3)                                                                                                                                    |
+| `components/ui/code-editor.tsx`, `disclosure-summary.tsx`, `pill.tsx`, `toaster.tsx`                      | Not registry items. Keep their behavior; replace every Ken OS value in them with shadcn tokens or Tailwind defaults (§3)                                                             |
+| `components.json`                                                                                         | Unchanged                                                                                                                                                                            |
 
 No `@import` of Google Fonts. Fonts come only from `next/font`.
 
@@ -79,26 +79,26 @@ No `@import` of Google Fonts. Fonts come only from `next/font`.
 
 Screens outside `components/ui` use Ken OS-only tokens. Every one is replaced with a shadcn token or a Tailwind default, so no Ken OS value is left. Affected: 28 files in `components/engineering`, `components/lab`, `components/resume-workspace.tsx`, `components/workspace-shell.tsx`, and the UI files above.
 
-| Ken OS class or token | Uses | Replace with |
-|---|---|---|
-| `bg-canvas` | 3 | `bg-background` |
-| `text-quiet` | 21 | `text-muted-foreground` |
-| `signal` (`text-signal`, `bg-signal`, `border-signal`, `ring-signal`) | 32 | the same with `primary` |
-| `primary-hover` | 2 | `hover:bg-primary/90` (the shadcn button pattern) |
-| `bg-tint`, `bg-table-head` | 7 | `bg-muted` |
-| `bg-row-hover` / `hover:bg-row-hover` | 6 | `hover:bg-muted/50` (the shadcn table pattern) |
-| `bg-rail` | 14 | `bg-muted` |
-| `bg-rail-lit` | 2 | `bg-primary` |
-| `bg-rail-soft` | 4 | `bg-primary/40` |
-| `status-gap`, `status-gap-surface` | 8 | `text-destructive`, `bg-destructive/10` |
-| `status-solid`, `status-partial` and their surfaces | 27 | shadcn has no success or warning colour. Use the shadcn `Badge` variants for status: Solid → `default`, Partly there → `secondary`, Gap and Misconception → `destructive`, others → `outline`. Plain-text status uses `text-foreground`. The icon and the word carry the meaning, never colour alone |
-| `shadow-panel` | 20 | Remove. A `Card` brings shadcn's own border and shadow; anything else that needs a surface uses `Card` or `border bg-card` |
-| `shadow-tab` | 6 | Remove; `Tabs` brings its own active style |
-| `rounded-*` with Ken OS radii | all | Unchanged class names; they now resolve to shadcn's radius scale |
-| `font-display` | 29 in 12 files | `font-heading` (resolves to Geist, same as body) |
-| `font-[750]`, `font-[650]` | 9 | `font-bold`, `font-semibold` |
-| Fixed Ken OS sizes in class strings (`h-[44px]` for controls, `w-[208px]` section column, `h-[56px]` header and similar copied from the old size tokens) | many | The shadcn component's own size, or the nearest Tailwind default step |
-| Hardcoded hex colours, if any | | A shadcn token |
+| Ken OS class or token                                                                                                                                    | Uses           | Replace with                                                                                                                                                                                                                                                                                         |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `bg-canvas`                                                                                                                                              | 3              | `bg-background`                                                                                                                                                                                                                                                                                      |
+| `text-quiet`                                                                                                                                             | 21             | `text-muted-foreground`                                                                                                                                                                                                                                                                              |
+| `signal` (`text-signal`, `bg-signal`, `border-signal`, `ring-signal`)                                                                                    | 32             | the same with `primary`                                                                                                                                                                                                                                                                              |
+| `primary-hover`                                                                                                                                          | 2              | `hover:bg-primary/90` (the shadcn button pattern)                                                                                                                                                                                                                                                    |
+| `bg-tint`, `bg-table-head`                                                                                                                               | 7              | `bg-muted`                                                                                                                                                                                                                                                                                           |
+| `bg-row-hover` / `hover:bg-row-hover`                                                                                                                    | 6              | `hover:bg-muted/50` (the shadcn table pattern)                                                                                                                                                                                                                                                       |
+| `bg-rail`                                                                                                                                                | 14             | `bg-muted`                                                                                                                                                                                                                                                                                           |
+| `bg-rail-lit`                                                                                                                                            | 2              | `bg-primary`                                                                                                                                                                                                                                                                                         |
+| `bg-rail-soft`                                                                                                                                           | 4              | `bg-primary/40`                                                                                                                                                                                                                                                                                      |
+| `status-gap`, `status-gap-surface`                                                                                                                       | 8              | `text-destructive`, `bg-destructive/10`                                                                                                                                                                                                                                                              |
+| `status-solid`, `status-partial` and their surfaces                                                                                                      | 27             | shadcn has no success or warning colour. Use the shadcn `Badge` variants for status: Solid → `default`, Partly there → `secondary`, Gap and Misconception → `destructive`, others → `outline`. Plain-text status uses `text-foreground`. The icon and the word carry the meaning, never colour alone |
+| `shadow-panel`                                                                                                                                           | 20             | Remove. A `Card` brings shadcn's own border and shadow; anything else that needs a surface uses `Card` or `border bg-card`                                                                                                                                                                           |
+| `shadow-tab`                                                                                                                                             | 6              | Remove; `Tabs` brings its own active style                                                                                                                                                                                                                                                           |
+| `rounded-*` with Ken OS radii                                                                                                                            | all            | Unchanged class names; they now resolve to shadcn's radius scale                                                                                                                                                                                                                                     |
+| `font-display`                                                                                                                                           | 29 in 12 files | `font-heading` (resolves to Geist, same as body)                                                                                                                                                                                                                                                     |
+| `font-[750]`, `font-[650]`                                                                                                                               | 9              | `font-bold`, `font-semibold`                                                                                                                                                                                                                                                                         |
+| Fixed Ken OS sizes in class strings (`h-[44px]` for controls, `w-[208px]` section column, `h-[56px]` header and similar copied from the old size tokens) | many           | The shadcn component's own size, or the nearest Tailwind default step                                                                                                                                                                                                                                |
+| Hardcoded hex colours, if any                                                                                                                            |                | A shadcn token                                                                                                                                                                                                                                                                                       |
 
 After this, a search of `apps/web/src` for `canvas`, `quiet`, `signal`, `tint`, `table-head`, `row-hover`, `rail`, `status-`, `shadow-panel`, `shadow-tab`, `font-display`, `font-[`, and `#` colour literals returns nothing outside comments.
 
@@ -126,12 +126,12 @@ The default ships a `.dark` block, so it stays in `globals.css` as generated. Ke
 
 ## 7. Tests and checks
 
-| Test | After the reset |
-|---|---|
-| `src/lib/design-tokens.test.ts` (contrast of Ken OS colours) | Deleted with the tokens. shadcn's neutral defaults are trusted as shipped |
-| `src/lib/shadcn-primitives.test.ts` (no raw controls outside `components/ui`) | Kept |
-| New `src/lib/shadcn-default.test.ts` | Fails if `apps/web/src` contains any Ken OS token name from §3, a `font-display` class, a Google Fonts URL, or a hex colour in a class string. Allows the empty "Ken OS" section in `globals.css` |
-| `pnpm check` | No longer runs the token generator |
+| Test                                                                          | After the reset                                                                                                                                                                                   |
+| ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/lib/design-tokens.test.ts` (contrast of Ken OS colours)                  | Deleted with the tokens. shadcn's neutral defaults are trusted as shipped                                                                                                                         |
+| `src/lib/shadcn-primitives.test.ts` (no raw controls outside `components/ui`) | Kept                                                                                                                                                                                              |
+| New `src/lib/shadcn-default.test.ts`                                          | Fails if `apps/web/src` contains any Ken OS token name from §3, a `font-display` class, a Google Fonts URL, or a hex colour in a class string. Allows the empty "Ken OS" section in `globals.css` |
+| `pnpm check`                                                                  | No longer runs the token generator                                                                                                                                                                |
 
 ## 8. Design preview bundle
 
@@ -151,11 +151,11 @@ The `design-system-sync` skill keeps only its component direction (bundle and pu
 
 ## 10. Slices
 
-| # | Branch | Covers |
-|---|---|---|
-| 1 | `refactor/shadcn-default-base` | §1 and §2: scratch init, `globals.css`, `layout.tsx` fonts, delete the token pipeline, overwrite registry primitives, Sonner and code editor fonts |
-| 2 | `refactor/shadcn-default-screens` | §3: replace every Ken OS class in screens, the new test, `pnpm check` change |
-| 3 | `docs/shadcn-default-done` | §8 and §9: preview bundle fonts, skill and docs updates, this file's status to Implemented |
+| #   | Branch                            | Covers                                                                                                                                             |
+| --- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `refactor/shadcn-default-base`    | §1 and §2: scratch init, `globals.css`, `layout.tsx` fonts, delete the token pipeline, overwrite registry primitives, Sonner and code editor fonts |
+| 2   | `refactor/shadcn-default-screens` | §3: replace every Ken OS class in screens, the new test, `pnpm check` change                                                                       |
+| 3   | `docs/shadcn-default-done`        | §8 and §9: preview bundle fonts, skill and docs updates, this file's status to Implemented                                                         |
 
 Slices 1 and 2 may need to land together if slice 1 alone breaks the build (removed tokens leave unknown classes). If so, do them as one PR with two commits.
 

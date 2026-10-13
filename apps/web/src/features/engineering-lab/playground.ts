@@ -4,7 +4,11 @@
 export const LAB_COOKIE_PREFIX = "kos_lab_";
 
 export function labCookieNames(header: string | null) {
-  return (header ?? "").split(";").map((part) => part.trim().split("=")[0]).filter((name) => name.startsWith(LAB_COOKIE_PREFIX)).sort();
+  return (header ?? "")
+    .split(";")
+    .map((part) => part.trim().split("=")[0])
+    .filter((name) => name.startsWith(LAB_COOKIE_PREFIX))
+    .sort();
 }
 
 export function json(body: unknown, init: ResponseInit = {}) {

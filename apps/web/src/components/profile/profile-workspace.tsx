@@ -16,7 +16,15 @@ import { DriveFile, type DriveFileState } from "./drive-file";
 
 // Profile: the owner's career details and the Drive resume they can be imported from. Spec: docs/product/profile-resume.md.
 
-export function ProfileWorkspace({ email, profile, drive }: { email: string; profile: ProfileState; drive: DriveFileState }) {
+export function ProfileWorkspace({
+  email,
+  profile,
+  drive,
+}: {
+  email: string;
+  profile: ProfileState;
+  drive: DriveFileState;
+}) {
   const [saved, setSaved] = useState(profile.details);
   const [savedAt, setSavedAt] = useState(profile.savedAt);
   const [details, setDetails] = useState(profile.details);
@@ -48,7 +56,10 @@ export function ProfileWorkspace({ email, profile, drive }: { email: string; pro
     setImporting(true);
     setProblem(null);
     try {
-      const result = await send<{ importId: string; draft: ProfileDetails; fileName: string }>("/api/profile/import", "POST");
+      const result = await send<{ importId: string; draft: ProfileDetails; fileName: string }>(
+        "/api/profile/import",
+        "POST",
+      );
       replaceForm(mergeImport(details, result.draft));
       setReview({ importId: result.importId, fileName: result.fileName });
       document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
@@ -69,7 +80,10 @@ export function ProfileWorkspace({ email, profile, drive }: { email: string; pro
     setSaving(true);
     setProblem(null);
     try {
-      const result = await send<{ savedAt: string }>("/api/profile", "PUT", { details, importId: review?.importId ?? null });
+      const result = await send<{ savedAt: string }>("/api/profile", "PUT", {
+        details,
+        importId: review?.importId ?? null,
+      });
       setSaved(details);
       setSavedAt(result.savedAt);
       setReview(null);
@@ -83,12 +97,22 @@ export function ProfileWorkspace({ email, profile, drive }: { email: string; pro
 
   return (
     <WorkspaceShell email={email} active="profile">
-      <div className="mx-auto max-w-5xl px-3 pb-24 pt-6 md:px-5 md:pt-7.5">
+      <div className="mx-auto max-w-5xl px-3 pt-6 pb-24 md:px-5 md:pt-7.5">
         <PageHeading kicker="Profile" title="Details" />
 
         <div className="flex flex-col gap-4">
-          {review && <Alert><FileDown /><AlertTitle>Imported from {review.fileName}. Not saved yet</AlertTitle></Alert>}
-          {problem && <Alert variant="destructive"><AlertCircle /><AlertTitle>{problem}</AlertTitle></Alert>}
+          {review && (
+            <Alert>
+              <FileDown />
+              <AlertTitle>Imported from {review.fileName}. Not saved yet</AlertTitle>
+            </Alert>
+          )}
+          {problem && (
+            <Alert variant="destructive">
+              <AlertCircle />
+              <AlertTitle>{problem}</AlertTitle>
+            </Alert>
+          )}
 
           <DriveFile state={drive} importing={importing} onImport={importDrive} />
           <DetailsForm key={formVersion} details={details} edit={edit} />
@@ -97,9 +121,17 @@ export function ProfileWorkspace({ email, profile, drive }: { email: string; pro
 
       <div className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur">
         <div className="mx-auto flex max-w-5xl items-center justify-end gap-2 px-3 py-3 md:px-5">
-          <span className="mr-auto text-sm text-muted-foreground">{changed || review ? "Unsaved changes" : savedAt ? `Saved ${shortDate(savedAt)}` : "Not saved"}</span>
-          {(changed || review) && <Button type="button" variant="ghost" onClick={discard} disabled={saving}>Discard</Button>}
-          <Button type="button" onClick={save} disabled={saving || !canSave}>{saving ? "Saving…" : "Save"}</Button>
+          <span className="mr-auto text-sm text-muted-foreground">
+            {changed || review ? "Unsaved changes" : savedAt ? `Saved ${shortDate(savedAt)}` : "Not saved"}
+          </span>
+          {(changed || review) && (
+            <Button type="button" variant="ghost" onClick={discard} disabled={saving}>
+              Discard
+            </Button>
+          )}
+          <Button type="button" onClick={save} disabled={saving || !canSave}>
+            {saving ? "Saving…" : "Save"}
+          </Button>
         </div>
       </div>
     </WorkspaceShell>

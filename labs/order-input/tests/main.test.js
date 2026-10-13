@@ -10,7 +10,11 @@ test("a valid order parses into exactly the four fields", () => {
 test("fields the order doesn't define never pass through", () => {
   const result = parseOrder({ ...valid, price: 0, isAdmin: true, userId: 1 });
   assert.equal(result.ok, true);
-  assert.deepEqual(Object.keys(result.value).sort(), ["email", "note", "quantity", "sku"], "price, isAdmin and userId must be dropped");
+  assert.deepEqual(
+    Object.keys(result.value).sort(),
+    ["email", "note", "quantity", "sku"],
+    "price, isAdmin and userId must be dropped",
+  );
 });
 
 test("a missing note becomes null", () => {

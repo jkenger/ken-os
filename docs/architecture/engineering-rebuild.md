@@ -1,5 +1,7 @@
 # Engineering rebuild
 
+> History since 13 Oct 2026: Engineering is now built from [engineering-claude-first.md](engineering-claude-first.md). Read this file for background only.
+
 Status: approved by the owner, 10 Oct 2026. Built the same day in 8 stacked PRs (section 9); `points.yaml` and `roles.yaml` re-approved the same day. Done: the owner walked the flow on the hosted app on 12 Oct 2026 (assessment, a proof, a written lesson and Practice), so every point in section 10 is met.
 
 ## Decision
@@ -17,14 +19,14 @@ This supersedes `engineering-redesign.md`, `engineering-assessment-v2.md`, `engi
 
 ## Owner decisions (10 Oct 2026)
 
-| Question | Decision |
-|---|---|
-| Assessment length | 5 questions, one per area, as in the reference |
-| "From your projects" section | Left out until Ken OS can really detect concepts in projects |
-| Topic states | Four: Not started, Learning, Practicing, Proven |
-| Existing progress | Start fresh. Old answers, attempts, proofs and lessons are deleted |
-| The 7 new topics | Included now, with assessment points and an exercise each |
-| Removed topics | Deleted, not archived |
+| Question                     | Decision                                                           |
+| ---------------------------- | ------------------------------------------------------------------ |
+| Assessment length            | 5 questions, one per area, as in the reference                     |
+| "From your projects" section | Left out until Ken OS can really detect concepts in projects       |
+| Topic states                 | Four: Not started, Learning, Practicing, Proven                    |
+| Existing progress            | Start fresh. Old answers, attempts, proofs and lessons are deleted |
+| The 7 new topics             | Included now, with assessment points and an exercise each          |
+| Removed topics               | Deleted, not archived                                              |
 
 ## 1. Curriculum
 
@@ -34,68 +36,68 @@ This supersedes `engineering-redesign.md`, `engineering-assessment-v2.md`, `engi
 
 ### Foundations
 
-| Chapter id | Chapter | Topic id | Topic | From today | Exercise |
-|---|---|---|---|---|---|
-| `js-runtime` | JavaScript runtime & async | `js.call_stack` | Call stack | `js.call_stack` | new `call-stack-block` |
-| | | `js.promises` | Promises | `js.promises` | `event-loop-order` (shared) |
-| | | `js.event_loop` | Event loop | `js.event_loop` | `event-loop-order` |
-| | | `js.closures` | Closures | `js.closures` | `closure-loop` |
-| `http-browser` | HTTP & the browser | `web.http_semantics` | HTTP semantics | `web.request_lifecycle`, narrowed to methods, status codes and headers | `request-anatomy` |
-| | | `web.cookies_cors` | Cookies & CORS | merge of `web.cookies_sessions` and `web.cors` | `cors-rules` |
-| | | `web.http_caching` | HTTP caching | `web.http_caching` | `cache-rules` |
+| Chapter id     | Chapter                    | Topic id             | Topic          | From today                                                             | Exercise                    |
+| -------------- | -------------------------- | -------------------- | -------------- | ---------------------------------------------------------------------- | --------------------------- |
+| `js-runtime`   | JavaScript runtime & async | `js.call_stack`      | Call stack     | `js.call_stack`                                                        | new `call-stack-block`      |
+|                |                            | `js.promises`        | Promises       | `js.promises`                                                          | `event-loop-order` (shared) |
+|                |                            | `js.event_loop`      | Event loop     | `js.event_loop`                                                        | `event-loop-order`          |
+|                |                            | `js.closures`        | Closures       | `js.closures`                                                          | `closure-loop`              |
+| `http-browser` | HTTP & the browser         | `web.http_semantics` | HTTP semantics | `web.request_lifecycle`, narrowed to methods, status codes and headers | `request-anatomy`           |
+|                |                            | `web.cookies_cors`   | Cookies & CORS | merge of `web.cookies_sessions` and `web.cors`                         | `cors-rules`                |
+|                |                            | `web.http_caching`   | HTTP caching   | `web.http_caching`                                                     | `cache-rules`               |
 
 ### Frontend
 
-| Chapter id | Chapter | Topic id | Topic | From today | Exercise |
-|---|---|---|---|---|---|
-| `react` | React | `react.render_model` | State & rendering | `react.render_model` | `todo-updates` |
-| | | `react.effects` | Effects & dependencies | `react.effects` | `chat-connection` |
-| | | `react.component_boundaries` | Component boundaries | **new** | new `component-split` |
+| Chapter id | Chapter | Topic id                     | Topic                  | From today           | Exercise              |
+| ---------- | ------- | ---------------------------- | ---------------------- | -------------------- | --------------------- |
+| `react`    | React   | `react.render_model`         | State & rendering      | `react.render_model` | `todo-updates`        |
+|            |         | `react.effects`              | Effects & dependencies | `react.effects`      | `chat-connection`     |
+|            |         | `react.component_boundaries` | Component boundaries   | **new**              | new `component-split` |
 
 ### Backend & Data
 
-| Chapter id | Chapter | Topic id | Topic | From today | Exercise |
-|---|---|---|---|---|---|
-| `api-boundaries` | API boundaries | `api.runtime_validation` | Runtime validation | `api.runtime_validation` | `order-input` |
-| | | `sec.resource_authorization` | Authorization | `sec.resource_authorization` (moved from Testing & security) | `team-docs` |
-| | | `api.error_contracts` | Error contracts | **new** | new `error-shape` |
-| `databases` | Databases | `db.transactions` | Transactions | `db.transactions` | `transfer-rollback` |
-| | | `db.composite_indexes` | Composite indexes | merge of `db.indexes` and `db.composite_indexes` | `order-history-index` |
-| | | `db.concurrency` | Concurrency | merge of `db.lost_update` and `db.atomic_updates` | `stock-race` |
+| Chapter id       | Chapter        | Topic id                     | Topic              | From today                                                   | Exercise              |
+| ---------------- | -------------- | ---------------------------- | ------------------ | ------------------------------------------------------------ | --------------------- |
+| `api-boundaries` | API boundaries | `api.runtime_validation`     | Runtime validation | `api.runtime_validation`                                     | `order-input`         |
+|                  |                | `sec.resource_authorization` | Authorization      | `sec.resource_authorization` (moved from Testing & security) | `team-docs`           |
+|                  |                | `api.error_contracts`        | Error contracts    | **new**                                                      | new `error-shape`     |
+| `databases`      | Databases      | `db.transactions`            | Transactions       | `db.transactions`                                            | `transfer-rollback`   |
+|                  |                | `db.composite_indexes`       | Composite indexes  | merge of `db.indexes` and `db.composite_indexes`             | `order-history-index` |
+|                  |                | `db.concurrency`             | Concurrency        | merge of `db.lost_update` and `db.atomic_updates`            | `stock-race`          |
 
 ### Production
 
-| Chapter id | Chapter | Topic id | Topic | From today | Exercise |
-|---|---|---|---|---|---|
-| `testing-security` | Testing & security | `test.strategy` | Test boundaries | `test.strategy` | `discount-tests` |
-| | | `sec.injection` | Injection prevention | `sec.xss`, widened to SQL injection | `comment-render` |
-| | | `sec.sessions` | Session security | **new** | `cookie-rules` |
-| `reliability` | Reliability | `rel.background_jobs` | Background jobs | `rel.background_jobs` | `job-queue` |
-| | | `rel.retry_backoff` | Retry & backoff | `rel.retry_backoff` | `retry-policy` (see §4) |
-| | | `rel.timeouts` | Timeouts | `rel.timeouts` | `request-timeout` |
-| | | `rel.partial_failures` | Partial failures | `rel.partial_failures` | `order-saga` |
-| `observability` | Observability | `obs.logs` | Structured logs | `obs.logs` | `structured-logs` |
-| | | `obs.traces` | Tracing | `obs.traces` | `trace-context` |
-| | | `obs.metrics` | Metrics | `obs.metrics` | `latency-summary` |
-| `architecture` | Architecture at scale | `arch.failure_tradeoffs` | Failure tradeoffs | **new** | `circuit-breaker` |
-| | | `arch.service_boundaries` | Service boundaries | **new** | new `service-split` |
+| Chapter id         | Chapter               | Topic id                  | Topic                | From today                          | Exercise                |
+| ------------------ | --------------------- | ------------------------- | -------------------- | ----------------------------------- | ----------------------- |
+| `testing-security` | Testing & security    | `test.strategy`           | Test boundaries      | `test.strategy`                     | `discount-tests`        |
+|                    |                       | `sec.injection`           | Injection prevention | `sec.xss`, widened to SQL injection | `comment-render`        |
+|                    |                       | `sec.sessions`            | Session security     | **new**                             | `cookie-rules`          |
+| `reliability`      | Reliability           | `rel.background_jobs`     | Background jobs      | `rel.background_jobs`               | `job-queue`             |
+|                    |                       | `rel.retry_backoff`       | Retry & backoff      | `rel.retry_backoff`                 | `retry-policy` (see §4) |
+|                    |                       | `rel.timeouts`            | Timeouts             | `rel.timeouts`                      | `request-timeout`       |
+|                    |                       | `rel.partial_failures`    | Partial failures     | `rel.partial_failures`              | `order-saga`            |
+| `observability`    | Observability         | `obs.logs`                | Structured logs      | `obs.logs`                          | `structured-logs`       |
+|                    |                       | `obs.traces`              | Tracing              | `obs.traces`                        | `trace-context`         |
+|                    |                       | `obs.metrics`             | Metrics              | `obs.metrics`                       | `latency-summary`       |
+| `architecture`     | Architecture at scale | `arch.failure_tradeoffs`  | Failure tradeoffs    | **new**                             | `circuit-breaker`       |
+|                    |                       | `arch.service_boundaries` | Service boundaries   | **new**                             | new `service-split`     |
 
 ### Applied AI
 
-| Chapter id | Chapter | Topic id | Topic | From today | Exercise |
-|---|---|---|---|---|---|
-| `retrieval` | Retrieval | `ai.semantic_search` | Embeddings | `ai.semantic_search` | `vector-search` |
-| | | `ai.chunking` | Chunking | **new** | new `chunk-boundaries` |
-| | | `ai.advanced_rag` | Hybrid search | `ai.advanced_rag` | `rank-fusion` |
-| | | `ai.retrieval_eval` | RAG evaluation | `ai.retrieval_eval` | `retrieval-metrics` |
-| `model-interfaces` | Model interfaces | `ai.structured_outputs` | Structured outputs | `ai.structured_outputs` | `invoice-extract` |
-| | | `ai.tool_calling` | Tool calling | `ai.tool_calling` | `tool-loop` |
-| `agents` | Agents | `ai.agent_patterns` | Agent loop | `ai.agent_patterns` | `support-workflow` |
-| | | `ai.agent_memory` | State & memory | `ai.agent_memory` | `chat-memory` |
-| | | `ai.mcp` | MCP | `ai.mcp` | `mcp-server` |
-| `ai-production` | AI in production | `ai.evals` | Evals | `ai.evals` | `eval-gate` |
-| | | `ai.model_routing` | Model routing | **new** | `smart-routing` |
-| | | `ai.cost_latency` | Cost & latency | `ai.cost_latency` | `context-budget` |
+| Chapter id         | Chapter          | Topic id                | Topic              | From today              | Exercise               |
+| ------------------ | ---------------- | ----------------------- | ------------------ | ----------------------- | ---------------------- |
+| `retrieval`        | Retrieval        | `ai.semantic_search`    | Embeddings         | `ai.semantic_search`    | `vector-search`        |
+|                    |                  | `ai.chunking`           | Chunking           | **new**                 | new `chunk-boundaries` |
+|                    |                  | `ai.advanced_rag`       | Hybrid search      | `ai.advanced_rag`       | `rank-fusion`          |
+|                    |                  | `ai.retrieval_eval`     | RAG evaluation     | `ai.retrieval_eval`     | `retrieval-metrics`    |
+| `model-interfaces` | Model interfaces | `ai.structured_outputs` | Structured outputs | `ai.structured_outputs` | `invoice-extract`      |
+|                    |                  | `ai.tool_calling`       | Tool calling       | `ai.tool_calling`       | `tool-loop`            |
+| `agents`           | Agents           | `ai.agent_patterns`     | Agent loop         | `ai.agent_patterns`     | `support-workflow`     |
+|                    |                  | `ai.agent_memory`       | State & memory     | `ai.agent_memory`       | `chat-memory`          |
+|                    |                  | `ai.mcp`                | MCP                | `ai.mcp`                | `mcp-server`           |
+| `ai-production`    | AI in production | `ai.evals`              | Evals              | `ai.evals`              | `eval-gate`            |
+|                    |                  | `ai.model_routing`      | Model routing      | **new**                 | `smart-routing`        |
+|                    |                  | `ai.cost_latency`       | Cost & latency     | `ai.cost_latency`       | `context-budget`       |
 
 Topic titles on screen are the short reference names in the "Topic" column. The long titles in today's YAML go.
 
@@ -127,12 +129,12 @@ Every topic has exactly one exercise (39 labs; `event-loop-order` serves two top
 
 Four states, stored per topic in `lab_progress`, replacing today's five statuses plus the screening and placement flags.
 
-| State | Set when |
-|---|---|
-| Not started | Default |
-| Learning | The lesson is opened |
-| Practicing | The exercise is run at least once |
-| Proven | The proof answer passes its rubric, after the exercise has passed |
+| State       | Set when                                                          |
+| ----------- | ----------------------------------------------------------------- |
+| Not started | Default                                                           |
+| Learning    | The lesson is opened                                              |
+| Practicing  | The exercise is run at least once                                 |
+| Proven      | The proof answer passes its rubric, after the exercise has passed |
 
 Rules:
 
@@ -158,12 +160,12 @@ Module tabs: **Overview, Profile, Learn, Practice.** The AI-uses badge stays in 
 
 ### Overview (`/engineering`)
 
-| Part | Before the first assessment | After it |
-|---|---|---|
-| Main card | Title "Assessment", state "Not started" or "In progress · 2 of 5", button **Start assessment** or **Resume assessment**, helper "5 questions · no timer" | Next topic: title is the topic name, meta "Area · Chapter" and its state, button **Continue** |
-| Practice card | Hidden | "Practice", state "4 ready" or "Done", button **Start practice** or **View summary**, helper "~12 min" |
-| Your path | The 5 areas, each with its summary line; a row opens Learn filtered to that area | Same, with each area's evidence level |
-| Relevant changes | Radar items, or the empty state "No changes yet / Checked weekly from official docs" with **View radar** | Same |
+| Part             | Before the first assessment                                                                                                                              | After it                                                                                               |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| Main card        | Title "Assessment", state "Not started" or "In progress · 2 of 5", button **Start assessment** or **Resume assessment**, helper "5 questions · no timer" | Next topic: title is the topic name, meta "Area · Chapter" and its state, button **Continue**          |
+| Practice card    | Hidden                                                                                                                                                   | "Practice", state "4 ready" or "Done", button **Start practice** or **View summary**, helper "~12 min" |
+| Your path        | The 5 areas, each with its summary line; a row opens Learn filtered to that area                                                                         | Same, with each area's evidence level                                                                  |
+| Relevant changes | Radar items, or the empty state "No changes yet / Checked weekly from official docs" with **View radar**                                                 | Same                                                                                                   |
 
 "From your projects" is left out.
 
@@ -171,11 +173,11 @@ Module tabs: **Overview, Profile, Learn, Practice.** The AI-uses badge stays in 
 
 Back link: Overview. Title "Intake". A single form, no Guide chat:
 
-| Field | Type | Helper |
-|---|---|---|
-| What you're building | Text area | |
+| Field                  | Type                | Helper                         |
+| ---------------------- | ------------------- | ------------------------------ |
+| What you're building   | Text area           |                                |
 | Role you're aiming for | Select, the 4 roles | Change it after the assessment |
-| Hours per week | Number, 1–40 | |
+| Hours per week         | Number, 1–40        |                                |
 
 Side panel "How this works": No timer · Pause between questions · Confidence is separate from correctness · Intake isn't graded.
 
@@ -189,13 +191,13 @@ Each question: area and kind label, the question, code block if any, **Answer** 
 
 If grading fails: "Couldn't grade. Your answer is saved" with **Retry** and **Save & exit**.
 
-| # | Area | Kind | Question | Code | Rubric (pass needs all) |
-|---|---|---|---|---|---|
-| 1 | Foundations | Predict the output | What will this snippet print, in order? | `console.log("A");` / `Promise.resolve().then(() => console.log("B"));` / `console.log("C");` | Prints A, C, B · Says synchronous code finishes before the promise microtask runs |
-| 2 | Frontend | Explain a decision | An effect fetches data whenever its dependency changes. How would you prevent an older response overwriting a newer one? | | Cancels the obsolete request or ignores its result · Uses a request identity or cleanup to tell them apart |
-| 3 | Backend & Data | Debug a scenario | Two requests both see one remaining item and each complete a purchase. Where should the invariant be enforced? | | Enforces it in the database transaction · Uses an atomic conditional update or appropriate locking |
-| 4 | Production | Reason about failure | A payment request times out. Is it safe to retry immediately? Explain your decision. | | A timeout doesn't prove failure · Uses an idempotency key or reconciles before repeating |
-| 5 | Applied AI | Explain a decision | Your retrieval returns semantically similar but irrelevant chunks. What would you inspect before changing the LLM? | | Inspects chunk boundaries, queries or metadata filters · Measures with known relevant documents |
+| #   | Area           | Kind                 | Question                                                                                                                 | Code                                                                                          | Rubric (pass needs all)                                                                                    |
+| --- | -------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| 1   | Foundations    | Predict the output   | What will this snippet print, in order?                                                                                  | `console.log("A");` / `Promise.resolve().then(() => console.log("B"));` / `console.log("C");` | Prints A, C, B · Says synchronous code finishes before the promise microtask runs                          |
+| 2   | Frontend       | Explain a decision   | An effect fetches data whenever its dependency changes. How would you prevent an older response overwriting a newer one? |                                                                                               | Cancels the obsolete request or ignores its result · Uses a request identity or cleanup to tell them apart |
+| 3   | Backend & Data | Debug a scenario     | Two requests both see one remaining item and each complete a purchase. Where should the invariant be enforced?           |                                                                                               | Enforces it in the database transaction · Uses an atomic conditional update or appropriate locking         |
+| 4   | Production     | Reason about failure | A payment request times out. Is it safe to retry immediately? Explain your decision.                                     |                                                                                               | A timeout doesn't prove failure · Uses an idempotency key or reconciles before repeating                   |
+| 5   | Applied AI     | Explain a decision   | Your retrieval returns semantically similar but irrelevant chunks. What would you inspect before changing the LLM?       |                                                                                               | Inspects chunk boundaries, queries or metadata filters · Measures with known relevant documents            |
 
 Reworded in plain language on 10 Oct 2026 at the owner's request, same meaning; `assessment.yaml` holds the live wording. These live in a new `content/engineering-lab/curriculum/assessment.yaml`, with `status: approved` and `reviewedOn: "2026-10-10"` (the owner chose this set by choosing the reference).
 
@@ -314,14 +316,14 @@ Start fresh. The owner's progress is deleted, not migrated.
 
 The old tables were shaped around topic-by-topic placement, so the new flow got its own tables instead of reusing them. Old ones are emptied by the same migration and dropped later.
 
-| Table | Holds |
-|---|---|
-| `lab_runs` | One assessment, with its 5 questions copied in so a taken assessment never changes |
-| `lab_run_answers` | One locked answer per question; the grade fills in afterwards and stays empty while grading has failed |
-| `lab_questions` | Proof prompts and practice questions the Assessor wrote, with rubric and reference answer |
-| `lab_topic_events` | Lesson opened, exercise run, solution opened, proof, review. Topic state is rebuilt from these |
-| `lab_progress` | A cache of the rebuilt state; never the source of truth |
-| `lab_profile` | Intake, target role, and a new `weekly_hours` column |
+| Table              | Holds                                                                                                  |
+| ------------------ | ------------------------------------------------------------------------------------------------------ |
+| `lab_runs`         | One assessment, with its 5 questions copied in so a taken assessment never changes                     |
+| `lab_run_answers`  | One locked answer per question; the grade fills in afterwards and stays empty while grading has failed |
+| `lab_questions`    | Proof prompts and practice questions the Assessor wrote, with rubric and reference answer              |
+| `lab_topic_events` | Lesson opened, exercise run, solution opened, proof, review. Topic state is rebuilt from these         |
+| `lab_progress`     | A cache of the rebuilt state; never the source of truth                                                |
+| `lab_profile`      | Intake, target role, and a new `weekly_hours` column                                                   |
 
 Kept as they were: `lab_source_packets`, `lab_lessons`, `lab_daily_sets`, `lab_radar_items`. Emptied now, dropped in a later release: `lab_assessment_runs`, `lab_assessments`, `lab_attempts`, `lab_chapter_screens`, `lab_solution_reveals`, `lab_progress_changes`, and `lab_profile.conversation` and `added_chapters`.
 
@@ -356,16 +358,16 @@ Update `docs/product/app-language.md`:
 
 One branch and one PR per slice, cut from up-to-date `main`. Each slice runs `pnpm test`, `pnpm check` and `pnpm build` and opens every touched screen locally.
 
-| # | Branch | Covers |
-|---|---|---|
-| 1 | `feat/engineering-curriculum` | `topics.yaml`, `points.yaml` (drafts for the 7 new topics), `assessment.yaml`, `roles.yaml` remap, labs relinked, deleted and added, source packets for deleted topics removed, `lab:generate` |
-| 2 | `feat/engineering-reset` | Data reset migration, four states, removed engine code (§7), status rename |
-| 3 | `feat/engineering-assessment` | Intake, 5-question assessment, results, direction |
-| 4 | `feat/engineering-topic` | Topic page with Learn, Exercise, Prove; lesson format; Retry & backoff content; proof grading |
-| 5 | `feat/engineering-profile` | Profile rules (§5), Profile page, evidence page |
-| 6 | `feat/engineering-overview-learn` | Overview and Learn pages |
-| 7 | `feat/engineering-practice` | Practice selection and screen |
-| 8 | `docs/engineering-rebuild-done` | Word list update, AGENTS.md and architecture docs pointed here, old docs marked superseded |
+| #   | Branch                            | Covers                                                                                                                                                                                         |
+| --- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `feat/engineering-curriculum`     | `topics.yaml`, `points.yaml` (drafts for the 7 new topics), `assessment.yaml`, `roles.yaml` remap, labs relinked, deleted and added, source packets for deleted topics removed, `lab:generate` |
+| 2   | `feat/engineering-reset`          | Data reset migration, four states, removed engine code (§7), status rename                                                                                                                     |
+| 3   | `feat/engineering-assessment`     | Intake, 5-question assessment, results, direction                                                                                                                                              |
+| 4   | `feat/engineering-topic`          | Topic page with Learn, Exercise, Prove; lesson format; Retry & backoff content; proof grading                                                                                                  |
+| 5   | `feat/engineering-profile`        | Profile rules (§5), Profile page, evidence page                                                                                                                                                |
+| 6   | `feat/engineering-overview-learn` | Overview and Learn pages                                                                                                                                                                       |
+| 7   | `feat/engineering-practice`       | Practice selection and screen                                                                                                                                                                  |
+| 8   | `docs/engineering-rebuild-done`   | Word list update, AGENTS.md and architecture docs pointed here, old docs marked superseded                                                                                                     |
 
 Slices 1 and 2 go first. Owner approval of `points.yaml` and `roles.yaml` is needed before slice 5 ships.
 

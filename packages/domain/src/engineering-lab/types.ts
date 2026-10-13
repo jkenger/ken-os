@@ -11,35 +11,19 @@ export interface CodeRun {
   passed: number;
   failed: number;
   output: string;
+  /** Each test as it ran, so Claude can read a failing test's expected and actual output. Older runs have none. */
+  tests?: TestOutcome[];
 }
 
-export interface Grade {
-  by: "code" | "assessor" | "baseline";
-  label: Label;
-  misconceptions: string[];
-  feedback: string;
-  run?: CodeRun;
-  /** True when the question itself was wrong (for example the Assessor's expected output disagreed with a real run). Never counts. */
-  voided?: boolean;
-  /** For written answers: how the answer did on each rubric point, in rubric order. */
-  rubric?: RubricResult[];
+export interface TestOutcome {
+  name: string;
+  passed: boolean;
+  /** For a failing test: what went wrong, usually "Expected …, got …". */
+  error?: string;
 }
 
-export const RUBRIC_RESULTS = ["covered", "partly", "missed"] as const;
+/** How an answer did on one rubric point. Older topic events carry these. */
 export interface RubricResult {
   point: string;
-  result: (typeof RUBRIC_RESULTS)[number];
-}
-
-/** What a topic question is for: the proof step, or a review in Practice. */
-export type QuestionUse = "proof" | "review";
-
-/** A proof prompt or practice question, written by the Assessor from the topic's assessment points. */
-export interface TopicQuestion {
-  prompt: string;
-  code: string | null;
-  /** A pass needs every line. Hidden until the answer is graded. */
-  rubric: string[];
-  /** Shown after answering. */
-  referenceAnswer: string;
+  result: "covered" | "partly" | "missed";
 }

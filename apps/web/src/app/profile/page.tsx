@@ -9,10 +9,18 @@ import { requireSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProfilePage({ searchParams }: { searchParams: Promise<{ drive_error?: string | string[] }> }) {
+export default async function ProfilePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ drive_error?: string | string[] }>;
+}) {
   const session = await requireSession("/profile");
   const { drive_error } = await searchParams;
-  const [profile, selection, connected] = await Promise.all([getProfile(session.userId), getSelectedResume(session.userId), hasDriveConnection(session.userId)]);
+  const [profile, selection, connected] = await Promise.all([
+    getProfile(session.userId),
+    getSelectedResume(session.userId),
+    hasDriveConnection(session.userId),
+  ]);
   let drive: DriveAccess = connected ? "connected" : "not_connected";
   let file: Artifact | null = null;
   let error: string | null = null;

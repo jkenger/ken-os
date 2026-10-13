@@ -3,26 +3,32 @@ import type { ReactNode } from "react";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { LEVELS, levelRank, type Level } from "@ken-os/domain";
 import { Badge as ShadcnBadge } from "@/components/ui/badge";
-import { eyebrow, PageHeading as SharedPageHeading } from "@/components/page-heading";
 import { cn } from "@/lib/utils";
 
 // Ken OS page building blocks, on the shadcn default look (see docs/architecture/design-system-shadcn-setup.md).
 
 export const panel = "rounded-xl bg-card border";
-export { eyebrow };
+export const eyebrow = "mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground";
 
 /** The page-heading badge: shadcn's Badge in the secondary look. */
 export function Badge({ children, className }: { children: ReactNode; className?: string }) {
-  return <ShadcnBadge variant="secondary" className={cn("align-middle", className)}>{children}</ShadcnBadge>;
+  return (
+    <ShadcnBadge variant="secondary" className={cn("align-middle", className)}>
+      {children}
+    </ShadcnBadge>
+  );
 }
 
 export function Back({ href, children }: { href: string; children: ReactNode }) {
-  return <Link href={href} className="mx-1 mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground md:mx-3.5"><IconArrowLeft size={17} aria-hidden="true" />{children}</Link>;
-}
-
-/** The shared page heading with Engineering as the default eyebrow. */
-export function PageHeading({ kicker = "Engineering", ...props }: Omit<Parameters<typeof SharedPageHeading>[0], "kicker"> & { kicker?: string }) {
-  return <SharedPageHeading kicker={kicker} {...props} />;
+  return (
+    <Link
+      href={href}
+      className="mx-1 mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground md:mx-3.5"
+    >
+      <IconArrowLeft size={17} aria-hidden="true" />
+      {children}
+    </Link>
+  );
 }
 
 export function Fact({ label, children, first }: { label: string; children: ReactNode; first?: boolean }) {
@@ -40,9 +46,21 @@ export function Rail({ level, soft = false, label }: { level: Level | null; soft
   return (
     <div className="mt-1 min-w-0" role="img" aria-label={label ?? `Level: ${level ?? "Developing"}`}>
       <div className="flex gap-0.5">
-        {LEVELS.map((item, index) => <span key={item} className={cn("h-2 flex-1 rounded-full", index === lit ? (soft ? "bg-primary/40" : "bg-primary") : "bg-muted")} />)}
+        {LEVELS.map((item, index) => (
+          <span
+            key={item}
+            className={cn(
+              "h-2 flex-1 rounded-full",
+              index === lit ? (soft ? "bg-primary/40" : "bg-primary") : "bg-muted",
+            )}
+          />
+        ))}
       </div>
-      <small className="mt-1 flex justify-between gap-1 text-xs text-muted-foreground lg:text-xs"><span>Junior</span><span>Mid</span><span>Senior</span></small>
+      <small className="mt-1 flex justify-between gap-1 text-xs text-muted-foreground lg:text-xs">
+        <span>Junior</span>
+        <span>Mid</span>
+        <span>Senior</span>
+      </small>
     </div>
   );
 }
@@ -53,9 +71,13 @@ export function Coverage({ met, total }: { met: number; total: number }) {
   return (
     <div className="mt-1 min-w-0" role="img" aria-label={`${met} of ${total} requirements met`}>
       <div className="flex gap-0.5">
-        {Array.from({ length: total }, (_, index) => <span key={index} className={cn("h-2 flex-1 rounded-full", index < met ? "bg-primary/40" : "bg-muted")} />)}
+        {Array.from({ length: total }, (_, index) => (
+          <span key={index} className={cn("h-2 flex-1 rounded-full", index < met ? "bg-primary/40" : "bg-muted")} />
+        ))}
       </div>
-      <small className="mt-1 block text-xs text-muted-foreground lg:text-xs">{met} of {total} met</small>
+      <small className="mt-1 block text-xs text-muted-foreground lg:text-xs">
+        {met} of {total} met
+      </small>
     </div>
   );
 }
@@ -71,10 +93,14 @@ export function SectionTitle({ title, action }: { title: string; action?: ReactN
 
 export function Notice({ tone = "info", children }: { tone?: "info" | "error" | "success"; children: ReactNode }) {
   return (
-    <div className={cn("my-5 rounded-md px-4 py-3.5 text-sm leading-relaxed",
-      tone === "info" && "bg-card text-foreground border",
-      tone === "error" && "bg-destructive/10 text-destructive",
-      tone === "success" && "bg-muted text-foreground")}>
+    <div
+      className={cn(
+        "my-5 rounded-md px-4 py-3.5 text-sm leading-relaxed",
+        tone === "info" && "border bg-card text-foreground",
+        tone === "error" && "bg-destructive/10 text-destructive",
+        tone === "success" && "bg-muted text-foreground",
+      )}
+    >
       {children}
     </div>
   );

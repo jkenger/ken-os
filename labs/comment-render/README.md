@@ -4,7 +4,10 @@ stranger: `author`, `text`, and an optional `website` link.
 The HTML it should return:
 
 ```html
-<article class="comment"><a href="https://example.com" rel="nofollow noopener noreferrer">Ana</a><p>Nice post</p></article>
+<article class="comment">
+  <a href="https://example.com" rel="nofollow noopener noreferrer">Ana</a>
+  <p>Nice post</p>
+</article>
 ```
 
 When there's no usable website, the author is plain text instead of a link: `<span>Ana</span>`.

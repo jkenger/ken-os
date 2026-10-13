@@ -1,8 +1,12 @@
 let events = [];
 function createConnection(serverUrl, roomId) {
   return {
-    connect() { events.push(`connect ${roomId} @ ${serverUrl}`); },
-    disconnect() { events.push(`disconnect ${roomId} @ ${serverUrl}`); },
+    connect() {
+      events.push(`connect ${roomId} @ ${serverUrl}`);
+    },
+    disconnect() {
+      events.push(`disconnect ${roomId} @ ${serverUrl}`);
+    },
   };
 }
 
@@ -15,8 +19,12 @@ function mount(Component, props) {
   function useEffect(setup, deps) {
     const slot = index++;
     const previous = slots[slot];
-    const changed = !previous || !deps || !previous.deps || deps.length !== previous.deps.length
-      || deps.some((dep, i) => !Object.is(dep, previous.deps[i]));
+    const changed =
+      !previous ||
+      !deps ||
+      !previous.deps ||
+      deps.length !== previous.deps.length ||
+      deps.some((dep, i) => !Object.is(dep, previous.deps[i]));
     if (!changed) return;
     pending.push(() => {
       if (previous && previous.cleanup) previous.cleanup();
@@ -33,7 +41,10 @@ function mount(Component, props) {
   render(props);
   return {
     rerender: render,
-    unmount() { slots.forEach((slot) => slot && slot.cleanup && slot.cleanup()); slots = []; },
+    unmount() {
+      slots.forEach((slot) => slot && slot.cleanup && slot.cleanup());
+      slots = [];
+    },
   };
 }
 
@@ -57,7 +68,11 @@ test("changing the room leaves the old one, then joins the new one", () => {
   events = [];
   const room = mount(ChatRoom, general);
   room.rerender({ ...general, roomId: "music" });
-  assert.deepEqual(events, ["connect general @ https://a.chat", "disconnect general @ https://a.chat", "connect music @ https://a.chat"]);
+  assert.deepEqual(events, [
+    "connect general @ https://a.chat",
+    "disconnect general @ https://a.chat",
+    "connect music @ https://a.chat",
+  ]);
 });
 
 test("changing the server reconnects too", () => {

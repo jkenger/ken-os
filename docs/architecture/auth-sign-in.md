@@ -22,28 +22,28 @@ Out of scope: more users or sign-in methods, and a single guard replacing the pe
 
 ## Today
 
-| # | Today | Problem |
-|---|---|---|
-| 1 | Every sign-in error is a raw JSON response from `/api/auth/google/callback` | No page, no way back, no "Try again" |
-| 2 | Signed-out pages `redirect("/")` | The page you wanted is lost |
-| 3 | `prompt: "consent"` on every sign-in | The Google consent screen every time |
-| 4 | Sign-in asks for `drive.file` and fails without it | Engineering and Terms don't need Drive, but you can't get in without granting it |
-| 5 | The session is a fixed 7 days from sign-in, then silently gone | A weekly bounce with no explanation |
-| 6 | Signing in with the wrong Google account has no "use another account" path | You have to sign out of Google yourself |
-| 7 | `/` is both the sign-in page and the Resume page | Two jobs on one route |
+| #   | Today                                                                       | Problem                                                                          |
+| --- | --------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| 1   | Every sign-in error is a raw JSON response from `/api/auth/google/callback` | No page, no way back, no "Try again"                                             |
+| 2   | Signed-out pages `redirect("/")`                                            | The page you wanted is lost                                                      |
+| 3   | `prompt: "consent"` on every sign-in                                        | The Google consent screen every time                                             |
+| 4   | Sign-in asks for `drive.file` and fails without it                          | Engineering and Terms don't need Drive, but you can't get in without granting it |
+| 5   | The session is a fixed 7 days from sign-in, then silently gone              | A weekly bounce with no explanation                                              |
+| 6   | Signing in with the wrong Google account has no "use another account" path  | You have to sign out of Google yourself                                          |
+| 7   | `/` is both the sign-in page and the Resume page                            | Two jobs on one route                                                            |
 
 ## 1. Routes
 
-| Route | Signed out | Signed in |
-|---|---|---|
-| `/sign-in` | The sign-in page (§2) | Redirect to `next` if valid, else `/` |
-| `/` | Redirect to `/sign-in` | Resume, as today |
-| Any other page | Redirect to `/sign-in?next=<path and query>` | The page |
-| `/api/auth/google` | Starts Google sign-in, carrying `next` | Same; used for "Use another account" |
-| `/api/auth/google/callback` | Never shows JSON; redirects to `next` on success or `/sign-in?error=<code>` on failure | Same |
-| `/api/auth/google/drive` (new) | 401 | Starts the Drive-access grant (§4) |
-| `/api/auth/signout` | POST only, origin-checked as today | Clears the session, redirects to `/sign-in?signed_out=1` |
-| API routes | 401 JSON, as today | Unchanged |
+| Route                          | Signed out                                                                             | Signed in                                                |
+| ------------------------------ | -------------------------------------------------------------------------------------- | -------------------------------------------------------- |
+| `/sign-in`                     | The sign-in page (§2)                                                                  | Redirect to `next` if valid, else `/`                    |
+| `/`                            | Redirect to `/sign-in`                                                                 | Resume, as today                                         |
+| Any other page                 | Redirect to `/sign-in?next=<path and query>`                                           | The page                                                 |
+| `/api/auth/google`             | Starts Google sign-in, carrying `next`                                                 | Same; used for "Use another account"                     |
+| `/api/auth/google/callback`    | Never shows JSON; redirects to `next` on success or `/sign-in?error=<code>` on failure | Same                                                     |
+| `/api/auth/google/drive` (new) | 401                                                                                    | Starts the Drive-access grant (§4)                       |
+| `/api/auth/signout`            | POST only, origin-checked as today                                                     | Clears the session, redirects to `/sign-in?signed_out=1` |
+| API routes                     | 401 JSON, as today                                                                     | Unchanged                                                |
 
 The signed-out branch moves out of `app/page.tsx` into `app/sign-in/page.tsx`.
 
@@ -57,13 +57,13 @@ The signed-out branch moves out of `app/page.tsx` into `app/sign-in/page.tsx`.
 
 Built from shadcn's `login` block (`pnpm dlx shadcn@latest add login-01`), trimmed to Google only, in the shadcn default look from `docs/architecture/design-system-shadcn-setup.md`. A centered `Card`, nothing else on the page: no tagline, no product tour.
 
-| Part | Text |
-|---|---|
-| Wordmark | Ken OS |
-| Card title | Sign in |
-| Card description | Owner only |
-| Button | Continue with Google (Google "G" mark, `variant="outline"`, full width) |
-| Alert (only when there's something to say) | See the states table |
+| Part                                       | Text                                                                    |
+| ------------------------------------------ | ----------------------------------------------------------------------- |
+| Wordmark                                   | Ken OS                                                                  |
+| Card title                                 | Sign in                                                                 |
+| Card description                           | Owner only                                                              |
+| Button                                     | Continue with Google (Google "G" mark, `variant="outline"`, full width) |
+| Alert (only when there's something to say) | See the states table                                                    |
 
 `<title>`: "Sign in · Ken OS". The button is a link to `/api/auth/google?next=<next>`. While navigating away it shows "Opening Google…" and is disabled, so a double click doesn't start two flows.
 
@@ -71,17 +71,17 @@ Built from shadcn's `login` block (`pnpm dlx shadcn@latest add login-01`), trimm
 
 Shown as a shadcn `Alert` above the button. Error codes come from the callback as `?error=<code>`; the page maps codes to text, never showing raw text from a URL.
 
-| State | Trigger | Alert | Actions |
-|---|---|---|---|
-| Plain | No query | none | Continue with Google |
-| Signed out | `?signed_out=1` | "Signed out" (default alert) | Continue with Google |
-| Session ended | `?expired=1` | "Session ended. Sign in again" | Continue with Google |
-| Cancelled | `?error=cancelled` (Google returned `access_denied`) | "Sign-in cancelled" | Continue with Google |
-| Link expired | `?error=expired` (state mismatch, missing cookies, `invalid_grant`) | "Sign-in expired. Try again" | Continue with Google |
-| Wrong account | `?error=wrong_account` | "This Google account doesn't have access" (destructive) | **Use another account** (starts sign-in with `prompt=select_account`) |
-| Unverified email | `?error=unverified` | "This Google account's email isn't verified" (destructive) | Use another account |
-| Google failed | `?error=google` (token or userinfo request failed) | "Google sign-in failed. Try again" (destructive) | Continue with Google |
-| Not set up | `OWNER_EMAIL` or Google keys missing | "Sign-in isn't set up" (destructive); in development only, the setup hint naming the missing variable | Button disabled |
+| State            | Trigger                                                             | Alert                                                                                                 | Actions                                                               |
+| ---------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Plain            | No query                                                            | none                                                                                                  | Continue with Google                                                  |
+| Signed out       | `?signed_out=1`                                                     | "Signed out" (default alert)                                                                          | Continue with Google                                                  |
+| Session ended    | `?expired=1`                                                        | "Session ended. Sign in again"                                                                        | Continue with Google                                                  |
+| Cancelled        | `?error=cancelled` (Google returned `access_denied`)                | "Sign-in cancelled"                                                                                   | Continue with Google                                                  |
+| Link expired     | `?error=expired` (state mismatch, missing cookies, `invalid_grant`) | "Sign-in expired. Try again"                                                                          | Continue with Google                                                  |
+| Wrong account    | `?error=wrong_account`                                              | "This Google account doesn't have access" (destructive)                                               | **Use another account** (starts sign-in with `prompt=select_account`) |
+| Unverified email | `?error=unverified`                                                 | "This Google account's email isn't verified" (destructive)                                            | Use another account                                                   |
+| Google failed    | `?error=google` (token or userinfo request failed)                  | "Google sign-in failed. Try again" (destructive)                                                      | Continue with Google                                                  |
+| Not set up       | `OWNER_EMAIL` or Google keys missing                                | "Sign-in isn't set up" (destructive); in development only, the setup hint naming the missing variable | Button disabled                                                       |
 
 The wrong-account alert doesn't echo the email that was tried, so the page never shows an address to a visitor.
 
@@ -125,20 +125,20 @@ Sign-in scopes become `openid email profile`. Drive is a second, incremental gra
 
 ## 7. Files
 
-| File | Change |
-|---|---|
-| `src/app/sign-in/page.tsx` | New: the page and its states |
-| `src/components/sign-in-card.tsx` | New: from the shadcn `login-01` block |
-| `src/app/page.tsx` | Signed-out branch removed; uses `requireSession("/")` |
-| 12 page files | `requireSession(<path>)` instead of `redirect("/")` |
-| `src/lib/session.ts` | `requireSession`, `safeNext`, `auth_time`, 30-day expiry, `renewSession` helper for the proxy |
-| `src/proxy.ts` | New: daily renewal only (§5) |
-| `src/app/api/auth/google/route.ts` | Sign-in scopes, `prompt=select_account`, no offline access, `next` and intent cookies |
-| `src/app/api/auth/google/drive/route.ts` | New (§4) |
-| `src/app/api/auth/google/callback/route.ts` | Both intents; every failure redirects with a code; `access_denied` → `cancelled` |
-| `src/app/api/auth/signout/route.ts` | Redirect to `/sign-in?signed_out=1` |
-| `src/components/resume-workspace.tsx` | Connect and Reconnect Google Drive states (§4) |
-| `src/lib/auth-errors.ts` | New: error codes → alert text, one place |
+| File                                        | Change                                                                                        |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `src/app/sign-in/page.tsx`                  | New: the page and its states                                                                  |
+| `src/components/sign-in-card.tsx`           | New: from the shadcn `login-01` block                                                         |
+| `src/app/page.tsx`                          | Signed-out branch removed; uses `requireSession("/")`                                         |
+| 12 page files                               | `requireSession(<path>)` instead of `redirect("/")`                                           |
+| `src/lib/session.ts`                        | `requireSession`, `safeNext`, `auth_time`, 30-day expiry, `renewSession` helper for the proxy |
+| `src/proxy.ts`                              | New: daily renewal only (§5)                                                                  |
+| `src/app/api/auth/google/route.ts`          | Sign-in scopes, `prompt=select_account`, no offline access, `next` and intent cookies         |
+| `src/app/api/auth/google/drive/route.ts`    | New (§4)                                                                                      |
+| `src/app/api/auth/google/callback/route.ts` | Both intents; every failure redirects with a code; `access_denied` → `cancelled`              |
+| `src/app/api/auth/signout/route.ts`         | Redirect to `/sign-in?signed_out=1`                                                           |
+| `src/components/resume-workspace.tsx`       | Connect and Reconnect Google Drive states (§4)                                                |
+| `src/lib/auth-errors.ts`                    | New: error codes → alert text, one place                                                      |
 
 ## 8. Tests and checks
 
@@ -159,11 +159,11 @@ Sign-in scopes become `openid email profile`. Drive is a second, incremental gra
 
 ## 9. Slices
 
-| # | Branch | Covers |
-|---|---|---|
-| 1 | `feat/sign-in-page` | §1 and §2: `/sign-in`, states, error codes from the callback, `next` with `safeNext`, `requireSession` in the 12 pages, sign-out redirect |
-| 2 | `feat/drive-grant` | §3 and §4: consent and account choice, the separate Drive grant, the shared callback intents, Resume states |
-| 3 | `feat/rolling-session` | §5: `auth_time`, 30 and 90 days, `proxy.ts` renewal |
+| #   | Branch                 | Covers                                                                                                                                    |
+| --- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | `feat/sign-in-page`    | §1 and §2: `/sign-in`, states, error codes from the callback, `next` with `safeNext`, `requireSession` in the 12 pages, sign-out redirect |
+| 2   | `feat/drive-grant`     | §3 and §4: consent and account choice, the separate Drive grant, the shared callback intents, Resume states                               |
+| 3   | `feat/rolling-session` | §5: `auth_time`, 30 and 90 days, `proxy.ts` renewal                                                                                       |
 
 Slice 1 can ship on today's look; it moves to the shadcn default with the rest of the app.
 

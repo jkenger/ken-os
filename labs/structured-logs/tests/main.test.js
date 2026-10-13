@@ -1,9 +1,18 @@
 function setup(fields) {
   const lines = [];
-  const logger = createLogger({ write: (line) => lines.push(line), now: () => new Date("2026-10-05T09:30:00.000Z"), fields });
-  const parsed = () => lines.map((line) => {
-    try { return JSON.parse(line); } catch { throw new Error(`Not a JSON line: ${line}`); }
+  const logger = createLogger({
+    write: (line) => lines.push(line),
+    now: () => new Date("2026-10-05T09:30:00.000Z"),
+    fields,
   });
+  const parsed = () =>
+    lines.map((line) => {
+      try {
+        return JSON.parse(line);
+      } catch {
+        throw new Error(`Not a JSON line: ${line}`);
+      }
+    });
   return { lines, logger, parsed };
 }
 
@@ -12,7 +21,14 @@ test("each call writes one JSON line with time, level and message", () => {
   logger.info("Order placed", { orderId: 7, totalCents: 2500 });
   assert.equal(lines.length, 1);
   assert.ok(!lines[0].includes("\n"), "one event, one line");
-  assert.deepEqual(parsed()[0], { time: "2026-10-05T09:30:00.000Z", level: "info", msg: "Order placed", service: "checkout", orderId: 7, totalCents: 2500 });
+  assert.deepEqual(parsed()[0], {
+    time: "2026-10-05T09:30:00.000Z",
+    level: "info",
+    msg: "Order placed",
+    service: "checkout",
+    orderId: 7,
+    totalCents: 2500,
+  });
 });
 
 test("a child logger adds its fields to every line", () => {

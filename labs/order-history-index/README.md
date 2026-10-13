@@ -10,7 +10,9 @@ orders from last year, waits much longer. Fix it in `migrate(db)`.
 Before you change anything, run this and note which index it uses and how many pages (`Buffers`) it touches:
 
 ```js
-const { rows } = await db.query("explain (analyze, buffers) select * from order_history where user_id = 9999 order by created_at desc limit 20");
+const { rows } = await db.query(
+  "explain (analyze, buffers) select * from order_history where user_id = 9999 order by created_at desc limit 20",
+);
 console.log(rows.map((row) => row["QUERY PLAN"]).join("\n"));
 ```
 

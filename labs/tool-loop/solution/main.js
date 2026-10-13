@@ -22,6 +22,14 @@ async function runOne(tools, call) {
   const tool = Object.prototype.hasOwnProperty.call(tools, call.name) ? tools[call.name] : null;
   if (!tool) return { error: `There is no tool called ${call.name}` };
   let args;
-  try { args = JSON.parse(call.arguments || "{}"); } catch { return { error: "The arguments weren't valid JSON" }; }
-  try { return await tool(args); } catch (error) { return { error: `The tool failed: ${error.message}` }; }
+  try {
+    args = JSON.parse(call.arguments || "{}");
+  } catch {
+    return { error: "The arguments weren't valid JSON" };
+  }
+  try {
+    return await tool(args);
+  } catch (error) {
+    return { error: `The tool failed: ${error.message}` };
+  }
 }

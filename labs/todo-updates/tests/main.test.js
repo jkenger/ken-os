@@ -17,26 +17,46 @@ function createApp(initial) {
   return {
     update(fn, ...args) {
       const next = fn(state, ...args);
-      if (!Object.is(next, state)) { state = next; render(); }
+      if (!Object.is(next, state)) {
+        state = next;
+        render();
+      }
     },
-    get state() { return state; },
-    get renders() { return renders; },
+    get state() {
+      return state;
+    },
+    get renders() {
+      return renders;
+    },
     rowRenders,
   };
 }
 
 function deepFreeze(value) {
-  if (value && typeof value === "object") { Object.values(value).forEach(deepFreeze); Object.freeze(value); }
+  if (value && typeof value === "object") {
+    Object.values(value).forEach(deepFreeze);
+    Object.freeze(value);
+  }
   return value;
 }
 
-const start = () => deepFreeze({ todos: [{ id: 1, text: "Buy milk", done: false }, { id: 2, text: "Write tests", done: true }], nextId: 3 });
+const start = () =>
+  deepFreeze({
+    todos: [
+      { id: 1, text: "Buy milk", done: false },
+      { id: 2, text: "Write tests", done: true },
+    ],
+    nextId: 3,
+  });
 
 test("adding a todo re-renders the app and only the new row", () => {
   const app = createApp(start());
   app.update(addTodo, "Call Ana");
   assert.equal(app.renders, 2, "the app should re-render once");
-  assert.deepEqual(app.state.todos.map((todo) => todo.text), ["Buy milk", "Write tests", "Call Ana"]);
+  assert.deepEqual(
+    app.state.todos.map((todo) => todo.text),
+    ["Buy milk", "Write tests", "Call Ana"],
+  );
   assert.equal(app.state.nextId, 4);
   assert.deepEqual([...app.rowRenders.values()], [1, 1, 1], "only the new row renders; the old rows stay as they were");
 });

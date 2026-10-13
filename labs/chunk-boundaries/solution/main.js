@@ -18,7 +18,12 @@ function chunkDocument(text, { maxChars = 400, overlap = 1 } = {}) {
 
   const chunks = [];
   for (const section of sections) {
-    const sentences = section.lines.join(" ").replace(/\s+/g, " ").trim().split(/(?<=[.!?])\s+/).filter(Boolean);
+    const sentences = section.lines
+      .join(" ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .split(/(?<=[.!?])\s+/)
+      .filter(Boolean);
     let start = 0;
     while (start < sentences.length) {
       let end = start + 1;

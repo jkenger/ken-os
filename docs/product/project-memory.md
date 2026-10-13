@@ -46,13 +46,13 @@ Out of scope for the pilot: automatic access to all Codex or Claude Code history
 
 ## Rules and authority
 
-| Claim or action | Agent may do | Owner confirmation needed |
-| --- | --- | --- |
-| Record an explicit choice stated in the current task | Propose with a conversation reference | To mark as owner-approved in Ken OS |
-| Choose an in-scope implementation detail | Record itself as decider with rationale | When the choice changes product scope, security, cost, data sharing, or external behavior |
-| Infer intent from a diff, commit, or PR | Suggest with `inferred` provenance | Before promoting it to a confirmed decision |
-| Edit or enrich a commit/PR | Never as a side effect of capture | Separate authorization and review |
-| Publish a devlog | Draft from approved material | Explicit publish approval |
+| Claim or action                                      | Agent may do                            | Owner confirmation needed                                                                 |
+| ---------------------------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Record an explicit choice stated in the current task | Propose with a conversation reference   | To mark as owner-approved in Ken OS                                                       |
+| Choose an in-scope implementation detail             | Record itself as decider with rationale | When the choice changes product scope, security, cost, data sharing, or external behavior |
+| Infer intent from a diff, commit, or PR              | Suggest with `inferred` provenance      | Before promoting it to a confirmed decision                                               |
+| Edit or enrich a commit/PR                           | Never as a side effect of capture       | Separate authorization and review                                                         |
+| Publish a devlog                                     | Draft from approved material            | Explicit publish approval                                                                 |
 
 No rule file can guarantee an agent will execute a workflow, and no skill grants access to sessions or services. Completeness is measured and surfaced; it is not assumed.
 

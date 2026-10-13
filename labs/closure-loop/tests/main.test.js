@@ -1,6 +1,9 @@
 test("each handler returns its own label", () => {
   const handlers = makeHandlers(["a", "b", "c"]);
-  assert.deepEqual(handlers.map((handler) => handler()), ["clicked a", "clicked b", "clicked c"]);
+  assert.deepEqual(
+    handlers.map((handler) => handler()),
+    ["clicked a", "clicked b", "clicked c"],
+  );
 });
 
 test("counters keep separate counts", () => {

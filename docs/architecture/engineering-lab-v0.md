@@ -53,21 +53,21 @@ Why: §8 asks for clear separation between curriculum, learner state, generated 
 
 Repo files (read at build time, validated on load):
 
-| File | Holds | Why a file |
-|---|---|---|
-| `topics.yaml` | Topic map | Changes rarely, and you should review changes in a PR |
-| `baseline.yaml` | The 2026-10-01 assessment | Must never change; it is the "before" picture |
-| `labs/*` | Runnable exercises and their tests | Code needs version control and real test runs |
+| File            | Holds                              | Why a file                                            |
+| --------------- | ---------------------------------- | ----------------------------------------------------- |
+| `topics.yaml`   | Topic map                          | Changes rarely, and you should review changes in a PR |
+| `baseline.yaml` | The 2026-10-01 assessment          | Must never change; it is the "before" picture         |
+| `labs/*`        | Runnable exercises and their tests | Code needs version control and real test runs         |
 
 Postgres tables (Drizzle, all scoped by `user_id` like the existing tables):
 
-| Table | One row is | Changes after insert? |
-|---|---|---|
-| `lab_source_packets` | One Researcher packet for one topic | Never |
-| `lab_lessons` | One saved lesson version | Never |
-| `lab_attempts` | One answer to one question or lab, with its grade | Never |
-| `lab_progress` | Current status for one topic | Yes, recalculated from attempts |
-| `lab_progress_changes` | One status change and the attempt that caused it | Never |
+| Table                  | One row is                                        | Changes after insert?           |
+| ---------------------- | ------------------------------------------------- | ------------------------------- |
+| `lab_source_packets`   | One Researcher packet for one topic               | Never                           |
+| `lab_lessons`          | One saved lesson version                          | Never                           |
+| `lab_attempts`         | One answer to one question or lab, with its grade | Never                           |
+| `lab_progress`         | Current status for one topic                      | Yes, recalculated from attempts |
+| `lab_progress_changes` | One status change and the attempt that caused it  | Never                           |
 
 Why Postgres for learning data: the hosted app can't write to the repo, and you'll learn on more than one device. The handoff allows "files/database" (§26, rule 14).
 
@@ -80,13 +80,13 @@ The baseline is loaded as attempts tagged `source: baseline`, so the History pag
 ```yaml
 - id: js.event_loop
   title: Event loop, tasks and microtasks
-  track: fullstack            # fullstack | production | ai
+  track: fullstack # fullstack | production | ai
   module: m1-js-runtime
   requires: [js.call_stack]
-  freshness: web_platform     # sets how often sources are re-checked
-  sourceGroups: [javascript]  # allowed domains for the Researcher
-  gap: Predicted A B D C ...  # exact gap from the baseline
-  depth: working              # working | deep
+  freshness: web_platform # sets how often sources are re-checked
+  sourceGroups: [javascript] # allowed domains for the Researcher
+  gap: Predicted A B D C ... # exact gap from the baseline
+  depth: working # working | deep
   prove: [predict, explain, debug]
   labs: [event-loop-order]
 ```
@@ -107,7 +107,7 @@ interface TopicProgress {
   status: Status;
   evidence: Partial<Record<Mode, { label: Label; attemptId: string; at: string }>>;
   confidence: { averageSelfRating: number | null; overconfident: boolean };
-  weaknesses: string[];        // named misconceptions still open
+  weaknesses: string[]; // named misconceptions still open
   lastAttemptAt: string | null;
   nextReviewAt: string | null;
 }
@@ -137,23 +137,23 @@ Change for v0: packets are stored in `lab_source_packets`. The local command kee
 interface LessonSnapshot {
   id: string;
   topicId: string;
-  version: number;              // unique per topic
+  version: number; // unique per topic
   sourcePacketId: string;
-  promptVersion: string;        // Tutor prompt that made it
+  promptVersion: string; // Tutor prompt that made it
   model: string;
   createdAt: string;
   sections: {
     whyItMatters: string;
-    whatYouKnow: string;        // from the baseline, so it doesn't reteach solid ground
+    whatYouKnow: string; // from the baseline, so it doesn't reteach solid ground
     theGap: string;
-    theory: string;             // minimum theory, Markdown
+    theory: string; // minimum theory, Markdown
     mentalModel: string;
     workedExample: { code: string; walkthrough: string };
   };
-  practice: PracticeItem[];     // prediction and short questions for the lesson itself
-  labIds: string[];             // authored labs this lesson hands off to
+  practice: PracticeItem[]; // prediction and short questions for the lesson itself
+  labIds: string[]; // authored labs this lesson hands off to
   citations: { claim: string; sourceUrl: string }[];
-  noteSuggestions: string[];    // concepts to write up in Obsidian, in your own words
+  noteSuggestions: string[]; // concepts to write up in Obsidian, in your own words
 }
 ```
 
@@ -170,9 +170,9 @@ interface Attempt {
   kind: "baseline" | "lesson" | "assessment" | "review";
   mode: Mode;
   lessonId: string | null;
-  item: AssessmentItem;         // the exact question as shown, stored with the attempt
+  item: AssessmentItem; // the exact question as shown, stored with the attempt
   response: { text?: string; code?: string; order?: string[] };
-  selfRating: 1 | 2 | 3 | 4 | 5 | null;   // required for assessment and review, null otherwise
+  selfRating: 1 | 2 | 3 | 4 | 5 | null; // required for assessment and review, null otherwise
   grade: {
     by: "code" | "assessor";
     label: Label;
@@ -193,7 +193,7 @@ Why the question is stored with the attempt: the Assessor writes new questions e
 id: event-loop-order
 topics: [js.event_loop, js.promises]
 modes: [predict, debug]
-runner: browser        # browser | pglite | sandbox
+runner: browser # browser | pglite | sandbox
 timeoutMs: 2000
 ```
 
@@ -251,10 +251,10 @@ Cost guard: a daily cap on lesson and assessment generation, with the count show
 
 ## 10. Minimal UI routes
 
-| Route | Shows |
-|---|---|
-| `/lab` | Today: what to do next and why, reviews due, weak areas, recently proven |
-| `/lab/topics` | Topic map grouped by module, with status and prerequisites |
+| Route              | Shows                                                                            |
+| ------------------ | -------------------------------------------------------------------------------- |
+| `/lab`             | Today: what to do next and why, reviews due, weak areas, recently proven         |
+| `/lab/topics`      | Topic map grouped by module, with status and prerequisites                       |
 | `/lab/topics/[id]` | Lesson, practice, lab, assessment, sources and this topic's history, in one page |
 
 API routes: `GET /api/lab/today`, `POST /api/lab/topics/[id]/lesson`, `POST /api/lab/topics/[id]/assessment`, and `POST /api/lab/attempts`. All are owner-only and use the existing origin check on writes.
@@ -293,11 +293,11 @@ After Module 3, run §23's review: does the loop help, are lessons coherent, are
 
 Each step ends with something testable.
 
-1. **Topic map and baseline files** with loaders and validation. Move `research-targets.ts` into `topics.yaml`. *Check: tests for prerequisite cycles and missing ids.*
-2. **Tables and migration** via `pnpm db:generate`, reviewed, then `pnpm db:migrate`. *Check: `test:db` style script.*
-3. **Progress rules and Planner** as pure functions. *Check: tests that replay the real baseline and expect `js.event_loop` (or its prerequisite) first, and that reading a lesson never changes status.*
+1. **Topic map and baseline files** with loaders and validation. Move `research-targets.ts` into `topics.yaml`. _Check: tests for prerequisite cycles and missing ids._
+2. **Tables and migration** via `pnpm db:generate`, reviewed, then `pnpm db:migrate`. _Check: `test:db` style script._
+3. **Progress rules and Planner** as pure functions. _Check: tests that replay the real baseline and expect `js.event_loop` (or its prerequisite) first, and that reading a lesson never changes status._
 4. **Researcher saves to Postgres**, plus an import for today's saved packet.
-5. **Tutor** with citation checks and lesson snapshots. *Check: one real lesson for `js.event_loop`, read by you.*
+5. **Tutor** with citation checks and lesson snapshots. _Check: one real lesson for `js.event_loop`, read by you._
 6. **Event-loop lab** with the browser runner and harness.
 7. **Assessor:** writes questions, browser-verified predict answers, AI grading for explain answers.
 8. **Attempt submission** updates progress and logs the status change.
@@ -308,16 +308,16 @@ Steps 1–10 are the vertical slice in §27. The rest of Module 1, then Module 2
 
 ## v0 versus later
 
-| In v0 | Later, when there's a measured need |
-|---|---|
-| Topic map in YAML, 3 modules | Full map from §24 |
-| Rule-based Planner | AI-assisted planning or wording |
-| Fixed review gaps (3/10/30/90 days) | Adaptive review scheduling |
-| Labels per proof mode | Numeric scores |
-| Browser and PGlite runners | Vercel Sandbox (Module 3), local runner reporting back |
-| Note suggestions in lessons | Obsidian links or export |
-| Daily generation cap | Cost and latency dashboards |
-| None | Knowledge debt from git diffs and PRs (§18), checkpoints (§16), AI track labs (§17) |
+| In v0                               | Later, when there's a measured need                                                 |
+| ----------------------------------- | ----------------------------------------------------------------------------------- |
+| Topic map in YAML, 3 modules        | Full map from §24                                                                   |
+| Rule-based Planner                  | AI-assisted planning or wording                                                     |
+| Fixed review gaps (3/10/30/90 days) | Adaptive review scheduling                                                          |
+| Labels per proof mode               | Numeric scores                                                                      |
+| Browser and PGlite runners          | Vercel Sandbox (Module 3), local runner reporting back                              |
+| Note suggestions in lessons         | Obsidian links or export                                                            |
+| Daily generation cap                | Cost and latency dashboards                                                         |
+| None                                | Knowledge debt from git diffs and PRs (§18), checkpoints (§16), AI track labs (§17) |
 
 Knowledge debt is deliberately not in v0 even though §18 calls it the key difference. It needs a working topic map and trustworthy progress first, or it would flag gaps against a scale that doesn't work yet. The schema is ready for it: an attempt's `kind` and the topic ids are what it will write against.
 
@@ -345,17 +345,17 @@ All three modules, all three pages and steps 1 to 9 are built. Step 10, the host
 
 **Where it differs from the proposal, and why**
 
-| Proposal | Built | Why |
-|---|---|---|
-| Five tables | Seven: adds `lab_assessments` and `lab_solution_reveals` | Question sets have to be stored before they're answered, so expected answers and rubrics never reach the browser. Solution reveals are recorded on the server, not reported by the browser. |
-| Baseline loaded into the database as attempts | Read from `baseline.yaml` and merged in at read time | The file stays the only copy of the "before" picture, so it can't drift. |
-| `lab_progress` holds current progress | Progress is rebuilt from attempts on every read; `lab_progress` keeps the last status for the change log | A later change to the topic map, such as a new proof mode, can never leave a stale status on screen. |
-| Validation only from assessments | Assessments, reviews, or an authored lab passed without first seeing its solution | Labs are the code-checked proof for debug and implement. The Assessor only writes questions for modes a lab doesn't already cover. |
-| YAML read at runtime | `lab:generate` compiles YAML and lab folders into checked TypeScript; `check` and `build` fail when it's stale | The hosted app can't read repo files at runtime. Lab solutions go into a separate server-only file and were confirmed absent from the browser bundles. |
-| Topics `web.https` and `web.request_lifecycle` | One topic, `web.request_lifecycle`, covering HTTPS | HTTPS can't be checked in code on its own; the request-anatomy probe covers both. |
-| Module 2 labs as DevTools exercises | Probe labs: you predict, then the page makes real requests and scores the predictions | Gives code-checked proof without a second domain. CORS runs from the code box worker, whose `data:` URL origin is already cross-origin. |
-| Race labs on Vercel Sandbox | PGlite in the browser, with concurrent calls interleaved between queries | Reproduces lost updates, signup races and duplicate payments for free. A sandbox is still the answer for lock and isolation-level labs, which v0 doesn't include. |
-| Step 6 decides the code box | A plain text box with Tab support and a per-lab draft in browser storage | No editor dependency for v0. |
+| Proposal                                       | Built                                                                                                          | Why                                                                                                                                                                                         |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Five tables                                    | Seven: adds `lab_assessments` and `lab_solution_reveals`                                                       | Question sets have to be stored before they're answered, so expected answers and rubrics never reach the browser. Solution reveals are recorded on the server, not reported by the browser. |
+| Baseline loaded into the database as attempts  | Read from `baseline.yaml` and merged in at read time                                                           | The file stays the only copy of the "before" picture, so it can't drift.                                                                                                                    |
+| `lab_progress` holds current progress          | Progress is rebuilt from attempts on every read; `lab_progress` keeps the last status for the change log       | A later change to the topic map, such as a new proof mode, can never leave a stale status on screen.                                                                                        |
+| Validation only from assessments               | Assessments, reviews, or an authored lab passed without first seeing its solution                              | Labs are the code-checked proof for debug and implement. The Assessor only writes questions for modes a lab doesn't already cover.                                                          |
+| YAML read at runtime                           | `lab:generate` compiles YAML and lab folders into checked TypeScript; `check` and `build` fail when it's stale | The hosted app can't read repo files at runtime. Lab solutions go into a separate server-only file and were confirmed absent from the browser bundles.                                      |
+| Topics `web.https` and `web.request_lifecycle` | One topic, `web.request_lifecycle`, covering HTTPS                                                             | HTTPS can't be checked in code on its own; the request-anatomy probe covers both.                                                                                                           |
+| Module 2 labs as DevTools exercises            | Probe labs: you predict, then the page makes real requests and scores the predictions                          | Gives code-checked proof without a second domain. CORS runs from the code box worker, whose `data:` URL origin is already cross-origin.                                                     |
+| Race labs on Vercel Sandbox                    | PGlite in the browser, with concurrent calls interleaved between queries                                       | Reproduces lost updates, signup races and duplicate payments for free. A sandbox is still the answer for lock and isolation-level labs, which v0 doesn't include.                           |
+| Step 6 decides the code box                    | A plain text box with Tab support and a per-lab draft in browser storage                                       | No editor dependency for v0.                                                                                                                                                                |
 
 **Verified**
 

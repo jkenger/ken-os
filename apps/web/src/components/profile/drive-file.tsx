@@ -26,12 +26,14 @@ interface PickerBuilder {
 declare global {
   interface Window {
     gapi?: { load(name: string, callback: () => void): void };
-    google?: { picker: {
-      ViewId: { DOCS: string };
-      Action: { PICKED: string };
-      DocsView: new (id: string) => { setMimeTypes(types: string): void };
-      PickerBuilder: new () => PickerBuilder;
-    } };
+    google?: {
+      picker: {
+        ViewId: { DOCS: string };
+        Action: { PICKED: string };
+        DocsView: new (id: string) => { setMimeTypes(types: string): void };
+        PickerBuilder: new () => PickerBuilder;
+      };
+    };
   }
 }
 
@@ -57,7 +59,15 @@ const mimeNames: Record<string, string> = {
 const connectDriveHref = "/api/auth/google/drive?next=%2Fprofile";
 
 /** The resume file in Google Drive: choose it, preview it, download it, and import it into the Profile. */
-export function DriveFile({ state, importing, onImport }: { state: DriveFileState; importing: boolean; onImport: () => void }) {
+export function DriveFile({
+  state,
+  importing,
+  onImport,
+}: {
+  state: DriveFileState;
+  importing: boolean;
+  onImport: () => void;
+}) {
   const router = useRouter();
   const { file, selection } = state;
   const [access, setAccess] = useState<DriveAccess>(state.access);
@@ -86,20 +96,34 @@ export function DriveFile({ state, importing, onImport }: { state: DriveFileStat
   async function openPicker() {
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_PICKER_API_KEY;
     const appId = process.env.NEXT_PUBLIC_GOOGLE_PROJECT_NUMBER;
-    if (!apiKey || !appId) { setMessage("Drive picker isn't set up"); return; }
-    if (!window.gapi) { setMessage("Drive picker is loading. Try again in a moment"); return; }
+    if (!apiKey || !appId) {
+      setMessage("Drive picker isn't set up");
+      return;
+    }
+    if (!window.gapi) {
+      setMessage("Drive picker is loading. Try again in a moment");
+      return;
+    }
     setBusy(true);
     setMessage(null);
     try {
       const response = await fetch("/api/drive/picker-token", { cache: "no-store" });
       const data = await response.json();
       if (!response.ok) {
-        if (data.drive === "not_connected" || data.drive === "disconnected") { setAccess(data.drive); setBusy(false); return; }
+        if (data.drive === "not_connected" || data.drive === "disconnected") {
+          setAccess(data.drive);
+          setBusy(false);
+          return;
+        }
         throw new Error(data.error ?? "Couldn't reach Google Drive. Try again");
       }
       window.gapi.load("picker", () => {
         const picker = window.google?.picker;
-        if (!picker) { setMessage("Drive picker didn't load. Reload the page"); setBusy(false); return; }
+        if (!picker) {
+          setMessage("Drive picker didn't load. Reload the page");
+          setBusy(false);
+          return;
+        }
         const view = new picker.DocsView(picker.ViewId.DOCS);
         view.setMimeTypes(`${GOOGLE_DOC_MIME},application/pdf,${DOCX_MIME}`);
         new picker.PickerBuilder()
@@ -124,47 +148,108 @@ export function DriveFile({ state, importing, onImport }: { state: DriveFileStat
 
   const connected = access === "connected";
   const title = !connected
-    ? access === "disconnected" ? "Google Drive disconnected" : "Google Drive not connected"
-    : file?.name ?? selection?.name ?? "No resume chosen";
+    ? access === "disconnected"
+      ? "Google Drive disconnected"
+      : "Google Drive not connected"
+    : (file?.name ?? selection?.name ?? "No resume chosen");
   const detail = !connected
     ? null
     : file
       ? `${mimeNames[file.mimeType] ?? "Document"} · Updated ${file.modifiedTime ? shortDate(file.modifiedTime) : "in Drive"}`
-      : state.error ?? "Google Doc, PDF or Word file";
+      : (state.error ?? "Google Doc, PDF or Word file");
 
   return (
     <Card id="drive-file" className="scroll-mt-24">
       <Script src="https://apis.google.com/js/api.js" strategy="afterInteractive" />
       <CardHeader>
-        <CardTitle className="flex min-w-0 items-center gap-2"><FileText className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" /><span className="truncate">{title}</span></CardTitle>
+        <CardTitle className="flex min-w-0 items-center gap-2">
+          <FileText className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <span className="truncate">{title}</span>
+        </CardTitle>
         {detail && <CardDescription>{detail}</CardDescription>}
         {connected && file && (
           <CardAction>
-            <Button variant="ghost" size="icon" type="button" aria-label="Refresh" title="Refresh" onClick={() => router.refresh()}><RefreshCw /></Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              type="button"
+              aria-label="Refresh"
+              title="Refresh"
+              onClick={() => router.refresh()}
+            >
+              <RefreshCw />
+            </Button>
           </CardAction>
         )}
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
-        {state.notice && <Alert variant="destructive"><AlertCircle /><AlertTitle>{state.notice}</AlertTitle></Alert>}
+        {state.notice && (
+          <Alert variant="destructive">
+            <AlertCircle />
+            <AlertTitle>{state.notice}</AlertTitle>
+          </Alert>
+        )}
         <div className="flex flex-wrap items-center gap-2">
           {!connected ? (
-            <Button asChild><a href={connectDriveHref}>{access === "disconnected" ? "Reconnect Google Drive" : "Connect Google Drive"}<ArrowUpRight data-icon="inline-end" aria-hidden="true" /></a></Button>
+            <Button asChild>
+              <a href={connectDriveHref}>
+                {access === "disconnected" ? "Reconnect Google Drive" : "Connect Google Drive"}
+                <ArrowUpRight data-icon="inline-end" aria-hidden="true" />
+              </a>
+            </Button>
           ) : (
             <>
-              {file && state.canImport && <Button type="button" onClick={onImport} disabled={importing}>{importing ? "Importing…" : "Import into Profile"}</Button>}
-              <Button type="button" variant={file ? "outline" : "default"} onClick={openPicker} disabled={busy}>{busy ? "Opening…" : "Choose resume"}</Button>
-              {file && file.canDownload !== false && <Button asChild variant="outline"><a href="/api/resume/content?download=1">Download<Download data-icon="inline-end" aria-hidden="true" /></a></Button>}
-              {file && <Button asChild variant="ghost"><a href={file.webViewLink ?? `https://drive.google.com/file/d/${encodeURIComponent(file.id)}/view`} target="_blank" rel="noopener noreferrer">Open in Drive<ArrowUpRight data-icon="inline-end" aria-hidden="true" /></a></Button>}
+              {file && state.canImport && (
+                <Button type="button" onClick={onImport} disabled={importing}>
+                  {importing ? "Importing…" : "Import into Profile"}
+                </Button>
+              )}
+              <Button type="button" variant={file ? "outline" : "default"} onClick={openPicker} disabled={busy}>
+                {busy ? "Opening…" : "Choose resume"}
+              </Button>
+              {file && file.canDownload !== false && (
+                <Button asChild variant="outline">
+                  <a href="/api/resume/content?download=1">
+                    Download
+                    <Download data-icon="inline-end" aria-hidden="true" />
+                  </a>
+                </Button>
+              )}
+              {file && (
+                <Button asChild variant="ghost">
+                  <a
+                    href={file.webViewLink ?? `https://drive.google.com/file/d/${encodeURIComponent(file.id)}/view`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Open in Drive
+                    <ArrowUpRight data-icon="inline-end" aria-hidden="true" />
+                  </a>
+                </Button>
+              )}
             </>
           )}
         </div>
-        {message && <Alert variant="destructive"><AlertCircle /><AlertTitle>{message}</AlertTitle></Alert>}
+        {message && (
+          <Alert variant="destructive">
+            <AlertCircle />
+            <AlertTitle>{message}</AlertTitle>
+          </Alert>
+        )}
         {state.previewUrl && (
           <Collapsible>
-            <CollapsibleTrigger asChild><Button type="button" variant="link" className="h-auto px-0">Preview</Button></CollapsibleTrigger>
+            <CollapsibleTrigger asChild>
+              <Button type="button" variant="link" className="h-auto px-0">
+                Preview
+              </Button>
+            </CollapsibleTrigger>
             <CollapsibleContent>
               {/* White on purpose: a PDF page is drawn on white whatever the theme. */}
-              <iframe className="mt-2 h-160 w-full rounded-lg border bg-white" title="Resume preview" src={state.previewUrl} />
+              <iframe
+                className="mt-2 h-160 w-full rounded-lg border bg-white"
+                title="Resume preview"
+                src={state.previewUrl}
+              />
             </CollapsibleContent>
           </Collapsible>
         )}

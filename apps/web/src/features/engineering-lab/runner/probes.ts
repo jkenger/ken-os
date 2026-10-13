@@ -18,7 +18,10 @@ async function getJson(path: string, init?: RequestInit) {
 /** Runs code in the code box's worker, whose origin is opaque, so its requests to Ken OS are cross-site. */
 async function fromOtherSite(code: string): Promise<Record<string, unknown>> {
   const outcome = await runInWorker(buildProbeScript(code, window.location.origin), 8000);
-  if (outcome.type !== "output") throw new Error(outcome.type === "timeout" || outcome.type === "error" ? outcome.message : "The probe produced no result.");
+  if (outcome.type !== "output")
+    throw new Error(
+      outcome.type === "timeout" || outcome.type === "error" ? outcome.message : "The probe produced no result.",
+    );
   const line = outcome.logs.find((entry) => entry.startsWith("{"));
   if (!line) throw new Error("The probe produced no result.");
   return JSON.parse(line) as Record<string, unknown>;

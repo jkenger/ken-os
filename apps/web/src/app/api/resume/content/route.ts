@@ -9,22 +9,13 @@ export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   const session = await getSession();
-  if (!session)
-    return NextResponse.json({ error: messages.signedOut }, { status: 401 });
+  if (!session) return NextResponse.json({ error: messages.signedOut }, { status: 401 });
   const selection = await getSelectedResume(session.userId);
-  if (!selection)
-    return NextResponse.json(
-      { error: "Choose a resume first" },
-      { status: 404 },
-    );
+  if (!selection) return NextResponse.json({ error: "Choose a resume first" }, { status: 404 });
   try {
     const accessToken = await getGoogleAccessToken(session.userId);
     const file = await getDriveFile(selection.fileId, accessToken);
-    if (file.trashed)
-      return NextResponse.json(
-        { error: "In Drive trash. Choose another file" },
-        { status: 404 },
-      );
+    if (file.trashed) return NextResponse.json({ error: "In Drive trash. Choose another file" }, { status: 404 });
     const content = await getResumeBytes(file, accessToken);
     const download = new URL(request.url).searchParams.get("download") === "1";
     const filename = content.filename.replace(/[\r\n"\\]/g, "_");
@@ -40,10 +31,7 @@ export async function GET(request: Request) {
     const status = error instanceof DriveError ? error.status : 502;
     return NextResponse.json(
       {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Couldn't load your resume. Try again",
+        error: error instanceof Error ? error.message : "Couldn't load your resume. Try again",
       },
       { status },
     );

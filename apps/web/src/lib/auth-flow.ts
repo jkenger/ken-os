@@ -22,11 +22,15 @@ export interface GoogleProfile {
 }
 
 /** Finishes the `signin` intent: owner and verified email only, then the user row. Never touches the Drive connection. */
-export async function finishSignIn(profile: GoogleProfile): Promise<{ ok: true; session: Session } | { ok: false; code: SignInErrorCode }> {
+export async function finishSignIn(
+  profile: GoogleProfile,
+): Promise<{ ok: true; session: Session } | { ok: false; code: SignInErrorCode }> {
   if (!profile.sub || !profile.email) return { ok: false, code: "google" };
   if (profile.email.trim().toLowerCase() !== ownerEmail()) return { ok: false, code: "wrong_account" };
   if (profile.email_verified !== true) return { ok: false, code: "unverified" };
-  await db().insert(users).values({ id: profile.sub, email: profile.email, name: profile.name ?? null })
+  await db()
+    .insert(users)
+    .values({ id: profile.sub, email: profile.email, name: profile.name ?? null })
     .onConflictDoUpdate({ target: users.id, set: { email: profile.email, name: profile.name ?? null } });
   return { ok: true, session: { userId: profile.sub, email: profile.email } };
 }
@@ -41,7 +45,9 @@ export async function finishDriveGrant(
   if (!tokens.scope?.split(" ").includes(DRIVE_SCOPE)) return { ok: false, code: "scope" };
   if (!tokens.refresh_token) return { ok: false, code: "google" };
   const encryptedRefreshToken = encryptToken(tokens.refresh_token);
-  await db().insert(googleConnections).values({ userId: sessionUserId, encryptedRefreshToken })
+  await db()
+    .insert(googleConnections)
+    .values({ userId: sessionUserId, encryptedRefreshToken })
     .onConflictDoUpdate({ target: googleConnections.userId, set: { encryptedRefreshToken, updatedAt: sql`now()` } });
   return { ok: true };
 }

@@ -8,8 +8,12 @@ export async function GET(request: Request) {
 }
 
 export async function PUT(request: Request) {
-  return profileRoute(request, (session, body) => {
-    const importId = typeof body.importId === "string" ? body.importId : null;
-    return saveProfile(session.userId, body.details, importId);
-  }, { write: true });
+  return profileRoute(
+    request,
+    (session, body) => {
+      const importId = typeof body.importId === "string" ? body.importId : null;
+      return saveProfile(session.userId, body.details, importId);
+    },
+    { write: true },
+  );
 }

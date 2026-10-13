@@ -3,7 +3,10 @@ import { DOCX_MIME, GOOGLE_DOC_MIME, PDF_MIME, type Artifact } from "@ken-os/dom
 const BASE = "https://www.googleapis.com/drive/v3/files";
 
 export class DriveError extends Error {
-  constructor(public readonly status: number, message: string) {
+  constructor(
+    public readonly status: number,
+    message: string,
+  ) {
     super(message);
   }
 }
@@ -24,11 +27,14 @@ export async function getDriveFile(fileId: string, accessToken: string): Promise
     fields: "id,name,mimeType,modifiedTime,webViewLink,capabilities(canDownload),trashed",
   });
   const response = await driveFetch(`${BASE}/${encodeURIComponent(fileId)}?${params}`, accessToken);
-  const file = await response.json() as Artifact & { capabilities?: { canDownload?: boolean } };
+  const file = (await response.json()) as Artifact & { capabilities?: { canDownload?: boolean } };
   return { ...file, canDownload: file.capabilities?.canDownload };
 }
 
-export async function getResumeBytes(file: Artifact, accessToken: string): Promise<{ bytes: ArrayBuffer; mimeType: string; filename: string }> {
+export async function getResumeBytes(
+  file: Artifact,
+  accessToken: string,
+): Promise<{ bytes: ArrayBuffer; mimeType: string; filename: string }> {
   if (file.canDownload === false) throw new DriveError(403, "This file cannot be downloaded.");
   let url: string;
   let mimeType: string;

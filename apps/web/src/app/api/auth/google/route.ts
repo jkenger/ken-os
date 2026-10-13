@@ -9,6 +9,7 @@ export const runtime = "nodejs";
 export async function GET(request: NextRequest) {
   const next = safeNext(request.nextUrl.searchParams.get("next"));
   // The sign-in page shows what's missing.
-  if (signInSetupGap()) return NextResponse.redirect(new URL(`/sign-in?next=${encodeURIComponent(next)}`, request.url), { status: 303 });
+  if (signInSetupGap())
+    return NextResponse.redirect(new URL(`/sign-in?next=${encodeURIComponent(next)}`, request.url), { status: 303 });
   return startGoogleAuth({ intent: "signin", next, scope: SIGN_IN_SCOPES, extra: { prompt: "select_account" } });
 }

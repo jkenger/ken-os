@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { attachPoints, parseAssessment, POINTS_PER_TOPIC, type TopicMap } from "@ken-os/domain";
-import { assessment, labs, pointsReview, topicMap } from "./generated/curriculum.generated";
+import { attachPoints, POINTS_PER_TOPIC, type TopicMap } from "@ken-os/domain";
+import { labs, pointsReview, topicMap } from "./generated/curriculum.generated";
 
 // The curriculum and its assessment points (docs/architecture/engineering-rebuild.md, section 1).
 
@@ -30,25 +30,47 @@ const COURSE: Record<string, Record<string, string[]>> = {
 };
 
 test("the course is exactly 5 areas, 13 chapters and 40 topics, in order", () => {
-  assert.deepEqual(topicMap.areas.map((area) => area.id), Object.keys(COURSE));
+  assert.deepEqual(
+    topicMap.areas.map((area) => area.id),
+    Object.keys(COURSE),
+  );
   for (const area of topicMap.areas) assert.deepEqual(area.chapters, Object.keys(COURSE[area.id]), area.id);
   assert.equal(topicMap.chapters.length, 13);
-  const expected = Object.values(COURSE).flatMap((chapters) => Object.entries(chapters).flatMap(([chapter, ids]) => ids.map((id) => `${chapter} ${id}`)));
-  assert.deepEqual(topicMap.topics.map((topic) => `${topic.chapter} ${topic.id}`), expected);
+  const expected = Object.values(COURSE).flatMap((chapters) =>
+    Object.entries(chapters).flatMap(([chapter, ids]) => ids.map((id) => `${chapter} ${id}`)),
+  );
+  assert.deepEqual(
+    topicMap.topics.map((topic) => `${topic.chapter} ${topic.id}`),
+    expected,
+  );
 });
 
 test("every topic has exactly one exercise, and every exercise belongs to a topic", () => {
   for (const topic of topicMap.topics) assert.equal(topic.labs.length, 1, topic.id);
   const used = new Set(topicMap.topics.flatMap((topic) => topic.labs));
-  assert.deepEqual(labs.map((lab) => lab.id).filter((id) => !used.has(id)), []);
+  assert.deepEqual(
+    labs.map((lab) => lab.id).filter((id) => !used.has(id)),
+    [],
+  );
   assert.equal(labs.length, 39, "39 labs; event-loop-order serves two topics");
-  for (const lab of labs) for (const topicId of lab.topics) assert.ok(topicMap.topics.find((topic) => topic.id === topicId)!.labs.includes(lab.id), `${lab.id} lists ${topicId}`);
+  for (const lab of labs)
+    for (const topicId of lab.topics)
+      assert.ok(
+        topicMap.topics.find((topic) => topic.id === topicId)!.labs.includes(lab.id),
+        `${lab.id} lists ${topicId}`,
+      );
 });
 
 test("every written topic carries 4 to 6 assessment points", () => {
   for (const topic of topicMap.topics) {
-    assert.ok(topic.points.length >= POINTS_PER_TOPIC.min && topic.points.length <= POINTS_PER_TOPIC.max, `${topic.id} has ${topic.points.length}`);
-    assert.ok(topic.points.every((point) => !point.includes("—")), `${topic.id}: no em dashes`);
+    assert.ok(
+      topic.points.length >= POINTS_PER_TOPIC.min && topic.points.length <= POINTS_PER_TOPIC.max,
+      `${topic.id} has ${topic.points.length}`,
+    );
+    assert.ok(
+      topic.points.every((point) => !point.includes("—")),
+      `${topic.id}: no em dashes`,
+    );
   }
 });
 
@@ -62,27 +84,13 @@ test("attachPoints rejects unknown topics and the wrong number of points", () =>
   const map: TopicMap = { ...topicMap, topics: topicMap.topics.map((topic) => ({ ...topic, points: [] })) };
   const full = Object.fromEntries(topicMap.topics.map((topic) => [topic.id, topic.points]));
   assert.doesNotThrow(() => attachPoints(map, { status: "draft", topics: full }));
-  assert.throws(() => attachPoints(map, { topics: { ...full, "js.unknown": ["A point long enough"] } }), /unknown topic/);
-  assert.throws(() => attachPoints(map, { topics: { ...full, "js.call_stack": ["Only one point here"] } }), /expected 4 to 6/);
+  assert.throws(
+    () => attachPoints(map, { topics: { ...full, "js.unknown": ["A point long enough"] } }),
+    /unknown topic/,
+  );
+  assert.throws(
+    () => attachPoints(map, { topics: { ...full, "js.call_stack": ["Only one point here"] } }),
+    /expected 4 to 6/,
+  );
   assert.throws(() => attachPoints(map, { status: "approved", topics: full }), /reviewedOn/);
-});
-
-test("the assessment is 5 approved questions, one per area, each with a rubric", () => {
-  assert.equal(assessment.status, "approved");
-  assert.equal(assessment.reviewedOn, "2026-10-10");
-  assert.deepEqual(assessment.questions.map((question) => question.area), topicMap.areas.map((area) => area.id));
-  assert.deepEqual(assessment.questions[0].expectedOutput, ["A", "C", "B"]);
-  for (const question of assessment.questions) {
-    assert.ok(question.rubric.length >= 1, question.id);
-    assert.ok(![question.prompt, ...question.rubric].some((line) => line.includes("—")), `${question.id}: no em dashes`);
-  }
-});
-
-test("parseAssessment rejects a missing area, a predict question without output and an empty rubric", () => {
-  const raw = { status: "approved", reviewedOn: "2026-10-10", questions: assessment.questions };
-  assert.doesNotThrow(() => parseAssessment(raw));
-  assert.throws(() => parseAssessment({ ...raw, questions: raw.questions.slice(1) }), /one question per area/);
-  assert.throws(() => parseAssessment({ ...raw, questions: [{ ...raw.questions[0], expectedOutput: null }, ...raw.questions.slice(1)] }), /needs code and expectedOutput/);
-  assert.throws(() => parseAssessment({ ...raw, questions: [{ ...raw.questions[0], rubric: [] }, ...raw.questions.slice(1)] }), /1 to 4/);
-  assert.throws(() => parseAssessment({ ...raw, reviewedOn: null }), /review date/);
 });

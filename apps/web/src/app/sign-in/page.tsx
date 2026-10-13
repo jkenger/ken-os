@@ -13,19 +13,37 @@ type Query = { next?: string; error?: string; expired?: string; signed_out?: str
 
 const one = (value: string | string[] | undefined) => (Array.isArray(value) ? value[0] : value);
 
-export default async function SignInPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const raw = await searchParams;
-  const query: Query = { next: one(raw.next), error: one(raw.error), expired: one(raw.expired), signed_out: one(raw.signed_out) };
+  const query: Query = {
+    next: one(raw.next),
+    error: one(raw.error),
+    expired: one(raw.expired),
+    signed_out: one(raw.signed_out),
+  };
   const next = safeNext(query.next);
   if (await getSession()) redirect(next);
 
   const gap = signInSetupGap();
   if (gap) {
-    const hint = process.env.NODE_ENV === "development" ? `Set ${gap} in apps/web/.env, then restart the dev server` : null;
-    return <Frame><SignInCard href="/api/auth/google" notice={signInNotices.notSetUp} setupHint={hint} disabled /></Frame>;
+    const hint =
+      process.env.NODE_ENV === "development" ? `Set ${gap} in apps/web/.env, then restart the dev server` : null;
+    return (
+      <Frame>
+        <SignInCard href="/api/auth/google" notice={signInNotices.notSetUp} setupHint={hint} disabled />
+      </Frame>
+    );
   }
   const params = new URLSearchParams({ next });
-  return <Frame><SignInCard href={`/api/auth/google?${params}`} notice={signInNotice(query)} /></Frame>;
+  return (
+    <Frame>
+      <SignInCard href={`/api/auth/google?${params}`} notice={signInNotice(query)} />
+    </Frame>
+  );
 }
 
 function Frame({ children }: { children: React.ReactNode }) {

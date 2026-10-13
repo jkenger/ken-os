@@ -36,7 +36,11 @@ export async function explainTerm(input: ExplainInput): Promise<{ answer: TermAn
     tools: [webSearchTool({ filters: { allowedDomains: TRUSTED_LOOKUP_DOMAINS }, searchContextSize: "low" })],
     outputType: answerSchema,
   });
-  const payload = { selection: input.selection.slice(0, 120), context: input.context.slice(0, 600), place: input.place.slice(0, 120) };
+  const payload = {
+    selection: input.selection.slice(0, 120),
+    context: input.context.slice(0, 600),
+    place: input.place.slice(0, 120),
+  };
   const result = await run(agent, JSON.stringify(payload), { maxTurns: 4 });
   if (!result.finalOutput) throw new Error("The lookup returned no answer.");
   return { answer: finalizeTermAnswer(input.selection, result.finalOutput), model: getDefaultModel() };

@@ -15,7 +15,9 @@ async function main() {
     throw new Error("This smoke test only runs against local PostgreSQL.");
   }
   const userId = `resume-test-${randomUUID()}`;
-  await db().insert(users).values({ id: userId, email: `${userId}@example.invalid` });
+  await db()
+    .insert(users)
+    .values({ id: userId, email: `${userId}@example.invalid` });
   try {
     assert.equal(await getSelectedResume(userId), null);
     await db().insert(artifactSelections).values({
@@ -27,7 +29,9 @@ async function main() {
       mimeType: "application/vnd.google-apps.document",
     });
     assert.equal((await getSelectedResume(userId))?.fileId, "original-drive-id");
-    await db().update(artifactSelections).set({ name: "My Updated Resume", updatedAt: sql`now()` })
+    await db()
+      .update(artifactSelections)
+      .set({ name: "My Updated Resume", updatedAt: sql`now()` })
       .where(eq(artifactSelections.userId, userId));
     const refreshed = await getSelectedResume(userId);
     assert.equal(refreshed?.fileId, "original-drive-id");

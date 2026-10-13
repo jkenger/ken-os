@@ -15,12 +15,23 @@ export type OAuthIntent = "signin" | "drive";
 export const SIGN_IN_SCOPES = "openid email profile";
 export const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 
-const cookieOptions = { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "lax" as const, path: "/", maxAge: 600 };
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax" as const,
+  path: "/",
+  maxAge: 600,
+};
 
 export const callbackUrl = () => `${appUrl()}/api/auth/google/callback`;
 
 /** Redirects to Google with state and PKCE, remembering where to return and which flow this is. */
-export function startGoogleAuth(options: { intent: OAuthIntent; next: string; scope: string; extra: Record<string, string> }): NextResponse {
+export function startGoogleAuth(options: {
+  intent: OAuthIntent;
+  next: string;
+  scope: string;
+  extra: Record<string, string>;
+}): NextResponse {
   const state = randomBytes(32).toString("base64url");
   const verifier = randomBytes(32).toString("base64url");
   const challenge = createHash("sha256").update(verifier).digest("base64url");

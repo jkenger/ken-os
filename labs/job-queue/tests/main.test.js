@@ -26,7 +26,9 @@ test("a failure backs off, and the third failure is dead", async () => {
   const once = await job(created.id);
   assert.equal(once.status, "pending");
   assert.equal(once.last_error, "timeout");
-  const { rows } = await db.query("select run_after > now() + interval '1 second' as later from jobs where id = $1", [created.id]);
+  const { rows } = await db.query("select run_after > now() + interval '1 second' as later from jobs where id = $1", [
+    created.id,
+  ]);
   assert.ok(rows[0].later, "a failed job waits before running again");
   for (const n of [2, 3]) {
     await db.query("update jobs set run_after = now() where id = $1", [created.id]);

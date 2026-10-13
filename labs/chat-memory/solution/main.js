@@ -22,7 +22,9 @@ function createMemory({ maxTokens, keepRecent, countTokens, summarize }) {
       if (!facts.includes(fact)) facts.push(fact);
     },
     context() {
-      const pinned = facts.length ? [{ role: "system", content: `Known facts about the user:\n${facts.map((fact) => `- ${fact}`).join("\n")}` }] : [];
+      const pinned = facts.length
+        ? [{ role: "system", content: `Known facts about the user:\n${facts.map((fact) => `- ${fact}`).join("\n")}` }]
+        : [];
       const earlier = summary ? [{ role: "system", content: `Summary of earlier conversation: ${summary}` }] : [];
       return [...pinned, ...earlier, ...messages];
     },

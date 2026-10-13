@@ -11,7 +11,10 @@ import { profileImports, profiles, users } from "@/lib/schema";
 // The Profile: the owner's career details, typed in or imported from the Drive resume. Spec: docs/product/profile-resume.md.
 
 export class ProfileInputError extends Error {
-  constructor(message: string, readonly status = 400) {
+  constructor(
+    message: string,
+    readonly status = 400,
+  ) {
     super(message);
   }
 }
@@ -29,7 +32,11 @@ export interface ProfileState {
 export async function getProfile(userId: string): Promise<ProfileState> {
   const [row] = await db().select().from(profiles).where(eq(profiles.userId, userId)).limit(1);
   if (row) return { details: normalizeProfile(row.details, "import"), savedAt: row.updatedAt.toISOString() };
-  const [user] = await db().select({ name: users.name, email: users.email }).from(users).where(eq(users.id, userId)).limit(1);
+  const [user] = await db()
+    .select({ name: users.name, email: users.email })
+    .from(users)
+    .where(eq(users.id, userId))
+    .limit(1);
   const details = emptyProfile();
   details.contact.fullName = user?.name ?? "";
   details.contact.email = user?.email ?? "";
@@ -37,7 +44,11 @@ export async function getProfile(userId: string): Promise<ProfileState> {
 }
 
 /** Saves what the owner typed. With an `importId`, it also marks that Drive import as applied. */
-export async function saveProfile(userId: string, input: unknown, importId: string | null): Promise<{ savedAt: string }> {
+export async function saveProfile(
+  userId: string,
+  input: unknown,
+  importId: string | null,
+): Promise<{ savedAt: string }> {
   let details: ProfileDetails;
   try {
     details = normalizeProfile(input, "save");
@@ -47,11 +58,17 @@ export async function saveProfile(userId: string, input: unknown, importId: stri
   }
   const now = new Date();
   await db().transaction(async (tx) => {
-    await tx.insert(profiles).values({ userId, details, updatedAt: now })
+    await tx
+      .insert(profiles)
+      .values({ userId, details, updatedAt: now })
       .onConflictDoUpdate({ target: profiles.userId, set: { details, updatedAt: now } });
     if (importId) {
-      await tx.update(profileImports).set({ status: "applied", appliedAt: now })
-        .where(and(eq(profileImports.id, importId), eq(profileImports.userId, userId), eq(profileImports.status, "pending")));
+      await tx
+        .update(profileImports)
+        .set({ status: "applied", appliedAt: now })
+        .where(
+          and(eq(profileImports.id, importId), eq(profileImports.userId, userId), eq(profileImports.status, "pending")),
+        );
     }
   });
   return { savedAt: now.toISOString() };
@@ -77,20 +94,25 @@ async function readChosenResume(userId: string) {
  * draft is kept as a `pending` import with the file's Drive version. The page lays it over the form with `mergeImport`,
  * so edits not saved yet survive.
  */
-export async function importFromDrive(userId: string): Promise<{ importId: string; draft: ProfileDetails; fileName: string }> {
+export async function importFromDrive(
+  userId: string,
+): Promise<{ importId: string; draft: ProfileDetails; fileName: string }> {
   const { file, text } = await readChosenResume(userId);
-  if (text.trim().length < MIN_RESUME_TEXT) throw new ProfileInputError("No text found in this file. Use a Google Doc or a text PDF", 422);
+  if (text.trim().length < MIN_RESUME_TEXT)
+    throw new ProfileInputError("No text found in this file. Use a Google Doc or a text PDF", 422);
 
   const { draft, model } = await importProfile(text);
   const importId = randomUUID();
-  await db().insert(profileImports).values({
-    id: importId,
-    userId,
-    driveFileId: file.id,
-    driveModifiedTime: file.modifiedTime ?? null,
-    draft,
-    promptVersion: PROFILE_IMPORT_PROMPT_VERSION,
-    model,
-  });
+  await db()
+    .insert(profileImports)
+    .values({
+      id: importId,
+      userId,
+      driveFileId: file.id,
+      driveModifiedTime: file.modifiedTime ?? null,
+      draft,
+      promptVersion: PROFILE_IMPORT_PROMPT_VERSION,
+      model,
+    });
   return { importId, draft, fileName: file.name };
 }

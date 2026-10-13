@@ -1,157 +1,32 @@
-// Source packet rules for the Engineering Lab Researcher. Module spec: docs/product/ai-engineering-learning-handoff.md.
+// Topic freshness and the domains a topic's sources come from. Terms reuses the domains for its lookups.
 
 /** How fast a topic's facts go stale, which decides when its sources must be checked again. */
 export type FreshnessClass = "core_concept" | "web_platform" | "framework" | "ai_ecosystem";
 
-export const REFRESH_AFTER_DAYS: Record<FreshnessClass, number> = {
-  core_concept: 365,
-  web_platform: 180,
-  framework: 60,
-  ai_ecosystem: 14,
-};
-
-/** Source priority from the spec, highest first. */
-export const SOURCE_TIERS = ["specification", "official_docs", "provider_docs", "technical_reference", "community"] as const;
-export type SourceTier = (typeof SOURCE_TIERS)[number];
-
-/** Domains the Researcher may cite, grouped so a topic can pick only the ones that fit it. */
+/** Trusted domains, grouped so a topic can pick only the ones that fit it. */
 export const SOURCE_DOMAINS = {
   javascript: ["developer.mozilla.org", "tc39.es", "html.spec.whatwg.org", "nodejs.org", "v8.dev"],
-  web: ["developer.mozilla.org", "fetch.spec.whatwg.org", "html.spec.whatwg.org", "httpwg.org", "rfc-editor.org", "datatracker.ietf.org", "web.dev"],
+  web: [
+    "developer.mozilla.org",
+    "fetch.spec.whatwg.org",
+    "html.spec.whatwg.org",
+    "httpwg.org",
+    "rfc-editor.org",
+    "datatracker.ietf.org",
+    "web.dev",
+  ],
   react: ["react.dev", "nextjs.org"],
   database: ["postgresql.org", "www.postgresql.org"],
-  ai: ["platform.openai.com", "developers.openai.com", "docs.anthropic.com", "docs.claude.com", "modelcontextprotocol.io", "ai-sdk.dev"],
+  ai: [
+    "platform.openai.com",
+    "developers.openai.com",
+    "docs.anthropic.com",
+    "docs.claude.com",
+    "modelcontextprotocol.io",
+    "ai-sdk.dev",
+  ],
   operations: ["opentelemetry.io", "owasp.org", "sre.google"],
   typescript: ["www.typescriptlang.org", "zod.dev"],
   testing: ["vitest.dev", "playwright.dev", "testing-library.com", "nodejs.org"],
 } as const satisfies Record<string, readonly string[]>;
 export type SourceGroup = keyof typeof SOURCE_DOMAINS;
-
-export interface ResearchTarget {
-  topicId: string;
-  title: string;
-  /** The exact gap to repair, taken from the baseline assessment. */
-  gap: string;
-  freshness: FreshnessClass;
-  allowedDomains: readonly string[];
-}
-
-export interface SourceClaim {
-  statement: string;
-  sourceUrl: string;
-}
-
-export interface PacketSource {
-  title: string;
-  url: string;
-  tier: SourceTier;
-  retrievedAt: string;
-  whyItMatters: string;
-}
-
-export interface SourcePacket {
-  schemaVersion: 1;
-  topicId: string;
-  title: string;
-  gap: string;
-  generatedAt: string;
-  sourceCheckedAt: string;
-  refreshAfter: string;
-  sources: PacketSource[];
-  claims: SourceClaim[];
-  misconceptionsToAddress: string[];
-  openQuestions: string[];
-  /** Anything the Researcher returned that broke the source rules, kept visible instead of silently dropped. */
-  rejected: string[];
-  /**
-   * Facts that changed since the previous packet for this topic, when there was one. A non-empty list flags a
-   * proven topic for re-checking. Older packets have none.
-   */
-  changedSinceLast?: string[];
-}
-
-/** What the model is allowed to decide. Dates, allowlist checks, and refresh timing are set in code. */
-export interface ResearchDraft {
-  sources: { title: string; url: string; tier: SourceTier; whyItMatters: string }[];
-  claims: SourceClaim[];
-  misconceptionsToAddress: string[];
-  openQuestions: string[];
-  changedSinceLast?: string[];
-}
-
-const MAX_SOURCES = 5;
-
-export function hostAllowed(url: string, allowedDomains: readonly string[]) {
-  let host: string;
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== "https:") return false;
-    host = parsed.hostname.toLowerCase();
-  } catch {
-    return false;
-  }
-  return allowedDomains.some((domain) => host === domain || host.endsWith(`.${domain}`));
-}
-
-function normalizeUrl(url: string) {
-  const parsed = new URL(url);
-  parsed.hash = "";
-  for (const key of [...parsed.searchParams.keys()]) if (key.startsWith("utm_")) parsed.searchParams.delete(key);
-  return parsed.toString();
-}
-
-/** Turns an untrusted model draft into a packet that keeps only allowlisted sources and claims backed by them. */
-export function finalizeSourcePacket(target: ResearchTarget, draft: ResearchDraft, now = new Date()): SourcePacket {
-  const checkedAt = now.toISOString().slice(0, 10);
-  const rejected: string[] = [];
-  const sources: PacketSource[] = [];
-  const seen = new Set<string>();
-
-  for (const source of draft.sources) {
-    if (!hostAllowed(source.url, target.allowedDomains)) {
-      rejected.push(`Source outside allowlist: ${source.url}`);
-      continue;
-    }
-    const url = normalizeUrl(source.url);
-    if (seen.has(url)) continue;
-    if (sources.length >= MAX_SOURCES) {
-      rejected.push(`Source over the limit of ${MAX_SOURCES}: ${url}`);
-      continue;
-    }
-    seen.add(url);
-    sources.push({ title: source.title.trim(), url, tier: source.tier, retrievedAt: checkedAt, whyItMatters: source.whyItMatters.trim() });
-  }
-
-  const claims: SourceClaim[] = [];
-  for (const claim of draft.claims) {
-    const url = hostAllowed(claim.sourceUrl, target.allowedDomains) ? normalizeUrl(claim.sourceUrl) : null;
-    if (!url || !seen.has(url)) {
-      rejected.push(`Claim without a kept source: ${claim.statement}`);
-      continue;
-    }
-    claims.push({ statement: claim.statement.trim(), sourceUrl: url });
-  }
-
-  const refresh = new Date(now);
-  refresh.setUTCDate(refresh.getUTCDate() + REFRESH_AFTER_DAYS[target.freshness]);
-
-  return {
-    schemaVersion: 1,
-    topicId: target.topicId,
-    title: target.title,
-    gap: target.gap,
-    generatedAt: now.toISOString(),
-    sourceCheckedAt: checkedAt,
-    refreshAfter: refresh.toISOString().slice(0, 10),
-    sources,
-    claims,
-    misconceptionsToAddress: draft.misconceptionsToAddress.map((item) => item.trim()).filter(Boolean),
-    openQuestions: draft.openQuestions.map((item) => item.trim()).filter(Boolean),
-    rejected,
-    ...(draft.changedSinceLast ? { changedSinceLast: draft.changedSinceLast.map((item) => item.trim()).filter(Boolean) } : {}),
-  };
-}
-
-export function isPacketUsable(packet: SourcePacket) {
-  return packet.sources.length > 0 && packet.claims.length > 0;
-}

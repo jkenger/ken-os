@@ -10,15 +10,15 @@ Today Ken OS stores a pointer to one Drive file. After this change it stores the
 
 ## Decisions
 
-| Question | Decision |
-|---|---|
-| Where it lives | A top-level **Profile** module replaces the Resume module. |
-| Engineering's "Profile" tab | Renamed **Standing** on screen. URLs (`/engineering/profile/...`), code names and the `lab_profile` table stay. |
-| Job market | International fields by default. Optional local fields (photo, birthdate, civil status, nationality, full address) are off unless turned on, and ATS templates never print them. |
-| Flow order | Details first, then the AI pass, then preview with a template switcher. Switching templates never reruns the AI. |
-| Drive reading | The picked Drive file is read only. When it changes, Ken OS shows what changed and the owner approves before anything is overwritten. |
-| Drive writing | Ken OS saves its own file to Drive when the owner turns that on. The original picked file is never written. |
-| Public link | Shows a published snapshot. Edits go live only on republish. Phone and address hidden by default. `noindex` by default. |
+| Question                    | Decision                                                                                                                                                                         |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Where it lives              | A top-level **Profile** module replaces the Resume module.                                                                                                                       |
+| Engineering's "Profile" tab | Renamed **Standing** on screen. URLs (`/engineering/profile/...`), code names and the `lab_profile` table stay.                                                                  |
+| Job market                  | International fields by default. Optional local fields (photo, birthdate, civil status, nationality, full address) are off unless turned on, and ATS templates never print them. |
+| Flow order                  | Details first, then the AI pass, then preview with a template switcher. Switching templates never reruns the AI.                                                                 |
+| Drive reading               | The picked Drive file is read only. When it changes, Ken OS shows what changed and the owner approves before anything is overwritten.                                            |
+| Drive writing               | Ken OS saves its own file to Drive when the owner turns that on. The original picked file is never written.                                                                      |
+| Public link                 | Shows a published snapshot. Edits go live only on republish. Phone and address hidden by default. `noindex` by default.                                                          |
 
 ## Two ways in, one form
 

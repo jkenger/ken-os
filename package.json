@@ -5,12 +5,18 @@
   "scripts": {
     "dev": "pnpm --filter @ken-os/web dev",
     "build": "pnpm --filter @ken-os/web build",
-    "check": "pnpm --filter @ken-os/web check",
+    "check": "pnpm format:check && pnpm --filter @ken-os/web check",
     "test": "pnpm --filter @ken-os/web test",
     "test:db:resume": "pnpm --filter @ken-os/web test:db:resume",
     "db:generate": "pnpm --filter @ken-os/web db:generate",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
-    "db:migrate": "pnpm --filter @ken-os/web db:migrate"
+    "db:migrate": "pnpm --filter @ken-os/web db:migrate",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "prettier": "^3.9.10",
+    "prettier-plugin-tailwindcss": "^0.8.1"
   }
 }

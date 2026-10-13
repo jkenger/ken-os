@@ -4,14 +4,18 @@ import { collectCopy, findViolations } from "./app-language-scan";
 
 test("screen copy follows the app language rule", () => {
   assert.deepEqual(
-    findViolations().map((violation) => `${violation.file}: ${JSON.stringify(violation.text)} (${violation.rules.join(", ")})`),
+    findViolations().map(
+      (violation) => `${violation.file}: ${JSON.stringify(violation.text)} (${violation.rules.join(", ")})`,
+    ),
     [],
     "App language violations. Rewrite them per docs/product/app-language.md.",
   );
 });
 
 test("the scan reads screen text and skips code values", () => {
-  const { copy, headings } = collectCopy("components/example.tsx", `
+  const { copy, headings } = collectCopy(
+    "components/example.tsx",
+    `
     import { x } from "some/path...";
     type Kind = "receipt" | "decision";
     export function Example({ kind }: { kind: Kind }) {
@@ -22,7 +26,11 @@ test("the scan reads screen text and skips code values", () => {
         <p>Couldn't save. Try again</p>
       </section>;
     }
-  `);
-  assert.deepEqual(copy.map((item) => item.text), ["Work log", "Decision", "Saved", ".", "Search…", "Couldn't save. Try again"]);
+  `,
+  );
+  assert.deepEqual(
+    copy.map((item) => item.text),
+    ["Work log", "Decision", "Saved", ".", "Search…", "Couldn't save. Try again"],
+  );
   assert.deepEqual(headings, ["Saved {}."]);
 });
