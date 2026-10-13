@@ -106,3 +106,17 @@ Built 14 Oct 2026 on `feat/engineering-roadmap-switcher`.
 - No migration. Archive and Restore on screen, the archived view and the Profile lines are slice 3.
 
 **Verified:** `pnpm test` (191, 2 new), `pnpm check`, `pnpm build`, `test:db:engineering` and `test:db:connector`. On the local server, signed in, with 3 test roadmaps saved by a script acting as Claude: the menu with progress and the current one checked; switching by clicking, with the address following; Re-plan and New roadmap copying their messages; plain `/engineering` opening the roadmap opened last; New roadmap at 3 of 3 showing the limit; a topic link loading its panel for that roadmap; a bad roadmap id falling back. The test roadmaps and link were removed afterwards.
+
+## 9. Slice 3 as built
+
+Built 14 Oct 2026 on `feat/engineering-roadmap-archive`.
+
+- **Archive** is "Archive this roadmap" in the switcher, for the roadmap shown, and **Archive** on a finished roadmap's summary. It isn't next to every roadmap in the menu, as §1 first said: a button inside each menu row is awkward to reach, and switching first is one click. Archiving opens the roadmap opened last, or the role's path when none is left.
+- **The Archived section** in the switcher lists the 10 most recently archived, each with "Archived <date>" or "Replaced <date>" for a version Re-plan kept. Picking one opens it.
+- **An archived roadmap opens read-only:** an "Archived · Since <date> · read only" notice with **Restore**, no Re-plan, and no Next topic in its topic panels. The switcher also shows when every roadmap is archived, so they stay reachable.
+- **Restore** checks the limit in the app first and says "3 of 3 active · archive one first"; the server refuses too. Restoring a replaced version brings it back as a roadmap of its own.
+- **Routes:** `POST /api/lab/roadmaps/[id]/archive` and `/restore`, through `labRoute` with `write: true`. Claude has no archive or restore tool.
+- **The Profile page** shows one Engineering card per active roadmap, opened last first, each linking to its roadmap (`engineeringSummary` now returns a list). Before any roadmap, one card for the role's path, as before.
+- `RoadmapView` gains `archivedAt`. No migration.
+
+**Verified:** `pnpm test`, `pnpm check`, `pnpm build`, `test:db:engineering` (12; the roadmaps section now also checks the Archived list order with a replaced version, per-owner lists, `archivedAt`, and the Profile lines) and `test:db:connector` (8). On the local server, with two test roadmaps saved by a script acting as Claude, by clicking: Archive this roadmap moving to the other one; the Archived section with the date; the archived roadmap opening read-only with Restore; Restore bringing it back; the Profile page with one card per roadmap linking to it. The summary's Archive button was checked by types and the shared archive action, not clicked. The test roadmaps were removed afterwards.

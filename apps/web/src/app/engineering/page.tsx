@@ -5,7 +5,7 @@ import { mcpUrl } from "@/features/connector/rules";
 import { getInstructionsSeen, getProjectUrl } from "@/features/engineering-lab/claude-links";
 import { instructionsState } from "@/features/engineering-lab/claude-setup";
 import { LabInputError } from "@/features/engineering-lab/errors";
-import { getRoadmap, getRoadmaps, getRoadmapSummary } from "@/features/engineering-lab/roadmap-store";
+import { archivedRoadmaps, getRoadmap, getRoadmaps, getRoadmapSummary } from "@/features/engineering-lab/roadmap-store";
 import { engineering } from "@/features/engineering-lab/routes";
 import { appUrl } from "@/lib/config";
 import { requireSession } from "@/lib/session";
@@ -23,13 +23,14 @@ export default async function RoadmapRoute({
 }) {
   const { topic, roadmap } = await searchParams;
   const session = await requireSession(engineering.roadmap(topic, roadmap));
-  const [view, roadmaps, connections, projectUrl, seen] = await Promise.all([
+  const [view, roadmaps, archived, connections, projectUrl, seen] = await Promise.all([
     // A roadmap that isn't the owner's, or no longer exists, falls back to the one opened last.
     getRoadmap(session.userId, roadmap).catch((error: unknown) => {
       if (error instanceof LabInputError) return null;
       throw error;
     }),
     getRoadmaps(session.userId),
+    archivedRoadmaps(session.userId),
     listConnections(session.userId),
     getProjectUrl(session.userId),
     getInstructionsSeen(session.userId),
@@ -50,6 +51,7 @@ export default async function RoadmapRoute({
           learned: item.counts.learned,
           total: item.counts.total,
         }))}
+      archived={archived}
       summary={summary}
       connections={connections}
       projectUrl={projectUrl}

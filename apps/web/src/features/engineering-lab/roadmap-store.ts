@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { pathChapters, staleLearned, type TopicStatus, type TopicStatusView } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { labCustomTopics, labRoadmaps, labTopicEvents } from "@/lib/schema";
@@ -44,6 +44,8 @@ export interface RoadmapView {
   planned: boolean;
   /** False for an archived roadmap, which opens read-only. */
   active: boolean;
+  /** When it was archived; null while active. */
+  archivedAt: string | null;
   chapters: RoadmapChapter[];
   counts: { learned: number; skipped: number; inProgress: number; total: number };
   /** The most recently changed In progress topic, else the first Not started one. */
@@ -58,6 +60,7 @@ interface RoadmapShape {
   goal: RoadmapView["goal"];
   planned: boolean;
   active: boolean;
+  archivedAt: string | null;
   chapters: { id: string; title: string; topicIds: string[] }[];
 }
 
@@ -86,6 +89,7 @@ const savedShape = (row: RoadmapRow): RoadmapShape => ({
   goal: { id: null, title: row.goal },
   planned: true,
   active: row.status === "active",
+  archivedAt: row.status === "archived" ? (row.archivedAt?.toISOString() ?? null) : null,
   chapters: row.chapters,
 });
 
@@ -100,6 +104,7 @@ async function defaultShape(userId: string): Promise<RoadmapShape> {
     goal: role ? { id: role.id, title: role.title } : null,
     planned: false,
     active: true,
+    archivedAt: null,
     chapters: chapterIds.map((chapterId) => ({
       id: chapterId,
       title: topicMap.chapters.find((chapter) => chapter.id === chapterId)!.title,
@@ -152,6 +157,7 @@ function buildView(
     goal: shape.goal,
     planned: shape.planned,
     active: shape.active,
+    archivedAt: shape.archivedAt,
     chapters,
     counts: {
       learned: count("learned"),
@@ -277,6 +283,25 @@ export async function restoreRoadmap(userId: string, roadmapId: string) {
   return { id: row.id, status: "active" as const };
 }
 
+/**
+ * The owner's archived roadmaps, most recently archived first, for the switcher's Archived section. A copy kept by
+ * Re-plan names the roadmap it was replaced in.
+ */
+export async function archivedRoadmaps(userId: string, limit = 10) {
+  const rows = await db()
+    .select({
+      id: labRoadmaps.id,
+      goal: labRoadmaps.goal,
+      archivedAt: labRoadmaps.archivedAt,
+      replacedBy: labRoadmaps.replacedBy,
+    })
+    .from(labRoadmaps)
+    .where(and(eq(labRoadmaps.userId, userId), eq(labRoadmaps.status, "archived")))
+    .orderBy(desc(labRoadmaps.archivedAt))
+    .limit(limit);
+  return rows.map((row) => ({ ...row, archivedAt: row.archivedAt?.toISOString() ?? null }));
+}
+
 /** Remembers that the owner opened this roadmap, so it opens next time on any device. */
 export async function markRoadmapOpened(userId: string, roadmapId: string) {
   await db()
@@ -386,11 +411,21 @@ export async function getRoadmapSummary(userId: string, view: RoadmapView) {
   );
 }
 
-/** The Engineering line on the Ken OS home page: the goal and how many topics are learned. */
-export async function engineeringSummary(userId: string): Promise<{ headline: string; detail: string }> {
-  const view = await getRoadmap(userId);
-  return {
+export interface EngineeringLine {
+  /** The roadmap it opens; null for the role's path. */
+  roadmapId: string | null;
+  headline: string;
+  detail: string;
+}
+
+/**
+ * The Engineering lines on the Profile page: one per active roadmap, opened last first, with its goal and how many topics
+ * are learned (engineering-roadmaps.md, section 1). Before any roadmap, one line for the role's path.
+ */
+export async function engineeringSummary(userId: string): Promise<EngineeringLine[]> {
+  return (await getRoadmaps(userId)).map((view) => ({
+    roadmapId: view.planned ? view.id : null,
     headline: view.goal?.title ?? "Engineering",
     detail: `${view.counts.learned} of ${view.counts.total} learned`,
-  };
+  }));
 }

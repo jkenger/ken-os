@@ -48,11 +48,14 @@ export function TopicSteps({
   projectUrl,
   onPractice,
   onSelect,
+  showNext = true,
 }: {
   panel: TopicPanelView;
   projectUrl: string | null;
   onPractice: () => void;
   onSelect: (topicId: string) => void;
+  /** False on an archived roadmap. */
+  showNext?: boolean;
 }) {
   const { steps, main } = topicSteps({ status: panel.status.status, practice: panel.practice });
   const variant = (id: StepId) => (main === id ? "default" : "outline");
@@ -82,7 +85,7 @@ export function TopicSteps({
 
   return (
     <section aria-label="Steps" className="grid gap-3">
-      {main === "next" && (
+      {main === "next" && showNext && (
         <div className="grid gap-2 rounded-lg border bg-muted/40 p-3">
           {panel.chapterDone && (
             <p className="text-sm font-medium">

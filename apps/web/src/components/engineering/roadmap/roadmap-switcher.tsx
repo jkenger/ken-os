@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { IconChevronDown, IconPlus } from "@tabler/icons-react";
+import { IconArchive, IconChevronDown, IconPlus } from "@tabler/icons-react";
+import { formatDate } from "@/components/lab/words";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,7 +28,8 @@ import { canAddRoadmap, ROADMAP_LIMIT } from "@/features/engineering-lab/roadmap
 import { AskClaude } from "../ask-claude";
 
 // Moving between roadmaps (docs/architecture/engineering-roadmaps.md, section 1): the page title, with a button beside it
-// that opens a menu of the active roadmaps with their progress, and New roadmap. Each roadmap has its own address.
+// that opens a menu of the active roadmaps with their progress, New roadmap, Archive for the one shown, and the archived
+// ones, which open read-only with Restore. Each roadmap has its own address.
 
 export interface RoadmapChoice {
   id: string;
@@ -36,18 +38,31 @@ export interface RoadmapChoice {
   total: number;
 }
 
+export interface ArchivedChoice {
+  id: string;
+  goal: string;
+  archivedAt: string | null;
+  /** Set on a version Re-plan replaced. */
+  replacedBy: string | null;
+}
+
 export function RoadmapSwitcher({
   title,
   currentId,
   roadmaps,
+  archived,
   projectUrl,
   onNew,
+  onArchive,
 }: {
   title: string;
   currentId: string | null;
   roadmaps: RoadmapChoice[];
+  archived: ArchivedChoice[];
   projectUrl: string | null;
   onNew: () => void;
+  /** Archives the roadmap shown; null when it's already archived. */
+  onArchive: (() => void) | null;
 }) {
   const router = useRouter();
   return (
@@ -88,6 +103,32 @@ export function RoadmapSwitcher({
             New roadmap
             {!projectUrl && <span className="ml-auto text-xs">Needs the Project link</span>}
           </DropdownMenuItem>
+          {onArchive && (
+            <DropdownMenuItem onSelect={onArchive}>
+              <IconArchive aria-hidden="true" />
+              Archive this roadmap
+            </DropdownMenuItem>
+          )}
+          {archived.length > 0 && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel>Archived</DropdownMenuLabel>
+              {archived.map((roadmap) => (
+                <DropdownMenuItem
+                  key={roadmap.id}
+                  onSelect={() => router.push(engineering.roadmap(null, roadmap.id))}
+                  className={roadmap.id === currentId ? "bg-accent" : undefined}
+                >
+                  <span className="min-w-0 flex-1 truncate">{roadmap.goal}</span>
+                  {roadmap.archivedAt && (
+                    <span className="text-xs text-muted-foreground">
+                      {roadmap.replacedBy ? "Replaced" : "Archived"} {formatDate(roadmap.archivedAt)}
+                    </span>
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
