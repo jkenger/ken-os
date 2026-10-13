@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { attachPoints, parseAssessment, POINTS_PER_TOPIC, type TopicMap } from "@ken-os/domain";
-import { assessment, labs, pointsReview, topicMap } from "./generated/curriculum.generated";
+import { attachPoints, POINTS_PER_TOPIC, type TopicMap } from "@ken-os/domain";
+import { labs, pointsReview, topicMap } from "./generated/curriculum.generated";
 
 // The curriculum and its assessment points (docs/architecture/engineering-rebuild.md, section 1).
 
@@ -93,40 +93,4 @@ test("attachPoints rejects unknown topics and the wrong number of points", () =>
     /expected 4 to 6/,
   );
   assert.throws(() => attachPoints(map, { status: "approved", topics: full }), /reviewedOn/);
-});
-
-test("the assessment is 5 approved questions, one per area, each with a rubric", () => {
-  assert.equal(assessment.status, "approved");
-  assert.equal(assessment.reviewedOn, "2026-10-10");
-  assert.deepEqual(
-    assessment.questions.map((question) => question.area),
-    topicMap.areas.map((area) => area.id),
-  );
-  assert.deepEqual(assessment.questions[0].expectedOutput, ["A", "C", "B"]);
-  for (const question of assessment.questions) {
-    assert.ok(question.rubric.length >= 1, question.id);
-    assert.ok(
-      ![question.prompt, ...question.rubric].some((line) => line.includes("—")),
-      `${question.id}: no em dashes`,
-    );
-  }
-});
-
-test("parseAssessment rejects a missing area, a predict question without output and an empty rubric", () => {
-  const raw = { status: "approved", reviewedOn: "2026-10-10", questions: assessment.questions };
-  assert.doesNotThrow(() => parseAssessment(raw));
-  assert.throws(() => parseAssessment({ ...raw, questions: raw.questions.slice(1) }), /one question per area/);
-  assert.throws(
-    () =>
-      parseAssessment({
-        ...raw,
-        questions: [{ ...raw.questions[0], expectedOutput: null }, ...raw.questions.slice(1)],
-      }),
-    /needs code and expectedOutput/,
-  );
-  assert.throws(
-    () => parseAssessment({ ...raw, questions: [{ ...raw.questions[0], rubric: [] }, ...raw.questions.slice(1)] }),
-    /1 to 4/,
-  );
-  assert.throws(() => parseAssessment({ ...raw, reviewedOn: null }), /review date/);
 });

@@ -3,12 +3,10 @@ import { test } from "node:test";
 import {
   chooseExercise,
   computeProgress,
-  finalizeClaudeLesson,
   judgeExerciseCheck,
   pointsFor,
   topicPoints,
   type ExerciseVersion,
-  type LessonContent,
   type TopicEvent,
   type TopicEventKind,
 } from "@ken-os/domain";
@@ -110,44 +108,6 @@ test("a Claude proof question must name points that are on the topic", () => {
   );
   assert.throws(() => pointsFor(topic, []), /at least one/);
   assert.throws(() => pointsFor(topic, ["p1", "p99"]), /Not a point on rel.retry_backoff: p99/);
-});
-
-const lesson: LessonContent = {
-  heading: "Retry with backoff",
-  body: "Wait longer between each retry.",
-  mentalModel: "A queue that spaces itself out.",
-  block: { kind: "formula", content: "delay = base * 2 ** attempt", note: "Doubles each time." },
-  example: "A payment call that fails once.",
-  deeper: null,
-  prove: ["Backoff spaces retries", "Jitter spreads clients", "Only retry safe calls"],
-  sources: [
-    { title: "MDN Retry-After", url: "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Retry-After" },
-    { title: "Someone's blog", url: "https://example.com/retries" },
-  ],
-};
-
-test("a Claude lesson keeps only trusted sources and reports the rest", () => {
-  const snapshot = finalizeClaudeLesson(lesson, { topicId: "rel.retry_backoff", version: 2 });
-  assert.deepEqual(
-    snapshot.sources.map((source) => source.url),
-    [lesson.sources[0].url],
-  );
-  assert.deepEqual(snapshot.rejected, ["Not on a trusted site: https://example.com/retries"]);
-  assert.equal(snapshot.sourcePacketId, null);
-  assert.equal(snapshot.model, "claude");
-  assert.throws(
-    () =>
-      finalizeClaudeLesson({ ...lesson, sources: [lesson.sources[1]] }, { topicId: "rel.retry_backoff", version: 2 }),
-    /at least one source on a trusted site/,
-  );
-  assert.throws(
-    () => finalizeClaudeLesson({ ...lesson, prove: ["One"] }, { topicId: "rel.retry_backoff", version: 2 }),
-    /exactly 3/,
-  );
-  assert.throws(
-    () => finalizeClaudeLesson({ ...lesson, body: "x".repeat(20_001) }, { topicId: "rel.retry_backoff", version: 2 }),
-    /under 20000 characters/,
-  );
 });
 
 let clock = Date.UTC(2026, 9, 12);
