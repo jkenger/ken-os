@@ -16,9 +16,9 @@ import { requireAnyTopic, type AnyTopic } from "./any-topic";
 import { recordInstructionsVersion } from "./claude-links";
 import { LabInputError } from "./errors";
 import { exerciseChoice, exerciseVersions, getDraft, saveClaudeExercise } from "./exercise-store";
-import { alsoInProgress, chapterOnRoadmap, getRoadmap, saveRoadmap, toRefresh } from "./roadmap-store";
+import { alsoInProgress, chapterOnRoadmap, getRoadmap, getRoadmaps, saveRoadmap, toRefresh } from "./roadmap-store";
+import { progressOnRoadmaps } from "./roadmaps";
 import { PLAN_LIMITS } from "./roadmap-plan";
-import { chapterDone, nextTopic } from "./topic-steps";
 import {
   addNote,
   claudeNotesToday,
@@ -56,7 +56,16 @@ export const toolInputs = {
         .describe("The version line from the Project instructions, as YYYY-MM-DD, so Ken OS knows they are current"),
     })
     .strict(),
-  get_roadmap: z.object({}).strict(),
+  get_roadmap: z
+    .object({
+      roadmapId: z
+        .string()
+        .min(1)
+        .max(100)
+        .optional()
+        .describe("A roadmap id from get_current_state. Without it, the roadmap the owner opened last"),
+    })
+    .strict(),
   get_topic: z.object({ topicId }).strict(),
   get_my_work: z.object({ topicId }).strict(),
   get_history: z.object({ topicId }).strict(),
@@ -104,6 +113,12 @@ export const toolInputs = {
     .strict(),
   save_roadmap: z
     .object({
+      roadmapId: z
+        .string()
+        .min(1)
+        .max(100)
+        .optional()
+        .describe("Only to re-plan an existing roadmap in place. Without it, the roadmap is added next to the others"),
       goal: text(PLAN_LIMITS.goal).describe("What the owner wants to become or be able to do, in their words"),
       chapters: z
         .array(
@@ -191,12 +206,26 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     name: "get_current_state",
     title: "Current state",
     description:
-      "Where the owner is: their goal, the topic in progress, counts of learned and skipped topics, the next topics, and learned topics old enough to refresh. Call this first, with the instructions version.",
+      "Where the owner is: their active roadmaps (up to 3) with each one's goal, counts and current topic, most recently opened first; and for the roadmap opened last, the topic in progress, the next topics, and learned topics old enough to refresh. Call this first, with the instructions version.",
     kind: "read",
     async run(userId, { instructionsVersion }) {
-      const [roadmap] = await Promise.all([getRoadmap(userId), recordInstructionsVersion(userId, instructionsVersion)]);
+      const [roadmaps] = await Promise.all([
+        getRoadmaps(userId),
+        recordInstructionsVersion(userId, instructionsVersion),
+      ]);
+      const roadmap = roadmaps[0];
       const { current } = roadmap;
       return {
+        // Engineering-roadmaps.md, section 2. The fields after this describe roadmaps[0], the one opened last.
+        roadmaps: roadmaps
+          .filter((view) => view.planned)
+          .map((view) => ({
+            roadmapId: view.id,
+            goal: view.goal?.title ?? null,
+            counts: view.counts,
+            current: view.current ? { topicId: view.current.id, title: view.current.title } : null,
+          })),
+        roadmapId: roadmap.id,
         goal: roadmap.goal,
         // False means the roadmap is the target role's default path: offer to plan one with save_roadmap.
         planned: roadmap.planned,
@@ -229,11 +258,13 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     name: "get_roadmap",
     title: "Roadmap",
     description:
-      "The owner's roadmap: chapters in order with their area and each topic's status (not_started, in_progress, learned, skipped).",
+      "One of the owner's roadmaps (the one opened last, unless you pass roadmapId): chapters in order with their area and each topic's status (not_started, in_progress, learned, skipped).",
     kind: "read",
-    async run(userId) {
-      const roadmap = await getRoadmap(userId);
+    async run(userId, { roadmapId: id }) {
+      const roadmap = await getRoadmap(userId, id);
       return {
+        roadmapId: roadmap.id,
+        active: roadmap.active,
         goal: roadmap.goal,
         planned: roadmap.planned,
         chapters: roadmap.chapters.map((chapter) => ({
@@ -421,14 +452,9 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     async run(userId, { topicId: id, summary, status, evidence }) {
       const saved = await reportProgress(userId, id, { summary, status, evidence });
       if (status !== "learned" && status !== "skipped") return { saved: true, ...saved };
-      // Engineering-progressive-flow.md, section 3: so Claude can mark a finished chapter and offer what's next.
-      const roadmap = await getRoadmap(userId);
-      return {
-        saved: true,
-        ...saved,
-        next: nextTopic(roadmap.chapters, id),
-        chapterDone: chapterDone(roadmap.chapters, id)?.title ?? null,
-      };
+      // So Claude can mark a finished chapter and offer what's next, on every roadmap with the topic
+      // (engineering-progressive-flow.md, section 3, and engineering-roadmaps.md, section 2).
+      return { saved: true, ...saved, roadmaps: progressOnRoadmaps(await getRoadmaps(userId), id) };
     },
   },
 
@@ -436,10 +462,10 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     name: "save_roadmap",
     title: "Save roadmap",
     description:
-      "Saves a roadmap the owner agreed to: their goal and chapters in order, each with topics. Use chapter and topic ids from get_roadmap where they fit; add a new topic only when nothing in the topic map is close, with 3 to 5 lines the owner should be able to explain. The old roadmap is archived and every topic keeps its progress. Ask before saving.",
+      "Saves a roadmap the owner agreed to: their goal and chapters in order, each with topics. Use chapter and topic ids from get_roadmap where they fit; add a new topic only when nothing in the topic map is close, with 3 to 5 lines the owner should be able to explain. It's added next to the owner's other roadmaps, up to 3 active; pass roadmapId only when the owner asks to re-plan that roadmap, which replaces it in place and archives the old version. Every topic keeps its progress. Ask before saving.",
     kind: "write",
-    async run(userId, plan) {
-      return { saved: true, ...(await saveRoadmap(userId, plan)) };
+    async run(userId, { roadmapId: id, ...plan }) {
+      return { saved: true, ...(await saveRoadmap(userId, plan, id)) };
     },
   },
 

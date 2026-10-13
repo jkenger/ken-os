@@ -11,6 +11,7 @@ import { LabInputError } from "./errors";
 import { getProfileRow } from "./profile-store";
 import { normalizePlan, PlanError, type PlanInput } from "./roadmap-plan";
 import { isComplete, roadmapSummary } from "./roadmap-summary";
+import { canAddRoadmap, orderRoadmaps, ROADMAP_LIMIT_MESSAGE } from "./roadmaps";
 import { listNotes, listReports, topicStatus, topicStatuses, type NoteView, type ReportView } from "./status-store";
 import { chapterDone, nextTopic, type PracticeState } from "./topic-steps";
 
@@ -36,9 +37,13 @@ export interface RoadmapChapter {
 }
 
 export interface RoadmapView {
+  /** The saved roadmap's id; null for the target role's path. */
+  id: string | null;
   goal: { id: string | null; title: string } | null;
   /** True when Claude planned this roadmap; false for the target role's path. */
   planned: boolean;
+  /** False for an archived roadmap, which opens read-only. */
+  active: boolean;
   chapters: RoadmapChapter[];
   counts: { learned: number; skipped: number; inProgress: number; total: number };
   /** The most recently changed In progress topic, else the first Not started one. */
@@ -47,26 +52,54 @@ export interface RoadmapView {
 
 const notStarted: TopicStatusView = { status: "not_started", setBy: null, changedAt: null, learnedAt: null };
 
-export async function activeRoadmap(userId: string) {
+type RoadmapRow = typeof labRoadmaps.$inferSelect;
+interface RoadmapShape {
+  id: string | null;
+  goal: RoadmapView["goal"];
+  planned: boolean;
+  active: boolean;
+  chapters: { id: string; title: string; topicIds: string[] }[];
+}
+
+/** The owner's active roadmaps, most recently opened first (docs/architecture/engineering-roadmaps.md). */
+export async function activeRoadmaps(userId: string) {
+  const rows = await db()
+    .select()
+    .from(labRoadmaps)
+    .where(and(eq(labRoadmaps.userId, userId), eq(labRoadmaps.status, "active")));
+  return orderRoadmaps(rows);
+}
+
+/** One of the owner's roadmaps, active or archived. */
+async function requireRoadmap(userId: string, roadmapId: string) {
   const [row] = await db()
     .select()
     .from(labRoadmaps)
-    .where(and(eq(labRoadmaps.userId, userId), eq(labRoadmaps.status, "active")))
+    .where(and(eq(labRoadmaps.userId, userId), eq(labRoadmaps.id, roadmapId)))
     .limit(1);
-  return row ?? null;
+  if (!row) throw new LabInputError(`Unknown roadmap "${roadmapId}"`);
+  return row;
 }
 
-/** The roadmap's chapters with their topic ids: the saved roadmap, or the target role's path. */
-async function roadmapShape(userId: string) {
-  const saved = await activeRoadmap(userId);
-  if (saved) return { goal: { id: null, title: saved.goal }, planned: true, chapters: saved.chapters };
+const savedShape = (row: RoadmapRow): RoadmapShape => ({
+  id: row.id,
+  goal: { id: null, title: row.goal },
+  planned: true,
+  active: row.status === "active",
+  chapters: row.chapters,
+});
+
+/** The target role's path, shown until the first roadmap is saved. */
+async function defaultShape(userId: string): Promise<RoadmapShape> {
   const profile = await getProfileRow(userId);
   const role = careers.roles.find((item) => item.id === profile?.direction);
   // The chapters the target role needs, in course order (no assessment scores to reorder them any more).
   const chapterIds = role ? pathChapters(topicMap, careers, role, {}) : topicMap.chapters.map((chapter) => chapter.id);
   return {
+    id: null,
     goal: role ? { id: role.id, title: role.title } : null,
     planned: false,
+    active: true,
     chapters: chapterIds.map((chapterId) => ({
       id: chapterId,
       title: topicMap.chapters.find((chapter) => chapter.id === chapterId)!.title,
@@ -80,12 +113,11 @@ function areaOf(chapterId: string) {
   return chapter ? topicMap.areas.find((item) => item.id === chapter.area)!.title : "Added by Claude";
 }
 
-export async function getRoadmap(userId: string): Promise<RoadmapView> {
-  const [shape, statuses, custom] = await Promise.all([
-    roadmapShape(userId),
-    topicStatuses(userId),
-    customTopics(userId),
-  ]);
+function buildView(
+  shape: RoadmapShape,
+  statuses: Map<string, TopicStatusView>,
+  custom: Awaited<ReturnType<typeof customTopics>>,
+): RoadmapView {
   const titleOf = (topicId: string) =>
     topicMap.topics.find((topic) => topic.id === topicId)?.title ?? custom.find((topic) => topic.id === topicId)?.title;
   const chapters = shape.chapters.map((chapter): RoadmapChapter => ({
@@ -116,8 +148,10 @@ export async function getRoadmap(userId: string): Promise<RoadmapView> {
   const pick = inProgress[0] ?? all.find((topic) => topic.status === "not_started");
   const count = (status: TopicStatus) => all.filter((topic) => topic.status === status).length;
   return {
+    id: shape.id,
     goal: shape.goal,
     planned: shape.planned,
+    active: shape.active,
     chapters,
     counts: {
       learned: count("learned"),
@@ -139,11 +173,42 @@ export async function getRoadmap(userId: string): Promise<RoadmapView> {
 }
 
 /**
- * Saves a roadmap Claude planned and the owner agreed to. The old one is archived, never deleted, and progress stays
- * with the topics. Claude's new topics are stored with their lines.
+ * One roadmap with every topic's status: the one named, else the one opened last, else the target role's path when the
+ * owner has no active roadmap.
  */
-export async function saveRoadmap(userId: string, input: PlanInput) {
-  const custom = await customTopics(userId);
+export async function getRoadmap(userId: string, roadmapId?: string | null): Promise<RoadmapView> {
+  const [shape, statuses, custom] = await Promise.all([
+    roadmapId
+      ? requireRoadmap(userId, roadmapId).then(savedShape)
+      : activeRoadmaps(userId).then((rows) => (rows[0] ? savedShape(rows[0]) : defaultShape(userId))),
+    topicStatuses(userId),
+    customTopics(userId),
+  ]);
+  return buildView(shape, statuses, custom);
+}
+
+/** Every active roadmap, most recently opened first, or just the target role's path when there are none. */
+export async function getRoadmaps(userId: string): Promise<RoadmapView[]> {
+  const [rows, statuses, custom] = await Promise.all([
+    activeRoadmaps(userId),
+    topicStatuses(userId),
+    customTopics(userId),
+  ]);
+  const shapes = rows.length ? rows.map(savedShape) : [await defaultShape(userId)];
+  return shapes.map((shape) => buildView(shape, statuses, custom));
+}
+
+/**
+ * Saves a roadmap Claude planned and the owner agreed to. Without `roadmapId` it's added next to the others, up to
+ * ROADMAP_LIMIT active. With one, it re-plans that roadmap in place: the id (and so the address) stays, and the
+ * version it replaces is kept as an archived copy. Nothing is deleted; progress stays with the topics. Claude's new
+ * topics are stored with their lines.
+ */
+export async function saveRoadmap(userId: string, input: PlanInput, roadmapId?: string) {
+  const [custom, active] = await Promise.all([customTopics(userId), activeRoadmaps(userId)]);
+  const replacing = roadmapId ? active.find((row) => row.id === roadmapId) : undefined;
+  if (roadmapId && !replacing) throw new LabInputError(`No active roadmap "${roadmapId}" to re-plan`);
+  if (!replacing && !canAddRoadmap(active.length)) throw new LabInputError(ROADMAP_LIMIT_MESSAGE);
   let plan;
   try {
     plan = normalizePlan(input, topicMap, new Set(custom.map((topic) => topic.id)));
@@ -151,19 +216,34 @@ export async function saveRoadmap(userId: string, input: PlanInput) {
     if (error instanceof PlanError) throw new LabInputError(error.message);
     throw error;
   }
-  const id = randomUUID();
+  const id = replacing?.id ?? randomUUID();
+  const now = new Date();
   await db().transaction(async (tx) => {
-    await tx
-      .update(labRoadmaps)
-      .set({ status: "archived", archivedAt: new Date() })
-      .where(and(eq(labRoadmaps.userId, userId), eq(labRoadmaps.status, "active")));
     if (plan.newTopics.length) {
       await tx.insert(labCustomTopics).values(plan.newTopics.map((topic) => ({ userId, ...topic })));
     }
-    await tx.insert(labRoadmaps).values({ id, userId, goal: plan.goal, chapters: plan.chapters, status: "active" });
+    if (replacing) {
+      await tx.insert(labRoadmaps).values({
+        ...replacing,
+        id: randomUUID(),
+        status: "archived",
+        archivedAt: now,
+        lastOpenedAt: null,
+        replacedBy: replacing.id,
+      });
+      await tx
+        .update(labRoadmaps)
+        .set({ goal: plan.goal, chapters: plan.chapters, lastOpenedAt: now })
+        .where(and(eq(labRoadmaps.userId, userId), eq(labRoadmaps.id, replacing.id)));
+    } else {
+      await tx
+        .insert(labRoadmaps)
+        .values({ id, userId, goal: plan.goal, chapters: plan.chapters, status: "active", lastOpenedAt: now });
+    }
   });
   return {
     id,
+    replanned: Boolean(replacing),
     goal: plan.goal,
     chapters: plan.chapters.map((chapter) => ({
       chapterId: chapter.id,
@@ -172,6 +252,37 @@ export async function saveRoadmap(userId: string, input: PlanInput) {
     })),
     addedTopics: plan.newTopics.map((topic) => ({ topicId: topic.id, title: topic.title })),
   };
+}
+
+/** Archives a roadmap. Its topics keep their progress, and it can be restored. */
+export async function archiveRoadmap(userId: string, roadmapId: string) {
+  const row = await requireRoadmap(userId, roadmapId);
+  if (row.status === "archived") return { id: row.id, status: "archived" as const };
+  await db()
+    .update(labRoadmaps)
+    .set({ status: "archived", archivedAt: new Date() })
+    .where(and(eq(labRoadmaps.userId, userId), eq(labRoadmaps.id, roadmapId)));
+  return { id: row.id, status: "archived" as const };
+}
+
+/** Brings an archived roadmap back, if fewer than ROADMAP_LIMIT are active. A replaced version comes back on its own. */
+export async function restoreRoadmap(userId: string, roadmapId: string) {
+  const [row, active] = await Promise.all([requireRoadmap(userId, roadmapId), activeRoadmaps(userId)]);
+  if (row.status === "active") return { id: row.id, status: "active" as const };
+  if (!canAddRoadmap(active.length)) throw new LabInputError(ROADMAP_LIMIT_MESSAGE);
+  await db()
+    .update(labRoadmaps)
+    .set({ status: "active", archivedAt: null, replacedBy: null, lastOpenedAt: new Date() })
+    .where(and(eq(labRoadmaps.userId, userId), eq(labRoadmaps.id, roadmapId)));
+  return { id: row.id, status: "active" as const };
+}
+
+/** Remembers that the owner opened this roadmap, so it opens next time on any device. */
+export async function markRoadmapOpened(userId: string, roadmapId: string) {
+  await db()
+    .update(labRoadmaps)
+    .set({ lastOpenedAt: new Date() })
+    .where(and(eq(labRoadmaps.userId, userId), eq(labRoadmaps.id, roadmapId), eq(labRoadmaps.status, "active")));
 }
 
 /** Topics on the roadmap that are In progress, other than the current one, most recent first. */
@@ -190,11 +301,13 @@ export function toRefresh(view: RoadmapView, now = new Date()) {
   );
 }
 
-/** The chapter a topic sits in on the active roadmap, for topics Claude added. */
+/** The chapter a topic sits in on an active roadmap (the one opened last first), for topics Claude added. */
 export async function chapterOnRoadmap(userId: string, topicId: string) {
-  const saved = await activeRoadmap(userId);
-  const chapter = saved?.chapters.find((item) => item.topicIds.includes(topicId));
-  return chapter ? { chapter: chapter.title } : undefined;
+  for (const row of await activeRoadmaps(userId)) {
+    const chapter = row.chapters.find((item) => item.topicIds.includes(topicId));
+    if (chapter) return { chapter: chapter.title };
+  }
+  return undefined;
 }
 
 export interface TopicPanelView {
