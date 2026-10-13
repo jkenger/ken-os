@@ -215,6 +215,18 @@ Built 13 Oct 2026 on `chore/engineering-retire-old-screens`.
 
 **Verified:** `pnpm test` (172), `pnpm check`, `pnpm build`, `pnpm format:check`, `test:db:engineering` (8 sections, rebuilt around what's left) and `test:db:connector` (8).
 
+## 9e. Claude links in the app
+
+Built 13 Oct 2026 on `feat/claude-links-in-app`, at the owner's request.
+
+- **The Claude Project link** is set in Settings (**Claude Project**) and stored in `lab_profile.claude_project_url`. `KEN_OS_CLAUDE_PROJECT_URL` is only a fallback until one is saved; clearing the field falls back to it again. Without either, Ask Claude stays hidden.
+- **A chat per topic, optional.** **Link chat** in the topic panel takes the chat's address; **Continue chat** then opens it, and **Change chat** replaces or clears it. Stored in `lab_topic_chats`, one per topic, per owner. Claude can't know its own chat's address, so only the owner sets it; Ask Claude stays for starting fresh.
+- **One rule for both links:** https on `claude.ai` (`claudeLink` in `ask-claude.ts`), checked on the server; anything else is refused with "Use an https claude.ai link".
+- **Recall in Claude:** the Project instructions now ask Claude to call `get_history` first whenever a topic comes up, so a fresh chat knows what was covered, explained and noted, linked chat or not.
+- **Migration** `0017_burly_arachne.sql` only adds the column and the table.
+
+**Verified:** `pnpm test`, `pnpm check`, `pnpm build`, `pnpm format:check`; `test:db:engineering` (9 sections, 1 new for links) and `test:db:connector` (8). On the local server with no env link: no Ask Claude; a non-Claude link refused in Settings; a saved Project link brings Ask Claude back; Link chat saves and shows Continue chat opening that chat in a new tab. The pane was minimized, so these ran through the page script and form input rather than real clicks. Test links were cleared afterwards.
+
 ## 10. Done when
 
 1. Claude plans a roadmap from a goal and a conversation about the owner's background, and it appears on `/engineering`.

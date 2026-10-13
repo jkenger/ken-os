@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { IconCode, IconPencil, IconTrash } from "@tabler/icons-react";
+import { IconCode, IconExternalLink, IconLink, IconPencil, IconTrash } from "@tabler/icons-react";
 import { TOPIC_STATUSES, type TopicStatus } from "@ken-os/domain";
 import { post, send } from "@/components/lab/topic/client";
 import { formatDate } from "@/components/lab/words";
@@ -14,6 +14,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { TopicPanelView } from "@/features/engineering-lab/roadmap-store";
 import type { NoteView, ReportView } from "@/features/engineering-lab/status-store";
 import { AskClaude } from "../ask-claude";
+import { ClaudeLinkField } from "./claude-link-field";
 import { CodeSheet } from "./code-sheet";
 import { StatusIcon, StatusLabel, statusWords } from "./status";
 
@@ -277,6 +278,7 @@ export function TopicSheet({
   const [panel, setPanel] = useState<TopicPanelView | null>(null);
   const [problem, setProblem] = useState("");
   const [coding, setCoding] = useState(false);
+  const [linking, setLinking] = useState(false);
 
   const refresh = useCallback(
     (id: string) =>
@@ -292,6 +294,7 @@ export function TopicSheet({
   useEffect(() => {
     setPanel(null);
     setCoding(false);
+    setLinking(false);
     if (topicId) void refresh(topicId);
   }, [topicId, refresh]);
 
@@ -330,12 +333,44 @@ export function TopicSheet({
               )}
               <StatusMenu panel={panel} onSaved={saved} />
               <div className="flex flex-wrap gap-2">
+                {panel.chatUrl && (
+                  <Button asChild size="sm">
+                    <a href={panel.chatUrl} target="_blank" rel="noopener noreferrer">
+                      Continue chat
+                      <IconExternalLink aria-hidden="true" />
+                    </a>
+                  </Button>
+                )}
                 {projectUrl && <AskClaude topic={panel} projectUrl={projectUrl} />}
                 <Button type="button" variant="outline" size="sm" onClick={() => setCoding(true)}>
                   <IconCode aria-hidden="true" />
                   Try it in code
                 </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  aria-expanded={linking}
+                  onClick={() => setLinking((open) => !open)}
+                >
+                  <IconLink aria-hidden="true" />
+                  {panel.chatUrl ? "Change chat" : "Link chat"}
+                </Button>
               </div>
+              {linking && (
+                <ClaudeLinkField
+                  label="Chat for this topic"
+                  value={panel.chatUrl}
+                  endpoint={`/api/lab/topics/${encodeURIComponent(panel.id)}/chat`}
+                  placeholder="https://claude.ai/chat/…"
+                  helper="Paste the chat you learned this topic in"
+                  savedTitle="Chat linked"
+                  onSaved={() => {
+                    setLinking(false);
+                    saved();
+                  }}
+                />
+              )}
               <section>
                 <h3 className={sectionTitle}>Reports</h3>
                 <Reports reports={panel.reports} />

@@ -4,6 +4,7 @@ import { pathChapters, staleLearned, type TopicStatus, type TopicStatusView } fr
 import { db } from "@/lib/db";
 import { labCustomTopics, labRoadmaps } from "@/lib/schema";
 import { customTopics, requireAnyTopic } from "./any-topic";
+import { getTopicChat } from "./claude-links";
 import { careers, topicMap } from "./curriculum";
 import { LabInputError } from "./errors";
 import { getProfileRow } from "./profile-store";
@@ -206,18 +207,21 @@ export interface TopicPanelView {
   status: TopicStatusView;
   reports: ReportView[];
   notes: NoteView[];
+  /** The Claude chat this topic was learned in, if the owner linked one. */
+  chatUrl: string | null;
 }
 
 /** Everything the roadmap's topic panel shows, except the code exercise, which loads when opened. */
 export async function getTopicPanel(userId: string, topicId: string): Promise<TopicPanelView> {
   const topic = await requireAnyTopic(userId, topicId, await chapterOnRoadmap(userId, topicId));
-  const [status, reports, notes] = await Promise.all([
+  const [status, reports, notes, chatUrl] = await Promise.all([
     topicStatus(userId, topicId),
     listReports(userId, topicId, 20),
     listNotes(userId, topicId),
+    getTopicChat(userId, topicId),
   ]);
   const { id, title, custom, area, chapter, gap, points } = topic;
-  return { id, title, custom, area, chapter, gap, points, status, reports, notes };
+  return { id, title, custom, area, chapter, gap, points, status, reports, notes, chatUrl };
 }
 
 /** The Engineering line on the Ken OS home page: the goal and how many topics are learned. */

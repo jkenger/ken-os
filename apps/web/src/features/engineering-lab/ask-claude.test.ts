@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { askClaudeMessage, claudeProjectUrl } from "./ask-claude";
+import { askClaudeMessage, claudeLink, claudeProjectUrl } from "./ask-claude";
 
 // Ask Claude (docs/architecture/engineering-claude-connector.md, section 6).
 
@@ -24,5 +24,19 @@ test("only an https claude.ai link shows the button", () => {
     "not a url",
   ]) {
     assert.equal(claudeProjectUrl(bad), null, bad);
+  }
+});
+
+test("Project and chat links are https claude.ai links only", () => {
+  assert.equal(claudeLink("https://claude.ai/chat/0198-abcd"), "https://claude.ai/chat/0198-abcd");
+  assert.equal(claudeLink("https://claude.ai/code/project/chan_1"), "https://claude.ai/code/project/chan_1");
+  for (const bad of [
+    null,
+    "",
+    "claude.ai/chat/1",
+    "https://claude.ai.evil.example/chat/1",
+    "https://user@claude.ai/chat/1",
+  ]) {
+    assert.equal(claudeLink(bad), null, String(bad));
   }
 });

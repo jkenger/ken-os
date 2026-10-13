@@ -11,10 +11,15 @@ export const PLAN_MESSAGE =
   "Plan a new Ken OS roadmap with me. Ask my goal and what I've worked on, propose chapters and topics from the topic map, and save it with save_roadmap once I agree.";
 
 /**
- * The owner's Claude Project, from KEN_OS_CLAUDE_PROJECT_URL. Only an https link on claude.ai counts; anything else
- * (unset, a typo, another site) hides the button rather than opening it.
+ * The owner's Claude Project from KEN_OS_CLAUDE_PROJECT_URL: the fallback until a link is saved in Settings.
+ * Anything that isn't a Claude link (unset, a typo, another site) hides the button rather than opening it.
  */
 export function claudeProjectUrl(value = process.env.KEN_OS_CLAUDE_PROJECT_URL): string | null {
+  return claudeLink(value);
+}
+
+/** A link Ken OS may open for Claude: https on claude.ai, a Project or a chat. Anything else is null. */
+export function claudeLink(value: string | null | undefined): string | null {
   if (!value?.trim()) return null;
   try {
     const url = new URL(value.trim());

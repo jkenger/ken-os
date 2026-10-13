@@ -17,6 +17,7 @@ import { Connections } from "../connections";
 import { Notice } from "../kit";
 import { RoadmapGraph } from "./roadmap-graph";
 import { RoadmapLanes } from "./roadmap-lanes";
+import { ClaudeLinkField } from "./claude-link-field";
 import { TopicSheet } from "./topic-sheet";
 
 // The Claude-first Engineering page (docs/architecture/engineering-claude-first.md, section 1): the goal and progress,
@@ -34,6 +35,7 @@ function Settings({
   connections: Connection[];
   projectUrl: string | null;
 }) {
+  const router = useRouter();
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -54,6 +56,17 @@ function Settings({
             <div className="mt-2 flex flex-wrap gap-2">
               {projectUrl && <AskClaude message={PLAN_MESSAGE} label="Plan new roadmap" projectUrl={projectUrl} />}
             </div>
+          </section>
+          <section>
+            <ClaudeLinkField
+              label="Claude Project"
+              value={projectUrl}
+              endpoint="/api/lab/settings/project"
+              placeholder="https://claude.ai/project/…"
+              helper="Opened by Ask Claude on every topic"
+              savedTitle="Claude Project saved"
+              onSaved={() => router.refresh()}
+            />
           </section>
           <Connections connections={connections} />
         </div>

@@ -283,15 +283,34 @@ export const labTopicEvents = pgTable(
   ],
 );
 
-/** One row per person: the target role, which shapes the default roadmap until Claude plans one. */
+/** One row per person: the target role, which shapes the default roadmap until Claude plans one, and the Claude Project. */
 export const labProfile = pgTable("lab_profile", {
   userId: text("user_id")
     .primaryKey()
     .references(() => users.id, { onDelete: "cascade" }),
   /** The target role id. */
   direction: text("direction"),
+  /** The owner's Claude Project, opened by Ask Claude. An https claude.ai link, set in Settings. */
+  claudeProjectUrl: text("claude_project_url"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/**
+ * The Claude chat a topic was learned in, pasted by the owner, so Continue chat goes straight back to it. Optional, one
+ * per topic. Claude can't know its own chat's address, so it never sets this.
+ */
+export const labTopicChats = pgTable(
+  "lab_topic_chats",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    topicId: text("topic_id").notNull(),
+    url: text("url").notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.topicId] })],
+);
 
 /** Rebuilt from lab_topic_events on every change; never the source of truth. */
 export const labProgress = pgTable(
