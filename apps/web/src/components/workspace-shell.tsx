@@ -5,15 +5,11 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   BookMarked,
   ChevronRight,
-  UserRound,
   BookOpenText,
   FileText,
   FlaskConical,
-  LayoutDashboard,
   Map as MapIcon,
   Library,
-  ListTree,
-  Repeat,
   Search,
   Sparkles,
   X,
@@ -56,7 +52,7 @@ type Module = "resume" | "memory" | "lab" | "terms";
 const modules = [
   { id: "resume" as const, label: "Resume", href: "/", icon: FileText },
   { id: "memory" as const, label: "Project Memory", href: "/memory", icon: BookOpenText },
-  { id: "lab" as const, label: "Engineering", href: engineering.overview, icon: FlaskConical },
+  { id: "lab" as const, label: "Engineering", href: engineering.roadmap(), icon: FlaskConical },
   { id: "terms" as const, label: "Terms", href: "/terms", icon: BookMarked },
 ];
 
@@ -87,13 +83,7 @@ const moduleDetails: Record<
   },
   lab: {
     title: "Engineering",
-    sections: [
-      { label: "Roadmap", href: engineering.roadmap(), icon: MapIcon },
-      { label: "Overview", href: engineering.overview, icon: LayoutDashboard },
-      { label: "Profile", href: engineering.profile, icon: UserRound },
-      { label: "Learn", href: engineering.learn, icon: ListTree },
-      { label: "Practice", href: engineering.practice, icon: Repeat },
-    ],
+    sections: [{ label: "Roadmap", href: engineering.roadmap(), icon: MapIcon }],
   },
   terms: { title: "Terms", sections: [{ label: "Terms", href: "/terms", icon: BookMarked }] },
 };

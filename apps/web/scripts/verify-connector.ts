@@ -153,7 +153,7 @@ async function main() {
       )
     ).json();
     assert.equal(state.result.isError, undefined);
-    assert.equal(state.result.structuredContent.assessmentOpen, false);
+    assert.equal(state.result.structuredContent.planned, false);
     const bad = await (
       await rpc(
         {

@@ -1,12 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
-import { staleLearned, type TopicStatus, type TopicStatusView } from "@ken-os/domain";
+import { pathChapters, staleLearned, type TopicStatus, type TopicStatusView } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { labCustomTopics, labRoadmaps } from "@/lib/schema";
 import { customTopics, requireAnyTopic } from "./any-topic";
 import { careers, topicMap } from "./curriculum";
 import { LabInputError } from "./errors";
-import { getPathView } from "./path-store";
 import { getProfileRow } from "./profile-store";
 import { normalizePlan, PlanError, type PlanInput } from "./roadmap-plan";
 import { listNotes, listReports, topicStatus, topicStatuses, type NoteView, type ReportView } from "./status-store";
@@ -57,9 +56,10 @@ export async function activeRoadmap(userId: string) {
 async function roadmapShape(userId: string) {
   const saved = await activeRoadmap(userId);
   if (saved) return { goal: { id: null, title: saved.goal }, planned: true, chapters: saved.chapters };
-  const [profile, path] = await Promise.all([getProfileRow(userId), getPathView(userId)]);
+  const profile = await getProfileRow(userId);
   const role = careers.roles.find((item) => item.id === profile?.direction);
-  const chapterIds = path.path ?? topicMap.chapters.map((chapter) => chapter.id);
+  // The chapters the target role needs, in course order (no assessment scores to reorder them any more).
+  const chapterIds = role ? pathChapters(topicMap, careers, role, {}) : topicMap.chapters.map((chapter) => chapter.id);
   return {
     goal: role ? { id: role.id, title: role.title } : null,
     planned: false,
@@ -218,4 +218,13 @@ export async function getTopicPanel(userId: string, topicId: string): Promise<To
   ]);
   const { id, title, custom, area, chapter, gap, points } = topic;
   return { id, title, custom, area, chapter, gap, points, status, reports, notes };
+}
+
+/** The Engineering line on the Ken OS home page: the goal and how many topics are learned. */
+export async function engineeringSummary(userId: string): Promise<{ headline: string; detail: string }> {
+  const view = await getRoadmap(userId);
+  return {
+    headline: view.goal?.title ?? "Engineering",
+    detail: `${view.counts.learned} of ${view.counts.total} learned`,
+  };
 }
