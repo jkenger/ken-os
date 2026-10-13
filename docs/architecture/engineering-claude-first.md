@@ -19,7 +19,7 @@ One page, `/engineering`. Eleven screens become one.
 | Header         | The goal, the progress line ("5 of 14 learned · Now: Effects & dependencies") over a bar, and **Settings** |
 | Roadmap        | Goal → chapters → topics. A graph by default, with **Lanes** as the other view                             |
 | Topic panel    | Opens when a topic is clicked (below)                                                                      |
-| Settings panel | The goal with **Plan new roadmap with Claude**, the resume link, and Connections with Disconnect           |
+| Settings panel | The goal with **Plan new roadmap with Claude**, and Connections with Disconnect                            |
 
 **The graph** shows only the current chapter's topics. Other chapters are single nodes with a count ("React · 1 of 3") and expand on click. Zoom and drag move around the rest. Use a maintained graph library, not hand-built layout. **Lanes** shows chapters as columns, in order, with topics stacked as cards; on a phone the columns stack.
 
@@ -49,9 +49,19 @@ A mockup of the graph, lanes and panel was reviewed in chat on 13 Oct 2026.
 
 ## 3. Roadmaps
 
-- **Planned in Claude.** The empty roadmap says "No roadmap" with **Plan with Claude**. Claude asks the goal, reads the resume with `get_resume`, proposes chapters and order, and calls `save_roadmap` once the owner agrees.
+- **Planned in Claude.** The empty roadmap says "No roadmap" with **Plan with Claude**. Claude asks the goal and what the owner has worked on, proposes chapters and order, and calls `save_roadmap` once the owner agrees. It skips a topic only when the owner says they know it or can explain it, never from their background alone (§3a).
 - **Built mostly from the reviewed topic map** (`content/engineering-lab/`). Claude may add topics of its own: a title, its chapter, and 3 to 5 "what you should be able to explain" lines, which Learned is judged against the way reviewed topics use their approved points. They show "Added by Claude".
 - **One active roadmap.** A new one archives the old. Progress belongs to topics, not roadmaps, so it carries across.
+
+## 3a. No resume tool
+
+Decided 13 Oct 2026, before slice 3: Ken OS won't build `get_resume` or a resume link in Settings.
+
+- **A resume says what someone built, not what they understand.** The roadmap is concept-level, and skipping topics from a resume would skip the gaps that matter. Effects & dependencies, the owner's first topic in Claude, is one their React work would have "covered".
+- **Planning is rare.** A roadmap is planned a few times a year, so a tool, a link between Engineering and the Resume module, and a setting don't pay for themselves.
+- **The value is free elsewhere.** The owner can tell Claude their background in a sentence, or add their resume file to the Claude Project's knowledge once, with no Ken OS code.
+
+Skipping stays the owner's call: they say they know a topic, or explain it.
 
 ## 4. Notes
 
@@ -59,7 +69,7 @@ A list of short notes per topic. Each is marked You or Claude, with a date. The 
 
 ## 5. Claude's tools
 
-Nine, all in `features/engineering-lab/agent-tools.ts`. The 40-saves-a-day limit, owner-only sign-in and Disconnect are unchanged.
+Nine, all in `features/engineering-lab/agent-tools.ts`: the eight from slice 1 and `save_roadmap`. (The first version of this table also listed `get_resume`, ten rows in all; it was dropped, §3a.) The 40-saves-a-day limit, owner-only sign-in and Disconnect are unchanged.
 
 | Tool                | Change                   | Does                                                                                                                           |
 | ------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
@@ -71,7 +81,6 @@ Nine, all in `features/engineering-lab/agent-tools.ts`. The 40-saves-a-day limit
 | `save_exercise`     | Kept                     | A new exercise version, checked in the browser                                                                                 |
 | `report_progress`   | New                      | `(topicId, summary, state?, evidence?)`. Adds a report; first report sets In progress; Learned needs evidence; Skipped allowed |
 | `save_note`         | New                      | Adds a Claude note to a topic                                                                                                  |
-| `get_resume`        | New, read-only           | The selected resume's text, from the Resume module                                                                             |
 | `save_roadmap`      | New                      | Saves a roadmap the owner agreed to: goal, chapters, topics, Claude's added topics                                             |
 
 Removed: `save_lesson`, `save_proof_question`. The rule that replaces "no tool can grade": **no tool can mark Learned without the owner's words as evidence, and no tool can undo the owner's changes.**
@@ -110,7 +119,7 @@ Every old Engineering URL redirects to `/engineering`: `/engineering/learn/<topi
 | --- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | 1   | `feat/engineering-reports-notes`       | Data (§7), the four states, `report_progress`, `save_note`, the changed and renamed tools, the carry-over. Usable in Claude straight away |
 | 2   | `feat/engineering-roadmap-page`        | The one-page screen (§1), beside the old screens                                                                                          |
-| 3   | `feat/engineering-plan-with-claude`    | `get_resume`, `save_roadmap`, Claude's added topics, the empty state and Settings                                                         |
+| 3   | `feat/engineering-plan-with-claude`    | `save_roadmap`, Claude's added topics, the empty state and Settings                                                                       |
 | 4   | `chore/engineering-retire-old-screens` | Redirects (§8), old screens and OpenAI use removed, docs and Project instructions updated                                                 |
 
 ## 9a. Slice 1 as built
@@ -133,7 +142,7 @@ Built 13 Oct 2026 on `feat/engineering-reports-notes`. Where these differ from t
 - **The current topic** is the most recently changed In progress topic, else the first Not started topic on the roadmap.
 - **The write limit** counts Claude's reports and notes with its saved exercises: 40 a day together.
 - **Roadmap tables** (`lab_roadmaps`, `lab_custom_topics`) move to slice 3, where they're first used. Until then the roadmap is the target role's path, as before.
-- **Tools in slice 1** (8): `get_current_state`, `get_roadmap`, `get_topic`, `get_my_work`, `get_history`, `save_exercise`, `report_progress`, `save_note`. `get_resume` and `save_roadmap` come in slice 3. `save_lesson` and `save_proof_question` are gone; the store functions behind them stay until slice 4 removes the old screens.
+- **Tools in slice 1** (8): `get_current_state`, `get_roadmap`, `get_topic`, `get_my_work`, `get_history`, `save_exercise`, `report_progress`, `save_note`. `save_roadmap` comes in slice 3; `get_resume` was dropped (§3a). `save_lesson` and `save_proof_question` are gone; the store functions behind them stay until slice 4 removes the old screens.
 - **The owner's status menu and note editing** exist in `status-store.ts` but have no routes yet; slice 2 adds them with the screen.
 - **Project instructions** were updated for reports, evidence and notes (`docs/product/claude-project-instructions.md`).
 
@@ -158,7 +167,7 @@ Built 13 Oct 2026 on `feat/engineering-roadmap-page`. The new page lives beside 
 - **The graph opens zoomed on the goal and the current chapter's topics,** readable at once. With 13 chapters the whole ring at once was too small to read. The fit button shows everything.
 - **Graph nodes must stay selectable** in React Flow's sense, or React Flow turns off pointer events and clicks never reach the buttons. Selection shows nothing.
 - **The layout choice** (Graph or Lanes) is kept in this browser only.
-- **Settings** shows the goal with **Change goal** (the existing Direction page until slice 3) and Connections. The resume and **Plan new roadmap with Claude** arrive in slice 3.
+- **Settings** shows the goal with **Change goal** (the existing Direction page until slice 3) and Connections. **Plan new roadmap with Claude** arrives in slice 3.
 - **A bug fixed on the way:** the exercise editor's data prop was named `panel`, the same as the card style it imports, so the editor had lost its card border since the connector work. It's now `data`.
 - **The sidebar** has Roadmap first, above the old four, until slice 4 removes them.
 
@@ -166,7 +175,7 @@ Built 13 Oct 2026 on `feat/engineering-roadmap-page`. The new page lives beside 
 
 ## 10. Done when
 
-1. Claude plans a roadmap from a goal and the resume, and it appears on `/engineering`.
+1. Claude plans a roadmap from a goal and a conversation about the owner's background, and it appears on `/engineering`.
 2. A report from Claude moves a topic to In progress and shows in its panel.
 3. Claude can mark Learned only with the owner's explanation; the evidence shows on the topic.
 4. The owner can skip, undo and add, edit and delete notes; Claude can add notes but not change the owner's.
