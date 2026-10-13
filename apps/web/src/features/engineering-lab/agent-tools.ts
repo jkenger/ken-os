@@ -6,7 +6,6 @@ import {
   CLAUDE_STATUSES,
   CONTENT_EVENT_KINDS,
   EVIDENCE_MIN_LENGTH,
-  staleLearned,
   topicPoints,
   type CodeRun,
   type Topic,
@@ -15,11 +14,10 @@ import {
 import { db } from "@/lib/db";
 import { ownerDayStart } from "@/lib/day";
 import { labTopicEvents } from "@/lib/schema";
-import { careers, placeOf, topicMap } from "./curriculum";
+import { placeOf } from "./curriculum";
 import { LabInputError } from "./errors";
 import { exerciseChoice, exerciseVersions, getDraft, saveClaudeExercise } from "./exercise-store";
-import { getPathView } from "./path-store";
-import { getProfileRow } from "./profile-store";
+import { alsoInProgress, getRoadmap, toRefresh } from "./roadmap-store";
 import {
   addNote,
   claudeNotesToday,
@@ -30,7 +28,6 @@ import {
   reportProgress,
   SUMMARY_MAX,
   topicStatus,
-  topicStatuses,
 } from "./status-store";
 import { requireTopic } from "./store";
 import { closedBook } from "./topic-store";
@@ -123,18 +120,6 @@ function topicSummary(topic: Topic, status: TopicStatusView) {
   return { topicId: topic.id, title: topic.title, ...placeOf(topic), status: status.status, statusSetBy: status.setBy };
 }
 
-async function targetRole(userId: string) {
-  const profile = await getProfileRow(userId);
-  const role = careers.roles.find((item) => item.id === profile?.direction);
-  return role ? { id: role.id, title: role.title } : null;
-}
-
-/** The roadmap's chapters in order: the target role's path, or every chapter in course order without one. */
-async function roadmapChapters(userId: string) {
-  const path = await getPathView(userId);
-  return path.path ?? topicMap.chapters.map((chapter) => chapter.id);
-}
-
 function runSummary(results: CodeRun | null) {
   if (!results) return null;
   const failing = results.tests
@@ -158,37 +143,32 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     kind: "read",
     openDuringAssessment: true,
     async run(userId) {
-      const [role, chapters, statuses, assessmentOpen] = await Promise.all([
-        targetRole(userId),
-        roadmapChapters(userId),
-        topicStatuses(userId),
-        closedBook(userId),
-      ]);
-      const topics = chapters.flatMap((chapter) => topicMap.topics.filter((topic) => topic.chapter === chapter));
-      const withStatus = topics.map((topic) => ({ topic, ...statuses.get(topic.id)! }));
-      const inProgress = withStatus
-        .filter((item) => item.status === "in_progress")
-        .sort((a, b) => (b.changedAt ?? "").localeCompare(a.changedAt ?? ""));
-      const current = inProgress[0] ?? withStatus.find((item) => item.status === "not_started") ?? null;
-      const count = (status: string) => withStatus.filter((item) => item.status === status).length;
+      const [roadmap, assessmentOpen] = await Promise.all([getRoadmap(userId), closedBook(userId)]);
+      const { current } = roadmap;
       return {
-        goal: role,
+        goal: roadmap.goal,
         assessmentOpen,
-        current: current ? topicSummary(current.topic, current) : null,
-        counts: {
-          learned: count("learned"),
-          skipped: count("skipped"),
-          inProgress: count("in_progress"),
-          total: topics.length,
-        },
-        alsoInProgress: inProgress.slice(1, 4).map((item) => ({ topicId: item.topic.id, title: item.topic.title })),
-        nextTopics: withStatus
-          .filter((item) => item.status === "not_started" && item.topic.id !== current?.topic.id)
+        current: current
+          ? {
+              topicId: current.id,
+              title: current.title,
+              area: current.area,
+              chapter: current.chapter,
+              status: current.status,
+            }
+          : null,
+        counts: roadmap.counts,
+        alsoInProgress: alsoInProgress(roadmap)
           .slice(0, 3)
-          .map((item) => ({ topicId: item.topic.id, title: item.topic.title })),
-        toRefresh: staleLearned(withStatus, new Date())
+          .map((topic) => ({ topicId: topic.id, title: topic.title })),
+        nextTopics: roadmap.chapters
+          .flatMap((chapter) => chapter.topics)
+          .filter((topic) => topic.status === "not_started" && topic.id !== current?.id)
+          .slice(0, 3)
+          .map((topic) => ({ topicId: topic.id, title: topic.title })),
+        toRefresh: toRefresh(roadmap)
           .slice(0, 5)
-          .map((item) => ({ topicId: item.topic.id, title: item.topic.title, learnedAt: item.learnedAt })),
+          .map((topic) => ({ topicId: topic.id, title: topic.title, learnedAt: topic.learnedAt })),
       };
     },
   },
@@ -201,24 +181,15 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     kind: "read",
     openDuringAssessment: true,
     async run(userId) {
-      const [role, chapters, statuses] = await Promise.all([
-        targetRole(userId),
-        roadmapChapters(userId),
-        topicStatuses(userId),
-      ]);
+      const roadmap = await getRoadmap(userId);
       return {
-        goal: role,
-        chapters: chapters.map((chapterId) => {
-          const chapter = topicMap.chapters.find((item) => item.id === chapterId)!;
-          return {
-            chapterId,
-            title: chapter.title,
-            area: topicMap.areas.find((item) => item.id === chapter.area)!.title,
-            topics: topicMap.topics
-              .filter((topic) => topic.chapter === chapterId)
-              .map((topic) => ({ topicId: topic.id, title: topic.title, status: statuses.get(topic.id)!.status })),
-          };
-        }),
+        goal: roadmap.goal,
+        chapters: roadmap.chapters.map((chapter) => ({
+          chapterId: chapter.id,
+          title: chapter.title,
+          area: chapter.area,
+          topics: chapter.topics.map((topic) => ({ topicId: topic.id, title: topic.title, status: topic.status })),
+        })),
       };
     },
   },

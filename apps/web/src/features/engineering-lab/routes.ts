@@ -13,6 +13,8 @@ function withQuery(path: string, query: Record<string, string | undefined | null
 
 export const engineering = {
   overview: "/engineering",
+  /** The Claude-first roadmap (docs/architecture/engineering-claude-first.md). `topic` opens that topic's panel. */
+  roadmap: (topicId?: string | null) => withQuery("/engineering/roadmap", { topic: topicId }),
   profile: "/engineering/profile",
   direction: "/engineering/profile/direction",
   /** Intake when no assessment is open, otherwise the open one. */
@@ -25,8 +27,9 @@ export const engineering = {
   practice: "/engineering/practice",
 } as const;
 
-/** The four tabs, in order. */
+/** The tabs, in order. Roadmap replaces the other four in slice 4. */
 export const engineeringTabs = [
+  { id: "roadmap", label: "Roadmap", href: "/engineering/roadmap" },
   { id: "overview", label: "Overview", href: engineering.overview },
   { id: "profile", label: "Profile", href: engineering.profile },
   { id: "learn", label: "Learn", href: engineering.learn },
@@ -37,6 +40,7 @@ export type EngineeringTab = (typeof engineeringTabs)[number]["id"];
 
 /** Which tab a path belongs to: assessment, direction and evidence live under Profile, topics under Learn. */
 export function tabForPath(pathname: string): EngineeringTab {
+  if (pathname.startsWith("/engineering/roadmap")) return "roadmap";
   if (pathname.startsWith("/engineering/profile")) return "profile";
   if (pathname.startsWith("/engineering/learn")) return "learn";
   if (pathname.startsWith("/engineering/practice")) return "practice";

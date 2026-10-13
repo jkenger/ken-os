@@ -39,4 +39,6 @@ test("nested pages belong to their tab", () => {
   assert.equal(tabForPath("/engineering/profile/evidence/a1"), "profile");
   assert.equal(tabForPath("/engineering/learn/js.event_loop"), "learn");
   assert.equal(tabForPath("/engineering/practice"), "practice");
+  assert.equal(tabForPath("/engineering/roadmap"), "roadmap");
+  assert.equal(engineering.roadmap("react.effects"), "/engineering/roadmap?topic=react.effects");
 });
