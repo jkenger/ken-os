@@ -16,5 +16,14 @@ The starter starts a new trace in every service, so the three halves never conne
 - `childSpan(span, ids)` returns a span inside the same trace, whose parent is `span`.
 - `inject(span)` returns the header to send downstream: `00-<traceId>-<spanId>-01`.
 
+```js
+// counterIds comes from the tests: predictable ids instead of random ones
+const header = "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01";
+startSpan({ traceparent: header }, counterIds());
+// → { traceId: "4bf92f3577b34da6a3ce929d0e0e4736", spanId: "bbbbbbbbbbbbbbb1", parentSpanId: "00f067aa0ba902b7" }
+extract("not a header");
+// → null
+```
+
 Then explain how a trace id in every log line connects logs and traces, and why a bad header starts a new trace
 instead of failing the request.

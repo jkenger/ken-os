@@ -40,6 +40,25 @@ export type LabMeta = Pick<LabDefinition, "id" | "title" | "topics" | "modes" | 
   probeId: string | null;
 };
 
+/** How a task shows what the code receives and returns. Repeated in errors so Claude can fix a refused exercise. */
+export const WORKED_EXAMPLE_FORMAT =
+  "a ```js block after the first paragraph with a call and its result, like `total([2, 3]);` then `// → 5`";
+
+/**
+ * Whether a task, after its first paragraph (the part shown under Details), has a code block with a call and an
+ * arrow to the result.
+ */
+export function hasWorkedExample(readme: string) {
+  const details = readme
+    .trim()
+    .split(/\n\s*\n/)
+    .slice(1)
+    .join("\n\n");
+  return [...details.matchAll(/```[\w-]*\n([\s\S]*?)```/g)].some(
+    ([, block]) => /[A-Za-z_$][\w$]*\s*\(/.test(block) && block.includes("→"),
+  );
+}
+
 export function parseLabMeta(raw: unknown, folder: string): LabMeta {
   const item = (raw ?? {}) as Record<string, unknown>;
   const where = `labs/${folder}/lab.yaml`;

@@ -18,3 +18,9 @@ console.log(rows.map((row) => row["QUERY PLAN"]).join("\n"));
 
 The tests pass when the plan uses an index that starts with `user_id`, needs no separate sort, and touches only a few
 pages.
+
+```js
+await migrate(db);
+(await recentOrders(db, 9999)).map((order) => order.total);
+// → [450, 800, 1200]
+```

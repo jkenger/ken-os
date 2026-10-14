@@ -12,5 +12,14 @@ helps (reading the ticket, writing the reply) and keep the decisions in code:
   Over 100 returns `{ status: "needs_approval" }` without refunding. Otherwise call `issueRefund(order.id,
 order.amount)` once and return `{ status: "refunded", amount }`.
 
+```js
+// setup and ticket come from the tests: setup() is a confident "refund" with an eligible order
+const { deps, refunds } = setup();
+await handleTicket(ticket(40), deps);
+// → { status: "refunded", amount: 40 }
+refunds;
+// → [["o9", 40]]
+```
+
 Then explain the difference between a workflow (code picks the steps) and an agent (the model picks the steps), and
 when each is the better choice.

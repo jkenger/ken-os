@@ -12,4 +12,13 @@ the top `k` as `{ id, score }`, best first:
 - Drop results scoring below `minScore` (default 0).
 - Break ties by `id`, so results are stable.
 
+```js
+const docs = [
+  { id: "a", vector: [2, 0, 0], meta: {} },
+  { id: "b", vector: [1, 1, 0], meta: {} },
+];
+search([1, 0, 0], docs, { k: 2 });
+// → [{ id: "a", score: 1 }, { id: "b", score: 0.7071067811865475 }]
+```
+
 Then explain why an embedding search can return something confidently wrong, and when keyword search does better.

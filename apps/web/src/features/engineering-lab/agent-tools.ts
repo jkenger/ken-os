@@ -6,6 +6,8 @@ import {
   CLAUDE_STATUSES,
   CONTENT_EVENT_KINDS,
   EVIDENCE_MIN_LENGTH,
+  hasWorkedExample,
+  WORKED_EXAMPLE_FORMAT,
   type CodeRun,
   type TopicStatusView,
 } from "@ken-os/domain";
@@ -77,7 +79,11 @@ export const toolInputs = {
           runner: z
             .enum(CLAUDE_RUNNERS)
             .describe("browser: JavaScript in a Web Worker. pglite: the same, with a fresh in-page Postgres"),
-          task: text(4_000).describe("The first paragraph is the task line; later paragraphs show under Details"),
+          task: text(4_000)
+            .refine(hasWorkedExample, `Add an example: ${WORKED_EXAMPLE_FORMAT}`)
+            .describe(
+              `The first paragraph is the task line; later paragraphs show under Details and must include ${WORKED_EXAMPLE_FORMAT}, using real arguments from the tests`,
+            ),
           starter: file.describe("What the owner starts from. Must fail at least one test"),
           tests: file
             .min(1)

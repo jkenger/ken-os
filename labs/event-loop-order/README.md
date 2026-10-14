@@ -3,6 +3,16 @@ A form submit handler logs four steps. The screen has to update right away, so `
 
 Right now `saved` is logged before `validated`. Fix `submitForm` so the order is:
 
+```js
+const lines = [];
+submitForm((line) => lines.push(line));
+[...lines];
+// → ["button disabled", "spinner shown"]
+await wait(20);
+lines;
+// → ["button disabled", "spinner shown", "validated", "saved"]
+```
+
 1. `button disabled`
 2. `spinner shown`
 3. `validated`

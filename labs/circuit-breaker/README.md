@@ -10,6 +10,18 @@ pile of waiting calls makes the service slower to come back. Write a circuit bre
   succeeds the breaker closes; if it fails the breaker opens again for another cooldown.
 - `state()` returns `"closed"`, `"open"` or `"half-open"`.
 
+```js
+// fakeService and clock come from the tests; the service starts down
+const service = fakeService();
+const breaker = createBreaker(service.fn, { failureThreshold: 2, cooldownMs: 5000, now: clock().now });
+await breaker.call("u1").catch((error) => error.message);
+await breaker.call("u1").catch((error) => error.message);
+breaker.state();
+// → "open"
+await breaker.call("u1").catch((error) => error.name);
+// → "BreakerOpenError"
+```
+
 Use `now()` for the time; the tests move a fake clock. Then write `recommendationsFor(breaker, userId, popular)`, which
 returns the breaker's result, or the `popular` list whenever the call fails, so the page still shows something.
 

@@ -26,7 +26,8 @@ export function runInWorker(script: string, timeoutMs: number): Promise<RunOutco
     );
     worker.onmessage = (event: MessageEvent<WorkerMessage>) => {
       if (event.data?.type === "error") return finish(event.data);
-      if (event.data?.type === "tests" || event.data?.type === "output") finish(event.data);
+      if (event.data?.type === "tests" || event.data?.type === "output" || event.data?.type === "try")
+        finish(event.data);
     };
     worker.onerror = (event) => {
       event.preventDefault();

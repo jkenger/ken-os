@@ -4,6 +4,19 @@ Chunk a help-centre article so every chunk is whole sentences from one section.
 `[{ heading, text, index }]`. Today it cuts every `maxChars` characters, so sentences break in half, one chunk can
 mix refunds with shipping, and no chunk knows which section it came from. Search then finds half an answer.
 
+```js
+const article = `# Refunds
+Refunds take 14 days. Cards are credited. Contact support.
+# Shipping
+Orders ship in two days.`;
+chunkDocument(article, { maxChars: 45, overlap: 1 });
+// → [
+//     { heading: "Refunds", text: "Refunds take 14 days. Cards are credited.", index: 0 },
+//     { heading: "Refunds", text: "Cards are credited. Contact support.", index: 1 },
+//     { heading: "Shipping", text: "Orders ship in two days.", index: 2 }
+//   ]
+```
+
 - A line starting with `#` is a heading. A chunk never spans two sections, and carries its section's heading, without
   the `#`.
 - Split a section into sentences, ending at `.`, `?` or `!`. A chunk is whole sentences joined by single spaces.

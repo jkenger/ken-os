@@ -4,4 +4,14 @@ Two bugs, both about what a function remembers.
    `clicked c`. Today every handler returns the wrong label.
 2. `createCounter()` should return a counter with its own count. Today two counters share one count.
 
+```js
+makeHandlers(["a", "b", "c"]).map((handler) => handler());
+// → ["clicked a", "clicked b", "clicked c"]
+const first = createCounter();
+const second = createCounter();
+first.increment();
+second.read();
+// → 0
+```
+
 Fix both without changing how they are called. For each bug, write one sentence on what the function captured.

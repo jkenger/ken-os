@@ -21,5 +21,15 @@ organisation's documents, and a viewer can edit. Fix the three functions:
 All three throw an error mentioning `sign in` when `actor` is `null`. Check membership in the database on every call,
 so a removed member loses access at once.
 
+```js
+const ana = { userId: 1 };
+(await getDocument(db, ana, 1)).title;
+// → "Roadmap"
+await getDocument(db, ana, 3);
+// → null
+(await listDocuments(db, ana, 1)).map((doc) => doc.title);
+// → ["Roadmap", "Pricing"]
+```
+
 Then explain the difference between who someone is (authentication) and what they may touch (authorization), and why
 the membership check belongs in the same query as the read or write.

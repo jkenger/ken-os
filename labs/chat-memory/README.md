@@ -11,4 +11,17 @@ assistant forgets the user's name and everything said early on.
   `system` message starting `Summary of earlier conversation:` (when there is a summary), then the recent messages
   word for word.
 
+```js
+// countTokens comes from the tests: it counts words
+const summarize = async (previous, older) => older.map((message) => message.content).join(" / ");
+const memory = createMemory({ maxTokens: 6, keepRecent: 1, countTokens, summarize });
+await memory.add({ role: "user", content: "Hi, I am Ana" });
+await memory.add({ role: "assistant", content: "Hello Ana, how can I help?" });
+memory.context();
+// → [
+//     { role: "system", content: "Summary of earlier conversation: Hi, I am Ana" },
+//     { role: "assistant", content: "Hello Ana, how can I help?" }
+//   ]
+```
+
 Then explain short-term memory (the conversation), long-term memory (facts kept across sessions) and what each costs.

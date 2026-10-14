@@ -11,4 +11,15 @@ table directly, so the two can't be separated, and any change to that table brea
 "out_of_stock" }`, or `{ ok: false, reason: "inventory_unavailable" }` when the call throws. Only a successful
   reservation creates an order.
 
+```js
+const inventory = createInventory({ lamp: 3 });
+const orders = createOrders(inventory);
+await orders.place("lamp", 2);
+// → { ok: true }
+await orders.place("lamp", 2);
+// → { ok: false, reason: "out_of_stock" }
+inventory.available("lamp");
+// → 1
+```
+
 Then write one sentence on what the network hop between the two adds that a function call didn't have.

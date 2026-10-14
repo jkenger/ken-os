@@ -10,5 +10,15 @@ labeled set: for each test question, the document ids a good search should find.
 - Each is averaged over the questions. A question with no relevant docs is left out; it can't be scored.
 - `perQuery` maps each scored question id to its own `{ recall, precision, reciprocalRank }`.
 
+```js
+evaluate({ q1: ["a", "c", "b"] }, { q1: ["c", "d"] }, 2);
+// → {
+//     recallAtK: 0.5,
+//     precisionAtK: 0.5,
+//     mrr: 0.5,
+//     perQuery: { q1: { recall: 0.5, precision: 0.5, reciprocalRank: 0.5 } }
+//   }
+```
+
 The starter only checks whether the first result is relevant, and reports that for all three. Then explain which
 metric matters most for RAG, where the model reads the top few chunks, and why per-question results matter.

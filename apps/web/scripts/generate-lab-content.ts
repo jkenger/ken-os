@@ -4,10 +4,12 @@ import { fileURLToPath } from "node:url";
 import { parse } from "yaml";
 import {
   attachPoints,
+  hasWorkedExample,
   parseCareers,
   parseLabMeta,
   parseProbeQuestions,
   parseTopicMap,
+  WORKED_EXAMPLE_FORMAT,
   type LabDefinition,
 } from "@ken-os/domain";
 
@@ -29,6 +31,8 @@ for (const folder of readdirSync(resolve(repoRoot, "labs"), { withFileTypes: tru
   .sort()) {
   const { probeId, ...meta } = parseLabMeta(parse(read("labs", folder, "lab.yaml")), folder);
   const readme = read("labs", folder, "README.md").trim();
+  if (meta.runner !== "probe" && !hasWorkedExample(readme))
+    throw new Error(`labs/${folder}/README.md: add an example, ${WORKED_EXAMPLE_FORMAT}`);
   if (meta.runner === "probe") {
     labs.push({
       ...meta,

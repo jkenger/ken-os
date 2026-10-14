@@ -8,13 +8,16 @@ import { CodeBlock, Markdown } from "@/components/lab/markdown";
 import { post } from "@/components/lab/topic/client";
 import { Button } from "@/components/ui/button";
 import { CodeEditor } from "@/components/ui/code-editor";
-import { Pill } from "@/components/ui/pill";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/toaster";
 import type { ExercisePanel } from "@/features/engineering-lab/exercise-store";
+import { firstExample } from "@/features/engineering-lab/runner/examples";
 import { buildLabScript, PGLITE_URL, type TestResult } from "@/features/engineering-lab/runner/harness";
 import { PROBES } from "@/features/engineering-lab/runner/probes";
-import { runInWorker } from "@/features/engineering-lab/runner/run-in-worker";
+import { runInWorker, type RunOutcome } from "@/features/engineering-lab/runner/run-in-worker";
 import { cn } from "@/lib/utils";
+import { TestList } from "./exercise-results";
+import { TryIt } from "./exercise-try";
 import { Dialog } from "./flow";
 import { Notice, panel } from "./kit";
 
@@ -40,35 +43,18 @@ function splitReadme(readme: string) {
   return { task: first.replace(/\s+/g, " ").trim(), details: rest.join("\n\n").trim() };
 }
 
-function TestList({ results }: { results: TestResult[] }) {
-  const passed = results.filter((item) => item.passed).length;
-  return (
-    <div role="status">
-      <p className="text-sm font-semibold">
-        {passed} / {results.length} tests passed
-      </p>
-      <ul className="mt-3 space-y-2.5 text-xs">
-        {results.map((item) => (
-          <li key={item.name} className="flex items-start gap-2.5">
-            <Pill tone={item.passed ? "solid" : "gap"}>{item.passed ? "Pass" : "Fail"}</Pill>
-            <span className="min-w-0">
-              {item.name}
-              {item.error && <span className="mt-0.5 block font-mono text-xs text-muted-foreground">{item.error}</span>}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
 type RunState =
   | { kind: "idle" }
   | { kind: "running" }
   | { kind: "error"; message: string }
-  | { kind: "results"; results: TestResult[] };
+  | { kind: "results"; results: TestResult[]; logs: string[] };
 type SaveState = "idle" | "saving" | "saved" | "failed";
 const saveWords: Record<SaveState, string> = { idle: "", saving: "Saving…", saved: "Saved", failed: "Not saved" };
+
+/** Why a run produced no test results, in one line. */
+function noResults(outcome: RunOutcome) {
+  return "message" in outcome ? outcome.message : "No tests ran";
+}
 
 /** Runs code against tests in the isolated worker, the same way a learner run does. */
 async function runTests(code: string, tests: string, options: { runner: string; setup: string; timeoutMs: number }) {
@@ -93,9 +79,7 @@ export function useExerciseCheck(topicId: string, check: ExercisePanel["check"],
     started.current = check.id;
     setChecking(true);
     const asCheck = (outcome: Awaited<ReturnType<typeof runTests>>) =>
-      outcome.type === "tests"
-        ? { results: outcome.results }
-        : { error: outcome.type === "output" ? "No tests ran" : outcome.message };
+      outcome.type === "tests" ? { results: outcome.results } : { error: noResults(outcome) };
     void (async () => {
       try {
         const options = { runner: check.runner, setup: check.setup, timeoutMs: check.timeoutMs };
@@ -140,6 +124,7 @@ export function Exercise({
   const [switching, setSwitching] = useState(false);
   const [solution, setSolution] = useState<string | null>(null);
   const [predicted, setPredicted] = useState<Record<string, string>>({});
+  const [tryInput, setTryInput] = useState(() => firstExample(lab.readme) ?? "");
   const autosave = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const checking = useExerciseCheck(topic.id, data.check, onRefresh);
   const probe = lab.runner === "probe" ? lab.probe! : null;
@@ -211,16 +196,16 @@ export function Exercise({
         const check = PROBES[probe.id];
         if (!check) throw new Error("Check unavailable");
         const score = scoreProbe(probe.questions, predicted, await check());
-        setState({ kind: "results", results: score.results });
+        setState({ kind: "results", results: score.results, logs: [] });
         await save(score.results, JSON.stringify(predicted));
         return;
       }
       const outcome = await runTests(code, lab.tests, lab);
       if (outcome.type !== "tests") {
-        setState({ kind: "error", message: outcome.type === "output" ? "No tests ran" : outcome.message });
+        setState({ kind: "error", message: noResults(outcome) });
         return;
       }
-      setState({ kind: "results", results: outcome.results });
+      setState({ kind: "results", results: outcome.results, logs: outcome.logs });
       await save(outcome.results, code);
     } catch (error) {
       setState({ kind: "error", message: error instanceof Error ? error.message : "Couldn't run tests. Try again" });
@@ -325,7 +310,18 @@ export function Exercise({
             </ol>
           ) : (
             <div className="mt-5">
-              <CodeEditor value={code} onChange={update} label={`Your code for ${lab.title}`} minHeight={260} />
+              <Tabs defaultValue="code">
+                <TabsList aria-label="Exercise files">
+                  <TabsTrigger value="code">Code</TabsTrigger>
+                  <TabsTrigger value="tests">Tests</TabsTrigger>
+                </TabsList>
+                <TabsContent value="code">
+                  <CodeEditor value={code} onChange={update} label={`Your code for ${lab.title}`} minHeight={260} />
+                </TabsContent>
+                <TabsContent value="tests">
+                  <CodeEditor value={lab.tests} readOnly label={`Tests for ${lab.title}`} minHeight={260} />
+                </TabsContent>
+              </Tabs>
               <p
                 role="status"
                 className={cn(
@@ -378,6 +374,7 @@ export function Exercise({
               </Dialog>
             )}
           </div>
+          {!probe && <TryIt code={code} lab={lab} input={tryInput} onInput={setTryInput} />}
           {solution && (
             <div className="mt-5">
               <p className="mb-2 text-xs font-semibold">Solution</p>
@@ -395,7 +392,20 @@ export function Exercise({
                 {state.message}
               </p>
             )}
-            {results && <TestList results={results} />}
+            {results && (
+              <TestList
+                results={results}
+                logs={state.kind === "results" ? state.logs : []}
+                onTry={
+                  probe
+                    ? undefined
+                    : (call) => {
+                        setTryInput(call);
+                        document.getElementById("try-it")?.scrollIntoView({ behavior: "smooth", block: "center" });
+                      }
+                }
+              />
+            )}
           </div>
           {progress.solutionOpened && (
             <p className="mt-4 text-xs text-muted-foreground">Solution opened · pass again from the starter</p>

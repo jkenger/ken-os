@@ -11,6 +11,14 @@ Write three update functions. Each returns the next state and never changes the 
 - `toggleTodo(state, id)` flips `done` on that todo.
 - `renameTodo(state, id, text)` changes that todo's `text`.
 
+```js
+const state = { todos: [{ id: 1, text: "Buy milk", done: false }], nextId: 2 };
+addTodo(state, "Call Ana");
+// → { todos: [{ id: 1, text: "Buy milk", done: false }, { id: 2, text: "Call Ana", done: false }], nextId: 3 }
+toggleTodo(state, 99) === state;
+// → true
+```
+
 Todos you don't change must stay the very same objects, so their rows don't re-render. When the id doesn't exist,
 return the state you were given, so nothing re-renders.
 

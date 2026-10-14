@@ -9,5 +9,22 @@ first place. Return up to `limit` results as `{ id, score }`, best first, ties b
 Many results are chunks of the same article, shaped `"article#chunk"`. Also write `bestPerArticle(results)`, which
 keeps only the best-scoring chunk of each article, in order, so one long article can't fill every slot.
 
+```js
+fuse(
+  [
+    ["a", "b"],
+    ["b", "c"],
+  ],
+  { k: 60 },
+).map((result) => result.id);
+// → ["b", "a", "c"]
+bestPerArticle([
+  { id: "faq#2", score: 0.03 },
+  { id: "faq#1", score: 0.02 },
+  { id: "guide#1", score: 0.01 },
+]);
+// → [{ id: "faq#2", score: 0.03 }, { id: "guide#1", score: 0.01 }]
+```
+
 The starter appends the vector results after the keyword ones. Then explain when query rewriting helps (several
 phrasings searched and fused) and what it costs.

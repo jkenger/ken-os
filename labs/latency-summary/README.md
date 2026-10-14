@@ -12,4 +12,16 @@ fast and some are very slow, and an average hides the slow ones. Write two funct
 `bucketCounts(durations, bounds)` returns cumulative buckets, the way Prometheus histograms store them: for each bound
 in order, `{ le: bound, count }` counting durations at or below it, then `{ le: "+Inf", count }` for all of them.
 
+```js
+summarize([
+  { ms: 40, status: 200 },
+  { ms: 10, status: 200 },
+  { ms: 30, status: 500 },
+  { ms: 20, status: 200 },
+]);
+// → { count: 4, errorRate: 0.25, p50: 20, p95: 40, p99: 40, max: 40 }
+bucketCounts([10, 20, 30, 40], [15, 35]);
+// → [{ le: 15, count: 1 }, { le: 35, count: 3 }, { le: "+Inf", count: 4 }]
+```
+
 Then explain why a histogram, rather than a stored average, lets you compute percentiles across many servers.

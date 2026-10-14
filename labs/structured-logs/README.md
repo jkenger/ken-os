@@ -11,4 +11,23 @@ Write `createLogger({ write, now, fields })`. It returns `info`, `warn` and `err
   `secret`, `authorization`, `cookie`, `apiKey` or `card`, in any letter case.
 - An `Error` in `extra.error` written as `{ name, message, stack }`. As it is, it would turn into `{}`.
 
+```js
+const lines = [];
+const logger = createLogger({
+  write: (line) => lines.push(line),
+  now: () => new Date("2026-10-05T09:30:00Z"),
+  fields: { service: "checkout" },
+});
+logger.child({ requestId: "req-1" }).info("Signed in", { password: "hunter2" });
+JSON.parse(lines[0]);
+// → {
+//     time: "2026-10-05T09:30:00.000Z",
+//     level: "info",
+//     msg: "Signed in",
+//     service: "checkout",
+//     requestId: "req-1",
+//     password: "[redacted]"
+//   }
+```
+
 Then explain which fields every line in a service should carry, and why logging the request body is risky.

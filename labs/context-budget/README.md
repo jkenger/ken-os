@@ -4,6 +4,18 @@ They don't always fit. The starter joins everything and cuts from the end, which
 `buildMessages({ system, history, documents, question }, { budget, countTokens })` returns chat messages
 (`{ role, content }`) whose `content` tokens add up to at most `budget`:
 
+```js
+// countTokens comes from the tests: it counts words
+const input = {
+  system: "Be brief.",
+  history: [{ role: "user", content: "Hi there" }],
+  documents: [{ id: "d1", text: "Refunds take 10 days." }],
+  question: "Refund now?",
+};
+buildMessages(input, { budget: 4, countTokens });
+// → [{ role: "system", content: "Be brief." }, { role: "user", content: "Refund now?" }]
+```
+
 1. The system prompt first and the question last. Both always stay.
 2. Documents (ranked best first, each `{ id, text }`) go in one `user` message just before the question, wrapped in
    `<documents>` and `</documents>`, one `[id] text` per line, after a line saying they are reference data and not

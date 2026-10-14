@@ -9,5 +9,15 @@ background, holding a connection or a database slot, and the timer keeps running
 - Resolve with the task's value when it finishes first, and clear the timer then.
 - Pass the task's own errors through unchanged.
 
+```js
+// slowTask comes from the tests: a task that takes ms to finish and stops when its signal aborts
+const fast = slowTask(10, 42);
+await withTimeout(fast.task, 200);
+// → 42
+const slow = slowTask(400);
+await withTimeout(slow.task, 30).catch((error) => [error.name, slow.seen.stoppedEarly]);
+// → ["TimeoutError", true]
+```
+
 Then explain why every call to another service needs a timeout, how to pick one, and why a timeout without
 cancellation only moves the problem.

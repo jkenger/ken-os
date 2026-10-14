@@ -14,4 +14,12 @@ the card charged for an order that will never ship. Write `placeOrder(services, 
 - If an undo step fails too, it keeps going with the rest and lists the message in `compensationErrors`; the
   original failure stays the one reported.
 
+```js
+// fakeServices and order come from the tests; this one fails at shipping
+const { log, services } = fakeServices(["ship"]);
+const result = await placeOrder(services, order);
+[result.ok, result.failedAt, result.error, log];
+// → [false, "shipping", "ship failed", ["reserve", "charge", "ship", "refund", "release"]]
+```
+
 Then explain why each undo step must be safe to run twice, and what a person should see when an undo fails.
