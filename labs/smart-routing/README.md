@@ -13,4 +13,13 @@ The starter sends every question to the large model. It's slow and expensive, an
   4. Cache only confident answers; `costUsd` is everything spent on this question.
 - `spent()` returns the total spent so far.
 
+```js
+// setup comes from the tests: small is unsure about refunds, small costs 0.01 and large 0.4
+const { answerer } = setup();
+await answerer.answer("What are your hours?");
+// → { text: "Small: What are your hours?", model: "small", costUsd: 0.01 }
+await answerer.answer("  what are your HOURS? ");
+// → { text: "Small: What are your hours?", model: "cache", costUsd: 0 }
+```
+
 Then explain the other levers on cost and latency: shorter prompts, prompt caching, streaming, and batching.

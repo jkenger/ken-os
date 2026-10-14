@@ -3,6 +3,13 @@ The Model Context Protocol (MCP) is a standard way to offer tools to any AI app:
 `await handle(request)` returns the response object, or `null` for a notification. `tools` maps a name to
 `{ description, inputSchema, handler }`.
 
+```js
+// server comes from the tests: a notes server with add_note and search_notes
+const request = { name: "add_note", arguments: { text: "buy milk" } };
+await server.handle({ jsonrpc: "2.0", id: 2, method: "tools/call", params: request });
+// → { jsonrpc: "2.0", id: 2, result: { content: [{ type: "text", text: "{\"saved\":1}" }], isError: false } }
+```
+
 - Every response has `jsonrpc: "2.0"` and the request's `id`, with either `result` or `error: { code, message }`.
 - A request without an `id` is a notification: do the work, return `null`.
 - `initialize`: result `{ protocolVersion, capabilities: { tools: {} }, serverInfo: { name, version } }`, echoing the

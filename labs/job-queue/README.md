@@ -10,6 +10,15 @@ at once. Write the four queue functions so that:
 - `fail(db, jobId, workerId, message)` records the error. Under 3 attempts it goes back to `pending` with `run_after`
   pushed out by 2 to the power of `attempts` seconds. At 3 attempts it becomes `dead`, for someone to look at.
 
+```js
+await enqueue(db, "email", { to: "ana@example.com" });
+const job = await claimNext(db, "w1");
+[job.status, job.locked_by, job.attempts];
+// → ["running", "w1", 1]
+await claimNext(db, "w2");
+// → null
+```
+
 The starter reads the next job, then updates it, in two steps. Five workers asking at once all read the same job.
 
 Then explain why jobs need to be safe to run twice anyway, and what the 30-second lease trades off.

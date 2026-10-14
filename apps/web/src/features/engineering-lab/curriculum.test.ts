@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { attachPoints, POINTS_PER_TOPIC, type TopicMap } from "@ken-os/domain";
+import { attachPoints, hasWorkedExample, POINTS_PER_TOPIC, type TopicMap } from "@ken-os/domain";
 import { labs, pointsReview, topicMap } from "./generated/curriculum.generated";
 
 // The curriculum and its assessment points (docs/architecture/engineering-rebuild.md, section 1).
@@ -93,4 +93,17 @@ test("attachPoints rejects unknown topics and the wrong number of points", () =>
     /expected 4 to 6/,
   );
   assert.throws(() => attachPoints(map, { status: "approved", topics: full }), /reviewedOn/);
+});
+
+test("every code exercise shows at least one example call and its result under Details", () => {
+  const missing = labs.filter((lab) => lab.runner !== "probe" && !hasWorkedExample(lab.readme)).map((lab) => lab.id);
+  assert.deepEqual(missing, []);
+});
+
+test("a worked example is a code block under Details with a call and an arrow to its result", () => {
+  const task = "Total the cart.";
+  assert.equal(hasWorkedExample(`${task}\n\n\`\`\`js\ntotal([2, 3]);\n// → 5\n\`\`\``), true);
+  assert.equal(hasWorkedExample(`${task}\n\nPass a list of prices and get their sum.`), false, "prose only");
+  assert.equal(hasWorkedExample(`${task}\n\n\`\`\`js\ntotal([2, 3]);\n\`\`\``), false, "no result");
+  assert.equal(hasWorkedExample(`\`\`\`js\ntotal([2, 3]); // → 5\n\`\`\``), false, "not under Details");
 });

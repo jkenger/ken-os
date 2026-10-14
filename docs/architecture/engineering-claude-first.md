@@ -242,6 +242,20 @@ Built 13 Oct 2026 on `feat/claude-links-in-app`, at the owner's request: everyth
 
 **Verified:** `pnpm test` (149, including `claude-instructions.test.ts`), `pnpm check`, `pnpm build`, `pnpm format:check`, `test:db:engineering` and `test:db:connector`. On the local server at phone width, with real clicks: the panel with all three steps, Copy on the address, Show all, a saved Project link turning step 3 to Saved with Open Project, and the "No roadmap" notice switching from Claude setup to Plan with Claude. Plan new roadmap in the header wasn't seen, since the local database has no saved roadmap. The test link was cleared afterwards.
 
+## 9g. Exercise debugging
+
+Built 14 Oct 2026 on `feat/exercise-debugging`. The owner got stuck on what an exercise's inputs were, not on the idea: a React exercise failed with "Expected 6, got (n) => n + 1" and nothing showed that `queue` was `[5, (n) => n + 1]`.
+
+- **Each test shows what happened inside it.** `runner/harness.ts` keeps `console.log`, `warn` and `error` per test, and records every call a test makes to the owner's functions: the arguments as they were passed and what came back or was thrown. Values print the way they'd be written in code: functions as their source (long ones as their start, like `async (arg) => …`), objects inline when short and indented when long.
+- **How calls are recorded:** the tests run in a block that shadows each top-level function or class in the owner's code with a recording copy (a `Proxy`). Variables stay shared, so a test can still set the owner's `let`. `assert.equal` compares the originals, so a function returned by the owner still equals the one the test holds. Calls are kept for failing tests only, at most 20 per test.
+- **Expected against got** comes as a line diff (`runner/diff.ts`), with the part of a line that differs highlighted and the path of the first difference, like `[1].qty`.
+- **Tests tab** next to Code shows the test source, read-only.
+- **Try it** runs the owner's code with their own input, without the tests, and shows the value and console. The tests' helpers (fakes, sample data) are loaded so a call can use them. It starts from the task's first example, and **Try** on a recorded call loads that call when it's code that runs as written.
+- **Every exercise has a worked example.** A task needs a code block after its first paragraph with a call and `// → result` (`hasWorkedExample` in the domain package). `save_exercise` refuses a task without one and says the format; `lab:generate` refuses a repo lab without one. All 35 code labs got one, and `runner.test.ts` runs every example against the lab's solution, so an example can't drift from the code. Claude exercises saved before this keep working, without an example.
+- **Nothing stored changed.** Console output, calls and diffs live only on the page. A run still saves each test's name, pass and error message.
+
+**Verified:** `pnpm test`, `pnpm check`, `pnpm build`. On the local server, on a temporary preview page (removed) since the app's own pages need a sign-in: the React case shows `getFinalState(0, [5, (n) => n + 1])` returning `(n) => n + 1` with a diff; a `console.log` inside the loop shows under each test; Try it runs the task's example on the starter; the Tests tab shows the test source. Diff and console colours measure at least 4.5:1 in light and dark.
+
 ## 10. Done when
 
 1. Claude plans a roadmap from a goal and a conversation about the owner's background, and it appears on `/engineering`.

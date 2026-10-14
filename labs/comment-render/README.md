@@ -12,6 +12,11 @@ The HTML it should return:
 
 When there's no usable website, the author is plain text instead of a link: `<span>Ana</span>`.
 
+```js
+renderComment({ author: "Ana", text: "Hi" });
+// → "<article class=\"comment\"><span>Ana</span><p>Hi</p></article>"
+```
+
 The starter pastes the strings straight into the template, so a comment like `<img src=x onerror=...>` runs code in
 every reader's browser. Fix it:
 

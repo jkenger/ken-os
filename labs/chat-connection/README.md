@@ -1,6 +1,14 @@
 `ChatRoom({ roomId, serverUrl }, { useEffect })` is a component that must stay connected to the chat room it shows.
 `createConnection(serverUrl, roomId)` returns an object with `connect()` and `disconnect()`.
 
+```js
+// mount, events and createConnection come from the tests
+const room = mount(ChatRoom, { roomId: "general", serverUrl: "https://a.chat" });
+room.rerender({ roomId: "music", serverUrl: "https://a.chat" });
+events;
+// → ["connect general @ https://a.chat", "disconnect general @ https://a.chat", "connect music @ https://a.chat"]
+```
+
 The tests run it in a small stand-in for React with React's `useEffect` rules: after each render, an effect runs again
 only if one of its dependencies changed (`Object.is`), the previous run's cleanup runs first, and every cleanup runs
 when the component unmounts.

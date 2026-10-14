@@ -6,6 +6,12 @@ show its connection string to anyone.
 
 Every body must be `{ error: { code, message } }`, plus `fields` for validation errors:
 
+```js
+const error = Object.assign(new Error("Order not found"), { name: "NotFoundError" });
+toErrorResponse(error);
+// → { status: 404, body: { error: { code: "not_found", message: "Order not found" } } }
+```
+
 | `error.name`      | Status | `code`          | `message`                                                               |
 | ----------------- | ------ | --------------- | ----------------------------------------------------------------------- |
 | `ValidationError` | 400    | `invalid_input` | the error's message; `fields` maps each issue's `path` to its `message` |

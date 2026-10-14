@@ -4,6 +4,15 @@ Move the search state into the page, so the box, the list and the summary always
 `resultList` that shows matching items, and a `summary()` line such as `2 of 5`. Today each part keeps its own copy of
 what it needs, so typing in the box doesn't change the list, and the summary stays at its first number.
 
+```js
+const page = createSearchPage(["Apple", "Banana", "Grape"]);
+page.filterBox.type("ap");
+page.resultList.visible();
+// → ["Apple", "Grape"]
+page.summary();
+// → "2 of 3"
+```
+
 Keep the same parts and calls:
 
 - `filterBox.type(text)` sets the search text and `filterBox.value()` returns it.

@@ -12,5 +12,14 @@ tagDrops }`:
   - `tagDrops`: tags whose pass rate fell by more than `maxDrop`.
   - `ok` only when the overall rate fell by no more than `maxDrop` and no tag did.
 
+```js
+// cases, oldPrompt and grade come from the tests
+const results = await runEval(cases, oldPrompt, grade);
+results[0];
+// → { id: "r1", tags: ["returns"], pass: true, output: "Yes, within 30 days." }
+report(results).byTag.shipping;
+// → { total: 3, passed: 2, passRate: 0.6666666666666666 }
+```
+
 Then explain where the cases come from, when to grade with code versus a model, and why a small eval set run often
 beats a big one run rarely.

@@ -81,3 +81,19 @@ test("inputs are checked before anything runs", async () => {
     "Claude can't write as the owner",
   );
 });
+
+test("a saved exercise must show an example call and its result", () => {
+  const exercise = {
+    runner: "browser",
+    task: "Return the sum of the prices.",
+    starter: "function total(prices) { return 0; }",
+    tests: "test('sums', () => assert.equal(total([2, 3]), 5));",
+    solution: "function total(prices) { return prices.reduce((a, b) => a + b, 0); }",
+  };
+  const parse = (task: string) =>
+    toolInputs.save_exercise.safeParse({ topicId: "react.effects", exercise: { ...exercise, task } });
+  const refused = parse(exercise.task);
+  assert.equal(refused.success, false);
+  assert.match(JSON.stringify(refused.error?.issues), /example/);
+  assert.equal(parse(`${exercise.task}\n\n\`\`\`js\ntotal([2, 3]);\n// → 5\n\`\`\``).success, true);
+});

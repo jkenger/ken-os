@@ -11,5 +11,12 @@ Make `parseOrder` return `{ ok: true, value }` or `{ ok: false, errors }`:
 - `errors` lists every problem at once, each as `{ path, message }`, where `path` is the field name, or `"body"`
   when the body isn't an object.
 
+```js
+parseOrder({ email: " Ken@Example.com ", sku: "ABC-1234", quantity: 3, isAdmin: true });
+// → { ok: true, value: { email: "ken@example.com", sku: "ABC-1234", quantity: 3, note: null } }
+parseOrder({ email: "ken@example.com", sku: "ABC-1234", quantity: "3" }).errors.map((error) => error.path);
+// → ["quantity"]
+```
+
 Then explain why a `price` or `isAdmin` field in the body must never reach the database, even if the type says it
 isn't there.
