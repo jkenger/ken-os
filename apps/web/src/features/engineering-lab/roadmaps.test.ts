@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { TopicStatus } from "@ken-os/domain";
 import type { RoadmapChapter } from "./roadmap-store";
-import { canAddRoadmap, orderRoadmaps, progressOnRoadmaps, ROADMAP_LIMIT } from "./roadmaps";
+import { canAddRoadmap, orderRoadmaps, progressOnRoadmaps, ROADMAP_LIMIT, toCheck } from "./roadmaps";
 
 // Several roadmaps at once (docs/architecture/engineering-roadmaps.md).
 
@@ -66,4 +66,36 @@ test("a topic on two roadmaps reports Next topic and chapter done for each", () 
     { roadmapId: "sys", goal: "System design", next: { id: "t1", title: "T1" }, chapterDone: "Chapter s" },
   ]);
   assert.deepEqual(progressOnRoadmaps(views, "nowhere"), []);
+});
+
+test("topics Ready to check are listed for the fresh check, the longest waiting first", () => {
+  const topic = (id: string, status: TopicStatus, changedAt: string | null = null) => ({
+    id,
+    title: id,
+    custom: false,
+    status,
+    changedAt,
+    learnedAt: null,
+  });
+  const chapters: RoadmapChapter[] = [
+    {
+      id: "react",
+      title: "React",
+      area: "Frontend",
+      topics: [
+        topic("react.state", "ready_to_check", "2026-10-12T00:00:00Z"),
+        topic("react.effects", "in_progress", "2026-10-13T00:00:00Z"),
+      ],
+    },
+    {
+      id: "js",
+      title: "JavaScript",
+      area: "Frontend",
+      topics: [topic("js.closures", "ready_to_check", "2026-10-10T00:00:00Z")],
+    },
+  ];
+  assert.deepEqual(
+    toCheck({ chapters }).map((item) => item.id),
+    ["js.closures", "react.state"],
+  );
 });

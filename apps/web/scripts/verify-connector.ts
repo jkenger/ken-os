@@ -144,6 +144,7 @@ async function main() {
       "report_progress",
       "save_exercise",
       "save_note",
+      "save_review",
       "save_roadmap",
     ]);
     const state = await (

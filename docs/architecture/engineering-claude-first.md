@@ -35,12 +35,13 @@ A mockup of the graph, lanes and panel was reviewed in chat on 13 Oct 2026.
 
 ## 2. Topic states
 
-| State       | Set by                                                                       |
-| ----------- | ---------------------------------------------------------------------------- |
-| Not started | The default; or the owner, to undo                                           |
-| In progress | Claude's first report on the topic                                           |
-| Learned     | Claude, with evidence (below); or the owner, with one line on why            |
-| Skipped     | The owner on the roadmap, or Claude when the owner says they already know it |
+| State          | Set by                                                                       |
+| -------------- | ---------------------------------------------------------------------------- |
+| Not started    | The default; or the owner, to undo                                           |
+| In progress    | Claude's first report on the topic                                           |
+| Ready to check | Claude, once every point is taught and the review sheet is saved (§9h)       |
+| Learned        | Claude, with evidence (below); or the owner, with one line on why            |
+| Skipped        | The owner on the roadmap, or Claude when the owner says they already know it |
 
 - **Learned needs evidence.** `report_progress` refuses Learned without the owner's explanation, word for word, given without hints, plus Claude's one-line note on how they got there. Both show in the topic's reports.
 - **The owner can undo anything.** Claude can't undo a state the owner set.
@@ -69,7 +70,7 @@ A list of short notes per topic. Each is marked You or Claude, with a date. The 
 
 ## 5. Claude's tools
 
-Nine, all in `features/engineering-lab/agent-tools.ts`: the eight from slice 1 and `save_roadmap`. (The first version of this table also listed `get_resume`, ten rows in all; it was dropped, §3a.) The 40-saves-a-day limit, owner-only sign-in and Disconnect are unchanged.
+Ten, all in `features/engineering-lab/agent-tools.ts`: the eight from slice 1, `save_roadmap`, and `save_review` (§9h). (The first version of this table also listed `get_resume`, ten rows in all; it was dropped, §3a.) The 40-saves-a-day limit, owner-only sign-in and Disconnect are unchanged.
 
 | Tool                | Change                   | Does                                                                                                                           |
 | ------------------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
@@ -82,6 +83,7 @@ Nine, all in `features/engineering-lab/agent-tools.ts`: the eight from slice 1 a
 | `report_progress`   | New                      | `(topicId, summary, state?, evidence?)`. Adds a report; first report sets In progress; Learned needs evidence; Skipped allowed |
 | `save_note`         | New                      | Adds a Claude note to a topic                                                                                                  |
 | `save_roadmap`      | New                      | Saves a roadmap the owner agreed to: goal, chapters, topics, Claude's added topics                                             |
+| `save_review`       | Added 14 Oct 2026        | A new version of the topic's review sheet: each point's question, explanation, example and mistake, and key terms (§9h)        |
 
 Removed: `save_lesson`, `save_proof_question`. The rule that replaces "no tool can grade": **no tool can mark Learned without the owner's words as evidence, and no tool can undo the owner's changes.**
 
@@ -255,6 +257,21 @@ Built 14 Oct 2026 on `feat/exercise-debugging`. The owner got stuck on what an e
 - **Nothing stored changed.** Console output, calls and diffs live only on the page. A run still saves each test's name, pass and error message.
 
 **Verified:** `pnpm test`, `pnpm check`, `pnpm build`. On the local server, on a temporary preview page (removed) since the app's own pages need a sign-in: the React case shows `getFinalState(0, [5, (n) => n + 1])` returning `(n) => n + 1` with a diff; a `console.log` inside the loop shows under each test; Try it runs the task's example on the starter; the Tests tab shows the test source. Diff and console colours measure at least 4.5:1 in light and dark.
+
+## 9h. Review sheets
+
+Built 14 Oct 2026 on `feat/topic-review-sheet`. Notes are append-only, short and scattered: a topic ends up with four or five saved at different moments, with no order and no way to update them, and the teaching itself sits in long chats. The owner needed one place to review a topic without scrolling back through Claude.
+
+- **One review sheet per topic.** Claude writes it with `save_review` as structured data: for each point (p1, p2, …) a question, a 2 to 3 line explanation, one small code example, and the mistake to avoid, marked as the owner's own when they made it in a session; then the key terms with one-line meanings. It must cover each of the topic's points exactly once (`checkSheet` in `review-sheet.ts`), and is stored in point order.
+- **Versioned, never edited.** Each save is a new row in `lab_reviews` with the next version number; the latest shows, and the Review tab can open an older one. Only Claude writes sheets, and each save counts toward the 40 a day. `get_topic` returns the latest sheet, so Claude can update it after the fresh check.
+- **Ready to check** sits between In progress and Learned. Claude reports it once every point is taught and the sheet is saved. `get_current_state` lists these topics in `toCheck`, the longest waiting first, next to `toRefresh`, and the Project instructions say to start the session with that check. A Ready to check topic can still be the roadmap's current topic.
+- **The topic panel has two tabs.** Topic keeps the steps, the status, Link chat, and the reports, now a **Sessions** timeline: date, what was covered, and where the owner got stuck (`report_progress` takes an optional `stuck` line, a new `stuck` column on `lab_topic_events`). Review shows the sheet, the terms, the owner's code from their latest passing run, their own explanation from the Learned evidence, then the notes, which keep working as before.
+- **Test yourself** on the Review tab hides every answer and shows each point as its question, with Show answer per point.
+- **Search reviews** on the Engineering page finds a term across the latest sheet of every topic and every note, terms first, then points, then notes. A hit opens its topic on the Review tab. It searches the text as typed, ignoring case, from two letters.
+
+Project instructions version moved to 2026-10-15 so Claude setup asks for a fresh paste.
+
+**Verified:** `pnpm test`, `pnpm check`, `pnpm build`, `test:db:connector`, and `test:db:engineering` (versions, the latest showing, old ones kept, `toCheck`, the stuck line, the passing code and explanation, search per owner). On the local server, signed in, with a sample sheet saved on Call stack through the tools: the Topic tab shows Ready to check and the Sessions timeline with the stuck line; the Review tab shows the sheet, Your mistake, terms and notes, and opens version 1; Test yourself shows only the questions, each with Show answer; Search reviews finds "frame" as a term, in points and in a note, and opens the topic on its Review tab. No sideways scroll at 375px.
 
 ## 10. Done when
 

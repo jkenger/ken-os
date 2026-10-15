@@ -3,14 +3,15 @@ import type { TopicEventKind } from "./progress";
 // A topic's status in the Claude-first Engineering module. Spec: docs/architecture/engineering-claude-first.md,
 // section 2. Like the old progress, it's rebuilt from the topic's events, so it can be recomputed at any time.
 
-export const TOPIC_STATUSES = ["not_started", "in_progress", "learned", "skipped"] as const;
+/** Ready to check: every point is taught, and the next session starts with the fresh check. */
+export const TOPIC_STATUSES = ["not_started", "in_progress", "ready_to_check", "learned", "skipped"] as const;
 export type TopicStatus = (typeof TOPIC_STATUSES)[number];
 
 /** Who set the current status: the owner, Claude, or the old Ken OS flow it was carried over from. */
 export type StatusSetter = "owner" | "claude" | "ken-os";
 
 /** What Claude may report as a status. Not started is only the owner's, to undo. */
-export const CLAUDE_STATUSES = ["in_progress", "learned", "skipped"] as const;
+export const CLAUDE_STATUSES = ["in_progress", "ready_to_check", "learned", "skipped"] as const;
 export type ClaudeStatus = (typeof CLAUDE_STATUSES)[number];
 
 /** Learned topics older than this are listed for Claude, so it can offer a refresh. Nothing changes on its own. */

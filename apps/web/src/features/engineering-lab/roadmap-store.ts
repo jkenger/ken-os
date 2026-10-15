@@ -47,8 +47,8 @@ export interface RoadmapView {
   /** When it was archived; null while active. */
   archivedAt: string | null;
   chapters: RoadmapChapter[];
-  counts: { learned: number; skipped: number; inProgress: number; total: number };
-  /** The most recently changed In progress topic, else the first Not started one. */
+  counts: { learned: number; skipped: number; inProgress: number; readyToCheck: number; total: number };
+  /** The most recently changed In progress or Ready to check topic, else the first Not started one. */
   current: { id: string; title: string; chapterId: string; area: string; chapter: string; status: TopicStatus } | null;
 }
 
@@ -148,7 +148,7 @@ function buildView(
   }));
   const all = chapters.flatMap((chapter) => chapter.topics.map((topic) => ({ ...topic, chapter })));
   const inProgress = all
-    .filter((topic) => topic.status === "in_progress")
+    .filter((topic) => topic.status === "in_progress" || topic.status === "ready_to_check")
     .sort((a, b) => (b.changedAt ?? "").localeCompare(a.changedAt ?? ""));
   const pick = inProgress[0] ?? all.find((topic) => topic.status === "not_started");
   const count = (status: TopicStatus) => all.filter((topic) => topic.status === status).length;
@@ -163,6 +163,7 @@ function buildView(
       learned: count("learned"),
       skipped: count("skipped"),
       inProgress: count("in_progress"),
+      readyToCheck: count("ready_to_check"),
       total: all.length,
     },
     current: pick

@@ -109,7 +109,7 @@ async function main() {
 
       const exerciseInput = (starter: string) => ({
         runner: "browser",
-        task: "Make counter() count.",
+        task: "Make counter() count.\n\n```js\nconst c = counter();\nc();\nc();\n// → 2\n```",
         tests: "test('counts', () => { const c = counter(); c(); assert.equal(c(), 2); });",
         starter,
         solution: "function counter() { let n = 0; return () => ++n; }",
@@ -350,7 +350,7 @@ async function main() {
         topicId: "custom.llm_as_judge",
         exercise: {
           runner: "browser",
-          task: "Score two answers.",
+          task: "Score two answers.\n\n```js\nscore();\n// → 1\n```",
           starter: "function score() { return 0; }",
           tests: "test('scores', () => { assert.equal(score(), 1); });",
           solution: "function score() { return 1; }",
@@ -641,6 +641,111 @@ async function main() {
       console.log("ok - summary: a finished roadmap lists each topic with the owner's words");
     } finally {
       await db().delete(users).where(eq(users.id, planner));
+    }
+
+    // Review sheets, sessions and Ready to check (engineering-claude-first.md, section 9h).
+    const reviewer = `engineering-check-${randomUUID()}`;
+    await db()
+      .insert(users)
+      .values({ id: reviewer, email: `${reviewer}@example.invalid`, name: "Engineering check (review)" });
+    try {
+      const reviews = await import("../src/features/engineering-lab/review-store");
+      const call = (name: string, input: unknown) =>
+        tools.callAgentTool(reviewer, name, input) as Promise<Record<string, any>>;
+      const topicId = "rel.retry_backoff";
+      const { points } = await anyTopic.requireAnyTopic(reviewer, topicId);
+      const sheetFor = (mistake: string, count = points.length) => ({
+        points: Array.from({ length: count }, (_, index) => ({
+          pointId: `p${count - index}`,
+          question: `Question ${count - index}?`,
+          explanation: "Wait longer after each failure, so a struggling service gets room to recover.",
+          example: "const delay = Math.min(base * 2 ** attempt, cap);",
+          mistake,
+          ownMistake: true,
+        })),
+        terms: [{ term: "Exponential backoff", meaning: "Doubling the wait after each failed try." }],
+      });
+
+      assert.equal((await reviews.getReview(reviewer, topicId)).sheet, null, "no sheet before Claude writes one");
+      await assert.rejects(call("save_review", { topicId, sheet: sheetFor("x", points.length - 1) }), /Missing: p/);
+      assert.equal((await call("save_review", { topicId, sheet: sheetFor("Retrying with no cap") })).version, 1);
+      assert.equal((await call("save_review", { topicId, sheet: sheetFor("Retrying right away") })).version, 2);
+      let review = await reviews.getReview(reviewer, topicId);
+      assert.equal(review.sheet?.version, 2, "the latest version shows");
+      assert.equal(review.sheet?.sheet.points[0].mistake, "Retrying right away");
+      assert.deepEqual(
+        review.sheet?.sheet.points.map((item) => item.pointId),
+        points.map((_, index) => `p${index + 1}`),
+        "stored in point order",
+      );
+      assert.deepEqual(
+        review.versions.map((item) => item.version),
+        [2, 1],
+        "old versions are kept",
+      );
+      assert.equal(
+        (await reviews.getReview(reviewer, topicId, 1)).sheet?.sheet.points[0].mistake,
+        "Retrying with no cap",
+      );
+      await assert.rejects(reviews.getReview(reviewer, topicId, 9), /No version 9/);
+      assert.equal((await reviews.getReview(other, topicId)).sheet, null, "sheets are per owner");
+      assert.equal((await call("get_topic", { topicId })).review.version, 2, "Claude reads the latest sheet");
+      assert.equal(await tools.claudeWritesToday(reviewer), 2, "sheets count toward the daily limit");
+      console.log("ok - review: save_review adds a version, the latest shows, old ones stay");
+
+      await call("report_progress", { topicId, summary: "Taught p1 to p3", stuck: "Forgot the cap on the delay" });
+      const ready = await call("report_progress", { topicId, summary: "Every point taught", status: "ready_to_check" });
+      assert.equal(ready.status, "ready_to_check");
+      const reports = await statuses.listReports(reviewer, topicId);
+      assert.equal(reports[1].stuck, "Forgot the cap on the delay", "a session keeps where the owner got stuck");
+      assert.equal(reports[0].stuck, null);
+      const state = await call("get_current_state", {});
+      assert.deepEqual(
+        state.toCheck.map((item: { topicId: string }) => item.topicId),
+        [topicId],
+        "the next session starts with the fresh check",
+      );
+      assert.equal(state.counts.readyToCheck, 1);
+      console.log("ok - review: sessions say where the owner got stuck, and Ready to check lists the topic");
+
+      await topics.recordExerciseRun(reviewer, topicId, {
+        labId: "retry-policy",
+        code: "function retryDelay() { return 0; }",
+        passed: 0,
+        failed: 4,
+        output: "",
+      });
+      assert.equal((await reviews.getReview(reviewer, topicId)).passingCode, null, "a failing run isn't shown");
+      await topics.recordExerciseRun(reviewer, topicId, {
+        labId: "retry-policy",
+        code: "function retryDelay(n) { return Math.min(100 * 2 ** n, 5000); }",
+        passed: 4,
+        failed: 0,
+        output: "",
+      });
+      const words = "Each retry waits twice as long as the one before, up to a cap, so the service can recover.";
+      await call("report_progress", {
+        topicId,
+        summary: "Fresh check passed",
+        status: "learned",
+        evidence: { explanation: words, note: "Unaided" },
+      });
+      review = await reviews.getReview(reviewer, topicId);
+      assert.match(review.passingCode?.code ?? "", /Math\.min/);
+      assert.equal(review.explanation?.text, words);
+      console.log("ok - review: the tab shows the passing code and the owner's own explanation");
+
+      await statuses.addNote(reviewer, topicId, "owner", "Backoff needs jitter too");
+      const hits = await reviews.searchAllReviews(reviewer, "BACKOFF");
+      assert.deepEqual(
+        hits.map((hit) => hit.where),
+        ["term", "note"],
+      );
+      assert.equal(hits[0].title, (await anyTopic.requireAnyTopic(reviewer, topicId)).title);
+      assert.deepEqual(await reviews.searchAllReviews(other, "backoff"), [], "search stays within the owner");
+      console.log("ok - review: search finds a term across sheets and notes");
+    } finally {
+      await db().delete(users).where(eq(users.id, reviewer));
     }
   } finally {
     await db().delete(users).where(eq(users.id, owner));

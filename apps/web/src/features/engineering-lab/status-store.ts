@@ -65,6 +65,8 @@ export async function topicStatus(userId: string, topicId: string): Promise<Topi
 
 export interface ReportInput {
   summary: string;
+  /** Where the owner got stuck this session, if anywhere. */
+  stuck?: string;
   status?: ClaudeStatus;
   /** Required for Learned: the owner's explanation word for word, and Claude's note on how they got there. */
   evidence?: { explanation: string; note: string };
@@ -102,6 +104,7 @@ export async function reportProgress(userId: string, topicId: string, input: Rep
     source: "claude",
     status,
     summary,
+    stuck: input.stuck?.trim().slice(0, SUMMARY_MAX) || null,
     evidence: status === "learned" ? input.evidence!.explanation.trim().slice(0, EVIDENCE_MAX) : null,
     evidenceNote: status === "learned" ? input.evidence!.note.trim().slice(0, SUMMARY_MAX) : null,
   });
@@ -122,6 +125,8 @@ export interface ReportView {
   at: string;
   by: "claude" | "owner";
   summary: string | null;
+  /** Where the owner got stuck in that session, from Claude's report. */
+  stuck: string | null;
   status: TopicStatus | null;
   evidence: string | null;
   evidenceNote: string | null;
@@ -146,6 +151,7 @@ export async function listReports(userId: string, topicId: string, limit = 50): 
     at: row.createdAt.toISOString(),
     by: row.kind === "report" ? "claude" : "owner",
     summary: row.summary,
+    stuck: row.stuck,
     status: row.status,
     evidence: row.evidence,
     evidenceNote: row.evidenceNote,

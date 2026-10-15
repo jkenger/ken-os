@@ -10,17 +10,22 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toaster";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { TopicPanelView } from "@/features/engineering-lab/roadmap-store";
 import type { NoteView, ReportView } from "@/features/engineering-lab/status-store";
 import { ClaudeLinkField } from "./claude-link-field";
 import { CodeSheet } from "./code-sheet";
+import { ReviewTab } from "./review-tab";
 import { StatusIcon, StatusLabel, statusWords } from "./status";
 import { TopicSteps } from "./topic-steps";
 
-// The roadmap's topic panel (docs/architecture/engineering-claude-first.md, section 1): the topic's steps, Learn →
-// Practice → Prove, with Next topic once it's done (engineering-progressive-flow.md, sections 2 and 3); the status, with a
-// menu to change it; Link chat; Claude's reports; and notes. The owner can set any status and edit or delete any note.
+// The roadmap's topic panel (docs/architecture/engineering-claude-first.md, section 1), in two tabs. Topic: the steps,
+// Learn → Practice → Prove, with Next topic once it's done (engineering-progressive-flow.md, sections 2 and 3); the
+// status, with a menu to change it; Link chat; and the sessions timeline from Claude's reports. Review: the review sheet
+// and notes (section 9h). The owner can set any status and edit or delete any note.
+
+export type TopicTab = "topic" | "review";
 
 const sectionTitle = "mb-2 text-xs font-semibold text-muted-foreground";
 const errorText = (error: unknown, fallback: string) => (error instanceof Error ? error.message : fallback);
@@ -110,15 +115,25 @@ function StatusMenu({ panel, onSaved }: { panel: TopicPanelView; onSaved: () => 
   );
 }
 
-function Reports({ reports }: { reports: ReportView[] }) {
+/** Claude's reports and the owner's status changes as a timeline, newest first: when, what was covered, where stuck. */
+function Sessions({ reports }: { reports: ReportView[] }) {
   if (!reports.length) {
-    return <p className="text-xs text-muted-foreground">No reports · Claude adds one as you learn</p>;
+    return <p className="text-xs text-muted-foreground">No sessions · Claude adds one as you learn</p>;
   }
   return (
-    <ul className="divide-y border-y">
+    <ol className="ml-1 border-l">
       {reports.map((report) => (
-        <li key={report.id} className="py-2.5 text-sm">
-          {report.summary && <p>{report.summary}</p>}
+        <li key={report.id} className="relative pb-4 pl-4 text-sm last:pb-0">
+          <span aria-hidden="true" className="absolute top-1.5 -left-[4.5px] size-2 rounded-full bg-border" />
+          <p className="text-xs text-muted-foreground">
+            {formatDate(report.at)} · {report.by === "claude" ? "Claude" : "You"}
+          </p>
+          {report.summary && <p className="mt-0.5">{report.summary}</p>}
+          {report.stuck && (
+            <p className="mt-1 text-xs">
+              <span className="font-semibold">Stuck:</span> {report.stuck}
+            </p>
+          )}
           {report.status && (
             <p className="mt-1">
               <StatusLabel status={report.status} />
@@ -130,12 +145,9 @@ function Reports({ reports }: { reports: ReportView[] }) {
               {report.evidenceNote && <span className="mt-1 block not-italic">Note: {report.evidenceNote}</span>}
             </blockquote>
           )}
-          <p className="mt-1 text-xs text-muted-foreground">
-            {report.by === "claude" ? "Claude" : "You"} · {formatDate(report.at)}
-          </p>
         </li>
       ))}
-    </ul>
+    </ol>
   );
 }
 
@@ -270,11 +282,16 @@ export function TopicSheet({
   roadmapId,
   roadmapActive,
   projectUrl,
+  tab,
+  onTabChange,
   onClose,
   onChanged,
   onSelect,
 }: {
   topicId: string | null;
+  /** Topic or Review; the page holds it, so search can open a topic on its review. */
+  tab: TopicTab;
+  onTabChange: (tab: TopicTab) => void;
   /** The roadmap it's opened on, for Next topic and chapter done. */
   roadmapId: string | null;
   /** False on an archived roadmap: the steps show, but not Next topic. */
@@ -330,61 +347,69 @@ export function TopicSheet({
             </div>
           )}
           {panel && (
-            <div className="grid gap-6 p-4">
-              {panel.gap && <p className="text-sm text-muted-foreground">{panel.gap}</p>}
-              {panel.custom && (
-                <section>
-                  <h3 className={sectionTitle}>Added by Claude · what to explain</h3>
-                  <ul className="list-disc space-y-1 pl-5 text-sm">
-                    {panel.points.map((line) => (
-                      <li key={line}>{line}</li>
-                    ))}
-                  </ul>
-                </section>
-              )}
-              <TopicSteps
-                panel={panel}
-                projectUrl={projectUrl}
-                onPractice={() => setCoding(true)}
-                onSelect={onSelect}
-                showNext={roadmapActive}
-              />
-              <StatusMenu panel={panel} onSaved={saved} />
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  aria-expanded={linking}
-                  onClick={() => setLinking((open) => !open)}
-                >
-                  <IconLink aria-hidden="true" />
-                  {panel.chatUrl ? "Change chat" : "Link chat"}
-                </Button>
-              </div>
-              {linking && (
-                <ClaudeLinkField
-                  label="Chat for this topic"
-                  value={panel.chatUrl}
-                  endpoint={`/api/lab/topics/${encodeURIComponent(panel.id)}/chat`}
-                  placeholder="https://claude.ai/chat/…"
-                  helper="Paste the chat you learned this topic in"
-                  savedTitle="Chat linked"
-                  onSaved={() => {
-                    setLinking(false);
-                    saved();
-                  }}
+            <Tabs value={tab} onValueChange={(next) => onTabChange(next as TopicTab)} className="gap-0">
+              <TabsList aria-label="Topic view" className="mx-4 mt-4">
+                <TabsTrigger value="topic">Topic</TabsTrigger>
+                <TabsTrigger value="review">Review</TabsTrigger>
+              </TabsList>
+              <TabsContent value="review" className="p-4">
+                <ReviewTab
+                  topicId={panel.id}
+                  notes={<Notes topicId={panel.id} notes={panel.notes} onSaved={saved} />}
                 />
-              )}
-              <section>
-                <h3 className={sectionTitle}>Reports</h3>
-                <Reports reports={panel.reports} />
-              </section>
-              <section>
-                <h3 className={sectionTitle}>Notes</h3>
-                <Notes topicId={panel.id} notes={panel.notes} onSaved={saved} />
-              </section>
-            </div>
+              </TabsContent>
+              <TabsContent value="topic" className="grid gap-6 p-4">
+                {panel.gap && <p className="text-sm text-muted-foreground">{panel.gap}</p>}
+                {panel.custom && (
+                  <section>
+                    <h3 className={sectionTitle}>Added by Claude · what to explain</h3>
+                    <ul className="list-disc space-y-1 pl-5 text-sm">
+                      {panel.points.map((line) => (
+                        <li key={line}>{line}</li>
+                      ))}
+                    </ul>
+                  </section>
+                )}
+                <TopicSteps
+                  panel={panel}
+                  projectUrl={projectUrl}
+                  onPractice={() => setCoding(true)}
+                  onSelect={onSelect}
+                  showNext={roadmapActive}
+                />
+                <StatusMenu panel={panel} onSaved={saved} />
+                <div className="flex flex-wrap gap-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    aria-expanded={linking}
+                    onClick={() => setLinking((open) => !open)}
+                  >
+                    <IconLink aria-hidden="true" />
+                    {panel.chatUrl ? "Change chat" : "Link chat"}
+                  </Button>
+                </div>
+                {linking && (
+                  <ClaudeLinkField
+                    label="Chat for this topic"
+                    value={panel.chatUrl}
+                    endpoint={`/api/lab/topics/${encodeURIComponent(panel.id)}/chat`}
+                    placeholder="https://claude.ai/chat/…"
+                    helper="Paste the chat you learned this topic in"
+                    savedTitle="Chat linked"
+                    onSaved={() => {
+                      setLinking(false);
+                      saved();
+                    }}
+                  />
+                )}
+                <section>
+                  <h3 className={sectionTitle}>Sessions</h3>
+                  <Sessions reports={panel.reports} />
+                </section>
+              </TabsContent>
+            </Tabs>
           )}
         </SheetContent>
       </Sheet>

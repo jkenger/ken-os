@@ -19,8 +19,10 @@ import { recordInstructionsVersion } from "./claude-links";
 import { LabInputError } from "./errors";
 import { exerciseChoice, exerciseVersions, getDraft, saveClaudeExercise } from "./exercise-store";
 import { alsoInProgress, chapterOnRoadmap, getRoadmap, getRoadmaps, saveRoadmap, toRefresh } from "./roadmap-store";
-import { progressOnRoadmaps } from "./roadmaps";
+import { progressOnRoadmaps, toCheck } from "./roadmaps";
 import { PLAN_LIMITS } from "./roadmap-plan";
+import { reviewSheetInput } from "./review-sheet";
+import { getReviewSheet, reviewsToday, saveReview } from "./review-store";
 import {
   addNote,
   claudeNotesToday,
@@ -100,11 +102,16 @@ export const toolInputs = {
   report_progress: z
     .object({
       topicId,
-      summary: text(SUMMARY_MAX).describe("One line on what happened, such as 'Explained cleanup; exercise next'"),
+      summary: text(SUMMARY_MAX).describe("One line on what was covered, such as 'Explained cleanup; exercise next'"),
+      stuck: text(SUMMARY_MAX)
+        .optional()
+        .describe("Where the owner got stuck this session, in one line, such as 'Thought cleanup runs on mount'"),
       status: z
         .enum(CLAUDE_STATUSES)
         .optional()
-        .describe("Only to change the status. The first report on a topic sets in_progress by itself"),
+        .describe(
+          "Only to change the status. The first report on a topic sets in_progress by itself. Set ready_to_check once every point (p1, p2, …) is taught, after save_review",
+        ),
       evidence: z
         .object({
           explanation: text(EVIDENCE_MAX).describe(
@@ -164,6 +171,14 @@ export const toolInputs = {
       body: text(NOTE_MAX).describe("A short note for the owner, such as a sharper way to say the idea"),
     })
     .strict(),
+  save_review: z
+    .object({
+      topicId,
+      sheet: reviewSheetInput.describe(
+        "The whole sheet: every point of the topic (p1, p2, …) once, and the key terms. It replaces the last version",
+      ),
+    })
+    .strict(),
 } as const;
 
 export type ToolName = keyof typeof toolInputs;
@@ -212,7 +227,7 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     name: "get_current_state",
     title: "Current state",
     description:
-      "Where the owner is: their active roadmaps (up to 3) with each one's goal, counts and current topic, most recently opened first; and for the roadmap opened last, the topic in progress, the next topics, and learned topics old enough to refresh. Call this first, with the instructions version.",
+      "Where the owner is: their active roadmaps (up to 3) with each one's goal, counts and current topic, most recently opened first; and for the roadmap opened last, the topic in progress, the next topics, topics ready to check (start the session with their fresh check), and learned topics old enough to refresh. Call this first, with the instructions version.",
     kind: "read",
     async run(userId, { instructionsVersion }) {
       const [roadmaps] = await Promise.all([
@@ -253,6 +268,10 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
           .filter((topic) => topic.status === "not_started" && topic.id !== current?.id)
           .slice(0, 3)
           .map((topic) => ({ topicId: topic.id, title: topic.title })),
+        // Every point taught: start the next session with the fresh check on these.
+        toCheck: toCheck(roadmap)
+          .slice(0, 5)
+          .map((topic) => ({ topicId: topic.id, title: topic.title, readySince: topic.changedAt })),
         toRefresh: toRefresh(roadmap)
           .slice(0, 5)
           .map((topic) => ({ topicId: topic.id, title: topic.title, learnedAt: topic.learnedAt })),
@@ -292,15 +311,16 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     name: "get_topic",
     title: "Topic",
     description:
-      "One topic: its place and status, what the owner should be able to explain (p1, p2, …), the latest reports, the owner's and your notes, and the current exercise's task, starter and tests (never the solution).",
+      "One topic: its place and status, what the owner should be able to explain (p1, p2, …), the latest reports, the owner's and your notes, the latest review sheet, and the current exercise's task, starter and tests (never the solution).",
     kind: "read",
     async run(userId, { topicId: id }) {
       const topic = await roadmapTopic(userId, id);
-      const [status, choice, reports, notes] = await Promise.all([
+      const [status, choice, reports, notes, review] = await Promise.all([
         topicStatus(userId, id),
         exerciseChoice(userId, topic),
         listReports(userId, id, 5),
         listNotes(userId, id),
+        getReviewSheet(userId, id),
       ]);
       const summary = {
         ...topicSummary(topic, status),
@@ -308,6 +328,8 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
         points: topic.points.map((text, index) => ({ id: `p${index + 1}`, text })),
         reports,
         notes,
+        // The latest review sheet, to update with save_review after the fresh check.
+        review,
       };
       if (!choice)
         return {
@@ -455,8 +477,8 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     description:
       "Records what happened on a topic, shown to the owner in Ken OS. The first report starts the topic. Set status learned only after the owner explains the idea in their own words without hints, and pass that explanation word for word as evidence. Set skipped when the owner says they already know it. You can't change a status the owner set.",
     kind: "write",
-    async run(userId, { topicId: id, summary, status, evidence }) {
-      const saved = await reportProgress(userId, id, { summary, status, evidence });
+    async run(userId, { topicId: id, summary, stuck, status, evidence }) {
+      const saved = await reportProgress(userId, id, { summary, stuck, status, evidence });
       if (status !== "learned" && status !== "skipped") return { saved: true, ...saved };
       // So Claude can mark a finished chapter and offer what's next, on every roadmap with the topic
       // (engineering-progressive-flow.md, section 3, and engineering-roadmaps.md, section 2).
@@ -484,6 +506,18 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     async run(userId, { topicId: id, body }) {
       const note = await addNote(userId, id, "claude", body);
       return { saved: true, noteId: note.id };
+    },
+  },
+
+  save_review: {
+    name: "save_review",
+    title: "Save review sheet",
+    description:
+      "Writes the topic's review sheet, what the owner reads instead of scrolling back through chat: for each point (p1, p2, …) a question to test themselves, a 2 to 3 line explanation in plain language, one small code example, and the mistake to avoid (the one they made, when they made one, with ownMistake true); then the key terms with one-line meanings. Write it once every point is taught, then report ready_to_check. Update it after the fresh check. Each save is a new version that replaces the sheet; old versions are kept.",
+    kind: "write",
+    async run(userId, { topicId: id, sheet }) {
+      const saved = await saveReview(userId, id, sheet);
+      return { saved: true, version: saved.version };
     },
   },
 };
@@ -515,9 +549,12 @@ export async function callAgentTool(userId: string, name: string, input: unknown
 /** Saves Claude may make per day, across every write tool. Claude's writes cost Ken OS nothing; this stops a runaway loop. */
 export const CLAUDE_WRITE_LIMIT = 40;
 
-/** Claude's saved content and reports are events with source "claude"; its notes are rows in lab_notes. */
+/**
+ * Claude's saved content and reports are events with source "claude"; its notes are rows in lab_notes, and its review
+ * sheets rows in lab_reviews (only Claude writes those).
+ */
 export async function claudeWritesToday(userId: string) {
-  const [[events], notes] = await Promise.all([
+  const [[events], notes, reviews] = await Promise.all([
     db()
       .select({ n: sql<number>`count(*)::int` })
       .from(labTopicEvents)
@@ -530,6 +567,7 @@ export async function claudeWritesToday(userId: string) {
         ),
       ),
     claudeNotesToday(userId),
+    reviewsToday(userId),
   ]);
-  return (events?.n ?? 0) + notes;
+  return (events?.n ?? 0) + notes + reviews;
 }
