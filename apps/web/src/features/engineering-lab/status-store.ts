@@ -4,6 +4,7 @@ import {
   claudeMayChange,
   computeTopicStatus,
   EVIDENCE_MIN_LENGTH,
+  readStatus,
   type ClaudeStatus,
   type StatusEvent,
   type TopicStatus,
@@ -152,7 +153,7 @@ export async function listReports(userId: string, topicId: string, limit = 50): 
     by: row.kind === "report" ? "claude" : "owner",
     summary: row.summary,
     stuck: row.stuck,
-    status: row.status,
+    status: readStatus(row.status),
     evidence: row.evidence,
     evidenceNote: row.evidenceNote,
   }));

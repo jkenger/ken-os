@@ -694,19 +694,33 @@ async function main() {
       console.log("ok - review: save_review adds a version, the latest shows, old ones stay");
 
       await call("report_progress", { topicId, summary: "Taught p1 to p3", stuck: "Forgot the cap on the delay" });
-      const ready = await call("report_progress", { topicId, summary: "Every point taught", status: "ready_to_check" });
-      assert.equal(ready.status, "ready_to_check");
-      const reports = await statuses.listReports(reviewer, topicId);
-      assert.equal(reports[1].stuck, "Forgot the cap on the delay", "a session keeps where the owner got stuck");
-      assert.equal(reports[0].stuck, null);
-      const state = await call("get_current_state", {});
-      assert.deepEqual(
-        state.toCheck.map((item: { topicId: string }) => item.topicId),
-        [topicId],
-        "the next session starts with the fresh check",
+      await assert.rejects(
+        call("report_progress", { topicId, summary: "Every point taught", status: "ready_to_check" }),
+        /Invalid input/,
+        "Ready to check is gone",
       );
-      assert.equal(state.counts.readyToCheck, 1);
-      console.log("ok - review: sessions say where the owner got stuck, and Ready to check lists the topic");
+      await call("report_progress", { topicId, summary: "Every point taught" });
+      await db().insert(labTopicEvents).values({
+        id: randomUUID(),
+        userId: reviewer,
+        topicId,
+        kind: "report",
+        source: "claude",
+        status: "ready_to_check",
+        summary: "Saved before Ready to check was removed",
+      });
+      assert.equal(
+        (await statuses.topicStatus(reviewer, topicId)).status,
+        "in_progress",
+        "an old one reads as In progress",
+      );
+      const reports = await statuses.listReports(reviewer, topicId);
+      assert.equal(reports[0].status, "in_progress");
+      assert.equal(reports[2].stuck, "Forgot the cap on the delay", "a session keeps where the owner got stuck");
+      assert.equal(reports[1].stuck, null);
+      console.log(
+        "ok - review: sessions say where the owner got stuck, and an old Ready to check reads as In progress",
+      );
 
       await topics.recordExerciseRun(reviewer, topicId, {
         labId: "retry-policy",

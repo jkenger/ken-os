@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
-import { pathChapters, staleLearned, type TopicStatus, type TopicStatusView } from "@ken-os/domain";
+import { pathChapters, readStatus, staleLearned, type TopicStatus, type TopicStatusView } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { labCustomTopics, labRoadmaps, labTopicEvents } from "@/lib/schema";
 import { customTopics, requireAnyTopic } from "./any-topic";
@@ -47,8 +47,8 @@ export interface RoadmapView {
   /** When it was archived; null while active. */
   archivedAt: string | null;
   chapters: RoadmapChapter[];
-  counts: { learned: number; skipped: number; inProgress: number; readyToCheck: number; total: number };
-  /** The most recently changed In progress or Ready to check topic, else the first Not started one. */
+  counts: { learned: number; skipped: number; inProgress: number; total: number };
+  /** The most recently changed In progress topic, else the first Not started one. */
   current: { id: string; title: string; chapterId: string; area: string; chapter: string; status: TopicStatus } | null;
 }
 
@@ -148,7 +148,7 @@ function buildView(
   }));
   const all = chapters.flatMap((chapter) => chapter.topics.map((topic) => ({ ...topic, chapter })));
   const inProgress = all
-    .filter((topic) => topic.status === "in_progress" || topic.status === "ready_to_check")
+    .filter((topic) => topic.status === "in_progress")
     .sort((a, b) => (b.changedAt ?? "").localeCompare(a.changedAt ?? ""));
   const pick = inProgress[0] ?? all.find((topic) => topic.status === "not_started");
   const count = (status: TopicStatus) => all.filter((topic) => topic.status === status).length;
@@ -163,7 +163,6 @@ function buildView(
       learned: count("learned"),
       skipped: count("skipped"),
       inProgress: count("in_progress"),
-      readyToCheck: count("ready_to_check"),
       total: all.length,
     },
     current: pick
@@ -408,7 +407,7 @@ export async function getRoadmapSummary(userId: string, view: RoadmapView) {
     .orderBy(asc(labTopicEvents.createdAt));
   return roadmapSummary(
     view.chapters,
-    rows.map((row) => ({ ...row, at: row.at.toISOString() })),
+    rows.map((row) => ({ ...row, status: readStatus(row.status), at: row.at.toISOString() })),
   );
 }
 

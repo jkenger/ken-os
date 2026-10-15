@@ -19,7 +19,7 @@ import { recordInstructionsVersion } from "./claude-links";
 import { LabInputError } from "./errors";
 import { exerciseChoice, exerciseVersions, getDraft, saveClaudeExercise } from "./exercise-store";
 import { alsoInProgress, chapterOnRoadmap, getRoadmap, getRoadmaps, saveRoadmap, toRefresh } from "./roadmap-store";
-import { progressOnRoadmaps, toCheck } from "./roadmaps";
+import { progressOnRoadmaps } from "./roadmaps";
 import { PLAN_LIMITS } from "./roadmap-plan";
 import { reviewSheetInput } from "./review-sheet";
 import { getReviewSheet, reviewsToday, saveReview } from "./review-store";
@@ -109,9 +109,7 @@ export const toolInputs = {
       status: z
         .enum(CLAUDE_STATUSES)
         .optional()
-        .describe(
-          "Only to change the status. The first report on a topic sets in_progress by itself. Set ready_to_check once every point (p1, p2, …) is taught, after save_review",
-        ),
+        .describe("Only to change the status. The first report on a topic sets in_progress by itself"),
       evidence: z
         .object({
           explanation: text(EVIDENCE_MAX).describe(
@@ -227,7 +225,7 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     name: "get_current_state",
     title: "Current state",
     description:
-      "Where the owner is: their active roadmaps (up to 3) with each one's goal, counts and current topic, most recently opened first; and for the roadmap opened last, the topic in progress, the next topics, topics ready to check (start the session with their fresh check), and learned topics old enough to refresh. Call this first, with the instructions version.",
+      "Where the owner is: their active roadmaps (up to 3) with each one's goal, counts and current topic, most recently opened first; and for the roadmap opened last, the topic in progress, the next topics, and learned topics old enough to refresh. Call this first, with the instructions version.",
     kind: "read",
     async run(userId, { instructionsVersion }) {
       const [roadmaps] = await Promise.all([
@@ -268,10 +266,6 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
           .filter((topic) => topic.status === "not_started" && topic.id !== current?.id)
           .slice(0, 3)
           .map((topic) => ({ topicId: topic.id, title: topic.title })),
-        // Every point taught: start the next session with the fresh check on these.
-        toCheck: toCheck(roadmap)
-          .slice(0, 5)
-          .map((topic) => ({ topicId: topic.id, title: topic.title, readySince: topic.changedAt })),
         toRefresh: toRefresh(roadmap)
           .slice(0, 5)
           .map((topic) => ({ topicId: topic.id, title: topic.title, learnedAt: topic.learnedAt })),
@@ -513,7 +507,7 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     name: "save_review",
     title: "Save review sheet",
     description:
-      "Writes the topic's review sheet, what the owner reads instead of scrolling back through chat: for each point (p1, p2, …) a question to test themselves, a 2 to 3 line explanation in plain language, one small code example, and the mistake to avoid (the one they made, when they made one, with ownMistake true); then the key terms with one-line meanings. Write it once every point is taught, then report ready_to_check. Update it after the fresh check. Each save is a new version that replaces the sheet; old versions are kept.",
+      "Writes the topic's review sheet, what the owner reads instead of scrolling back through chat: for each point (p1, p2, …) a question to test themselves, a 2 to 3 line explanation in plain language, one small code example, and the mistake to avoid (the one they made, when they made one, with ownMistake true); then the key terms with one-line meanings. Write it once every point is taught, and update it after the fresh check. Each save is a new version that replaces the sheet; old versions are kept.",
     kind: "write",
     async run(userId, { topicId: id, sheet }) {
       const saved = await saveReview(userId, id, sheet);

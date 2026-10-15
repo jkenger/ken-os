@@ -1,10 +1,4 @@
-import {
-  IconCircleCheck,
-  IconCircleDashed,
-  IconListCheck,
-  IconPlayerSkipForward,
-  IconProgress,
-} from "@tabler/icons-react";
+import { IconCircleCheck, IconCircleDashed, IconPlayerSkipForward, IconProgress } from "@tabler/icons-react";
 import type { TopicStatus } from "@ken-os/domain";
 import { cn } from "@/lib/utils";
 
@@ -14,7 +8,6 @@ import { cn } from "@/lib/utils";
 export const statusWords: Record<TopicStatus, string> = {
   not_started: "Not started",
   in_progress: "In progress",
-  ready_to_check: "Ready to check",
   learned: "Learned",
   skipped: "Skipped",
 };
@@ -22,7 +15,6 @@ export const statusWords: Record<TopicStatus, string> = {
 const icons = {
   not_started: IconCircleDashed,
   in_progress: IconProgress,
-  ready_to_check: IconListCheck,
   learned: IconCircleCheck,
   skipped: IconPlayerSkipForward,
 } as const;
@@ -31,7 +23,6 @@ const icons = {
 export const statusTone: Record<TopicStatus, string> = {
   not_started: "text-muted-foreground",
   in_progress: "text-primary",
-  ready_to_check: "text-primary",
   learned: "text-primary",
   skipped: "text-muted-foreground",
 };

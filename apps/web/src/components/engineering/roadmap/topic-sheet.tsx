@@ -21,7 +21,7 @@ import { StatusIcon, StatusLabel, statusWords } from "./status";
 import { TopicSteps } from "./topic-steps";
 
 // The roadmap's topic panel (docs/architecture/engineering-claude-first.md, section 1), in two tabs. Topic: the steps,
-// Learn → Practice → Prove, with Next topic once it's done (engineering-progressive-flow.md, sections 2 and 3); the
+// Learn → Practice, with Next topic once it's done (engineering-progressive-flow.md, sections 2 and 3); the
 // status, with a menu to change it; Link chat; and the sessions timeline from Claude's reports. Review: the review sheet
 // and notes (section 9h). The owner can set any status and edit or delete any note.
 

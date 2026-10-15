@@ -35,17 +35,17 @@ A mockup of the graph, lanes and panel was reviewed in chat on 13 Oct 2026.
 
 ## 2. Topic states
 
-| State          | Set by                                                                       |
-| -------------- | ---------------------------------------------------------------------------- |
-| Not started    | The default; or the owner, to undo                                           |
-| In progress    | Claude's first report on the topic                                           |
-| Ready to check | Claude, once every point is taught and the review sheet is saved (§9h)       |
-| Learned        | Claude, with evidence (below); or the owner, with one line on why            |
-| Skipped        | The owner on the roadmap, or Claude when the owner says they already know it |
+| State       | Set by                                                                       |
+| ----------- | ---------------------------------------------------------------------------- |
+| Not started | The default; or the owner, to undo                                           |
+| In progress | Claude's first report on the topic                                           |
+| Learned     | Claude, with evidence (below); or the owner, with one line on why            |
+| Skipped     | The owner on the roadmap, or Claude when the owner says they already know it |
 
 - **Learned needs evidence.** `report_progress` refuses Learned without the owner's explanation, word for word, given without hints, plus Claude's one-line note on how they got there. Both show in the topic's reports.
 - **The owner can undo anything.** Claude can't undo a state the owner set.
 - **Nothing fades.** `get_current_state` lists Learned topics older than 60 days so Claude can offer a refresh. Nothing changes on its own.
+- **Ready to check was removed** on 15 Oct 2026 (`fix/remove-prove-and-ready-to-check`): the owner didn't use it. Events saved with it read as In progress (`readStatus`).
 - **State is rebuilt from events,** as today: `lab_topic_events` stays the source of truth and the cached state is recomputed on each new event.
 
 ## 3. Roadmaps
@@ -264,7 +264,7 @@ Built 14 Oct 2026 on `feat/topic-review-sheet`. Notes are append-only, short and
 
 - **One review sheet per topic.** Claude writes it with `save_review` as structured data: for each point (p1, p2, …) a question, a 2 to 3 line explanation, one small code example, and the mistake to avoid, marked as the owner's own when they made it in a session; then the key terms with one-line meanings. It must cover each of the topic's points exactly once (`checkSheet` in `review-sheet.ts`), and is stored in point order.
 - **Versioned, never edited.** Each save is a new row in `lab_reviews` with the next version number; the latest shows, and the Review tab can open an older one. Only Claude writes sheets, and each save counts toward the 40 a day. `get_topic` returns the latest sheet, so Claude can update it after the fresh check.
-- **Ready to check** sits between In progress and Learned. Claude reports it once every point is taught and the sheet is saved. `get_current_state` lists these topics in `toCheck`, the longest waiting first, next to `toRefresh`, and the Project instructions say to start the session with that check. A Ready to check topic can still be the roadmap's current topic.
+- **Ready to check** sat between In progress and Learned, with `get_current_state` listing those topics in `toCheck`. Removed on 15 Oct 2026 (§2).
 - **The topic panel has two tabs.** Topic keeps the steps, the status, Link chat, and the reports, now a **Sessions** timeline: date, what was covered, and where the owner got stuck (`report_progress` takes an optional `stuck` line, a new `stuck` column on `lab_topic_events`). Review shows the sheet, the terms, the owner's code from their latest passing run, their own explanation from the Learned evidence, then the notes, which keep working as before.
 - **Test yourself** on the Review tab hides every answer and shows each point as its question, with Show answer per point.
 - **Search reviews** on the Engineering page finds a term across the latest sheet of every topic and every note, terms first, then points, then notes. A hit opens its topic on the Review tab. It searches the text as typed, ignoring case, from two letters.

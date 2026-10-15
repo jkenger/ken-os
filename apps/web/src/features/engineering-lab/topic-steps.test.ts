@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { TopicStatus } from "@ken-os/domain";
-import { proveMessage } from "./ask-claude";
 import type { RoadmapChapter } from "./roadmap-store";
 import { chapterDone, nextTopic, topicSteps } from "./topic-steps";
 
@@ -27,27 +26,27 @@ const states = (steps: ReturnType<typeof topicSteps>) => steps.steps.map((step) 
 
 test("a new topic starts at Learn, with Practice optional", () => {
   const steps = topicSteps({ status: "not_started", practice: "not_tried" });
-  assert.deepEqual(states(steps), ["learn:todo", "practice:optional", "prove:todo"]);
+  assert.deepEqual(states(steps), ["learn:todo", "practice:optional"]);
   assert.equal(steps.main, "learn");
 });
 
-test("once Claude has started, Practice is next when there's an exercise, else Prove", () => {
+test("once Claude has started, Practice is next until a run passes, then back to the chat", () => {
   assert.equal(topicSteps({ status: "in_progress", practice: "not_tried" }).main, "practice");
   assert.equal(topicSteps({ status: "in_progress", practice: "tried" }).main, "practice", "a failing run isn't done");
   const passed = topicSteps({ status: "in_progress", practice: "passed" });
-  assert.deepEqual(states(passed), ["learn:done", "practice:done", "prove:todo"]);
-  assert.equal(passed.main, "prove");
+  assert.deepEqual(states(passed), ["learn:done", "practice:done"]);
+  assert.equal(passed.main, "learn");
   const none = topicSteps({ status: "in_progress", practice: "none" });
-  assert.deepEqual(states(none), ["learn:done", "practice:none", "prove:todo"]);
-  assert.equal(none.main, "prove");
+  assert.deepEqual(states(none), ["learn:done", "practice:none"]);
+  assert.equal(none.main, "learn");
 });
 
 test("Learned and Skipped topics are finished, and point to the next topic", () => {
   const learned = topicSteps({ status: "learned", practice: "not_tried" });
-  assert.deepEqual(states(learned), ["learn:done", "practice:optional", "prove:done"]);
+  assert.deepEqual(states(learned), ["learn:done", "practice:optional"]);
   assert.equal(learned.main, "next");
   const skipped = topicSteps({ status: "skipped", practice: "none" });
-  assert.deepEqual(states(skipped), ["learn:skipped", "practice:none", "prove:skipped"]);
+  assert.deepEqual(states(skipped), ["learn:skipped", "practice:none"]);
   assert.equal(skipped.main, "next");
 });
 
@@ -72,11 +71,4 @@ test("a chapter is done when every topic in it is Learned or Skipped", () => {
   assert.deepEqual(chapterDone(chapters, "a1"), { title: "Chapter a", learned: 1, total: 2 });
   assert.equal(chapterDone(chapters, "b1"), null);
   assert.equal(chapterDone(chapters, "elsewhere"), null);
-});
-
-test("Prove it asks Claude to check the topic, in the owner's own words", () => {
-  assert.equal(
-    proveMessage({ id: "js.closures", title: "Closures" }),
-    "Check me on Closures (Ken OS topic `js.closures`). Ask me to explain it in my own words.",
-  );
 });

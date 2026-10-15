@@ -7,28 +7,25 @@ import type { RoadmapChapter } from "./roadmap-store";
 /** Where the owner is with the topic's exercise: a run passed, they ran it, not yet, or there's no exercise. */
 export type PracticeState = "passed" | "tried" | "not_tried" | "none";
 
-export type StepId = "learn" | "practice" | "prove";
+export type StepId = "learn" | "practice";
 export type StepState = "done" | "todo" | "optional" | "skipped" | "none";
 
 /**
- * Learn → Practice → Prove, and which one gets the main button. Learn is done once Claude has started (In progress),
- * Practice once a run passed, Prove once the topic is Learned. Practice never blocks Prove. A finished topic (Learned or
- * Skipped) points to the next topic instead.
+ * Learn → Practice, and which one gets the main button. Learn is done once Claude has started (In progress), Practice
+ * once a run passed; after that the main button goes back to the chat. A finished topic (Learned or Skipped) points to
+ * the next topic instead.
  */
 export function topicSteps({ status, practice }: { status: TopicStatus; practice: PracticeState }) {
   const finished = status === "learned" || status === "skipped";
   const steps: { id: StepId; state: StepState }[] = [
     { id: "learn", state: status === "skipped" ? "skipped" : status === "not_started" ? "todo" : "done" },
     { id: "practice", state: practice === "passed" ? "done" : practice === "none" ? "none" : "optional" },
-    { id: "prove", state: status === "learned" ? "done" : status === "skipped" ? "skipped" : "todo" },
   ];
   const main: StepId | "next" = finished
     ? "next"
-    : status === "not_started"
-      ? "learn"
-      : practice === "tried" || practice === "not_tried"
-        ? "practice"
-        : "prove";
+    : status !== "not_started" && (practice === "tried" || practice === "not_tried")
+      ? "practice"
+      : "learn";
   return { steps, main };
 }
 

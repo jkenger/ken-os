@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { IconArrowRight } from "@tabler/icons-react";
 import { scoreProbe, type LabDefinition, type Topic } from "@ken-os/domain";
 import { CodeBlock, Markdown } from "@/components/lab/markdown";
 import { post } from "@/components/lab/topic/client";
@@ -102,15 +101,12 @@ export function Exercise({
   topic,
   data,
   progress,
-  onProve,
   onRefresh,
 }: {
   topic: Pick<Topic, "id">;
   data: ExercisePanel;
   /** From the topic's progress: whether the exercise stands passed, and whether the solution was opened since. */
   progress: { exercisePassed: boolean; solutionOpened: boolean };
-  /** Shown once the exercise passes. Omitted where there's no proof step. */
-  onProve?: () => void;
   /** Reloads this exercise's data after a run, a check, a switch or the solution. Defaults to reloading the page. */
   onRefresh?: () => void;
 }) {
@@ -128,7 +124,6 @@ export function Exercise({
   const autosave = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const checking = useExerciseCheck(topic.id, data.check, onRefresh);
   const probe = lab.runner === "probe" ? lab.probe! : null;
-  const passed = progress.exercisePassed;
 
   // Code saved only in this browser before autosave existed comes back once, then autosaves.
   useEffect(() => {
@@ -230,7 +225,6 @@ export function Exercise({
   }
 
   const results = state.kind === "results" ? state.results : null;
-  const allPassed = Boolean(results && results.length && results.every((item) => item.passed));
   return (
     <div className="@container">
       <div className={twoColumns}>
@@ -365,7 +359,7 @@ export function Exercise({
               <Dialog title="Show solution?" trigger="Show solution">
                 {(close) => (
                   <>
-                    <p>The exercise must pass again from the starter before Prove opens</p>
+                    <p>Try it again from the starter after reading it</p>
                     <Button type="button" className="mt-5" onClick={() => void showSolution(close)}>
                       Show solution
                     </Button>
@@ -409,12 +403,6 @@ export function Exercise({
           </div>
           {progress.solutionOpened && (
             <p className="mt-4 text-xs text-muted-foreground">Solution opened · pass again from the starter</p>
-          )}
-          {onProve && (allPassed || passed) && (
-            <Button type="button" className="mt-5" onClick={onProve}>
-              Continue to proof
-              <IconArrowRight size={18} aria-hidden="true" />
-            </Button>
           )}
         </aside>
       </div>

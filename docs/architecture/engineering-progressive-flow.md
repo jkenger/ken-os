@@ -49,15 +49,14 @@ Ken OS can't read the Claude Project, so the instructions report their own versi
 
 The topic panel shows the topic's own path under the title, the same one Claude follows in chat:
 
-| Step     | Done when                                        | Its action                                      |
-| -------- | ------------------------------------------------ | ----------------------------------------------- |
-| Learn    | The topic is In progress (Claude's first report) | **Ask Claude**, or **Continue chat** if linked  |
-| Practice | An exercise run passed all its tests             | **Try it in code**                              |
-| Prove    | The topic is Learned                             | **Prove it**: Ask Claude with a proving message |
+| Step     | Done when                                        | Its action                                     |
+| -------- | ------------------------------------------------ | ---------------------------------------------- |
+| Learn    | The topic is In progress (Claude's first report) | **Ask Claude**, or **Continue chat** if linked |
+| Practice | An exercise run passed all its tests             | **Try it in code**                             |
 
-- **Practice is optional.** It shows "Optional", and Prove is open whether or not it's done. A topic with no usable exercise shows Practice as "No exercise yet" and skips to Prove.
+- **Practice is optional.** It shows "Optional". A topic with no usable exercise shows Practice as "No exercise yet". Once Practice passes, or with no exercise, the main button goes back to Learn.
 - **One main button:** the first step not done gets the filled button; the others stay outline. All stay usable.
-- **Prove it** opens the Ask Claude dialog with: "Check me on <title> (Ken OS topic `<id>`). Ask me to explain it in my own words." Claude already won't mark Learned without the owner's words.
+- **Prove was removed** on 15 Oct 2026 (`fix/remove-prove-and-ready-to-check`): the owner didn't use it. The steps are Learn → Practice; a topic becomes Learned through Claude in chat or the status menu.
 - **Skipped and Learned topics** show the steps as done or skipped; the main button moves to Next topic (§3).
 - Reports, notes, the state menu and Link chat stay where they are, below the steps.
 

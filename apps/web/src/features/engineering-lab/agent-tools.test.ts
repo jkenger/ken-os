@@ -48,7 +48,6 @@ test("inputs are checked before anything runs", async () => {
     false,
     "only the owner resets a topic",
   );
-  assert.equal(toolInputs.report_progress.safeParse({ ...report, status: "ready_to_check" }).success, true);
   assert.equal(
     toolInputs.report_progress.safeParse({ ...report, stuck: "Thought the cleanup ran on mount" }).success,
     true,
