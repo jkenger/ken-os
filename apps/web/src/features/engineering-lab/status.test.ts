@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { claudeMayChange, computeTopicStatus, staleLearned, type StatusEvent, type TopicStatus } from "@ken-os/domain";
+import {
+  claudeMayChange,
+  computeTopicStatus,
+  staleLearned,
+  TOPIC_STATUSES,
+  type StatusEvent,
+  type TopicStatus,
+} from "@ken-os/domain";
 
 // Topic statuses (docs/architecture/engineering-claude-first.md, section 2).
 
@@ -84,4 +91,15 @@ test("Learned topics older than 60 days are listed for a refresh, oldest first",
     staleLearned(items, now).map((item) => item.id),
     ["older", "old"],
   );
+});
+
+test("Claude marks a topic Ready to check once every point is taught, and Learned still follows", () => {
+  const ready = computeTopicStatus([report(), report("ready_to_check")]);
+  assert.equal(ready.status, "ready_to_check");
+  assert.equal(ready.setBy, "claude");
+  assert.equal(ready.learnedAt, null);
+  assert.equal(claudeMayChange(ready, "learned"), true);
+  assert.equal(computeTopicStatus([report("ready_to_check"), report("learned")]).status, "learned");
+  assert.equal(claudeMayChange(computeTopicStatus([owner("in_progress")]), "ready_to_check"), false);
+  assert.deepEqual(TOPIC_STATUSES, ["not_started", "in_progress", "ready_to_check", "learned", "skipped"]);
 });

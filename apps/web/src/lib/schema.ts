@@ -17,6 +17,7 @@ import type {
   TopicState,
   TopicStatus,
 } from "@ken-os/domain";
+import type { ReviewSheet } from "../features/engineering-lab/review-sheet";
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -323,6 +324,8 @@ export const labTopicEvents = pgTable(
     status: text("status").$type<TopicStatus>(),
     /** report: Claude's one-line summary of the session. status_set: the owner's reason, for Learned. */
     summary: text("summary"),
+    /** report: where the owner got stuck that session, if anywhere. */
+    stuck: text("stuck"),
     /** report setting Learned: the owner's own explanation, word for word. */
     evidence: text("evidence"),
     /** report setting Learned: Claude's note on how the owner got there, such as hints given. */
@@ -499,6 +502,25 @@ export const labNotes = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("lab_notes_user_topic_idx").on(table.userId, table.topicId, table.createdAt)],
+);
+
+/**
+ * A topic's review sheet, one row per version (docs/architecture/engineering-claude-first.md, section 9h). Claude
+ * replaces the sheet by saving a new version; the latest one shows, and the old ones are kept.
+ */
+export const labReviews = pgTable(
+  "lab_reviews",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    topicId: text("topic_id").notNull(),
+    version: integer("version").notNull(),
+    sheet: jsonb("sheet").$type<ReviewSheet>().notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex("lab_reviews_user_topic_version_unique").on(table.userId, table.topicId, table.version)],
 );
 
 /**

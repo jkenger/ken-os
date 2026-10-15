@@ -6,14 +6,14 @@ import { agentTools, callAgentTool, toolInputs } from "./agent-tools";
 // The connector's tool layer (docs/architecture/engineering-claude-first.md, section 5). Database behaviour is in
 // scripts/verify-engineering.ts and scripts/verify-connector.ts; these check the rules that need no database.
 
-test("the tools are five reads and four writes", () => {
+test("the tools are five reads and five writes", () => {
   assert.deepEqual(
     agentTools.filter((tool) => tool.kind === "read").map((tool) => tool.name),
     ["get_current_state", "get_roadmap", "get_topic", "get_my_work", "get_history"],
   );
   assert.deepEqual(
     agentTools.filter((tool) => tool.kind === "write").map((tool) => tool.name),
-    ["save_exercise", "report_progress", "save_roadmap", "save_note"],
+    ["save_exercise", "report_progress", "save_roadmap", "save_note", "save_review"],
   );
 });
 
@@ -47,6 +47,12 @@ test("inputs are checked before anything runs", async () => {
     toolInputs.report_progress.safeParse({ ...report, status: "not_started" }).success,
     false,
     "only the owner resets a topic",
+  );
+  assert.equal(toolInputs.report_progress.safeParse({ ...report, status: "ready_to_check" }).success, true);
+  assert.equal(
+    toolInputs.report_progress.safeParse({ ...report, stuck: "Thought the cleanup ran on mount" }).success,
+    true,
+    "a report can say where the owner got stuck",
   );
   assert.equal(
     toolInputs.report_progress.safeParse({ ...report, status: "learned", evidence: { explanation: "x" } }).success,
@@ -96,4 +102,27 @@ test("a saved exercise must show an example call and its result", () => {
   assert.equal(refused.success, false);
   assert.match(JSON.stringify(refused.error?.issues), /example/);
   assert.equal(parse(`${exercise.task}\n\n\`\`\`js\ntotal([2, 3]);\n// → 5\n\`\`\``).success, true);
+});
+
+test("a review sheet is checked like any other input", () => {
+  const sheet = {
+    points: [
+      {
+        pointId: "p1",
+        question: "What causes a re-render?",
+        explanation: "Setting state with a new value.",
+        example: "setCount(1);",
+        mistake: "Mutating the array in place.",
+        ownMistake: true,
+      },
+    ],
+    terms: [{ term: "Updater function", meaning: "A function that gets the previous state." }],
+  };
+  assert.equal(toolInputs.save_review.safeParse({ topicId: "react.state", sheet }).success, true);
+  assert.equal(toolInputs.save_review.safeParse({ topicId: "react.state", sheet: { points: [] } }).success, false);
+  assert.equal(
+    toolInputs.save_review.safeParse({ topicId: "react.state", sheet, version: 2 }).success,
+    false,
+    "Claude can't pick or overwrite a version",
+  );
 });

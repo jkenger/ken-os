@@ -24,7 +24,8 @@ import { Notice } from "../kit";
 import { NewRoadmapDialog, RoadmapSwitcher, type ArchivedChoice, type RoadmapChoice } from "./roadmap-switcher";
 import { ClaudeSetup } from "./claude-setup";
 import { SetupChecklist } from "./setup-checklist";
-import { TopicSheet } from "./topic-sheet";
+import { ReviewSearch } from "./review-search";
+import { TopicSheet, type TopicTab } from "./topic-sheet";
 
 // The Claude-first Engineering page (docs/architecture/engineering-claude-first.md, section 1): the goal and progress,
 // the roadmap as a graph or lanes, and a topic panel. Claude teaches; this page shows where you are. A finished roadmap
@@ -63,6 +64,7 @@ export function RoadmapPage({
   const router = useRouter();
   const [layout, setLayout] = useState<Layout>("graph");
   const [selected, setSelected] = useState<string | null>(initialTopic);
+  const [topicTab, setTopicTab] = useState<TopicTab>("topic");
   const [setupOpen, setSetupOpen] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
   // The roadmap's address, kept in the URL with the open topic; the role's path has none.
@@ -95,8 +97,9 @@ export function RoadmapPage({
 
   // The open topic lives in the address, so a link can open it and Back closes it.
   const select = useCallback(
-    (topicId: string | null) => {
+    (topicId: string | null, tab: TopicTab = "topic") => {
       setSelected(topicId);
+      setTopicTab(tab);
       window.history.replaceState(null, "", engineering.roadmap(topicId, roadmapId));
     },
     [roadmapId],
@@ -170,6 +173,7 @@ export function RoadmapPage({
             )}
           </div>
           <div className="flex flex-wrap items-center gap-2">
+            <ReviewSearch onOpen={(topicId) => select(topicId, "review")} />
             <Tabs value={layout} onValueChange={(next) => changeLayout(next as Layout)}>
               <TabsList aria-label="Roadmap layout">
                 <TabsTrigger value="graph">Graph</TabsTrigger>
@@ -274,9 +278,11 @@ export function RoadmapPage({
         roadmapId={roadmapId}
         roadmapActive={view.active}
         projectUrl={projectUrl}
+        tab={topicTab}
+        onTabChange={setTopicTab}
         onClose={() => select(null)}
         onChanged={() => router.refresh()}
-        onSelect={select}
+        onSelect={(topicId) => select(topicId)}
       />
     </WorkspaceShell>
   );
