@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
   claudeMayChange,
   computeTopicStatus,
+  readStatus,
   staleLearned,
   TOPIC_STATUSES,
   type StatusEvent,
@@ -93,13 +94,13 @@ test("Learned topics older than 60 days are listed for a refresh, oldest first",
   );
 });
 
-test("Claude marks a topic Ready to check once every point is taught, and Learned still follows", () => {
-  const ready = computeTopicStatus([report(), report("ready_to_check")]);
-  assert.equal(ready.status, "ready_to_check");
-  assert.equal(ready.setBy, "claude");
-  assert.equal(ready.learnedAt, null);
-  assert.equal(claudeMayChange(ready, "learned"), true);
-  assert.equal(computeTopicStatus([report("ready_to_check"), report("learned")]).status, "learned");
-  assert.equal(claudeMayChange(computeTopicStatus([owner("in_progress")]), "ready_to_check"), false);
-  assert.deepEqual(TOPIC_STATUSES, ["not_started", "in_progress", "ready_to_check", "learned", "skipped"]);
+test("a Ready to check saved before it was removed reads as In progress", () => {
+  const old: StatusEvent = { ...report(), status: "ready_to_check" };
+  const view = computeTopicStatus([report(), old]);
+  assert.equal(view.status, "in_progress");
+  assert.equal(view.setBy, "claude");
+  assert.equal(computeTopicStatus([old, report("learned")]).status, "learned");
+  assert.equal(readStatus("ready_to_check"), "in_progress");
+  assert.equal(readStatus(null), null);
+  assert.deepEqual(TOPIC_STATUSES, ["not_started", "in_progress", "learned", "skipped"]);
 });

@@ -4,26 +4,22 @@ import type { ReactNode } from "react";
 import { IconArrowRight, IconCheck, IconCode, IconExternalLink, IconMinus } from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { proveMessage } from "@/features/engineering-lab/ask-claude";
 import type { TopicPanelView } from "@/features/engineering-lab/roadmap-store";
 import { topicSteps, type StepId, type StepState } from "@/features/engineering-lab/topic-steps";
 import { AskClaude } from "../ask-claude";
 
-// The path inside a topic (docs/architecture/engineering-progressive-flow.md, sections 2 and 3): Learn → Practice →
-// Prove, the same one Claude follows in chat, with the next step as the main button. A finished topic shows Next topic,
+// The path inside a topic (docs/architecture/engineering-progressive-flow.md, sections 2 and 3): Learn → Practice,
+// the same one Claude follows in chat, with the next step as the main button. A finished topic shows Next topic,
 // and Chapter done when it finished its chapter.
 
-const titles: Record<StepId, string> = { learn: "Learn", practice: "Practice", prove: "Prove" };
+const titles: Record<StepId, string> = { learn: "Learn", practice: "Practice" };
 
 function stateWord(id: StepId, state: StepState, practice: TopicPanelView["practice"]) {
   if (state === "skipped") return "Skipped";
   if (id === "learn") return state === "done" ? "Started" : "Not started";
-  if (id === "practice") {
-    if (state === "done") return "Passed";
-    if (state === "none") return "No exercise yet";
-    return practice === "tried" ? "Tried · optional" : "Optional";
-  }
-  return state === "done" ? "Learned" : "Not yet";
+  if (state === "done") return "Passed";
+  if (state === "none") return "No exercise yet";
+  return practice === "tried" ? "Tried · optional" : "Optional";
 }
 
 function Marker({ state, number }: { state: StepState; number: number }) {
@@ -78,9 +74,6 @@ export function TopicSteps({
           Try it in code
         </Button>
       ),
-    prove: projectUrl ? (
-      <AskClaude message={proveMessage(panel)} label="Prove it" projectUrl={projectUrl} variant={variant("prove")} />
-    ) : null,
   };
 
   return (
@@ -112,10 +105,7 @@ export function TopicSteps({
               <p className="text-sm font-medium">{titles[step.id]}</p>
               <p className="text-xs text-muted-foreground">{stateWord(step.id, step.state, panel.practice)}</p>
             </div>
-            {step.id === "prove" && (step.state === "done" || step.state === "skipped")
-              ? null
-              : (actions[step.id] ??
-                (step.id !== "practice" && <Badge variant="outline">Needs the Project link</Badge>))}
+            {actions[step.id] ?? (step.id === "learn" && <Badge variant="outline">Needs the Project link</Badge>)}
           </li>
         ))}
       </ol>

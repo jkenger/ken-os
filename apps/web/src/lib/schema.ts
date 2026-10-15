@@ -15,7 +15,7 @@ import type {
   TopicEventKind,
   TopicProgress,
   TopicState,
-  TopicStatus,
+  StoredTopicStatus,
 } from "@ken-os/domain";
 import type { ReviewSheet } from "../features/engineering-lab/review-sheet";
 
@@ -321,7 +321,7 @@ export const labTopicEvents = pgTable(
     graderVersion: text("grader_version"),
     source: text("source").$type<ContentSource>().notNull().default("ken-os"),
     /** report and status_set: the status set, if any (docs/architecture/engineering-claude-first.md, section 2). */
-    status: text("status").$type<TopicStatus>(),
+    status: text("status").$type<StoredTopicStatus>(),
     /** report: Claude's one-line summary of the session. status_set: the owner's reason, for Learned. */
     summary: text("summary"),
     /** report: where the owner got stuck that session, if anywhere. */

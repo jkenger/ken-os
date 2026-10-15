@@ -32,11 +32,3 @@ export function progressOnRoadmaps(
       chapterDone: chapterDone(view.chapters, topicId)?.title ?? null,
     }));
 }
-
-/** Topics Ready to check, the longest waiting first, so the next session starts with the fresh check. */
-export function toCheck(view: { chapters: RoadmapChapter[] }) {
-  return view.chapters
-    .flatMap((chapter) => chapter.topics)
-    .filter((topic) => topic.status === "ready_to_check")
-    .sort((a, b) => (a.changedAt ?? "").localeCompare(b.changedAt ?? ""));
-}
