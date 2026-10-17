@@ -8,7 +8,6 @@ import { formatDate } from "@/components/lab/words";
 import { toast } from "@/components/ui/toaster";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Connection } from "@/features/connector/oauth-store";
 import { setupAlert, setupChecklist, type InstructionsState } from "@/features/engineering-lab/claude-setup";
@@ -194,20 +193,7 @@ export function RoadmapPage({
               )}
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Tabs value={layout} onValueChange={(next) => changeLayout(next as Layout)}>
-                <TabsList aria-label="Roadmap layout">
-                  <TabsTrigger value="lanes">
-                    <IconLayoutColumns aria-hidden="true" />
-                    Lanes
-                  </TabsTrigger>
-                  <TabsTrigger value="graph">
-                    <IconSitemap aria-hidden="true" />
-                    Graph
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
               <ReviewSearch onOpen={(topicId) => select(topicId, "review")} />
-              <Separator orientation="vertical" className="mx-1 hidden h-5! sm:block" />
               <ClaudeSetup
                 mcpUrl={mcpUrl}
                 connections={connections}
@@ -257,10 +243,26 @@ export function RoadmapPage({
               <p className="font-semibold">No topics yet</p>
               <p className="mt-0.5 text-xs text-muted-foreground">Plan a roadmap with Claude to fill it</p>
             </Notice>
-          ) : layout === "graph" ? (
-            <RoadmapGraph key={roadmapId ?? "path"} view={view} selected={selected} onSelect={select} />
           ) : (
-            <RoadmapLanes view={view} selected={selected} onSelect={select} />
+            <div className="grid gap-3">
+              <Tabs value={layout} onValueChange={(next) => changeLayout(next as Layout)}>
+                <TabsList aria-label="Roadmap layout">
+                  <TabsTrigger value="lanes">
+                    <IconLayoutColumns aria-hidden="true" />
+                    Lanes
+                  </TabsTrigger>
+                  <TabsTrigger value="graph">
+                    <IconSitemap aria-hidden="true" />
+                    Graph
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+              {layout === "graph" ? (
+                <RoadmapGraph key={roadmapId ?? "path"} view={view} selected={selected} onSelect={select} />
+              ) : (
+                <RoadmapLanes view={view} selected={selected} onSelect={select} />
+              )}
+            </div>
           )}
         </div>
         <TopicSheet

@@ -6,9 +6,10 @@ inventing its own. It covers what was built and proved on this screen only; it i
 
 ## What the screen is
 
-- **Header.** The roadmap title (with the roadmap switcher), then one row of actions grouped by role: the view switch
-  (Lanes, Graph) and Search reviews, a divider, Claude setup as a quiet button, and one primary button, Continue topic,
-  which opens the topic you're on. Re-plan was taken off the header on 17 Oct 2026 until it is redesigned;
+- **Header.** The roadmap title (with the roadmap switcher), then three actions: Search reviews as an icon button with
+  a tooltip, Claude setup as a quiet button, and one primary button, Continue topic, which opens the topic you're on.
+  The view switch (Lanes, Graph) sits just above the roadmap it changes, not in the header (17 Oct 2026, when the
+  header row got too crowded). Re-plan was taken off the header on 17 Oct 2026 until it is redesigned;
   `replanMessage` stays in `features/engineering-lab/ask-claude.ts`, unused.
 - **Progress line.** Four cells in one bordered strip: learned out of total with a bar and a percentage, Now (the
   current topic), Next (the next unfinished topic, from `nextTopic`), and the roadmap's size. Every number comes from
