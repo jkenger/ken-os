@@ -35,3 +35,8 @@ export function claudeLink(value: string | null | undefined): string | null {
     return null;
   }
 }
+
+/** Ask Claude to write a topic's material when the panel shows Not planned yet (docs/architecture/roadmap-ui.md). */
+export function planTopicMessage(topic: { id: string; title: string }) {
+  return `Plan ${topic.title} (Loots topic \`${topic.id}\`): write its description, tasks, resources and mastery criteria with save_topic_material.`;
+}

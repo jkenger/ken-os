@@ -12,6 +12,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SEARCH_MIN, type SearchHit } from "@/features/engineering-lab/review-sheet";
 
 // Search across every review sheet and note by term (docs/architecture/engineering-claude-first.md, section 9h). A hit
@@ -58,10 +59,20 @@ export function ReviewSearch({ onOpen }: { onOpen: (topicId: string) => void }) 
   const searched = query.trim().length >= SEARCH_MIN;
   return (
     <>
-      <Button type="button" variant="outline" onClick={() => setOpen(true)}>
-        <IconSearch aria-hidden="true" />
-        Search reviews
-      </Button>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Search reviews"
+            onClick={() => setOpen(true)}
+          >
+            <IconSearch aria-hidden="true" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Search reviews</TooltipContent>
+      </Tooltip>
       <CommandDialog
         open={open}
         onOpenChange={setOpen}

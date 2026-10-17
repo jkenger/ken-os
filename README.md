@@ -1,38 +1,168 @@
 # Ken OS
 
-A private, hosted developer workspace. The first module keeps one canonical resume connected to Google Drive.
+A private, hosted workspace for one developer. Each workflow is a module inside one Next.js app, and only the configured owner can sign in.
 
-## Current vertical slice
+## Modules
 
-- Google sign in, restricted to `OWNER_EMAIL`
-- Google Picker selection using the per-file `drive.file` scope
-- Persistent canonical resume selection by Drive file ID
-- Live metadata refresh, preview, and download
-- Read-only resume assistant for Google Docs files
+| Module         | Route          | What it does                                                                                                                                                                    |
+| -------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Profile        | `/profile`     | Career details stored as fields, typed in or imported from a resume picked in Google Drive. Resumes are rendered from those fields. The picked Drive file is only ever read.    |
+| Engineering    | `/engineering` | A learning roadmap for full-stack and AI engineering: chapters, topics, statuses, review sheets, notes and one code lab per topic. Claude teaches through the Ken OS connector. |
+| Terms          | `/terms`       | Select text anywhere in the app and press Explain (or E) for a short definition from trusted sources. Saved terms are underlined wherever they appear.                          |
+| Project Memory | `/memory`      | A pilot for recording decisions and work receipts on Ken OS itself, with owner review and a generated handoff.                                                                  |
 
-See [the product brief](docs/product/brief.md) and [architecture](docs/architecture/overview.md).
+`/` redirects to `/profile`.
 
-The reusable [hosted MVP skill](.agents/skills/ship-hosted-mvp/SKILL.md) and [repository guidance](AGENTS.md) capture how this project is built.
+### Claude connector
 
-The proposed [one-app starter standard](docs/architecture/starter-standard.md) and [hosting playbook](docs/architecture/hosting.md) are design documents, not yet a scaffold CLI or deployment skill.
+Ken OS is also an MCP server (`/api/mcp`, with OAuth at `/oauth/authorize`). A Claude Project connected to it can read the Engineering roadmap, report progress, and save exercises, notes and reviews. Claude can mark a topic Learned only with the owner's own explanation as evidence, and it can never change a status the owner set or edit the owner's notes. See [engineering-claude-first.md](docs/architecture/engineering-claude-first.md).
 
-The proposed Project Memory module has separate [product](docs/product/project-memory.md) and [architecture](docs/architecture/project-memory.md) specs. Receipt capture and agent connectors are not implemented yet.
+## Tech stack
 
-## Local setup
+- TypeScript in a pnpm 10 workspace
+- Next.js (App Router) and React 19
+- Tailwind CSS 4 and shadcn/ui
+- PostgreSQL with Drizzle ORM and Drizzle Kit migrations
+- Google OAuth, Google Drive and Google Picker
+- OpenAI Agents SDK for the Profile import and rewrite and for term lookup
+- Model Context Protocol SDK for the Claude connector
+- Vercel hosting
 
-1. Run `pnpm install`, then `pnpm db:up`. This starts a development-only Docker PostgreSQL service on `127.0.0.1:5435`; the other nearby ports are already in use on this machine.
-2. If you do not already have an app environment file, copy `apps/web/.env.example` to `apps/web/.env.local`. The local `DATABASE_URL` is `postgresql://user:password@localhost:5435/ken_os`. Fill in the remaining values.
-3. In Google Cloud, enable the Google Drive and Google Picker APIs. Register `http://localhost:3000/api/auth/google/callback` as an OAuth redirect URI and `http://localhost:3000` as an allowed JavaScript origin. Configure the Picker API key for that origin and `https://docs.google.com/*`.
-4. Run `pnpm db:migrate`, then `pnpm dev`. Use `pnpm db:down` to stop the Ken OS container; its named volume keeps the data. For a hosted database with separate pooled and direct URLs, put the direct URL in `DATABASE_URL_UNPOOLED`. The migration uses it when present. The initial Drizzle migration is safe for databases created by the earlier handwritten migration. For later schema edits, run `pnpm db:generate`, review the SQL, then migrate.
+## Repository layout
 
-The Google OAuth consent screen may need your email added as a test user while the application is in testing mode.
+```text
+apps/web/            Next.js app: UI, API routes, auth, sessions, database
+  src/app/           Routes (profile, engineering, terms, memory, api, oauth)
+  src/features/      Module logic (profile, engineering-lab, terms, connector, project-memory)
+  src/components/    UI; shadcn primitives live in components/ui
+  drizzle/           SQL migrations
+  scripts/           Migration, lab generation and database check scripts
+packages/domain/     Shared types and format rules
+packages/drive/      Google Drive adapter
+packages/agents/     Profile and term lookup agents
+content/             Engineering topic map, roles and curriculum (YAML)
+labs/                One code lab per Engineering topic (starter, solution, tests)
+docs/                Product specs and architecture notes
+```
 
-## Verification
+## Getting started
 
-Run `pnpm check`, `pnpm test`, and `pnpm build` before release. The tests cover the selected Drive file's latest metadata/content behavior without calling Google. `pnpm test:db:resume` checks that a metadata refresh keeps the selected Drive ID. Database checks refuse non-local URLs. After a production deploy, check the resume flow in the browser and inspect Vercel runtime logs for errors. Do not run tests against the owner's live resume.
+### Prerequisites
 
-## Hosting
+- Node.js and pnpm 10
+- Docker, for the local PostgreSQL container
+- A Google Cloud project with the Google Drive and Google Picker APIs enabled
+- An OpenAI API key, for the Profile import and term lookup
 
-The default target is Vercel for `apps/web` with a managed PostgreSQL database. Set the Vercel project's Root Directory to `apps/web` and allow workspace packages outside that directory in its build settings. Configure the variables from `.env.example` for the deployment, with `APP_URL` set to its public HTTPS origin. Add `APP_URL/api/auth/google/callback` to Google's OAuth redirect URIs and `APP_URL` to its JavaScript origins. Production deploys apply pending migrations automatically: `apps/web/vercel.json` runs `db:migrate:deploy` after a successful build. It runs only when `VERCEL_ENV` is `production`, so preview deploys never change the schema, and a failed migration fails the deploy so the previous version stays live. The schema changes slightly before the new code goes live, so every migration must still work with the code already deployed: add tables and columns first, remove old ones in a later release.
+### Setup
 
-The app stores only the selected Drive file ID and metadata; Google Drive remains the source of document content. When the Google OAuth consent screen is an external app in **Testing** status, Google refresh tokens for the Drive scope expire after seven days. For persistent hosted use, move the Google app to **In production** after its setup is complete, or use the reconnect action when testing tokens expire.
+1. Install dependencies and start the database. Postgres runs on `127.0.0.1:5435`.
+
+   ```sh
+   pnpm install
+   pnpm db:up
+   ```
+
+2. Copy `apps/web/.env.example` to `apps/web/.env.local` and fill in the values (see [Configuration](#configuration)).
+
+3. In Google Cloud, add `http://localhost:3000/api/auth/google/callback` as an OAuth redirect URI and `http://localhost:3000` as a JavaScript origin. Restrict the Picker API key to that origin and `https://docs.google.com/*`. While the OAuth consent screen is in testing mode, add your email as a test user.
+
+4. Apply migrations and start the app at `http://localhost:3000`.
+
+   ```sh
+   pnpm db:migrate
+   pnpm dev
+   ```
+
+`pnpm db:down` stops the container; its named volume keeps the data.
+
+### Configuration
+
+All variables are listed in [`apps/web/.env.example`](apps/web/.env.example).
+
+| Variable                                                                 | Purpose                                                                                     |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| `APP_URL`                                                                | Public origin of the app                                                                    |
+| `OWNER_EMAIL`                                                            | The only Google account allowed to sign in                                                  |
+| `DATABASE_URL`                                                           | PostgreSQL connection string                                                                |
+| `DATABASE_URL_UNPOOLED`                                                  | Optional direct connection for migrations when `DATABASE_URL` is pooled                     |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`                               | Google OAuth client                                                                         |
+| `NEXT_PUBLIC_GOOGLE_PICKER_API_KEY`, `NEXT_PUBLIC_GOOGLE_PROJECT_NUMBER` | Google Picker                                                                               |
+| `SESSION_SECRET`, `TOKEN_ENCRYPTION_KEY`                                 | Session signing and encryption of the stored Google refresh token (32 or more random chars) |
+| `OPENAI_API_KEY`                                                         | Profile import and rewrite, term lookup                                                     |
+| `MCP_ALLOWED_REDIRECT_HOSTS`                                             | Hosts allowed for Claude connector OAuth redirects (default `claude.ai,claude.com`)         |
+| `KEN_OS_CLAUDE_PROJECT_URL`                                              | Optional fallback Claude Project link for Ask Claude                                        |
+
+## Scripts
+
+Run from the repository root.
+
+| Command                                  | What it does                                                         |
+| ---------------------------------------- | -------------------------------------------------------------------- |
+| `pnpm dev`                               | Start the app in development                                         |
+| `pnpm build`                             | Production build                                                     |
+| `pnpm check`                             | Prettier check, generated lab content check, then `tsc --noEmit`     |
+| `pnpm test`                              | Unit tests, UI guards, and lab starter and solution checks           |
+| `pnpm format`                            | Format every file with Prettier                                      |
+| `pnpm db:up` / `pnpm db:down`            | Start or stop local PostgreSQL                                       |
+| `pnpm db:generate`                       | Generate a migration from schema changes (review the SQL before use) |
+| `pnpm db:migrate`                        | Apply migrations to the local database                               |
+| `pnpm --filter @ken-os/web lab:generate` | Regenerate lab content after editing curriculum YAML or a lab        |
+
+## Testing
+
+Before opening a PR, run:
+
+```sh
+pnpm check
+pnpm test
+pnpm build
+```
+
+Tests use Node's built-in test runner through `tsx --test` and do not call Google. Database checks run against local Postgres only and refuse non-local URLs. With `pnpm db:up` and `pnpm db:migrate` done, run the one for the area you changed:
+
+```sh
+pnpm --filter @ken-os/web test:db:profile
+pnpm --filter @ken-os/web test:db:resume
+pnpm --filter @ken-os/web test:db:engineering
+pnpm --filter @ken-os/web test:db:terms
+pnpm --filter @ken-os/web test:db:connector
+pnpm --filter @ken-os/web test:db:auth
+pnpm --filter @ken-os/web test:db:memory
+```
+
+There is no CI; these checks are run locally.
+
+## Deployment
+
+Ken OS deploys to Vercel with a managed PostgreSQL database.
+
+1. Set the Vercel project's Root Directory to `apps/web` and allow workspace packages outside it in the build settings.
+2. Set the variables from `.env.example`, with `APP_URL` as the deployment's HTTPS origin.
+3. Add `APP_URL/api/auth/google/callback` to Google's OAuth redirect URIs and `APP_URL` to its JavaScript origins.
+
+Production deploys apply pending migrations after the build (`db:migrate:deploy` in `apps/web/vercel.json`); preview deploys never change the schema, and a failed migration fails the deploy. Because the schema changes just before new code goes live, each migration must work with the code already deployed: add tables and columns first, and remove old ones in a later release. Never run `db:migrate` against the hosted database by hand.
+
+When the Google OAuth app is an external app in Testing status, Drive refresh tokens expire after seven days. Move it to In production for lasting hosted use, or reconnect from the Profile page.
+
+## Security
+
+- Sign-in is restricted to `OWNER_EMAIL`, with OAuth state and PKCE on the callback.
+- Sessions last 30 days from last use and never more than 90 days from sign-in.
+- The Google refresh token is encrypted at rest. API routes check the session and the request origin on mutations.
+- Drive access uses the per-file `drive.file` scope and is granted separately from sign-in. No agent can write to Drive.
+
+## Documentation
+
+- [AGENTS.md](AGENTS.md): repository guide for contributors and coding agents (layout, boundaries, design and copy rules)
+- [Product brief](docs/product/brief.md) and [architecture overview](docs/architecture/overview.md)
+- [Profile and resume builder](docs/product/profile-resume.md)
+- [Engineering, Claude first](docs/architecture/engineering-claude-first.md) and [roadmap UI](docs/architecture/roadmap-ui.md)
+- [Project Memory product](docs/product/project-memory.md) and [architecture](docs/architecture/project-memory.md)
+- [Sign-in and sessions](docs/architecture/auth-sign-in.md)
+- [App language](docs/product/app-language.md) for UI copy
+- Proposals, not yet built: [one-app starter standard](docs/architecture/starter-standard.md), [hosting playbook](docs/architecture/hosting.md), [Blog Writing Studio](docs/product/blog-writing-studio.md)
+
+## License
+
+Private project. No license is granted for reuse.

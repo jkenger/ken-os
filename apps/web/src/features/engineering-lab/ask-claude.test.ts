@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { askClaudeMessage, claudeLink, claudeProjectUrl, replanMessage } from "./ask-claude";
+import { askClaudeMessage, claudeLink, claudeProjectUrl, planTopicMessage, replanMessage } from "./ask-claude";
 
 // Ask Claude (docs/architecture/engineering-claude-connector.md, section 6).
 
@@ -45,5 +45,12 @@ test("Re-plan names the roadmap and its id, so Claude replaces that one", () => 
   assert.equal(
     replanMessage({ id: "rm-1", goal: "System design interviews" }),
     "Re-plan my roadmap System design interviews (Loots roadmap `rm-1`). Start by checking where I am.",
+  );
+});
+
+test("plan a topic names it by id and asks Claude to write its material", () => {
+  assert.equal(
+    planTopicMessage({ id: "react.render_model", title: "State & rendering" }),
+    "Plan State & rendering (Loots topic `react.render_model`): write its description, tasks, resources and mastery criteria with save_topic_material.",
   );
 });

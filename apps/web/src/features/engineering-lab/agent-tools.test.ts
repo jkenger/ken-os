@@ -6,14 +6,22 @@ import { agentTools, callAgentTool, toolInputs } from "./agent-tools";
 // The connector's tool layer (docs/architecture/engineering-claude-first.md, section 5). Database behaviour is in
 // scripts/verify-engineering.ts and scripts/verify-connector.ts; these check the rules that need no database.
 
-test("the tools are five reads and five writes", () => {
+test("the tools are five reads and seven writes", () => {
   assert.deepEqual(
     agentTools.filter((tool) => tool.kind === "read").map((tool) => tool.name),
     ["get_current_state", "get_roadmap", "get_topic", "get_my_work", "get_history"],
   );
   assert.deepEqual(
     agentTools.filter((tool) => tool.kind === "write").map((tool) => tool.name),
-    ["save_exercise", "report_progress", "save_roadmap", "save_note", "save_review"],
+    [
+      "save_exercise",
+      "report_progress",
+      "save_roadmap",
+      "save_topic_plan",
+      "save_topic_material",
+      "save_note",
+      "save_review",
+    ],
   );
 });
 

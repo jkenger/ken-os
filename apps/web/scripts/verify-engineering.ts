@@ -761,6 +761,126 @@ async function main() {
     } finally {
       await db().delete(users).where(eq(users.id, reviewer));
     }
+
+    // Claude's topic plans and material (docs/architecture/roadmap-ui.md, "Topic panel: what comes next").
+    const writer = `engineering-check-${randomUUID()}`;
+    await db()
+      .insert(users)
+      .values({ id: writer, email: `${writer}@example.invalid`, name: "Engineering check (material)" });
+    try {
+      const material = await import("../src/features/engineering-lab/topic-material-store");
+      const call = (name: string, input: unknown) =>
+        tools.callAgentTool(writer, name, input) as Promise<Record<string, any>>;
+      const [retry, timeouts, logs] = ["rel.retry_backoff", "rel.timeouts", "obs.logs"];
+      const roadmapId = (
+        await call("save_roadmap", {
+          goal: "Reliable services",
+          chapters: [{ title: "Reliability", topics: [retry, timeouts, logs] }],
+        })
+      ).id as string;
+
+      assert.equal(
+        (await call("get_roadmap", { roadmapId })).chapters[0].topics[0].plan,
+        null,
+        "no plan before Claude saves one",
+      );
+      await call("save_topic_plan", {
+        roadmapId,
+        topics: [
+          { topicId: timeouts, minutes: 30, difficulty: "easy" },
+          { topicId: retry, prerequisites: [timeouts], related: [logs], minutes: 45, difficulty: "medium" },
+        ],
+      });
+      await call("save_topic_plan", { roadmapId, topics: [{ topicId: retry, minutes: 40 }] });
+      const plans = await material.getPlans(roadmapId);
+      assert.deepEqual(plans[retry], { prerequisites: [timeouts], related: [logs], minutes: 40, difficulty: "medium" });
+      assert.equal(
+        (await call("get_roadmap", { roadmapId })).chapters[0].topics[0].plan.minutes,
+        40,
+        "Claude reads its plan back",
+      );
+      await assert.rejects(
+        call("save_topic_plan", { roadmapId, topics: [{ topicId: timeouts, prerequisites: [retry] }] }),
+        /Loop: rel\.timeouts → rel\.retry_backoff → rel\.timeouts/,
+      );
+      await assert.rejects(
+        call("save_topic_plan", { roadmapId, topics: [{ topicId: "react.effects", minutes: 20 }] }),
+        /isn't on this roadmap/,
+      );
+      await assert.rejects(material.saveTopicPlans(other, roadmapId, [{ topicId: retry }]), /Unknown roadmap/);
+      console.log("ok - material: save_topic_plan saves and corrects a topic's plan, and refuses loops and strangers");
+
+      const panel = await roadmaps.getTopicPanel(writer, retry, roadmapId);
+      assert.deepEqual(panel.plan?.waitingOn, [timeouts], "waiting on a prerequisite not yet learned");
+      assert.deepEqual(
+        panel.plan?.related.map((topic) => topic.id),
+        [logs],
+      );
+      assert.equal(panel.material, null, "Not planned yet");
+      console.log("ok - material: the panel shows prerequisites, Waiting on and related topics");
+
+      const input = {
+        topicId: retry,
+        description: "Wait longer after each failure so a struggling service can recover",
+        tasks: {
+          read: "Read the retry section with Claude",
+          build: "Build a capped backoff",
+          explain: "Explain the cap",
+        },
+        resources: [{ title: "Retries", url: "https://example.com/retries", kind: "docs" as const }],
+        criteria: ["Why the wait doubles", "Why there is a cap", "Why jitter helps"],
+      };
+      await assert.rejects(
+        material.saveTopicMaterial(writer, input, async (urls) => urls),
+        /These links don't load: https:\/\/example\.com\/retries/,
+      );
+      assert.equal(await material.getMaterial(writer, retry), null, "nothing is saved when a link is broken");
+      await material.saveTopicMaterial(writer, input, async () => []);
+      await material.saveTopicMaterial(writer, { ...input, criteria: ["One", "Two", "Three"] }, async () => []);
+      const saved = await material.getMaterial(writer, retry);
+      assert.equal(saved?.description, input.description);
+      assert.deepEqual(saved?.criteria, ["One", "Two", "Three"], "saving again replaces it whole");
+      assert.equal(await material.getMaterial(other, retry), null, "material is per owner");
+      assert.equal((await call("get_topic", { topicId: retry })).material.tasks.build, "Build a capped backoff");
+      assert.ok((await tools.claudeWritesToday(writer)) >= 2, "material and plans count toward the daily limit");
+      console.log("ok - material: save_topic_material replaces a topic's material, and refuses broken links");
+
+      // Retire as replaced: Claude's criteria are now the topic's points everywhere, and its description the line.
+      const replaced = await anyTopic.requireAnyTopic(writer, retry);
+      assert.deepEqual(replaced.points, ["One", "Two", "Three"]);
+      assert.equal(replaced.gap, input.description);
+      assert.notDeepEqual(
+        (await anyTopic.requireAnyTopic(other, retry)).points,
+        replaced.points,
+        "another owner keeps the topic map's points",
+      );
+      const topicView = await call("get_topic", { topicId: retry });
+      assert.deepEqual(
+        topicView.points.map((point: { id: string }) => point.id),
+        ["p1", "p2", "p3"],
+        "Claude checks against its own criteria",
+      );
+      const sheetOf = (count: number) => ({
+        points: Array.from({ length: count }, (_, index) => ({
+          pointId: `p${index + 1}`,
+          question: "Why?",
+          explanation: "Because the wait grows after each failure.",
+          example: "const delay = Math.min(base * 2 ** attempt, cap);",
+          mistake: "Retrying right away",
+          ownMistake: false,
+        })),
+        terms: [{ term: "Backoff", meaning: "Waiting longer after each failed try." }],
+      });
+      await assert.rejects(call("save_review", { topicId: retry, sheet: sheetOf(5) }), /p4|p5|points/i);
+      assert.equal((await call("save_review", { topicId: retry, sheet: sheetOf(3) })).version, 1);
+      const panelAfter = await roadmaps.getTopicPanel(writer, retry, roadmapId);
+      assert.deepEqual(panelAfter.points, ["One", "Two", "Three"], "the panel shows the same criteria");
+      console.log(
+        "ok - material: Claude's criteria replace the topic's points for get_topic, review sheets and the panel",
+      );
+    } finally {
+      await db().delete(users).where(eq(users.id, writer));
+    }
   } finally {
     await db().delete(users).where(eq(users.id, owner));
     await db().delete(users).where(eq(users.id, other));

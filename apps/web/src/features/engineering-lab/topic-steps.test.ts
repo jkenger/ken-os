@@ -2,10 +2,10 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { TopicStatus } from "@ken-os/domain";
 import type { RoadmapChapter } from "./roadmap-store";
-import { chapterDone, nextTopic, topicSteps } from "./topic-steps";
+import { chapterDone, nextTopic, topicTasks } from "./topic-steps";
 
-// The path inside a topic, Next topic and chapter done (docs/architecture/engineering-progressive-flow.md, sections 2
-// and 3).
+// A topic's tasks, Next topic and chapter done (docs/architecture/engineering-progressive-flow.md, sections 2 and 3,
+// and docs/architecture/roadmap-ui.md).
 
 const topic = (id: string, status: TopicStatus = "not_started") => ({
   id,
@@ -22,32 +22,38 @@ const chapter = (id: string, topics: ReturnType<typeof topic>[]): RoadmapChapter
   topics,
 });
 
-const states = (steps: ReturnType<typeof topicSteps>) => steps.steps.map((step) => `${step.id}:${step.state}`);
+const states = (tasks: ReturnType<typeof topicTasks>) => tasks.tasks.map((task) => `${task.id}:${task.state}`);
 
-test("a new topic starts at Learn, with Practice optional", () => {
-  const steps = topicSteps({ status: "not_started", practice: "not_tried" });
-  assert.deepEqual(states(steps), ["learn:todo", "practice:optional"]);
-  assert.equal(steps.main, "learn");
+test("a new topic has Read, Build and Explain to do, starting with Read", () => {
+  const tasks = topicTasks({ status: "not_started", practice: "not_tried" });
+  assert.deepEqual(states(tasks), ["read:todo", "build:todo", "explain:todo"]);
+  assert.deepEqual([tasks.done, tasks.total], [0, 3]);
+  assert.equal(tasks.main, "read");
 });
 
-test("once Claude has started, Practice is next until a run passes, then back to the chat", () => {
-  assert.equal(topicSteps({ status: "in_progress", practice: "not_tried" }).main, "practice");
-  assert.equal(topicSteps({ status: "in_progress", practice: "tried" }).main, "practice", "a failing run isn't done");
-  const passed = topicSteps({ status: "in_progress", practice: "passed" });
-  assert.deepEqual(states(passed), ["learn:done", "practice:done"]);
-  assert.equal(passed.main, "learn");
-  const none = topicSteps({ status: "in_progress", practice: "none" });
-  assert.deepEqual(states(none), ["learn:done", "practice:none"]);
-  assert.equal(none.main, "learn");
+test("Read is done once Claude has started; Build is next until a run passes, then Explain", () => {
+  const started = topicTasks({ status: "in_progress", practice: "not_tried" });
+  assert.deepEqual(states(started), ["read:done", "build:todo", "explain:todo"]);
+  assert.equal(started.main, "build");
+  assert.equal(topicTasks({ status: "in_progress", practice: "tried" }).main, "build", "a failing run isn't done");
+  const passed = topicTasks({ status: "in_progress", practice: "passed" });
+  assert.deepEqual(states(passed), ["read:done", "build:done", "explain:todo"]);
+  assert.deepEqual([passed.done, passed.main], [2, "explain"]);
 });
 
-test("Learned and Skipped topics are finished, and point to the next topic", () => {
-  const learned = topicSteps({ status: "learned", practice: "not_tried" });
-  assert.deepEqual(states(learned), ["learn:done", "practice:optional"]);
-  assert.equal(learned.main, "next");
-  const skipped = topicSteps({ status: "skipped", practice: "none" });
-  assert.deepEqual(states(skipped), ["learn:skipped", "practice:none"]);
-  assert.equal(skipped.main, "next");
+test("without an exercise, Build waits on one and Explain is next", () => {
+  const tasks = topicTasks({ status: "in_progress", practice: "none" });
+  assert.deepEqual(states(tasks), ["read:done", "build:none", "explain:todo"]);
+  assert.deepEqual([tasks.done, tasks.total, tasks.main], [1, 3, "explain"]);
+});
+
+test("Explain is done when the topic is Learned, and a finished topic points to the next one", () => {
+  const learned = topicTasks({ status: "learned", practice: "passed" });
+  assert.deepEqual(states(learned), ["read:done", "build:done", "explain:done"]);
+  assert.deepEqual([learned.done, learned.main], [3, "next"]);
+  const skipped = topicTasks({ status: "skipped", practice: "none" });
+  assert.deepEqual(states(skipped), ["read:skipped", "build:skipped", "explain:skipped"]);
+  assert.deepEqual([skipped.done, skipped.main], [0, "next"]);
 });
 
 test("the next topic is the next unfinished one in roadmap order, wrapping to earlier ones", () => {

@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { IconLink, IconPencil, IconTrash, IconX } from "@tabler/icons-react";
+import { IconArrowRight, IconLink, IconPencil, IconTrash, IconX } from "@tabler/icons-react";
 import { TOPIC_STATUSES, type TopicStatus } from "@ken-os/domain";
 import { post, send } from "@/components/lab/topic/client";
 import { formatDate } from "@/components/lab/words";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,13 +19,18 @@ import { ClaudeLinkField } from "./claude-link-field";
 import { CodeSheet } from "./code-sheet";
 import { ReviewTab } from "./review-tab";
 import { StatusChip, StatusIcon, StatusLabel, statusWords } from "./status";
-import { TopicSteps } from "./topic-steps";
+import { TaskProgress, TopicTaskAction, TopicTasks } from "./topic-tasks";
+import { NotPlanned, TopicFacts, TopicLinks, TopicResources } from "./topic-material";
+import { chapterClasses } from "./chapter-mark";
+import { cn } from "@/lib/utils";
 
-// The roadmap's topic panel (docs/architecture/engineering-claude-first.md, section 1), in two tabs. Topic: the steps,
-// Learn → Practice, with Next topic once it's done (engineering-progressive-flow.md, sections 2 and 3); the
-// status, with a menu to change it; Link chat; and the sessions timeline from Claude's reports. Review: the review sheet
-// and notes (section 9h). The owner can set any status and edit or delete any note. From 1280px the panel docks beside
-// the roadmap; below that it is a sheet (docs/architecture/roadmap-ui.md).
+// The roadmap's topic panel (docs/architecture/engineering-claude-first.md, section 1, and docs/architecture/roadmap-ui.md)
+// in two modes. Overview, beside the graph: task progress and the next topic, with Open in lanes. Detail, beside the
+// lanes, in two tabs. Topic: the tasks (Read, Build, Explain), mastery criteria, the status with a menu to change it,
+// Link chat, and the sessions timeline from Claude's reports. Review: the review sheet and notes (section 9h). The main
+// button is the first task left to do, or Next topic once it's done (engineering-progressive-flow.md, sections 2 and 3).
+// The owner can set any status and edit or delete any note. From 1280px the panel docks beside the roadmap; below that
+// it is a sheet.
 
 export type TopicTab = "topic" | "review";
 
@@ -278,25 +284,34 @@ function Notes({ topicId, notes, onSaved }: { topicId: string; notes: NoteView[]
   );
 }
 
+export type TopicMode = "overview" | "detail";
+
 export function TopicSheet({
   topicId,
   roadmapId,
   roadmapActive,
   projectUrl,
+  mode,
   tab,
   onTabChange,
+  onOpenDetail,
   onClose,
   onChanged,
   onSelect,
   docked = false,
+  chapterIndex = null,
 }: {
   topicId: string | null;
-  /** Topic or Review; the page holds it, so search can open a topic on its review. */
+  /** Overview beside the graph; Detail beside the lanes, with the tasks, mastery criteria and the Review tab. */
+  mode: TopicMode;
+  /** Topic or Review, in Detail; the page holds it, so search can open a topic on its review. */
   tab: TopicTab;
   onTabChange: (tab: TopicTab) => void;
+  /** Open in lanes: the page switches to Lanes, and the panel to Detail. */
+  onOpenDetail: () => void;
   /** The roadmap it's opened on, for Next topic and chapter done. */
   roadmapId: string | null;
-  /** False on an archived roadmap: the steps show, but not Next topic. */
+  /** False on an archived roadmap: the tasks show, but not Next topic. */
   roadmapActive: boolean;
   projectUrl: string | null;
   onClose: () => void;
@@ -306,6 +321,8 @@ export function TopicSheet({
   onChanged: () => void;
   /** Wide screens: a panel beside the roadmap, so the roadmap stays in view. Otherwise a sheet over it. */
   docked?: boolean;
+  /** The topic's chapter position on the roadmap, for its accent; null when it isn't on it. */
+  chapterIndex?: number | null;
 }) {
   const [panel, setPanel] = useState<TopicPanelView | null>(null);
   const [problem, setProblem] = useState("");
@@ -335,9 +352,7 @@ export function TopicSheet({
     onChanged();
   };
 
-  const place = panel ? `${panel.chapter} · ${panel.area}` : "Topic";
-
-  const body = (
+  const loading = (
     <>
       {problem && <p className="p-4 text-sm text-destructive">{problem}</p>}
       {!panel && !problem && (
@@ -347,79 +362,147 @@ export function TopicSheet({
           <Skeleton className="h-24 w-full" />
         </div>
       )}
-      {panel && (
-        <Tabs value={tab} onValueChange={(next) => onTabChange(next as TopicTab)} className="gap-0">
-          <TabsList aria-label="Topic view" className="mx-4 mt-4">
-            <TabsTrigger value="topic">Topic</TabsTrigger>
-            <TabsTrigger value="review">Review{panel.notes.length > 0 && ` · ${panel.notes.length}`}</TabsTrigger>
-          </TabsList>
-          <TabsContent value="review" className="p-4">
-            <ReviewTab topicId={panel.id} notes={<Notes topicId={panel.id} notes={panel.notes} onSaved={saved} />} />
-          </TabsContent>
-          <TabsContent value="topic" className="grid gap-6 p-4">
-            {panel.gap && <p className="text-sm text-muted-foreground">{panel.gap}</p>}
-            <TopicSteps
-              panel={panel}
-              projectUrl={projectUrl}
-              onPractice={() => setCoding(true)}
-              onSelect={onSelect}
-              showNext={roadmapActive}
-            />
-            {panel.custom && panel.points.length > 0 && (
-              <section aria-labelledby="explain-title">
-                <h3 id="explain-title" className={sectionTitle}>
-                  What to explain
-                </h3>
-                <ol className="grid gap-2 text-sm">
-                  {panel.points.map((line, index) => (
-                    <li key={line} className="flex gap-2.5">
-                      <span className="pt-px font-mono text-xs text-muted-foreground">{index + 1}</span>
-                      <span>{line}</span>
-                    </li>
-                  ))}
-                </ol>
-              </section>
-            )}
-            <section aria-labelledby="status-title">
-              <h3 id="status-title" className={sectionTitle}>
-                Status
-              </h3>
-              <StatusMenu panel={panel} onSaved={saved} />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="mt-2 -ml-2"
-                aria-expanded={linking}
-                onClick={() => setLinking((open) => !open)}
-              >
-                <IconLink aria-hidden="true" />
-                {panel.chatUrl ? "Change chat" : "Link chat"}
-              </Button>
-              {linking && (
-                <ClaudeLinkField
-                  label="Chat for this topic"
-                  value={panel.chatUrl}
-                  endpoint={`/api/lab/topics/${encodeURIComponent(panel.id)}/chat`}
-                  placeholder="https://claude.ai/chat/…"
-                  helper="Paste the chat you learned this topic in"
-                  savedTitle="Chat linked"
-                  onSaved={() => {
-                    setLinking(false);
-                    saved();
-                  }}
-                />
-              )}
-            </section>
-            <section aria-labelledby="sessions-title">
-              <h3 id="sessions-title" className={sectionTitle}>
-                Sessions
-              </h3>
-              <Sessions reports={panel.reports} />
-            </section>
-          </TabsContent>
-        </Tabs>
+    </>
+  );
+
+  // The topic's line: Claude's description once written (any-topic.ts applies it), else the topic map's line.
+  const descriptionText = panel?.gap ?? null;
+  const description = (
+    <>
+      {descriptionText && <p className="text-sm text-muted-foreground">{descriptionText}</p>}
+      <TopicFacts plan={panel?.plan ?? null} />
+    </>
+  );
+
+  // Overview: where the topic stands and what comes after it. The rest is one click away in Lanes.
+  const overview = panel && (
+    <div className="grid gap-6 p-4">
+      <TaskProgress panel={panel} />
+      <TopicLinks plan={panel.plan} onSelect={onSelect} />
+      {panel.next && roadmapActive && (
+        <section aria-labelledby="next-title" className="grid gap-1.5">
+          <h3 id="next-title" className={sectionTitle}>
+            Next in path
+          </h3>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => onSelect(panel.next!.id)}
+            className="h-auto min-h-11 justify-start gap-2.5 rounded-xl text-left whitespace-normal"
+          >
+            <IconArrowRight aria-hidden="true" className="text-muted-foreground" />
+            <span className="min-w-0 flex-1">{panel.next.title}</span>
+          </Button>
+        </section>
       )}
+    </div>
+  );
+
+  // Detail: what to do and how you'll know you've got it, then your record, with the review sheet and notes in Review.
+  const detail = panel && (
+    <Tabs value={tab} onValueChange={(next) => onTabChange(next as TopicTab)} className="gap-0">
+      <TabsList aria-label="Topic view" className="mx-4 mt-4">
+        <TabsTrigger value="topic">Topic</TabsTrigger>
+        <TabsTrigger value="review">Review{panel.notes.length > 0 && ` · ${panel.notes.length}`}</TabsTrigger>
+      </TabsList>
+      <TabsContent value="review" className="p-4">
+        <ReviewTab topicId={panel.id} notes={<Notes topicId={panel.id} notes={panel.notes} onSaved={saved} />} />
+      </TabsContent>
+      <TabsContent value="topic" className="grid gap-6 p-4">
+        <NotPlanned panel={panel} projectUrl={projectUrl} />
+        <TopicResources material={panel.material} />
+        <TopicTasks panel={panel} />
+        {panel.points.length > 0 && (
+          <section aria-labelledby="mastery-title" className="grid gap-2">
+            <h3 id="mastery-title" className="text-sm font-semibold">
+              Mastery criteria
+            </h3>
+            <ul className="grid list-disc gap-1.5 pl-5 text-sm">
+              {panel.points.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          </section>
+        )}
+        <section aria-labelledby="status-title">
+          <h3 id="status-title" className={sectionTitle}>
+            Status
+          </h3>
+          <StatusMenu panel={panel} onSaved={saved} />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="mt-2 -ml-2"
+            aria-expanded={linking}
+            onClick={() => setLinking((open) => !open)}
+          >
+            <IconLink aria-hidden="true" />
+            {panel.chatUrl ? "Change chat" : "Link chat"}
+          </Button>
+          {linking && (
+            <ClaudeLinkField
+              label="Chat for this topic"
+              value={panel.chatUrl}
+              endpoint={`/api/lab/topics/${encodeURIComponent(panel.id)}/chat`}
+              placeholder="https://claude.ai/chat/…"
+              helper="Paste the chat you learned this topic in"
+              savedTitle="Chat linked"
+              onSaved={() => {
+                setLinking(false);
+                saved();
+              }}
+            />
+          )}
+        </section>
+        <section aria-labelledby="sessions-title">
+          <h3 id="sessions-title" className={sectionTitle}>
+            Sessions{panel.reports.length > 0 && ` · ${panel.reports.length}`}
+          </h3>
+          <Sessions reports={panel.reports} />
+        </section>
+      </TabsContent>
+    </Tabs>
+  );
+
+  const footer = panel && (
+    <div className="sticky bottom-0 mt-auto grid gap-2 border-t bg-card p-4">
+      {mode === "overview" ? (
+        <Button type="button" onClick={onOpenDetail}>
+          Open in lanes
+          <IconArrowRight aria-hidden="true" />
+        </Button>
+      ) : (
+        <TopicTaskAction
+          panel={panel}
+          projectUrl={projectUrl}
+          onPractice={() => setCoding(true)}
+          onSelect={onSelect}
+          showNext={roadmapActive}
+        />
+      )}
+    </div>
+  );
+
+  const heading = (
+    <div className="flex items-center gap-2">
+      {panel && <StatusChip status={panel.status.status} />}
+      {panel && (
+        <Badge
+          variant="secondary"
+          className={cn("max-w-48 truncate", chapterIndex !== null && chapterClasses(chapterIndex).tile)}
+        >
+          {panel.chapter}
+        </Badge>
+      )}
+    </div>
+  );
+
+  const body = (
+    <>
+      {loading}
+      {mode === "overview" ? overview : detail}
+      {footer}
     </>
   );
 
@@ -438,8 +521,7 @@ export function TopicSheet({
         >
           <div className="grid gap-2.5 border-b p-4">
             <div className="flex items-center gap-2">
-              {panel && <StatusChip status={panel.status.status} />}
-              <p className="min-w-0 truncate text-xs text-muted-foreground">{place}</p>
+              {heading}
               <Button
                 type="button"
                 variant="ghost"
@@ -454,6 +536,7 @@ export function TopicSheet({
             <h2 id="topic-panel-title" className="font-heading text-xl leading-tight font-bold tracking-tight">
               {panel?.title ?? " "}
             </h2>
+            {description}
           </div>
           {body}
         </aside>
@@ -467,11 +550,12 @@ export function TopicSheet({
       <Sheet open={Boolean(topicId)} onOpenChange={(open) => !open && onClose()}>
         <SheetContent className="gap-0 overflow-y-auto data-[side=right]:w-full data-[side=right]:sm:max-w-md">
           <SheetHeader className="border-b">
-            <div className="flex items-center gap-2 pr-8">
-              {panel && <StatusChip status={panel.status.status} />}
-              <SheetDescription className="truncate">{place}</SheetDescription>
-            </div>
+            <div className="pr-8">{heading}</div>
             <SheetTitle className="font-heading text-xl">{panel?.title ?? " "}</SheetTitle>
+            <SheetDescription className={cn(!descriptionText && "sr-only")}>
+              {descriptionText ?? panel?.chapter ?? "Topic"}
+            </SheetDescription>
+            <TopicFacts plan={panel?.plan ?? null} />
           </SheetHeader>
           {body}
         </SheetContent>

@@ -102,6 +102,7 @@ Built 14 Oct 2026 on `feat/engineering-roadmap-switcher`.
 - **Opened last:** the page posts to `/api/lab/roadmaps/[id]/open` when an active roadmap opens. It isn't recorded during the page render, so a prefetched link can't count as opening one.
 - **New roadmap** copies the planning message (`PLAN_MESSAGE`) through the Ask Claude dialog, now able to open from a menu item. At 3 active it says "3 of 3 active · archive one first"; without a Project link it points to Claude setup. A finished roadmap's **Plan next roadmap** uses the same dialog.
 - **Re-plan** replaces Plan new roadmap in the header, for an active, unfinished roadmap. Its message is `replanMessage`, naming the roadmap and its id.
+  Taken off the header on 17 Oct 2026 until it is redesigned (`docs/architecture/roadmap-ui.md`).
 - **The topic panel** reads Next topic and chapter done on the roadmap it was opened on (`?roadmap=` on the panel request).
 - No migration. Archive and Restore on screen, the archived view and the Profile lines are slice 3.
 

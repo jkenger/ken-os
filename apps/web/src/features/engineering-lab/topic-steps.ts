@@ -1,32 +1,33 @@
 import type { TopicStatus } from "@ken-os/domain";
 import type { RoadmapChapter } from "./roadmap-store";
 
-// The path inside a topic, Next topic and chapter done (docs/architecture/engineering-progressive-flow.md, sections 2
-// and 3). Pure, so the panel, Claude's tools and the tests share them.
+// A topic's tasks, Next topic and chapter done (docs/architecture/engineering-progressive-flow.md, sections 2 and 3,
+// and docs/architecture/roadmap-ui.md). Pure, so the panel, Claude's tools and the tests share them.
 
 /** Where the owner is with the topic's exercise: a run passed, they ran it, not yet, or there's no exercise. */
 export type PracticeState = "passed" | "tried" | "not_tried" | "none";
 
-export type StepId = "learn" | "practice";
-export type StepState = "done" | "todo" | "optional" | "skipped" | "none";
+export type TaskId = "read" | "build" | "explain";
+/** Done, still to do, waiting on an exercise (Build only), or the topic was skipped. */
+export type TaskState = "done" | "todo" | "none" | "skipped";
 
 /**
- * Learn → Practice, and which one gets the main button. Learn is done once Claude has started (In progress), Practice
- * once a run passed; after that the main button goes back to the chat. A finished topic (Learned or Skipped) points to
- * the next topic instead.
+ * Read → Build → Explain, the same three for every topic, from what has happened: Read is done once Claude has started
+ * (In progress), Build once an exercise run passed, Explain once the topic is Learned with the owner's own words. The
+ * main button goes to the first task left to do; a finished topic (Learned or Skipped) points to the next topic.
  */
-export function topicSteps({ status, practice }: { status: TopicStatus; practice: PracticeState }) {
-  const finished = status === "learned" || status === "skipped";
-  const steps: { id: StepId; state: StepState }[] = [
-    { id: "learn", state: status === "skipped" ? "skipped" : status === "not_started" ? "todo" : "done" },
-    { id: "practice", state: practice === "passed" ? "done" : practice === "none" ? "none" : "optional" },
+export function topicTasks({ status, practice }: { status: TopicStatus; practice: PracticeState }) {
+  const skipped = status === "skipped";
+  const state = (done: boolean, waiting = false): TaskState =>
+    skipped ? "skipped" : done ? "done" : waiting ? "none" : "todo";
+  const tasks: { id: TaskId; state: TaskState }[] = [
+    { id: "read", state: state(status !== "not_started") },
+    { id: "build", state: state(practice === "passed", practice === "none") },
+    { id: "explain", state: state(status === "learned") },
   ];
-  const main: StepId | "next" = finished
-    ? "next"
-    : status !== "not_started" && (practice === "tried" || practice === "not_tried")
-      ? "practice"
-      : "learn";
-  return { steps, main };
+  const finished = status === "learned" || skipped;
+  const main: TaskId | "next" = finished ? "next" : (tasks.find((task) => task.state === "todo")?.id ?? "explain");
+  return { tasks, done: tasks.filter((task) => task.state === "done").length, total: tasks.length, main };
 }
 
 const unfinished = (status: TopicStatus) => status !== "learned" && status !== "skipped";
