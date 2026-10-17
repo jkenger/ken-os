@@ -6,16 +6,16 @@ Status: v0 is live on ken-os-web.vercel.app ([as-built notes](engineering-lab-v0
 
 ## Decided
 
-- **Engineering Lab is a Ken OS module**, not a separate repo. Ken OS is the umbrella platform. The module reuses the owner sign-in, PostgreSQL with Drizzle, and `packages/agents`. (Owner, 2026-10-01.)
+- **Engineering Lab is a Loots module**, not a separate repo. Loots is the umbrella platform. The module reuses the owner sign-in, PostgreSQL with Drizzle, and `packages/agents`. (Owner, 2026-10-01.)
 - **Which document wins:** the handoff decides anything inside the module. [The product brief](../product/brief.md) decides platform-wide rules such as owner-only access and approval for external writes.
-- **"Topic", not "skill"**, in the UI and in new code, because Ken OS already has an "Agent skills" page. (Owner, 2026-10-01.)
+- **"Topic", not "skill"**, in the UI and in new code, because Loots already has an "Agent skills" page. (Owner, 2026-10-01.)
 - **Lab code is written in a browser code box** on the topic page. There is no local runner in v0. (Owner, 2026-10-01.)
 - **Confidence is rated only on assessment and review answers**, not on lesson practice or lab runs. (Owner, 2026-10-01.)
-- **No second domain for CORS labs.** The code box's worker has an opaque origin, so its requests to Ken OS are already cross-origin. This closed the last open question in the proposal. (Found during the build, 2026-10-01.)
+- **No second domain for CORS labs.** The code box's worker has an opaque origin, so its requests to Loots are already cross-origin. This closed the last open question in the proposal. (Found during the build, 2026-10-01.)
 - **No Vercel Sandbox in v0.** Race labs interleave concurrent calls between queries on PGlite, which reproduces lost updates, check-then-insert races and duplicate creates. A sandbox with real parallel connections is only needed for lock and isolation-level labs, which v0 doesn't have. (Found during the build, 2026-10-01.)
 - **A prediction's "why" is saved but not graded.** It has its own box, so it can't be mistaken for a printed line. After answering, the learner sees an explanation the Tutor or Assessor wrote with the question (`tutor-v2`, `assessor-v2`) and compares it themselves, so there's no extra AI call. Older lessons and questions have no explanation. (First live test, 2026-10-02.)
 - **A practice prediction locks once it's right.** Retrying after a wrong answer is still allowed. Assessment questions already allowed one answer each. (First live test, 2026-10-02.)
-- **The UI direction is built** as agreed in [engineering-lab-ui.md](engineering-lab-ui.md): topic steps, line-by-line and rubric feedback, the Course outline, Today's Continue card, Ken OS-wide term lookup and Go deeper sections. (2026-10-03.)
+- **The UI direction is built** as agreed in [engineering-lab-ui.md](engineering-lab-ui.md): topic steps, line-by-line and rubric feedback, the Course outline, Today's Continue card, Loots-wide term lookup and Go deeper sections. (2026-10-03.)
 - **"Known" means proven or placed.** A passed placement check (kind `placement`, Assessor questions before any lesson) or a proof makes a topic known: it satisfies prerequisites and the Planner skips it. The baseline alone never does; a baseline "solid" only shows as "Known · skip" on Course. (2026-10-03.)
 - **The course outline lives in `topics.yaml`:** two tracks, chapters, and a `planned` list of unwritten topic names per chapter, covering all of handoff §24. (2026-10-03.)
 - **The module is now "Engineering", with four tabs: Overview, Profile, Learn, Practice.** Built from the owner's 2026-10-06 redesign handoff, in the prototype's look one to one (owner's choice). Topic steps are now Lesson, Predict, Lab, Prove; today's practice on an unproven topic no longer counts as proof; the day turns over at Manila midnight. Pages moved to `/engineering`; the six `/lab` pages redirect (307) with their query, and `/api/lab`, tables and code names are unchanged. No schema change. Reconciliation, decisions and open questions: [engineering-redesign.md](engineering-redesign.md). (2026-10-06.)
@@ -48,7 +48,7 @@ Why it is built this way:
 
 ## Lab runners
 
-Ken OS runs on Vercel, where a normal request cannot run a lab's tests. Every v0 lab runs in the learner's browser instead, for free.
+Loots runs on Vercel, where a normal request cannot run a lab's tests. Every v0 lab runs in the learner's browser instead, for free.
 
 | Lab type                     | Runner                                                                                                    | Used for                                 |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------- |

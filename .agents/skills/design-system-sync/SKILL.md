@@ -5,7 +5,7 @@ description: Push the app's rebuilt components to the Ken OS design system's liv
 
 # Sync the Ken OS design system
 
-The app runs on a shadcn preset (Luma, applied with `shadcn apply --preset b2NOILwepE`) and builds its own look on top of it, in the labelled "Ken OS" section of `apps/web/src/app/globals.css` and in components outside `components/ui`. The Ken OS design system in Claude is the owner's reference for what to build on top; it no longer drives the app, and there are no tokens to pull from it. See `docs/architecture/design-system-shadcn-setup.md`.
+The app runs on a shadcn preset (Luma, applied with `shadcn apply --preset b2NOILwepE`) and builds its own look on top of it, in the labelled "Loots" section of `apps/web/src/app/globals.css` and in components outside `components/ui`. The Ken OS design system in Claude is the owner's reference for what to build on top; it no longer drives the app, and there are no tokens to pull from it. See `docs/architecture/design-system-shadcn-setup.md`.
 
 Design system: https://claude.ai/artifact/RQFnaHFKvuprgmgPk6nFqj (private: only the owner's Claude sessions can read it). If it can't be read, say so and stop.
 

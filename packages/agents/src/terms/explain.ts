@@ -11,7 +11,7 @@ const answerSchema = z.object({
   sourceUrl: z.string().nullable(),
 });
 
-const instructions = `You explain one unfamiliar term for the owner of Ken OS, a developer, while they read.
+const instructions = `You explain one unfamiliar term for the owner of Loots, a developer, while they read.
 
 Rules:
 - term: the term as it should be saved, in its usual spelling (singular, normal case).
@@ -31,7 +31,7 @@ export interface ExplainInput {
 /** One short meaning and one trusted link for a selected term. Web access is read-only and limited to trusted sites. */
 export async function explainTerm(input: ExplainInput): Promise<{ answer: TermAnswer; model: string }> {
   const agent = new Agent({
-    name: "Ken OS term lookup",
+    name: "Loots term lookup",
     instructions,
     tools: [webSearchTool({ filters: { allowedDomains: TRUSTED_LOOKUP_DOMAINS }, searchContextSize: "low" })],
     outputType: answerSchema,

@@ -13,7 +13,7 @@ const details = normalizeProfile(
         bullets: ["Did billing work on Stripe, failed payments went down 18%", "Worked on tests"],
       },
     ],
-    projects: [{ name: "Ken OS", bullets: ["Made a workspace app"] }],
+    projects: [{ name: "Loots", bullets: ["Made a workspace app"] }],
   },
   "save",
 );
@@ -25,7 +25,7 @@ test("the summary and every bullet are targets, labelled by where they sit", () 
       ["summary", "Summary"],
       ["experience.0.0", "Senior Engineer, Northwind"],
       ["experience.0.1", "Senior Engineer, Northwind"],
-      ["projects.0.0", "Ken OS"],
+      ["projects.0.0", "Loots"],
     ],
   );
 });

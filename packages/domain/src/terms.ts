@@ -1,6 +1,6 @@
 import { SOURCE_DOMAINS } from "./engineering-lab/sources";
 
-// Term lookup: select a word on any Ken OS page, get a short meaning and one trusted link, save it to Terms.
+// Term lookup: select a word on any Loots page, get a short meaning and one trusted link, save it to Terms.
 
 /** Every site the Researcher trusts. A lookup's link must come from one of these. */
 export const TRUSTED_LOOKUP_DOMAINS = [...new Set(Object.values(SOURCE_DOMAINS).flat())];

@@ -4,9 +4,9 @@ Status: step 1 built 12 Oct 2026, step 2 built 13 Oct 2026, step 3 built 14 Oct 
 
 ## The idea in one line
 
-Ken OS stores the owner's career details as structured fields, and every resume is a view of those fields through a template.
+Loots stores the owner's career details as structured fields, and every resume is a view of those fields through a template.
 
-Today Ken OS stores a pointer to one Drive file. After this change it stores the content itself, so templates, AI writing, a public link and saving to Drive all build on the same data.
+Today Loots stores a pointer to one Drive file. After this change it stores the content itself, so templates, AI writing, a public link and saving to Drive all build on the same data.
 
 ## Decisions
 
@@ -16,16 +16,16 @@ Today Ken OS stores a pointer to one Drive file. After this change it stores the
 | Engineering's "Profile" tab | Dropped. Engineering became one roadmap page on 13 Oct 2026, so it has no Profile tab and nothing to rename.                                                                     |
 | Job market                  | International fields by default. Optional local fields (photo, birthdate, civil status, nationality, full address) are off unless turned on, and ATS templates never print them. |
 | Flow order                  | Details first, then the AI pass, then preview with a template switcher. Switching templates never reruns the AI.                                                                 |
-| Drive reading               | The picked Drive file is read only. When it changes, Ken OS shows what changed and the owner approves before anything is overwritten.                                            |
-| Drive writing               | Ken OS saves its own file to Drive when the owner turns that on. The original picked file is never written.                                                                      |
+| Drive reading               | The picked Drive file is read only. When it changes, Loots shows what changed and the owner approves before anything is overwritten.                                             |
+| Drive writing               | Loots saves its own file to Drive when the owner turns that on. The original picked file is never written.                                                                       |
 | Public link                 | Shows a published snapshot. Edits go live only on republish. Phone and address hidden by default. `noindex` by default.                                                          |
 
 ## Two ways in, one form
 
 Both flows end in the same Profile form.
 
-- **Import from Drive.** Choose a resume with the existing Google Picker. Ken OS extracts the text, the AI turns it into fields, and the owner reviews them in the form before saving. Nothing is saved until the owner saves.
-- **Build from scratch.** The form opens prefilled with what Ken OS already knows (name and email from sign-in), and the owner fills the rest.
+- **Import from Drive.** Choose a resume with the existing Google Picker. Loots extracts the text, the AI turns it into fields, and the owner reviews them in the form before saving. Nothing is saved until the owner saves.
+- **Build from scratch.** The form opens prefilled with what Loots already knows (name and email from sign-in), and the owner fills the rest.
 
 Google sign-in only gives name, email and photo. It does not give work history, so "prefill" is honest about that.
 
@@ -65,7 +65,7 @@ Two jobs, both following the existing structured-output pattern in `packages/age
 
 ## Public link
 
-The first page in Ken OS anyone can open without signing in.
+The first page in Loots anyone can open without signing in.
 
 - Lives at `/r/<slug>`, so it never clashes with app routes.
 - The slug is chosen by the owner or random, lowercase, unique.
@@ -81,8 +81,8 @@ The first page in Ken OS anyone can open without signing in.
 
 Two one-way paths, never a loop.
 
-- **Drive to Ken OS.** Each import stores the Drive file's `modifiedTime`. On page load, if Drive reports a newer time, Profile shows "Drive file changed" with a Review action. Review runs the import again and shows the new fields against the saved ones. The owner accepts per section.
-- **Ken OS to Drive.** When turned on, saving a resume writes a Google Doc (or PDF) that Ken OS created, in the owner's Drive. The current `drive.file` permission covers files the app creates, so no new Google permission or verification is needed. This is a write to an external system, so it is off until the owner turns it on, and the screen shows when it last saved.
+- **Drive to Loots.** Each import stores the Drive file's `modifiedTime`. On page load, if Drive reports a newer time, Profile shows "Drive file changed" with a Review action. Review runs the import again and shows the new fields against the saved ones. The owner accepts per section.
+- **Loots to Drive.** When turned on, saving a resume writes a Google Doc (or PDF) that Loots created, in the owner's Drive. The current `drive.file` permission covers files the app creates, so no new Google permission or verification is needed. This is a write to an external system, so it is off until the owner turns it on, and the screen shows when it last saved.
 
 ## Build order
 

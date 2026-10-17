@@ -32,7 +32,7 @@ test("an AI answer with an untrusted link keeps the meaning and drops the link",
   assert.equal(answer.source, null);
 });
 
-test("the link back to where a term was found stays on Ken OS", () => {
+test("the link back to where a term was found stays on Loots", () => {
   assert.equal(safeReturnPath("/lab/topics/js.event_loop?step=learn"), "/lab/topics/js.event_loop?step=learn");
   assert.equal(safeReturnPath("//evil.example/x"), "/");
   assert.equal(safeReturnPath("https://evil.example/"), "/");

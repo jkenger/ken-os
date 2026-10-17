@@ -27,7 +27,7 @@ const receipt = {
   evidence: [{ kind: "commit", locator: "https://github.com/jkenger/ken-os/commit/abc", relation: "supports" }],
 };
 
-test("accepts a bounded Ken OS decision and receipt", () => {
+test("accepts a bounded Loots decision and receipt", () => {
   assert.equal(parseDecisionDraft(decision).projectId, "ken-os");
   assert.equal(parseReceiptDraft(receipt).policyVersion, 1);
 });

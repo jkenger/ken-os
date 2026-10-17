@@ -1,4 +1,4 @@
-# Engineering with Claude: a connector between claude.ai and Ken OS
+# Engineering with Claude: a connector between claude.ai and Loots
 
 > History since 13 Oct 2026: Engineering is now built from [engineering-claude-first.md](engineering-claude-first.md). Read this file for background only.
 
@@ -6,21 +6,21 @@ Status: all three slices built, 12 and 13 Oct 2026 (§10a to §10c). The connect
 
 ## Decision
 
-Engineering stops being only an app you click through. **Claude (claude.ai) is where the owner thinks and talks; Ken OS is where they code, get checked, and see where they are.** A Ken OS connector inside Claude joins the two.
+Engineering stops being only an app you click through. **Claude (claude.ai) is where the owner thinks and talks; Loots is where they code, get checked, and see where they are.** A Loots connector inside Claude joins the two.
 
-The owner's feedback on the rebuilt loop: the topic editor is good, but the experience feels like a traditional learning system. The results are fixed, a confusing point can't be followed up, and it all feels like an app. The wanted experience is like a chat, but enclosed and progressive. It shouldn't mean rebuilding Claude or ChatGPT inside Ken OS.
+The owner's feedback on the rebuilt loop: the topic editor is good, but the experience feels like a traditional learning system. The results are fixed, a confusing point can't be followed up, and it all feels like an app. The wanted experience is like a chat, but enclosed and progressive. It shouldn't mean rebuilding Claude or ChatGPT inside Loots.
 
 Owner decisions (12 Oct 2026):
 
-| Question                     | Decision                                                                                                                     |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Where the conversation lives | claude.ai, through a custom connector. The owner has Claude Pro. A chat panel inside Ken OS is kept on file as option B (§9) |
-| Who writes topic content     | Claude, on demand, in the conversation. Ken OS's built-in writers stay as a fallback                                         |
-| Practice                     | Stays in Ken OS as graded reviews. Quizzing in Claude is fine but records nothing                                            |
+| Question                     | Decision                                                                                                                    |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Where the conversation lives | claude.ai, through a custom connector. The owner has Claude Pro. A chat panel inside Loots is kept on file as option B (§9) |
+| Who writes topic content     | Claude, on demand, in the conversation. Loots' built-in writers stay as a fallback                                          |
+| Practice                     | Stays in Loots as graded reviews. Quizzing in Claude is fine but records nothing                                            |
 
 ## 1. The split
 
-|                                                          | Claude                                      | Ken OS                                  |
+|                                                          | Claude                                      | Loots                                   |
 | -------------------------------------------------------- | ------------------------------------------- | --------------------------------------- |
 | Explaining, follow-up questions, "another way", examples | Yes                                         |                                         |
 | Writing a topic's lesson, exercise and proof question    | Drafts and saves them through the connector | Stores, checks and shows them           |
@@ -34,7 +34,7 @@ Owner decisions (12 Oct 2026):
 
 The same conversation that teaches the owner must not also pass them.
 
-1. **Claude never decides Proven.** The connector has no tool that grades, submits a proof, marks a topic Proven, or changes a grade, a review date or the path. The proof is answered in Ken OS and graded by Ken OS's Assessor, which never sees the chat.
+1. **Claude never decides Proven.** The connector has no tool that grades, submits a proof, marks a topic Proven, or changes a grade, a review date or the path. The proof is answered in Loots and graded by Loots' Assessor, which never sees the chat.
 2. **The rubric is never Claude's.** Claude may draft a topic's proof question, but grading always uses that topic's approved assessment points (`content/engineering-lab/curriculum/points.yaml`). A question Claude writes is accepted only if it names which of those points it tests.
 3. **An exercise freezes once it's started.** The first run of an exercise version locks it. A later `save_exercise` creates a new version; the old one and its runs stay as they were. Tests can't get easier mid-attempt.
 
@@ -42,7 +42,7 @@ Chat itself is never evidence. Only passed exercises and graded proofs count.
 
 ## 3. The connector
 
-Ken OS hosts a **remote MCP server** that the owner adds in claude.ai under Customize → Connectors → Add custom connector. claude.ai connects from Anthropic's cloud, so the endpoint is public, signed in with OAuth, and owner-only like the rest of Ken OS.
+Loots hosts a **remote MCP server** that the owner adds in claude.ai under Customize → Connectors → Add custom connector. claude.ai connects from Anthropic's cloud, so the endpoint is public, signed in with OAuth, and owner-only like the rest of Loots.
 
 ### Endpoint
 
@@ -84,14 +84,14 @@ Everything Claude saves is untrusted text, the same as Skills uploads and select
   - A lesson: 20,000 characters
   - Each exercise file: 20,000 characters
   - A proof prompt: 1,000 characters
-- **Write limits:** 40 writes a day across all write tools, returning a clear error when reached. Claude's writes cost Ken OS nothing, but this stops a runaway loop.
+- **Write limits:** 40 writes a day across all write tools, returning a clear error when reached. Claude's writes cost Loots nothing, but this stops a runaway loop.
 
 ### Sign-in (OAuth)
 
-Follow the MCP authorization spec, with Ken OS as its own authorization server, which signs the owner in through the existing Google sign-in.
+Follow the MCP authorization spec, with Loots as its own authorization server, which signs the owner in through the existing Google sign-in.
 
 - **Metadata:** `/.well-known/oauth-protected-resource` and `/.well-known/oauth-authorization-server`.
-- **`/oauth/authorize`:** requires a Ken OS session (otherwise `/sign-in?next=…` from the sign-in spec), then shows a consent page in app language. Title "Connect Claude", list "Read your Engineering progress and code" and "Save lessons, exercises and proof questions", buttons **Allow** and **Deny**.
+- **`/oauth/authorize`:** requires a Loots session (otherwise `/sign-in?next=…` from the sign-in spec), then shows a consent page in app language. Title "Connect Claude", list "Read your Engineering progress and code" and "Save lessons, exercises and proof questions", buttons **Allow** and **Deny**.
 - **`/oauth/token`:** authorization code with PKCE (S256 only), and refresh tokens.
 - **Client registration:** support both of claude.ai's options, "Use Claude's published identity" (client ID metadata documents) and "Register automatically" (`/oauth/register`, dynamic client registration). Verify against what claude.ai sends when the connector is added.
 - **Redirect URIs:** allowed only on `claude.ai` and `claude.com` over HTTPS, from an env list `MCP_ALLOWED_REDIRECT_HOSTS`. Read the exact callback from the first real authorize request and keep the list to it.
@@ -110,7 +110,7 @@ Exercises today come from the repo (`labs/`). Claude's are stored in the databas
   - Invalid: the page says "This exercise doesn't check out", with what failed, and the previous valid version stays in use. `get_topic` then reports it, so Claude can fix it.
 - **Locking:** the owner's first run locks the version (§2). A newer valid version appears as "New exercise from Claude" with **Switch**. Switching starts a fresh attempt; old runs stay on the old version.
 - **Proof needs a pass** on the version the owner is on, without having opened its solution first, as the rebuild already requires.
-- **Solutions:** `get_topic` never returns them, and the Claude Project instructions say not to reveal one before the owner has tried. The owner can still open it in Ken OS, which costs the proof as today.
+- **Solutions:** `get_topic` never returns them, and the Claude Project instructions say not to reveal one before the owner has tried. The owner can still open it in Loots, which costs the proof as today.
 
 ## 5. Autosave
 
@@ -122,16 +122,16 @@ Claude can only help with code it can see.
 ## 6. Ask Claude
 
 - Each topic page gets **Ask Claude** next to the step bar.
-- It copies a starter message, "Teach me <topic name> (Ken OS topic `<topicId>`). Start by checking where I am.", and opens the owner's Claude Project in a new tab.
+- It copies a starter message, "Teach me <topic name> (Loots topic `<topicId>`). Start by checking where I am.", and opens the owner's Claude Project in a new tab.
 - The project URL comes from `KEN_OS_CLAUDE_PROJECT_URL`.
 - A toast says "Copied. Paste it in Claude".
 - If the variable isn't set, the button isn't shown.
 
 ## 7. The Claude Project
 
-The owner creates a Claude Project named "Ken OS Engineering", turns on the Ken OS connector, and pastes these instructions. They're kept in the repo at `docs/product/claude-project-instructions.md`, so changes are reviewed like code.
+The owner creates a Claude Project named "Loots Engineering", turns on the Loots connector, and pastes these instructions. They're kept in the repo at `docs/product/claude-project-instructions.md`, so changes are reviewed like code.
 
-> You are my engineering tutor, working inside my Ken OS Engineering path. Always call `get_current_state` first, and `get_topic` before teaching a topic. Teach one topic at a time, the one Ken OS says is current unless I choose another. Ask before you tell: check what I already think, then explain. Keep explanations short and follow my questions wherever they go within the topic. When I'm ready to practise, write the exercise with `save_exercise`, then tell me to open it in Ken OS. When I'm stuck, read my code and the failing test with `get_my_work` and ask me a question that points at the problem; don't give me the fix or the solution unless I ask twice. Never tell me a topic is proven or what my grade will be; Ken OS decides that. When a lesson would help, write it with `save_lesson`, using only trusted sources. Write in plain language, no em dashes.
+> You are my engineering tutor, working inside my Loots Engineering path. Always call `get_current_state` first, and `get_topic` before teaching a topic. Teach one topic at a time, the one Loots says is current unless I choose another. Ask before you tell: check what I already think, then explain. Keep explanations short and follow my questions wherever they go within the topic. When I'm ready to practise, write the exercise with `save_exercise`, then tell me to open it in Loots. When I'm stuck, read my code and the failing test with `get_my_work` and ask me a question that points at the problem; don't give me the fix or the solution unless I ask twice. Never tell me a topic is proven or what my grade will be; Loots decides that. When a lesson would help, write it with `save_lesson`, using only trusted sources. Write in plain language, no em dashes.
 
 ## 8. Files
 
@@ -148,12 +148,12 @@ The owner creates a Claude Project named "Ken OS Engineering", turns on the Ken 
 | `docs/product/claude-project-instructions.md`                                                                 | New: §7 text                                                                                                                                                                |
 | `AGENTS.md`                                                                                                   | Name the connector as another untrusted input, and its no-grading rule                                                                                                      |
 
-## 9. Option B, kept on file: a chat panel inside Ken OS
+## 9. Option B, kept on file: a chat panel inside Loots
 
 Built only if option A disappoints: switching tabs feels clumsy, claude.ai can't reach the connector, or Claude can't see enough.
 
 - A chat panel on the right of the topic page, calling the Claude API with the same `agent-tools.ts` tools as function tools, plus the same rules.
-- Conversations are stored in Ken OS per topic.
+- Conversations are stored in Loots per topic.
 - **Cost:** API calls are billed per token and aren't covered by Claude Pro. It needs a model budget alongside the existing AI-use limit.
 - **Effort:** a real chat UI (streaming, history, tool calls shown), which is the rebuild the owner wants to avoid. That's why it's option B.
 - **Nothing in option A blocks it,** as long as the tools stay in `agent-tools.ts` and never import route or MCP code.
@@ -190,7 +190,7 @@ Decisions made while building slice 1, 12 Oct 2026. Where they differ from the s
 - **An open assessment closes the tools**, as it closes lessons. Only `get_current_state` (which reports `assessmentOpen`) and `list_path` answer.
 - **Hand-written lessons stay.** `save_lesson` refuses a topic with a hand-written lesson, the same as the Tutor.
 - **A Claude proof question** stores the named points as its rubric and "A solid answer shows: …" as its reference answer. The newest proof question is the one the owner answers.
-- **Claude's writes don't use Ken OS AI uses.** The daily count skips rows with `source: "claude"`.
+- **Claude's writes don't use Loots AI uses.** The daily count skips rows with `source: "claude"`.
 - **Claude's exercises** time out at 3 s in the browser runner and 20 s with PGlite, matching the repo labs. A starter that throws counts as failing.
 - **Autosave** keeps one row per owner and version (`lab_exercise_drafts`, keyed by the version's lab id), overwritten on each save. Code saved in the browser before autosave comes back once and then autosaves.
 
@@ -236,7 +236,7 @@ Built 13 Oct 2026 on `feat/engineering-mcp`. Where these differ from §3, these 
 
 **Verified:** `pnpm test` (`rules.test.ts`), `pnpm check`, `pnpm build`, `test:db:connector` (8 checks: registration, authorize, code exchange, `/api/mcp`, write limit, refresh and reuse, Disconnect, owner only) and `test:db:engineering`. On the local server: both metadata documents, the 401, the consent page, a real tool call with a token, and Disconnect on Profile stopping that token.
 
-**Hosted, 13 Oct 2026:** the owner added Ken OS as a custom connector in claude.ai, signed in through the consent page, and saw the 8 tools (§11, step 1). Later that day, the starter message from Ask Claude, pasted into the owner's Project, made Claude call `get_current_state` (§11, step 2). Steps 3 to 6 are not yet tried on the hosted app.
+**Hosted, 13 Oct 2026:** the owner added Loots as a custom connector in claude.ai, signed in through the consent page, and saw the 8 tools (§11, step 1). Later that day, the starter message from Ask Claude, pasted into the owner's Project, made Claude call `get_current_state` (§11, step 2). Steps 3 to 6 are not yet tried on the hosted app.
 
 ## 10c. Slice 3 as built
 
@@ -251,11 +251,11 @@ Built 13 Oct 2026 on `feat/engineering-ask-claude`.
 
 ## 11. Done when
 
-1. The owner adds Ken OS as a custom connector in claude.ai, signs in through Ken OS's consent page, and sees the tools.
-2. In the Claude Project, asking about the current topic reads the real state and topic from Ken OS.
-3. Claude writes an exercise; Ken OS checks it in the browser and shows it, or reports why it's invalid.
+1. The owner adds Loots as a custom connector in claude.ai, signs in through Loots' consent page, and sees the tools.
+2. In the Claude Project, asking about the current topic reads the real state and topic from Loots.
+3. Claude writes an exercise; Loots checks it in the browser and shows it, or reports why it's invalid.
 4. While stuck, Claude reads the owner's autosaved code and the failing test, and helps without giving the fix.
-5. The proof is answered in Ken OS and graded there; nothing Claude does can mark a topic Proven.
+5. The proof is answered in Loots and graded there; nothing Claude does can mark a topic Proven.
 6. Disconnect on the Profile page stops the connector at once.
 7. `pnpm test`, `pnpm check` and `pnpm build` pass. Steps 1 to 6 work on the hosted app, since claude.ai can't reach a local server.
 

@@ -15,7 +15,7 @@ async function getJson(path: string, init?: RequestInit) {
   return response.json() as Promise<Record<string, unknown>>;
 }
 
-/** Runs code in the code box's worker, whose origin is opaque, so its requests to Ken OS are cross-site. */
+/** Runs code in the code box's worker, whose origin is opaque, so its requests to Loots are cross-site. */
 async function fromOtherSite(code: string): Promise<Record<string, unknown>> {
   const outcome = await runInWorker(buildProbeScript(code, window.location.origin), 8000);
   if (outcome.type !== "output")

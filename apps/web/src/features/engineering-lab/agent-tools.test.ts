@@ -38,7 +38,7 @@ test("no tool records a run, opens a solution, or changes the role or the profil
 });
 
 test("inputs are checked before anything runs", async () => {
-  await assert.rejects(callAgentTool("nobody", "save_lesson", {}), /Unknown tool/, "lessons left Ken OS");
+  await assert.rejects(callAgentTool("nobody", "save_lesson", {}), /Unknown tool/, "lessons left Loots");
   await assert.rejects(callAgentTool("nobody", "save_proof_question", {}), /Unknown tool/, "so did graded proofs");
   await assert.rejects(callAgentTool("nobody", "get_topic", {}), /Invalid input. topicId/);
   const report = { topicId: "react.effects", summary: "Explained cleanup" };

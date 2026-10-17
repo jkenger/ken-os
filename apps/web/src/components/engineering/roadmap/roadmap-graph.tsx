@@ -130,7 +130,7 @@ function TopicNode({ data }: NodeProps<GraphNode>) {
 
 const nodeTypes: NodeTypes = { goal: GoalNode, chapter: ChapterNode, group: GroupNode, topic: TopicNode };
 
-/** Theme the graph with Ken OS tokens, so it follows light and dark mode. */
+/** Theme the graph with Loots tokens, so it follows light and dark mode. */
 const flowStyle = {
   "--xy-background-color": "transparent",
   "--xy-background-pattern-color": "var(--border)",

@@ -1,4 +1,4 @@
-The code box runs in an isolated worker whose origin is `null`, so to Ken OS it is another site. The check sends six
+The code box runs in an isolated worker whose origin is `null`, so to Loots it is another site. The check sends six
 requests from there to a practice endpoint, each answered with a different CORS policy, and records whether the
 calling code could read the response.
 

@@ -8,4 +8,4 @@ see what the second request did. Each response body is about 20 KB, so a full do
 | no-store | `Cache-Control: no-store`                         |
 
 Turn off "Disable cache" in DevTools before running, or every answer will be "reaches the server". This is the
-browser's cache only. A CDN or server cache in front of Ken OS would be a separate layer with its own rules.
+browser's cache only. A CDN or server cache in front of Loots would be a separate layer with its own rules.

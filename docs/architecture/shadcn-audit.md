@@ -4,7 +4,7 @@
 
 Audited and fixed on 2026-10-06 on branch `refactor/shadcn-audit`.
 
-**Answer:** screens were not using shadcn. Ken OS had shadcn installed but only ever pulled three of its components, and no rule, tool or test said screens had to use them. Every page now builds its controls from shadcn primitives in `apps/web/src/components/ui`, and a test fails if that slips again.
+**Answer:** screens were not using shadcn. Loots had shadcn installed but only ever pulled three of its components, and no rule, tool or test said screens had to use them. Every page now builds its controls from shadcn primitives in `apps/web/src/components/ui`, and a test fails if that slips again.
 
 ## What the audit found
 
@@ -34,7 +34,7 @@ All three causes below were needed for it to go this far. The first is the main 
 
 `AGENTS.md` said "shadcn/ui primitives live in `apps/web/src/components/ui` and should be tailored". It never said: use one for every control, and add the missing one from the registry before writing markup. So an agent building a tab row found no `tabs.tsx`, and writing a `<button role="tab">` was within the rules.
 
-The first version (2026-09-23) also said "the original Ken OS CSS remains in place", which made hand-written markup the normal path from day one.
+The first version (2026-09-23) also said "the original Loots CSS remains in place", which made hand-written markup the normal path from day one.
 
 ### 2. When the design contract changed, the Button didn't
 
@@ -55,7 +55,7 @@ Nothing checked any of this. App language had a scan test; shadcn use had none.
 - Added from the registry and tailored to the contract: textarea, label, native-select, input-group, dialog, sheet, tabs, switch, toggle, toggle-group, badge, collapsible, dropdown-menu (14 Oct 2026, for the roadmap switcher), table, sidebar, separator, skeleton, command, sonner.
 - `Button` now matches the contract (44px, medium label, `primary-hover`) and has a `text` variant, so `kit.tsx` no longer defines buttons.
 - The shell runs on `SidebarProvider`, the nested icon sidebar and `SidebarInset`; module search is `CommandDialog`. Measured against the old shell at 1440px: same 49px rail, 208px section column and inset position. Under 1024px the column hides and section tabs show; under 768px the sidebar's own sheet holds both lists at 18rem.
-- `toast()` keeps its signature and now shows through Sonner, pinned to the light theme (Ken OS has no dark theme, so `next-themes` was removed).
+- `toast()` keeps its signature and now shows through Sonner, pinned to the light theme (Loots has no dark theme, so `next-themes` was removed).
 - `Pill` and the Engineering page badge render shadcn `Badge` with status variants (`solid`, `partial`, `gap`, `neutral`, `dashed`).
 - `.mcp.json` at the repo root runs the shadcn MCP server.
 - `apps/web/src/lib/shadcn-primitives.test.ts` fails on any raw control (`button`, `input`, `select`, `textarea`, `option`, `label`, `table`, `dialog`), hand-built widget role or direct Radix import outside `components/ui`. It runs with `pnpm test`.

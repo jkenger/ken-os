@@ -104,7 +104,7 @@ export function MemoryWorkspace({ email, overview }: { email: string; overview: 
   const proposedReceipts = overview.receipts.filter((item) => item.status === "proposed");
   const openQuestions = approvedReceipts.flatMap((item) => item.remaining).slice(0, 8);
   const handoffText = [
-    `KEN OS HANDOFF · policy v${overview.project.policyVersion}`,
+    `LOOTS HANDOFF · policy v${overview.project.policyVersion}`,
     "Approved decisions:",
     ...approvedDecisions.map(
       (item) =>
@@ -123,7 +123,7 @@ export function MemoryWorkspace({ email, overview }: { email: string; overview: 
     ...openQuestions.map((item) => `- ${item}`),
     openQuestions.length ? "" : "- None recorded.",
     `Drafts not yet approved: ${proposedDecisions.length} decisions, ${proposedReceipts.length} work logs`,
-    "Inspect source references in Ken OS before relying on this handoff.",
+    "Inspect source references in Loots before relying on this handoff.",
   ].join("\n");
 
   async function submitDecision(event: FormEvent<HTMLFormElement>) {
@@ -677,7 +677,7 @@ export function MemoryWorkspace({ email, overview }: { email: string; overview: 
             </section>
             <section className="scroll-mt-24 px-5 py-6 sm:px-8 lg:px-9" id="policy">
               <h2 className="font-heading text-xl font-semibold tracking-tight">Policy</h2>
-              <p className="mt-2 text-sm leading-5 text-muted-foreground">Ken OS only · no work or client content</p>
+              <p className="mt-2 text-sm leading-5 text-muted-foreground">Loots only · no work or client content</p>
               <details className="group mt-4 text-sm">
                 <DisclosureSummary className="font-semibold">Capture rules</DisclosureSummary>
                 <ul className="mt-3 list-disc space-y-2 pl-5 text-muted-foreground">

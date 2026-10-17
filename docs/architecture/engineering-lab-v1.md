@@ -70,13 +70,13 @@ Commits 3a4acda..78d2425 in ken-os
 
 Anything not proven joins a "knowledge debt" list on Today. It never blocks your work; it only makes the gap visible.
 
-**Why local.** Project Memory's rules forbid uploading work or client code, and so do these. The diff is read and classified on your machine. Only concept names, the repository name and commit hashes reach Ken OS. Code and file contents never do.
+**Why local.** Project Memory's rules forbid uploading work or client code, and so do these. The diff is read and classified on your machine. Only concept names, the repository name and commit hashes reach Loots. Code and file contents never do.
 
 **How it fits together.**
 
 1. `pnpm --filter @ken-os/web lab:debt -- --repo <path> --range <from>..<to>` reads `git diff` locally.
 2. A local AI call maps the changes to topic ids from the topic map, plus suggested names for concepts the map doesn't have yet. The prompt gets the topic map's ids and titles, not the lab's content.
-3. The command sends `{ repo, range, topics: [...], unknown: [...] }` to Ken OS with a scoped key, the same way Project Memory capture works.
+3. The command sends `{ repo, range, topics: [...], unknown: [...] }` to Loots with a scoped key, the same way Project Memory capture works.
 4. A new `lab_debt_items` table stores each concept with its source and a status: open, queued, dismissed or resolved. It resolves itself when the topic is proven.
 5. Unknown concepts appear as suggestions. Adding one to the map stays a reviewed change to `topics.yaml`; the app never edits the curriculum itself.
 
@@ -144,10 +144,10 @@ At the end of each module there's one mixed scenario, like §16's broken checkou
 
 - **Review sessions** are now part of daily practice (section 9).
 - **Obsidian export** (§21). At the end of a lesson, "copy note scaffold" copies a Markdown stub with the topic, its sources and the note suggestions. You still write the note yourself.
-- **Lock and isolation-level labs.** Real `SELECT ... FOR UPDATE`, deadlocks and isolation levels need parallel database connections, which PGlite can't provide. **Recommended:** a throwaway Neon branch per run, created and deleted by the server, instead of Vercel Sandbox, because Ken OS already uses Neon. Build it only if Module 3's review shows the need.
+- **Lock and isolation-level labs.** Real `SELECT ... FOR UPDATE`, deadlocks and isolation levels need parallel database connections, which PGlite can't provide. **Recommended:** a throwaway Neon branch per run, created and deleted by the server, instead of Vercel Sandbox, because Loots already uses Neon. Build it only if Module 3's review shows the need.
 - **Known v0 gaps to close:**
   - Lab results come from the learner's browser. That's fine for one owner, but the server should at least re-run probe scoring itself.
-  - PGlite loads from a CDN. Pin its integrity, or serve it from Ken OS.
+  - PGlite loads from a CDN. Pin its integrity, or serve it from Loots.
   - Check the probes in Firefox and Safari.
 
 ## 8. After polish: a roadmap graph and a full course
@@ -255,6 +255,6 @@ Several of these were later done anyway: the full §24 map, and agent patterns, 
 Questions 1 and 3 were overtaken: Modules 4 and 5 and the whole AI track are written, and knowledge debt is next in line if the gate review supports it. Questions 2 and 4 are still open.
 
 1. **Order:** knowledge debt before Modules 4 and 5, or the other way round? Knowledge debt is the differentiator; the modules are where the most baseline gaps are.
-2. **Which repositories** should knowledge debt be allowed to read? Ken OS only at first, or any repository you choose each time?
+2. **Which repositories** should knowledge debt be allowed to read? Loots only at first, or any repository you choose each time?
 3. **AI track timing:** start it alongside Module 4, or only after Modules 4 and 5?
 4. **Gate length:** is two to three weeks of use realistic, or should the review happen after a fixed number of proven topics instead?

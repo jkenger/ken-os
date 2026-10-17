@@ -103,7 +103,7 @@ async function main() {
   // The app's stylesheet, scanning only what the bundle contains, with the fonts set the way next/font would set them.
   const globalsPath = resolve(webRoot, "src/app/globals.css");
   const source = readFileSync(globalsPath, "utf8")
-    // Ken OS has one light theme. The design system page adds a "dark" class to its preview frames when the viewer
+    // Loots has one light theme. The design system page adds a "dark" class to its preview frames when the viewer
     // uses dark mode, which would switch on shadcn's built-in dark styles; point the variant at a class nothing sets.
     .replace("@custom-variant dark (&:is(.dark *));", "@custom-variant dark (&:is(.ken-os-dark-theme *));")
     .concat("\nhtml { color-scheme: light !important; }\n")

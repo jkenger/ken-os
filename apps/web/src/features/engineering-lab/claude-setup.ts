@@ -1,7 +1,7 @@
 import { CLAUDE_INSTRUCTIONS_UPDATED } from "./claude-instructions";
 
 // The setup checklist's rules (docs/architecture/engineering-progressive-flow.md, section 1). Pure, so the page and the
-// tests share them. Ken OS can't read the Claude Project, so the instructions report their own version: Claude passes
+// tests share them. Loots can't read the Claude Project, so the instructions report their own version: Claude passes
 // it to get_current_state, and the last one seen is stored on lab_profile.
 
 export type InstructionsState = "pasted" | "out_of_date" | "not_yet";

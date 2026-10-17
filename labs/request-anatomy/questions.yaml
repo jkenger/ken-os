@@ -6,7 +6,7 @@ questions:
   - id: post_origin
     prompt: Does a same-origin POST carry an Origin header?
     options: ["yes", "no"]
-    why: Any request that can change state gets Origin, so servers can check where it came from. Ken OS's own routes rely on this.
+    why: Any request that can change state gets Origin, so servers can check where it came from. Loots' own routes rely on this.
   - id: sec_fetch_site
     prompt: What does the Sec-Fetch-Site header say for these requests?
     options: ["same-origin", "same-site", "cross-site", "not sent"]
@@ -16,6 +16,6 @@ questions:
     options: ["yes", "no"]
     why: The default credentials mode is same-origin, so cookies go to your own origin automatically and not to others.
   - id: encrypted
-    prompt: Is the connection between this browser and Ken OS encrypted right now?
+    prompt: Is the connection between this browser and Loots encrypted right now?
     options: ["yes", "no"]
     why: HTTPS is HTTP sent inside a TLS connection, which gives encryption, tamper detection and proof of the server's identity. Plain http, as on localhost, has none of those, whether the server is public or private.

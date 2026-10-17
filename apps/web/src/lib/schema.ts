@@ -388,7 +388,7 @@ export const labProgress = pgTable(
   (table) => [primaryKey({ columns: [table.userId, table.topicId] })],
 );
 
-// Ken OS-wide term lookup. A saved term is one per spelling (term_key); lookups are logged only to enforce the daily limit.
+// Loots-wide term lookup. A saved term is one per spelling (term_key); lookups are logged only to enforce the daily limit.
 export const kenTerms = pgTable(
   "ken_terms",
   {
@@ -403,7 +403,7 @@ export const kenTerms = pgTable(
     sourceUrl: text("source_url"),
     /** Where it was looked up, in words, such as "Engineering Lab · Event loop". */
     foundIn: text("found_in").notNull(),
-    /** The Ken OS path it was found on, so the Terms page can link back. Always a same-site path. */
+    /** The Loots path it was found on, so the Terms page can link back. Always a same-site path. */
     foundAt: text("found_at").notNull(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -429,7 +429,7 @@ export const kenTermLookups = pgTable(
   ],
 );
 
-// The Claude connector's sign-in (docs/architecture/engineering-claude-connector.md, section 3). Ken OS is its own
+// The Claude connector's sign-in (docs/architecture/engineering-claude-connector.md, section 3). Loots is its own
 // OAuth server for one owner. Codes and tokens are stored only as SHA-256 hashes.
 
 /** An app that may ask to connect: registered through /api/oauth/register, or a client metadata URL (CIMD). */

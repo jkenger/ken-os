@@ -26,7 +26,7 @@ Today a new roadmap archives the old one. After this, the owner keeps up to 3 ro
 - **Opening a roadmap records it** as last opened (`last_opened_at`), so the page, the Profile line and Claude agree across devices.
 - **Header actions:** **Re-plan** (replaces this roadmap) and **Claude setup**. **New roadmap** lives in the switcher. Both open the Ask Claude dialog:
   - New roadmap: "Plan a new roadmap with me. Start by checking where I am."
-  - Re-plan: "Re-plan my roadmap <goal> (Ken OS roadmap `<id>`). Start by checking where I am."
+  - Re-plan: "Re-plan my roadmap <goal> (Loots roadmap `<id>`). Start by checking where I am."
 - **At the limit,** New roadmap's dialog says "3 of 3 active · archive one first" instead of copying a message. Restore is refused the same way.
 - **Archive** is in the switcher next to each roadmap and on a finished roadmap's summary, next to Plan next roadmap. Archiving the roadmap you're viewing opens the next one opened last, or the default path if none is left.
 - **An archived roadmap opens read-only:** its graph or lanes, its summary if it was finished, and **Restore**. No Re-plan, no Next topic.

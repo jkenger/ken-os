@@ -14,9 +14,9 @@ Status: implemented 10 Oct 2026 on `feat/auth-sign-in` (all three slices on one 
 
 ## Decision
 
-Ken OS gets a real sign-in page, an error state for every way sign-in can fail, and a flow that returns the owner to where they were, stops asking for Google consent every time, keeps the session alive while it's in use, and asks for Drive access only when the Resume needs it.
+Loots gets a real sign-in page, an error state for every way sign-in can fail, and a flow that returns the owner to where they were, stops asking for Google consent every time, keeps the session alive while it's in use, and asks for Drive access only when the Resume needs it.
 
-Ken OS stays **owner-only with Google sign-in**. These boundaries are kept exactly: OAuth state and PKCE, the `OWNER_EMAIL` check on a verified Google email, the encrypted Drive refresh token, origin checks on POST routes, and the session checks in API routes.
+Loots stays **owner-only with Google sign-in**. These boundaries are kept exactly: OAuth state and PKCE, the `OWNER_EMAIL` check on a verified Google email, the encrypted Drive refresh token, origin checks on POST routes, and the session checks in API routes.
 
 Out of scope: more users or sign-in methods, and a single guard replacing the per-page session checks (a separate structural change). The proxy added here only renews sessions; it doesn't decide who gets in.
 
@@ -59,13 +59,13 @@ Built from shadcn's `login` block (`pnpm dlx shadcn@latest add login-01`), trimm
 
 | Part                                       | Text                                                                    |
 | ------------------------------------------ | ----------------------------------------------------------------------- |
-| Wordmark                                   | Ken OS                                                                  |
+| Wordmark                                   | Loots                                                                   |
 | Card title                                 | Sign in                                                                 |
 | Card description                           | Owner only                                                              |
 | Button                                     | Continue with Google (Google "G" mark, `variant="outline"`, full width) |
 | Alert (only when there's something to say) | See the states table                                                    |
 
-`<title>`: "Sign in · Ken OS". The button is a link to `/api/auth/google?next=<next>`. While navigating away it shows "Opening Google…" and is disabled, so a double click doesn't start two flows.
+`<title>`: "Sign in · Loots". The button is a link to `/api/auth/google?next=<next>`. While navigating away it shows "Opening Google…" and is disabled, so a double click doesn't start two flows.
 
 ### States
 
@@ -120,7 +120,7 @@ Sign-in scopes become `openid email profile`. Drive is a second, incremental gra
 ## 6. Sign out
 
 - The POST route clears the session and redirects to `/sign-in?signed_out=1`.
-- It doesn't revoke the Drive token. Signing out of Ken OS isn't disconnecting Drive.
+- It doesn't revoke the Drive token. Signing out of Loots isn't disconnecting Drive.
 - The sign-out control stays where it is in the shell.
 
 ## 7. Files
@@ -154,7 +154,7 @@ Sign-in scopes become `openid email profile`. Drive is a second, incremental gra
   4. Cancel at Google
   5. The wrong account
   6. Connecting Drive from the Resume page
-  7. Revoking Ken OS in Google account settings, then Reconnect Google Drive
+  7. Revoking Loots in Google account settings, then Reconnect Google Drive
   8. Signing out
 
 ## 9. Slices

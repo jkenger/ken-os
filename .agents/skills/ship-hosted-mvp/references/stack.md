@@ -21,7 +21,7 @@ Choosing shadcn/ui is not the same as using it. In the same setup step:
 - Add a test that fails on raw `button`, `input`, `select`, `textarea`, `label` or `table` elements, hand-built widget roles and direct Radix imports outside the primitives folder, with a short allow list for deliberate exceptions.
 - Write the rule into the project's agent instructions: use or add the primitive first, and when the design changes a control, change the primitive.
 
-Ken OS skipped these and ended up with a second, hand-built set of buttons, tabs, dialogs and a sidebar beside an installed shadcn.
+Loots skipped these and ended up with a second, hand-built set of buttons, tabs, dialogs and a sidebar beside an installed shadcn.
 
 Choose Vite + React instead of Next.js when the product is genuinely client-only or already has a separate API. Add a worker, queue, vector database, or agent specialist only when the first outcome requires it. Prefer a single process for the first hosted slice. For external content, store a stable reference and fetch current content from its owner unless a cached copy is itself a product requirement.
 

@@ -7,7 +7,7 @@ import { appUrl } from "@/lib/config";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// The Ken OS connector for Claude: MCP over Streamable HTTP, stateless, one bearer token per request.
+// The Loots connector for Claude: MCP over Streamable HTTP, stateless, one bearer token per request.
 // Spec: docs/architecture/engineering-claude-connector.md, section 3.
 
 export async function POST(request: Request) {

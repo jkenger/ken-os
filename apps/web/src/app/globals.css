@@ -128,7 +128,7 @@
     }
 }
 
-/* Ken OS: additions on top of the shadcn default */
+/* Loots: additions on top of the shadcn default */
 
 @layer base {
   html { scroll-behavior: smooth; }

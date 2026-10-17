@@ -84,7 +84,7 @@ function StatusMenu({ panel, onSaved }: { panel: TopicPanelView; onSaved: () => 
       </ToggleGroup>
       {panel.status.setBy && (
         <p className="mt-1.5 text-xs text-muted-foreground">
-          Set by {panel.status.setBy === "owner" ? "you" : panel.status.setBy === "claude" ? "Claude" : "Ken OS"}
+          Set by {panel.status.setBy === "owner" ? "you" : panel.status.setBy === "claude" ? "Claude" : "Loots"}
           {panel.status.changedAt ? ` · ${formatDate(panel.status.changedAt)}` : ""}
         </p>
       )}

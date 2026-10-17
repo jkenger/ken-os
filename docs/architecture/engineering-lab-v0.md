@@ -263,7 +263,7 @@ A new "Engineering Lab" entry goes in the workspace shell, next to Resume, Agent
 
 Why three pages instead of the handoff's six: §20 says the learning engine is the product, not the UI. History and Sources fit on the topic page until they outgrow it. Labs and Assessments are steps inside a topic, not places to browse.
 
-Wording: **"topic" everywhere**, in the UI and in new code (decided 2026-10-01). Ken OS already has an "Agent skills" page, so "skill" would mean two things. Step 1 renames the Researcher's `skillId` to `topicId` so the module uses one word.
+Wording: **"topic" everywhere**, in the UI and in new code (decided 2026-10-01). Loots already has an "Agent skills" page, so "skill" would mean two things. Step 1 renames the Researcher's `skillId` to `topicId` so the module uses one word.
 
 ## 11. MVP scope for Modules 1–3
 

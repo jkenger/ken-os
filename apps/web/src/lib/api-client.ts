@@ -1,4 +1,4 @@
-/** Calls a Ken OS JSON route from the browser and throws the route's own one-line error when it fails. */
+/** Calls a Loots JSON route from the browser and throws the route's own one-line error when it fails. */
 export async function send<T>(path: string, method: "POST" | "PUT" | "DELETE", body: unknown = {}): Promise<T> {
   const response = await fetch(path, {
     method,

@@ -176,7 +176,7 @@ function Brand() {
   );
 }
 
-/** The Ken OS sidebar on shadcn's Sidebar (its nested icon block): an icon rail and a section column. On a phone,
+/** The Loots sidebar on shadcn's Sidebar (its nested icon block): an icon rail and a section column. On a phone,
  *  shadcn renders it as an 18rem sheet that holds both lists. */
 function ShellSidebar({
   email,
@@ -200,7 +200,7 @@ function ShellSidebar({
         <SidebarHeader className="flex-row items-center justify-between">
           <span className="flex items-center gap-2 text-sm font-semibold">
             <Brand />
-            Ken OS
+            Loots
           </span>
           <Button variant="ghost" size="icon" aria-label="Close menu" onClick={close}>
             <X />
@@ -255,7 +255,7 @@ function ShellSidebar({
     >
       <Sidebar collapsible="none" className="w-(--sidebar-width-icon) shrink-0 border-r border-sidebar-border">
         <SidebarHeader>
-          <Link href="/" aria-label="Ken OS home">
+          <Link href="/" aria-label="Loots home">
             <Brand />
           </Link>
         </SidebarHeader>
@@ -447,7 +447,7 @@ export function WorkspaceShell({
   });
   const content = termLookup ? <TermLookup module={detail.title}>{children}</TermLookup> : children;
 
-  // The Ken OS shell, following shadcn/ui's sidebar anatomy (the nested icon sidebar block): an icon rail and a
+  // The Loots shell, following shadcn/ui's sidebar anatomy (the nested icon sidebar block): an icon rail and a
   // section column on the sidebar, beside one content inset. The column shows from 1024px.
   return (
     <TooltipProvider delayDuration={0}>

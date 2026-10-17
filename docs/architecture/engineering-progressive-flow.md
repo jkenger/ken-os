@@ -24,7 +24,7 @@ Shows at the top of `/engineering`, in place of the "No roadmap" box, until all 
 
 | Item                 | Done when                                                | Action           |
 | -------------------- | -------------------------------------------------------- | ---------------- |
-| Connect Ken OS       | A connection exists (Claude setup, step 1)               | Claude setup     |
+| Connect Loots        | A connection exists (Claude setup, step 1)               | Claude setup     |
 | Project instructions | Claude reported the current instructions version (below) | Claude setup     |
 | Project link         | A Project link is saved, or the env fallback is set      | Claude setup     |
 | Plan roadmap         | A roadmap is saved (`planned`)                           | Plan with Claude |
@@ -35,10 +35,10 @@ Shows at the top of `/engineering`, in place of the "No roadmap" box, until all 
 
 ### Knowing the instructions were pasted
 
-Ken OS can't read the Claude Project, so the instructions report their own version.
+Loots can't read the Claude Project, so the instructions report their own version.
 
 - `CLAUDE_INSTRUCTIONS_UPDATED` (already in `claude-instructions.ts`) becomes the version. The instructions text gains one line: call `get_current_state` with `instructionsVersion: "<that date>"`.
-- `get_current_state` takes an optional `instructionsVersion` (a `YYYY-MM-DD` string; anything else is ignored). Ken OS stores the last one seen and when.
+- `get_current_state` takes an optional `instructionsVersion` (a `YYYY-MM-DD` string; anything else is ignored). Loots stores the last one seen and when.
 - States, shown in the checklist and in Claude setup step 2:
   - **Pasted** when the stored version equals the current one.
   - **Out of date** when it's older. The step shows "Copy instructions" as the main button.
