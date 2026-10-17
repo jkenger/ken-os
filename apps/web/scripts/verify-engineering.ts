@@ -878,6 +878,20 @@ async function main() {
       console.log(
         "ok - material: Claude's criteria replace the topic's points for get_topic, review sheets and the panel",
       );
+
+      // Delete: the roadmap, the version Re-plan kept and its plans go; the topic's material stays.
+      await call("save_roadmap", {
+        roadmapId,
+        goal: "Reliable services v2",
+        chapters: [{ title: "Reliability", topics: [retry] }],
+      });
+      await assert.rejects(roadmaps.deleteRoadmap(other, roadmapId), /Unknown roadmap/, "only the owner deletes");
+      assert.deepEqual(await roadmaps.deleteRoadmap(writer, roadmapId), { id: roadmapId, deleted: true });
+      assert.deepEqual(await db().select().from(labRoadmaps).where(eq(labRoadmaps.userId, writer)), []);
+      assert.deepEqual(await material.getPlans(roadmapId), {}, "its plans go with it");
+      assert.notEqual(await material.getMaterial(writer, retry), null, "the topic's material stays");
+      await assert.rejects(roadmaps.deleteRoadmap(writer, roadmapId), /Unknown roadmap/);
+      console.log("ok - roadmaps: delete removes a roadmap with its replaced versions and plans");
     } finally {
       await db().delete(users).where(eq(users.id, writer));
     }
