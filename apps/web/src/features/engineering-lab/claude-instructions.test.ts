@@ -29,3 +29,11 @@ test("the instructions are plain text with a date", () => {
   assert.match(CLAUDE_INSTRUCTIONS_UPDATED, /^\d{4}-\d{2}-\d{2}$/);
   assert.ok(CLAUDE_PROJECT_INSTRUCTIONS.length < 4_000, "short enough to paste");
 });
+
+test("the instructions have Claude teach from the topic's material: its tasks in order, from its resources", () => {
+  const text = CLAUDE_PROJECT_INSTRUCTIONS.toLowerCase();
+  assert.match(text, /follow its tasks in order/);
+  assert.match(text, /for read, open its resources/);
+  assert.match(text, /for build, .*save_exercise/);
+  assert.match(text, /for explain, .*own words/);
+});
