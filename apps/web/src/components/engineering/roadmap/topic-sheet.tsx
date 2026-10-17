@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { IconLink, IconPencil, IconTrash } from "@tabler/icons-react";
+import { IconLink, IconPencil, IconTrash, IconX } from "@tabler/icons-react";
 import { TOPIC_STATUSES, type TopicStatus } from "@ken-os/domain";
 import { post, send } from "@/components/lab/topic/client";
 import { formatDate } from "@/components/lab/words";
@@ -17,13 +17,14 @@ import type { NoteView, ReportView } from "@/features/engineering-lab/status-sto
 import { ClaudeLinkField } from "./claude-link-field";
 import { CodeSheet } from "./code-sheet";
 import { ReviewTab } from "./review-tab";
-import { StatusIcon, StatusLabel, statusWords } from "./status";
+import { StatusChip, StatusIcon, StatusLabel, statusWords } from "./status";
 import { TopicSteps } from "./topic-steps";
 
 // The roadmap's topic panel (docs/architecture/engineering-claude-first.md, section 1), in two tabs. Topic: the steps,
 // Learn → Practice, with Next topic once it's done (engineering-progressive-flow.md, sections 2 and 3); the
 // status, with a menu to change it; Link chat; and the sessions timeline from Claude's reports. Review: the review sheet
-// and notes (section 9h). The owner can set any status and edit or delete any note.
+// and notes (section 9h). The owner can set any status and edit or delete any note. From 1280px the panel docks beside
+// the roadmap; below that it is a sheet (docs/architecture/roadmap-ui.md).
 
 export type TopicTab = "topic" | "review";
 
@@ -287,6 +288,7 @@ export function TopicSheet({
   onClose,
   onChanged,
   onSelect,
+  docked = false,
 }: {
   topicId: string | null;
   /** Topic or Review; the page holds it, so search can open a topic on its review. */
@@ -302,6 +304,8 @@ export function TopicSheet({
   onSelect: (topicId: string) => void;
   /** Called after a change, so the roadmap can show the new status. */
   onChanged: () => void;
+  /** Wide screens: a panel beside the roadmap, so the roadmap stays in view. Otherwise a sheet over it. */
+  docked?: boolean;
 }) {
   const [panel, setPanel] = useState<TopicPanelView | null>(null);
   const [problem, setProblem] = useState("");
@@ -331,89 +335,148 @@ export function TopicSheet({
     onChanged();
   };
 
+  const place = panel ? `${panel.chapter} · ${panel.area}` : "Topic";
+
+  const body = (
+    <>
+      {problem && <p className="p-4 text-sm text-destructive">{problem}</p>}
+      {!panel && !problem && (
+        <div className="grid gap-3 p-4" aria-busy="true" aria-label="Loading topic">
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-8 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
+      )}
+      {panel && (
+        <Tabs value={tab} onValueChange={(next) => onTabChange(next as TopicTab)} className="gap-0">
+          <TabsList aria-label="Topic view" className="mx-4 mt-4">
+            <TabsTrigger value="topic">Topic</TabsTrigger>
+            <TabsTrigger value="review">Review{panel.notes.length > 0 && ` · ${panel.notes.length}`}</TabsTrigger>
+          </TabsList>
+          <TabsContent value="review" className="p-4">
+            <ReviewTab topicId={panel.id} notes={<Notes topicId={panel.id} notes={panel.notes} onSaved={saved} />} />
+          </TabsContent>
+          <TabsContent value="topic" className="grid gap-6 p-4">
+            {panel.gap && <p className="text-sm text-muted-foreground">{panel.gap}</p>}
+            <TopicSteps
+              panel={panel}
+              projectUrl={projectUrl}
+              onPractice={() => setCoding(true)}
+              onSelect={onSelect}
+              showNext={roadmapActive}
+            />
+            {panel.custom && panel.points.length > 0 && (
+              <section aria-labelledby="explain-title">
+                <h3 id="explain-title" className={sectionTitle}>
+                  What to explain
+                </h3>
+                <ol className="grid gap-2 text-sm">
+                  {panel.points.map((line, index) => (
+                    <li key={line} className="flex gap-2.5">
+                      <span className="pt-px font-mono text-xs text-muted-foreground">{index + 1}</span>
+                      <span>{line}</span>
+                    </li>
+                  ))}
+                </ol>
+              </section>
+            )}
+            <section aria-labelledby="status-title">
+              <h3 id="status-title" className={sectionTitle}>
+                Status
+              </h3>
+              <StatusMenu panel={panel} onSaved={saved} />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="mt-2 -ml-2"
+                aria-expanded={linking}
+                onClick={() => setLinking((open) => !open)}
+              >
+                <IconLink aria-hidden="true" />
+                {panel.chatUrl ? "Change chat" : "Link chat"}
+              </Button>
+              {linking && (
+                <ClaudeLinkField
+                  label="Chat for this topic"
+                  value={panel.chatUrl}
+                  endpoint={`/api/lab/topics/${encodeURIComponent(panel.id)}/chat`}
+                  placeholder="https://claude.ai/chat/…"
+                  helper="Paste the chat you learned this topic in"
+                  savedTitle="Chat linked"
+                  onSaved={() => {
+                    setLinking(false);
+                    saved();
+                  }}
+                />
+              )}
+            </section>
+            <section aria-labelledby="sessions-title">
+              <h3 id="sessions-title" className={sectionTitle}>
+                Sessions
+              </h3>
+              <Sessions reports={panel.reports} />
+            </section>
+          </TabsContent>
+        </Tabs>
+      )}
+    </>
+  );
+
+  const code = panel && <CodeSheet topic={panel} open={coding} onClose={() => setCoding(false)} onChanged={saved} />;
+
+  if (docked) {
+    if (!topicId) return null;
+    return (
+      <>
+        <aside
+          aria-labelledby="topic-panel-title"
+          onKeyDown={(event) => {
+            if (event.key === "Escape" && !event.defaultPrevented) onClose();
+          }}
+          className="sticky top-2 flex max-h-[calc(100svh-1rem)] w-96 shrink-0 flex-col overflow-y-auto border-l bg-card"
+        >
+          <div className="grid gap-2.5 border-b p-4">
+            <div className="flex items-center gap-2">
+              {panel && <StatusChip status={panel.status.status} />}
+              <p className="min-w-0 truncate text-xs text-muted-foreground">{place}</p>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Close topic"
+                className="ml-auto"
+                onClick={onClose}
+              >
+                <IconX aria-hidden="true" />
+              </Button>
+            </div>
+            <h2 id="topic-panel-title" className="font-heading text-xl leading-tight font-bold tracking-tight">
+              {panel?.title ?? " "}
+            </h2>
+          </div>
+          {body}
+        </aside>
+        {code}
+      </>
+    );
+  }
+
   return (
     <>
       <Sheet open={Boolean(topicId)} onOpenChange={(open) => !open && onClose()}>
         <SheetContent className="gap-0 overflow-y-auto data-[side=right]:w-full data-[side=right]:sm:max-w-md">
           <SheetHeader className="border-b">
-            <SheetDescription>{panel ? `${panel.area} · ${panel.chapter}` : "Topic"}</SheetDescription>
-            <SheetTitle className="text-xl">{panel?.title ?? " "}</SheetTitle>
-          </SheetHeader>
-          {problem && <p className="p-4 text-sm text-destructive">{problem}</p>}
-          {!panel && !problem && (
-            <div className="grid gap-3 p-4">
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-20 w-full" />
+            <div className="flex items-center gap-2 pr-8">
+              {panel && <StatusChip status={panel.status.status} />}
+              <SheetDescription className="truncate">{place}</SheetDescription>
             </div>
-          )}
-          {panel && (
-            <Tabs value={tab} onValueChange={(next) => onTabChange(next as TopicTab)} className="gap-0">
-              <TabsList aria-label="Topic view" className="mx-4 mt-4">
-                <TabsTrigger value="topic">Topic</TabsTrigger>
-                <TabsTrigger value="review">Review</TabsTrigger>
-              </TabsList>
-              <TabsContent value="review" className="p-4">
-                <ReviewTab
-                  topicId={panel.id}
-                  notes={<Notes topicId={panel.id} notes={panel.notes} onSaved={saved} />}
-                />
-              </TabsContent>
-              <TabsContent value="topic" className="grid gap-6 p-4">
-                {panel.gap && <p className="text-sm text-muted-foreground">{panel.gap}</p>}
-                {panel.custom && (
-                  <section>
-                    <h3 className={sectionTitle}>Added by Claude · what to explain</h3>
-                    <ul className="list-disc space-y-1 pl-5 text-sm">
-                      {panel.points.map((line) => (
-                        <li key={line}>{line}</li>
-                      ))}
-                    </ul>
-                  </section>
-                )}
-                <TopicSteps
-                  panel={panel}
-                  projectUrl={projectUrl}
-                  onPractice={() => setCoding(true)}
-                  onSelect={onSelect}
-                  showNext={roadmapActive}
-                />
-                <StatusMenu panel={panel} onSaved={saved} />
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    aria-expanded={linking}
-                    onClick={() => setLinking((open) => !open)}
-                  >
-                    <IconLink aria-hidden="true" />
-                    {panel.chatUrl ? "Change chat" : "Link chat"}
-                  </Button>
-                </div>
-                {linking && (
-                  <ClaudeLinkField
-                    label="Chat for this topic"
-                    value={panel.chatUrl}
-                    endpoint={`/api/lab/topics/${encodeURIComponent(panel.id)}/chat`}
-                    placeholder="https://claude.ai/chat/…"
-                    helper="Paste the chat you learned this topic in"
-                    savedTitle="Chat linked"
-                    onSaved={() => {
-                      setLinking(false);
-                      saved();
-                    }}
-                  />
-                )}
-                <section>
-                  <h3 className={sectionTitle}>Sessions</h3>
-                  <Sessions reports={panel.reports} />
-                </section>
-              </TabsContent>
-            </Tabs>
-          )}
+            <SheetTitle className="font-heading text-xl">{panel?.title ?? " "}</SheetTitle>
+          </SheetHeader>
+          {body}
         </SheetContent>
       </Sheet>
-      {panel && <CodeSheet topic={panel} open={coding} onClose={() => setCoding(false)} onChanged={saved} />}
+      {code}
     </>
   );
 }

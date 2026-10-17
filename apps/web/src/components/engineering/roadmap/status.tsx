@@ -1,9 +1,11 @@
-import { IconCircleCheck, IconCircleDashed, IconPlayerSkipForward, IconProgress } from "@tabler/icons-react";
+import { IconCircleCheckFilled, IconCircleDashed, IconCircleHalf2, IconPlayerSkipForward } from "@tabler/icons-react";
 import type { TopicStatus } from "@ken-os/domain";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-// How a topic's status reads on the roadmap (docs/architecture/engineering-claude-first.md, section 2). The word and the
-// icon carry the meaning; colour only reinforces it.
+// How a topic's status reads on the roadmap (docs/architecture/engineering-claude-first.md, section 2, and
+// docs/architecture/roadmap-ui.md). The word and the icon shape carry the meaning; colour only reinforces it: a filled
+// check for Learned, a half circle for In progress, a dashed ring for Not started, a skip arrow for Skipped.
 
 export const statusWords: Record<TopicStatus, string> = {
   not_started: "Not started",
@@ -14,17 +16,25 @@ export const statusWords: Record<TopicStatus, string> = {
 
 const icons = {
   not_started: IconCircleDashed,
-  in_progress: IconProgress,
-  learned: IconCircleCheck,
+  in_progress: IconCircleHalf2,
+  learned: IconCircleCheckFilled,
   skipped: IconPlayerSkipForward,
 } as const;
 
-/** Text colour for a status: strong for Learned and In progress, quiet for the rest. */
+/** Text colour for a status: its own colour for Learned and In progress, quiet for the rest. */
 export const statusTone: Record<TopicStatus, string> = {
   not_started: "text-muted-foreground",
-  in_progress: "text-primary",
-  learned: "text-primary",
+  in_progress: "text-topic-active",
+  learned: "text-topic-learned",
   skipped: "text-muted-foreground",
+};
+
+/** The soft chip behind a status word. */
+const chipTone: Record<TopicStatus, string> = {
+  not_started: "bg-muted text-foreground",
+  in_progress: "bg-topic-active-soft text-topic-active",
+  learned: "bg-topic-learned-soft text-topic-learned",
+  skipped: "bg-muted text-muted-foreground",
 };
 
 export function StatusIcon({
@@ -46,5 +56,15 @@ export function StatusLabel({ status }: { status: TopicStatus }) {
       <StatusIcon status={status} size={14} />
       {statusWords[status]}
     </span>
+  );
+}
+
+/** The status as a chip, for a topic's heading. */
+export function StatusChip({ status }: { status: TopicStatus }) {
+  return (
+    <Badge variant="secondary" className={cn("gap-1", chipTone[status])}>
+      <StatusIcon status={status} className="text-current" />
+      {statusWords[status]}
+    </Badge>
   );
 }

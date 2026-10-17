@@ -1,33 +1,40 @@
 import type { TopicStatus } from "@ken-os/domain";
 
-// Where each node of the roadmap graph sits (docs/architecture/engineering-claude-first.md, section 1). The goal is in
-// the middle, chapters sit on a ring around it in roadmap order, and an expanded chapter fans its topics outward.
-// Collapsed chapters show one node with a count. Positions are node centres; the graph draws with nodeOrigin [0.5, 0.5].
+// Where each node of the roadmap graph sits (docs/architecture/engineering-claude-first.md, section 1). The goal heads a
+// column of chapters in roadmap order; an expanded chapter shows its topics in a group to its right, two to a row.
+// Collapsed chapters show one node with a count. Edges are only what the roadmap knows: its order and which chapter a
+// topic belongs to. There are no topic-to-topic prerequisites in the data, so none are drawn.
+// Positions are top-left corners; every node carries its own size, so the graph draws with nodeOrigin [0, 0].
 
 export interface LayoutInput {
   goal: string;
   chapters: { id: string; title: string; topics: { id: string; title: string; status: TopicStatus }[] }[];
 }
 
+interface Box {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+export type ChapterData = {
+  chapterId: string;
+  title: string;
+  order: number;
+  learned: number;
+  total: number;
+  /** Every topic Learned or Skipped (engineering-progressive-flow.md, section 3). */
+  done: boolean;
+  expanded: boolean;
+};
+
 export type LayoutNode =
-  | { id: string; type: "goal"; x: number; y: number; data: { title: string } }
-  | {
-      id: string;
-      type: "chapter";
-      x: number;
-      y: number;
-      data: {
-        chapterId: string;
-        title: string;
-        order: number;
-        learned: number;
-        total: number;
-        /** Every topic Learned or Skipped (engineering-progressive-flow.md, section 3). */
-        done: boolean;
-        expanded: boolean;
-      };
-    }
-  | { id: string; type: "topic"; x: number; y: number; data: { topicId: string; title: string; status: TopicStatus } };
+  | (Box & { type: "goal"; data: { title: string } })
+  | (Box & { type: "chapter"; data: ChapterData })
+  | (Box & { type: "group"; data: { chapterId: string; title: string; order: number } })
+  | (Box & { type: "topic"; data: { topicId: string; chapterId: string; title: string; status: TopicStatus } });
 
 export interface LayoutEdge {
   id: string;
@@ -35,34 +42,56 @@ export interface LayoutEdge {
   target: string;
 }
 
-/** The chapter ring grows with the number of chapters so their labels don't touch. */
-export function chapterRadius(chapters: number) {
-  return Math.max(220, chapters * 36);
-}
-
-/** Topics fan out this far beyond the chapter ring, this many radians apart. */
-export const TOPIC_DISTANCE = 180;
-export const TOPIC_SPREAD = 0.3;
+/** Node sizes in graph pixels; the node components fill them. */
+export const GRAPH = {
+  goal: { width: 232, height: 64 },
+  chapter: { width: 232, height: 60 },
+  topic: { width: 212, height: 40 },
+  /** Space between one chapter row and the next. */
+  rowGap: 28,
+  /** Space between a chapter and its group. */
+  groupGap: 56,
+  groupPadding: 12,
+  groupHeading: 30,
+  topicGap: 8,
+  columns: 2,
+} as const;
 
 export const goalNodeId = "goal";
 export const chapterNodeId = (chapterId: string) => `chapter:${chapterId}`;
+export const groupNodeId = (chapterId: string) => `group:${chapterId}`;
 export const topicNodeId = (topicId: string) => `topic:${topicId}`;
 
+/** One of six chapter accents, in roadmap order (0-based index in, 1 to 6 out). */
+export function chapterTone(index: number) {
+  return ((index % 6) + 1) as 1 | 2 | 3 | 4 | 5 | 6;
+}
+
+const groupWidth = GRAPH.groupPadding * 2 + GRAPH.columns * GRAPH.topic.width + (GRAPH.columns - 1) * GRAPH.topicGap;
+
+function groupHeight(topics: number) {
+  const rows = Math.max(1, Math.ceil(topics / GRAPH.columns));
+  return GRAPH.groupPadding * 2 + GRAPH.groupHeading + rows * GRAPH.topic.height + (rows - 1) * GRAPH.topicGap;
+}
+
 export function layoutRoadmap(input: LayoutInput, expanded: ReadonlySet<string>) {
-  const nodes: LayoutNode[] = [{ id: goalNodeId, type: "goal", x: 0, y: 0, data: { title: input.goal } }];
+  const nodes: LayoutNode[] = [
+    { id: goalNodeId, type: "goal", x: 0, y: 0, ...GRAPH.goal, data: { title: input.goal } },
+  ];
   const edges: LayoutEdge[] = [];
-  const ring = chapterRadius(input.chapters.length);
-  const step = (2 * Math.PI) / Math.max(input.chapters.length, 1);
+  const groupX = GRAPH.chapter.width + GRAPH.groupGap;
+  let top = GRAPH.goal.height + GRAPH.rowGap;
+  let previous = goalNodeId;
+
   input.chapters.forEach((chapter, index) => {
-    // The first chapter sits at the top; the rest follow clockwise, in roadmap order.
-    const angle = -Math.PI / 2 + index * step;
     const id = chapterNodeId(chapter.id);
     const open = expanded.has(chapter.id);
     nodes.push({
       id,
       type: "chapter",
-      x: Math.round(Math.cos(angle) * ring),
-      y: Math.round(Math.sin(angle) * ring),
+      x: 0,
+      y: top,
+      ...GRAPH.chapter,
       data: {
         chapterId: chapter.id,
         title: chapter.title,
@@ -75,21 +104,38 @@ export function layoutRoadmap(input: LayoutInput, expanded: ReadonlySet<string>)
         expanded: open,
       },
     });
-    edges.push({ id: `${goalNodeId}->${id}`, source: goalNodeId, target: id });
-    if (!open) return;
-    const reach = ring + TOPIC_DISTANCE;
-    chapter.topics.forEach((topic, position) => {
-      const offset = (position - (chapter.topics.length - 1) / 2) * TOPIC_SPREAD;
-      const topicId = topicNodeId(topic.id);
+    edges.push({ id: `${previous}->${id}`, source: previous, target: id });
+    previous = id;
+
+    let rowHeight: number = GRAPH.chapter.height;
+    if (open) {
+      const group = groupNodeId(chapter.id);
+      const height = groupHeight(chapter.topics.length);
       nodes.push({
-        id: topicId,
-        type: "topic",
-        x: Math.round(Math.cos(angle + offset) * reach),
-        y: Math.round(Math.sin(angle + offset) * reach),
-        data: { topicId: topic.id, title: topic.title, status: topic.status },
+        id: group,
+        type: "group",
+        x: groupX,
+        y: top,
+        width: groupWidth,
+        height,
+        data: { chapterId: chapter.id, title: chapter.title, order: index + 1 },
       });
-      edges.push({ id: `${id}->${topicId}`, source: id, target: topicId });
-    });
+      edges.push({ id: `${id}->${group}`, source: id, target: group });
+      chapter.topics.forEach((topic, position) => {
+        const column = position % GRAPH.columns;
+        const row = Math.floor(position / GRAPH.columns);
+        nodes.push({
+          id: topicNodeId(topic.id),
+          type: "topic",
+          x: groupX + GRAPH.groupPadding + column * (GRAPH.topic.width + GRAPH.topicGap),
+          y: top + GRAPH.groupPadding + GRAPH.groupHeading + row * (GRAPH.topic.height + GRAPH.topicGap),
+          ...GRAPH.topic,
+          data: { topicId: topic.id, chapterId: chapter.id, title: topic.title, status: topic.status },
+        });
+      });
+      rowHeight = Math.max(rowHeight, height);
+    }
+    top += rowHeight + GRAPH.rowGap;
   });
   return { nodes, edges };
 }

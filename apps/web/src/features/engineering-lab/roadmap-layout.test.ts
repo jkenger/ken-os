@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { chapterRadius, layoutRoadmap, type LayoutInput } from "./roadmap-layout";
+import { chapterTone, layoutRoadmap, type LayoutInput, type LayoutNode } from "./roadmap-layout";
 
 // The roadmap graph's layout (docs/architecture/engineering-claude-first.md, section 1).
 
@@ -27,10 +27,17 @@ const input: LayoutInput = {
     { id: "api", title: "APIs", topics: [{ id: "api.a", title: "A", status: "not_started" }] },
   ],
 };
-const distance = (node: { x: number; y: number }) => Math.hypot(node.x, node.y);
+
+const overlaps = (a: LayoutNode, b: LayoutNode) =>
+  a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+const inside = (inner: LayoutNode, outer: LayoutNode) =>
+  inner.x >= outer.x &&
+  inner.y >= outer.y &&
+  inner.x + inner.width <= outer.x + outer.width &&
+  inner.y + inner.height <= outer.y + outer.height;
 
 test("collapsed chapters are one node with a count, and only expanded chapters show topics", () => {
-  const { nodes, edges } = layoutRoadmap(input, new Set(["react"]));
+  const { nodes } = layoutRoadmap(input, new Set(["react"]));
   assert.equal(nodes.filter((node) => node.type === "goal").length, 1);
   assert.equal(nodes.filter((node) => node.type === "chapter").length, 3);
   assert.deepEqual(
@@ -39,25 +46,58 @@ test("collapsed chapters are one node with a count, and only expanded chapters s
   );
   const js = nodes.find((node) => node.id === "chapter:js")!;
   assert.ok(js.type === "chapter" && js.data.learned === 1 && js.data.total === 2 && !js.data.expanded);
-  assert.equal(edges.length, 3 + 3, "goal to each chapter, chapter to each shown topic");
 });
 
-test("the goal is in the middle, chapters on a ring in order from the top, topics beyond them", () => {
+test("edges follow roadmap order only: goal to the first chapter, each chapter to the next, a chapter to its topics", () => {
+  const { edges } = layoutRoadmap(input, new Set(["react"]));
+  assert.deepEqual(
+    edges.map((edge) => `${edge.source}->${edge.target}`),
+    ["goal->chapter:js", "chapter:js->chapter:react", "chapter:react->group:react", "chapter:react->chapter:api"],
+  );
+});
+
+test("chapters run top to bottom in roadmap order, below the goal", () => {
   const { nodes } = layoutRoadmap(input, new Set(["js", "react", "api"]));
-  const goal = nodes[0];
-  assert.deepEqual([goal.x, goal.y], [0, 0]);
+  const goal = nodes.find((node) => node.type === "goal")!;
   const chapters = nodes.filter((node) => node.type === "chapter");
-  for (const chapter of chapters) assert.ok(Math.abs(distance(chapter) - chapterRadius(3)) <= 1);
-  assert.ok(chapters[0].y < 0 && Math.abs(chapters[0].x) <= 1, "the first chapter sits at the top");
-  for (const topic of nodes.filter((node) => node.type === "topic"))
-    assert.ok(distance(topic) > chapterRadius(3) + 100);
-  const positions = nodes.map((node) => `${node.x},${node.y}`);
-  assert.equal(new Set(positions).size, positions.length, "no two nodes share a spot");
+  assert.deepEqual(
+    chapters.map((node) => node.id),
+    ["chapter:js", "chapter:react", "chapter:api"],
+  );
+  assert.ok(
+    chapters.every((node) => node.x === goal.x),
+    "the goal and chapters share one column",
+  );
+  const tops = [goal, ...chapters].map((node) => node.y);
+  assert.deepEqual(
+    tops,
+    [...tops].sort((a, b) => a - b),
+  );
 });
 
-test("the ring grows with more chapters", () => {
-  assert.equal(chapterRadius(3), 220);
-  assert.ok(chapterRadius(13) > chapterRadius(3));
+test("an expanded chapter's topics sit inside its group, beside the chapter, in roadmap order", () => {
+  const { nodes } = layoutRoadmap(input, new Set(["react"]));
+  const chapter = nodes.find((node) => node.id === "chapter:react")!;
+  const group = nodes.find((node) => node.id === "group:react")!;
+  const topics = nodes.filter((node) => node.type === "topic");
+  assert.equal(group.y, chapter.y, "the group starts level with its chapter");
+  assert.ok(group.x >= chapter.x + chapter.width, "the group sits to the right of the chapter");
+  for (const topic of topics) assert.ok(inside(topic, group), `${topic.id} sits inside its group`);
+  const reading = [...topics].sort((a, b) => a.y - b.y || a.x - b.x).map((node) => node.id);
+  assert.deepEqual(reading, ["topic:react.a", "topic:react.b", "topic:react.c"], "left to right, then down");
+});
+
+test("no two boxes overlap, apart from topics inside their own group", () => {
+  const { nodes } = layoutRoadmap(input, new Set(["js", "react", "api"]));
+  const found: string[] = [];
+  for (const [index, a] of nodes.entries())
+    for (const b of nodes.slice(index + 1)) {
+      const family =
+        (a.type === "group" && b.type === "topic" && inside(b, a)) ||
+        (b.type === "group" && a.type === "topic" && inside(a, b));
+      if (!family && overlaps(a, b)) found.push(`${a.id} / ${b.id}`);
+    }
+  assert.deepEqual(found, []);
 });
 
 test("a chapter is marked done when every topic is Learned or Skipped", () => {
@@ -84,4 +124,8 @@ test("a chapter is marked done when every topic is Learned or Skipped", () => {
     ["api", false],
     ["done", true],
   ]);
+});
+
+test("chapter tones cycle through six accents in roadmap order", () => {
+  assert.deepEqual([0, 1, 5, 6, 7].map(chapterTone), [1, 2, 6, 1, 2]);
 });
