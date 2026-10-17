@@ -23,7 +23,7 @@ inventing its own. It covers what was built and proved on this screen only; it i
   visible and clickable; Escape or the close button closes it. Below 1280px it is the same content in a Sheet. Lanes
   and Graph share the selected topic, and the open topic lives in the address. It has two modes:
   - **Overview**, beside the graph: status, chapter, description, task progress, Next in path, and **Open in lanes**.
-  - **Detail**, beside the lanes: Tasks, Mastery criteria (the topic's points, for every topic), Status, Link chat and
+  - **Detail**, beside the lanes: Tasks, Mastery criteria (the topic's points: Claude's criteria once written), Status, Link chat and
     Sessions in the Topic tab; the review sheet and notes in the Review tab. A review opened from search always shows
     Detail. The main button is the first task left to do, or Next topic once the topic is finished.
 - **Tasks.** The same three for every topic, from `topicTasks` in `features/engineering-lab/topic-steps.ts`: **Read**
@@ -98,8 +98,15 @@ Agreed 17 Oct 2026: only what the reference mockup and the current build show, n
    wording, and mastery criteria. Roadmap-wide fields come when a roadmap is planned, topic detail when a topic starts.
    Claude can correct its own material; there are no edit forms. A topic without it shows "Not planned yet" and Ask
    Claude to plan it.
-3. **Clean state:** remove `points.yaml`, the `gap` lines and the built-in labs once every active topic has Claude's
-   version. Sessions, review sheets, notes, evidence, status history and done exercises stay.
+3. **Done, retire as replaced** (changed 17 Oct 2026 from removing everything at once, because material is written as
+   each topic starts, so "every topic has Claude's version" could take weeks): once Claude writes a topic's material,
+   its mastery criteria become the topic's points and its description the topic's line, everywhere.
+   `requireAnyTopic` in `any-topic.ts` applies it (`withMaterial` in `topic-material.ts`), so `get_topic`'s p1, p2…,
+   review sheets (which must cover the new criteria), the Review tab and the panel all follow. Topics Claude hasn't
+   written keep the old material as the fallback. A review sheet saved on the old points no longer lines up after the
+   switch; Claude rewrites it the next time it works on the topic.
+4. **Later, final cleanup:** delete `points.yaml`, the `gap` lines and the built-in labs once no active topic falls
+   back to them. Sessions, review sheets, notes, evidence, status history and done exercises stay.
 
 How release 2 works:
 

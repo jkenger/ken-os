@@ -365,8 +365,8 @@ export function TopicSheet({
     </>
   );
 
-  // Claude's description once it writes one; until then the topic map's line, when there is one.
-  const descriptionText = panel?.material?.description ?? panel?.gap ?? null;
+  // The topic's line: Claude's description once written (any-topic.ts applies it), else the topic map's line.
+  const descriptionText = panel?.gap ?? null;
   const description = (
     <>
       {descriptionText && <p className="text-sm text-muted-foreground">{descriptionText}</p>}
@@ -412,13 +412,13 @@ export function TopicSheet({
         <NotPlanned panel={panel} projectUrl={projectUrl} />
         <TopicResources material={panel.material} />
         <TopicTasks panel={panel} />
-        {(panel.material?.criteria ?? panel.points).length > 0 && (
+        {panel.points.length > 0 && (
           <section aria-labelledby="mastery-title" className="grid gap-2">
             <h3 id="mastery-title" className="text-sm font-semibold">
               Mastery criteria
             </h3>
             <ul className="grid list-disc gap-1.5 pl-5 text-sm">
-              {(panel.material?.criteria ?? panel.points).map((line) => (
+              {panel.points.map((line) => (
                 <li key={line}>{line}</li>
               ))}
             </ul>
