@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, or } from "drizzle-orm";
 import { pathChapters, readStatus, staleLearned, type TopicStatus, type TopicStatusView } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { labCustomTopics, labRoadmaps, labTopicEvents } from "@/lib/schema";
@@ -276,6 +276,18 @@ export async function archiveRoadmap(userId: string, roadmapId: string) {
     .set({ status: "archived", archivedAt: new Date() })
     .where(and(eq(labRoadmaps.userId, userId), eq(labRoadmaps.id, roadmapId)));
   return { id: row.id, status: "archived" as const };
+}
+
+/**
+ * Deletes a roadmap, active or archived, with the versions Re-plan kept of it and Claude's plans for its topics. Topics
+ * keep their progress, material and notes, since those belong to topics, not roadmaps.
+ */
+export async function deleteRoadmap(userId: string, roadmapId: string) {
+  const row = await requireRoadmap(userId, roadmapId);
+  await db()
+    .delete(labRoadmaps)
+    .where(and(eq(labRoadmaps.userId, userId), or(eq(labRoadmaps.id, row.id), eq(labRoadmaps.replacedBy, row.id))));
+  return { id: row.id, deleted: true as const };
 }
 
 /** Brings an archived roadmap back, if fewer than ROADMAP_LIMIT are active. A replaced version comes back on its own. */

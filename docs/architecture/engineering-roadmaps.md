@@ -13,7 +13,7 @@ Today a new roadmap archives the old one. After this, the owner keeps up to 3 ro
 | New or replace            | Two actions: **New roadmap** adds one; **Re-plan** replaces that roadmap, keeping its place and address |
 | Moving between them       | A switcher on the page title; each roadmap has its own address                                          |
 | Which one opens           | The one opened last, remembered on the server                                                           |
-| Done with one             | Archive, never delete. **Restore** brings it back if there's room                                       |
+| Done with one             | Archive; **Restore** brings it back if there's room. **Delete** removes it for good (17 Oct 2026)       |
 | Before the first roadmap  | The role's default path, as today                                                                       |
 | What Claude needs to know | Only the roadmap tools take a roadmap; topic tools are unchanged                                        |
 
@@ -29,6 +29,7 @@ Today a new roadmap archives the old one. After this, the owner keeps up to 3 ro
   - Re-plan: "Re-plan my roadmap <goal> (Loots roadmap `<id>`). Start by checking where I am."
 - **At the limit,** New roadmap's dialog says "3 of 3 active · archive one first" instead of copying a message. Restore is refused the same way.
 - **Archive** is in the switcher next to each roadmap and on a finished roadmap's summary, next to Plan next roadmap. Archiving the roadmap you're viewing opens the next one opened last, or the default path if none is left.
+- **Delete** is in the switcher for the roadmap shown, active or archived, behind a confirmation. It removes the roadmap, the versions Re-plan kept of it and Claude's plans for its topics; topic progress, material and notes stay. Then the next roadmap opens, as after Archive. Added 17 Oct 2026 at the owner's request.
 - **An archived roadmap opens read-only:** its graph or lanes, its summary if it was finished, and **Restore**. No Re-plan, no Next topic.
 - **The Profile page's Engineering line** shows one line per active roadmap (goal and "5 of 14 learned"), most recently opened first.
 
@@ -43,7 +44,7 @@ Today a new roadmap archives the old one. After this, the owner keeps up to 3 ro
 | Topic tools         | Unchanged: `get_topic`, `get_history`, `get_my_work`, `save_exercise`, `save_note`                                                                                                  |
 
 - **The instructions change** by one line: add a roadmap with `save_roadmap` unless the owner asks to re-plan one, then pass its `roadmapId`. `CLAUDE_INSTRUCTIONS_UPDATED` moves, so Claude setup shows Out of date until the owner pastes them again.
-- Claude can't archive or restore. Those stay the owner's, like deleting notes.
+- Claude can't archive, restore or delete. Those stay the owner's, like deleting notes.
 
 ## 3. Re-plan in place
 

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IconArrowRight, IconLayoutColumns, IconSitemap } from "@tabler/icons-react";
-import { post } from "@/components/lab/topic/client";
+import { post, send } from "@/components/lab/topic/client";
 import { formatDate } from "@/components/lab/words";
 import { toast } from "@/components/ui/toaster";
 import { WorkspaceShell } from "@/components/workspace-shell";
@@ -20,7 +20,13 @@ import { RoadmapProgress } from "./roadmap-progress";
 import { RoadmapSummary } from "./roadmap-summary";
 import { canAddRoadmap, ROADMAP_LIMIT } from "@/features/engineering-lab/roadmaps";
 import { Notice } from "../kit";
-import { NewRoadmapDialog, RoadmapSwitcher, type ArchivedChoice, type RoadmapChoice } from "./roadmap-switcher";
+import {
+  DeleteRoadmapDialog,
+  NewRoadmapDialog,
+  RoadmapSwitcher,
+  type ArchivedChoice,
+  type RoadmapChoice,
+} from "./roadmap-switcher";
 import { ClaudeSetup } from "./claude-setup";
 import { SetupChecklist } from "./setup-checklist";
 import { ReviewSearch } from "./review-search";
@@ -80,6 +86,8 @@ export function RoadmapPage({
   const [topicTab, setTopicTab] = useState<TopicTab>("topic");
   const [setupOpen, setSetupOpen] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   // The roadmap's address, kept in the URL with the open topic; the role's path has none.
   const roadmapId = view.planned ? view.id : null;
 
@@ -146,6 +154,27 @@ export function RoadmapPage({
     }
   }
 
+  // Delete the roadmap shown, then open the one opened last, as after Archive.
+  async function remove() {
+    if (!roadmapId) return;
+    setDeleting(true);
+    try {
+      await send(`/api/lab/roadmaps/${encodeURIComponent(roadmapId)}`, "DELETE");
+      setDeleteOpen(false);
+      toast({ tone: "success", title: `Deleted ${goal}` });
+      router.push(engineering.roadmap());
+      router.refresh();
+    } catch (error) {
+      toast({
+        tone: "error",
+        title: "Couldn't delete. Try again",
+        description: error instanceof Error ? error.message : undefined,
+      });
+    } finally {
+      setDeleting(false);
+    }
+  }
+
   async function restore() {
     if (!roadmapId) return;
     if (!canAddRoadmap(roadmaps.length)) {
@@ -187,6 +216,7 @@ export function RoadmapPage({
                   projectUrl={projectUrl}
                   onNew={() => setNewOpen(true)}
                   onArchive={roadmapId && view.active ? () => void archive() : null}
+                  onDelete={roadmapId ? () => setDeleteOpen(true) : null}
                 />
               ) : (
                 <h1 className="font-heading text-2xl leading-tight font-bold tracking-tight md:text-3xl">{goal}</h1>
@@ -282,6 +312,13 @@ export function RoadmapPage({
         />
       </div>
       <NewRoadmapDialog active={roadmaps.length} projectUrl={projectUrl} open={newOpen} onOpenChange={setNewOpen} />
+      <DeleteRoadmapDialog
+        goal={goal}
+        open={deleteOpen}
+        busy={deleting}
+        onOpenChange={setDeleteOpen}
+        onConfirm={() => void remove()}
+      />
     </WorkspaceShell>
   );
 }
