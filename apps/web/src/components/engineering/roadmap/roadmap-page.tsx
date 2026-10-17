@@ -11,12 +11,10 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Connection } from "@/features/connector/oauth-store";
-import { replanMessage } from "@/features/engineering-lab/ask-claude";
 import { setupAlert, setupChecklist, type InstructionsState } from "@/features/engineering-lab/claude-setup";
 import type { RoadmapView } from "@/features/engineering-lab/roadmap-store";
 import type { RoadmapSummary as Summary } from "@/features/engineering-lab/roadmap-summary";
 import { engineering } from "@/features/engineering-lab/routes";
-import { AskClaude } from "../ask-claude";
 import { RoadmapGraph } from "./roadmap-graph";
 import { RoadmapLanes } from "./roadmap-lanes";
 import { RoadmapProgress } from "./roadmap-progress";
@@ -77,7 +75,7 @@ export function RoadmapPage({
   initialTopic: string | null;
 }) {
   const router = useRouter();
-  const [layout, setLayout] = useState<Layout>("lanes");
+  const [layout, setLayout] = useState<Layout>("graph");
   const wide = useWide();
   const [selected, setSelected] = useState<string | null>(initialTopic);
   const [topicTab, setTopicTab] = useState<TopicTab>("topic");
@@ -93,14 +91,17 @@ export function RoadmapPage({
     // initialTopic belongs to the page load, so only a new roadmap resets it.
   }, [roadmapId]);
 
-  // The layout you picked last time, kept in this browser only.
+  // The layout you picked last time, kept in this browser only. Without one: Graph, or Lanes on a phone, where a
+  // dependency graph is too small to use.
   useEffect(() => {
+    let saved: string | null = null;
     try {
-      const saved = window.localStorage.getItem(LAYOUT_KEY);
-      if (saved === "graph" || saved === "lanes") setLayout(saved);
+      saved = window.localStorage.getItem(LAYOUT_KEY);
     } catch {
       /* storage unavailable */
     }
+    if (saved === "graph" || saved === "lanes") setLayout(saved);
+    else if (window.matchMedia("(max-width: 767px)").matches) setLayout("lanes");
   }, []);
   const changeLayout = (next: Layout) => {
     setLayout(next);
@@ -122,6 +123,12 @@ export function RoadmapPage({
   );
 
   const goal = view.goal?.title ?? "Roadmap";
+  // The panel is an overview beside the graph and the full detail beside the lanes. A review opened from search needs the
+  // Review tab, so it always shows the detail.
+  const topicMode = layout === "graph" && topicTab !== "review" ? "overview" : "detail";
+  const chapterIndex = selected
+    ? view.chapters.findIndex((chapter) => chapter.topics.some((topic) => topic.id === selected))
+    : -1;
 
   // Archive the roadmap shown, then open the one opened last (or the role's path when none is left).
   async function archive() {
@@ -201,14 +208,6 @@ export function RoadmapPage({
               </Tabs>
               <ReviewSearch onOpen={(topicId) => select(topicId, "review")} />
               <Separator orientation="vertical" className="mx-1 hidden h-5! sm:block" />
-              {roadmapId && view.active && projectUrl && !summary && (
-                <AskClaude
-                  message={replanMessage({ id: roadmapId, goal: view.goal?.title ?? "Roadmap" })}
-                  label="Re-plan"
-                  variant="ghost"
-                  projectUrl={projectUrl}
-                />
-              )}
               <ClaudeSetup
                 mcpUrl={mcpUrl}
                 connections={connections}
@@ -269,7 +268,10 @@ export function RoadmapPage({
           roadmapId={roadmapId}
           roadmapActive={view.active}
           projectUrl={projectUrl}
+          mode={topicMode}
           tab={topicTab}
+          onOpenDetail={() => changeLayout("lanes")}
+          chapterIndex={chapterIndex < 0 ? null : chapterIndex}
           onTabChange={setTopicTab}
           onClose={() => select(null)}
           onChanged={() => router.refresh()}
