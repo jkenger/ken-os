@@ -1,21 +1,23 @@
-# Ken OS
+# Loots
 
 A private, hosted workspace for one developer. Each workflow is a module inside one Next.js app, and only the configured owner can sign in.
 
+Loots was called Ken OS until October 2026. The repository, the `@ken-os/*` packages and other identifiers keep the old name.
+
 ## Modules
 
-| Module         | Route          | What it does                                                                                                                                                                    |
-| -------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Profile        | `/profile`     | Career details stored as fields, typed in or imported from a resume picked in Google Drive. Resumes are rendered from those fields. The picked Drive file is only ever read.    |
-| Engineering    | `/engineering` | A learning roadmap for full-stack and AI engineering: chapters, topics, statuses, review sheets, notes and one code lab per topic. Claude teaches through the Ken OS connector. |
-| Terms          | `/terms`       | Select text anywhere in the app and press Explain (or E) for a short definition from trusted sources. Saved terms are underlined wherever they appear.                          |
-| Project Memory | `/memory`      | A pilot for recording decisions and work receipts on Ken OS itself, with owner review and a generated handoff.                                                                  |
+| Module         | Route          | What it does                                                                                                                                                                   |
+| -------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Profile        | `/profile`     | Career details stored as fields, typed in or imported from a resume picked in Google Drive. Resumes are rendered from those fields. The picked Drive file is only ever read.   |
+| Engineering    | `/engineering` | A learning roadmap for full-stack and AI engineering: chapters, topics, statuses, review sheets, notes and one code lab per topic. Claude teaches through the Loots connector. |
+| Terms          | `/terms`       | Select text anywhere in the app and press Explain (or E) for a short definition from trusted sources. Saved terms are underlined wherever they appear.                         |
+| Project Memory | `/memory`      | A pilot for recording decisions and work receipts on Loots itself, with owner review and a generated handoff.                                                                  |
 
 `/` redirects to `/profile`.
 
 ### Claude connector
 
-Ken OS is also an MCP server (`/api/mcp`, with OAuth at `/oauth/authorize`). A Claude Project connected to it can read the Engineering roadmap, report progress, and save exercises, notes and reviews. Claude can mark a topic Learned only with the owner's own explanation as evidence, and it can never change a status the owner set or edit the owner's notes. See [engineering-claude-first.md](docs/architecture/engineering-claude-first.md).
+Loots is also an MCP server (`/api/mcp`, with OAuth at `/oauth/authorize`). A Claude Project connected to it can read the Engineering roadmap, report progress, and save exercises, notes and reviews. Claude can mark a topic Learned only with the owner's own explanation as evidence, and it can never change a status the owner set or edit the owner's notes. See [engineering-claude-first.md](docs/architecture/engineering-claude-first.md).
 
 ## Tech stack
 
@@ -135,7 +137,7 @@ There is no CI; these checks are run locally.
 
 ## Deployment
 
-Ken OS deploys to Vercel with a managed PostgreSQL database.
+Loots deploys to Vercel with a managed PostgreSQL database.
 
 1. Set the Vercel project's Root Directory to `apps/web` and allow workspace packages outside it in the build settings.
 2. Set the variables from `.env.example`, with `APP_URL` as the deployment's HTTPS origin.
