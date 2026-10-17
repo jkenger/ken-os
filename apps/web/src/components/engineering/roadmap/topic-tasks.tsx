@@ -15,7 +15,10 @@ import { AskClaude } from "../ask-claude";
 
 const titles: Record<TaskId, string> = { read: "Read", build: "Build", explain: "Explain" };
 
-function taskLine(id: TaskId, practice: TopicPanelView["practice"]) {
+/** Claude's wording for the topic once it writes it; until then the same line for every topic. */
+function taskLine(id: TaskId, panel: TopicPanelView) {
+  if (panel.material) return panel.material.tasks[id];
+  const { practice } = panel;
   if (id === "read") return "Learn it with Claude";
   if (id === "build") return practice === "none" ? "No exercise yet" : "Pass the exercise";
   return "Explain it in your own words";
@@ -76,7 +79,7 @@ export function TopicTasks({ panel }: { panel: TopicPanelView }) {
           <li key={task.id} className="flex gap-2.5">
             <Box state={task.state} />
             <span className={cn((task.state === "none" || task.state === "skipped") && "text-muted-foreground")}>
-              <span className="font-semibold">{titles[task.id]}</span> · {taskLine(task.id, panel.practice)}
+              <span className="font-semibold">{titles[task.id]}</span> · {taskLine(task.id, panel)}
               <span className="sr-only">, {stateWords[task.state]}</span>
             </span>
           </li>

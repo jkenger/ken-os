@@ -24,6 +24,7 @@ import {
   goalNodeId,
   groupNodeId,
   layoutRoadmap,
+  topicNodeId,
   type ChapterData,
   type LayoutNode,
 } from "@/features/engineering-lab/roadmap-layout";
@@ -35,7 +36,8 @@ import { StatusIcon, statusWords } from "./status";
 
 // The roadmap as a graph (docs/architecture/engineering-claude-first.md, section 1, and docs/architecture/roadmap-ui.md):
 // the goal heads a column of chapters in roadmap order, and an open chapter shows its topics in a group beside it. The
-// lines are the roadmap's order and chapter membership, nothing more: the data has no topic-to-topic prerequisites.
+// lines are the roadmap's order, chapter membership, and the prerequisites Claude saved (curved arrows between topics,
+// darker when they touch the open topic).
 // The chapter you're on, and the open topic's chapter, start open; clicking a chapter opens or closes it.
 
 type Flags = { selected?: boolean; active?: boolean; onPick?: () => void };
@@ -122,8 +124,10 @@ function TopicNode({ data }: NodeProps<GraphNode>) {
         topic.status === "skipped" && "text-muted-foreground",
       )}
     >
+      <Handle type="target" position={Position.Left} style={hidden} isConnectable={false} />
       <StatusIcon status={topic.status} size={15} />
       <span className="truncate">{topic.title}</span>
+      <Handle type="source" position={Position.Right} style={hidden} isConnectable={false} />
     </Button>
   );
 }
@@ -186,7 +190,15 @@ export function RoadmapGraph({
   const activeChapter = selectedChapter ?? view.current?.chapterId ?? null;
 
   const { nodes, edges } = useMemo(() => {
-    const layout = layoutRoadmap({ goal: view.goal?.title ?? "No goal", chapters: view.chapters }, expanded);
+    const prerequisites = Object.fromEntries(
+      Object.entries(view.plans).map(([topicId, plan]) => [topicId, plan.prerequisites]),
+    );
+    const layout = layoutRoadmap(
+      { goal: view.goal?.title ?? "No goal", chapters: view.chapters },
+      expanded,
+      prerequisites,
+    );
+    const selectedNode = selected ? topicNodeId(selected) : null;
     return {
       nodes: layout.nodes.map((node): GraphNode => {
         const flags: Flags =
@@ -212,11 +224,18 @@ export function RoadmapGraph({
         };
       }),
       edges: layout.edges.map((edge): Edge => {
-        const toGroup = edge.target.startsWith("group:");
-        const lit = toGroup && activeChapter !== null && edge.target === groupNodeId(activeChapter);
+        const toGroup = edge.kind === "member";
+        const prerequisite = edge.kind === "prerequisite";
+        const lit = prerequisite
+          ? edge.source === selectedNode || edge.target === selectedNode
+          : toGroup && activeChapter !== null && edge.target === groupNodeId(activeChapter);
         return {
-          ...edge,
-          type: "smoothstep",
+          id: edge.id,
+          source: edge.source,
+          target: edge.target,
+          // Prerequisites curve between topics, learn-first to learn-next; roadmap order and membership step.
+          type: prerequisite ? "default" : "smoothstep",
+          zIndex: prerequisite ? 2 : 0,
           sourceHandle: toGroup ? "side" : undefined,
           selectable: false,
           markerEnd: {

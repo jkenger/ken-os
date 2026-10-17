@@ -20,6 +20,7 @@ import { CodeSheet } from "./code-sheet";
 import { ReviewTab } from "./review-tab";
 import { StatusChip, StatusIcon, StatusLabel, statusWords } from "./status";
 import { TaskProgress, TopicTaskAction, TopicTasks } from "./topic-tasks";
+import { NotPlanned, TopicFacts, TopicLinks, TopicResources } from "./topic-material";
 import { chapterClasses } from "./chapter-mark";
 import { cn } from "@/lib/utils";
 
@@ -364,12 +365,20 @@ export function TopicSheet({
     </>
   );
 
-  const description = panel?.gap ? <p className="text-sm text-muted-foreground">{panel.gap}</p> : null;
+  // Claude's description once it writes one; until then the topic map's line, when there is one.
+  const descriptionText = panel?.material?.description ?? panel?.gap ?? null;
+  const description = (
+    <>
+      {descriptionText && <p className="text-sm text-muted-foreground">{descriptionText}</p>}
+      <TopicFacts plan={panel?.plan ?? null} />
+    </>
+  );
 
   // Overview: where the topic stands and what comes after it. The rest is one click away in Lanes.
   const overview = panel && (
     <div className="grid gap-6 p-4">
       <TaskProgress panel={panel} />
+      <TopicLinks plan={panel.plan} onSelect={onSelect} />
       {panel.next && roadmapActive && (
         <section aria-labelledby="next-title" className="grid gap-1.5">
           <h3 id="next-title" className={sectionTitle}>
@@ -400,14 +409,16 @@ export function TopicSheet({
         <ReviewTab topicId={panel.id} notes={<Notes topicId={panel.id} notes={panel.notes} onSaved={saved} />} />
       </TabsContent>
       <TabsContent value="topic" className="grid gap-6 p-4">
+        <NotPlanned panel={panel} projectUrl={projectUrl} />
+        <TopicResources material={panel.material} />
         <TopicTasks panel={panel} />
-        {panel.points.length > 0 && (
+        {(panel.material?.criteria ?? panel.points).length > 0 && (
           <section aria-labelledby="mastery-title" className="grid gap-2">
             <h3 id="mastery-title" className="text-sm font-semibold">
               Mastery criteria
             </h3>
             <ul className="grid list-disc gap-1.5 pl-5 text-sm">
-              {panel.points.map((line) => (
+              {(panel.material?.criteria ?? panel.points).map((line) => (
                 <li key={line}>{line}</li>
               ))}
             </ul>
@@ -541,9 +552,10 @@ export function TopicSheet({
           <SheetHeader className="border-b">
             <div className="pr-8">{heading}</div>
             <SheetTitle className="font-heading text-xl">{panel?.title ?? " "}</SheetTitle>
-            <SheetDescription className={cn(!panel?.gap && "sr-only")}>
-              {panel?.gap ?? `${panel?.chapter ?? "Topic"}`}
+            <SheetDescription className={cn(!descriptionText && "sr-only")}>
+              {descriptionText ?? panel?.chapter ?? "Topic"}
             </SheetDescription>
+            <TopicFacts plan={panel?.plan ?? null} />
           </SheetHeader>
           {body}
         </SheetContent>

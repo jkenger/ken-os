@@ -23,6 +23,8 @@ import { progressOnRoadmaps } from "./roadmaps";
 import { PLAN_LIMITS } from "./roadmap-plan";
 import { reviewSheetInput } from "./review-sheet";
 import { getReviewSheet, reviewsToday, saveReview } from "./review-store";
+import { topicMaterialInput, topicPlanInput } from "./topic-material";
+import { getMaterial, materialWritesToday, saveTopicMaterial, saveTopicPlans } from "./topic-material-store";
 import {
   addNote,
   claudeNotesToday,
@@ -163,6 +165,13 @@ export const toolInputs = {
         .max(PLAN_LIMITS.chapters),
     })
     .strict(),
+  save_topic_plan: z
+    .object({
+      roadmapId: z.string().min(1).max(100).describe("The roadmap these topics are on, from get_current_state"),
+      topics: z.array(topicPlanInput).min(1).max(100),
+    })
+    .strict(),
+  save_topic_material: topicMaterialInput,
   save_note: z
     .object({
       topicId,
@@ -277,7 +286,7 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     name: "get_roadmap",
     title: "Roadmap",
     description:
-      "One of the owner's roadmaps (the one opened last, unless you pass roadmapId): chapters in order with their area and each topic's status (not_started, in_progress, learned, skipped).",
+      "One of the owner's roadmaps (the one opened last, unless you pass roadmapId): chapters in order with their area and each topic's status (not_started, in_progress, learned, skipped), and your plan for each topic (prerequisites, related, minutes, difficulty) or null.",
     kind: "read",
     async run(userId, { roadmapId: id }) {
       const roadmap = await getRoadmap(userId, id);
@@ -295,6 +304,8 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
             title: topic.title,
             status: topic.status,
             addedByClaude: topic.custom,
+            // Your plan for the topic on this roadmap, from save_topic_plan; null until you save one.
+            plan: roadmap.plans[topic.id] ?? null,
           })),
         })),
       };
@@ -305,21 +316,24 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     name: "get_topic",
     title: "Topic",
     description:
-      "One topic: its place and status, what the owner should be able to explain (p1, p2, …), the latest reports, the owner's and your notes, the latest review sheet, and the current exercise's task, starter and tests (never the solution).",
+      "One topic: its place and status, what the owner should be able to explain (p1, p2, …), your material for it (description, task wording, resources, mastery criteria) or null, the latest reports, the owner's and your notes, the latest review sheet, and the current exercise's task, starter and tests (never the solution).",
     kind: "read",
     async run(userId, { topicId: id }) {
       const topic = await roadmapTopic(userId, id);
-      const [status, choice, reports, notes, review] = await Promise.all([
+      const [status, choice, reports, notes, review, material] = await Promise.all([
         topicStatus(userId, id),
         exerciseChoice(userId, topic),
         listReports(userId, id, 5),
         listNotes(userId, id),
         getReviewSheet(userId, id),
+        getMaterial(userId, id),
       ]);
       const summary = {
         ...topicSummary(topic, status),
         gap: topic.gap,
         points: topic.points.map((text, index) => ({ id: `p${index + 1}`, text })),
+        // Null means "Not planned yet": write it with save_topic_material when the topic starts.
+        material,
         reports,
         notes,
         // The latest review sheet, to update with save_review after the fresh check.
@@ -491,6 +505,28 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     },
   },
 
+  save_topic_plan: {
+    name: "save_topic_plan",
+    title: "Save topic plan",
+    description:
+      "Saves your plan for topics on one roadmap: prerequisites (topics on the same roadmap to learn first; only real dependencies, no loops), up to 3 related topics on the same roadmap, an estimate in minutes and a difficulty, both for this owner. Call it right after save_roadmap for every topic. To correct one later, send just that topic and the fields to change; the rest keep their value.",
+    kind: "write",
+    async run(userId, { roadmapId: id, topics }) {
+      return { saved: true, ...(await saveTopicPlans(userId, id, topics)) };
+    },
+  },
+
+  save_topic_material: {
+    name: "save_topic_material",
+    title: "Save topic material",
+    description:
+      "Saves the topic's material, shown in Ken OS: a one-line description, the wording of its three tasks (read with you, build something small, explain it in their own words), learning resources (real pages, official docs first; links that don't load are refused) and 3 to 6 mastery criteria. Write it when the topic starts, if get_topic shows material null. Saving again replaces it whole, which is how you correct it.",
+    kind: "write",
+    async run(userId, input) {
+      return { saved: true, ...(await saveTopicMaterial(userId, input)) };
+    },
+  },
+
   save_note: {
     name: "save_note",
     title: "Save note",
@@ -544,11 +580,12 @@ export async function callAgentTool(userId: string, name: string, input: unknown
 export const CLAUDE_WRITE_LIMIT = 40;
 
 /**
- * Claude's saved content and reports are events with source "claude"; its notes are rows in lab_notes, and its review
- * sheets rows in lab_reviews (only Claude writes those).
+ * Claude's saved content and reports are events with source "claude"; its notes are rows in lab_notes, its review
+ * sheets rows in lab_reviews, and its topic material and plans rows in lab_topic_material and lab_topic_plans (only
+ * Claude writes those).
  */
 export async function claudeWritesToday(userId: string) {
-  const [[events], notes, reviews] = await Promise.all([
+  const [[events], notes, reviews, material] = await Promise.all([
     db()
       .select({ n: sql<number>`count(*)::int` })
       .from(labTopicEvents)
@@ -562,6 +599,7 @@ export async function claudeWritesToday(userId: string) {
       ),
     claudeNotesToday(userId),
     reviewsToday(userId),
+    materialWritesToday(userId),
   ]);
-  return (events?.n ?? 0) + notes + reviews;
+  return (events?.n ?? 0) + notes + reviews + material;
 }

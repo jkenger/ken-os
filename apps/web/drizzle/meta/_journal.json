@@ -169,6 +169,13 @@
       "when": 1791967608376,
       "tag": "0023_reflective_talkback",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1792217234108,
+      "tag": "0024_unknown_namorita",
+      "breakpoints": true
     }
   ]
 }

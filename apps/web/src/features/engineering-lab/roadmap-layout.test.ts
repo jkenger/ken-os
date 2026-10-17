@@ -129,3 +129,17 @@ test("a chapter is marked done when every topic is Learned or Skipped", () => {
 test("chapter tones cycle through six accents in roadmap order", () => {
   assert.deepEqual([0, 1, 5, 6, 7].map(chapterTone), [1, 2, 6, 1, 2]);
 });
+
+test("prerequisites are arrows from the topic to learn first, only between topics that are shown", () => {
+  const prerequisites = { "react.a": ["js.a"], "react.b": ["react.a"], "api.a": ["react.c"] };
+  const arrows = (open: string[]) =>
+    layoutRoadmap(input, new Set(open), prerequisites)
+      .edges.filter((edge) => edge.kind === "prerequisite")
+      .map((edge) => `${edge.source}->${edge.target}`);
+  assert.deepEqual(arrows(["js", "react", "api"]), [
+    "topic:js.a->topic:react.a",
+    "topic:react.a->topic:react.b",
+    "topic:react.c->topic:api.a",
+  ]);
+  assert.deepEqual(arrows(["react"]), ["topic:react.a->topic:react.b"], "no arrow to or from a folded chapter");
+});

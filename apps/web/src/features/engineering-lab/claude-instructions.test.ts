@@ -17,6 +17,8 @@ test("the instructions only name tools that exist, and name the ones the flow re
     "save_note",
     "save_roadmap",
     "save_review",
+    "save_topic_plan",
+    "save_topic_material",
   ]) {
     assert.ok(CLAUDE_PROJECT_INSTRUCTIONS.includes(needed), `the instructions should mention ${needed}`);
   }

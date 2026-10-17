@@ -146,6 +146,8 @@ async function main() {
       "save_note",
       "save_review",
       "save_roadmap",
+      "save_topic_material",
+      "save_topic_plan",
     ]);
     const state = await (
       await rpc(
