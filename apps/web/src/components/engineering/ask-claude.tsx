@@ -42,7 +42,7 @@ export function AskClaude({
   label?: string;
   projectUrl: string;
   /** "default" when it is the next thing to do. */
-  variant?: "default" | "outline";
+  variant?: "default" | "outline" | "ghost";
   /** Opened from elsewhere, such as a menu item: no button of its own. */
   open?: boolean;
   onOpenChange?: (open: boolean) => void;

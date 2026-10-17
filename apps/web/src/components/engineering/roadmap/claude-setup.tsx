@@ -93,7 +93,7 @@ export function ClaudeSetup({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
-        <Button type="button" variant="outline" size="sm">
+        <Button type="button" variant="ghost" size="sm">
           Claude setup
           {alert && <Badge variant="destructive">{alert}</Badge>}
         </Button>

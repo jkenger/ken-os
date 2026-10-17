@@ -2,12 +2,13 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { IconArrowRight, IconLayoutColumns, IconSitemap } from "@tabler/icons-react";
 import { post } from "@/components/lab/topic/client";
 import { formatDate } from "@/components/lab/words";
 import { toast } from "@/components/ui/toaster";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { Connection } from "@/features/connector/oauth-store";
 import { replanMessage } from "@/features/engineering-lab/ask-claude";
@@ -18,6 +19,7 @@ import { engineering } from "@/features/engineering-lab/routes";
 import { AskClaude } from "../ask-claude";
 import { RoadmapGraph } from "./roadmap-graph";
 import { RoadmapLanes } from "./roadmap-lanes";
+import { RoadmapProgress } from "./roadmap-progress";
 import { RoadmapSummary } from "./roadmap-summary";
 import { canAddRoadmap, ROADMAP_LIMIT } from "@/features/engineering-lab/roadmaps";
 import { Notice } from "../kit";
@@ -28,12 +30,25 @@ import { ReviewSearch } from "./review-search";
 import { TopicSheet, type TopicTab } from "./topic-sheet";
 
 // The Claude-first Engineering page (docs/architecture/engineering-claude-first.md, section 1): the goal and progress,
-// the roadmap as a graph or lanes, and a topic panel. Claude teaches; this page shows where you are. A finished roadmap
+// the roadmap as lanes or a graph, and a topic panel. Claude teaches; this page shows where you are. A finished roadmap
 // shows its summary above the graph (engineering-progressive-flow.md, section 4). The title switches between roadmaps,
-// and each has its own address (engineering-roadmaps.md, section 1).
+// and each has its own address (engineering-roadmaps.md, section 1). Layout and look: docs/architecture/roadmap-ui.md.
 
 type Layout = "graph" | "lanes";
 const LAYOUT_KEY = "ken-os-roadmap-layout";
+
+/** True from 1280px, where the topic panel docks beside the roadmap instead of covering it. */
+function useWide() {
+  const [wide, setWide] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 1280px)");
+    const update = () => setWide(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  return wide;
+}
 
 export function RoadmapPage({
   email,
@@ -62,7 +77,8 @@ export function RoadmapPage({
   initialTopic: string | null;
 }) {
   const router = useRouter();
-  const [layout, setLayout] = useState<Layout>("graph");
+  const [layout, setLayout] = useState<Layout>("lanes");
+  const wide = useWide();
   const [selected, setSelected] = useState<string | null>(initialTopic);
   const [topicTab, setTopicTab] = useState<TopicTab>("topic");
   const [setupOpen, setSetupOpen] = useState(false);
@@ -143,7 +159,7 @@ export function RoadmapPage({
     }
   }
 
-  const { counts, current } = view;
+  const { current } = view;
   const facts = {
     connected: connections.length > 0,
     instructions,
@@ -152,88 +168,65 @@ export function RoadmapPage({
   };
   return (
     <WorkspaceShell email={email} active="lab" tab="roadmap">
-      <div className="mx-auto max-w-7xl px-3 pt-6 pb-9 md:px-5 md:pt-7.5">
-        <div className="mx-1 mb-5 flex flex-wrap items-start justify-between gap-4 md:mx-3.5">
-          <div className="min-w-0">
-            <p className="text-xs font-semibold text-muted-foreground">Engineering</p>
-            {roadmaps.length > 0 || archived.length > 0 ? (
-              <RoadmapSwitcher
-                title={goal}
-                currentId={roadmapId}
-                roadmaps={roadmaps}
-                archived={archived}
+      <div className="flex min-w-0 items-start">
+        <div className="grid min-w-0 flex-1 gap-5 px-4 pt-6 pb-10 md:px-7">
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+            <div className="min-w-0">
+              {roadmaps.length > 0 || archived.length > 0 ? (
+                <RoadmapSwitcher
+                  title={goal}
+                  currentId={roadmapId}
+                  roadmaps={roadmaps}
+                  archived={archived}
+                  projectUrl={projectUrl}
+                  onNew={() => setNewOpen(true)}
+                  onArchive={roadmapId && view.active ? () => void archive() : null}
+                />
+              ) : (
+                <h1 className="font-heading text-2xl leading-tight font-bold tracking-tight md:text-3xl">{goal}</h1>
+              )}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Tabs value={layout} onValueChange={(next) => changeLayout(next as Layout)}>
+                <TabsList aria-label="Roadmap layout">
+                  <TabsTrigger value="lanes">
+                    <IconLayoutColumns aria-hidden="true" />
+                    Lanes
+                  </TabsTrigger>
+                  <TabsTrigger value="graph">
+                    <IconSitemap aria-hidden="true" />
+                    Graph
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+              <ReviewSearch onOpen={(topicId) => select(topicId, "review")} />
+              <Separator orientation="vertical" className="mx-1 hidden h-5! sm:block" />
+              {roadmapId && view.active && projectUrl && !summary && (
+                <AskClaude
+                  message={replanMessage({ id: roadmapId, goal: view.goal?.title ?? "Roadmap" })}
+                  label="Re-plan"
+                  variant="ghost"
+                  projectUrl={projectUrl}
+                />
+              )}
+              <ClaudeSetup
+                mcpUrl={mcpUrl}
+                connections={connections}
                 projectUrl={projectUrl}
-                onNew={() => setNewOpen(true)}
-                onArchive={roadmapId && view.active ? () => void archive() : null}
+                instructions={instructions}
+                alert={setupAlert(facts)}
+                open={setupOpen}
+                onOpenChange={setSetupOpen}
               />
-            ) : (
-              <h1 className="text-3xl leading-tight font-bold tracking-tight md:text-4xl">
-                {view.goal?.title ?? "Roadmap"}
-              </h1>
-            )}
+              {current && !summary && (
+                <Button type="button" size="sm" onClick={() => select(current.id)}>
+                  Continue topic
+                  <IconArrowRight aria-hidden="true" />
+                </Button>
+              )}
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <ReviewSearch onOpen={(topicId) => select(topicId, "review")} />
-            <Tabs value={layout} onValueChange={(next) => changeLayout(next as Layout)}>
-              <TabsList aria-label="Roadmap layout">
-                <TabsTrigger value="graph">Graph</TabsTrigger>
-                <TabsTrigger value="lanes">Lanes</TabsTrigger>
-              </TabsList>
-            </Tabs>
-            {roadmapId && view.active && projectUrl && !summary && (
-              <AskClaude
-                message={replanMessage({ id: roadmapId, goal: view.goal?.title ?? "Roadmap" })}
-                label="Re-plan"
-                projectUrl={projectUrl}
-              />
-            )}
-            <ClaudeSetup
-              mcpUrl={mcpUrl}
-              connections={connections}
-              projectUrl={projectUrl}
-              instructions={instructions}
-              alert={setupAlert(facts)}
-              open={setupOpen}
-              onOpenChange={setSetupOpen}
-            />
-          </div>
-        </div>
-        <div className="mx-1 mb-5 md:mx-3.5">
-          <p className="text-sm">
-            {summary ? (
-              <>
-                <span className="font-semibold">Complete</span>
-                {summary.finishedAt && ` · ${formatDate(summary.finishedAt)}`}
-                {` · ${counts.learned} of ${counts.total} learned`}
-              </>
-            ) : (
-              <>
-                {counts.learned} of {counts.total} learned
-                {counts.skipped > 0 && ` · ${counts.skipped} skipped`}
-                {current && (
-                  <>
-                    {" · Now: "}
-                    <Button
-                      type="button"
-                      variant="link"
-                      className="h-auto p-0 text-sm"
-                      onClick={() => select(current.id)}
-                    >
-                      {current.title}
-                    </Button>
-                  </>
-                )}
-              </>
-            )}
-          </p>
-          <Progress
-            value={summary ? 100 : counts.total ? Math.round((counts.learned / counts.total) * 100) : 0}
-            aria-label={`${counts.learned} of ${counts.total} learned`}
-            className="mt-2"
-          />
-        </div>
-        {!view.active && (
-          <div className="mx-1 mb-5 md:mx-3.5">
+          {!view.active && (
             <Notice>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
@@ -247,43 +240,44 @@ export function RoadmapPage({
                 </Button>
               </div>
             </Notice>
-          </div>
-        )}
-        {setupChecklist(facts).show && (
-          <div className="mx-1 mb-5 md:mx-3.5">
+          )}
+          {setupChecklist(facts).show && (
             <SetupChecklist facts={facts} projectUrl={projectUrl} onOpenSetup={() => setSetupOpen(true)} />
-          </div>
-        )}
-        {summary && (
-          <div className="mx-1 mb-5 md:mx-3.5">
+          )}
+          <RoadmapProgress view={view} summary={summary} onSelect={select} />
+          {summary && (
             <RoadmapSummary
               summary={summary}
               onNew={() => setNewOpen(true)}
               onArchive={view.active && roadmapId ? () => void archive() : null}
               onSelect={select}
             />
-          </div>
-        )}
-        <div className="mx-1 md:mx-3.5">
-          {layout === "graph" ? (
+          )}
+          {view.chapters.length === 0 ? (
+            <Notice>
+              <p className="font-semibold">No topics yet</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">Plan a roadmap with Claude to fill it</p>
+            </Notice>
+          ) : layout === "graph" ? (
             <RoadmapGraph key={roadmapId ?? "path"} view={view} selected={selected} onSelect={select} />
           ) : (
             <RoadmapLanes view={view} selected={selected} onSelect={select} />
           )}
         </div>
+        <TopicSheet
+          topicId={selected}
+          roadmapId={roadmapId}
+          roadmapActive={view.active}
+          projectUrl={projectUrl}
+          tab={topicTab}
+          onTabChange={setTopicTab}
+          onClose={() => select(null)}
+          onChanged={() => router.refresh()}
+          onSelect={(topicId) => select(topicId)}
+          docked={wide}
+        />
       </div>
       <NewRoadmapDialog active={roadmaps.length} projectUrl={projectUrl} open={newOpen} onOpenChange={setNewOpen} />
-      <TopicSheet
-        topicId={selected}
-        roadmapId={roadmapId}
-        roadmapActive={view.active}
-        projectUrl={projectUrl}
-        tab={topicTab}
-        onTabChange={setTopicTab}
-        onClose={() => select(null)}
-        onChanged={() => router.refresh()}
-        onSelect={(topicId) => select(topicId)}
-      />
     </WorkspaceShell>
   );
 }

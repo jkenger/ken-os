@@ -67,15 +67,15 @@ export function RoadmapSwitcher({
   const router = useRouter();
   return (
     <div className="flex items-start gap-2">
-      <h1 className="min-w-0 text-3xl leading-tight font-bold tracking-tight md:text-4xl">{title}</h1>
+      <h1 className="min-w-0 font-heading text-2xl leading-tight font-bold tracking-tight md:text-3xl">{title}</h1>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             type="button"
-            variant="outline"
+            variant="ghost"
             size="icon-sm"
             aria-label="Switch roadmap"
-            className="mt-1 shrink-0 md:mt-1.5"
+            className="mt-0.5 shrink-0 md:mt-1"
           >
             <IconChevronDown aria-hidden="true" />
           </Button>

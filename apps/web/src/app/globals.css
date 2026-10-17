@@ -134,6 +134,65 @@
   html { scroll-behavior: smooth; }
 }
 
+/* Roadmap colours (docs/architecture/roadmap-ui.md). Topic colours mark a topic's status and always sit next to an icon
+   and a word; chapter colours tell chapters apart and never mean a status. Each has a soft fill for chips and tiles. */
+:root {
+  --topic-learned: oklch(0.5 0.12 152);
+  --topic-learned-soft: oklch(0.955 0.03 152);
+  --topic-active: oklch(0.48 0.14 262);
+  --topic-active-soft: oklch(0.955 0.022 262);
+  --chapter-1: oklch(0.45 0.07 150);
+  --chapter-1-soft: oklch(0.945 0.025 150);
+  --chapter-2: oklch(0.45 0.08 258);
+  --chapter-2-soft: oklch(0.945 0.02 258);
+  --chapter-3: oklch(0.47 0.09 48);
+  --chapter-3-soft: oklch(0.945 0.025 55);
+  --chapter-4: oklch(0.45 0.06 190);
+  --chapter-4-soft: oklch(0.945 0.02 190);
+  --chapter-5: oklch(0.45 0.08 318);
+  --chapter-5-soft: oklch(0.945 0.02 318);
+  --chapter-6: oklch(0.47 0.08 85);
+  --chapter-6-soft: oklch(0.945 0.03 90);
+}
+
+.dark {
+  --topic-learned: oklch(0.78 0.13 152);
+  --topic-learned-soft: oklch(0.3 0.05 152);
+  --topic-active: oklch(0.78 0.11 262);
+  --topic-active-soft: oklch(0.3 0.06 262);
+  --chapter-1: oklch(0.8 0.07 150);
+  --chapter-1-soft: oklch(0.3 0.03 150);
+  --chapter-2: oklch(0.8 0.07 258);
+  --chapter-2-soft: oklch(0.3 0.03 258);
+  --chapter-3: oklch(0.8 0.08 55);
+  --chapter-3-soft: oklch(0.3 0.03 55);
+  --chapter-4: oklch(0.8 0.06 190);
+  --chapter-4-soft: oklch(0.3 0.03 190);
+  --chapter-5: oklch(0.8 0.07 318);
+  --chapter-5-soft: oklch(0.3 0.03 318);
+  --chapter-6: oklch(0.8 0.08 90);
+  --chapter-6-soft: oklch(0.3 0.03 90);
+}
+
+@theme inline {
+  --color-topic-learned: var(--topic-learned);
+  --color-topic-learned-soft: var(--topic-learned-soft);
+  --color-topic-active: var(--topic-active);
+  --color-topic-active-soft: var(--topic-active-soft);
+  --color-chapter-1: var(--chapter-1);
+  --color-chapter-1-soft: var(--chapter-1-soft);
+  --color-chapter-2: var(--chapter-2);
+  --color-chapter-2-soft: var(--chapter-2-soft);
+  --color-chapter-3: var(--chapter-3);
+  --color-chapter-3-soft: var(--chapter-3-soft);
+  --color-chapter-4: var(--chapter-4);
+  --color-chapter-4-soft: var(--chapter-4-soft);
+  --color-chapter-5: var(--chapter-5);
+  --color-chapter-5-soft: var(--chapter-5-soft);
+  --color-chapter-6: var(--chapter-6);
+  --color-chapter-6-soft: var(--chapter-6-soft);
+}
+
 /* Saved terms on any page (components/terms/saved-term-marks.tsx): a dotted underline, painted without changing the text. */
 ::highlight(ken-term) {
   text-decoration: underline dotted 1.5px var(--muted-foreground);
