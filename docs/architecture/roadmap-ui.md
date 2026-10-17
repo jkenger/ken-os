@@ -121,6 +121,10 @@ How release 2 works:
   planned yet" with Ask Claude to plan it. The graph draws prerequisites as curved arrows between shown topics.
 - **Claude** reads its plans in `get_roadmap` and its material in `get_topic`. The Project instructions changed on 17
   Oct 2026, so Claude setup shows Out of date until they're pasted again.
+- **Teaching from the material:** the instructions also tell Claude to follow a topic's tasks in order once it has
+  material: Read from its resources (quoting the page, not memory), Build with `save_exercise` when it fits in code,
+  then the own-words check. This second change landed the same day, still dated 2026-10-17, so Claude setup can't flag
+  it; paste the instructions again by hand.
 
 Dropped for good: the quiz, a one-click complete, actual-time tracking, and the "Claude" topic tag.
 
