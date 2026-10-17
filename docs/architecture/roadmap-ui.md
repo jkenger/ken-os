@@ -92,7 +92,7 @@ screen needs one, not before.
 Agreed 17 Oct 2026: only what the reference mockup and the current build show, nothing beyond them.
 
 1. **Done:** the two modes on today's data, Graph by default, Re-plan button removed.
-2. **Claude's material:** storage and connector tools so Claude, the only writer, adds per topic a description, an
+2. **Done, Claude's material:** storage and connector tools so Claude, the only writer, adds per topic a description, an
    estimate ("~25 min"), difficulty (Easy, Medium, Hard), prerequisites (graph arrows; "Waiting on" is advice, not a
    lock; loops are refused), related topics on the same roadmap, learning resources (links checked on save), task
    wording, and mastery criteria. Roadmap-wide fields come when a roadmap is planned, topic detail when a topic starts.
@@ -100,6 +100,19 @@ Agreed 17 Oct 2026: only what the reference mockup and the current build show, n
    Claude to plan it.
 3. **Clean state:** remove `points.yaml`, the `gap` lines and the built-in labs once every active topic has Claude's
    version. Sessions, review sheets, notes, evidence, status history and done exercises stay.
+
+How release 2 works:
+
+- **Plans** are rows in `lab_topic_plans`, one per topic on a roadmap. `save_topic_plan` sends any number of topics;
+  fields left out keep their value, so the same tool plans a roadmap and corrects one topic. `mergePlans` refuses a
+  topic, prerequisite or related topic that isn't on the roadmap, a topic pointing at itself, and loops.
+- **Material** is one row per owner and topic in `lab_topic_material`, replaced whole by `save_topic_material`. Every
+  resource link is fetched first (`brokenLinks`, HEAD then GET), and the save is refused if one doesn't load.
+- **On screen:** Overview adds the estimate and difficulty, Prerequisites with "Waiting on", and Related objectives;
+  Detail adds Learning resources, Claude's task wording and its mastery criteria (else the topic's points), or "Not
+  planned yet" with Ask Claude to plan it. The graph draws prerequisites as curved arrows between shown topics.
+- **Claude** reads its plans in `get_roadmap` and its material in `get_topic`. The Project instructions changed on 17
+  Oct 2026, so Claude setup shows Out of date until they're pasted again.
 
 Dropped for good: the quiz, a one-click complete, actual-time tracking, and the "Claude" topic tag.
 

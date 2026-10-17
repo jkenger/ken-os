@@ -2,8 +2,8 @@ import type { TopicStatus } from "@ken-os/domain";
 
 // Where each node of the roadmap graph sits (docs/architecture/engineering-claude-first.md, section 1). The goal heads a
 // column of chapters in roadmap order; an expanded chapter shows its topics in a group to its right, two to a row.
-// Collapsed chapters show one node with a count. Edges are only what the roadmap knows: its order and which chapter a
-// topic belongs to. There are no topic-to-topic prerequisites in the data, so none are drawn.
+// Collapsed chapters show one node with a count. Edges are only what the roadmap knows: its order, which chapter a
+// topic belongs to, and the prerequisites Claude saved, drawn between topics that are shown.
 // Positions are top-left corners; every node carries its own size, so the graph draws with nodeOrigin [0, 0].
 
 export interface LayoutInput {
@@ -40,6 +40,8 @@ export interface LayoutEdge {
   id: string;
   source: string;
   target: string;
+  /** Roadmap order between chapters, a chapter to its topics, or a prerequisite Claude saved (learn source first). */
+  kind: "order" | "member" | "prerequisite";
 }
 
 /** Node sizes in graph pixels; the node components fill them. */
@@ -74,7 +76,11 @@ function groupHeight(topics: number) {
   return GRAPH.groupPadding * 2 + GRAPH.groupHeading + rows * GRAPH.topic.height + (rows - 1) * GRAPH.topicGap;
 }
 
-export function layoutRoadmap(input: LayoutInput, expanded: ReadonlySet<string>) {
+export function layoutRoadmap(
+  input: LayoutInput,
+  expanded: ReadonlySet<string>,
+  prerequisites: Readonly<Record<string, readonly string[]>> = {},
+) {
   const nodes: LayoutNode[] = [
     { id: goalNodeId, type: "goal", x: 0, y: 0, ...GRAPH.goal, data: { title: input.goal } },
   ];
@@ -104,7 +110,7 @@ export function layoutRoadmap(input: LayoutInput, expanded: ReadonlySet<string>)
         expanded: open,
       },
     });
-    edges.push({ id: `${previous}->${id}`, source: previous, target: id });
+    edges.push({ id: `${previous}->${id}`, source: previous, target: id, kind: "order" });
     previous = id;
 
     let rowHeight: number = GRAPH.chapter.height;
@@ -120,7 +126,7 @@ export function layoutRoadmap(input: LayoutInput, expanded: ReadonlySet<string>)
         height,
         data: { chapterId: chapter.id, title: chapter.title, order: index + 1 },
       });
-      edges.push({ id: `${id}->${group}`, source: id, target: group });
+      edges.push({ id: `${id}->${group}`, source: id, target: group, kind: "member" });
       chapter.topics.forEach((topic, position) => {
         const column = position % GRAPH.columns;
         const row = Math.floor(position / GRAPH.columns);
@@ -137,5 +143,14 @@ export function layoutRoadmap(input: LayoutInput, expanded: ReadonlySet<string>)
     }
     top += rowHeight + GRAPH.rowGap;
   });
+  const shown = new Set(nodes.filter((node) => node.type === "topic").map((node) => node.id));
+  for (const chapter of input.chapters)
+    for (const topic of chapter.topics)
+      for (const first of prerequisites[topic.id] ?? []) {
+        const source = topicNodeId(first);
+        const target = topicNodeId(topic.id);
+        if (shown.has(source) && shown.has(target))
+          edges.push({ id: `${source}->${target}`, source, target, kind: "prerequisite" });
+      }
   return { nodes, edges };
 }

@@ -14,6 +14,8 @@ import { isComplete, roadmapSummary } from "./roadmap-summary";
 import { canAddRoadmap, orderRoadmaps, ROADMAP_LIMIT_MESSAGE } from "./roadmaps";
 import { listNotes, listReports, topicStatus, topicStatuses, type NoteView, type ReportView } from "./status-store";
 import { chapterDone, nextTopic, type PracticeState } from "./topic-steps";
+import { waitingOn, type TopicMaterial, type TopicPlan } from "./topic-material";
+import { getMaterial, getPlans } from "./topic-material-store";
 
 // The owner's roadmap with every topic's status: what the roadmap page draws and what Claude's state tools read.
 // Spec: docs/architecture/engineering-claude-first.md, sections 1 to 3. The roadmap is the one Claude planned and the
@@ -50,6 +52,8 @@ export interface RoadmapView {
   counts: { learned: number; skipped: number; inProgress: number; total: number };
   /** The most recently changed In progress topic, else the first Not started one. */
   current: { id: string; title: string; chapterId: string; area: string; chapter: string; status: TopicStatus } | null;
+  /** Claude's plan for each topic on this roadmap, by topic id (docs/architecture/roadmap-ui.md). Empty until saved. */
+  plans: Record<string, TopicPlan>;
 }
 
 const notStarted: TopicStatusView = { status: "not_started", setBy: null, changedAt: null, learnedAt: null };
@@ -122,6 +126,7 @@ function buildView(
   shape: RoadmapShape,
   statuses: Map<string, TopicStatusView>,
   custom: Awaited<ReturnType<typeof customTopics>>,
+  plans: Record<string, TopicPlan> = {},
 ): RoadmapView {
   const titleOf = (topicId: string) =>
     topicMap.topics.find((topic) => topic.id === topicId)?.title ?? custom.find((topic) => topic.id === topicId)?.title;
@@ -175,6 +180,7 @@ function buildView(
           status: pick.status,
         }
       : null,
+    plans,
   };
 }
 
@@ -190,7 +196,7 @@ export async function getRoadmap(userId: string, roadmapId?: string | null): Pro
     topicStatuses(userId),
     customTopics(userId),
   ]);
-  return buildView(shape, statuses, custom);
+  return buildView(shape, statuses, custom, await getPlans(shape.id));
 }
 
 /** Every active roadmap, most recently opened first, or just the target role's path when there are none. */
@@ -201,7 +207,8 @@ export async function getRoadmaps(userId: string): Promise<RoadmapView[]> {
     customTopics(userId),
   ]);
   const shapes = rows.length ? rows.map(savedShape) : [await defaultShape(userId)];
-  return shapes.map((shape) => buildView(shape, statuses, custom));
+  const plans = await Promise.all(shapes.map((shape) => getPlans(shape.id)));
+  return shapes.map((shape, index) => buildView(shape, statuses, custom, plans[index]));
 }
 
 /**
@@ -355,6 +362,17 @@ export interface TopicPanelView {
   /** The next unfinished topic on the roadmap, and this topic's chapter when it's done (section 3). */
   next: { id: string; title: string } | null;
   chapterDone: { title: string; learned: number; total: number } | null;
+  /** Claude's material for the topic; null until Claude writes it ("Not planned yet"). */
+  material: TopicMaterial | null;
+  /** Claude's plan for the topic on this roadmap, with titles and statuses filled in; null when there is none. */
+  plan: {
+    minutes: number | null;
+    difficulty: TopicPlan["difficulty"];
+    prerequisites: { id: string; title: string; status: TopicStatus }[];
+    related: { id: string; title: string; chapter: string; status: TopicStatus }[];
+    /** Prerequisites not yet Learned or Skipped: advice, not a lock. */
+    waitingOn: string[];
+  } | null;
 }
 
 /** Everything the roadmap's topic panel shows, except the code exercise, which loads when opened. */
@@ -365,19 +383,43 @@ export async function getTopicPanel(
   roadmapId?: string | null,
 ): Promise<TopicPanelView> {
   const topic = await requireAnyTopic(userId, topicId, await chapterOnRoadmap(userId, topicId));
-  const [status, reports, notes, chatUrl, practice, roadmap] = await Promise.all([
+  const [status, reports, notes, chatUrl, practice, roadmap, material] = await Promise.all([
     topicStatus(userId, topicId),
     listReports(userId, topicId, 20),
     listNotes(userId, topicId),
     getTopicChat(userId, topicId),
     practiceState(userId, topic),
     getRoadmap(userId, roadmapId),
+    getMaterial(userId, topicId),
   ]);
   const { id, title, custom, area, chapter, gap, points } = topic;
   return {
     ...{ id, title, custom, area, chapter, gap, points, status, reports, notes, chatUrl, practice },
     next: nextTopic(roadmap.chapters, topicId),
     chapterDone: chapterDone(roadmap.chapters, topicId),
+    material,
+    plan: planView(roadmap, topicId),
+  };
+}
+
+/** A topic's plan on the roadmap, with each linked topic's title, chapter and status. */
+function planView(roadmap: RoadmapView, topicId: string): TopicPanelView["plan"] {
+  const plan = roadmap.plans[topicId];
+  if (!plan) return null;
+  const onRoadmap = new Map(
+    roadmap.chapters.flatMap((chapter) => chapter.topics.map((topic) => [topic.id, { ...topic, chapter }] as const)),
+  );
+  const linked = (ids: string[]) =>
+    ids.flatMap((id) => {
+      const topic = onRoadmap.get(id);
+      return topic ? [{ id, title: topic.title, chapter: topic.chapter.title, status: topic.status }] : [];
+    });
+  return {
+    minutes: plan.minutes,
+    difficulty: plan.difficulty,
+    prerequisites: linked(plan.prerequisites).map(({ id, title, status }) => ({ id, title, status })),
+    related: linked(plan.related),
+    waitingOn: waitingOn(plan, (id) => onRoadmap.get(id)?.status),
   };
 }
 

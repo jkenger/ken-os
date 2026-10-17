@@ -18,6 +18,7 @@ import type {
   StoredTopicStatus,
 } from "@ken-os/domain";
 import type { ReviewSheet } from "../features/engineering-lab/review-sheet";
+import type { Difficulty, TopicMaterial } from "../features/engineering-lab/topic-material";
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -562,4 +563,44 @@ export const labCustomTopics = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [primaryKey({ columns: [table.userId, table.id] })],
+);
+
+/**
+ * Claude's plan for a topic on one roadmap (docs/architecture/roadmap-ui.md): prerequisites and related topics on the
+ * same roadmap, an estimate and a difficulty. Saved with save_topic_plan when a roadmap is planned, corrected the same way.
+ */
+export const labTopicPlans = pgTable(
+  "lab_topic_plans",
+  {
+    roadmapId: text("roadmap_id")
+      .notNull()
+      .references(() => labRoadmaps.id, { onDelete: "cascade" }),
+    topicId: text("topic_id").notNull(),
+    prerequisites: jsonb("prerequisites").$type<string[]>().notNull(),
+    related: jsonb("related").$type<string[]>().notNull(),
+    minutes: integer("minutes"),
+    difficulty: text("difficulty").$type<Difficulty>(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.roadmapId, table.topicId] })],
+);
+
+/**
+ * Claude's material for a topic, on every roadmap (docs/architecture/roadmap-ui.md): a description, the wording of its
+ * three tasks, learning resources and mastery criteria. Saved whole with save_topic_material when the topic starts.
+ */
+export const labTopicMaterial = pgTable(
+  "lab_topic_material",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    topicId: text("topic_id").notNull(),
+    description: text("description").notNull(),
+    tasks: jsonb("tasks").$type<TopicMaterial["tasks"]>().notNull(),
+    resources: jsonb("resources").$type<TopicMaterial["resources"]>().notNull(),
+    criteria: jsonb("criteria").$type<string[]>().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.topicId] })],
 );
