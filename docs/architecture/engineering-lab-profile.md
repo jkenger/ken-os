@@ -108,7 +108,7 @@ The conversation may also **suggest chapters the course doesn't have** (payments
 **Boundaries:**
 
 - A new read-only agent, separate from the Assessor, so whoever helps set your target never grades you.
-- What you type is data, never instructions, like every other agent input in Ken OS.
+- What you type is data, never instructions, like every other agent input in Loots.
 - It writes only to your profile (direction, intake answers, approved chapter suggestions), and only on your confirmation.
 
 ## 4. The baseline assessment
@@ -188,7 +188,7 @@ No spider chart. It looks rich but distorts the comparison, because the shape ch
 
 **Before the baseline exists**, the home shows one thing: start the intake and assessment, with how long it takes and that it can be paused.
 
-The Ken OS home gets a small summary card (direction, overall level, today's practice done or not) that links into the lab.
+The Loots home gets a small summary card (direction, overall level, today's practice done or not) that links into the lab.
 
 ## 6. Daily practice
 
@@ -246,7 +246,7 @@ Each slice is usable on its own.
 | Slice             | What ships                                                                                                             | Done when                                                                                |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | 1. Foundation     | Areas on topics; `roles.yaml` drafted by the Researcher and approved; intake; the assessment; the cutover in section 8 | You've completed a baseline run and the five places read from it                         |
-| 2. Profile        | The three pictures; the direction conversation; chapter suggestions; "How this was assessed"; the Ken OS home card     | You've chosen a direction from real role distances                                       |
+| 2. Profile        | The three pictures; the direction conversation; chapter suggestions; "How this was assessed"; the Loots home card      | You've chosen a direction from real role distances                                       |
 | 3. Daily practice | v1 §9 in the Today strip                                                                                               | A day's set is stable across visits and its answers update reviews                       |
 | 4. Radar          | Weekly run, five items, re-check flags                                                                                 | A week's items appear with tags and sources, and a changed packet flags its proven topic |
 

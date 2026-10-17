@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toaster";
 import type { Connection } from "@/features/connector/oauth-store";
 
-// Apps connected to Ken OS through the Claude connector, with Disconnect, shown in Claude setup, whose badge says when there are none (docs/architecture/engineering-claude-connector.md,
+// Apps connected to Loots through the Claude connector, with Disconnect, shown in Claude setup, whose badge says when there are none (docs/architecture/engineering-claude-connector.md,
 // section 3, Revoking). Disconnect stops the app on its next call.
 
 export function Connections({ connections }: { connections: Connection[] }) {

@@ -5,7 +5,7 @@ import "./globals.css";
 
 const dmSansHeading = DM_Sans({ subsets: ["latin"], variable: "--font-heading" });
 
-// Fonts from the shadcn preset (Luma). Ken OS does not switch themes yet, so the scratch app's ThemeProvider is left out.
+// Fonts from the shadcn preset (Luma). Loots does not switch themes yet, so the scratch app's ThemeProvider is left out.
 const publicSans = Public_Sans({ subsets: ["latin"], variable: "--font-sans" });
 
 const fontMono = Geist_Mono({
@@ -14,7 +14,7 @@ const fontMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ken OS",
+  title: "Loots",
   description: "A private developer workspace",
 };
 

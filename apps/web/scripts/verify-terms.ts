@@ -47,7 +47,7 @@ async function main() {
     assert.equal(terms.length, 2);
     const skip = terms.find((term) => term.term === "skip scan")!;
     assert.equal(skip.source, null, "an untrusted link is never stored");
-    assert.equal(skip.foundAt, "/", "the link back stays on Ken OS");
+    assert.equal(skip.foundAt, "/", "the link back stays on Loots");
     console.log("ok - save, one per spelling, untrusted links and off-site paths dropped");
 
     const known = await store.lookupTerm(userId, { selection: "MICROTASK", context: "", place: "" });

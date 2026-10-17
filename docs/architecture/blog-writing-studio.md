@@ -18,7 +18,7 @@ Private editor pages use the existing Google owner session. Every mutation also 
 
 ## Code placement and request path
 
-Use `apps/web/src/features/blog/` for the post contract, outlines, validation, use cases, assistant prompts, and tests. Keep route handlers under `apps/web/src/app/api/blog/` thin: authenticate where needed, validate request/size, invoke a use case, return a bounded result. Put the owner workspace under a private route such as `/writing`; public routes are `/blog` and `/blog/[slug]` with a layout independent of the authenticated app shell. Reuse shadcn primitives and the Ken OS design baseline for the studio, without requiring the eventual public site to use the same shell.
+Use `apps/web/src/features/blog/` for the post contract, outlines, validation, use cases, assistant prompts, and tests. Keep route handlers under `apps/web/src/app/api/blog/` thin: authenticate where needed, validate request/size, invoke a use case, return a bounded result. Put the owner workspace under a private route such as `/writing`; public routes are `/blog` and `/blog/[slug]` with a layout independent of the authenticated app shell. Reuse shadcn primitives and the Loots design baseline for the studio, without requiring the eventual public site to use the same shell.
 
 The normal write path is **editor → autosave request → validated use case → repository → PostgreSQL**. The public read path queries a published projection, not the working document. Do not move types into `packages/domain` until another package actually consumes them.
 

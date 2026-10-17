@@ -8,7 +8,7 @@ Status: proposed, 12 Oct 2026. The UI half of [engineering-claude-connector.md](
 - **Words:** app language. Names, actions and states, no sentences in the frame, no taglines, no em dashes, no emoji. Copy below is final unless a frame shows it doesn't fit.
 - **Sizes:** each frame at desktop (1440 wide) and phone (390 wide). Light theme.
 - **Claude's own screens aren't ours to design.** Where a frame needs to show the conversation side, draw a plain, unbranded chat window labelled "Claude (illustrative)". Never copy claude.ai's look or logo.
-- **Honesty is visible.** Wherever Claude has touched something, the screen says so in a word or a badge. Wherever grading happens, the screen makes clear Ken OS does it.
+- **Honesty is visible.** Wherever Claude has touched something, the screen says so in a word or a badge. Wherever grading happens, the screen makes clear Loots does it.
 
 ## Frames
 
@@ -30,25 +30,25 @@ Today's topic page: `PageHeading` (area · chapter, the topic name, a state badg
 | B2    | A new version before the owner has run anything: it simply shows. The editor's meta line names the source            | "From Claude · v3" (repo labs show nothing)                                                                                                                                |
 | B3    | Checking a new version in the browser before showing it. A skeleton editor with a status line                        | "Checking exercise…"                                                                                                                                                       |
 | B4    | The new version failed its check. A destructive notice; the previous version stays in the editor                     | Title "This exercise doesn't check out", line naming what failed, e.g. "The solution fails 1 of 4 tests", then "Using v2". No button; Claude sees it through the connector |
-| B5    | No exercise yet for the topic (rare: every topic has a repo lab today)                                               | Empty state "No exercise yet" / "Ask Claude to write one", button **Ask Claude**. Ken OS has no built-in exercise writer                                                   |
+| B5    | No exercise yet for the topic (rare: every topic has a repo lab today)                                               | Empty state "No exercise yet" / "Ask Claude to write one", button **Ask Claude**. Loots has no built-in exercise writer                                                    |
 
 ### C. Topic page: lesson and proof
 
-| Frame | State                                                                                                            | Copy                                           |
-| ----- | ---------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
-| C1    | A lesson written by Claude: the meta line under the lesson heading                                               | "From Claude · Oct 12"                         |
-| C2    | Prove step: one helper line under the prompt, so grading's owner is clear                                        | "Graded in Ken OS against this topic's points" |
-| C3    | Prove step with a question Claude wrote: the points it tests are listed under the prompt as small outline badges | Point titles, shortened                        |
+| Frame | State                                                                                                            | Copy                                          |
+| ----- | ---------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| C1    | A lesson written by Claude: the meta line under the lesson heading                                               | "From Claude · Oct 12"                        |
+| C2    | Prove step: one helper line under the prompt, so grading's owner is clear                                        | "Graded in Loots against this topic's points" |
+| C3    | Prove step with a question Claude wrote: the points it tests are listed under the prompt as small outline badges | Point titles, shortened                       |
 
 ### D. Connect Claude (consent page)
 
 Shown at `/oauth/authorize` when the owner adds the connector in claude.ai. Same frame as the sign-in page: a centered Card, nothing else.
 
-| Frame | State                  | Copy                                                                                                                                                                                                                                                                                         |
-| ----- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| D1    | Default                | Wordmark "Ken OS"; title "Connect Claude"; a "Can" list with two lines, "Read your Engineering progress and code" and "Save lessons, exercises and proof questions"; a "Can't" list with one line, "Grade answers or mark topics proven"; buttons **Allow** (default) and **Deny** (outline) |
-| D2    | Bad or expired request | Destructive notice "This connection link isn't valid" / "Add the connector again in Claude". No buttons                                                                                                                                                                                      |
-| D3    | Signed out             | Not a frame: the sign-in page appears first, then D1                                                                                                                                                                                                                                         |
+| Frame | State                  | Copy                                                                                                                                                                                                                                                                                        |
+| ----- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1    | Default                | Wordmark "Loots"; title "Connect Claude"; a "Can" list with two lines, "Read your Engineering progress and code" and "Save lessons, exercises and proof questions"; a "Can't" list with one line, "Grade answers or mark topics proven"; buttons **Allow** (default) and **Deny** (outline) |
+| D2    | Bad or expired request | Destructive notice "This connection link isn't valid" / "Add the connector again in Claude". No buttons                                                                                                                                                                                     |
+| D3    | Signed out             | Not a frame: the sign-in page appears first, then D1                                                                                                                                                                                                                                        |
 
 Show "Can" and "Can't" as two short lists with icons (check and cross) plus the words. Colour never carries the meaning on its own.
 
@@ -60,11 +60,11 @@ A new Card at the bottom of the Engineering Profile page.
 | ----- | ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | E1    | Connected                    | Card title "Connections"; a row: "Claude", "Connected Oct 12 · Last used 2 min ago", and **Disconnect** (ghost, destructive text)   |
 | E2    | Disconnect pressed: a dialog | Title "Disconnect Claude?", line "Claude loses access until you connect again", buttons **Cancel** and **Disconnect** (destructive) |
-| E3    | None                         | Empty state "No connections" / "Add Ken OS as a connector in Claude"                                                                |
+| E3    | None                         | Empty state "No connections" / "Add Loots as a connector in Claude"                                                                 |
 
 ### F. Storyboard (illustrative)
 
-One wide frame, desktop only: "Claude (illustrative)" on the left with a short teaching exchange about Retry & backoff, and the Ken OS topic page on the right on the Exercise step, with a failing test and the autosave "Saved". This shows the split at a glance; it's not a screen to build.
+One wide frame, desktop only: "Claude (illustrative)" on the left with a short teaching exchange about Retry & backoff, and the Loots topic page on the right on the Exercise step, with a failing test and the autosave "Saved". This shows the split at a glance; it's not a screen to build.
 
 ### G. Option B, on file only
 
@@ -92,23 +92,23 @@ Paste this into Claude Design:
 Make mockups in the Ken OS design system (https://claude.ai/artifact/RQFnaHFKvuprgmgPk6nFqj) for "Engineering with Claude".
 
 Context
-- Ken OS is a private, owner-only web app. Its Engineering module teaches one topic at a time: Learn, Exercise (a code editor with real tests) and Prove (a written answer graded in Ken OS).
-- New: the owner talks a topic through with Claude in claude.ai, which connects to Ken OS. Claude can read their progress and code and save lessons, exercises and proof questions. Claude can never grade or mark a topic proven; Ken OS does.
+- Loots is a private, owner-only web app. Its Engineering module teaches one topic at a time: Learn, Exercise (a code editor with real tests) and Prove (a written answer graded in Loots).
+- New: the owner talks a topic through with Claude in claude.ai, which connects to Loots. Claude can read their progress and code and save lessons, exercises and proof questions. Claude can never grade or mark a topic proven; Loots does.
 - Read the design system's README first. Use its live components (window.KenOS). It's shadcn's Nova default (2.0.0).
 - The full brief, with every frame, state and word: docs/architecture/engineering-claude-connector-mockups.md in jkenger/ken-os. Follow it exactly. The frames are summarized here.
 
 Frames (desktop 1440 and phone 390 each, light theme)
 A. Topic page: an "Ask Claude" outline button at the right of the Learn / Exercise / Prove tabs (under the heading on a phone); the toast "Copied. Paste it in Claude"; an autosave status beside the editor: "Saving…", "Saved", "Couldn't save · Retry".
 B. Exercises from Claude: notice "New exercise from Claude" / "Switching starts a fresh attempt" with Switch and Not now; meta line "From Claude · v3"; "Checking exercise…" skeleton; destructive notice "This exercise doesn't check out" / "The solution fails 1 of 4 tests" / "Using v2"; empty state "No exercise yet" / "Ask Claude to write one" with Ask Claude.
-C. Lesson meta "From Claude · Oct 12"; Prove helper "Graded in Ken OS against this topic's points"; the points a Claude question tests as small outline badges.
+C. Lesson meta "From Claude · Oct 12"; Prove helper "Graded in Loots against this topic's points"; the points a Claude question tests as small outline badges.
 D. Consent page "Connect Claude" as a centered card: Can: "Read your Engineering progress and code", "Save lessons, exercises and proof questions"; Can't: "Grade answers or mark topics proven"; Allow and Deny. Plus the invalid-link state.
 E. Profile "Connections" card: Claude row with "Connected Oct 12 · Last used 2 min ago" and Disconnect; the "Disconnect Claude?" dialog; the empty state "No connections".
-F. One wide storyboard: an unbranded chat window labelled "Claude (illustrative)" beside the Ken OS topic page on the Exercise step. Never copy claude.ai's look or logo.
+F. One wide storyboard: an unbranded chat window labelled "Claude (illustrative)" beside the Loots topic page on the Exercise step. Never copy claude.ai's look or logo.
 G. One low-detail frame of option B, a chat panel docked right of the topic page, labelled "Option B · not planned".
 
 Rules
 - App language: names, actions and states; no taglines, no narrating, no em dashes, no emoji.
-- Wherever Claude made something, a word or badge says so. Wherever grading happens, it's clearly Ken OS.
+- Wherever Claude made something, a word or badge says so. Wherever grading happens, it's clearly Loots.
 - Text 4.5:1, control edges and focus 3:1. Icons always with words.
 - Avoid purple-blue gradients, gradient text, glassmorphism, grain, fade-ins, badges above headlines.
 - Save as drafts. Name any new token or component as a proposal. Don't change tokens.json or the version until I choose.

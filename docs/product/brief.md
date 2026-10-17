@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Ken OS is a private, hosted developer operating system. It brings important artifacts and connected workflows into one place, with agents that help inspect and work with them.
+Loots is a private, hosted developer operating system. It brings important artifacts and connected workflows into one place, with agents that help inspect and work with them.
 
 ## Initial problem
 
@@ -27,10 +27,10 @@ After signing in, the owner selects a resume from Google Drive once. The dashboa
 - Career: job opportunities, tailored resume copies, cover letters, application history.
 - Artifacts: bio, project briefs, certificates, and reusable answers.
 - Publishing: a private [Blog Writing Studio](blog-writing-studio.md) for owner-authored technical diary entries, followed later by public portfolio curation.
-- Projects: repository status, decisions, tasks, and release notes. The proposed [Project Memory module](project-memory.md) starts with decisions and evidence-backed work receipts for Ken OS itself.
+- Projects: repository status, decisions, tasks, and release notes. The proposed [Project Memory module](project-memory.md) starts with decisions and evidence-backed work receipts for Loots itself.
 - Knowledge: notes, bookmarks, and searchable personal context.
 - Automation: recurring checks, scheduled agent work, and an approval inbox.
-- Skills: the first build (an upload library for the resume assistant) was removed on 12 Oct 2026 because nothing else used it. Coding skills already live in Claude Code and Codex, which the hosted app can't install into. Revisit only when a Ken OS agent needs owner-written guidance; the likeliest shape then is a plain guidance field per agent, not an upload library. Writing agent skills could also be an Engineering topic.
+- Skills: the first build (an upload library for the resume assistant) was removed on 12 Oct 2026 because nothing else used it. Coding skills already live in Claude Code and Codex, which the hosted app can't install into. Revisit only when a Loots agent needs owner-written guidance; the likeliest shape then is a plain guidance field per agent, not an upload library. Writing agent skills could also be an Engineering topic.
 - Engineering (in progress, formerly Engineering Lab): a learning system for full-stack and AI engineering, rebuilt on 10 Oct 2026 to [engineering-rebuild.md](../architecture/engineering-rebuild.md), which is the module's source of truth. This brief stays the platform's.
 
 These are candidates, not MVP commitments. Each should prove a recurring personal workflow before it becomes a module.

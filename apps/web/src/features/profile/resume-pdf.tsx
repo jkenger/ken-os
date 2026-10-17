@@ -153,8 +153,8 @@ export function ResumeDocument({
     <Document
       title={`${details.contact.fullName || "Resume"} Resume`}
       author={details.contact.fullName}
-      creator="Ken OS"
-      producer="Ken OS"
+      creator="Loots"
+      producer="Loots"
     >
       <Page size={PAPER[paper]} style={s.page}>
         <Text style={s.name}>{details.contact.fullName}</Text>

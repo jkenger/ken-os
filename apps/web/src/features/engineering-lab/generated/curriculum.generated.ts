@@ -1520,7 +1520,7 @@ export const labs: LabDefinition[] = [
     "runner": "probe",
     "timeoutMs": 15000,
     "hint": null,
-    "readme": "The check fetches the same URL twice for each of three caching policies and reads the browser's own timing data to\nsee what the second request did. Each response body is about 20 KB, so a full download is easy to spot.\n\n| Policy   | Response headers                                  |\n| -------- | ------------------------------------------------- |\n| max-age  | `Cache-Control: private, max-age=120`             |\n| no-cache | `Cache-Control: private, no-cache` plus an `ETag` |\n| no-store | `Cache-Control: no-store`                         |\n\nTurn off \"Disable cache\" in DevTools before running, or every answer will be \"reaches the server\". This is the\nbrowser's cache only. A CDN or server cache in front of Ken OS would be a separate layer with its own rules.",
+    "readme": "The check fetches the same URL twice for each of three caching policies and reads the browser's own timing data to\nsee what the second request did. Each response body is about 20 KB, so a full download is easy to spot.\n\n| Policy   | Response headers                                  |\n| -------- | ------------------------------------------------- |\n| max-age  | `Cache-Control: private, max-age=120`             |\n| no-cache | `Cache-Control: private, no-cache` plus an `ETag` |\n| no-store | `Cache-Control: no-store`                         |\n\nTurn off \"Disable cache\" in DevTools before running, or every answer will be \"reaches the server\". This is the\nbrowser's cache only. A CDN or server cache in front of Loots would be a separate layer with its own rules.",
     "starter": "",
     "tests": "",
     "setup": "",
@@ -1834,7 +1834,7 @@ export const labs: LabDefinition[] = [
     "runner": "probe",
     "timeoutMs": 15000,
     "hint": null,
-    "readme": "The code box runs in an isolated worker whose origin is `null`, so to Ken OS it is another site. The check sends six\nrequests from there to a practice endpoint, each answered with a different CORS policy, and records whether the\ncalling code could read the response.\n\n| Variant           | Server sends                                                                                 |\n| ----------------- | -------------------------------------------------------------------------------------------- |\n| none              | no CORS headers                                                                              |\n| star              | `Access-Control-Allow-Origin: *`                                                             |\n| star-credentials  | `*` plus `Allow-Credentials: true`; request uses `credentials: \"include\"`                    |\n| echo-credentials  | the caller's origin plus `Allow-Credentials: true`; request uses `credentials: \"include\"`    |\n| preflight-denied  | the caller's origin; request adds an `X-Lab-Token` header, which the preflight doesn't allow |\n| preflight-allowed | the same, but the preflight allows `X-Lab-Token`                                             |\n\nBefore you start, write down who enforces CORS: the server, the browser, or both.",
+    "readme": "The code box runs in an isolated worker whose origin is `null`, so to Loots it is another site. The check sends six\nrequests from there to a practice endpoint, each answered with a different CORS policy, and records whether the\ncalling code could read the response.\n\n| Variant           | Server sends                                                                                 |\n| ----------------- | -------------------------------------------------------------------------------------------- |\n| none              | no CORS headers                                                                              |\n| star              | `Access-Control-Allow-Origin: *`                                                             |\n| star-credentials  | `*` plus `Allow-Credentials: true`; request uses `credentials: \"include\"`                    |\n| echo-credentials  | the caller's origin plus `Allow-Credentials: true`; request uses `credentials: \"include\"`    |\n| preflight-denied  | the caller's origin; request adds an `X-Lab-Token` header, which the preflight doesn't allow |\n| preflight-allowed | the same, but the preflight allows `X-Lab-Token`                                             |\n\nBefore you start, write down who enforces CORS: the server, the browser, or both.",
     "starter": "",
     "tests": "",
     "setup": "",
@@ -2128,7 +2128,7 @@ export const labs: LabDefinition[] = [
     "runner": "probe",
     "timeoutMs": 10000,
     "hint": null,
-    "readme": "Your page is about to send a GET and a POST to Ken OS's own practice endpoint, which reports back exactly what it\nreceived. Predict each answer first; then run the check and compare.\n\nOpen DevTools on the Network tab while it runs, and find each answer in the request headers yourself.",
+    "readme": "Your page is about to send a GET and a POST to Loots' own practice endpoint, which reports back exactly what it\nreceived. Predict each answer first; then run the check and compare.\n\nOpen DevTools on the Network tab while it runs, and find each answer in the request headers yourself.",
     "starter": "",
     "tests": "",
     "setup": "",
@@ -2151,7 +2151,7 @@ export const labs: LabDefinition[] = [
             "yes",
             "no"
           ],
-          "why": "Any request that can change state gets Origin, so servers can check where it came from. Ken OS's own routes rely on this."
+          "why": "Any request that can change state gets Origin, so servers can check where it came from. Loots' own routes rely on this."
         },
         {
           "id": "sec_fetch_site",
@@ -2175,7 +2175,7 @@ export const labs: LabDefinition[] = [
         },
         {
           "id": "encrypted",
-          "prompt": "Is the connection between this browser and Ken OS encrypted right now?",
+          "prompt": "Is the connection between this browser and Loots encrypted right now?",
           "options": [
             "yes",
             "no"

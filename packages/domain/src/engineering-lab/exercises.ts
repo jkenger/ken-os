@@ -6,7 +6,7 @@ import type { TestOutcome } from "./types";
 // The repo lab is version 0. Claude's exercises are versions 1 and up, checked in the owner's browser before they show,
 // and frozen by the first run.
 
-/** Runners Claude may write for. Probes are built into Ken OS and the sandbox runner isn't available. */
+/** Runners Claude may write for. Probes are built into Loots and the sandbox runner isn't available. */
 export const CLAUDE_RUNNERS = ["browser", "pglite"] as const satisfies readonly Runner[];
 export type ClaudeRunner = (typeof CLAUDE_RUNNERS)[number];
 
@@ -22,7 +22,7 @@ export const CLAUDE_LIMITS = {
   proofPrompt: 1_000,
 } as const;
 
-/** One version of a topic's exercise, as Ken OS keeps it. Only the page that checks it and Show solution see `solution`. */
+/** One version of a topic's exercise, as Loots keeps it. Only the page that checks it and Show solution see `solution`. */
 export interface ExerciseVersion {
   /** The repo lab's id for version 0, the stored row's id for Claude's. Runs and drafts record it as their lab id. */
   id: string;

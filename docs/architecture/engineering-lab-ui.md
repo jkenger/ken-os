@@ -9,9 +9,9 @@ Status: **built on 2026-10-03** (all seven steps; see "As built" at the end). Ag
 - **The course has a shape:** two tracks (Full-stack, AI Engineering), each with chapters and the full outline from handoff §24, including topics not written yet. A **"My gaps"** switch hides what assessment says you already know.
 - **Today is one card:** "Continue: Event loop · Step 2 of 4 · Practice". Reviews and recent changes sit underneath.
 - **Feedback shows exactly what was wrong:** a line-by-line diff for predictions and a rubric checklist for written answers, plus the explanation.
-- **Look up any word, anywhere in Ken OS:** select text, press Explain (or `E`), get a short meaning and one trusted link, and save it to a new **Terms** page.
+- **Look up any word, anywhere in Loots:** select text, press Explain (or `E`), get a short meaning and one trusted link, and save it to a new **Terms** page.
 - **CodeMirror 6** replaces the plain text boxes, for writing and for showing code.
-- **Still Ken OS:** same type, spacing and warm monochrome surfaces, plus new learning components. Colour is used only for meaning.
+- **Still Loots:** same type, spacing and warm monochrome surfaces, plus new learning components. Colour is used only for meaning.
 
 ## What the first live test showed
 
@@ -26,31 +26,31 @@ The bugs from the same test (the "why" being graded as output, answers vanishing
 
 ## Decisions
 
-| #   | Question                      | Decision                                                                                                                          |
-| --- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| Q2  | What should it feel like?     | Short focused sessions by default, a workbench inside labs, and a full reader in the Learn step.                                  |
-| Q3  | Topic page shape              | Steps with a step bar; labs use a split screen on desktop.                                                                        |
-| Q4  | Code editing                  | CodeMirror 6 (about 150 KB, works on phones), for writing and reading code.                                                       |
-| Q5  | How far from the Ken OS look? | Ken OS base plus purpose-built learning components. Colour only for meaning.                                                      |
-| Q6  | Phone or desktop first?       | Split by task: desktop for lessons and labs; phone fully designed for daily practice, reviews and predictions.                    |
-| Q7  | Feedback tone                 | Quiet and exact, a little warm, and diff-style for predictions.                                                                   |
-| Q8  | How the course is organized   | Tracks, then chapters, then topics, like a book's table of contents.                                                              |
-| Q9  | Reader and sessions           | The Learn step is the reader; the other steps are focused.                                                                        |
-| Q10 | Lesson depth                  | A short core plus optional "Go deeper" sections.                                                                                  |
-| Q11 | Moving between steps          | Free. The step bar suggests, it never locks.                                                                                      |
-| Q12 | Today                         | One main "Continue" card.                                                                                                         |
-| Q13 | Term lookup scope             | Ken OS-wide, built and tried in the lab first.                                                                                    |
-| Q14 | Where meanings come from      | A short AI explanation for the selected context, plus one link from the Researcher's trusted sites.                               |
-| Q15 | What saving does              | A Terms list now, stored so daily practice can quiz saved terms later.                                                            |
-| Q16 | What "warm" means             | One short human line and a small check on a solid answer; one clear moment when a topic is proven. No confetti, sounds or points. |
-| Q17 | Full course and gap focus     | One course with a "My gaps" switch; known topics show "Known · skip".                                                             |
-| Q18 | Topics nobody assessed        | A 2 to 3 question placement check decides whether they're known or a gap.                                                         |
-| Q19 | Topics not written yet        | Shown in the outline, greyed, marked "Not written yet".                                                                           |
-| Q20 | Feedback on written answers   | A rubric checklist: each point covered, partly covered or missed.                                                                 |
-| Q21 | Triggering a lookup           | An "Explain" button beside any selection, plus the `E` shortcut.                                                                  |
-| Q22 | Saved terms page              | "Terms", in the main Ken OS sidebar.                                                                                              |
-| Q23 | Where this sits in the plan   | It's the polish phase, before v1 features. The full-course outline moves up with it.                                              |
-| Q24 | What the write-up is          | This doc plus clickable mockups in `design-preview`.                                                                              |
+| #   | Question                     | Decision                                                                                                                          |
+| --- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| Q2  | What should it feel like?    | Short focused sessions by default, a workbench inside labs, and a full reader in the Learn step.                                  |
+| Q3  | Topic page shape             | Steps with a step bar; labs use a split screen on desktop.                                                                        |
+| Q4  | Code editing                 | CodeMirror 6 (about 150 KB, works on phones), for writing and reading code.                                                       |
+| Q5  | How far from the Loots look? | Loots base plus purpose-built learning components. Colour only for meaning.                                                       |
+| Q6  | Phone or desktop first?      | Split by task: desktop for lessons and labs; phone fully designed for daily practice, reviews and predictions.                    |
+| Q7  | Feedback tone                | Quiet and exact, a little warm, and diff-style for predictions.                                                                   |
+| Q8  | How the course is organized  | Tracks, then chapters, then topics, like a book's table of contents.                                                              |
+| Q9  | Reader and sessions          | The Learn step is the reader; the other steps are focused.                                                                        |
+| Q10 | Lesson depth                 | A short core plus optional "Go deeper" sections.                                                                                  |
+| Q11 | Moving between steps         | Free. The step bar suggests, it never locks.                                                                                      |
+| Q12 | Today                        | One main "Continue" card.                                                                                                         |
+| Q13 | Term lookup scope            | Loots-wide, built and tried in the lab first.                                                                                     |
+| Q14 | Where meanings come from     | A short AI explanation for the selected context, plus one link from the Researcher's trusted sites.                               |
+| Q15 | What saving does             | A Terms list now, stored so daily practice can quiz saved terms later.                                                            |
+| Q16 | What "warm" means            | One short human line and a small check on a solid answer; one clear moment when a topic is proven. No confetti, sounds or points. |
+| Q17 | Full course and gap focus    | One course with a "My gaps" switch; known topics show "Known · skip".                                                             |
+| Q18 | Topics nobody assessed       | A 2 to 3 question placement check decides whether they're known or a gap.                                                         |
+| Q19 | Topics not written yet       | Shown in the outline, greyed, marked "Not written yet".                                                                           |
+| Q20 | Feedback on written answers  | A rubric checklist: each point covered, partly covered or missed.                                                                 |
+| Q21 | Triggering a lookup          | An "Explain" button beside any selection, plus the `E` shortcut.                                                                  |
+| Q22 | Saved terms page             | "Terms", in the main Loots sidebar.                                                                                               |
+| Q23 | Where this sits in the plan  | It's the polish phase, before v1 features. The full-course outline moves up with it.                                              |
+| Q24 | What the write-up is         | This doc plus clickable mockups in `design-preview`.                                                                              |
 
 Defaults the owner accepted without a separate question: term lookups get their own daily limit, so a reading-heavy day can't block lesson generation; on a phone, a lab shows Instructions and Code as two tabs; a topic without labs has no Lab step.
 
@@ -81,7 +81,7 @@ Defaults the owner accepted without a separate question: term lookups get their 
 
 ### Term lookup and Terms
 
-- **Select any text** under 60 characters on a Ken OS page, code included. A small "Explain `E`" button appears below the selection.
+- **Select any text** under 60 characters on a Loots page, code included. A small "Explain `E`" button appears below the selection.
 - **The popover** gives the term, two sentences of meaning written for the sentence you selected it from, one link from a trusted site, and "Save to Terms". Escape or scrolling closes it. You never leave the page.
 - **Terms** (main sidebar): search, then each term with its meaning, where you found it (a link back), the source link, and when you saved it.
 
@@ -100,7 +100,7 @@ Defaults the owner accepted without a separate question: term lookups get their 
 
 > **Superseded on 10 Oct 2026:** the app reset to the shadcn default ([design-system-shadcn-setup.md](design-system-shadcn-setup.md)). The fonts and status tokens below are gone; status uses the Badge variants.
 
-**Ken OS stays the base.** Manrope headings, Source Sans 3 body text, the warm monochrome tokens, the same radii and spacing. Nothing here is a framework default.
+**Loots stays the base.** Manrope headings, Source Sans 3 body text, the warm monochrome tokens, the same radii and spacing. Nothing here is a framework default.
 
 **New tokens, for meaning only.** They lived in `features/design-system/contract.ts` (added in step 1) and now live in the Ken OS design system in Claude, synced to `apps/web/design-system/tokens.json`, with Tailwind names such as `bg-status-solid-surface` and `text-status-solid`:
 
@@ -112,14 +112,14 @@ Defaults the owner accepted without a separate question: term lookups get their 
 
 - **Colour never works alone.** Every status also has words, and "Proven" and "Not assessed yet" have an icon.
 - **Muted text fixed in step 1:** `--muted-foreground` was `#766f66`, only 4.40:1 on `--muted`. It is now `#6e675e`: 5.53:1 on the page, 4.95:1 on `--muted` and 4.65:1 on `--secondary`.
-- **Ken OS has no dark theme yet.** When it gets one, these tokens need dark values measured separately.
+- **Loots has no dark theme yet.** When it gets one, these tokens need dark values measured separately.
 - **Motion only where it explains something:** the step bar's underline, the "My gaps" switch, collapsible sections. No fade-in on scroll.
 
 ## Components to build
 
-Shared across Ken OS (`components/ui` or a shared folder):
+Shared across Loots (`components/ui` or a shared folder):
 
-- **CodeEditor:** CodeMirror 6 with a Ken OS theme, editable or read-only.
+- **CodeEditor:** CodeMirror 6 with a Loots theme, editable or read-only.
 - **TermLookup:** the selection button, the popover and the `E` shortcut, wrapping each module's page.
 - **Pill:** a status label with tone (solid, partial, gap, neutral, quiet). It replaces the lab's current `Tag`.
 
@@ -145,7 +145,7 @@ The mockup versions live in `apps/web/src/components/lab-ui-preview/` and are th
 3. **Feedback:** the prediction diff, then the grader's rubric results and the checklist. _Check: the owner's "outer start, body" answer shows the two missing lines at a glance._ **Done 2026-10-03:** `diffLines` in the domain package; `grader-v2` returns per-point results, stored in `lab_attempts.rubric` (migration 0006). It does.
 4. **Course outline,** "My gaps" and placement checks. _Check: the outline matches §24, and gap focus hides exactly the known topics._ **Done 2026-10-03:** the Topics page is now Course. See "As built" below for how the outline and placement differ from the plan.
 5. **Today's Continue card.** **Done 2026-10-03:** Today and the topic page share `stepsForTopic`, so the card and the step bar always agree.
-6. **Term lookup and Terms**, shared across Ken OS. _Check: a lookup never leaves the page, and a saved term links back to where it was found._ **Done 2026-10-03:** `features/terms`, `components/terms`, the `/terms` page, migration 0007.
+6. **Term lookup and Terms**, shared across Loots. _Check: a lookup never leaves the page, and a saved term links back to where it was found._ **Done 2026-10-03:** `features/terms`, `components/terms`, the `/terms` page, migration 0007.
 7. **"Go deeper"** lesson sections (`tutor-v3`). **Done 2026-10-03.**
 
 Then the v1 features, starting from its section 1 gate.
@@ -168,7 +168,7 @@ Verified: `tsc`, `next build`, 80 unit tests, `test:db:lab` (8 checks) and `test
 ## Not part of this
 
 - A roadmap graph. The Course outline answers "where am I in the whole course" for now; the graph stays in v1 section 8.
-- A dark theme for Ken OS.
+- A dark theme for Loots.
 - Writing the content for the unwritten topics. The outline only names them.
 
 ## After the first live test (2026-10-03)
@@ -178,6 +178,6 @@ The owner tested term lookup on production. What changed:
 - **`E` was unreliable.** It re-read the page's selection at the moment the key was pressed, which can come back empty. It now acts on the selection the Explain button is showing, and listens at the window level.
 - **Hover state** on the Explain button, plus a tooltip naming the shortcut.
 - **Loading is visible:** a spinner, two placeholder lines, and "You can close this: the lookup keeps going".
-- **Lookups are background jobs.** A browser-side job store (`features/terms/lookup-jobs.ts`) keeps a lookup running when the popover closes or you move to another Ken OS page; if nothing is watching when it finishes, a notification shows the meaning with Save to Terms. The server stores every answer the moment it arrives (`ken_term_lookups.term_key` and `answer`, migration 0008), so the same term within 30 days is answered instantly, without an AI call or counting toward the limit, even after a reload. No server queue was needed, since a lookup takes seconds.
+- **Lookups are background jobs.** A browser-side job store (`features/terms/lookup-jobs.ts`) keeps a lookup running when the popover closes or you move to another Loots page; if nothing is watching when it finishes, a notification shows the meaning with Save to Terms. The server stores every answer the moment it arrives (`ken_term_lookups.term_key` and `answer`, migration 0008), so the same term within 30 days is answered instantly, without an AI call or counting toward the limit, even after a reload. No server queue was needed, since a lookup takes seconds.
 - **App-wide notifications:** `components/ui/toaster.tsx` (`toast()` plus one `<Toaster />` in the workspace shell), recorded as a design-system component rule. The lab's inline "saved" messages, Course and Terms now use it; errors about a specific action stay next to that action.
 - **Code in question text:** a practice question showed raw ` ```js ` code. Question text now renders as Markdown, and the Tutor (`tutor-v4`) and Assessor (`assessor-v3`) are told to keep code out of it.

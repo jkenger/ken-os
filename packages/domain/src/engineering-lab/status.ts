@@ -15,7 +15,7 @@ export function readStatus(status: StoredTopicStatus | null): TopicStatus | null
   return status === "ready_to_check" ? "in_progress" : status;
 }
 
-/** Who set the current status: the owner, Claude, or the old Ken OS flow it was carried over from. */
+/** Who set the current status: the owner, Claude, or the old Loots flow it was carried over from. */
 export type StatusSetter = "owner" | "claude" | "ken-os";
 
 /** What Claude may report as a status. Not started is only the owner's, to undo. */

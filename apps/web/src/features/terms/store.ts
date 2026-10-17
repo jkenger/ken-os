@@ -138,7 +138,7 @@ export async function saveTerm(
       meaning: answer.meaning,
       sourceTitle: answer.source?.title ?? null,
       sourceUrl: answer.source && isTrustedSourceUrl(answer.source.url) ? answer.source.url : null,
-      foundIn: input.foundIn.trim().slice(0, 160) || "Ken OS",
+      foundIn: input.foundIn.trim().slice(0, 160) || "Loots",
       foundAt: safeReturnPath(input.foundAt),
     })
     .onConflictDoNothing()

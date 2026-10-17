@@ -5,7 +5,7 @@ import { LEVELS, levelRank, type Level } from "@ken-os/domain";
 import { Badge as ShadcnBadge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-// Ken OS page building blocks, on the shadcn default look (see docs/architecture/design-system-shadcn-setup.md).
+// Loots page building blocks, on the shadcn default look (see docs/architecture/design-system-shadcn-setup.md).
 
 export const panel = "rounded-xl bg-card border";
 export const eyebrow = "mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground";

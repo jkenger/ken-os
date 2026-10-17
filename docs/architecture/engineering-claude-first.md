@@ -4,9 +4,9 @@ Status: approved by the owner, 13 Oct 2026, after a design review in chat. All f
 
 ## Decision
 
-**Claude teaches. Ken OS shows where you are.**
+**Claude teaches. Loots shows where you are.**
 
-After the connector shipped, the owner learned Effects & dependencies entirely in their Claude Project and preferred it to the in-app flow. Claude checked their state, asked before telling, sent them to the exercise, read their code and asked for the explanation. So all learning moves to Claude. Ken OS keeps the roadmap, each topic's state, Claude's reports and the owner's notes, on one screen.
+After the connector shipped, the owner learned Effects & dependencies entirely in their Claude Project and preferred it to the in-app flow. Claude checked their state, asked before telling, sent them to the exercise, read their code and asked for the explanation. So all learning moves to Claude. Loots keeps the roadmap, each topic's state, Claude's reports and the owner's notes, on one screen.
 
 This reverses the connector spec's first rule ("Claude never decides Proven"). Its replacement: **Claude can mark a topic Learned only with the owner's own explanation, word for word, as evidence.** The owner can always undo it.
 
@@ -19,7 +19,7 @@ One page, `/engineering`. Eleven screens become one.
 | Header       | The goal, the progress line ("5 of 14 learned · Now: Effects & dependencies") over a bar, **Plan new roadmap** and **Claude setup** |
 | Roadmap      | Goal → chapters → topics. A graph by default, with **Lanes** as the other view                                                      |
 | Topic panel  | Opens when a topic is clicked (below)                                                                                               |
-| Claude setup | Connect Ken OS, the Project instructions and the Project link (9f)                                                                  |
+| Claude setup | Connect Loots, the Project instructions and the Project link (9f)                                                                   |
 
 **The graph** shows only the current chapter's topics. Other chapters are single nodes with a count ("React · 1 of 3") and expand on click. Zoom and drag move around the rest. Use a maintained graph library, not hand-built layout. **Lanes** shows chapters as columns, in order, with topics stacked as cards; on a phone the columns stack.
 
@@ -56,11 +56,11 @@ A mockup of the graph, lanes and panel was reviewed in chat on 13 Oct 2026.
 
 ## 3a. No resume tool
 
-Decided 13 Oct 2026, before slice 3: Ken OS won't build `get_resume` or a resume link in Settings.
+Decided 13 Oct 2026, before slice 3: Loots won't build `get_resume` or a resume link in Settings.
 
 - **A resume says what someone built, not what they understand.** The roadmap is concept-level, and skipping topics from a resume would skip the gaps that matter. Effects & dependencies, the owner's first topic in Claude, is one their React work would have "covered".
 - **Planning is rare.** A roadmap is planned a few times a year, so a tool, a link between Engineering and the Resume module, and a setting don't pay for themselves.
-- **The value is free elsewhere.** The owner can tell Claude their background in a sentence, or add their resume file to the Claude Project's knowledge once, with no Ken OS code.
+- **The value is free elsewhere.** The owner can tell Claude their background in a sentence, or add their resume file to the Claude Project's knowledge once, with no Loots code.
 
 Skipping stays the owner's call: they say they know a topic, or explain it.
 
@@ -89,7 +89,7 @@ Removed: `save_lesson`, `save_proof_question`. The rule that replaces "no tool c
 
 ## 6. What goes
 
-- Ken OS's own lessons, the Tutor, the Researcher and source packets
+- Loots' own lessons, the Tutor, the Researcher and source packets
 - The 5-question assessment, its results and the evidence pages
 - Graded proofs (the Prove tab) and the Assessor
 - Daily Practice and review dates
@@ -165,7 +165,7 @@ Built 13 Oct 2026 on `feat/engineering-roadmap-page`. The new page lives beside 
 
 **Decisions**
 
-- **Graph library:** `@xyflow/react` 12.12.0 (React Flow, MIT). Its attribution link stays visible, as its authors ask of non-subscribers. Themed with Ken OS tokens, so it follows light and dark mode.
+- **Graph library:** `@xyflow/react` 12.12.0 (React Flow, MIT). Its attribution link stays visible, as its authors ask of non-subscribers. Themed with Loots tokens, so it follows light and dark mode.
 - **The graph opens zoomed on the goal and the current chapter's topics,** readable at once. With 13 chapters the whole ring at once was too small to read. The fit button shows everything.
 - **Graph nodes must stay selectable** in React Flow's sense, or React Flow turns off pointer events and clicks never reach the buttons. Selection shows nothing.
 - **The layout choice** (Graph or Lanes) is kept in this browser only.
@@ -234,12 +234,12 @@ Built 13 Oct 2026 on `feat/claude-links-in-app`, at the owner's request.
 Built 13 Oct 2026 on `feat/claude-links-in-app`, at the owner's request: everything Claude needs, in one place in the app.
 
 - **One panel, three steps.** **Claude setup** in the header opens it. Each step shows its state as a badge:
-  1. **Connect Ken OS:** the connector address (`<app>/api/mcp`) with **Copy**, the path in Claude, and the connections with **Disconnect**. State: Connected or Not connected.
+  1. **Connect Loots:** the connector address (`<app>/api/mcp`) with **Copy**, the path in Claude, and the connections with **Disconnect**. State: Connected or Not connected.
   2. **Project instructions:** **Copy instructions**, **Show all**, and the date they last changed. State: Updated with the date.
   3. **Project link:** the field from 9e, plus **Open Project**. State: Saved or Not set.
 - **Settings is gone.** Connections and the Project link moved into Claude setup, and **Plan new roadmap** into the header (shown once a roadmap is saved). Without a Project link, the "No roadmap" notice offers Claude setup instead of Plan with Claude.
 - **The instructions have one source:** `CLAUDE_PROJECT_INSTRUCTIONS` in `features/engineering-lab/claude-instructions.ts`, with `CLAUDE_INSTRUCTIONS_UPDATED`. `docs/product/claude-project-instructions.md` points there. Change them in a reviewed commit and update the date, so the owner knows to paste them again. `claude-instructions.test.ts` checks that every tool they name exists, that the ones the flow relies on are named, and that there are no em dashes.
-- **Ken OS can't tell** whether the Project has the latest instructions, since claude.ai doesn't expose them. The date is the signal.
+- **Loots can't tell** whether the Project has the latest instructions, since claude.ai doesn't expose them. The date is the signal.
 - No new tables or routes.
 
 **Verified:** `pnpm test` (149, including `claude-instructions.test.ts`), `pnpm check`, `pnpm build`, `pnpm format:check`, `test:db:engineering` and `test:db:connector`. On the local server at phone width, with real clicks: the panel with all three steps, Copy on the address, Show all, a saved Project link turning step 3 to Saved with Open Project, and the "No roadmap" notice switching from Claude setup to Plan with Claude. Plan new roadmap in the header wasn't seen, since the local database has no saved roadmap. The test link was cleared afterwards.

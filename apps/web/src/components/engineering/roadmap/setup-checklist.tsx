@@ -12,7 +12,7 @@ import { panel } from "../kit";
 // its state and one action. It replaces the "No roadmap" box and hides once setup is done.
 
 const rows: Record<SetupItemId, { title: string; helper: string; action: string }> = {
-  connect: { title: "Connect Ken OS", helper: "Add Ken OS as a connector in Claude", action: "Connect" },
+  connect: { title: "Connect Loots", helper: "Add Loots as a connector in Claude", action: "Connect" },
   instructions: {
     title: "Project instructions",
     helper: "Paste them into your Claude Project",

@@ -7,7 +7,7 @@ import { getSession, safeNext } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Sign in · Ken OS" };
+export const metadata: Metadata = { title: "Sign in · Loots" };
 
 type Query = { next?: string; error?: string; expired?: string; signed_out?: string };
 

@@ -12,7 +12,7 @@ The reference: `C:\Users\johnk\Downloads\Ken-OS-Engineering-Design\ken-engineeri
 
 Two things are not copied word for word:
 
-- **Look.** The reference uses Inter, indigo and Tabler icons. Ken OS uses shadcn's Nova default (design system 2.0.0, see `docs/architecture/design-system-shadcn-setup.md`): build every screen from the registry components as shipped, with no Ken OS-only tokens. Look changes start in the design system, never in a code PR.
+- **Look.** The reference uses Inter, indigo and Tabler icons. Loots uses shadcn's Nova default (design system 2.0.0, see `docs/architecture/design-system-shadcn-setup.md`): build every screen from the registry components as shipped, with no Loots-only tokens. Look changes start in the design system, never in a code PR.
 - **Copy.** The reference has small labels above headings and taglines under them. Screens follow [app-language.md](../product/app-language.md): same structure, app-language wording. This document gives the wording.
 
 This supersedes `engineering-redesign.md`, `engineering-assessment-v2.md`, `engineering-lab-profile.md` and the Engineering slices (3, 4, 5) of `docs/product/app-language-rewrite.md`. Keep those files as history; don't build from them.
@@ -22,7 +22,7 @@ This supersedes `engineering-redesign.md`, `engineering-assessment-v2.md`, `engi
 | Question                     | Decision                                                           |
 | ---------------------------- | ------------------------------------------------------------------ |
 | Assessment length            | 5 questions, one per area, as in the reference                     |
-| "From your projects" section | Left out until Ken OS can really detect concepts in projects       |
+| "From your projects" section | Left out until Loots can really detect concepts in projects        |
 | Topic states                 | Four: Not started, Learning, Practicing, Proven                    |
 | Existing progress            | Start fresh. Old answers, attempts, proofs and lessons are deleted |
 | The 7 new topics             | Included now, with assessment points and an exercise each          |

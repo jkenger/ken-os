@@ -30,7 +30,7 @@ const asAny = (topic: ExerciseTopic): AnyTopic => ("mapTopic" in topic ? topic :
 /** Run limits for Claude's exercises, matching the slowest repo labs of each runner. */
 const TIMEOUT_MS: Record<ClaudeRunner, number> = { browser: 3_000, pglite: 20_000 };
 
-/** One version with everything Ken OS knows about it. `solution` never leaves the server except for the check and Show solution. */
+/** One version with everything Loots knows about it. `solution` never leaves the server except for the check and Show solution. */
 export interface StoredVersion extends ExerciseVersion {
   lab: LabDefinition;
   solution: string | null;

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 
-// The page heading every Ken OS module uses, on the shadcn default look.
+// The page heading every Loots module uses, on the shadcn default look.
 
 export const eyebrow = "mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground";
 

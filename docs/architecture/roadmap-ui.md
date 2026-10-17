@@ -33,7 +33,7 @@ inventing its own. It covers what was built and proved on this screen only; it i
 
 ## Colours
 
-Tokens are in the Ken OS section at the end of `apps/web/src/app/globals.css`, each with a light and a dark value and
+Tokens are in the Loots section at the end of `apps/web/src/app/globals.css`, each with a light and a dark value and
 a `-soft` fill for chips and tiles. Names avoid the old Studio names that `shadcn-default.test.ts` blocks (no
 `status-*`, `tint`, `canvas`).
 
@@ -80,7 +80,7 @@ screen needs one, not before.
 ## Rules for the next screen
 
 - Build controls from `components/ui` only; `shadcn-primitives.test.ts` fails on a raw `button` or a hand-built widget.
-- A new colour is a token in the Ken OS section with a light and dark value and an `@theme inline` entry, then a
+- A new colour is a token in the Loots section with a light and dark value and an `@theme inline` entry, then a
   class. Never a hex class (the guard test blocks it). Check text contrast in both themes: 4.5:1 for body text.
 - Keep status colours and chapter (domain) colours separate, and keep an icon or word next to every colour.
 - Keep data honest: no invented estimates, resources, prerequisites or states. Show a section only when the data has it.

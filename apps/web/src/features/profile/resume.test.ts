@@ -58,7 +58,7 @@ const details = normalizeProfile(
     ],
     education: [{ school: "UP Diliman", degree: "BS", field: "Computer Science", start: "2015", end: "2019" }],
     skills: [{ name: "Languages", items: ["TypeScript", "Go"] }],
-    projects: [{ name: "Ken OS", description: "A private workspace" }],
+    projects: [{ name: "Loots", description: "A private workspace" }],
     local: { enabled: true, birthdate: "1995-06-30", civilStatus: "Single", address: "12 Secret St" },
   },
   "save",

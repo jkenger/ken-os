@@ -4,7 +4,7 @@ Status: approved by the owner, 3 Oct 2026. Implemented 3 Oct 2026; `apps/web/src
 
 ## Decision
 
-Ken OS screens speak in app language: names, actions and states. Full sentences belong only in content, meaning a lesson, an agent's own chat or answer, or feedback on something the owner wrote.
+Loots screens speak in app language: names, actions and states. Full sentences belong only in content, meaning a lesson, an agent's own chat or answer, or feedback on something the owner wrote.
 
 A copy audit on 3 Oct 2026 found the app read as "a mix of marketing and an agent talking to me". Older modules sold themselves ("Design, made repeatable."). The Engineering Lab narrated and reassured ("Ready when you are. First, a short talk."). The same feature also changed names between screens.
 
@@ -201,7 +201,7 @@ Superseded on 12 Oct 2026: Resume became Profile ([profile-resume.md](profile-re
 | RESUME ASSISTANT / Ask about your resume.                                          | Resume assistant                                                     |
 | Could not select file. / Could not answer.                                         | Couldn't open the file. Choose it again / Couldn't answer. Try again |
 
-Signed-out page: may keep one plain tagline, but drops "Ken OS starts with your resume" since the Lab now leads.
+Signed-out page: may keep one plain tagline, but drops "Loots starts with your resume" since the Lab now leads.
 
 ### 6. Project Memory (`memory-workspace.tsx`)
 

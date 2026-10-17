@@ -1,4 +1,4 @@
-# Ken OS Engineering — architectural redesign handoff
+# Loots Engineering — architectural redesign handoff
 
 Date: 2026-10-06 · Status: implementation proposal, ready for repository reconciliation.
 Owner: John Kenneth Gervacio.
@@ -6,9 +6,9 @@ Selected UI: first displayed light Evidence Workbench option in Ken-OS-Engineeri
 
 ## 1. Objective and scope
 
-Turn the existing Engineering Lab into Ken OS's Engineering module: a living, evidence-backed profile connected to assessment, learning, retention and project work. Expose four surfaces—Overview, Profile, Learn, Practice—while keeping the existing learning engine.
+Turn the existing Engineering Lab into Loots' Engineering module: a living, evidence-backed profile connected to assessment, learning, retention and project work. Expose four surfaces—Overview, Profile, Learn, Practice—while keeping the existing learning engine.
 
-This is an incremental refactor inside Ken OS, not a replacement application. Reuse owner auth, PostgreSQL/Drizzle, domain functions, agents, authored content and runners. Keep internal `engineering-lab` directories and `lab_*` tables initially. The public navigation name becomes Engineering. A cosmetic rename must not trigger a database rewrite.
+This is an incremental refactor inside Loots, not a replacement application. Reuse owner auth, PostgreSQL/Drizzle, domain functions, agents, authored content and runners. Keep internal `engineering-lab` directories and `lab_*` tables initially. The public navigation name becomes Engineering. A cosmetic rename must not trigger a database rewrite.
 
 First release: shared shell; real intake and assessment; direction and evidence profile; integrated topic workspace; existing daily practice; compact overview. Knowledge debt is a later release after real use validates the learning loop. Existing radar may be surfaced if its deployed implementation is verified; do not make it a dependency for the core release.
 
@@ -24,7 +24,7 @@ Source bundle read for this handoff:
 - `engineering-lab-profile.md`: profile, assessment, role definitions and as-built corrections.
 - `UX-HANDOFF.md` in the design package: proposed screen flows and frontend limitations.
 
-Use latest dated decisions and as-built sections over older proposal paragraphs. The module's original product handoff and Ken OS product brief remain governing sources in the real repository. They were referenced by the attachments but were not supplied here. Neither was `engineering-lab-ui.md`, `topics.yaml`, `roles.yaml`, source code, migrations or repository `AGENTS.md`. Read them before changing code. Report concrete conflicts instead of assuming this proposal silently supersedes unseen requirements.
+Use latest dated decisions and as-built sections over older proposal paragraphs. The module's original product handoff and Loots product brief remain governing sources in the real repository. They were referenced by the attachments but were not supplied here. Neither was `engineering-lab-ui.md`, `topics.yaml`, `roles.yaml`, source code, migrations or repository `AGENTS.md`. Read them before changing code. Report concrete conflicts instead of assuming this proposal silently supersedes unseen requirements.
 
 This handoff changes information architecture and recommends application contracts. It preserves existing evidence rules unless an explicit resolution below says otherwise. Proposed paths, interfaces and tables are not claims about live implementation. Repository reconciliation must identify actual equivalents.
 
@@ -36,7 +36,7 @@ The attachments report 52 topics, 13 chapters, two tracks and 48 authored labs. 
 
 | Existing capability                         | Evidence in attachments                                         | Redesign treatment                                                   |
 | ------------------------------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------- |
-| Owner auth, shared DB, agents package       | Engineering already a Ken OS module                             | Reuse unchanged                                                      |
+| Owner auth, shared DB, agents package       | Engineering already a Loots module                              | Reuse unchanged                                                      |
 | Topic map and authored labs                 | Full course reported built                                      | Reuse IDs, prerequisites, test harnesses and starters                |
 | Source packets and Tutor                    | Built                                                           | Reuse; expose sources within topic details                           |
 | Assessor, grader and executable predictions | Built                                                           | Reuse separate prompts, fingerprints and evidence records            |
@@ -106,7 +106,7 @@ Use temporary redirects during rollout; make them permanent only after rollback 
 | UI                   | Four surfaces, editing, feedback, inspectable evidence                                      | Trusted scoring, manual real passes                      |
 | Browser runners      | Execute bounded authored work and collect observations                                      | Owner credentials, authoritative multi-user attestations |
 
-Keep existing `packages/domain/src/engineering-lab` and `packages/agents/src/engineering-lab`. Add application adapters alongside the current feature/server conventions discovered in Ken OS. Compose reusable UI in the shared component system; do not import the prototype wholesale or create a second design system.
+Keep existing `packages/domain/src/engineering-lab` and `packages/agents/src/engineering-lab`. Add application adapters alongside the current feature/server conventions discovered in Loots. Compose reusable UI in the shared component system; do not import the prototype wholesale or create a second design system.
 
 Recommended application boundaries (names are proposals):
 
@@ -415,8 +415,8 @@ Use actual repository commands after inspection. Attachments cite `pnpm test`, `
 
 ## 16. Ready-to-use Claude Code instruction
 
-> Implement the Ken OS Engineering redesign described here using the selected first/light Evidence Workbench design and the supplied design package. Begin by reading repository AGENTS, the original module handoff, product brief and latest as-built architecture. Inspect actual code, schema, approved roles, routes and deployment status; produce a reconciliation note before edits. Reuse existing domain functions, attempts, agents, authored labs, runners, baseline runs and daily scheduling. Preserve topic IDs and evidence provenance. Do not copy the prototype's demo grading, hardcoded levels, Blob worker, localStorage or manual proof pass into production. Deliver the shell/Profile and real assessment vertical slice first, with existing contracts adapted wherever possible. Then integrate Learn/Exercise/Prove and Practice/Overview. Keep changes additive, preserve legacy links and provide an evidence-preserving rollback. Defer knowledge debt and paid infrastructure. Explain exact changes, meaningful checks and remaining gaps. Do not answer the owner's assessment, silently retire baseline context before completion, or claim visual QA without matched browser evidence. Production deployment and external writes require the project's applicable authorization.
+> Implement the Loots Engineering redesign described here using the selected first/light Evidence Workbench design and the supplied design package. Begin by reading repository AGENTS, the original module handoff, product brief and latest as-built architecture. Inspect actual code, schema, approved roles, routes and deployment status; produce a reconciliation note before edits. Reuse existing domain functions, attempts, agents, authored labs, runners, baseline runs and daily scheduling. Preserve topic IDs and evidence provenance. Do not copy the prototype's demo grading, hardcoded levels, Blob worker, localStorage or manual proof pass into production. Deliver the shell/Profile and real assessment vertical slice first, with existing contracts adapted wherever possible. Then integrate Learn/Exercise/Prove and Practice/Overview. Keep changes additive, preserve legacy links and provide an evidence-preserving rollback. Defer knowledge debt and paid infrastructure. Explain exact changes, meaningful checks and remaining gaps. Do not answer the owner's assessment, silently retire baseline context before completion, or claim visual QA without matched browser evidence. Production deployment and external writes require the project's applicable authorization.
 
 ## 17. Completion record for this handoff
 
-Prepared from supplied documents and selected design; no Ken OS repository was accessed or modified. No real competency assessment, grading call, database migration or production deployment was performed. Proposed contracts remain subject to repository reconciliation. The next action is Slice 0 in the actual Ken OS checkout, followed by adapting the existing real Profile/assessment implementation—not starting another standalone app.
+Prepared from supplied documents and selected design; no Loots repository was accessed or modified. No real competency assessment, grading call, database migration or production deployment was performed. Proposed contracts remain subject to repository reconciliation. The next action is Slice 0 in the actual Loots checkout, followed by adapting the existing real Profile/assessment implementation—not starting another standalone app.

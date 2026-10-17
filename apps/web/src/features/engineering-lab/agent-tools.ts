@@ -48,7 +48,7 @@ import {
 // - Everything Claude sends is untrusted: each input is checked against its schema and the size caps.
 // - Claude may save at most CLAUDE_WRITE_LIMIT times a day.
 
-const topicId = z.string().min(1).max(100).describe("A Ken OS topic id, for example js.call_stack");
+const topicId = z.string().min(1).max(100).describe("A Loots topic id, for example js.call_stack");
 const text = (max: number) => z.string().trim().min(1).max(max);
 const file = z.string().max(CLAUDE_LIMITS.exerciseFile);
 
@@ -59,7 +59,7 @@ export const toolInputs = {
         .string()
         .max(20)
         .optional()
-        .describe("The version line from the Project instructions, as YYYY-MM-DD, so Ken OS knows they are current"),
+        .describe("The version line from the Project instructions, as YYYY-MM-DD, so Loots knows they are current"),
     })
     .strict(),
   get_roadmap: z
@@ -92,9 +92,7 @@ export const toolInputs = {
           tests: file
             .min(1)
             .describe("Tests using test(name, fn) and assert.equal / assert.deepEqual, like the repo labs"),
-          solution: file
-            .min(1)
-            .describe("Must pass every test. Never shown to the owner unless they open it in Ken OS"),
+          solution: file.min(1).describe("Must pass every test. Never shown to the owner unless they open it in Loots"),
           hint: text(500).nullable().optional(),
           setup: file.optional().describe("pglite only: SQL run on the fresh database before the code"),
         })
@@ -474,7 +472,7 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
         labId: saved.id,
         version: saved.version,
         checked: saved.checked,
-        next: "Open the topic's exercise in Ken OS to check it",
+        next: "Open the topic's exercise in Loots to check it",
       };
     },
   },
@@ -483,7 +481,7 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     name: "report_progress",
     title: "Report progress",
     description:
-      "Records what happened on a topic, shown to the owner in Ken OS. The first report starts the topic. Set status learned only after the owner explains the idea in their own words without hints, and pass that explanation word for word as evidence. Set skipped when the owner says they already know it. You can't change a status the owner set.",
+      "Records what happened on a topic, shown to the owner in Loots. The first report starts the topic. Set status learned only after the owner explains the idea in their own words without hints, and pass that explanation word for word as evidence. Set skipped when the owner says they already know it. You can't change a status the owner set.",
     kind: "write",
     async run(userId, { topicId: id, summary, stuck, status, evidence }) {
       const saved = await reportProgress(userId, id, { summary, stuck, status, evidence });
@@ -520,7 +518,7 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     name: "save_topic_material",
     title: "Save topic material",
     description:
-      "Saves the topic's material, shown in Ken OS: a one-line description, the wording of its three tasks (read with you, build something small, explain it in their own words), learning resources (real pages, official docs first; links that don't load are refused) and 3 to 6 mastery criteria. Write it when the topic starts, if get_topic shows material null. Saving again replaces it whole, which is how you correct it.",
+      "Saves the topic's material, shown in Loots: a one-line description, the wording of its three tasks (read with you, build something small, explain it in their own words), learning resources (real pages, official docs first; links that don't load are refused) and 3 to 6 mastery criteria. Write it when the topic starts, if get_topic shows material null. Saving again replaces it whole, which is how you correct it.",
     kind: "write",
     async run(userId, input) {
       return { saved: true, ...(await saveTopicMaterial(userId, input)) };
@@ -576,7 +574,7 @@ export async function callAgentTool(userId: string, name: string, input: unknown
   return tool.run(userId, parsed.data as never);
 }
 
-/** Saves Claude may make per day, across every write tool. Claude's writes cost Ken OS nothing; this stops a runaway loop. */
+/** Saves Claude may make per day, across every write tool. Claude's writes cost Loots nothing; this stops a runaway loop. */
 export const CLAUDE_WRITE_LIMIT = 40;
 
 /**

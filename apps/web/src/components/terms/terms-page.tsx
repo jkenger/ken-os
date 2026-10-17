@@ -15,7 +15,7 @@ function saved(value: string) {
   return new Date(value).toLocaleDateString("en", { month: "short", day: "numeric" });
 }
 
-/** Every term looked up and saved anywhere in Ken OS, with where it was found. */
+/** Every term looked up and saved anywhere in Loots, with where it was found. */
 export function TermsPage({ email, terms }: { email: string; terms: SavedTerm[] }) {
   const router = useRouter();
   const [query, setQuery] = useState("");

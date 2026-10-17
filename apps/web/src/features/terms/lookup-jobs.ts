@@ -4,7 +4,7 @@ import { termKey, type TermAnswer } from "@ken-os/domain";
 import { reloadSavedTerms } from "./saved-terms";
 
 // Term lookups as background jobs in the browser. A lookup keeps running when the popover closes or you move to another
-// Ken OS page; whoever is still listening gets the result, and nobody listening means a toast. The server also keeps
+// Loots page; whoever is still listening gets the result, and nobody listening means a toast. The server also keeps
 // each answer, so the same term is instant later, even after a reload.
 
 export type LookupJob =

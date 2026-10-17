@@ -30,7 +30,7 @@ function shorten(text: string, max = 180) {
 }
 
 /**
- * Select a word or short phrase on any Ken OS page, then press Explain (or E): a short meaning and one link from a
+ * Select a word or short phrase on any Loots page, then press Explain (or E): a short meaning and one link from a
  * trusted site, with Save to Terms. Closing the popover doesn't cancel the lookup; when it finishes, a toast offers
  * the answer instead. The popover closes on Escape, scroll or a click elsewhere.
  */

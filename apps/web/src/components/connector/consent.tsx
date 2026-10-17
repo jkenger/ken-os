@@ -41,7 +41,7 @@ export function ConsentCard({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="text-center font-heading text-lg font-semibold tracking-tight">Ken OS</div>
+      <div className="text-center font-heading text-lg font-semibold tracking-tight">Loots</div>
       <Card>
         <CardHeader>
           <CardTitle>Connect Claude</CardTitle>
@@ -85,7 +85,7 @@ export function ConsentCard({
 export function ConsentProblem({ message }: { message: string }) {
   return (
     <div className="flex flex-col gap-6">
-      <div className="text-center font-heading text-lg font-semibold tracking-tight">Ken OS</div>
+      <div className="text-center font-heading text-lg font-semibold tracking-tight">Loots</div>
       <Alert variant="destructive">
         <IconAlertCircle aria-hidden="true" />
         <AlertTitle>Can&apos;t connect</AlertTitle>

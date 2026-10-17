@@ -1,4 +1,4 @@
-# Claude Code notes for Ken OS
+# Claude Code notes for Loots
 
 `AGENTS.md` at the repo root is the project guide: layout, boundaries, design and copy rules. This file adds only what Claude Code needs on top. Do not copy `AGENTS.md` content here; change it there.
 

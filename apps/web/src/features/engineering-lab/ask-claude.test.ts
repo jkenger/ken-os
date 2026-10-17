@@ -7,7 +7,7 @@ import { askClaudeMessage, claudeLink, claudeProjectUrl, planTopicMessage, repla
 test("the starter message names the topic and its id", () => {
   assert.equal(
     askClaudeMessage({ id: "js.closures", title: "Closures" }),
-    "Teach me Closures (Ken OS topic `js.closures`). Start by checking where I am.",
+    "Teach me Closures (Loots topic `js.closures`). Start by checking where I am.",
   );
 });
 
@@ -44,13 +44,13 @@ test("Project and chat links are https claude.ai links only", () => {
 test("Re-plan names the roadmap and its id, so Claude replaces that one", () => {
   assert.equal(
     replanMessage({ id: "rm-1", goal: "System design interviews" }),
-    "Re-plan my roadmap System design interviews (Ken OS roadmap `rm-1`). Start by checking where I am.",
+    "Re-plan my roadmap System design interviews (Loots roadmap `rm-1`). Start by checking where I am.",
   );
 });
 
 test("plan a topic names it by id and asks Claude to write its material", () => {
   assert.equal(
     planTopicMessage({ id: "react.render_model", title: "State & rendering" }),
-    "Plan State & rendering (Ken OS topic `react.render_model`): write its description, tasks, resources and mastery criteria with save_topic_material.",
+    "Plan State & rendering (Loots topic `react.render_model`): write its description, tasks, resources and mastery criteria with save_topic_material.",
   );
 });

@@ -102,7 +102,7 @@ export function ClaudeSetup({
         <SheetHeader className="border-b">
           <SheetTitle className="text-xl">Claude setup</SheetTitle>
         </SheetHeader>
-        <Step number={1} title="Connect Ken OS" state={connected ? "Connected" : "Not connected"} done={connected}>
+        <Step number={1} title="Connect Loots" state={connected ? "Connected" : "Not connected"} done={connected}>
           <div className="grid gap-1.5">
             <InputGroup>
               <InputGroupInput readOnly value={mcpUrl} aria-label="Connector address" className="font-mono text-xs" />

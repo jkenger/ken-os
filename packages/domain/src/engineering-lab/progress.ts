@@ -41,7 +41,7 @@ export const CONTENT_EVENT_KINDS: readonly TopicEventKind[] = [
  */
 export const STATUS_EVENT_KINDS: readonly TopicEventKind[] = ["report", "status_set"];
 
-/** Who wrote a lesson, a question or an event: Ken OS itself, or Claude through the connector. */
+/** Who wrote a lesson, a question or an event: Loots itself, or Claude through the connector. */
 export const CONTENT_SOURCES = ["ken-os", "claude"] as const;
 export type ContentSource = (typeof CONTENT_SOURCES)[number];
 

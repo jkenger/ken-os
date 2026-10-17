@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 
 // The connector's OAuth rules, with no database. Spec: docs/architecture/engineering-claude-connector.md, section 3.
-// Ken OS is its own authorization server for one owner, following the MCP authorization spec and what claude.ai needs:
+// Loots is its own authorization server for one owner, following the MCP authorization spec and what claude.ai needs:
 // https://claude.com/docs/connectors/building/authentication
 
 /** The one scope: read Engineering progress and code, save lessons, exercises and proof questions. */
@@ -37,7 +37,7 @@ export function isAllowedRedirect(value: unknown, hosts = allowedHosts()): value
   return Boolean(url && hosts.includes(url.hostname.toLowerCase()));
 }
 
-/** A client metadata document URL Ken OS may fetch: https, on an allowed host, with a path. Anything else is never fetched. */
+/** A client metadata document URL Loots may fetch: https, on an allowed host, with a path. Anything else is never fetched. */
 export function isMetadataClientId(value: unknown, hosts = allowedHosts()): value is string {
   const url = httpsUrl(value);
   return Boolean(url && url.pathname !== "/" && hosts.includes(url.hostname.toLowerCase()));
@@ -76,7 +76,7 @@ export function protectedResourceMetadata(appUrl: string) {
     authorization_servers: [appUrl],
     scopes_supported: [SCOPE],
     bearer_methods_supported: ["header"],
-    resource_name: "Ken OS Engineering",
+    resource_name: "Loots Engineering",
   };
 }
 
@@ -100,7 +100,7 @@ export function authorizationServerMetadata(appUrl: string) {
 }
 
 /** The 401 that starts sign-in in Claude. It must be a 401: Claude ignores the header on any other status. */
-export function unauthorized(appUrl: string, description = "Sign in to Ken OS") {
+export function unauthorized(appUrl: string, description = "Sign in to Loots") {
   const header = `Bearer error="invalid_token", error_description="${description}", resource_metadata="${resourceMetadataUrl(appUrl)}", scope="${SCOPE}"`;
   return new Response(JSON.stringify({ error: "invalid_token", error_description: description }), {
     status: 401,

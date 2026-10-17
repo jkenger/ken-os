@@ -1,6 +1,6 @@
 # Blog Writing Studio — product spec
 
-Status: scoped proposal, not implemented. Portfolio presentation is a later slice. This module extends the private Ken OS workspace with a public blog; it does not make Project Memory a publishing engine.
+Status: scoped proposal, not implemented. Portfolio presentation is a later slice. This module extends the private Loots workspace with a public blog; it does not make Project Memory a publishing engine.
 
 ## Purpose
 
@@ -45,7 +45,7 @@ Preset text appears as dismissible guidance beside or within an empty section, n
 - `/blog` lists only published posts; `/blog/[slug]` shows the refined version by default. Public routes never require Google sign-in and never reveal draft IDs, private notes, assistant exchanges, or Project Memory.
 - When raw is enabled for that published version, readers can switch between **Refined** and **Raw draft**. Both are labeled clearly; raw is described as a snapshot selected by the author, not an AI-free authenticity certificate.
 - Public content is rendered from a stored, immutable publication snapshot. Updating the private draft cannot change a live post accidentally.
-- The public identity, eventual custom domain, and visual relationship to Ken OS are unresolved. The first slice can use the existing host and a distinct public layout without choosing the final brand or domain.
+- The public identity, eventual custom domain, and visual relationship to Loots are unresolved. The first slice can use the existing host and a distinct public layout without choosing the final brand or domain.
 
 ## First slice and exclusions
 

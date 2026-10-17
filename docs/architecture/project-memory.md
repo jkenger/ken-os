@@ -10,7 +10,7 @@ Project repo / active agent session
   └─ explicit capture/checkpoint action
                 │ authenticated, project-scoped submission
                 ▼
-Ken OS Next.js API → validation/use cases → Drizzle/PostgreSQL
+Loots Next.js API → validation/use cases → Drizzle/PostgreSQL
                 │                         ├─ policies + projects
                 │                         ├─ decisions + revisions
                 │                         └─ receipts + evidence refs
@@ -18,13 +18,13 @@ Ken OS Next.js API → validation/use cases → Drizzle/PostgreSQL
 Owner review UI → approved project handoff view → next agent/session
 ```
 
-The application owns durable memory and approval state. Git owns code history; agent products own their conversations. Ken OS stores typed references and selected, reviewed claims, not a mirrored transcript. A reference may become inaccessible; its last verified metadata and availability state remain visible. The hosted app has no inherent access to Codex tasks, Claude Code history, local files, or private GitHub repositories.
+The application owns durable memory and approval state. Git owns code history; agent products own their conversations. Loots stores typed references and selected, reviewed claims, not a mirrored transcript. A reference may become inaccessible; its last verified metadata and availability state remain visible. The hosted app has no inherent access to Codex tasks, Claude Code history, local files, or private GitHub repositories.
 
 ## Policy and adapter contract
 
-The canonical policy is an immutable, versioned Ken OS record. The project repository contains a **small, checked-in adapter** with project ID, policy version/digest, data-sharing scope, and instructions to read the current handoff and submit drafts only through an available authorized tool. For the pilot, this can be linked from the existing root `AGENTS.md`; do not replace the repository's other guidance. A Claude Code adapter can be added later, generated from the same policy rather than maintained as an independent rule set.
+The canonical policy is an immutable, versioned Loots record. The project repository contains a **small, checked-in adapter** with project ID, policy version/digest, data-sharing scope, and instructions to read the current handoff and submit drafts only through an available authorized tool. For the pilot, this can be linked from the existing root `AGENTS.md`; do not replace the repository's other guidance. A Claude Code adapter can be added later, generated from the same policy rather than maintained as an independent rule set.
 
-On startup, the adapter compares its pinned digest with Ken OS. If unavailable or mismatched, it reports the condition and uses the checked-in minimum rules for local work; it must not silently adopt a broader remote policy or upload data. The policy defines what counts as a consequential decision, capture points, fields, review rules, and exclusions. Instructions encourage behavior; server-side schema validation and owner review enforce the parts that can actually be enforced.
+On startup, the adapter compares its pinned digest with Loots. If unavailable or mismatched, it reports the condition and uses the checked-in minimum rules for local work; it must not silently adopt a broader remote policy or upload data. The policy defines what counts as a consequential decision, capture points, fields, review rules, and exclusions. Instructions encourage behavior; server-side schema validation and owner review enforce the parts that can actually be enforced.
 
 Suggested minimum rule: read current approved memory before substantial work; checkpoint consequential decisions when made; submit one task receipt on completion or deliberate handoff; cite accessible evidence; distinguish stated rationale from inference; never upload excluded project content; never rewrite commits or PRs just to satisfy capture.
 
@@ -50,7 +50,7 @@ The pilot uses Drizzle schema and reviewed migrations `0002`–`0004`. Text is b
 4. Owner review uses the existing browser session and mutation-origin protections. Approval/rejection is attributable and transactional. Editing creates a revision; it does not overwrite the prior claim. Only approved owner decisions enter the authoritative handoff as confirmed.
 5. `GET handoff` derives a bounded, ordered view from approved current decisions, unresolved questions, and latest relevant receipts. It includes source and policy version and labels proposed or inferred material separately. The view can be cached, but the database remains authoritative.
 
-The pilot routes are `/api/memory/agent`, `/api/memory/decisions`, `/api/memory/receipts`, `/api/memory/review`, and `/api/memory/credentials`. The checked-in adapter and explicit CLI commands are documented in [the Ken OS adapter](../memory/ken-os-adapter.md). An MCP tool can provide the same typed operations across compatible agents later. Instructions cannot force an end-of-session action; interruption recovery depends on decision-time checkpoints and idempotent retry.
+The pilot routes are `/api/memory/agent`, `/api/memory/decisions`, `/api/memory/receipts`, `/api/memory/review`, and `/api/memory/credentials`. The checked-in adapter and explicit CLI commands are documented in [the Loots adapter](../memory/ken-os-adapter.md). An MCP tool can provide the same typed operations across compatible agents later. Instructions cannot force an end-of-session action; interruption recovery depends on decision-time checkpoints and idempotent retry.
 
 An adapter-neutral draft payload should have this shape (illustrative fields, not a committed HTTP schema):
 
@@ -87,7 +87,7 @@ The server derives owner identity from authentication, not from payload fields. 
 ## Identity, trust, and privacy
 
 - Keep the existing single-owner web session for the review UI. Machine/agent submissions need a **separate scoped credential**, never the browser cookie or a secret committed to a repository. Store only a credential hash server-side; allow rotation and revocation. Narrow it to one project and write-draft/read-context capabilities. A future OAuth/MCP integration can replace this without changing the domain contract.
-- The agent should submit only from a project explicitly allowlisted for personal Ken OS. Default to deny. A repository adapter or a prompt is not authorization; the server checks the project and credential scope too.
+- The agent should submit only from a project explicitly allowlisted for personal Loots. Default to deny. A repository adapter or a prompt is not authorization; the server checks the project and credential scope too.
 - Source links are not fetched server-side in the pilot. If later enabled, provider access must be separately authorized and URL fetching must defend against private-network access, redirects, and oversized content.
 - Browser review and agent submission are separate trust boundaries. Apply existing session/origin checks to browser mutations; agent requests use token authentication, rate limits, payload limits, audit logging, and TLS.
 - Redact secrets and personal/client details before storing text. The server rejects obvious credential-shaped values, but the UI must still let the owner review and remove sensitive claims. No raw conversation upload by default.
@@ -105,7 +105,7 @@ For a lost session, the adapter requests the latest handoff, inspects only sourc
 
 Follow the existing app path: route handler → use case → repository/provider adapter. Put persistence schema in `apps/web/src/lib/schema.ts` initially, or split into a memory schema module if size warrants it. Group the new feature UI, validation, and use cases under `apps/web/src/features/project-memory/`; keep HTTP routes thin. Shared receipt/policy types may move to `packages/domain` only when both the web app and an external adapter actually consume them. Do not add another deployable worker for the pilot.
 
-1. Define the versioned receipt/policy JSON schemas and Ken OS pilot rules; seed selected existing Ken OS decisions from docs as `proposed` for owner review. Add schema validation tests with unsupported and malicious inputs.
+1. Define the versioned receipt/policy JSON schemas and Loots pilot rules; seed selected existing Loots decisions from docs as `proposed` for owner review. Add schema validation tests with unsupported and malicious inputs.
 2. Add Drizzle migration, owner review API/UI, derived handoff, and tests for authorization, state transitions, revisions, and idempotency.
 3. Add an explicit, local Codex capture/checkpoint adapter for this repository. Verify a normal task, an interrupted task, and a fresh session/model reading the approved handoff. Do not call it automatic until capture reliability is measured.
 4. Only then consider a Claude Code adapter, supported lifecycle hooks, GitHub read integration, PR enrichment, and private devlog generation. Each new connector needs a project-specific permission and data-flow review.

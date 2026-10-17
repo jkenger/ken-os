@@ -127,7 +127,7 @@ export function formatMinutes(minutes: number) {
 
 export const topicMaterialInput = z
   .object({
-    topicId: topicId.describe("A Ken OS topic id"),
+    topicId: topicId.describe("A Loots topic id"),
     description: line(200).describe("One line on what the topic is about, in plain language"),
     tasks: z
       .object({
@@ -151,7 +151,7 @@ export const topicMaterialInput = z
           .strict(),
       )
       .max(6)
-      .describe("Real pages you have checked: official docs first. Ken OS refuses links that don't load"),
+      .describe("Real pages you have checked: official docs first. Loots refuses links that don't load"),
     criteria: z
       .array(line(200))
       .min(3)

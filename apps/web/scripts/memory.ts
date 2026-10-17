@@ -12,7 +12,7 @@ function assertPilotRepository() {
   const root = resolve(process.cwd(), "../..");
   const remote = execFileSync("git", ["-C", root, "remote", "get-url", "origin"], { encoding: "utf8" }).trim();
   if (!/^(?:https:\/\/github\.com\/|git@github\.com:)jkenger\/ken-os(?:\.git)?$/i.test(remote)) {
-    throw new Error("Memory capture is allowlisted only for the Ken OS repository.");
+    throw new Error("Memory capture is allowlisted only for the Loots repository.");
   }
 }
 
@@ -20,7 +20,7 @@ function endpoint() {
   const base = new URL(process.env.KEN_OS_MEMORY_URL ?? "https://ken-os-web.vercel.app");
   const production = base.origin === "https://ken-os-web.vercel.app";
   const local = base.origin === "http://localhost:3000" || base.origin === "http://127.0.0.1:3000";
-  if (!production && !local) throw new Error("Memory endpoint must be Ken OS production or local port 3000.");
+  if (!production && !local) throw new Error("Memory endpoint must be Loots production or local port 3000.");
   return new URL("/api/memory/agent", base);
 }
 

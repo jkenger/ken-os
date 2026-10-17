@@ -89,8 +89,7 @@ function list(value: unknown, label: string, maxItems: number, maxChars: number)
 
 function projectAndKey(input: Record<string, unknown>) {
   if (input.schemaVersion !== MEMORY_SCHEMA_VERSION) throw new MemoryInputError("Unsupported memory schema version.");
-  if (input.projectId !== PILOT_PROJECT_ID)
-    throw new MemoryInputError("Only the Ken OS pilot project is allowed.", 403);
+  if (input.projectId !== PILOT_PROJECT_ID) throw new MemoryInputError("Only the Loots pilot project is allowed.", 403);
   const idempotencyKey = bounded(input.idempotencyKey, "Idempotency key", 120);
   if (!/^[A-Za-z0-9][A-Za-z0-9._:-]*$/.test(idempotencyKey)) throw new MemoryInputError("Invalid idempotency key.");
   return idempotencyKey;

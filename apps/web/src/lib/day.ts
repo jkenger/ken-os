@@ -1,5 +1,5 @@
 // The owner's calendar day. Daily practice and the daily AI and lookup limits turn over at the owner's midnight, not
-// the server's. Ken OS has one owner, in Manila; OWNER_TIME_ZONE overrides it. Decided 2026-10-06
+// the server's. Loots has one owner, in Manila; OWNER_TIME_ZONE overrides it. Decided 2026-10-06
 // (docs/architecture/engineering-redesign.md, Q4). Stored dates written before then stay as they were.
 
 export const OWNER_TIME_ZONE = process.env.OWNER_TIME_ZONE || "Asia/Manila";

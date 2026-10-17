@@ -52,7 +52,7 @@ export function SignInCard({ href, notice, setupHint = null, disabled = false }:
   const inactive = disabled || opening;
   return (
     <div className="flex flex-col gap-6">
-      <div className="text-center font-heading text-lg font-semibold tracking-tight">Ken OS</div>
+      <div className="text-center font-heading text-lg font-semibold tracking-tight">Loots</div>
       <Card>
         <CardHeader>
           <CardTitle>Sign in</CardTitle>

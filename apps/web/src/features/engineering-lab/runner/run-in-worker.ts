@@ -6,7 +6,7 @@ export type RunOutcome = WorkerMessage | { type: "timeout"; message: string };
 
 /**
  * Runs a harness script in a Web Worker started from a data: URL. The opaque origin means the code cannot
- * reach Ken OS with the owner's session, and terminate() stops infinite loops.
+ * reach Loots with the owner's session, and terminate() stops infinite loops.
  */
 export function runInWorker(script: string, timeoutMs: number): Promise<RunOutcome> {
   return new Promise((resolve) => {

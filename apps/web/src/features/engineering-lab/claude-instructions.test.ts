@@ -8,7 +8,7 @@ import { CLAUDE_INSTRUCTIONS_UPDATED, CLAUDE_PROJECT_INSTRUCTIONS } from "./clau
 test("the instructions only name tools that exist, and name the ones the flow relies on", () => {
   const names = new Set<string>(agentTools.map((tool) => tool.name));
   const mentioned = CLAUDE_PROJECT_INSTRUCTIONS.match(/\b(?:get|save|report|list)_[a-z_]+/g) ?? [];
-  for (const name of mentioned) assert.ok(names.has(name), `${name} isn't a Ken OS tool`);
+  for (const name of mentioned) assert.ok(names.has(name), `${name} isn't a Loots tool`);
   for (const needed of [
     "get_current_state",
     "get_topic",
