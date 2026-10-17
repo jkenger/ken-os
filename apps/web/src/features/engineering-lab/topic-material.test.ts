@@ -8,6 +8,7 @@ import {
   topicMaterialInput,
   topicPlanInput,
   waitingOn,
+  withMaterial,
   type TopicPlan,
 } from "./topic-material";
 
@@ -114,4 +115,15 @@ test("made-up links are reported: an error status, or a site that doesn't exist;
     return { ok: answer < 400, status: answer };
   };
   assert.deepEqual(await brokenLinks(Object.keys(answers), fetcher), ["https://gone.dev", "https://made-up.dev"]);
+});
+
+test("once Claude writes material, its criteria and description replace the topic's points and line", () => {
+  const topic = { id: "a", gap: "Old line", points: ["Old one", "Old two", "Old three", "Old four", "Old five"] };
+  const written = { ...material, criteria: ["New one", "New two", "New three"] };
+  assert.deepEqual(withMaterial(topic, written), {
+    id: "a",
+    gap: material.description,
+    points: ["New one", "New two", "New three"],
+  });
+  assert.equal(withMaterial(topic, null), topic, "until then, the old material stays as the fallback");
 });

@@ -2,12 +2,11 @@ import { and, eq, gte, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { ownerDayStart } from "@/lib/day";
 import { labRoadmaps, labTopicMaterial, labTopicPlans } from "@/lib/schema";
-import { requireAnyTopic } from "./any-topic";
+import { requireAnyTopic, topicMaterial } from "./any-topic";
 import { LabInputError } from "./errors";
 import {
   brokenLinks,
   mergePlans,
-  type TopicMaterial,
   type TopicMaterialInput,
   type TopicPlan,
   type TopicPlanInput,
@@ -64,17 +63,8 @@ export async function saveTopicPlans(userId: string, roadmapId: string, topics: 
   return { topics: changed.length };
 }
 
-/** Claude's material for a topic, or null before Claude writes it. */
-export async function getMaterial(userId: string, topicId: string): Promise<TopicMaterial | null> {
-  const [row] = await db()
-    .select()
-    .from(labTopicMaterial)
-    .where(and(eq(labTopicMaterial.userId, userId), eq(labTopicMaterial.topicId, topicId)))
-    .limit(1);
-  return row
-    ? { description: row.description, tasks: row.tasks, resources: row.resources, criteria: row.criteria }
-    : null;
-}
+/** Claude's material for a topic, or null before Claude writes it. Read in any-topic.ts, which applies it to the topic. */
+export const getMaterial = topicMaterial;
 
 /** Saves a topic's material whole, replacing the last one. Refused when a resource link doesn't load. */
 export async function saveTopicMaterial(

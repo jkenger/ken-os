@@ -1,13 +1,15 @@
 import { and, eq } from "drizzle-orm";
 import type { Topic } from "@ken-os/domain";
 import { db } from "@/lib/db";
-import { labCustomTopics } from "@/lib/schema";
+import { labCustomTopics, labTopicMaterial } from "@/lib/schema";
 import { findTopic, placeOf } from "./curriculum";
 import { LabInputError } from "./errors";
+import { withMaterial, type TopicMaterial } from "./topic-material";
 
 // A topic on the owner's roadmap: one from the reviewed topic map, or one Claude added (`custom.*`). Spec:
 // docs/architecture/engineering-claude-first.md, section 3. The Claude-first code reads topics through here; the old
-// screens stay on the map only until slice 4 removes them.
+// screens stay on the map only until slice 4 removes them. Once Claude writes a topic's material, its criteria and
+// description replace the points and line here, so every caller gets Claude's version (docs/architecture/roadmap-ui.md).
 
 export interface AnyTopic {
   id: string;
@@ -16,9 +18,10 @@ export interface AnyTopic {
   custom: boolean;
   area: string;
   chapter: string;
-  /** For a map topic: what it repairs, in one line. Null for Claude's topics. */
+  /** Claude's description once written; else for a map topic what it repairs, in one line, and null for Claude's topics. */
   gap: string | null;
-  /** What the owner should be able to explain: the approved points, or Claude's 3 to 5 lines. */
+  /** What the owner should be able to explain: Claude's mastery criteria once written; else the approved points, or the
+   * 3 to 5 lines Claude added the topic with. */
   points: string[];
   /** The map topic, for its repo exercise. Null for Claude's topics, which have only Claude's exercises. */
   mapTopic: Topic | null;
@@ -43,8 +46,29 @@ export async function customTopics(userId: string) {
   return db().select().from(labCustomTopics).where(eq(labCustomTopics.userId, userId));
 }
 
-/** The topic, or a 404 the owner or Claude can read. `place` names the chapter a custom topic sits in, if known. */
+/** Claude's material for a topic, or null before Claude writes it. */
+export async function topicMaterial(userId: string, topicId: string): Promise<TopicMaterial | null> {
+  const [row] = await db()
+    .select()
+    .from(labTopicMaterial)
+    .where(and(eq(labTopicMaterial.userId, userId), eq(labTopicMaterial.topicId, topicId)))
+    .limit(1);
+  return row
+    ? { description: row.description, tasks: row.tasks, resources: row.resources, criteria: row.criteria }
+    : null;
+}
+
+/**
+ * The topic with Claude's material applied, or a 404 the owner or Claude can read. `place` names the chapter a custom
+ * topic sits in, if known.
+ */
 export async function requireAnyTopic(userId: string, topicId: string, place?: { chapter: string }): Promise<AnyTopic> {
+  const [topic, material] = await Promise.all([findAnyTopic(userId, topicId, place), topicMaterial(userId, topicId)]);
+  return withMaterial(topic, material);
+}
+
+/** The topic as the map or Claude first wrote it, before any material. */
+async function findAnyTopic(userId: string, topicId: string, place?: { chapter: string }): Promise<AnyTopic> {
   const mapped = findTopic(topicId);
   if (mapped) return fromMap(mapped);
   if (isCustomTopicId(topicId)) {

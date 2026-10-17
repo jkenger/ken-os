@@ -198,3 +198,15 @@ export async function brokenLinks(urls: readonly string[], fetcher: Fetcher = fe
   const results = await Promise.all(urls.map(async (url) => ({ url, outcome: await check(url) })));
   return results.filter((result) => result.outcome === "broken").map((result) => result.url);
 }
+
+/**
+ * Retire as replaced (docs/architecture/roadmap-ui.md): once Claude writes a topic's material, its mastery criteria
+ * become the topic's points and its description the topic's line, everywhere they're read: the panel, get_topic's
+ * p1, p2…, review sheets and the own-words check. Until then the old material stays as the fallback.
+ */
+export function withMaterial<T extends { gap: string | null; points: string[] }>(
+  topic: T,
+  material: Pick<TopicMaterial, "description" | "criteria"> | null,
+): T {
+  return material ? { ...topic, gap: material.description, points: material.criteria } : topic;
+}

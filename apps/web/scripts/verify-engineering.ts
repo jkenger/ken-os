@@ -844,6 +844,40 @@ async function main() {
       assert.equal((await call("get_topic", { topicId: retry })).material.tasks.build, "Build a capped backoff");
       assert.ok((await tools.claudeWritesToday(writer)) >= 2, "material and plans count toward the daily limit");
       console.log("ok - material: save_topic_material replaces a topic's material, and refuses broken links");
+
+      // Retire as replaced: Claude's criteria are now the topic's points everywhere, and its description the line.
+      const replaced = await anyTopic.requireAnyTopic(writer, retry);
+      assert.deepEqual(replaced.points, ["One", "Two", "Three"]);
+      assert.equal(replaced.gap, input.description);
+      assert.notDeepEqual(
+        (await anyTopic.requireAnyTopic(other, retry)).points,
+        replaced.points,
+        "another owner keeps the topic map's points",
+      );
+      const topicView = await call("get_topic", { topicId: retry });
+      assert.deepEqual(
+        topicView.points.map((point: { id: string }) => point.id),
+        ["p1", "p2", "p3"],
+        "Claude checks against its own criteria",
+      );
+      const sheetOf = (count: number) => ({
+        points: Array.from({ length: count }, (_, index) => ({
+          pointId: `p${index + 1}`,
+          question: "Why?",
+          explanation: "Because the wait grows after each failure.",
+          example: "const delay = Math.min(base * 2 ** attempt, cap);",
+          mistake: "Retrying right away",
+          ownMistake: false,
+        })),
+        terms: [{ term: "Backoff", meaning: "Waiting longer after each failed try." }],
+      });
+      await assert.rejects(call("save_review", { topicId: retry, sheet: sheetOf(5) }), /p4|p5|points/i);
+      assert.equal((await call("save_review", { topicId: retry, sheet: sheetOf(3) })).version, 1);
+      const panelAfter = await roadmaps.getTopicPanel(writer, retry, roadmapId);
+      assert.deepEqual(panelAfter.points, ["One", "Two", "Three"], "the panel shows the same criteria");
+      console.log(
+        "ok - material: Claude's criteria replace the topic's points for get_topic, review sheets and the panel",
+      );
     } finally {
       await db().delete(users).where(eq(users.id, writer));
     }
