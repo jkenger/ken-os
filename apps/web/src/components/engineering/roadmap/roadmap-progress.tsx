@@ -70,46 +70,49 @@ export function RoadmapProgress({
   };
   const next = after ? findTopic(after.id) : null;
   return (
-    <section
-      aria-label="Progress"
-      className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border bg-border sm:grid-cols-2 xl:grid-cols-4"
-    >
-      <Cell label={summary ? "Complete" : "Progress"}>
-        <p className="flex items-baseline gap-1.5">
-          <span className="font-heading text-xl font-bold tracking-tight">
-            {counts.learned} of {counts.total}
-          </span>
-          <span className="text-sm text-muted-foreground">learned</span>
-        </p>
-        <div className="flex items-center gap-2.5">
-          <Progress value={percent} aria-label={`${counts.learned} of ${counts.total} learned`} className="flex-1" />
-          <span className="font-mono text-xs text-muted-foreground">{percent}%</span>
-        </div>
-      </Cell>
-      {current && !summary ? (
-        <TopicCell label="Now" topic={{ ...current }} onSelect={onSelect} />
-      ) : (
-        <Cell label="Finished">
+    // Columns follow the strip's own width, not the window's, so it stays two across beside the docked topic panel.
+    <div className="@container">
+      <section
+        aria-label="Progress"
+        className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border bg-border @lg:grid-cols-2 @3xl:grid-cols-4"
+      >
+        <Cell label={summary ? "Complete" : "Progress"}>
+          <p className="flex items-baseline gap-1.5">
+            <span className="font-heading text-xl font-bold tracking-tight">
+              {counts.learned} of {counts.total}
+            </span>
+            <span className="text-sm text-muted-foreground">learned</span>
+          </p>
+          <div className="flex items-center gap-2.5">
+            <Progress value={percent} aria-label={`${counts.learned} of ${counts.total} learned`} className="flex-1" />
+            <span className="font-mono text-xs text-muted-foreground">{percent}%</span>
+          </div>
+        </Cell>
+        {current && !summary ? (
+          <TopicCell label="Now" topic={{ ...current }} onSelect={onSelect} />
+        ) : (
+          <Cell label="Finished">
+            <p className="text-sm font-semibold">
+              {summary?.finishedAt ? formatDate(summary.finishedAt) : "Nothing in progress"}
+            </p>
+          </Cell>
+        )}
+        {next && next.id !== current?.id ? (
+          <TopicCell label="Next" topic={next} onSelect={onSelect} />
+        ) : (
+          <Cell label="Next">
+            <p className="text-sm font-semibold">{summary ? "Every topic is done" : "Nothing after this"}</p>
+          </Cell>
+        )}
+        <Cell label="Roadmap">
           <p className="text-sm font-semibold">
-            {summary?.finishedAt ? formatDate(summary.finishedAt) : "Nothing in progress"}
+            {chapters.length} {chapters.length === 1 ? "chapter" : "chapters"}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {counts.inProgress} in progress · {counts.skipped} skipped
           </p>
         </Cell>
-      )}
-      {next && next.id !== current?.id ? (
-        <TopicCell label="Next" topic={next} onSelect={onSelect} />
-      ) : (
-        <Cell label="Next">
-          <p className="text-sm font-semibold">{summary ? "Every topic is done" : "Nothing after this"}</p>
-        </Cell>
-      )}
-      <Cell label="Roadmap">
-        <p className="text-sm font-semibold">
-          {chapters.length} {chapters.length === 1 ? "chapter" : "chapters"}
-        </p>
-        <p className="text-xs text-muted-foreground">
-          {counts.inProgress} in progress · {counts.skipped} skipped
-        </p>
-      </Cell>
-    </section>
+      </section>
+    </div>
   );
 }

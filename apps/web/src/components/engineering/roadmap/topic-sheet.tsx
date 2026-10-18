@@ -524,6 +524,17 @@ export function TopicSheet({
     };
   }, [docked, topicId]);
 
+  // Docked, Escape closes the panel wherever focus is, as the Sheet does. A dialog or menu that Escape closes first calls
+  // preventDefault, so it never closes the panel too.
+  useEffect(() => {
+    if (!docked || !topicId) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape" && !event.defaultPrevented) onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [docked, topicId, onClose]);
+
   const code = panel && <CodeSheet topic={panel} open={coding} onClose={() => setCoding(false)} onChanged={saved} />;
 
   if (docked) {
@@ -533,9 +544,6 @@ export function TopicSheet({
         <aside
           ref={asideRef}
           aria-labelledby="topic-panel-title"
-          onKeyDown={(event) => {
-            if (event.key === "Escape" && !event.defaultPrevented) onClose();
-          }}
           className="sticky top-2 flex h-[calc(100svh-5rem)] w-96 shrink-0 flex-col overflow-y-auto border-l bg-card"
         >
           <div className="grid gap-2.5 border-b p-4">

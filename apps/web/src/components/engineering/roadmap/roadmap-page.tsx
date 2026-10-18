@@ -121,7 +121,7 @@ export function RoadmapPage({
     }
   };
 
-  // The open topic lives in the address, so a link can open it and Back closes it.
+  // The open topic lives in the address, so a link or a reload opens it. It replaces the entry, so Back leaves the page.
   const select = useCallback(
     (topicId: string | null, tab: TopicTab = "topic") => {
       setSelected(topicId);
