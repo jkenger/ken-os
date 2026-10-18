@@ -54,6 +54,7 @@ Module names are proper names in title case and appear the same in the sidebar, 
 | Use            | Instead of                                                               |
 | -------------- | ------------------------------------------------------------------------ |
 | Profile        | Resume (renamed 12 Oct 2026), Resume hub, Your documents, Primary resume |
+| Portfolio      | Public site, Showcase                                                    |
 | Engineering    | Engineering Lab, Lab (renamed 6 Oct 2026; code keeps `engineering-lab`)  |
 | Terms          | Saved terms, Words you looked up                                         |
 | Project Memory |                                                                          |
@@ -79,6 +80,17 @@ Added 12 Oct 2026 ([profile-resume.md](profile-resume.md)).
 | Target role                 | The optional role the wording aims at                         | Job target, Desired position                     |
 | Accept, Undo, Accept all    | Take or put back one suggestion, or take the rest             | Apply, Reject, Revert                            |
 | Line changed since          | A suggestion for a line edited after the rewrite              | Conflict, Stale                                  |
+
+### Portfolio
+
+Added 18 Oct 2026 ([portfolio.md](../architecture/portfolio.md)).
+
+| Use                   | Meaning                                                         | Instead of                   |
+| --------------------- | --------------------------------------------------------------- | ---------------------------- |
+| Publish, Unpublish    | Make the saved details live on the public site, or take it down | Deploy, Sync, Go live, Share |
+| Live, Not published   | Whether the public site has a snapshot                          | Online, Public, Draft        |
+| Changes not published | Profile saved after the live publish                            | Out of date, Stale           |
+| Snapshot              | The exact data one Publish gave the site                        | Export, Build, Payload       |
 
 ### Engineering
 

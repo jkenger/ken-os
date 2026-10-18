@@ -1,6 +1,6 @@
 # Portfolio — architecture spec
 
-Status: proposed design, agreed with the owner on 18 Oct 2026. No schema, routes or app exist yet.
+Status: agreed with the owner on 18 Oct 2026. Step 1 is built (Profile only); steps 2 to 4 are not.
 
 The portfolio is the owner's public site, for hiring and for showing what he builds. It is also the playground for what Loots can do: it shows Loots data and can try features Loots does not have yet.
 

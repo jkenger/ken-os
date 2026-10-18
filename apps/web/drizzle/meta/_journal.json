@@ -176,6 +176,13 @@
       "when": 1792217234108,
       "tag": "0024_unknown_namorita",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1792289928518,
+      "tag": "0025_portfolio",
+      "breakpoints": true
     }
   ]
 }

@@ -11,7 +11,7 @@
     "memory:context": "tsx scripts/memory.ts context",
     "memory:submit": "tsx scripts/memory.ts submit",
     "test:db:memory": "tsx scripts/verify-memory.ts",
-    "test": "tsx --test src/lib/*.test.ts src/features/project-memory/*.test.ts src/features/engineering-lab/*.test.ts src/features/terms/*.test.ts src/features/connector/*.test.ts src/features/profile/*.test.ts",
+    "test": "tsx --test src/lib/*.test.ts src/features/project-memory/*.test.ts src/features/engineering-lab/*.test.ts src/features/terms/*.test.ts src/features/connector/*.test.ts src/features/profile/*.test.ts src/features/portfolio/*.test.ts",
     "test:db:resume": "tsx scripts/verify-resume.ts",
     "test:db:auth": "tsx scripts/verify-auth.ts",
     "db:generate": "drizzle-kit generate",
@@ -21,7 +21,8 @@
     "test:db:terms": "tsx scripts/verify-terms.ts",
     "test:db:connector": "tsx scripts/verify-connector.ts",
     "test:db:profile": "tsx scripts/verify-profile.ts",
-    "db:migrate:deploy": "tsx scripts/migrate-on-deploy.ts"
+    "db:migrate:deploy": "tsx scripts/migrate-on-deploy.ts",
+    "test:db:portfolio": "tsx scripts/verify-portfolio.ts"
   },
   "dependencies": {
     "@codemirror/commands": "^6.11.1",
@@ -33,6 +34,7 @@
     "@ken-os/agents": "workspace:*",
     "@ken-os/domain": "workspace:*",
     "@ken-os/drive": "workspace:*",
+    "@ken-os/portfolio": "workspace:*",
     "@modelcontextprotocol/sdk": "1.32.1",
     "@react-pdf/renderer": "^4.9.0",
     "@tabler/icons-react": "^3.49.0",

@@ -9,6 +9,7 @@ import {
   FileText,
   FlaskConical,
   FolderOpen,
+  Globe,
   Map as MapIcon,
   Library,
   Search,
@@ -49,10 +50,11 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { engineering, tabForPath, type EngineeringTab } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
 
-type Module = "profile" | "memory" | "lab" | "terms";
+type Module = "profile" | "portfolio" | "memory" | "lab" | "terms";
 
 const modules = [
   { id: "profile" as const, label: "Profile", href: "/profile", icon: UserRound },
+  { id: "portfolio" as const, label: "Portfolio", href: "/portfolio", icon: Globe },
   { id: "memory" as const, label: "Project Memory", href: "/memory", icon: BookOpenText },
   { id: "lab" as const, label: "Engineering", href: engineering.roadmap(), icon: FlaskConical },
   { id: "terms" as const, label: "Terms", href: "/terms", icon: BookMarked },
@@ -73,6 +75,7 @@ const moduleDetails: Record<
       { label: "Drive file", href: "/profile#drive-file", icon: FolderOpen },
     ],
   },
+  portfolio: { title: "Portfolio", sections: [{ label: "Publish", href: "/portfolio", icon: Globe }] },
   memory: {
     title: "Project Memory",
     sections: [

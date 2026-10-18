@@ -44,6 +44,9 @@ Out of scope: more users or sign-in methods, and a single guard replacing the pe
 | `/api/auth/google/drive` (new) | 401                                                                                    | Starts the Drive-access grant (§4)                       |
 | `/api/auth/signout`            | POST only, origin-checked as today                                                     | Clears the session, redirects to `/sign-in?signed_out=1` |
 | API routes                     | 401 JSON, as today                                                                     | Unchanged                                                |
+| `/api/public/portfolio`        | The live Portfolio snapshot, or 404 when unpublished. Reads no session                 | Same                                                     |
+
+`/api/public/portfolio` is the one route outside the owner gate. It reads only the live published snapshot (`docs/architecture/portfolio.md`); any new public route follows the same rule.
 
 The signed-out branch moves out of `app/page.tsx` into `app/sign-in/page.tsx`.
 
