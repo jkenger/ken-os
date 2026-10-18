@@ -508,6 +508,8 @@ export function TopicSheet({
 
   const code = panel && <CodeSheet topic={panel} open={coding} onClose={() => setCoding(false)} onChanged={saved} />;
 
+  // Docked, the panel stays short enough to clear the shell header at the top of the page, so its footer (Ask Claude)
+  // is on screen whether the page or the panel scrolls.
   if (docked) {
     if (!topicId) return null;
     return (
@@ -517,7 +519,7 @@ export function TopicSheet({
           onKeyDown={(event) => {
             if (event.key === "Escape" && !event.defaultPrevented) onClose();
           }}
-          className="sticky top-2 flex max-h-[calc(100svh-1rem)] w-96 shrink-0 flex-col overflow-y-auto border-l bg-card"
+          className="sticky top-2 flex max-h-[calc(100svh-5rem)] w-96 shrink-0 flex-col overflow-y-auto border-l bg-card"
         >
           <div className="grid gap-2.5 border-b p-4">
             <div className="flex items-center gap-2">

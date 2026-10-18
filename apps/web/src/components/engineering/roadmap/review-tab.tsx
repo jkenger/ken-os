@@ -14,6 +14,7 @@ import type { ReviewView } from "@/features/engineering-lab/review-store";
 // A topic's Review tab (docs/architecture/engineering-claude-first.md, section 9h): Claude's review sheet by point, the
 // key terms, the owner's passing code and their own explanation, then the notes. Test yourself hides every answer and
 // shows each point as a question, to answer before Claude's fresh check.
+// Grids use grid-cols-1 (minmax(0, 1fr)) so a long code line scrolls inside its block instead of widening the panel.
 
 const sectionTitle = "mb-2 text-xs font-semibold text-muted-foreground";
 const codeBlock = "overflow-x-auto rounded-lg bg-muted p-3 font-mono text-xs leading-relaxed";
@@ -28,7 +29,7 @@ async function load(topicId: string, version: number | null): Promise<ReviewView
 
 function Answer({ point }: { point: ReviewPoint }) {
   return (
-    <div className="grid gap-2">
+    <div className="grid grid-cols-1 gap-2">
       <p className="text-sm leading-relaxed">{point.explanation}</p>
       <pre className={codeBlock}>
         <code>{point.example}</code>
@@ -98,9 +99,9 @@ export function ReviewTab({ topicId, notes }: { topicId: string; notes: ReactNod
   const { sheet } = review;
   const latest = review.versions[0]?.version ?? null;
   return (
-    <div className="grid gap-6">
+    <div className="grid grid-cols-1 gap-6">
       {sheet ? (
-        <section className="grid gap-4">
+        <section className="grid grid-cols-1 gap-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             {review.versions.length > 1 ? (
               <NativeSelect
@@ -128,7 +129,7 @@ export function ReviewTab({ topicId, notes }: { topicId: string; notes: ReactNod
               {testing ? "Show answers" : "Test yourself"}
             </Button>
           </div>
-          <ol className="grid gap-5">
+          <ol className="grid grid-cols-1 gap-5">
             {sheet.sheet.points.map((point, index) => (
               <li key={point.pointId} className="border-t pt-4">
                 <p className="text-xs font-semibold text-muted-foreground">
