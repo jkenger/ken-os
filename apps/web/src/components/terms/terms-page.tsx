@@ -86,6 +86,7 @@ export function TermsPage({ email, terms }: { email: string; terms: SavedTerm[] 
               <li
                 key={term.id}
                 id={`term-${term.id}`}
+                aria-current={opened === `term-${term.id}` ? "true" : undefined}
                 className={cn(
                   "grid scroll-mt-24 gap-2 px-5 py-5 md:grid-cols-[200px_minmax(0,1fr)_auto] md:gap-6 md:px-6",
                   opened === `term-${term.id}` && selectedRow,
