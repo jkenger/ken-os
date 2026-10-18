@@ -8,5 +8,6 @@ export const panel = "rounded-xl bg-card border";
 export const selectedSurface = "border-selected/55 bg-card ring-3 ring-selected/15 hover:bg-card";
 
 /** A selected row inside a divided `panel` list, where the row has no border of its own: the same colour as an inset
- *  outline, rounded at the list's ends to follow the panel's corners. */
-export const selectedRow = "bg-card ring-1 ring-selected/55 ring-inset first:rounded-t-xl last:rounded-b-xl";
+ *  outline, rounded at the list's ends to follow the panel's corners. Full strength, because the outline is the only
+ *  visual cue: it clears 3:1 against the card (6.7:1 light, 8.9:1 dark), where 55% would not. */
+export const selectedRow = "bg-card ring-1 ring-selected ring-inset first:rounded-t-xl last:rounded-b-xl";
