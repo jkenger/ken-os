@@ -11,6 +11,10 @@ inventing its own. It covers what was built and proved on this screen only; it i
   The view switch (Lanes, Graph) sits just above the roadmap it changes, not in the header (17 Oct 2026, when the
   header row got too crowded). Re-plan was taken off the header on 17 Oct 2026 until it is redesigned;
   `replanMessage` stays in `features/engineering-lab/ask-claude.ts`, unused.
+- **Setup checklist.** Shown until setup is done (`setupChecklist` in `features/engineering-lab/claude-setup.ts`),
+  above the progress line. With no roadmap planned it opens with all four steps. Once a roadmap is planned it starts
+  folded to one row: the count, the next step and that step's action, with Show steps for the rest, so the roadmap sits
+  near the top (18 Oct 2026). The roadmap never waits on setup.
 - **Progress line.** Four cells in one bordered strip: learned out of total with a bar and a percentage, Now (the
   current topic), Next (the next unfinished topic, from `nextTopic`), and the roadmap's size. Every number comes from
   `RoadmapView`. There are no time estimates, because the data has none.
@@ -19,13 +23,17 @@ inventing its own. It covers what was built and proved on this screen only; it i
   bar, and its topics as full-width rows.
 - **Graph** (the default view; phones open on Lanes unless you picked Graph before). Redrawn on 18 Oct 2026 as a dependency map: every
   chapter is a tinted area (its chapter colour) holding all its topics, four to a row; areas run left to right in
-  roadmap order and wrap to a new row. Topic cards show the status icon, the title and the status word. Arrows run
+  roadmap order and wrap to a new row. Topic cards show the status icon, the title (up to two lines, then cut, with the
+  full title on hover) and the status word. Arrows run
   from topic to topic inside a chapter, a dashed arrow joins chapters side by side, and prerequisites Claude saved
-  curve between topics; lines touching the open topic are drawn in `topic-active`. It opens fitted to the row holding
-  the current chapter. The view switch row carries the status legend (`StatusLegend`, from 1024px) and **Find a topic** (`TopicFind`, also opened with /; Ctrl or Cmd + K stays with the module search), in line with the Lanes and Graph tabs, for both views. Layout lives in `features/engineering-lab/roadmap-layout.ts` and
+  curve between topics; lines touching the open topic are drawn in `selected`. It opens on the row holding the open
+  topic's chapter (else the current chapter, else the first), fitted across and pinned to the top. Where that fit would
+  be under 75% (below about 1600px, or beside the docked panel), it opens at 75% with that chapter at the left edge
+  instead, and the rest is a pan away. Edges are not Tab stops. The view switch row carries the status legend (`StatusLegend`, from 1024px) and **Find a topic** (`TopicFind`, also opened with /; Ctrl or Cmd + K stays with the module search), in line with the Lanes and Graph tabs, for both views. Layout lives in `features/engineering-lab/roadmap-layout.ts` and
   is unit tested.
 - **Topic panel.** From 1280px it docks to the right of the roadmap (`TopicSheet` with `docked`), so the roadmap stays
-  visible and clickable; Escape or the close button closes it. Below 1280px it is the same content in a Sheet. Lanes
+  visible and clickable; Escape (wherever focus is, unless it is closing a dialog or menu first) or the close button
+  closes it. Below 1280px it is the same content in a Sheet. Both come from the shared `DockedPanel`. Lanes
   and Graph share the selected topic, and the open topic lives in the address. It has two modes:
   - **Overview**, beside the graph: status, chapter, description, task progress, Next in path, and **Open in lanes**.
   - **Detail**, beside the lanes: Tasks, Mastery criteria (the topic's points: Claude's criteria once written), Status, Link chat and
@@ -44,6 +52,7 @@ a `-soft` fill for chips and tiles. Names avoid the old Studio names that `shadc
 | Token                           | Use                                                                                                    | Never                        |
 | ------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------- |
 | `topic-learned`, `topic-active` | Status icons and the status chip for Learned and In progress                                           | Decoration, chapter identity |
+| `selected`                      | The picked topic in Lanes and Graph (`selectedSurface`) and the graph lines touching it                | Status of any kind           |
 | `chapter-1` to `chapter-6`      | Chapter mark, chapter bar, the tinted graph area. Picked by roadmap position with `chapterTone(index)` | Status of any kind           |
 | shadcn tokens                   | Everything else: surfaces, text, borders, the primary button                                           |                              |
 
@@ -61,9 +70,8 @@ area ("Added by Claude").
 - Page padding `px-4 md:px-7`, `gap-5` between page blocks, `gap-3.5` between lanes.
 - Cards and strips are `rounded-xl border bg-card` with no shadow. Rows inside are `rounded-lg`. Graph topic cards are the
   exception: `rounded-xl` with `shadow-xs`, so they sit above their tinted area.
-- Selected in Lanes means a dark outline (`ring-foreground`), never a colour fill. The selected graph topic takes a
-  soft `topic-active` border and ring instead, matching the lit arrows around it; its icon and word still carry its
-  status.
+- Selected means a soft `selected` border and ring on a card surface (`selectedSurface` in `components/engineering/kit.tsx`),
+  in Lanes and Graph alike, matching the lit graph arrows; the icon and word still carry the status.
 
 ## Components
 
@@ -74,13 +82,14 @@ Shared within the roadmap folder (`components/engineering/roadmap/`):
 | `StatusIcon`, `StatusLabel`, `StatusChip` (`status.tsx`)           | A topic status as icon, icon plus word, or soft chip       | Anything that shows a topic's status |
 | `ChapterMark`, `ChapterBar`, `chapterClasses` (`chapter-mark.tsx`) | A chapter's numbered tile, progress bar and accent classes | Anything that lists chapters         |
 | `RoadmapProgress`                                                  | The progress strip                                         | Roadmap pages only                   |
+| `DockedPanel`, `useDocked` (`components/docked-panel.tsx`)         | The docked-or-sheet side panel `TopicSheet` fills          | Any screen with a picked-item panel  |
 
 Roadmap-only on purpose: `RoadmapLanes`, `RoadmapGraph` and its node components, `TopicSheet`. They hold roadmap
 behaviour and would not survive being made generic.
 
-Not extracted yet, though they repeat: the bordered strip of cells (`RoadmapProgress`, `RoadmapSummary`) and the
-docked-or-sheet panel. Extract them into `components/engineering/kit.tsx` (or a shared folder) the second time another
-screen needs one, not before.
+Not extracted yet, though it repeats: the bordered strip of cells (`RoadmapProgress`, `RoadmapSummary`). Extract it the
+first time another screen needs one, not before. Shared tokens, components and the rules for adding more are in
+`docs/architecture/design-system.md`.
 
 ## Rules for the next screen
 
@@ -133,13 +142,16 @@ How release 2 works:
 
 Dropped for good: the quiz, a one-click complete, actual-time tracking, and the "Claude" topic tag.
 
-## Gaps this redesign could not close
+## What the screen does not do
 
-These need a data-model change first, so the screen does not fake them:
+Release 2 (above) added prerequisites, estimates, difficulty and resources, all written by Claude. What is still out, on
+purpose or for want of data:
 
-- **Prerequisites between topics.** The roadmap stores chapters and topic order only. A real dependency graph needs a
-  `prerequisites` list per topic (or per roadmap edge) in `lab_roadmaps`, and `save_roadmap` to accept it.
-- **Time estimates and difficulty.** Topics have no duration or difficulty.
-- **Learning resources and tasks.** The topic panel shows what exists: what to explain, Learn and Practice steps,
-  status, sessions, the review sheet and notes.
-- **Blocked.** There is no blocked status; the four statuses are Not started, In progress, Learned, Skipped.
+- **Blocked.** There is no blocked status; the four are Not started, In progress, Learned, Skipped. A prerequisite not
+  yet learned shows as "Waiting on" in the panel, as advice: any topic can be opened and worked on.
+- **Prerequisites on the graph** are drawn only between topics on the roadmap shown. A curve from a row above runs from
+  the right edge of its card, so it can be a long diagonal; it passes under the cards.
+- **A Now mark on the graph.** Lanes marks the current topic Now; the graph shows only its In progress icon.
+- **Time spent.** Estimates are Claude's plan; nothing tracks actual time.
+- **Back** leaves the page: opening a topic replaces the address entry rather than adding one.
+- **A theme switch.** Every token has a dark value, but the app has no way to turn dark mode on yet.

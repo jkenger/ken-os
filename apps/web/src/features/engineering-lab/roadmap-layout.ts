@@ -43,7 +43,8 @@ export interface LayoutEdge {
 
 /** Node sizes in graph pixels; the node components fill them. */
 export const GRAPH = {
-  topic: { width: 176, height: 52 },
+  /** Tall enough for a title on two lines and the status word. */
+  topic: { width: 176, height: 62 },
   /** Topics in one row of an area. */
   columns: 4,
   /** Space between topics in a row (room for the arrow), and between rows. */

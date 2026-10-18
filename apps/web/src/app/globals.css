@@ -134,7 +134,7 @@
   html { scroll-behavior: smooth; }
 }
 
-/* Roadmap colours (docs/architecture/roadmap-ui.md). Topic colours mark a topic's status and always sit next to an icon
+/* Roadmap colours (docs/architecture/roadmap-ui.md; every Loots token: docs/architecture/design-system.md). Topic colours mark a topic's status and always sit next to an icon
    and a word; chapter colours tell chapters apart and never mean a status. Each has a soft fill for chips and tiles. */
 :root {
   --topic-learned: oklch(0.5 0.12 152);
@@ -153,6 +153,9 @@
   --chapter-5-soft: oklch(0.945 0.02 318);
   --chapter-6: oklch(0.47 0.08 85);
   --chapter-6-soft: oklch(0.945 0.03 90);
+  /* The item you picked (a row, a card, the lines touching it). It shares the In progress hue today; components use
+     this name, so selection can change without touching status. */
+  --selected: var(--topic-active);
 }
 
 .dark {
@@ -172,6 +175,7 @@
   --chapter-5-soft: oklch(0.3 0.03 318);
   --chapter-6: oklch(0.8 0.08 90);
   --chapter-6-soft: oklch(0.3 0.03 90);
+  --selected: var(--topic-active);
 }
 
 @theme inline {
@@ -191,6 +195,7 @@
   --color-chapter-5-soft: var(--chapter-5-soft);
   --color-chapter-6: var(--chapter-6);
   --color-chapter-6-soft: var(--chapter-6-soft);
+  --color-selected: var(--selected);
 }
 
 /* Saved terms on any page (components/terms/saved-term-marks.tsx): a dotted underline, painted without changing the text. */
