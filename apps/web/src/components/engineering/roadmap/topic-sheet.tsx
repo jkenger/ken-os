@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { IconArrowRight, IconLink, IconPencil, IconTrash, IconX } from "@tabler/icons-react";
 import { TOPIC_STATUSES, type TopicStatus } from "@ken-os/domain";
 import { post, send } from "@/components/lab/topic/client";
@@ -506,20 +506,37 @@ export function TopicSheet({
     </>
   );
 
+  // Docked, the panel runs from below the shell header (or its top-2 sticky edge once the header scrolls away) down to the
+  // shell's bottom edge (its 8px margin and 1px border), so it fills that space and Ask Claude is on screen at any scroll.
+  const asideRef = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const aside = asideRef.current;
+    if (!aside) return;
+    const fit = () => {
+      aside.style.height = `${window.innerHeight - Math.max(aside.getBoundingClientRect().top, 8) - 9}px`;
+    };
+    fit();
+    window.addEventListener("scroll", fit, { passive: true });
+    window.addEventListener("resize", fit);
+    return () => {
+      window.removeEventListener("scroll", fit);
+      window.removeEventListener("resize", fit);
+    };
+  }, [docked, topicId]);
+
   const code = panel && <CodeSheet topic={panel} open={coding} onClose={() => setCoding(false)} onChanged={saved} />;
 
-  // Docked, the panel stays short enough to clear the shell header at the top of the page, so its footer (Ask Claude)
-  // is on screen whether the page or the panel scrolls.
   if (docked) {
     if (!topicId) return null;
     return (
       <>
         <aside
+          ref={asideRef}
           aria-labelledby="topic-panel-title"
           onKeyDown={(event) => {
             if (event.key === "Escape" && !event.defaultPrevented) onClose();
           }}
-          className="sticky top-2 flex max-h-[calc(100svh-5rem)] w-96 shrink-0 flex-col overflow-y-auto border-l bg-card"
+          className="sticky top-2 flex h-[calc(100svh-5rem)] w-96 shrink-0 flex-col overflow-y-auto border-l bg-card"
         >
           <div className="grid gap-2.5 border-b p-4">
             <div className="flex items-center gap-2">
