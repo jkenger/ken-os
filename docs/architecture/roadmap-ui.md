@@ -70,7 +70,7 @@ area ("Added by Claude").
 - Page padding `px-4 md:px-7`, `gap-5` between page blocks, `gap-3.5` between lanes.
 - Cards and strips are `rounded-xl border bg-card` with no shadow. Rows inside are `rounded-lg`. Graph topic cards are the
   exception: `rounded-xl` with `shadow-xs`, so they sit above their tinted area.
-- Selected means a soft `selected` border and ring on a card surface (`selectedSurface` in `components/engineering/kit.tsx`),
+- Selected means a soft `selected` border and ring on a card surface (`selectedSurface` in `components/surfaces.ts`),
   in Lanes and Graph alike, matching the lit graph arrows; the icon and word still carry the status.
 
 ## Components

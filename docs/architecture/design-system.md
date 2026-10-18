@@ -26,23 +26,39 @@ The chapter accents stay Engineering's: no other screen numbers its groups yet. 
 
 ## Shared conventions
 
-- **Panel:** `rounded-xl border bg-card`, no shadow (`panel` in `components/engineering/kit.tsx`). Rows inside are
-  `rounded-lg`.
-- **Selected item:** `selectedSurface` in `kit.tsx`: a soft `selected` border and ring on a card surface, never a fill
-  alone, with the item's own icon and word left to carry its state.
+- **Panel:** `rounded-xl border bg-card`, no shadow (`panel` in `components/surfaces.ts`). Rows inside are
+  `rounded-lg`, or divided with `divide-y` in a list.
+- **Selected item:** never a fill alone, and the item's own icon or word still carries its state. A card or button
+  with its own border takes `selectedSurface` (a soft `selected` border and ring); a row in a divided `panel` list
+  takes `selectedRow` (an inset `selected` outline). Both are in `components/surfaces.ts`.
 - **Strip of cells:** cells on `bg-card` in a grid with `gap-px bg-border` inside a rounded border, so the gaps draw
   the lines (`RoadmapProgress`, `RoadmapSummary`).
-- **Type:** headings `font-heading` (page title `text-2xl md:text-3xl` bold, panel title `text-xl` bold); section labels
-  `text-xs font-semibold text-muted-foreground`; numbers that line up `font-mono text-xs`.
-- **Spacing:** page `px-4 md:px-7`, `gap-5` between page blocks.
+- **Type:** section labels `text-xs font-semibold text-muted-foreground`; numbers that line up `font-mono text-xs`;
+  panel titles `font-heading text-xl` bold. Page titles are not shared yet: the roadmap uses `text-2xl md:text-3xl`,
+  Terms and Memory `text-3xl md:text-4xl`. Pick one the next time a page heading changes, not as a sweep.
+- **Spacing:** `gap-5` between page blocks. Page padding differs the same way: the roadmap `px-4 md:px-7`, Terms and
+  Memory `px-5 sm:px-8 lg:px-10`. Match the module you are in.
 - **Width:** size grids inside a page that can sit beside a docked panel with container queries (`@container`, `@lg:`),
   not window breakpoints, since the panel takes width the window doesn't know about.
 - **Status:** never colour alone. Each state has its own icon shape and its word, in the accessible name too.
+
+## Tried outside the Roadmap
+
+On 18 Oct 2026 the foundations were applied to **Terms** (`components/terms/terms-page.tsx`) without changing its
+layout: its list became a `panel`, and the term a link opens (`/terms#term-…`) is marked with `selectedRow` instead of
+a grey fill. Checked at 1280 and 390px.
+
+- **Held up:** the `selected` token, `panel`, and the never-fill-alone rule. The roadmap's `selectedSurface` did not fit
+  a divided list (its border and halo need an element with a border of its own), so `selectedRow` was added beside it.
+- **Did not apply:** `DockedPanel` (Terms shows everything inline; a panel would be a redesign) and the status set
+  (terms have no lifecycle). Both stay proven on the roadmap only.
+- **Not shared after all:** the roadmap's page title size and page padding (above).
 
 ## Shared components
 
 | Component                                                 | Where                                                   | States and props                                                                                                                                                                                                    |
 | --------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `panel`, `selectedSurface`, `selectedRow`                 | `components/surfaces.ts`                                | Class strings for a panel, a selected bordered item and a selected list row                                                                                                                                         |
 | `DockedPanel`, `useDocked`                                | `components/docked-panel.tsx`                           | Docked beside the page from 1280px, a right Sheet below. Open or closed; Escape and the close button close it. Badges, title, description (or a screen-reader fallback), facts, body with an optional sticky footer |
 | `StatusIcon`, `StatusLabel`, `StatusChip`, `StatusLegend` | `components/engineering/roadmap/status.tsx`             | Not started, In progress, Learned, Skipped: icon only, icon and word, soft chip, the four as pills                                                                                                                  |
 | `ChapterMark`, `ChapterBar`, `chapterClasses`             | `components/engineering/roadmap/chapter-mark.tsx`       | A numbered tile, a progress bar and accent classes for chapter 1 to 6 (then repeating)                                                                                                                              |

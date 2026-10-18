@@ -4,7 +4,9 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BookOpen, ExternalLink, Search, Trash2 } from "lucide-react";
+import { panel, selectedRow } from "@/components/surfaces";
 import { WorkspaceShell } from "@/components/workspace-shell";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toaster";
 import type { SavedTerm } from "@/features/terms/store";
@@ -79,12 +81,15 @@ export function TermsPage({ email, terms }: { email: string; terms: SavedTerm[] 
         )}
 
         {terms.length ? (
-          <ul data-term-skip className="mt-6 divide-y divide-border rounded-xl border bg-card">
+          <ul data-term-skip className={cn(panel, "mt-6 divide-y divide-border")}>
             {shown.map((term) => (
               <li
                 key={term.id}
                 id={`term-${term.id}`}
-                className={`grid scroll-mt-24 gap-2 px-5 py-5 md:grid-cols-[200px_minmax(0,1fr)_auto] md:gap-6 md:px-6 ${opened === `term-${term.id}` ? "bg-muted" : ""}`}
+                className={cn(
+                  "grid scroll-mt-24 gap-2 px-5 py-5 md:grid-cols-[200px_minmax(0,1fr)_auto] md:gap-6 md:px-6",
+                  opened === `term-${term.id}` && selectedRow,
+                )}
               >
                 <p className="font-heading text-lg font-semibold tracking-tight">{term.term}</p>
                 <div className="min-w-0">
