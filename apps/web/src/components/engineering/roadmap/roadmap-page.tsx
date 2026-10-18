@@ -6,6 +6,7 @@ import { IconArrowRight, IconLayoutColumns, IconSitemap } from "@tabler/icons-re
 import { post, send } from "@/components/lab/topic/client";
 import { formatDate } from "@/components/lab/words";
 import { toast } from "@/components/ui/toaster";
+import { useDocked } from "@/components/docked-panel";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -42,19 +43,6 @@ import { TopicSheet, type TopicTab } from "./topic-sheet";
 type Layout = "graph" | "lanes";
 const LAYOUT_KEY = "ken-os-roadmap-layout";
 
-/** True from 1280px, where the topic panel docks beside the roadmap instead of covering it. */
-function useWide() {
-  const [wide, setWide] = useState(false);
-  useEffect(() => {
-    const query = window.matchMedia("(min-width: 1280px)");
-    const update = () => setWide(query.matches);
-    update();
-    query.addEventListener("change", update);
-    return () => query.removeEventListener("change", update);
-  }, []);
-  return wide;
-}
-
 export function RoadmapPage({
   email,
   view,
@@ -83,7 +71,7 @@ export function RoadmapPage({
 }) {
   const router = useRouter();
   const [layout, setLayout] = useState<Layout>("graph");
-  const wide = useWide();
+  const wide = useDocked();
   const [selected, setSelected] = useState<string | null>(initialTopic);
   const [topicTab, setTopicTab] = useState<TopicTab>("topic");
   const [setupOpen, setSetupOpen] = useState(false);

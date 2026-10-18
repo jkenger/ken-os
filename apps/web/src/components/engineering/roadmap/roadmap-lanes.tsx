@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import type { RoadmapView } from "@/features/engineering-lab/roadmap-store";
 import { isChapterDone } from "@/features/engineering-lab/topic-steps";
 import { cn } from "@/lib/utils";
+import { selectedSurface } from "../kit";
 import { ChapterBar, ChapterMark } from "./chapter-mark";
 import { StatusIcon, statusWords } from "./status";
 
@@ -62,7 +63,7 @@ export function RoadmapLanes({
                       aria-pressed={isSelected}
                       className={cn(
                         "h-auto min-h-9 w-full justify-start gap-2.5 rounded-lg px-2 py-2 text-left text-sm font-normal whitespace-normal",
-                        isSelected && "border-topic-active/55 bg-card ring-3 ring-topic-active/15 hover:bg-card",
+                        isSelected && selectedSurface,
                         isNow && "font-semibold",
                         topic.status === "skipped" && "text-muted-foreground",
                       )}

@@ -29,13 +29,14 @@ import {
 import type { RoadmapView } from "@/features/engineering-lab/roadmap-store";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { selectedSurface } from "../kit";
 import { chapterClasses } from "./chapter-mark";
 import { StatusIcon, statusWords } from "./status";
 
 // The roadmap as a graph (docs/architecture/engineering-claude-first.md, section 1, and docs/architecture/roadmap-ui.md):
 // every chapter is a tinted area holding its topics, in roadmap order. Arrows run from topic to topic inside a chapter
 // and between chapters side by side; prerequisites Claude saved curve between topics. Lines touching the open topic
-// are drawn in the In progress colour.
+// are drawn in the selected colour.
 
 type Flags = { selected?: boolean; onPick?: () => void };
 type GraphNode = Node<LayoutNode["data"] & Flags>;
@@ -73,15 +74,19 @@ function TopicNode({ data }: NodeProps<GraphNode>) {
       aria-pressed={topic.selected}
       title={topic.title}
       className={cn(
-        "nodrag size-full justify-start gap-2.5 rounded-xl bg-card px-3 text-left font-normal shadow-xs",
-        topic.selected && "border-topic-active/55 ring-3 ring-topic-active/15",
+        "nodrag size-full justify-start gap-2.5 rounded-xl bg-card px-3 text-left font-normal whitespace-normal shadow-xs",
+        topic.selected && selectedSurface,
       )}
     >
       <Handle type="target" position={Position.Left} style={hidden} isConnectable={false} />
       <StatusIcon status={topic.status} size={17} />
       <span className="flex min-w-0 flex-col">
+        {/* Two lines before it cuts, so most titles read in full at the card's width. */}
         <span
-          className={cn("truncate text-[0.8125rem] font-medium", topic.status === "skipped" && "text-muted-foreground")}
+          className={cn(
+            "line-clamp-2 text-[0.8125rem] leading-snug font-medium",
+            topic.status === "skipped" && "text-muted-foreground",
+          )}
         >
           {topic.title}
         </span>
@@ -149,7 +154,7 @@ export function RoadmapGraph({
       })),
       edges: layout.edges.map((edge): Edge => {
         const lit = edge.source === selectedNode || edge.target === selectedNode;
-        const stroke = lit ? "var(--topic-active)" : "var(--ring)";
+        const stroke = lit ? "var(--selected)" : "var(--ring)";
         return {
           id: edge.id,
           source: edge.source,

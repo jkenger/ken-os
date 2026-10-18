@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils";
 // Loots page building blocks, on the shadcn default look (see docs/architecture/design-system-shadcn-setup.md).
 
 export const panel = "rounded-xl bg-card border";
+/** A selected row or card: a soft border and ring in the selected colour on a card surface, never a fill alone. */
+export const selectedSurface = "border-selected/55 bg-card ring-3 ring-selected/15 hover:bg-card";
 export const eyebrow = "mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground";
 
 /** The page-heading badge: shadcn's Badge in the secondary look. */

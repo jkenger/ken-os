@@ -1,13 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { IconArrowRight, IconLink, IconPencil, IconTrash, IconX } from "@tabler/icons-react";
+import { useCallback, useEffect, useState } from "react";
+import { IconArrowRight, IconLink, IconPencil, IconTrash } from "@tabler/icons-react";
 import { TOPIC_STATUSES, type TopicStatus } from "@ken-os/domain";
 import { post, send } from "@/components/lab/topic/client";
 import { formatDate } from "@/components/lab/words";
+import { DockedPanel } from "@/components/docked-panel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toaster";
@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils";
 // Link chat, and the sessions timeline from Claude's reports. Review: the review sheet and notes (section 9h). The main
 // button is the first task left to do, or Next topic once it's done (engineering-progressive-flow.md, sections 2 and 3).
 // The owner can set any status and edit or delete any note. From 1280px the panel docks beside the roadmap; below that
-// it is a sheet.
+// it is a sheet (DockedPanel).
 
 export type TopicTab = "topic" | "review";
 
@@ -367,12 +367,6 @@ export function TopicSheet({
 
   // The topic's line: Claude's description once written (any-topic.ts applies it), else the topic map's line.
   const descriptionText = panel?.gap ?? null;
-  const description = (
-    <>
-      {descriptionText && <p className="text-sm text-muted-foreground">{descriptionText}</p>}
-      <TopicFacts plan={panel?.plan ?? null} />
-    </>
-  );
 
   // Overview: where the topic stands and what comes after it. The rest is one click away in Lanes.
   const overview = panel && (
@@ -506,87 +500,23 @@ export function TopicSheet({
     </>
   );
 
-  // Docked, the panel runs from below the shell header (or its top-2 sticky edge once the header scrolls away) down to the
-  // shell's bottom edge (its 8px margin and 1px border), so it fills that space and Ask Claude is on screen at any scroll.
-  const asideRef = useRef<HTMLElement>(null);
-  useLayoutEffect(() => {
-    const aside = asideRef.current;
-    if (!aside) return;
-    const fit = () => {
-      aside.style.height = `${window.innerHeight - Math.max(aside.getBoundingClientRect().top, 8) - 9}px`;
-    };
-    fit();
-    window.addEventListener("scroll", fit, { passive: true });
-    window.addEventListener("resize", fit);
-    return () => {
-      window.removeEventListener("scroll", fit);
-      window.removeEventListener("resize", fit);
-    };
-  }, [docked, topicId]);
-
-  // Docked, Escape closes the panel wherever focus is, as the Sheet does. A dialog or menu that Escape closes first calls
-  // preventDefault, so it never closes the panel too.
-  useEffect(() => {
-    if (!docked || !topicId) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !event.defaultPrevented) onClose();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [docked, topicId, onClose]);
-
   const code = panel && <CodeSheet topic={panel} open={coding} onClose={() => setCoding(false)} onChanged={saved} />;
-
-  if (docked) {
-    if (!topicId) return null;
-    return (
-      <>
-        <aside
-          ref={asideRef}
-          aria-labelledby="topic-panel-title"
-          className="sticky top-2 flex h-[calc(100svh-5rem)] w-96 shrink-0 flex-col overflow-y-auto border-l bg-card"
-        >
-          <div className="grid gap-2.5 border-b p-4">
-            <div className="flex items-center gap-2">
-              {heading}
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-sm"
-                aria-label="Close topic"
-                className="ml-auto"
-                onClick={onClose}
-              >
-                <IconX aria-hidden="true" />
-              </Button>
-            </div>
-            <h2 id="topic-panel-title" className="font-heading text-xl leading-tight font-bold tracking-tight">
-              {panel?.title ?? " "}
-            </h2>
-            {description}
-          </div>
-          {body}
-        </aside>
-        {code}
-      </>
-    );
-  }
 
   return (
     <>
-      <Sheet open={Boolean(topicId)} onOpenChange={(open) => !open && onClose()}>
-        <SheetContent className="gap-0 overflow-y-auto data-[side=right]:w-full data-[side=right]:sm:max-w-md">
-          <SheetHeader className="border-b">
-            <div className="pr-8">{heading}</div>
-            <SheetTitle className="font-heading text-xl">{panel?.title ?? " "}</SheetTitle>
-            <SheetDescription className={cn(!descriptionText && "sr-only")}>
-              {descriptionText ?? panel?.chapter ?? "Topic"}
-            </SheetDescription>
-            <TopicFacts plan={panel?.plan ?? null} />
-          </SheetHeader>
-          {body}
-        </SheetContent>
-      </Sheet>
+      <DockedPanel
+        open={Boolean(topicId)}
+        docked={docked}
+        onClose={onClose}
+        closeLabel="Close topic"
+        badges={heading}
+        title={panel?.title ?? " "}
+        description={descriptionText}
+        descriptionFallback={panel?.chapter ?? "Topic"}
+        facts={<TopicFacts plan={panel?.plan ?? null} />}
+      >
+        {body}
+      </DockedPanel>
       {code}
     </>
   );
