@@ -8,7 +8,6 @@ import {
   Handle,
   MarkerType,
   MiniMap,
-  Panel,
   Position,
   ReactFlow,
   type Edge,
@@ -169,8 +168,8 @@ export function RoadmapGraph({
     };
   }, [view, selected, onSelect]);
 
-  // Open on the row of chapters holding the one you're on (else the first row), fitted across and pinned to the top
-  // under the legend, with the rest a scroll away.
+  // Open on the row of chapters holding the one you're on (else the first row), fitted across and pinned to the top,
+  // with the rest a scroll away.
   const [focus] = useState(() => {
     const areas = nodes.filter((node) => node.type === "area");
     const top = (areas.find((node) => node.id === areaNodeId(activeChapter ?? "")) ?? areas[0])?.position.y ?? 0;
@@ -179,52 +178,54 @@ export function RoadmapGraph({
   const openOnFocus = async (flow: ReactFlowInstance<GraphNode, Edge>) => {
     await flow.fitView({ nodes: focus.nodes, padding: 0.04, maxZoom: 1 });
     const { x, zoom } = flow.getViewport();
-    await flow.setViewport({ x, y: 52 - focus.top * zoom, zoom });
+    await flow.setViewport({ x, y: 16 - focus.top * zoom, zoom });
   };
 
   return (
-    <div
-      className="h-[calc(100svh-17rem)] min-h-[32rem] w-full overflow-hidden rounded-xl border bg-muted/40"
-      style={flowStyle}
-    >
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        nodeTypes={nodeTypes}
-        nodeOrigin={[0, 0]}
-        onInit={openOnFocus}
-        minZoom={0.25}
-        maxZoom={1.5}
-        nodesConnectable={false}
-        nodesFocusable={false}
-        panOnScroll
-        aria-label="Roadmap graph"
-        proOptions={{ hideAttribution: true }}
+    <div className="grid gap-2">
+      <div className="flex flex-wrap items-center justify-end gap-1.5">
+        {legend.map((status) => (
+          <Badge key={status} variant="outline" className="h-6 gap-1.5 bg-card pr-2.5 pl-1.5 font-normal">
+            <StatusIcon status={status} size={14} />
+            {statusWords[status]}
+          </Badge>
+        ))}
+      </div>
+      <div
+        className="h-[calc(100svh-19rem)] min-h-[32rem] w-full overflow-hidden rounded-xl border bg-muted/40"
+        style={flowStyle}
       >
-        <Background variant={BackgroundVariant.Dots} gap={18} size={1} />
-        <Panel position="top-left" className="flex flex-wrap items-center gap-1.5">
-          {legend.map((status) => (
-            <Badge key={status} variant="outline" className="h-6 gap-1.5 bg-card pr-2.5 pl-1.5 font-normal">
-              <StatusIcon status={status} size={14} />
-              {statusWords[status]}
-            </Badge>
-          ))}
-        </Panel>
-        <Controls showInteractive={false} position="bottom-left" />
-        <MiniMap
-          position="bottom-right"
-          pannable
-          zoomable
-          ariaLabel="Roadmap overview"
-          className="hidden! rounded-lg border md:block!"
-          nodeColor={(node) =>
-            node.type === "area"
-              ? `var(--chapter-${chapterTone((node.data as AreaData).order - 1)}-soft)`
-              : "var(--border)"
-          }
-          nodeBorderRadius={4}
-        />
-      </ReactFlow>
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          nodeTypes={nodeTypes}
+          nodeOrigin={[0, 0]}
+          onInit={openOnFocus}
+          minZoom={0.25}
+          maxZoom={1.5}
+          nodesConnectable={false}
+          nodesFocusable={false}
+          panOnScroll
+          aria-label="Roadmap graph"
+          proOptions={{ hideAttribution: true }}
+        >
+          <Background variant={BackgroundVariant.Dots} gap={18} size={1} />
+          <Controls showInteractive={false} position="bottom-left" />
+          <MiniMap
+            position="bottom-right"
+            pannable
+            zoomable
+            ariaLabel="Roadmap overview"
+            className="hidden! rounded-lg border md:block!"
+            nodeColor={(node) =>
+              node.type === "area"
+                ? `var(--chapter-${chapterTone((node.data as AreaData).order - 1)}-soft)`
+                : "var(--border)"
+            }
+            nodeBorderRadius={4}
+          />
+        </ReactFlow>
+      </div>
     </div>
   );
 }
