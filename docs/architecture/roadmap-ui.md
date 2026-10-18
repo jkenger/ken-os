@@ -61,9 +61,8 @@ area ("Added by Claude").
 - Page padding `px-4 md:px-7`, `gap-5` between page blocks, `gap-3.5` between lanes.
 - Cards and strips are `rounded-xl border bg-card` with no shadow. Rows inside are `rounded-lg`. Graph topic cards are the
   exception: `rounded-xl` with `shadow-xs`, so they sit above their tinted area.
-- Selected in Lanes means a dark outline (`ring-foreground`), never a colour fill. The selected graph topic takes a
-  soft `topic-active` border and ring instead, matching the lit arrows around it; its icon and word still carry its
-  status.
+- Selected means a soft `topic-active` border and ring (`border-topic-active/55 ring-3 ring-topic-active/15`) on a
+  card surface, in Lanes and Graph alike, matching the lit graph arrows; the icon and word still carry the status.
 
 ## Components
 
