@@ -30,6 +30,8 @@ import {
 import { ClaudeSetup } from "./claude-setup";
 import { SetupChecklist } from "./setup-checklist";
 import { ReviewSearch } from "./review-search";
+import { StatusLegend } from "./status";
+import { TopicFind } from "./topic-find";
 import { TopicSheet, type TopicTab } from "./topic-sheet";
 
 // The Claude-first Engineering page (docs/architecture/engineering-claude-first.md, section 1): the goal and progress,
@@ -275,18 +277,24 @@ export function RoadmapPage({
             </Notice>
           ) : (
             <div className="grid gap-3">
-              <Tabs value={layout} onValueChange={(next) => changeLayout(next as Layout)}>
-                <TabsList aria-label="Roadmap layout">
-                  <TabsTrigger value="lanes">
-                    <IconLayoutColumns aria-hidden="true" />
-                    Lanes
-                  </TabsTrigger>
-                  <TabsTrigger value="graph">
-                    <IconSitemap aria-hidden="true" />
-                    Graph
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
+              <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+                <Tabs value={layout} onValueChange={(next) => changeLayout(next as Layout)}>
+                  <TabsList aria-label="Roadmap layout">
+                    <TabsTrigger value="lanes">
+                      <IconLayoutColumns aria-hidden="true" />
+                      Lanes
+                    </TabsTrigger>
+                    <TabsTrigger value="graph">
+                      <IconSitemap aria-hidden="true" />
+                      Graph
+                    </TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+                  <StatusLegend className="hidden lg:flex" />
+                  <TopicFind view={view} onSelect={select} />
+                </div>
+              </div>
               {layout === "graph" ? (
                 <RoadmapGraph key={roadmapId ?? "path"} view={view} selected={selected} onSelect={select} />
               ) : (

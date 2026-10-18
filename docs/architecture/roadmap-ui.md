@@ -22,7 +22,7 @@ inventing its own. It covers what was built and proved on this screen only; it i
   roadmap order and wrap to a new row. Topic cards show the status icon, the title and the status word. Arrows run
   from topic to topic inside a chapter, a dashed arrow joins chapters side by side, and prerequisites Claude saved
   curve between topics; lines touching the open topic are drawn in `topic-active`. It opens fitted to the row holding
-  the current chapter. The status legend is a row of pills above the graph, not inside it. Layout lives in `features/engineering-lab/roadmap-layout.ts` and
+  the current chapter. The view switch row carries the status legend (`StatusLegend`, from 1024px) and **Find a topic** (`TopicFind`, also opened with /; Ctrl or Cmd + K stays with the module search), in line with the Lanes and Graph tabs, for both views. Layout lives in `features/engineering-lab/roadmap-layout.ts` and
   is unit tested.
 - **Topic panel.** From 1280px it docks to the right of the roadmap (`TopicSheet` with `docked`), so the roadmap stays
   visible and clickable; Escape or the close button closes it. Below 1280px it is the same content in a Sheet. Lanes

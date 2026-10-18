@@ -68,3 +68,19 @@ export function StatusChip({ status }: { status: TopicStatus }) {
     </Badge>
   );
 }
+
+const legend: TopicStatus[] = ["learned", "in_progress", "not_started", "skipped"];
+
+/** Every status as a row of pills, beside the roadmap view switch. */
+export function StatusLegend({ className }: { className?: string }) {
+  return (
+    <div className={cn("flex flex-wrap items-center gap-1.5", className)}>
+      {legend.map((status) => (
+        <Badge key={status} variant="outline" className="h-6 gap-1.5 bg-card pr-2.5 pl-1.5 font-normal">
+          <StatusIcon status={status} size={14} />
+          {statusWords[status]}
+        </Badge>
+      ))}
+    </div>
+  );
+}

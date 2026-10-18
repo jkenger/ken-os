@@ -27,7 +27,6 @@ import {
   type LayoutNode,
 } from "@/features/engineering-lab/roadmap-layout";
 import type { RoadmapView } from "@/features/engineering-lab/roadmap-store";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { chapterClasses } from "./chapter-mark";
@@ -105,8 +104,6 @@ const flowStyle = {
   "--xy-controls-button-border-color": "var(--border)",
 } as CSSProperties;
 
-const legend: TopicStatus[] = ["learned", "in_progress", "not_started", "skipped"];
-
 /** The chapter a topic sits in, or null. */
 function chapterOf(view: RoadmapView, topicId: string | null) {
   if (!topicId) return null;
@@ -182,50 +179,40 @@ export function RoadmapGraph({
   };
 
   return (
-    <div className="grid gap-2">
-      <div className="flex flex-wrap items-center justify-end gap-1.5">
-        {legend.map((status) => (
-          <Badge key={status} variant="outline" className="h-6 gap-1.5 bg-card pr-2.5 pl-1.5 font-normal">
-            <StatusIcon status={status} size={14} />
-            {statusWords[status]}
-          </Badge>
-        ))}
-      </div>
-      <div
-        className="h-[calc(100svh-19rem)] min-h-[32rem] w-full overflow-hidden rounded-xl border bg-muted/40"
-        style={flowStyle}
+    <div
+      className="h-[calc(100svh-17rem)] min-h-[32rem] w-full overflow-hidden rounded-xl border bg-muted/40"
+      style={flowStyle}
+    >
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        nodeTypes={nodeTypes}
+        nodeOrigin={[0, 0]}
+        onInit={openOnFocus}
+        minZoom={0.25}
+        maxZoom={1.5}
+        nodesConnectable={false}
+        nodesFocusable={false}
+        panOnScroll
+        aria-label="Roadmap graph"
+        proOptions={{ hideAttribution: true }}
       >
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          nodeTypes={nodeTypes}
-          nodeOrigin={[0, 0]}
-          onInit={openOnFocus}
-          minZoom={0.25}
-          maxZoom={1.5}
-          nodesConnectable={false}
-          nodesFocusable={false}
-          panOnScroll
-          aria-label="Roadmap graph"
-          proOptions={{ hideAttribution: true }}
-        >
-          <Background variant={BackgroundVariant.Dots} gap={18} size={1} />
-          <Controls showInteractive={false} position="bottom-left" />
-          <MiniMap
-            position="bottom-right"
-            pannable
-            zoomable
-            ariaLabel="Roadmap overview"
-            className="hidden! rounded-lg border md:block!"
-            nodeColor={(node) =>
-              node.type === "area"
-                ? `var(--chapter-${chapterTone((node.data as AreaData).order - 1)}-soft)`
-                : "var(--border)"
-            }
-            nodeBorderRadius={4}
-          />
-        </ReactFlow>
-      </div>
+        <Background variant={BackgroundVariant.Dots} gap={18} size={1} />
+        <Controls showInteractive={false} position="bottom-left" />
+        <MiniMap
+          position="bottom-right"
+          pannable
+          zoomable
+          ariaLabel="Roadmap overview"
+          className="hidden! rounded-lg border md:block!"
+          nodeColor={(node) =>
+            node.type === "area"
+              ? `var(--chapter-${chapterTone((node.data as AreaData).order - 1)}-soft)`
+              : "var(--border)"
+          }
+          nodeBorderRadius={4}
+        />
+      </ReactFlow>
     </div>
   );
 }
