@@ -40,4 +40,5 @@ The next deployable process is a worker only when background jobs are needed. A 
 - Add durable background work for sync, notifications, and long agent runs.
 - Add an approval record before any agent can write to external services.
 - Add the proposed [Project Memory module](project-memory.md) inside the existing web app and PostgreSQL boundary before considering a separate worker or cross-tool connector.
+- Add the proposed [Portfolio](portfolio.md): a private Portfolio module that publishes one snapshot, a public endpoint that serves it, and a separate `apps/portfolio` on the owner's domain that reads only that endpoint.
 - Add the proposed [Blog Writing Studio](blog-writing-studio.md) as private authoring plus a public published-snapshot read path in the same app; keep Project Memory an optional, owner-selected source rather than a publishing pipeline.
