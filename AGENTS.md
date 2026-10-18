@@ -18,6 +18,7 @@ Loots is the owner's private, hosted platform; each workflow is a module under i
 - `docs/architecture/engineering-progressive-flow.md`: one path through Engineering from setup to a finished roadmap (setup checklist, topic steps, next topic, roadmap summary), built 13 to 14 Oct 2026.
 - `docs/architecture/engineering-roadmaps.md`: proposed: up to 3 roadmaps at once, with a switcher, Re-plan, and archive and restore.
 - `docs/architecture/overview.md`: current system boundaries.
+- `docs/architecture/portfolio.md`: proposed public portfolio: a private Portfolio module publishes one snapshot, `GET /api/public/portfolio` serves it, and a separate `apps/portfolio` on the owner's domain reads only that. Replaces Profile's own public link.
 - `docs/architecture/starter-standard.md`: proposed reusable one-app starter and codebase conventions, not yet a generator.
 - `docs/architecture/hosting.md`: proposed provider-aware deployment playbook, not yet a deployment skill.
 - `.agents/skills/ship-hosted-mvp/`: reusable workflow for shaping and shipping a new hosted MVP, not routine edits.

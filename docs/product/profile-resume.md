@@ -89,7 +89,7 @@ Two one-way paths, never a loop.
 1. **Profile and import.** Profile page, form, import from Drive with review, prefill, navigation change, Engineering rename.
 2. **Templates and preview.** Three templates, preview with a switcher, PDF download.
 3. **AI rewrite.** Rewrite with accept or undo per change.
-4. **Public link.** Publish, unpublish, slug, privacy switches.
+4. **Public link.** Not built on its own: replaced by the portfolio's resume section (`docs/architecture/portfolio.md`, agreed 18 Oct 2026).
 5. **Drive sync.** Change detection and review, saving to Drive.
 
 Each step ships on its own and leaves the app working.
