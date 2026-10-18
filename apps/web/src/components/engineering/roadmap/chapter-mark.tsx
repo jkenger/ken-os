@@ -5,12 +5,36 @@ import { cn } from "@/lib/utils";
 // tell apart in Lanes and Graph. Chapter colours never mean a status. Class names are spelled out for Tailwind.
 
 const tones = {
-  1: { tile: "bg-chapter-1-soft text-chapter-1", fill: "bg-chapter-1" },
-  2: { tile: "bg-chapter-2-soft text-chapter-2", fill: "bg-chapter-2" },
-  3: { tile: "bg-chapter-3-soft text-chapter-3", fill: "bg-chapter-3" },
-  4: { tile: "bg-chapter-4-soft text-chapter-4", fill: "bg-chapter-4" },
-  5: { tile: "bg-chapter-5-soft text-chapter-5", fill: "bg-chapter-5" },
-  6: { tile: "bg-chapter-6-soft text-chapter-6", fill: "bg-chapter-6" },
+  1: {
+    tile: "bg-chapter-1-soft text-chapter-1",
+    fill: "bg-chapter-1",
+    area: "border-chapter-1/15 bg-chapter-1-soft/60 text-chapter-1",
+  },
+  2: {
+    tile: "bg-chapter-2-soft text-chapter-2",
+    fill: "bg-chapter-2",
+    area: "border-chapter-2/15 bg-chapter-2-soft/60 text-chapter-2",
+  },
+  3: {
+    tile: "bg-chapter-3-soft text-chapter-3",
+    fill: "bg-chapter-3",
+    area: "border-chapter-3/15 bg-chapter-3-soft/60 text-chapter-3",
+  },
+  4: {
+    tile: "bg-chapter-4-soft text-chapter-4",
+    fill: "bg-chapter-4",
+    area: "border-chapter-4/15 bg-chapter-4-soft/60 text-chapter-4",
+  },
+  5: {
+    tile: "bg-chapter-5-soft text-chapter-5",
+    fill: "bg-chapter-5",
+    area: "border-chapter-5/15 bg-chapter-5-soft/60 text-chapter-5",
+  },
+  6: {
+    tile: "bg-chapter-6-soft text-chapter-6",
+    fill: "bg-chapter-6",
+    area: "border-chapter-6/15 bg-chapter-6-soft/60 text-chapter-6",
+  },
 } as const;
 
 /** The accent classes for the chapter at this 0-based position. */
