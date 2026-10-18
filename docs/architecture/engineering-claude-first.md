@@ -21,7 +21,7 @@ One page, `/engineering`. Eleven screens become one.
 | Topic panel  | Opens when a topic is clicked (below)                                                                                               |
 | Claude setup | Connect Loots, the Project instructions and the Project link (9f)                                                                   |
 
-**The graph** shows only the current chapter's topics. Other chapters are single nodes with a count ("React · 1 of 3") and expand on click. Zoom and drag move around the rest. Use a maintained graph library, not hand-built layout. **Lanes** shows chapters as columns, in order, with topics stacked as cards; on a phone the columns stack.
+**The graph** shows every chapter as a tinted area holding its topics, in roadmap order (redrawn on 18 Oct 2026; `roadmap-ui.md` has the details). The goal node and folding chapters were dropped. Zoom and drag move around the rest. Use a maintained graph library, not hand-built layout. **Lanes** shows chapters as columns, in order, with topics stacked as cards; on a phone the columns stack.
 
 **The topic panel**, top to bottom:
 
@@ -166,7 +166,7 @@ Built 13 Oct 2026 on `feat/engineering-roadmap-page`. The new page lives beside 
 **Decisions**
 
 - **Graph library:** `@xyflow/react` 12.12.0 (React Flow, MIT). Its attribution link stays visible, as its authors ask of non-subscribers. Themed with Loots tokens, so it follows light and dark mode.
-- **The graph opens zoomed on the goal and the current chapter's topics,** readable at once. With 13 chapters the whole ring at once was too small to read. The fit button shows everything.
+- **The graph opens fitted to the row of chapters holding the current one,** pinned to the top. The fit button shows everything.
 - **Graph nodes must stay selectable** in React Flow's sense, or React Flow turns off pointer events and clicks never reach the buttons. Selection shows nothing.
 - **The layout choice** (Graph or Lanes) is kept in this browser only.
 - **Settings** shows the goal with **Change goal** (the existing Direction page until slice 3) and Connections. **Plan new roadmap with Claude** arrives in slice 3.

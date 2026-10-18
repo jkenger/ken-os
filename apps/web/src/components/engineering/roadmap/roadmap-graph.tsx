@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import {
   Background,
   BackgroundVariant,
@@ -12,96 +12,50 @@ import {
   Position,
   ReactFlow,
   type Edge,
+  type ReactFlowInstance,
   type Node,
   type NodeProps,
   type NodeTypes,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 import type { TopicStatus } from "@ken-os/domain";
 import {
-  chapterNodeId,
-  goalNodeId,
-  groupNodeId,
+  chapterTone,
+  areaNodeId,
   layoutRoadmap,
   topicNodeId,
-  type ChapterData,
+  type AreaData,
   type LayoutNode,
 } from "@/features/engineering-lab/roadmap-layout";
 import type { RoadmapView } from "@/features/engineering-lab/roadmap-store";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChapterMark, chapterClasses } from "./chapter-mark";
+import { chapterClasses } from "./chapter-mark";
 import { StatusIcon, statusWords } from "./status";
 
 // The roadmap as a graph (docs/architecture/engineering-claude-first.md, section 1, and docs/architecture/roadmap-ui.md):
-// the goal heads a column of chapters in roadmap order, and an open chapter shows its topics in a group beside it. The
-// lines are the roadmap's order, chapter membership, and the prerequisites Claude saved (curved arrows between topics,
-// darker when they touch the open topic).
-// The chapter you're on, and the open topic's chapter, start open; clicking a chapter opens or closes it.
+// every chapter is a tinted area holding its topics, in roadmap order. Arrows run from topic to topic inside a chapter
+// and between chapters side by side; prerequisites Claude saved curve between topics. Lines touching the open topic
+// are drawn in the In progress colour.
 
-type Flags = { selected?: boolean; active?: boolean; onPick?: () => void };
+type Flags = { selected?: boolean; onPick?: () => void };
 type GraphNode = Node<LayoutNode["data"] & Flags>;
 
 const hidden: CSSProperties = { opacity: 0, pointerEvents: "none" };
 
-function GoalNode({ data }: NodeProps<GraphNode>) {
-  const goal = data as { title: string };
+function AreaNode({ data }: NodeProps<GraphNode>) {
+  const area = data as AreaData;
+  const tone = chapterClasses(area.order - 1);
   return (
-    <div className="flex size-full flex-col justify-center rounded-xl bg-primary px-4 text-primary-foreground">
-      <span className="text-xs font-semibold opacity-75">Goal</span>
-      <span className="line-clamp-2 text-sm leading-snug font-semibold">{goal.title}</span>
-      <Handle type="source" position={Position.Bottom} style={hidden} isConnectable={false} />
-    </div>
-  );
-}
-
-function ChapterNode({ data }: NodeProps<GraphNode>) {
-  const chapter = data as ChapterData & Flags;
-  const Chevron = chapter.expanded ? IconChevronDown : IconChevronRight;
-  return (
-    <>
-      <Handle type="target" position={Position.Top} style={hidden} isConnectable={false} />
-      <Button
-        type="button"
-        variant="outline"
-        onClick={chapter.onPick}
-        aria-expanded={chapter.expanded}
-        aria-label={`Chapter ${chapter.order}, ${chapter.title}, ${chapter.done ? "done, " : ""}${chapter.learned} of ${chapter.total} learned`}
-        className={cn(
-          "nodrag size-full justify-start gap-2.5 rounded-xl bg-card px-2.5 text-left whitespace-normal",
-          chapter.active && "border-foreground",
-        )}
-      >
-        <ChapterMark index={chapter.order - 1} className="size-7" />
-        <span className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-sm font-semibold">{chapter.title}</span>
-          <span className="text-xs font-normal text-muted-foreground">
-            {chapter.done ? "Done · " : ""}
-            {chapter.learned} of {chapter.total} learned
-          </span>
+    <div className={cn("size-full rounded-2xl border px-3.5 pt-3", tone.area)}>
+      <p className="flex items-center gap-2 text-[0.6875rem] font-semibold tracking-wider uppercase">
+        <span className="font-mono opacity-80">{String(area.order).padStart(2, "0")}</span>
+        <span className="truncate">{area.title}</span>
+        <span className="ml-auto font-normal tracking-normal whitespace-nowrap text-muted-foreground normal-case">
+          {area.done ? "Done · " : ""}
+          {area.learned} of {area.total}
         </span>
-        <Chevron aria-hidden="true" className="text-muted-foreground" />
-      </Button>
-      <Handle type="source" position={Position.Bottom} style={hidden} isConnectable={false} />
-      <Handle id="side" type="source" position={Position.Right} style={hidden} isConnectable={false} />
-    </>
-  );
-}
-
-function GroupNode({ data }: NodeProps<GraphNode>) {
-  const group = data as { title: string; order: number } & Flags;
-  return (
-    <div
-      className={cn(
-        "size-full rounded-2xl border bg-card/70 px-3 pt-2.5",
-        group.active ? "border-foreground" : "border-dashed",
-      )}
-    >
-      <Handle type="target" position={Position.Left} style={hidden} isConnectable={false} />
-      <p className="flex items-center gap-2 text-xs font-semibold text-muted-foreground">
-        <span aria-hidden="true" className={cn("size-2 rounded-full", chapterClasses(group.order - 1).fill)} />
-        {group.title}
       </p>
     </div>
   );
@@ -118,21 +72,26 @@ function TopicNode({ data }: NodeProps<GraphNode>) {
       aria-pressed={topic.selected}
       title={topic.title}
       className={cn(
-        "nodrag size-full justify-start gap-2 rounded-lg bg-card px-2.5 text-left text-xs font-normal",
-        topic.selected && "border-foreground font-semibold shadow-md ring-1 ring-foreground",
-        topic.status === "in_progress" && "font-semibold",
-        topic.status === "skipped" && "text-muted-foreground",
+        "nodrag size-full justify-start gap-2.5 rounded-xl bg-card px-3 text-left font-normal shadow-xs",
+        topic.selected && "border-topic-active/55 ring-3 ring-topic-active/15",
       )}
     >
       <Handle type="target" position={Position.Left} style={hidden} isConnectable={false} />
-      <StatusIcon status={topic.status} size={15} />
-      <span className="truncate">{topic.title}</span>
+      <StatusIcon status={topic.status} size={17} />
+      <span className="flex min-w-0 flex-col">
+        <span
+          className={cn("truncate text-[0.8125rem] font-medium", topic.status === "skipped" && "text-muted-foreground")}
+        >
+          {topic.title}
+        </span>
+        <span className="text-[0.6875rem] text-muted-foreground">{statusWords[topic.status]}</span>
+      </span>
       <Handle type="source" position={Position.Right} style={hidden} isConnectable={false} />
     </Button>
   );
 }
 
-const nodeTypes: NodeTypes = { goal: GoalNode, chapter: ChapterNode, group: GroupNode, topic: TopicNode };
+const nodeTypes: NodeTypes = { area: AreaNode, topic: TopicNode };
 
 /** Theme the graph with Loots tokens, so it follows light and dark mode. */
 const flowStyle = {
@@ -164,101 +123,64 @@ export function RoadmapGraph({
   selected: string | null;
   onSelect: (topicId: string) => void;
 }) {
-  const [expanded, setExpanded] = useState<Set<string>>(() => {
-    const open = new Set<string>();
-    const first = view.current?.chapterId ?? view.chapters[0]?.id;
-    if (first) open.add(first);
-    const picked = chapterOf(view, selected);
-    if (picked) open.add(picked);
-    return open;
-  });
-  const toggle = (chapterId: string) =>
-    setExpanded((open) => {
-      const next = new Set(open);
-      if (next.has(chapterId)) next.delete(chapterId);
-      else next.add(chapterId);
-      return next;
-    });
-
-  // A topic opened from search or Next topic shows inside its chapter.
-  const selectedChapter = chapterOf(view, selected);
-  useEffect(() => {
-    if (selectedChapter) setExpanded((open) => (open.has(selectedChapter) ? open : new Set(open).add(selectedChapter)));
-  }, [selectedChapter]);
-
-  const allOpen = view.chapters.every((chapter) => expanded.has(chapter.id));
-  const activeChapter = selectedChapter ?? view.current?.chapterId ?? null;
+  const activeChapter = chapterOf(view, selected) ?? view.current?.chapterId ?? null;
 
   const { nodes, edges } = useMemo(() => {
     const prerequisites = Object.fromEntries(
       Object.entries(view.plans).map(([topicId, plan]) => [topicId, plan.prerequisites]),
     );
-    const layout = layoutRoadmap(
-      { goal: view.goal?.title ?? "No goal", chapters: view.chapters },
-      expanded,
-      prerequisites,
-    );
+    const layout = layoutRoadmap({ chapters: view.chapters }, prerequisites);
     const selectedNode = selected ? topicNodeId(selected) : null;
     return {
-      nodes: layout.nodes.map((node): GraphNode => {
-        const flags: Flags =
-          node.type === "chapter"
-            ? { active: node.data.chapterId === activeChapter, onPick: () => toggle(node.data.chapterId) }
-            : node.type === "group"
-              ? { active: node.data.chapterId === activeChapter }
-              : node.type === "topic"
-                ? { selected: node.data.topicId === selected, onPick: () => onSelect(node.data.topicId) }
-                : {};
-        return {
-          id: node.id,
-          type: node.type,
-          position: { x: node.x, y: node.y },
-          width: node.width,
-          height: node.height,
-          style: { width: node.width, height: node.height },
-          zIndex: node.type === "group" ? -1 : 1,
-          draggable: false,
-          // Selectable keeps pointer events on, so clicks reach the buttons inside. Selection itself shows nothing.
-          selectable: node.type === "chapter" || node.type === "topic",
-          data: { ...node.data, ...flags },
-        };
-      }),
+      nodes: layout.nodes.map((node): GraphNode => ({
+        id: node.id,
+        type: node.type,
+        position: { x: node.x, y: node.y },
+        width: node.width,
+        height: node.height,
+        style: { width: node.width, height: node.height },
+        zIndex: node.type === "area" ? -1 : 1,
+        draggable: false,
+        // Selectable keeps pointer events on, so clicks reach the buttons inside. Selection itself shows nothing.
+        selectable: node.type === "topic",
+        data:
+          node.type === "topic"
+            ? { ...node.data, selected: node.data.topicId === selected, onPick: () => onSelect(node.data.topicId) }
+            : node.data,
+      })),
       edges: layout.edges.map((edge): Edge => {
-        const toGroup = edge.kind === "member";
-        const prerequisite = edge.kind === "prerequisite";
-        const lit = prerequisite
-          ? edge.source === selectedNode || edge.target === selectedNode
-          : toGroup && activeChapter !== null && edge.target === groupNodeId(activeChapter);
+        const lit = edge.source === selectedNode || edge.target === selectedNode;
+        const stroke = lit ? "var(--topic-active)" : "var(--ring)";
         return {
           id: edge.id,
           source: edge.source,
           target: edge.target,
-          // Prerequisites curve between topics, learn-first to learn-next; roadmap order and membership step.
-          type: prerequisite ? "default" : "smoothstep",
-          zIndex: prerequisite ? 2 : 0,
-          sourceHandle: toGroup ? "side" : undefined,
+          zIndex: edge.kind === "prerequisite" ? 2 : 0,
           selectable: false,
-          markerEnd: {
-            type: MarkerType.ArrowClosed,
-            width: 14,
-            height: 14,
-            color: lit ? "var(--foreground)" : "var(--ring)",
+          markerEnd: { type: MarkerType.ArrowClosed, width: 14, height: 14, color: stroke },
+          style: {
+            stroke,
+            strokeWidth: lit ? 1.5 : 1.2,
+            // Chapter order is dashed, so it reads apart from topic order and prerequisites.
+            strokeDasharray: edge.kind === "chapter" ? "3 4" : undefined,
           },
-          style: lit ? { stroke: "var(--foreground)", strokeWidth: 1.5 } : undefined,
         };
       }),
     };
-  }, [view, expanded, selected, onSelect, activeChapter]);
+  }, [view, selected, onSelect]);
 
-  // Open on the goal and the chapter you're on with its topics: readable, and the rest a scroll away.
+  // Open on the row of chapters holding the one you're on (else the first row), fitted across and pinned to the top
+  // under the legend, with the rest a scroll away.
   const [focus] = useState(() => {
-    const ids = new Set([goalNodeId]);
-    if (activeChapter) {
-      ids.add(chapterNodeId(activeChapter));
-      ids.add(groupNodeId(activeChapter));
-    }
-    return nodes.filter((node) => ids.has(node.id)).map((node) => ({ id: node.id }));
+    const areas = nodes.filter((node) => node.type === "area");
+    const top = (areas.find((node) => node.id === areaNodeId(activeChapter ?? "")) ?? areas[0])?.position.y ?? 0;
+    return { top, nodes: areas.filter((node) => node.position.y === top).map((node) => ({ id: node.id })) };
   });
+  const openOnFocus = async (flow: ReactFlowInstance<GraphNode, Edge>) => {
+    await flow.fitView({ nodes: focus.nodes, padding: 0.04, maxZoom: 1 });
+    const { x, zoom } = flow.getViewport();
+    await flow.setViewport({ x, y: 52 - focus.top * zoom, zoom });
+  };
 
   return (
     <div
@@ -270,8 +192,7 @@ export function RoadmapGraph({
         edges={edges}
         nodeTypes={nodeTypes}
         nodeOrigin={[0, 0]}
-        fitView
-        fitViewOptions={{ nodes: focus, padding: 0.12, maxZoom: 1 }}
+        onInit={openOnFocus}
         minZoom={0.25}
         maxZoom={1.5}
         nodesConnectable={false}
@@ -281,33 +202,13 @@ export function RoadmapGraph({
         proOptions={{ hideAttribution: true }}
       >
         <Background variant={BackgroundVariant.Dots} gap={18} size={1} />
-        <Panel
-          position="top-left"
-          className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground"
-        >
+        <Panel position="top-left" className="flex flex-wrap items-center gap-1.5">
           {legend.map((status) => (
-            <span key={status} className="inline-flex items-center gap-1.5">
+            <Badge key={status} variant="outline" className="h-6 gap-1.5 bg-card pr-2.5 pl-1.5 font-normal">
               <StatusIcon status={status} size={14} />
               {statusWords[status]}
-            </span>
+            </Badge>
           ))}
-        </Panel>
-        <Panel position="top-right">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="bg-card"
-            onClick={() =>
-              setExpanded(
-                allOpen
-                  ? new Set(activeChapter ? [activeChapter] : [])
-                  : new Set(view.chapters.map((chapter) => chapter.id)),
-              )
-            }
-          >
-            {allOpen ? "Hide other topics" : "Show all topics"}
-          </Button>
         </Panel>
         <Controls showInteractive={false} position="bottom-left" />
         <MiniMap
@@ -317,7 +218,9 @@ export function RoadmapGraph({
           ariaLabel="Roadmap overview"
           className="hidden! rounded-lg border md:block!"
           nodeColor={(node) =>
-            node.type === "goal" ? "var(--primary)" : node.type === "group" ? "var(--muted)" : "var(--border)"
+            node.type === "area"
+              ? `var(--chapter-${chapterTone((node.data as AreaData).order - 1)}-soft)`
+              : "var(--border)"
           }
           nodeBorderRadius={4}
         />

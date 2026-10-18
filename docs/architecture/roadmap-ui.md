@@ -17,9 +17,13 @@ inventing its own. It covers what was built and proved on this screen only; it i
 - **Lanes.** One card per chapter in roadmap order, in a grid that fits as many 15.5rem columns as
   the width allows and wraps, so no sideways scrolling. Each card has the chapter mark, title, "x of y learned", a thin
   bar, and its topics as full-width rows.
-- **Graph** (the default view; phones open on Lanes unless you picked Graph before). The goal heads a column of chapters in roadmap order. An open chapter shows its topics in a group to its
-  right, two per row. Lines show only what the data has: roadmap order and which chapter a topic is in. Layout lives in
-  `features/engineering-lab/roadmap-layout.ts` and is unit tested.
+- **Graph** (the default view; phones open on Lanes unless you picked Graph before). Redrawn on 18 Oct 2026 as a dependency map: every
+  chapter is a tinted area (its chapter colour) holding all its topics, four to a row; areas run left to right in
+  roadmap order and wrap to a new row. Topic cards show the status icon, the title and the status word. Arrows run
+  from topic to topic inside a chapter, a dashed arrow joins chapters side by side, and prerequisites Claude saved
+  curve between topics; lines touching the open topic are drawn in `topic-active`. It opens fitted to the row holding
+  the current chapter. The legend is a row of pills. Layout lives in `features/engineering-lab/roadmap-layout.ts` and
+  is unit tested.
 - **Topic panel.** From 1280px it docks to the right of the roadmap (`TopicSheet` with `docked`), so the roadmap stays
   visible and clickable; Escape or the close button closes it. Below 1280px it is the same content in a Sheet. Lanes
   and Graph share the selected topic, and the open topic lives in the address. It has two modes:
@@ -37,11 +41,11 @@ Tokens are in the Loots section at the end of `apps/web/src/app/globals.css`, ea
 a `-soft` fill for chips and tiles. Names avoid the old Studio names that `shadcn-default.test.ts` blocks (no
 `status-*`, `tint`, `canvas`).
 
-| Token                           | Use                                                                                                       | Never                        |
-| ------------------------------- | --------------------------------------------------------------------------------------------------------- | ---------------------------- |
-| `topic-learned`, `topic-active` | Status icons and the status chip for Learned and In progress                                              | Decoration, chapter identity |
-| `chapter-1` to `chapter-6`      | Chapter mark, chapter bar, the dot on a graph group. Picked by roadmap position with `chapterTone(index)` | Status of any kind           |
-| shadcn tokens                   | Everything else: surfaces, text, borders, the primary button                                              |                              |
+| Token                           | Use                                                                                                    | Never                        |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------ | ---------------------------- |
+| `topic-learned`, `topic-active` | Status icons and the status chip for Learned and In progress                                           | Decoration, chapter identity |
+| `chapter-1` to `chapter-6`      | Chapter mark, chapter bar, the tinted graph area. Picked by roadmap position with `chapterTone(index)` | Status of any kind           |
+| shadcn tokens                   | Everything else: surfaces, text, borders, the primary button                                           |                              |
 
 Not started and Skipped use `muted-foreground`. Status is never colour alone: each status has its own icon shape
 (filled check, half circle, dashed ring, skip arrow) and its word in the accessible name.
@@ -55,10 +59,11 @@ area ("Added by Claude").
   semibold. Section labels inside panels are `text-xs font-semibold text-muted-foreground`.
 - Numbers that line up (chapter number, percentage, step numbers) use `font-mono text-xs`.
 - Page padding `px-4 md:px-7`, `gap-5` between page blocks, `gap-3.5` between lanes.
-- Cards and strips are `rounded-xl border bg-card` with no shadow. Rows inside are `rounded-lg`. Only the selected graph
-  topic gets a shadow.
-- Selected means a dark outline (`ring-foreground` or `border-foreground`), never a colour fill, so it reads apart from
-  status colours and from the focus ring.
+- Cards and strips are `rounded-xl border bg-card` with no shadow. Rows inside are `rounded-lg`. Graph topic cards are the
+  exception: `rounded-xl` with `shadow-xs`, so they sit above their tinted area.
+- Selected in Lanes means a dark outline (`ring-foreground`), never a colour fill. The selected graph topic takes a
+  soft `topic-active` border and ring instead, matching the lit arrows around it; its icon and word still carry its
+  status.
 
 ## Components
 
