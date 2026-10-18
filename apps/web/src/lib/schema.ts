@@ -17,6 +17,7 @@ import type {
   TopicState,
   StoredTopicStatus,
 } from "@ken-os/domain";
+import type { PortfolioSnapshot } from "@ken-os/portfolio";
 import type { ReviewSheet } from "../features/engineering-lab/review-sheet";
 import type { Difficulty, TopicMaterial } from "../features/engineering-lab/topic-material";
 
@@ -101,6 +102,33 @@ export const profileRewrites = pgTable(
   },
   (table) => [index("profile_rewrites_user_created_idx").on(table.userId, table.createdAt)],
 );
+
+/** Each Portfolio publish: the exact snapshot the public site was given. Append-only; `version` goes up by one per
+ *  owner. Spec: docs/architecture/portfolio.md. */
+export const portfolioPublications = pgTable(
+  "portfolio_publications",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    version: integer("version").notNull(),
+    snapshot: jsonb("snapshot").$type<PortfolioSnapshot>().notNull(),
+    publishedAt: timestamp("published_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex("portfolio_publications_user_version_idx").on(table.userId, table.version)],
+);
+
+/** Which publication is live. A null `current_publication_id` means unpublished: the public endpoint returns 404. */
+export const portfolios = pgTable("portfolios", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  currentPublicationId: text("current_publication_id").references(() => portfolioPublications.id, {
+    onDelete: "set null",
+  }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
 
 export const memoryProjects = pgTable("memory_projects", {
   id: text("id").primaryKey(),

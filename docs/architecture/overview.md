@@ -29,7 +29,7 @@ The next deployable process is a worker only when background jobs are needed. A 
 - The configured owner email gates the session. Sign-in asks only for `openid email profile`; Drive (`drive.file`) is a separate grant from the Profile page (`/api/auth/google/drive`). See `docs/architecture/auth-sign-in.md`.
 - Sessions roll: 30 days from last use, renewed at most daily by `src/proxy.ts`, never past 90 days from sign-in. The proxy only renews; pages call `requireSession`.
 - The Google refresh token is encrypted at rest with `TOKEN_ENCRYPTION_KEY`.
-- API routes validate the session and mutation origin.
+- API routes validate the session and mutation origin. The one exception is `GET /api/public/portfolio`, which needs no session and reads only the live published Portfolio snapshot ([portfolio.md](portfolio.md)).
 - Picker obtains a short-lived access token only after a valid session.
 - The Profile import reads the chosen resume's text and returns fields for review; no agent can modify Drive.
 
