@@ -40,6 +40,9 @@ import { StatusIcon, statusWords } from "./status";
 type Flags = { selected?: boolean; onPick?: () => void };
 type GraphNode = Node<LayoutNode["data"] & Flags>;
 
+/** The smallest zoom the graph opens at, where a topic's title is still readable. */
+const READABLE_ZOOM = 0.75;
+
 const hidden: CSSProperties = { opacity: 0, pointerEvents: "none" };
 
 function AreaNode({ data }: NodeProps<GraphNode>) {
@@ -151,7 +154,8 @@ export function RoadmapGraph({
           id: edge.id,
           source: edge.source,
           target: edge.target,
-          zIndex: edge.kind === "prerequisite" ? 2 : 0,
+          // Under the topic cards, so a prerequisite curve never crosses a title.
+          zIndex: 0,
           selectable: false,
           markerEnd: { type: MarkerType.ArrowClosed, width: 14, height: 14, color: stroke },
           style: {
@@ -166,15 +170,23 @@ export function RoadmapGraph({
   }, [view, selected, onSelect]);
 
   // Open on the row of chapters holding the one you're on (else the first row), fitted across and pinned to the top,
-  // with the rest a scroll away.
+  // with the rest a scroll away. Where the row only fits below a readable size (a narrow window, or the docked panel
+  // beside it), open at that size with the chapter you're on at the left edge instead.
   const [focus] = useState(() => {
     const areas = nodes.filter((node) => node.type === "area");
-    const top = (areas.find((node) => node.id === areaNodeId(activeChapter ?? "")) ?? areas[0])?.position.y ?? 0;
-    return { top, nodes: areas.filter((node) => node.position.y === top).map((node) => ({ id: node.id })) };
+    const active = areas.find((node) => node.id === areaNodeId(activeChapter ?? "")) ?? areas[0];
+    const top = active?.position.y ?? 0;
+    return {
+      top,
+      left: active?.position.x ?? 0,
+      nodes: areas.filter((node) => node.position.y === top).map((node) => ({ id: node.id })),
+    };
   });
   const openOnFocus = async (flow: ReactFlowInstance<GraphNode, Edge>) => {
     await flow.fitView({ nodes: focus.nodes, padding: 0.04, maxZoom: 1 });
-    const { x, zoom } = flow.getViewport();
+    const fitted = flow.getViewport();
+    const zoom = Math.max(fitted.zoom, READABLE_ZOOM);
+    const x = zoom === fitted.zoom ? fitted.x : 16 - focus.left * zoom;
     await flow.setViewport({ x, y: 16 - focus.top * zoom, zoom });
   };
 
@@ -193,6 +205,7 @@ export function RoadmapGraph({
         maxZoom={1.5}
         nodesConnectable={false}
         nodesFocusable={false}
+        edgesFocusable={false}
         panOnScroll
         aria-label="Roadmap graph"
         proOptions={{ hideAttribution: true }}
