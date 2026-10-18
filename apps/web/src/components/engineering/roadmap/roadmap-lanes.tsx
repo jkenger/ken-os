@@ -62,7 +62,7 @@ export function RoadmapLanes({
                       aria-pressed={isSelected}
                       className={cn(
                         "h-auto min-h-9 w-full justify-start gap-2.5 rounded-lg px-2 py-2 text-left text-sm font-normal whitespace-normal",
-                        isSelected && "bg-muted ring-2 ring-foreground ring-inset hover:bg-muted",
+                        isSelected && "border-topic-active/55 bg-card ring-3 ring-topic-active/15 hover:bg-card",
                         isNow && "font-semibold",
                         topic.status === "skipped" && "text-muted-foreground",
                       )}
