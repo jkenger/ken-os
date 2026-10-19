@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readExports, readVariants, readWraps } from "./source";
+import { readExports, readUses, readVariants, readWraps } from "./source";
 
 test("readExports lists functions, consts and export lists, without types", () => {
   const source = `
@@ -56,4 +56,17 @@ export function Both() {
 }
 `;
   assert.deepEqual(readWraps(source), { Badge: "badge" });
+});
+
+test("readUses lists the primitives a file imports, once each", () => {
+  const source = `
+import { Button } from "@/components/ui/button"
+import {
+  Tooltip,
+  TooltipContent,
+} from "@/components/ui/tooltip"
+import { buttonVariants } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
+`;
+  assert.deepEqual(readUses(source), ["button", "tooltip"]);
 });
