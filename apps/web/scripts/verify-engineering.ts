@@ -358,6 +358,12 @@ async function main() {
       });
       const judgeTopic = await anyTopic.requireAnyTopic(planner, "custom.llm_as_judge");
       assert.equal(
+        (await roadmaps.getTopicPanel(planner, "custom.llm_as_judge")).practice,
+        "checking",
+        "the panel offers Try it in code, where the check runs",
+      );
+      assert.equal((await call("get_topic", { topicId: "custom.llm_as_judge" })).uncheckedExercise?.labId, saved.labId);
+      assert.equal(
         (await exercises.getCodePanel(planner, judgeTopic)).pending?.id,
         saved.labId,
         "the page checks it first",

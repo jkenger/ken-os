@@ -47,6 +47,12 @@ test("without an exercise, Build waits on one and Explain is next", () => {
   assert.deepEqual([tasks.done, tasks.total, tasks.main], [1, 3, "explain"]);
 });
 
+test("Claude's first exercise waiting for its check is Build to do, so Try it in code can check it", () => {
+  const tasks = topicTasks({ status: "in_progress", practice: "checking" });
+  assert.deepEqual(states(tasks), ["read:done", "build:todo", "explain:todo"]);
+  assert.equal(tasks.main, "build");
+});
+
 test("Explain is done when the topic is Learned, and a finished topic points to the next one", () => {
   const learned = topicTasks({ status: "learned", practice: "passed" });
   assert.deepEqual(states(learned), ["read:done", "build:done", "explain:done"]);
