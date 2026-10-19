@@ -1,6 +1,6 @@
 # Portfolio — architecture spec
 
-Status: agreed with the owner on 18 Oct 2026. Step 1 is built (Profile only); steps 2 to 4 are not.
+Status: agreed with the owner on 18 Oct 2026. Step 1 is built (Profile only); steps 2 to 4 are not. The screens are drawn from [the mockup brief](../mockups/portfolio.md).
 
 The portfolio is the owner's public site, for hiring and for showing what he builds. It is also the playground for what Loots can do: it shows Loots data and can try features Loots does not have yet.
 
