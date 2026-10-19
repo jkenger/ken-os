@@ -1,6 +1,6 @@
 # Design Studio: mockup brief
 
-Status: proposed, 19 Oct 2026. The UI half of [design-studio.md](../architecture/design-studio.md), which holds the decisions this brief
+Status: drawn 19 Oct 2026 in the [Design Studio mockups](https://claude.ai/artifact/SJTbQ5ZZaMPnw7UpvY8H8c) canvas; the handoff README is in project files, `design-studio-mockups/`. The open questions it raised are settled in the spec's "Decided after the mockups". The UI half of [design-studio.md](../architecture/design-studio.md), which holds the decisions this brief
 draws (three panels, build-time manifest, metadata only for other libraries, inspector first, drafts and export). This
 brief says which frames, states and words to draw. Code follows the chosen mockups.
 
@@ -9,18 +9,15 @@ brief says which frames, states and words to draw. Code follows the chosen mocku
 This brief is written for another agent to draw from. When the mockups are done, hand back all of the following. A
 frame that can't be drawn as written still comes back, with a note saying why.
 
-1. **One PNG per frame and width**, named `<frame>-<width>[-dark].png` (for example `C4-1440.png`, `A4-1440-dark.png`,
-   `G3-390.png`), in the project files folder `design-studio-mockups/`. Every frame in the tables below, at the widths
-   in Ground rules, plus the dark frames named.
-2. **The source** the PNGs were made from, in the same folder: the HTML mock (`mock.html`, self-contained, as in
-   `selected-styling/`) or a link to the design file.
-3. **`design-studio-mockups/README.md`** with:
-   - **Frames**: a table of every frame id, its file names, and Done, Changed or Skipped.
+1. **The design canvas link**: one canvas with an artboard per frame, named by its frame id, at the widths in Ground
+   rules, plus the dark frames named. The canvas is the reference for building. Do not export or render PNGs; that is only for an outside agent that cannot open the canvas.
+2. **`design-studio-mockups/README.md`** in project files, with:
+   - **Frames**: a table of every frame id, its artboard, and Done, Changed or Skipped.
    - **Changes from this brief**: each place the copy, layout or behaviour differs from what is written here, and why.
    - **Proposals**: any new token or component the frames needed, named as a proposal with what it is for (see
      "Adding a token or component" in `design-system.md`). None is fine.
    - **Open questions**: decisions the owner has to make before code starts, each with the option you recommend.
-4. **A short summary** in the reply that hands the work back: which frames to look at first, and the open questions.
+3. **A short summary** in the reply that hands the work back: which frames to look at first, and the open questions.
 
 Do not change code, `globals.css` or this brief. Changes to the brief go under "Changes from this brief"; the owner
 folds the agreed ones in.
@@ -74,22 +71,22 @@ folds the agreed ones in.
 
 | Frame | State                                                                                                               | Copy                                   |
 | ----- | ------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| A1    | First open, nothing picked. Graph fitted to the "This repo" area. Inspector open on Theme (see D1)                  | Title "Design Studio"; Export disabled |
+| A1    | First open, nothing picked. Canvas at 100% on the top row of This repo. Inspector open on Theme (see D1)            | Title "Design Studio"; Export disabled |
 | A2    | Button picked from the tree: tree row and graph node both selected, canvas pans to the node, inspector shows Button | Address `/studio?c=ui/button`          |
 | A3    | Three drafts exist                                                                                                  | Badge "Changed 3"; Export enabled      |
 | A4    | Dark frame of A2, with the canvas preview in dark too                                                               | Same                                   |
 
 ### B. Components panel (the tree)
 
-| Frame | State                                                                                                                                                                                                    | Copy                                                                          |
-| ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
-| B1    | Default. Search field, then filters: Library (NativeSelect), Installed or All (ToggleGroup), Changed (Switch). Then the library branches as Collapsibles with a count; This repo open, the others closed | "Find a component", "Library", "All libraries", "Installed", "All", "Changed" |
-| B2    | This repo open: components A to Z. A wrapper sits under the primitive it wraps, indented, with a small outline badge                                                                                     | Badge "Loots"                                                                 |
-| B3    | A row with a draft: a dot after the name, with "Changed" in its accessible name and in a tooltip                                                                                                         | Tooltip "Changed"                                                             |
-| B4    | shadcn/ui open with All: installed ones show a check icon and "Installed"; the rest show nothing extra                                                                                                   | "Installed"                                                                   |
-| B5    | Selected row: `selectedRow` outline, `aria-current`                                                                                                                                                      |                                                                               |
-| B6    | Search with no match                                                                                                                                                                                     | "No components match" / button **Clear filters**                              |
-| B7    | Changed on with no drafts                                                                                                                                                                                | "No changes yet"                                                              |
+| Frame | State                                                                                                                                                                                                                    | Copy                                                                          |
+| ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| B1    | Default. Search field, then filters: Library (NativeSelect), Installed or All (ToggleGroup, All by default), Changed (Switch). Then the library branches as Collapsibles with a count; This repo open, the others closed | "Find a component", "Library", "All libraries", "Installed", "All", "Changed" |
+| B2    | This repo open: components A to Z. A wrapper sits under the primitive it wraps, indented, with a small outline badge                                                                                                     | Badge "Loots"                                                                 |
+| B3    | A row with a draft: a dot after the name, with "Changed" in its accessible name and in a tooltip                                                                                                                         | Tooltip "Changed"                                                             |
+| B4    | shadcn/ui open with All: installed ones show a check icon and "Installed"; the rest show nothing extra                                                                                                                   | "Installed"                                                                   |
+| B5    | Selected row: `selectedRow` outline, `aria-current`                                                                                                                                                                      |                                                                               |
+| B6    | Search with no match                                                                                                                                                                                                     | "No components match" / button **Clear filters**                              |
+| B7    | Changed on with no drafts                                                                                                                                                                                                | "No changes yet"                                                              |
 
 Rows are links (they set `?c=`), one line each: icon for the kind (primitive, wrapper, not installed), name, then the
 dot. Long names truncate with the full name on hover.
@@ -174,7 +171,7 @@ components. Labelled "Later · not planned". Enough to judge whether a chat fits
 - Escape closes the inspector wherever focus is, unless it is closing a dialog or menu first (the `DockedPanel` rule).
 - Keyboard: tree rows are links in tab order; arrow keys move within the tree; `/` opens Find a component, ignored
   while typing in a field; Ctrl or Cmd + K stays with the app search. Canvas nodes are Tab stops, edges are not.
-- The canvas opens fitted to the picked component's library area, else This repo.
+- The canvas opens at 100% on the picked component, else on the top row of This repo. Fit is one click away.
 - Status and state are never colour alone: the draft dot has the word in its name, Not installed and Loots are words
   in badges, the selected node also carries `aria-pressed`.
 - Studio chrome sizes its insides with container queries, since the docked inspector takes width the window doesn't

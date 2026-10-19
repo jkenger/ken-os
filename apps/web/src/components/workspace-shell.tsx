@@ -11,6 +11,7 @@ import {
   FolderOpen,
   Globe,
   Map as MapIcon,
+  Palette,
   Library,
   Search,
   Sparkles,
@@ -50,7 +51,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { engineering, tabForPath, type EngineeringTab } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
 
-type Module = "profile" | "portfolio" | "memory" | "lab" | "terms";
+type Module = "profile" | "portfolio" | "memory" | "lab" | "terms" | "studio";
 
 const modules = [
   { id: "profile" as const, label: "Profile", href: "/profile", icon: UserRound },
@@ -58,6 +59,7 @@ const modules = [
   { id: "memory" as const, label: "Project Memory", href: "/memory", icon: BookOpenText },
   { id: "lab" as const, label: "Engineering", href: engineering.roadmap(), icon: FlaskConical },
   { id: "terms" as const, label: "Terms", href: "/terms", icon: BookMarked },
+  { id: "studio" as const, label: "Design Studio", href: "/studio", icon: Palette },
 ];
 
 const moduleDetails: Record<
@@ -91,6 +93,7 @@ const moduleDetails: Record<
     sections: [{ label: "Roadmap", href: engineering.roadmap(), icon: MapIcon }],
   },
   terms: { title: "Terms", sections: [{ label: "Terms", href: "/terms", icon: BookMarked }] },
+  studio: { title: "Design Studio", sections: [{ label: "Components", href: "/studio", icon: Palette }] },
 };
 
 type Section = { key: string; label: string; href: string; icon: typeof FileText; selected: boolean };
