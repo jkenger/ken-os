@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Kbd } from "@/components/ui/kbd";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Pill } from "@/components/ui/pill";
@@ -159,6 +160,7 @@ export const previews: Record<string, () => ReactNode> = {
       <InputGroupInput placeholder="Find a topic" aria-label="Find a topic" />
     </InputGroup>
   ),
+  "ui/kbd": () => <Kbd>Ctrl K</Kbd>,
   "ui/label": () => (
     <div className="grid w-full gap-2">
       <Label htmlFor="studio-label-sample">Project link</Label>
