@@ -66,6 +66,22 @@ test("inputs are checked before anything runs", async () => {
     false,
     "evidence needs Claude's note",
   );
+  const build = {
+    where: "real-app",
+    evidence: [{ path: "app/page.tsx", contents: "export default 1" }],
+    note: "Fixed it",
+  };
+  assert.equal(toolInputs.report_progress.safeParse({ ...report, build }).success, true);
+  for (const evidence of [[], [{ path: "app/page.tsx", contents: "  " }]])
+    assert.equal(
+      toolInputs.report_progress.safeParse({ ...report, build: { ...build, evidence } }).success,
+      false,
+      "Build needs the owner's code",
+    );
+  assert.equal(
+    toolInputs.report_progress.safeParse({ ...report, build: { ...build, where: "somewhere" } }).success,
+    false,
+  );
   assert.equal(
     toolInputs.save_roadmap.safeParse({ goal: "AI engineer", chapters: [] }).success,
     false,

@@ -15,9 +15,17 @@ import { db } from "@/lib/db";
 import { ownerDayStart } from "@/lib/day";
 import { labTopicEvents } from "@/lib/schema";
 import { requireAnyTopic, type AnyTopic } from "./any-topic";
+import { buildInput } from "./build-evidence";
 import { recordInstructionsVersion } from "./claude-links";
 import { LabInputError } from "./errors";
-import { exerciseChoice, exerciseVersions, getDraft, pendingVersion, saveClaudeExercise } from "./exercise-store";
+import {
+  exerciseChoice,
+  exerciseVersions,
+  getDraft,
+  pendingVersion,
+  practiceState,
+  saveClaudeExercise,
+} from "./exercise-store";
 import { alsoInProgress, chapterOnRoadmap, getRoadmap, getRoadmaps, saveRoadmap, toRefresh } from "./roadmap-store";
 import { progressOnRoadmaps } from "./roadmaps";
 import { PLAN_LIMITS } from "./roadmap-plan";
@@ -29,6 +37,7 @@ import {
   addNote,
   claudeNotesToday,
   EVIDENCE_MAX,
+  latestBuild,
   listNotes,
   listReports,
   NOTE_MAX,
@@ -120,6 +129,11 @@ export const toolInputs = {
         .strict()
         .optional()
         .describe("Required for learned, refused otherwise"),
+      build: buildInput
+        .optional()
+        .describe(
+          "Ticks the topic's Build task for a build reviewed outside a passing Loots exercise run, such as a fix in the owner's own app. Only once the owner's code works",
+        ),
     })
     .strict(),
   save_roadmap: z
@@ -314,20 +328,28 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     name: "get_topic",
     title: "Topic",
     description:
-      "One topic: its place and status, what the owner should be able to explain (p1, p2, …), your material for it (description, task wording, resources, mastery criteria) or null, the latest reports, the owner's and your notes, the latest review sheet, and the current exercise's task, starter and tests (never the solution).",
+      "One topic: its place and status, whether its Build task is done (and the owner's final code when you reported it), what the owner should be able to explain (p1, p2, …), your material for it (description, task wording, resources, mastery criteria) or null, the latest reports, the owner's and your notes, the latest review sheet, and the current exercise's task, starter and tests (never the solution).",
     kind: "read",
     async run(userId, { topicId: id }) {
       const topic = await roadmapTopic(userId, id);
-      const [status, choice, reports, notes, review, material] = await Promise.all([
+      const [status, choice, reports, notes, review, material, practice, build] = await Promise.all([
         topicStatus(userId, id),
         exerciseChoice(userId, topic),
         listReports(userId, id, 5),
         listNotes(userId, id),
         getReviewSheet(userId, id),
         getMaterial(userId, id),
+        practiceState(userId, topic),
+        latestBuild(userId, id),
       ]);
       const summary = {
         ...topicSummary(topic, status),
+        // Build is done once an exercise run passed or you reported the build; evidence is the latest one you reported.
+        build: {
+          done: practice === "passed" || Boolean(build),
+          exercisePassed: practice === "passed",
+          reported: build,
+        },
         gap: topic.gap,
         points: topic.points.map((text, index) => ({ id: `p${index + 1}`, text })),
         // Null means "Not planned yet": write it with save_topic_material when the topic starts.
@@ -490,10 +512,10 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
     name: "report_progress",
     title: "Report progress",
     description:
-      "Records what happened on a topic, shown to the owner in Loots. The first report starts the topic. Set status learned only after the owner explains the idea in their own words without hints, and pass that explanation word for word as evidence. Set skipped when the owner says they already know it. You can't change a status the owner set.",
+      "Records what happened on a topic, shown to the owner in Loots. The first report starts the topic. Set status learned only after the owner explains the idea in their own words without hints, and pass that explanation word for word as evidence. Set skipped when the owner says they already know it. When the owner finishes a build outside a passing Loots exercise run, such as in their own app, pass build with their final code word for word to tick the Build task. You can't change a status the owner set.",
     kind: "write",
-    async run(userId, { topicId: id, summary, stuck, status, evidence }) {
-      const saved = await reportProgress(userId, id, { summary, stuck, status, evidence });
+    async run(userId, { topicId: id, summary, stuck, status, evidence, build }) {
+      const saved = await reportProgress(userId, id, { summary, stuck, status, evidence, build });
       if (status !== "learned" && status !== "skipped") return { saved: true, ...saved };
       // So Claude can mark a finished chapter and offer what's next, on every roadmap with the topic
       // (engineering-progressive-flow.md, section 3, and engineering-roadmaps.md, section 2).

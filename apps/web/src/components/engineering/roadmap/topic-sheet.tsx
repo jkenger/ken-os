@@ -141,6 +141,7 @@ function Sessions({ reports }: { reports: ReportView[] }) {
               <span className="font-semibold">Stuck:</span> {report.stuck}
             </p>
           )}
+          {report.built && <p className="mt-1 text-xs font-semibold">Build done · your code is under Build</p>}
           {report.status && (
             <p className="mt-1">
               <StatusLabel status={report.status} />

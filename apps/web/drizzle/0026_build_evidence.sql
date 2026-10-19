@@ -1,0 +1,1 @@
+ALTER TABLE "lab_topic_events" ADD COLUMN "build" jsonb;

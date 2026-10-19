@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, gte, inArray, isNotNull, sql } from "drizzle-orm";
 import {
   claudeMayChange,
   computeTopicStatus,
@@ -13,6 +13,7 @@ import {
 import { db } from "@/lib/db";
 import { ownerDayStart } from "@/lib/day";
 import { labNotes, labTopicEvents } from "@/lib/schema";
+import type { BuildEvidence } from "./build-evidence";
 import { topicMap } from "./curriculum";
 import { LabInputError } from "./errors";
 import { requireAnyTopic } from "./any-topic";
@@ -71,6 +72,8 @@ export interface ReportInput {
   status?: ClaudeStatus;
   /** Required for Learned: the owner's explanation word for word, and Claude's note on how they got there. */
   evidence?: { explanation: string; note: string };
+  /** Ticks Build for work done outside a passing exercise run: the owner's final code, word for word. */
+  build?: BuildEvidence;
 }
 
 /**
@@ -92,6 +95,9 @@ export async function reportProgress(userId: string, topicId: string, input: Rep
   } else if (input.evidence) {
     throw new LabInputError("Evidence is only for Learned");
   }
+  if (input.build && !input.build.evidence.some((item) => item.contents.trim())) {
+    throw new LabInputError("Build needs evidence: the owner's final code, at least one file");
+  }
   if (status && !claudeMayChange(current, status)) {
     throw new LabInputError(
       `The owner set this topic to ${current.status.replace("_", " ")}. Only they can change it`,
@@ -108,6 +114,7 @@ export async function reportProgress(userId: string, topicId: string, input: Rep
     stuck: input.stuck?.trim().slice(0, SUMMARY_MAX) || null,
     evidence: status === "learned" ? input.evidence!.explanation.trim().slice(0, EVIDENCE_MAX) : null,
     evidenceNote: status === "learned" ? input.evidence!.note.trim().slice(0, SUMMARY_MAX) : null,
+    build: input.build ?? null,
   });
   return { id, status: (await topicStatus(userId, topicId)).status };
 }
@@ -131,12 +138,15 @@ export interface ReportView {
   status: TopicStatus | null;
   evidence: string | null;
   evidenceNote: string | null;
+  /** The report ticked Build; the code is in latestBuild. */
+  built: boolean;
 }
 
 /** A topic's reports and status changes, newest first. */
 export async function listReports(userId: string, topicId: string, limit = 50): Promise<ReportView[]> {
+  const { build, ...columns } = getTableColumns(labTopicEvents);
   const rows = await db()
-    .select()
+    .select({ ...columns, built: sql<boolean>`${build} is not null` })
     .from(labTopicEvents)
     .where(
       and(
@@ -156,7 +166,30 @@ export async function listReports(userId: string, topicId: string, limit = 50): 
     status: readStatus(row.status),
     evidence: row.evidence,
     evidenceNote: row.evidenceNote,
+    built: row.built,
   }));
+}
+
+export interface BuildView extends BuildEvidence {
+  at: string;
+}
+
+/** The latest Build Claude reported for a topic, with the owner's final code; null when there is none. */
+export async function latestBuild(userId: string, topicId: string): Promise<BuildView | null> {
+  const [row] = await db()
+    .select({ build: labTopicEvents.build, at: labTopicEvents.createdAt })
+    .from(labTopicEvents)
+    .where(
+      and(
+        eq(labTopicEvents.userId, userId),
+        eq(labTopicEvents.topicId, topicId),
+        eq(labTopicEvents.kind, "report"),
+        isNotNull(labTopicEvents.build),
+      ),
+    )
+    .orderBy(desc(labTopicEvents.createdAt))
+    .limit(1);
+  return row?.build ? { ...row.build, at: row.at.toISOString() } : null;
 }
 
 export interface NoteView {

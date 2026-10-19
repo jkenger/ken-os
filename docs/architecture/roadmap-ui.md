@@ -40,8 +40,10 @@ inventing its own. It covers what was built and proved on this screen only; it i
     Sessions in the Topic tab; the review sheet and notes in the Review tab. A review opened from search always shows
     Detail. The main button is the first task left to do, or Next topic once the topic is finished.
 - **Tasks.** The same three for every topic, from `topicTasks` in `features/engineering-lab/topic-steps.ts`: **Read**
-  (done once Claude has started), **Build** (done when an exercise run passed; waits when there is no exercise), and
-  **Explain** (done when the topic is Learned with your own words). Nobody ticks them by hand.
+  (done once Claude has started), **Build** (done when an exercise run passed, or when Claude reports a build done
+  outside a Loots exercise with `report_progress` and your final code as `build` evidence; waits when there is
+  neither), and **Explain** (done when the topic is Learned with your own words). Nobody ticks them by hand. A reported
+  build's code shows collapsed under Build as **Your code**, and `get_topic` returns it with whether Build is done.
 
 ## Colours
 
