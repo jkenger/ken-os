@@ -1,6 +1,6 @@
 # Design Studio — architecture spec
 
-Status: agreed with the owner on 19 Oct 2026. Nothing is built yet.
+Status: agreed with the owner on 19 Oct 2026. Nothing is built yet. The screens are drawn from [design-studio-mockups.md](design-studio-mockups.md).
 
 The Design Studio is a private workspace in Loots for seeing and tuning the app's components. It lists every component in the repo and in the shadcn libraries the owner might add, renders the installed ones live, and lets the owner change their look with instant feedback. Changes are saved as drafts and turned into code by export. The studio does not write to the codebase itself.
 
