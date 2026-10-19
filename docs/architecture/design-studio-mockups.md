@@ -4,6 +4,27 @@ Status: proposed, 19 Oct 2026. The UI half of [design-studio.md](design-studio.m
 draws (three panels, build-time manifest, metadata only for other libraries, inspector first, drafts and export). This
 brief says which frames, states and words to draw. Code follows the chosen mockups.
 
+## Handoff: what to return
+
+This brief is written for another agent to draw from. When the mockups are done, hand back all of the following. A
+frame that can't be drawn as written still comes back, with a note saying why.
+
+1. **One PNG per frame and width**, named `<frame>-<width>[-dark].png` (for example `C4-1440.png`, `A4-1440-dark.png`,
+   `G3-390.png`), in the project files folder `design-studio-mockups/`. Every frame in the tables below, at the widths
+   in Ground rules, plus the dark frames named.
+2. **The source** the PNGs were made from, in the same folder: the HTML mock (`mock.html`, self-contained, as in
+   `selected-styling/`) or a link to the design file.
+3. **`design-studio-mockups/README.md`** with:
+   - **Frames**: a table of every frame id, its file names, and Done, Changed or Skipped.
+   - **Changes from this brief**: each place the copy, layout or behaviour differs from what is written here, and why.
+   - **Proposals**: any new token or component the frames needed, named as a proposal with what it is for (see
+     "Adding a token or component" in `design-system.md`). None is fine.
+   - **Open questions**: decisions the owner has to make before code starts, each with the option you recommend.
+4. **A short summary** in the reply that hands the work back: which frames to look at first, and the open questions.
+
+Do not change code, `globals.css` or this brief. Changes to the brief go under "Changes from this brief"; the owner
+folds the agreed ones in.
+
 ## Ground rules for every frame
 
 - **Look:** Loots as it is. shadcn's default setup plus the Loots tokens and shared rules in
