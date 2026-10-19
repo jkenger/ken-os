@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { ThinkingOrb } from "thinking-orbs";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { ExercisePanel } from "@/features/engineering-lab/exercise-store";
@@ -28,7 +29,8 @@ function Pending({
 }) {
   const checking = useExerciseCheck(topicId, check, onChecked);
   return (
-    <p role="status" className="text-sm text-muted-foreground">
+    <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground">
+      {checking && <ThinkingOrb state="solving" size={20} aria-hidden="true" />}
       {checking ? "Checking new exercise from Claude…" : "Checking new exercise from Claude"}
     </p>
   );

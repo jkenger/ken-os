@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AlertCircle, Lightbulb, Sparkles } from "lucide-react";
+import { ThinkingOrb } from "thinking-orbs";
 import {
   applyRewrite,
   REWRITE_TARGET_ROLE_MAX,
@@ -100,6 +101,7 @@ export function RewritePanel({
           <Button type="button" onClick={run} disabled={running}>
             {running ? "Improving…" : suggestions ? "Run again" : "Improve writing"}
           </Button>
+          {running && <ThinkingOrb state="composing" size={20} aria-hidden="true" className="mb-2" />}
         </div>
         <p className="-mt-2 text-xs text-muted-foreground">Optional, shapes the wording</p>
 
