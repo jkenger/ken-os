@@ -10,7 +10,7 @@ This brief is written for another agent to draw from. When the mockups are done,
 frame that can't be drawn as written still comes back, with a note saying why.
 
 1. **The design canvas link**: one canvas with an artboard per frame, named by its frame id, at the widths in Ground
-   rules, plus the dark frames named. The canvas is the reference for building; no PNG export unless the owner asks.
+   rules, plus the dark frames named. The canvas is the reference for building. Do not export or render PNGs; that is only for an outside agent that cannot open the canvas.
 2. **`design-studio-mockups/README.md`** in project files, with:
    - **Frames**: a table of every frame id, its artboard, and Done, Changed or Skipped.
    - **Changes from this brief**: each place the copy, layout or behaviour differs from what is written here, and why.

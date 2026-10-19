@@ -6,8 +6,8 @@ mockups.
 
 - Briefs live here, one per screen or feature, named after it (`design-studio.md`).
 - The mockups themselves are a design canvas, linked from the brief and the handoff README. The README goes in the
-  project files, in the folder named in the brief's "Handoff: what to return" section, not in the repo. No PNG export
-  unless the owner asks.
+  project files, in the folder named in the brief's "Handoff: what to return" section, not in the repo. Claude agents never
+  export or render PNGs; PNGs are only for an outside agent that cannot open the canvas.
 
 | Brief                                                      | Spec                                                                               |
 | ---------------------------------------------------------- | ---------------------------------------------------------------------------------- |
