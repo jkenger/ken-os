@@ -1,6 +1,6 @@
 # Engineering with Claude: mockup brief
 
-Status: proposed, 12 Oct 2026. The UI half of [engineering-claude-connector.md](engineering-claude-connector.md). Mockups are made in the Ken OS design system in Claude (look changes start there); this brief says which frames, states and words to draw. Code follows the chosen mockups.
+Status: proposed, 12 Oct 2026. The UI half of [engineering-claude-connector.md](../architecture/engineering-claude-connector.md). Mockups are made in the Ken OS design system in Claude (look changes start there); this brief says which frames, states and words to draw. Code follows the chosen mockups.
 
 ## Ground rules for every frame
 
@@ -95,7 +95,7 @@ Context
 - Loots is a private, owner-only web app. Its Engineering module teaches one topic at a time: Learn, Exercise (a code editor with real tests) and Prove (a written answer graded in Loots).
 - New: the owner talks a topic through with Claude in claude.ai, which connects to Loots. Claude can read their progress and code and save lessons, exercises and proof questions. Claude can never grade or mark a topic proven; Loots does.
 - Read the design system's README first. Use its live components (window.KenOS). It's shadcn's Nova default (2.0.0).
-- The full brief, with every frame, state and word: docs/architecture/engineering-claude-connector-mockups.md in jkenger/ken-os. Follow it exactly. The frames are summarized here.
+- The full brief, with every frame, state and word: docs/mockups/engineering-claude-connector.md in jkenger/ken-os. Follow it exactly. The frames are summarized here.
 
 Frames (desktop 1440 and phone 390 each, light theme)
 A. Topic page: an "Ask Claude" outline button at the right of the Learn / Exercise / Prove tabs (under the heading on a phone); the toast "Copied. Paste it in Claude"; an autosave status beside the editor: "Saving…", "Saved", "Couldn't save · Retry".
