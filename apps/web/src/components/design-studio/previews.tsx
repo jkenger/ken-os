@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { ChevronsUpDown, Search } from "lucide-react";
+import { BookMarked, ChevronsUpDown, FlaskConical, Search, UserRound } from "lucide-react";
 import { Back, Badge as KitBadge, Coverage, Fact, Notice, Rail, SectionTitle } from "@/components/engineering/kit";
 import { panel, selectedRow, selectedSurface } from "@/components/surfaces";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -38,6 +38,16 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarGroup,
+  SidebarGroupLabel,
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+  SidebarProvider,
+} from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -230,6 +240,38 @@ export const previews: Record<string, () => ReactNode> = {
         </SheetHeader>
       </SheetContent>
     </Sheet>
+  ),
+  // Its own provider, and collapsible="none" so it sits in the preview instead of fixing itself to the window.
+  "ui/sidebar": () => (
+    <SidebarProvider className="min-h-0 w-56 overflow-hidden rounded-lg border">
+      <Sidebar collapsible="none" className="w-full">
+        <SidebarContent>
+          <SidebarGroup>
+            <SidebarGroupLabel>Modules</SidebarGroupLabel>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton>
+                  <UserRound aria-hidden="true" />
+                  Profile
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton isActive>
+                  <FlaskConical aria-hidden="true" />
+                  Engineering
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton>
+                  <BookMarked aria-hidden="true" />
+                  Terms
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroup>
+        </SidebarContent>
+      </Sidebar>
+    </SidebarProvider>
   ),
   "ui/skeleton": () => (
     <div className="grid w-full max-w-xs gap-2">
