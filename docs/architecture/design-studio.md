@@ -75,12 +75,19 @@ Export:
 
 ## Build order
 
-Each step is its own PR and leaves the app working.
+Each step is its own PR and leaves the app working. Each one names the frames on the [mockup canvas](https://claude.ai/artifact/SJTbQ5ZZaMPnw7UpvY8H8c) it must match; the canvas is the reference for the screen, this spec for the behaviour.
 
-1. **Manifest and tree.** The script, the manifest for this repo only, `/studio` with the tree and a single-component preview. Built 19 Oct 2026. Previews are written by hand in `components/design-studio/previews.tsx`; Sidebar has none, since it needs its own provider and page frame.
-2. **Graph.** All installed components as live nodes with dependency edges; shared selection with the tree.
-3. **Inspector and drafts.** Variant, prop and token controls, live re-render, the drafts table, Copy as patch.
-4. **Other libraries.** shadcn/ui and chosen registries as metadata branches and graph cards.
-5. **Connector export.** The drafts tool and the apply-through-Claude flow.
+To build a step: open the named frames on the canvas before writing UI (their artboard source has the exact layout, spacing and copy), and before the PR put screenshots of the built page beside the same frames and close the gaps. Anything left different on purpose is listed in the PR.
+
+1. **Manifest and tree.** The script, the manifest for this repo only, `/studio` with the tree and a single-component preview. Frames: the workspace frame from A1 and A2 (page title row, tree column, canvas column, inspector column), tree B1, B2, B5 and B6 without the Library, Installed and Changed filters (one library, no drafts yet), the picked component as one node like C1 and C2, C9 for a preview that fails, the inspector header and facts from D2 without its tabs and controls, and G1 to G3 for smaller screens. Built 19 Oct 2026 and rebuilt against these frames the same day. Previews are written by hand in `components/design-studio/previews.tsx`. Different from the frames on purpose until a later step:
+   - no Export button or Changed badge in the title row (step 3);
+   - no Fit or zoom in the canvas toolbar, and one node at 100% (step 2);
+   - the inspector lists exports and variant groups read-only, with no tabs, controls, close button or Theme view (step 3);
+   - from 1024 to 1279 px the inspector sits under the canvas instead of in G2's sheet, which comes with its controls (step 3);
+   - no section toggle in the top bar, since the studio has no section column.
+2. **Graph.** All installed components as live nodes with dependency edges; shared selection with the tree. Frames: A1 and A2 canvas, C1 to C8, the C6 toolbar.
+3. **Inspector and drafts.** Variant, prop and token controls, live re-render, the drafts table, Copy as patch. Frames: D1 to D6, D8, F, A3, A4, B3, B7, E1, E2, E5, G2's inspector sheet.
+4. **Other libraries.** shadcn/ui and chosen registries as metadata branches and graph cards. Frames: B1's Library, Installed and Changed filters, B4, C3, D7.
+5. **Connector export.** The drafts tool and the apply-through-Claude flow. Frames: E3, and the E4 note.
 
 Later, once the inspector has been used: decide on an AI tab (shadcn's AI Elements needs the Vercel AI SDK and a model key in the app).

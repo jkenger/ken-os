@@ -93,7 +93,8 @@ const moduleDetails: Record<
     sections: [{ label: "Roadmap", href: engineering.roadmap(), icon: MapIcon }],
   },
   terms: { title: "Terms", sections: [{ label: "Terms", href: "/terms", icon: BookMarked }] },
-  studio: { title: "Design Studio", sections: [{ label: "Components", href: "/studio", icon: Palette }] },
+  // No section column: the studio needs the width for its tree, canvas and inspector (mockup frame A1).
+  studio: { title: "Design Studio", sections: [] },
 };
 
 type Section = { key: string; label: string; href: string; icon: typeof FileText; selected: boolean };
