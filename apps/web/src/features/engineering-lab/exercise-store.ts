@@ -187,6 +187,11 @@ export async function getExercisePanel(userId: string, topic: ExerciseTopic): Pr
   };
 }
 
+/** The newest version still waiting for its browser check. Only shown when the topic has no usable version. */
+export async function pendingVersion(userId: string, topic: ExerciseTopic) {
+  return (await exerciseVersions(userId, topic)).filter((version) => version.checked === "unchecked").at(-1) ?? null;
+}
+
 /**
  * Try it in code on the roadmap: the exercise, or, for a topic with no usable version yet, the newest version still
  * waiting for its browser check. Both null means there's no exercise yet.
@@ -194,7 +199,7 @@ export async function getExercisePanel(userId: string, topic: ExerciseTopic): Pr
 export async function getCodePanel(userId: string, topic: AnyTopic) {
   const choice = await exerciseChoice(userId, topic);
   if (choice) return { exercise: await getExercisePanel(userId, topic), pending: null };
-  const waiting = (await exerciseVersions(userId, topic)).filter((version) => version.checked === "unchecked").at(-1);
+  const waiting = await pendingVersion(userId, topic);
   return { exercise: null, pending: waiting ? checkOf(waiting) : null };
 }
 
@@ -293,7 +298,7 @@ export async function saveClaudeExercise(userId: string, topicId: string, input:
 
 /**
  * The Practice step (docs/architecture/engineering-progressive-flow.md, section 2): a run passed, the owner ran it,
- * not yet, or the topic has no usable exercise.
+ * not yet, the topic's first exercise waits for its browser check, or the topic has no exercise.
  */
 export async function practiceState(userId: string, topic: ExerciseTopic): Promise<PracticeState> {
   const [choice, runs] = await Promise.all([
@@ -310,6 +315,6 @@ export async function practiceState(userId: string, topic: ExerciseTopic): Promi
       ),
   ]);
   if (runs.some((run) => run.passed)) return "passed";
-  if (!choice) return "none";
+  if (!choice) return (await pendingVersion(userId, topic)) ? "checking" : "none";
   return runs.length ? "tried" : "not_tried";
 }

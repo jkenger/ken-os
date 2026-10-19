@@ -20,7 +20,12 @@ function taskLine(id: TaskId, panel: TopicPanelView) {
   if (panel.material) return panel.material.tasks[id];
   const { practice } = panel;
   if (id === "read") return "Learn it with Claude";
-  if (id === "build") return practice === "none" ? "No exercise yet" : "Pass the exercise";
+  if (id === "build")
+    return practice === "none"
+      ? "No exercise yet"
+      : practice === "checking"
+        ? "New exercise from Claude"
+        : "Pass the exercise";
   return "Explain it in your own words";
 }
 

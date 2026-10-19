@@ -4,8 +4,11 @@ import type { RoadmapChapter } from "./roadmap-store";
 // A topic's tasks, Next topic and chapter done (docs/architecture/engineering-progressive-flow.md, sections 2 and 3,
 // and docs/architecture/roadmap-ui.md). Pure, so the panel, Claude's tools and the tests share them.
 
-/** Where the owner is with the topic's exercise: a run passed, they ran it, not yet, or there's no exercise. */
-export type PracticeState = "passed" | "tried" | "not_tried" | "none";
+/**
+ * Where the owner is with the topic's exercise: a run passed, they ran it, not yet, Claude's first one waits for its
+ * browser check (Try it in code runs it), or there's no exercise.
+ */
+export type PracticeState = "passed" | "tried" | "not_tried" | "checking" | "none";
 
 export type TaskId = "read" | "build" | "explain";
 /** Done, still to do, waiting on an exercise (Build only), or the topic was skipped. */

@@ -17,7 +17,7 @@ import { labTopicEvents } from "@/lib/schema";
 import { requireAnyTopic, type AnyTopic } from "./any-topic";
 import { recordInstructionsVersion } from "./claude-links";
 import { LabInputError } from "./errors";
-import { exerciseChoice, exerciseVersions, getDraft, saveClaudeExercise } from "./exercise-store";
+import { exerciseChoice, exerciseVersions, getDraft, pendingVersion, saveClaudeExercise } from "./exercise-store";
 import { alsoInProgress, chapterOnRoadmap, getRoadmap, getRoadmaps, saveRoadmap, toRefresh } from "./roadmap-store";
 import { progressOnRoadmaps } from "./roadmaps";
 import { PLAN_LIMITS } from "./roadmap-plan";
@@ -337,12 +337,21 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
         // The latest review sheet, to update with save_review after the fresh check.
         review,
       };
-      if (!choice)
+      if (!choice) {
+        const pending = await pendingVersion(userId, topic);
+        if (pending)
+          return {
+            ...summary,
+            exercise: null,
+            uncheckedExercise: { labId: pending.id, version: pending.version },
+            next: "Your exercise is saved and waits for the owner's browser check. Ask them to open the topic and click Try it in code",
+          };
         return {
           ...summary,
           exercise: null,
           next: "No exercise yet. Write one with save_exercise if the owner wants to practise in code",
         };
+      }
       const { current } = choice;
       const lab = current.lab;
       return {
@@ -472,7 +481,7 @@ const tools: { [N in ToolName]: AgentTool<N> } = {
         labId: saved.id,
         version: saved.version,
         checked: saved.checked,
-        next: "Open the topic's exercise in Loots to check it",
+        next: "Ask the owner to open the topic in Loots and click Try it in code. Their browser checks it there before it shows",
       };
     },
   },
