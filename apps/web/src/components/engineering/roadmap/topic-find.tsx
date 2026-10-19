@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { IconSearch } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
+import { Kbd } from "@/components/ui/kbd";
 import {
   Command,
   CommandDialog,
@@ -45,11 +46,11 @@ export function TopicFind({ view, onSelect }: { view: RoadmapView; onSelect: (to
         variant="outline"
         size="sm"
         onClick={() => setOpen(true)}
-        className="w-full justify-start gap-2 rounded-lg bg-card font-normal text-muted-foreground sm:w-56"
+        className="w-full justify-start gap-2 font-normal text-muted-foreground sm:w-56"
       >
         <IconSearch aria-hidden="true" />
         Find a topic
-        <kbd className="ml-auto rounded border px-1.5 font-mono text-[0.6875rem] leading-4">/</kbd>
+        <Kbd className="ml-auto">/</Kbd>
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen} title="Find a topic" description="Topics on this roadmap">
         <Command>

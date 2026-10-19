@@ -154,7 +154,7 @@ export function Confidence({
           <ToggleGroupItem
             key={rating}
             value={String(rating)}
-            className="h-10 w-11 border-input bg-card text-sm font-normal hover:bg-accent data-[state=on]:border-primary data-[state=on]:bg-secondary data-[state=on]:font-semibold"
+            className="h-10 w-11 border-input bg-card text-sm font-normal data-[state=on]:border-primary data-[state=on]:bg-secondary data-[state=on]:font-semibold"
           >
             {rating}
           </ToggleGroupItem>

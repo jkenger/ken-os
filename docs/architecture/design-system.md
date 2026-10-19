@@ -94,9 +94,13 @@ reuses the pattern (icon shape plus word, soft chip, legend) with its own states
 ## shadcn primitives to use directly
 
 Everything in `components/ui`: Button, Badge, Tabs, Sheet, Dialog, Command and CommandDialog, ToggleGroup, Progress,
-Collapsible, Tooltip, DropdownMenu, Input, InputGroup, Textarea, Skeleton and the toaster. Use them as shipped; change
+Collapsible, Tooltip, DropdownMenu, Input, InputGroup, Textarea, Kbd, Skeleton and the toaster. Use them as shipped; change
 a look with a variant or a class at the call site, or in one Loots wrapper, never by editing the primitive.
 `shadcn-primitives.test.ts` fails on a raw control or a hand-built widget.
+
+Never put `bg-accent` on a hover or a selected state outside a menu: in the Luma preset `accent` is near-black (it is the
+menu highlight, paired with `accent-foreground`), so it turns a control black. Let the variant's own hover work, or use
+`selectedSurface` / `selectedRow`. Keyboard hints use `Kbd`, and radius is left to the preset.
 
 ## Patterns worth reusing
 

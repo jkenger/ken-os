@@ -382,7 +382,7 @@ export function TopicSheet({
             type="button"
             variant="outline"
             onClick={() => onSelect(panel.next!.id)}
-            className="h-auto min-h-11 justify-start gap-2.5 rounded-xl text-left whitespace-normal"
+            className="h-auto min-h-11 justify-start gap-2.5 text-left whitespace-normal"
           >
             <IconArrowRight aria-hidden="true" className="text-muted-foreground" />
             <span className="min-w-0 flex-1">{panel.next.title}</span>
