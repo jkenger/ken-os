@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronRight, Layers, Search, Square } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -12,21 +12,29 @@ import { cn } from "@/lib/utils";
 
 /** The studio's component tree (mockup frames B1, B2, B5, B6): find, then one branch per library with each component
  *  as a row and Loots wrappers nested under the primitive they're built on. Only This repo exists until step 4, so the
- *  Library, Installed and Changed filters wait for it. */
+ *  Library, Installed and Changed filters wait for it. The find query is the workspace's, since it filters the canvas
+ *  too. */
 export function StudioTree({
   components,
   picked,
+  query,
+  onQueryChange,
+  findRef,
   onPick,
   className,
 }: {
   components: StudioComponent[];
   picked: string;
+  query: string;
+  onQueryChange: (query: string) => void;
+  /** The find field, for the canvas toolbar's Find button. */
+  findRef?: RefObject<HTMLInputElement | null>;
   onPick?: () => void;
   className?: string;
 }) {
-  const [query, setQuery] = useState("");
   const [open, setOpen] = useState(true);
-  const find = useRef<HTMLInputElement>(null);
+  const ownFind = useRef<HTMLInputElement>(null);
+  const find = findRef ?? ownFind;
   const list = useRef<HTMLDivElement>(null);
   const rows = treeOrder(components);
   const shown = filterTree(rows, query);
@@ -42,7 +50,7 @@ export function StudioTree({
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
+  }, [find]);
 
   // Keep the picked row in view, such as after opening /studio?c=ui/tooltip.
   useEffect(() => {
@@ -61,7 +69,7 @@ export function StudioTree({
             placeholder="Find a component"
             aria-label="Find a component"
             value={query}
-            onChange={(event) => setQuery(event.target.value)}
+            onChange={(event) => onQueryChange(event.target.value)}
           />
           <InputGroupAddon align="inline-end">
             <kbd className="rounded border bg-muted px-1.5 font-mono text-xs text-muted-foreground">/</kbd>
@@ -123,7 +131,7 @@ export function StudioTree({
         ) : (
           <div className="grid justify-items-center gap-3 px-4 py-10 text-center">
             <p className="text-sm font-semibold">No components match</p>
-            <Button variant="outline" size="sm" onClick={() => setQuery("")}>
+            <Button variant="outline" size="sm" onClick={() => onQueryChange("")}>
               Clear filters
             </Button>
           </div>

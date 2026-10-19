@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { kebab, pascal, type StudioComponent, type StudioManifest } from "../src/features/design-studio/manifest";
-import { readExports, readVariants, readWraps } from "../src/features/design-studio/source";
+import { readExports, readUses, readVariants, readWraps } from "../src/features/design-studio/source";
 
 // Writes the Design Studio's list of this repo's components (docs/architecture/design-studio.md), so the hosted app
 // never reads repo files at runtime. --write regenerates it; --check fails when it is out of date.
@@ -35,6 +35,9 @@ const primitives: StudioComponent[] = readdirSync(resolve(src, "components/ui"))
       file,
       exports: readExports(source),
       variants: readVariants(source),
+      uses: readUses(source)
+        .filter((used) => used !== slug)
+        .map((used) => `ui/${used}`),
     };
   });
 
@@ -51,6 +54,7 @@ const wrappers: StudioComponent[] = wrapperFiles.flatMap(({ file, library }) => 
       file,
       exports: [name],
       variants: [],
+      uses: [],
       ...(wraps[name] ? { wraps: `ui/${wraps[name]}` } : {}),
     }));
 });
@@ -62,6 +66,7 @@ const surfaces: StudioComponent[] = readExports(read(surfaceFile.file)).map((nam
   file: surfaceFile.file,
   exports: [name],
   variants: [],
+  uses: [],
   wraps: surfaceFile.wraps,
 }));
 

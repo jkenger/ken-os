@@ -1,36 +1,32 @@
 "use client";
 
-import { Component, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { CircleAlert, Moon, PanelLeft, Sun } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Moon, PanelLeft, Sun } from "lucide-react";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { treeOrder, type StudioComponent, type StudioManifest } from "@/features/design-studio/manifest";
+import { filterTree, treeOrder, type StudioComponent, type StudioManifest } from "@/features/design-studio/manifest";
 import { cn } from "@/lib/utils";
-import { previews } from "./previews";
+import { Preview, StudioGraph, type Theme } from "./studio-graph";
 import { StudioTree } from "./studio-tree";
 
-type Theme = "light" | "dark";
-
-/** Shows "Preview failed" (mockup frame C9) when a component throws while rendering, instead of losing the page. */
-class PreviewBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
-  state = { failed: false };
-  static getDerivedStateFromError() {
-    return { failed: true };
-  }
-  render() {
-    if (!this.state.failed) return this.props.children;
-    return (
-      <p className="flex items-center gap-2 text-sm text-destructive">
-        <CircleAlert className="size-4" aria-hidden="true" />
-        Preview failed
-      </p>
-    );
-  }
+/** True from 1024px, where the tree sits beside the canvas and the canvas is the graph. Below it the canvas shows the
+ *  picked component alone (G3). */
+function useWide() {
+  const [wide, setWide] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 1024px)");
+    const update = () => setWide(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  return wide;
 }
 
 /** Light and Dark for the preview only, from the canvas toolbar (A2, G3). */
@@ -57,9 +53,8 @@ function ThemeToggle({ theme, onChange }: { theme: Theme; onChange: (theme: Them
   );
 }
 
-/** The picked component as one canvas node (C1, C2): its name, Loots on a wrapper, and the live component inside. */
+/** On a phone, the picked component as one node (G3): its name, Loots on a wrapper, and the live component inside. */
 function Node({ component, theme }: { component: StudioComponent; theme: Theme }) {
-  const Preview = previews[component.id];
   return (
     <figure
       className="flex w-full max-w-xl flex-col rounded-[14px] border border-selected/55 bg-card ring-3 ring-selected/15"
@@ -79,13 +74,7 @@ function Node({ component, theme }: { component: StudioComponent; theme: Theme }
           theme === "dark" && "dark",
         )}
       >
-        {Preview ? (
-          <PreviewBoundary key={component.id}>
-            <Preview />
-          </PreviewBoundary>
-        ) : (
-          <p className="text-sm text-muted-foreground">No preview</p>
-        )}
+        <Preview id={component.id} />
       </div>
     </figure>
   );
@@ -149,8 +138,8 @@ function Details({ component }: { component: StudioComponent }) {
   );
 }
 
-/** Design Studio step 1 (docs/architecture/design-studio.md): the workspace frame from mockup frames A1 and A2, with
- *  this repo's components in the tree, the picked one live in the canvas, and its facts in the inspector. */
+/** The Design Studio (docs/architecture/design-studio.md): the workspace frame from mockup frames A1 and A2, with
+ *  this repo's components in the tree, all of them live in the graph, and the picked one's facts in the inspector. */
 export function StudioWorkspace({
   email,
   manifest,
@@ -162,9 +151,18 @@ export function StudioWorkspace({
 }) {
   const [theme, setTheme] = useState<Theme>("light");
   const [treeOpen, setTreeOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const find = useRef<HTMLInputElement>(null);
+  const wide = useWide();
+  const router = useRouter();
+  const rows = useMemo(() => treeOrder(manifest.components), [manifest.components]);
+  const shown = useMemo(() => new Set(filterTree(rows, query).map((row) => row.component.id)), [rows, query]);
+  const pick = useCallback(
+    (id: string) => router.push(`/studio?c=${encodeURIComponent(id)}`, { scroll: false }),
+    [router],
+  );
   // Open on the top row of This repo, as decided after the mockups.
-  const current =
-    manifest.components.find((component) => component.id === selected) ?? treeOrder(manifest.components)[0]?.component;
+  const current = manifest.components.find((component) => component.id === selected) ?? rows[0]?.component;
 
   return (
     <WorkspaceShell email={email} active="studio">
@@ -188,6 +186,8 @@ export function StudioWorkspace({
               <StudioTree
                 components={manifest.components}
                 picked={current?.id ?? ""}
+                query={query}
+                onQueryChange={setQuery}
                 onPick={() => setTreeOpen(false)}
                 className="flex-1"
               />
@@ -201,16 +201,32 @@ export function StudioWorkspace({
             <StudioTree
               components={manifest.components}
               picked={current.id}
+              query={query}
+              onQueryChange={setQuery}
+              findRef={find}
               className="mb-4 hidden w-70 shrink-0 rounded-xl border bg-card lg:sticky lg:top-2 lg:row-span-2 lg:flex lg:h-[calc(100svh-160px)] xl:static xl:h-auto"
             />
 
-            <section aria-label="Canvas" className="flex min-w-0 flex-1 flex-col gap-3 px-4 lg:px-0 xl:mb-4">
-              <div className="hidden items-center lg:flex">
-                <ThemeToggle theme={theme} onChange={setTheme} />
-              </div>
-              <div className="grid min-h-72 flex-1 place-items-center overflow-auto rounded-xl border bg-[radial-gradient(var(--color-border)_1px,transparent_1px)] bg-size-[16px_16px] p-4 sm:p-8 lg:mr-4 lg:min-h-96 xl:mr-0">
-                <Node component={current} theme={theme} />
-              </div>
+            <section
+              aria-label="Canvas"
+              className="flex min-w-0 flex-1 flex-col gap-2 px-4 lg:h-[calc(100svh-160px)] lg:pr-4 lg:pl-0 xl:mb-4 xl:h-auto xl:pr-0"
+            >
+              {wide ? (
+                <StudioGraph
+                  components={manifest.components}
+                  shown={shown}
+                  picked={current.id}
+                  theme={theme}
+                  onPick={pick}
+                  onClear={() => setQuery("")}
+                  onFind={() => find.current?.focus()}
+                  themeToggle={<ThemeToggle theme={theme} onChange={setTheme} />}
+                />
+              ) : (
+                <div className="grid min-h-72 flex-1 place-items-center overflow-auto rounded-xl border bg-[radial-gradient(var(--color-border)_1px,transparent_1px)] bg-size-[16px_16px] p-4 sm:p-8">
+                  <Node component={current} theme={theme} />
+                </div>
+              )}
             </section>
 
             <aside

@@ -177,3 +177,10 @@ export function readWraps(source: string) {
   }
   return wraps;
 }
+
+/** The other components/ui primitives a file imports, by slug, in source order. These are its registry dependencies:
+ *  shadcn writes them as imports from "@/components/ui/<slug>". */
+export function readUses(source: string) {
+  const slugs = [...source.matchAll(/\bfrom\s*["']@\/components\/ui\/([^"']+)["']/g)].map((match) => match[1]);
+  return [...new Set(slugs)];
+}

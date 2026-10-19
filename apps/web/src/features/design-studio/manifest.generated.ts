@@ -24,7 +24,8 @@ export const studioManifest: StudioManifest = {
           ],
           "defaultOption": "default"
         }
-      ]
+      ],
+      "uses": []
     },
     {
       "id": "ui/badge",
@@ -48,7 +49,8 @@ export const studioManifest: StudioManifest = {
           ],
           "defaultOption": "default"
         }
-      ]
+      ],
+      "uses": []
     },
     {
       "id": "ui/button",
@@ -86,7 +88,8 @@ export const studioManifest: StudioManifest = {
           ],
           "defaultOption": "default"
         }
-      ]
+      ],
+      "uses": []
     },
     {
       "id": "ui/card",
@@ -102,7 +105,8 @@ export const studioManifest: StudioManifest = {
         "CardDescription",
         "CardContent"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "ui/code-editor",
@@ -112,7 +116,8 @@ export const studioManifest: StudioManifest = {
       "exports": [
         "CodeEditor"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "ui/collapsible",
@@ -124,7 +129,8 @@ export const studioManifest: StudioManifest = {
         "CollapsibleTrigger",
         "CollapsibleContent"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "ui/command",
@@ -142,7 +148,11 @@ export const studioManifest: StudioManifest = {
         "CommandShortcut",
         "CommandSeparator"
       ],
-      "variants": []
+      "variants": [],
+      "uses": [
+        "ui/dialog",
+        "ui/input-group"
+      ]
     },
     {
       "id": "ui/dialog",
@@ -161,7 +171,10 @@ export const studioManifest: StudioManifest = {
         "DialogTitle",
         "DialogTrigger"
       ],
-      "variants": []
+      "variants": [],
+      "uses": [
+        "ui/button"
+      ]
     },
     {
       "id": "ui/disclosure-summary",
@@ -171,7 +184,8 @@ export const studioManifest: StudioManifest = {
       "exports": [
         "DisclosureSummary"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "ui/dropdown-menu",
@@ -195,7 +209,8 @@ export const studioManifest: StudioManifest = {
         "DropdownMenuSubTrigger",
         "DropdownMenuSubContent"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "ui/input-group",
@@ -231,6 +246,11 @@ export const studioManifest: StudioManifest = {
           ],
           "defaultOption": "xs"
         }
+      ],
+      "uses": [
+        "ui/button",
+        "ui/input",
+        "ui/textarea"
       ]
     },
     {
@@ -241,7 +261,8 @@ export const studioManifest: StudioManifest = {
       "exports": [
         "Input"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "ui/label",
@@ -251,7 +272,8 @@ export const studioManifest: StudioManifest = {
       "exports": [
         "Label"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "ui/native-select",
@@ -263,7 +285,8 @@ export const studioManifest: StudioManifest = {
         "NativeSelectOptGroup",
         "NativeSelectOption"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "ui/pill",
@@ -273,7 +296,10 @@ export const studioManifest: StudioManifest = {
       "exports": [
         "Pill"
       ],
-      "variants": []
+      "variants": [],
+      "uses": [
+        "ui/badge"
+      ]
     },
     {
       "id": "ui/popover",
@@ -289,7 +315,8 @@ export const studioManifest: StudioManifest = {
         "PopoverTitle",
         "PopoverTrigger"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "ui/progress",
@@ -299,7 +326,8 @@ export const studioManifest: StudioManifest = {
       "exports": [
         "Progress"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "ui/separator",
@@ -309,7 +337,8 @@ export const studioManifest: StudioManifest = {
       "exports": [
         "Separator"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "ui/sheet",
@@ -326,7 +355,10 @@ export const studioManifest: StudioManifest = {
         "SheetTitle",
         "SheetDescription"
       ],
-      "variants": []
+      "variants": [],
+      "uses": [
+        "ui/button"
+      ]
     },
     {
       "id": "ui/sidebar",
@@ -377,6 +409,14 @@ export const studioManifest: StudioManifest = {
           ],
           "defaultOption": "default"
         }
+      ],
+      "uses": [
+        "ui/button",
+        "ui/input",
+        "ui/separator",
+        "ui/sheet",
+        "ui/skeleton",
+        "ui/tooltip"
       ]
     },
     {
@@ -387,7 +427,8 @@ export const studioManifest: StudioManifest = {
       "exports": [
         "Skeleton"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "ui/sonner",
@@ -397,7 +438,8 @@ export const studioManifest: StudioManifest = {
       "exports": [
         "Toaster"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "ui/switch",
@@ -407,7 +449,8 @@ export const studioManifest: StudioManifest = {
       "exports": [
         "Switch"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "ui/table",
@@ -424,7 +467,8 @@ export const studioManifest: StudioManifest = {
         "TableCell",
         "TableCaption"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "ui/tabs",
@@ -447,7 +491,8 @@ export const studioManifest: StudioManifest = {
           ],
           "defaultOption": "default"
         }
-      ]
+      ],
+      "uses": []
     },
     {
       "id": "ui/textarea",
@@ -457,7 +502,8 @@ export const studioManifest: StudioManifest = {
       "exports": [
         "Textarea"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "ui/toaster",
@@ -469,7 +515,10 @@ export const studioManifest: StudioManifest = {
         "dismissToast",
         "Toaster"
       ],
-      "variants": []
+      "variants": [],
+      "uses": [
+        "ui/sonner"
+      ]
     },
     {
       "id": "ui/toggle-group",
@@ -480,7 +529,10 @@ export const studioManifest: StudioManifest = {
         "ToggleGroup",
         "ToggleGroupItem"
       ],
-      "variants": []
+      "variants": [],
+      "uses": [
+        "ui/toggle"
+      ]
     },
     {
       "id": "ui/toggle",
@@ -509,7 +561,8 @@ export const studioManifest: StudioManifest = {
           ],
           "defaultOption": "default"
         }
-      ]
+      ],
+      "uses": []
     },
     {
       "id": "ui/tooltip",
@@ -522,7 +575,8 @@ export const studioManifest: StudioManifest = {
         "TooltipProvider",
         "TooltipTrigger"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "kit/badge",
@@ -533,6 +587,7 @@ export const studioManifest: StudioManifest = {
         "Badge"
       ],
       "variants": [],
+      "uses": [],
       "wraps": "ui/badge"
     },
     {
@@ -543,7 +598,8 @@ export const studioManifest: StudioManifest = {
       "exports": [
         "Back"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "kit/fact",
@@ -553,7 +609,8 @@ export const studioManifest: StudioManifest = {
       "exports": [
         "Fact"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "kit/rail",
@@ -563,7 +620,8 @@ export const studioManifest: StudioManifest = {
       "exports": [
         "Rail"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "kit/coverage",
@@ -573,7 +631,8 @@ export const studioManifest: StudioManifest = {
       "exports": [
         "Coverage"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "kit/section-title",
@@ -583,7 +642,8 @@ export const studioManifest: StudioManifest = {
       "exports": [
         "SectionTitle"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "kit/notice",
@@ -593,7 +653,8 @@ export const studioManifest: StudioManifest = {
       "exports": [
         "Notice"
       ],
-      "variants": []
+      "variants": [],
+      "uses": []
     },
     {
       "id": "surfaces/panel",
@@ -604,6 +665,7 @@ export const studioManifest: StudioManifest = {
         "panel"
       ],
       "variants": [],
+      "uses": [],
       "wraps": "ui/card"
     },
     {
@@ -615,6 +677,7 @@ export const studioManifest: StudioManifest = {
         "selectedSurface"
       ],
       "variants": [],
+      "uses": [],
       "wraps": "ui/card"
     },
     {
@@ -626,6 +689,7 @@ export const studioManifest: StudioManifest = {
         "selectedRow"
       ],
       "variants": [],
+      "uses": [],
       "wraps": "ui/card"
     }
   ]
