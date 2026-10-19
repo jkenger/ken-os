@@ -4,14 +4,20 @@ import { IconArrowRight, IconCheck, IconCode, IconExternalLink } from "@tabler/i
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { DisclosureSummary } from "@/components/ui/disclosure-summary";
 import type { TopicPanelView } from "@/features/engineering-lab/roadmap-store";
+import type { BuildView } from "@/features/engineering-lab/status-store";
 import { topicTasks, type TaskId, type TaskState } from "@/features/engineering-lab/topic-steps";
 import { cn } from "@/lib/utils";
+import { formatDate } from "@/components/lab/words";
 import { AskClaude } from "../ask-claude";
 
 // A topic's tasks (docs/architecture/roadmap-ui.md): Read, Build, Explain, the same three for every topic, ticked only
-// by what happened (Claude started, an exercise run passed, the topic is Learned). The owner can't tick them by hand.
+// by what happened (Claude started, an exercise run passed or Claude reported the build, the topic is Learned). The owner can't tick them by hand.
 // TopicTaskAction is the main button: the first task left to do, or Next topic once the topic is finished.
+
+const taskState = (panel: TopicPanelView) =>
+  topicTasks({ status: panel.status.status, practice: panel.practice, built: Boolean(panel.build) });
 
 const titles: Record<TaskId, string> = { read: "Read", build: "Build", explain: "Explain" };
 
@@ -21,11 +27,13 @@ function taskLine(id: TaskId, panel: TopicPanelView) {
   const { practice } = panel;
   if (id === "read") return "Learn it with Claude";
   if (id === "build")
-    return practice === "none"
-      ? "No exercise yet"
-      : practice === "checking"
-        ? "New exercise from Claude"
-        : "Pass the exercise";
+    return panel.build
+      ? "Built with Claude's review"
+      : practice === "none"
+        ? "No exercise yet"
+        : practice === "checking"
+          ? "New exercise from Claude"
+          : "Pass the exercise";
   return "Explain it in your own words";
 }
 
@@ -51,9 +59,38 @@ function Box({ state }: { state: TaskState }) {
   );
 }
 
+const places: Record<BuildView["where"], string> = {
+  "real-app": "In your app",
+  "loots-exercise": "In a Loots exercise",
+};
+
+/** The owner's final code from the build Claude reported, collapsed under Build. */
+function BuildCode({ build }: { build: BuildView }) {
+  return (
+    <details className="group mt-1.5">
+      <DisclosureSummary className="text-xs font-semibold">
+        Your code · {build.evidence.length === 1 ? "1 file" : `${build.evidence.length} files`}
+      </DisclosureSummary>
+      <div className="mt-2 grid gap-3">
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          {places[build.where]} · {formatDate(build.at)} · {build.note}
+        </p>
+        {build.evidence.map((file, index) => (
+          <figure key={`${file.path}-${index}`} className="grid gap-1">
+            <figcaption className="font-mono text-xs text-muted-foreground">{file.path}</figcaption>
+            <pre className="overflow-x-auto rounded-lg bg-muted p-3 font-mono text-xs leading-relaxed">
+              {file.contents}
+            </pre>
+          </figure>
+        ))}
+      </div>
+    </details>
+  );
+}
+
 /** How many tasks are done, as a count and a bar. */
 export function TaskProgress({ panel }: { panel: TopicPanelView }) {
-  const { done, total } = topicTasks({ status: panel.status.status, practice: panel.practice });
+  const { done, total } = taskState(panel);
   return (
     <div className="grid gap-2">
       <div className="flex items-baseline justify-between">
@@ -68,7 +105,7 @@ export function TaskProgress({ panel }: { panel: TopicPanelView }) {
 }
 
 export function TopicTasks({ panel }: { panel: TopicPanelView }) {
-  const { tasks, done, total } = topicTasks({ status: panel.status.status, practice: panel.practice });
+  const { tasks, done, total } = taskState(panel);
   return (
     <section aria-labelledby="tasks-title" className="grid gap-2.5">
       <div className="flex items-baseline justify-between">
@@ -83,10 +120,13 @@ export function TopicTasks({ panel }: { panel: TopicPanelView }) {
         {tasks.map((task) => (
           <li key={task.id} className="flex gap-2.5">
             <Box state={task.state} />
-            <span className={cn((task.state === "none" || task.state === "skipped") && "text-muted-foreground")}>
-              <span className="font-semibold">{titles[task.id]}</span> · {taskLine(task.id, panel)}
-              <span className="sr-only">, {stateWords[task.state]}</span>
-            </span>
+            <div className="min-w-0 flex-1">
+              <span className={cn((task.state === "none" || task.state === "skipped") && "text-muted-foreground")}>
+                <span className="font-semibold">{titles[task.id]}</span> · {taskLine(task.id, panel)}
+                <span className="sr-only">, {stateWords[task.state]}</span>
+              </span>
+              {task.id === "build" && panel.build && <BuildCode build={panel.build} />}
+            </div>
           </li>
         ))}
       </ul>
@@ -109,7 +149,7 @@ export function TopicTaskAction({
   /** False on an archived roadmap. */
   showNext?: boolean;
 }) {
-  const { main } = topicTasks({ status: panel.status.status, practice: panel.practice });
+  const { main } = taskState(panel);
 
   if (main === "next") {
     if (!showNext) return null;

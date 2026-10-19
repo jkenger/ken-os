@@ -12,7 +12,16 @@ import { getProfileRow } from "./profile-store";
 import { normalizePlan, PlanError, type PlanInput } from "./roadmap-plan";
 import { isComplete, roadmapSummary } from "./roadmap-summary";
 import { canAddRoadmap, orderRoadmaps, ROADMAP_LIMIT_MESSAGE } from "./roadmaps";
-import { listNotes, listReports, topicStatus, topicStatuses, type NoteView, type ReportView } from "./status-store";
+import {
+  latestBuild,
+  listNotes,
+  listReports,
+  topicStatus,
+  topicStatuses,
+  type BuildView,
+  type NoteView,
+  type ReportView,
+} from "./status-store";
 import { chapterDone, nextTopic, type PracticeState } from "./topic-steps";
 import { waitingOn, type TopicMaterial, type TopicPlan } from "./topic-material";
 import { getMaterial, getPlans } from "./topic-material-store";
@@ -371,6 +380,8 @@ export interface TopicPanelView {
   chatUrl: string | null;
   /** The Practice step (engineering-progressive-flow.md, section 2). */
   practice: PracticeState;
+  /** The latest Build Claude reported with the owner's code, which ticks Build too; null when there is none. */
+  build: BuildView | null;
   /** The next unfinished topic on the roadmap, and this topic's chapter when it's done (section 3). */
   next: { id: string; title: string } | null;
   chapterDone: { title: string; learned: number; total: number } | null;
@@ -395,18 +406,19 @@ export async function getTopicPanel(
   roadmapId?: string | null,
 ): Promise<TopicPanelView> {
   const topic = await requireAnyTopic(userId, topicId, await chapterOnRoadmap(userId, topicId));
-  const [status, reports, notes, chatUrl, practice, roadmap, material] = await Promise.all([
+  const [status, reports, notes, chatUrl, practice, build, roadmap, material] = await Promise.all([
     topicStatus(userId, topicId),
     listReports(userId, topicId, 20),
     listNotes(userId, topicId),
     getTopicChat(userId, topicId),
     practiceState(userId, topic),
+    latestBuild(userId, topicId),
     getRoadmap(userId, roadmapId),
     getMaterial(userId, topicId),
   ]);
   const { id, title, custom, area, chapter, gap, points } = topic;
   return {
-    ...{ id, title, custom, area, chapter, gap, points, status, reports, notes, chatUrl, practice },
+    ...{ id, title, custom, area, chapter, gap, points, status, reports, notes, chatUrl, practice, build },
     next: nextTopic(roadmap.chapters, topicId),
     chapterDone: chapterDone(roadmap.chapters, topicId),
     material,

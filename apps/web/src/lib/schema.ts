@@ -18,6 +18,7 @@ import type {
   StoredTopicStatus,
 } from "@ken-os/domain";
 import type { PortfolioSnapshot } from "@ken-os/portfolio";
+import type { BuildEvidence } from "../features/engineering-lab/build-evidence";
 import type { ReviewSheet } from "../features/engineering-lab/review-sheet";
 import type { Difficulty, TopicMaterial } from "../features/engineering-lab/topic-material";
 
@@ -359,6 +360,8 @@ export const labTopicEvents = pgTable(
     evidence: text("evidence"),
     /** report setting Learned: Claude's note on how the owner got there, such as hints given. */
     evidenceNote: text("evidence_note"),
+    /** report ticking Build: where the owner built it, their final code word for word, and Claude's note. */
+    build: jsonb("build").$type<BuildEvidence>(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [

@@ -343,6 +343,36 @@ async function main() {
       assert.equal((await call("get_my_work", { topicId: "custom.llm_as_judge" })).labId, null);
       await call("report_progress", { topicId: "custom.llm_as_judge", summary: "Talked through judges" });
       await call("save_note", { topicId: "custom.llm_as_judge", body: "Say rubric, not vibe check" });
+
+      // A build in the owner's own app ticks Build, with their final code kept word for word.
+      assert.equal((await call("get_topic", { topicId: "react.effects" })).build.done, false);
+      const code = "export function GET() {\n  return Response.json({ ok: true });\n}\n";
+      await assert.rejects(
+        call("report_progress", {
+          topicId: "react.effects",
+          summary: "Fixed the route",
+          build: { where: "real-app", evidence: [], note: "Forgot to return" },
+        }),
+        /Build needs evidence/,
+      );
+      const builtReport = await call("report_progress", {
+        topicId: "react.effects",
+        summary: "Fixed the route in their app",
+        build: {
+          where: "real-app",
+          evidence: [{ path: "app/api/route.ts", contents: code }],
+          note: "Forgot to return",
+        },
+      });
+      assert.equal(builtReport.status, "in_progress", "a build report doesn't change the status");
+      const built = await call("get_topic", { topicId: "react.effects" });
+      assert.equal(built.build.done, true);
+      assert.equal(built.build.exercisePassed, false);
+      assert.equal(built.build.reported.evidence[0].contents, code, "the code is kept word for word");
+      assert.equal(built.reports[0].built, true);
+      const builtPanel = await roadmaps.getTopicPanel(planner, "react.effects");
+      assert.equal(builtPanel.build?.where, "real-app");
+      console.log("ok - connector: a build outside Loots ticks Build with the owner's code");
       const panel = await roadmaps.getTopicPanel(planner, "custom.llm_as_judge");
       assert.equal(panel.status.status, "in_progress");
       assert.equal(panel.notes.length, 1);

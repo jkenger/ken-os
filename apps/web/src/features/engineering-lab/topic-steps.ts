@@ -16,16 +16,25 @@ export type TaskState = "done" | "todo" | "none" | "skipped";
 
 /**
  * Read → Build → Explain, the same three for every topic, from what has happened: Read is done once Claude has started
- * (In progress), Build once an exercise run passed, Explain once the topic is Learned with the owner's own words. The
- * main button goes to the first task left to do; a finished topic (Learned or Skipped) points to the next topic.
+ * (In progress), Build once an exercise run passed or Claude reported the build with the owner's code (`built`), Explain
+ * once the topic is Learned with the owner's own words. The main button goes to the first task left to do; a finished
+ * topic (Learned or Skipped) points to the next topic.
  */
-export function topicTasks({ status, practice }: { status: TopicStatus; practice: PracticeState }) {
+export function topicTasks({
+  status,
+  practice,
+  built = false,
+}: {
+  status: TopicStatus;
+  practice: PracticeState;
+  built?: boolean;
+}) {
   const skipped = status === "skipped";
   const state = (done: boolean, waiting = false): TaskState =>
     skipped ? "skipped" : done ? "done" : waiting ? "none" : "todo";
   const tasks: { id: TaskId; state: TaskState }[] = [
     { id: "read", state: state(status !== "not_started") },
-    { id: "build", state: state(practice === "passed", practice === "none") },
+    { id: "build", state: state(built || practice === "passed", practice === "none") },
     { id: "explain", state: state(status === "learned") },
   ];
   const finished = status === "learned" || skipped;

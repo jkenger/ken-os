@@ -41,6 +41,16 @@ test("Read is done once Claude has started; Build is next until a run passes, th
   assert.deepEqual([passed.done, passed.main], [2, "explain"]);
 });
 
+test("a build Claude reported ticks Build, with or without a Loots exercise", () => {
+  assert.deepEqual(states(topicTasks({ status: "in_progress", practice: "none", built: true })), [
+    "read:done",
+    "build:done",
+    "explain:todo",
+  ]);
+  const tried = topicTasks({ status: "in_progress", practice: "tried", built: true });
+  assert.deepEqual([tried.done, tried.main], [2, "explain"]);
+});
+
 test("without an exercise, Build waits on one and Explain is next", () => {
   const tasks = topicTasks({ status: "in_progress", practice: "none" });
   assert.deepEqual(states(tasks), ["read:done", "build:none", "explain:todo"]);
