@@ -126,7 +126,8 @@ export function RoadmapSwitcher({
                 <DropdownMenuItem
                   key={roadmap.id}
                   onSelect={() => router.push(engineering.roadmap(null, roadmap.id))}
-                  className={roadmap.id === currentId ? "bg-accent" : undefined}
+                  aria-current={roadmap.id === currentId ? "true" : undefined}
+                  className="aria-[current=true]:bg-muted"
                 >
                   <span className="min-w-0 flex-1 truncate">{roadmap.goal}</span>
                   {roadmap.archivedAt && (

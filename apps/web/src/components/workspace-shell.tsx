@@ -21,6 +21,7 @@ import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { TermLookup } from "@/components/terms/term-lookup";
 import { Toaster } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
+import { Kbd } from "@/components/ui/kbd";
 import {
   Command,
   CommandDialog,
@@ -126,17 +127,15 @@ function ModuleSearch() {
   return (
     <>
       <Button
-        variant="ghost"
+        variant="outline"
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Jump to a module"
-        className="h-9 w-9 gap-2 rounded-full bg-card px-0 text-muted-foreground hover:bg-accent sm:w-60 sm:justify-start sm:px-3.5 md:bg-muted md:shadow-none lg:w-72"
+        className="w-9 px-0 font-normal text-muted-foreground sm:w-60 sm:justify-start sm:px-3 lg:w-72"
       >
         <Search size={16} strokeWidth={1.8} aria-hidden="true" />
         <span className="hidden flex-1 text-left text-xs font-normal sm:block">Jump to a module…</span>
-        <kbd className="hidden rounded-md bg-card px-1.5 py-0.5 text-xs font-normal text-muted-foreground sm:block">
-          Ctrl K
-        </kbd>
+        <Kbd className="hidden sm:inline-flex">Ctrl K</Kbd>
       </Button>
       <CommandDialog
         open={open}
@@ -392,7 +391,9 @@ function ShellInset({ title, sections, children }: { title: string; sections: Se
               key={key}
               className={cn(
                 "h-8 shrink-0 rounded-md px-3 py-1.5 text-sm transition-colors",
-                selected ? "bg-sidebar-accent font-medium text-foreground" : "text-sidebar-foreground hover:bg-accent",
+                selected
+                  ? "bg-sidebar-accent font-medium text-foreground"
+                  : "text-sidebar-foreground hover:bg-sidebar-accent",
               )}
               href={href}
               aria-current={selected ? "location" : undefined}

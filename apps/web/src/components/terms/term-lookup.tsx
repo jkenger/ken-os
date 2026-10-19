@@ -5,6 +5,7 @@ import { BookmarkCheck, BookmarkPlus, ExternalLink, X } from "lucide-react";
 import { ThinkingOrb } from "thinking-orbs";
 import { TERM_MAX_LENGTH, type TermAnswer } from "@ken-os/domain";
 import { Button } from "@/components/ui/button";
+import { Kbd } from "@/components/ui/kbd";
 import { toast } from "@/components/ui/toaster";
 import { SavedTermMarks } from "@/components/terms/saved-term-marks";
 import { markSaved, saveLookup, startLookup, watchLookup, type LookupJob } from "@/features/terms/lookup-jobs";
@@ -214,11 +215,11 @@ export function TermLookup({ module, children }: { module: string; children: Rea
           data-term-lookup
           title="Explain this term (E)"
           aria-keyshortcuts="E"
-          className="fixed z-40 h-8 gap-1.5 rounded-lg px-3 text-xs font-semibold shadow-lg hover:shadow-xl"
+          className="fixed z-40 h-8 gap-1.5 px-3 text-xs font-semibold shadow-lg"
           style={{ left: Math.max(16, pending.x - 44), top: pending.y + 8 }}
           onClick={() => explain(pending)}
         >
-          Explain <kbd className="rounded border border-primary-foreground/40 px-1 text-xs">E</kbd>
+          Explain <Kbd className="bg-primary-foreground/20 text-primary-foreground">E</Kbd>
         </Button>
       )}
       {pending && open && (
