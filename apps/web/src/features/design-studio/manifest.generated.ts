@@ -265,6 +265,17 @@ export const studioManifest: StudioManifest = {
       "uses": []
     },
     {
+      "id": "ui/kbd",
+      "name": "Kbd",
+      "kind": "primitive",
+      "file": "components/ui/kbd.tsx",
+      "exports": [
+        "Kbd"
+      ],
+      "variants": [],
+      "uses": []
+    },
+    {
       "id": "ui/label",
       "name": "Label",
       "kind": "primitive",
