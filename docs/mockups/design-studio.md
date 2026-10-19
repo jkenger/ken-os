@@ -1,6 +1,6 @@
 # Design Studio: mockup brief
 
-Status: proposed, 19 Oct 2026. The UI half of [design-studio.md](design-studio.md), which holds the decisions this brief
+Status: proposed, 19 Oct 2026. The UI half of [design-studio.md](../architecture/design-studio.md), which holds the decisions this brief
 draws (three panels, build-time manifest, metadata only for other libraries, inspector first, drafts and export). This
 brief says which frames, states and words to draw. Code follows the chosen mockups.
 
@@ -28,7 +28,7 @@ folds the agreed ones in.
 ## Ground rules for every frame
 
 - **Look:** Loots as it is. shadcn's default setup plus the Loots tokens and shared rules in
-  [design-system.md](design-system.md): `panel` surfaces with no shadow, `selected` for the picked item, status never
+  [design-system.md](../architecture/design-system.md): `panel` surfaces with no shadow, `selected` for the picked item, status never
   colour alone. Build from `components/ui` (Button, Badge, Tabs, ToggleGroup, Switch, Input, NativeSelect, Collapsible,
   Command, Dialog, Sheet, Tooltip, Skeleton) and the shared `DockedPanel`. Anything that needs a new token or component
   is named as a proposal in the frame's notes, not slipped in.
