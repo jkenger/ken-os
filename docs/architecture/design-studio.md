@@ -1,6 +1,6 @@
 # Design Studio — architecture spec
 
-Status: agreed with the owner on 19 Oct 2026. Nothing is built yet. The screens are drawn from [the mockup brief](../mockups/design-studio.md).
+Status: agreed with the owner on 19 Oct 2026. Step 1 (manifest and tree) is built; steps 2 to 5 are not. The screens are drawn from [the mockup brief](../mockups/design-studio.md).
 
 The Design Studio is a private workspace in Loots for seeing and tuning the app's components. It lists every component in the repo and in the shadcn libraries the owner might add, renders the installed ones live, and lets the owner change their look with instant feedback. Changes are saved as drafts and turned into code by export. The studio does not write to the codebase itself.
 
@@ -77,7 +77,7 @@ Export:
 
 Each step is its own PR and leaves the app working.
 
-1. **Manifest and tree.** The script, the manifest for this repo only, `/studio` with the tree and a single-component preview.
+1. **Manifest and tree.** The script, the manifest for this repo only, `/studio` with the tree and a single-component preview. Built 19 Oct 2026. Previews are written by hand in `components/design-studio/previews.tsx`; Sidebar has none, since it needs its own provider and page frame.
 2. **Graph.** All installed components as live nodes with dependency edges; shared selection with the tree.
 3. **Inspector and drafts.** Variant, prop and token controls, live re-render, the drafts table, Copy as patch.
 4. **Other libraries.** shadcn/ui and chosen registries as metadata branches and graph cards.
