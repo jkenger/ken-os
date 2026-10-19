@@ -35,5 +35,7 @@ test("the instructions have Claude teach from the topic's material: its tasks in
   assert.match(text, /follow its tasks in order/);
   assert.match(text, /for read, open its resources/);
   assert.match(text, /for build, .*save_exercise/);
+  assert.match(text, /never a rebuild of something the framework or tool already does/);
+  assert.match(text, /set the build in a real project/);
   assert.match(text, /for explain, .*own words/);
 });
