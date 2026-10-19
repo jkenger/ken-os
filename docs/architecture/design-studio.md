@@ -20,6 +20,18 @@ The Design Studio is a private workspace in Loots for seeing and tuning the app'
 
 Rejected: compiling uninstalled registry code in the browser (running third-party code inside the signed-in app, and a compiler to maintain), a separate "Custom" library (it would list the same button twice), the app writing to the repo or opening PRs itself (it has no GitHub access and should not), and in-app AI chat for the first slice (Loots makes no model calls today; AI lives in Claude, per `engineering-claude-first.md`).
 
+## Decided after the mockups
+
+Agreed with the owner on 19 Oct 2026, from the open questions in the mockup handoff (project files, `design-studio-mockups/README.md`; canvas [Design Studio mockups](https://claude.ai/artifact/SJTbQ5ZZaMPnw7UpvY8H8c)).
+
+1. **First open** is 100% on the top row of This repo, not fitted: fitting lands near 33%, below the 50% cutoff where nodes show names only. **Fit** stays one click away.
+2. **Installed shadcn components** keep a row in both This repo and shadcn/ui. The shadcn/ui row shows Installed and selects the This repo node; the canvas draws each component once.
+3. **The tree's default filter** is All, so the catalogue is visible.
+4. **Registry items without a description**: the manifest script copies the docs one-liners when it runs, and the UI shows nothing when there is none.
+5. **Edges between libraries** (Calendar uses Button) show only for the picked or hovered node.
+6. **Token edits to shadcn tokens** are always an override in the Loots section of `globals.css`, never an edit of the base.
+7. **A large registry's area** (Magic UI) stays folded on the canvas until its tree branch is opened.
+
 ## Shape
 
 ```text
