@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import { BookmarkCheck, BookmarkPlus, ExternalLink, LoaderCircle, X } from "lucide-react";
+import { BookmarkCheck, BookmarkPlus, ExternalLink, X } from "lucide-react";
+import { ThinkingOrb } from "thinking-orbs";
 import { TERM_MAX_LENGTH, type TermAnswer } from "@ken-os/domain";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toaster";
@@ -239,7 +240,7 @@ export function TermLookup({ module, children }: { module: string; children: Rea
           {(!job || job.state === "loading") && (
             <div className="mt-2" role="status">
               <p className="flex items-center gap-2 font-semibold">
-                <LoaderCircle size={15} className="motion-safe:animate-spin" aria-hidden="true" />
+                <ThinkingOrb state="searching" size={20} aria-hidden="true" />
                 Looking up…
               </p>
               <div className="mt-3 space-y-2" aria-hidden="true">

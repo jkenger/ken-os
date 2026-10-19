@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ThinkingOrb } from "thinking-orbs";
 import { scoreProbe, type LabDefinition, type Topic } from "@ken-os/domain";
 import { CodeBlock, Markdown } from "@/components/lab/markdown";
 import { post } from "@/components/lab/topic/client";
@@ -255,7 +256,8 @@ export function Exercise({
             </Notice>
           )}
           {checking && (
-            <p role="status" className="mb-4 text-xs text-muted-foreground">
+            <p role="status" className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
+              <ThinkingOrb state="solving" size={20} aria-hidden="true" />
               Checking new exercise from Claude…
             </p>
           )}
