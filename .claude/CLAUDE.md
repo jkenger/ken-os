@@ -13,7 +13,7 @@
 
 Run from the repo root before a PR:
 
-1. `pnpm check`: every file is Prettier-formatted, generated lab content and the studio manifest are current, then `tsc --noEmit`.
+1. `pnpm check`: every file is Prettier-formatted, generated lab content is current, then `tsc --noEmit`.
 2. `pnpm test`: unit tests, including the shadcn primitive and default-theme guards, and every lab starter fails while every solution passes.
 3. `pnpm build`: production build.
 
@@ -25,7 +25,7 @@ Database checks need `pnpm db:up` (Docker Postgres on `127.0.0.1:5435`) and `pnp
 - `pnpm --filter @ken-os/web test:db:auth`
 - `pnpm --filter @ken-os/web test:db:memory`
 
-After editing the curriculum YAML, a lesson or a lab, run `pnpm --filter @ken-os/web lab:generate` before `pnpm check`. After changing a component, run `pnpm --filter @ken-os/web studio:generate`.
+After editing the curriculum YAML, a lesson or a lab, run `pnpm --filter @ken-os/web lab:generate` before `pnpm check`.
 
 `.claude/settings.json` hooks run Prettier on every file Claude writes or edits, then `pnpm check` after every `.ts` or `.tsx` edit.
 

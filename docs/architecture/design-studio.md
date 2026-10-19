@@ -1,6 +1,6 @@
 # Design Studio — architecture spec
 
-Status: agreed with the owner on 19 Oct 2026. Step 1 (manifest and tree) is built; steps 2 to 5 are not. The screens are drawn from [the mockup brief](../mockups/design-studio.md).
+Status: agreed with the owner on 19 Oct 2026. Nothing is built yet. The screens are drawn from [the mockup brief](../mockups/design-studio.md).
 
 The Design Studio is a private workspace in Loots for seeing and tuning the app's components. It lists every component in the repo and in the shadcn libraries the owner might add, renders the installed ones live, and lets the owner change their look with instant feedback. Changes are saved as drafts and turned into code by export. The studio does not write to the codebase itself.
 
@@ -19,18 +19,6 @@ The Design Studio is a private workspace in Loots for seeing and tuning the app'
 | Where edits go            | Drafts in Postgres. Export turns them into code: "Copy as patch" first, then Claude applies them through the connector. |
 
 Rejected: compiling uninstalled registry code in the browser (running third-party code inside the signed-in app, and a compiler to maintain), a separate "Custom" library (it would list the same button twice), the app writing to the repo or opening PRs itself (it has no GitHub access and should not), and in-app AI chat for the first slice (Loots makes no model calls today; AI lives in Claude, per `engineering-claude-first.md`).
-
-## Decided after the mockups
-
-Agreed with the owner on 19 Oct 2026, from the open questions in the mockup handoff (project files, `design-studio-mockups/README.md`; canvas [Design Studio mockups](https://claude.ai/artifact/SJTbQ5ZZaMPnw7UpvY8H8c)).
-
-1. **First open** is 100% on the top row of This repo, not fitted: fitting lands near 33%, below the 50% cutoff where nodes show names only. **Fit** stays one click away.
-2. **Installed shadcn components** keep a row in both This repo and shadcn/ui. The shadcn/ui row shows Installed and selects the This repo node; the canvas draws each component once.
-3. **The tree's default filter** is All, so the catalogue is visible.
-4. **Registry items without a description**: the manifest script copies the docs one-liners when it runs, and the UI shows nothing when there is none.
-5. **Edges between libraries** (Calendar uses Button) show only for the picked or hovered node.
-6. **Token edits to shadcn tokens** are always an override in the Loots section of `globals.css`, never an edit of the base.
-7. **A large registry's area** (Magic UI) stays folded on the canvas until its tree branch is opened.
 
 ## Shape
 
@@ -77,7 +65,7 @@ Export:
 
 Each step is its own PR and leaves the app working.
 
-1. **Manifest and tree.** The script, the manifest for this repo only, `/studio` with the tree and a single-component preview. Built 19 Oct 2026. Previews are written by hand in `components/design-studio/previews.tsx`; Sidebar has none, since it needs its own provider and page frame.
+1. **Manifest and tree.** The script, the manifest for this repo only, `/studio` with the tree and a single-component preview.
 2. **Graph.** All installed components as live nodes with dependency edges; shared selection with the tree.
 3. **Inspector and drafts.** Variant, prop and token controls, live re-render, the drafts table, Copy as patch.
 4. **Other libraries.** shadcn/ui and chosen registries as metadata branches and graph cards.

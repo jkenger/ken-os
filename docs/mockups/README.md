@@ -5,9 +5,8 @@ back. The decisions behind a screen stay in `docs/architecture/`; each brief lin
 mockups.
 
 - Briefs live here, one per screen or feature, named after it (`design-studio.md`).
-- The mockups themselves are a design canvas, linked from the brief and the handoff README. The README goes in the
-  project files, in the folder named in the brief's "Handoff: what to return" section, not in the repo. Claude agents never
-  export or render PNGs; PNGs are only for an outside agent that cannot open the canvas.
+- The mockups themselves (PNGs and the HTML or design source) go in the project files, in a folder named in the brief's
+  "Handoff: what to return" section, not in the repo.
 
 | Brief                                                      | Spec                                                                               |
 | ---------------------------------------------------------- | ---------------------------------------------------------------------------------- |
