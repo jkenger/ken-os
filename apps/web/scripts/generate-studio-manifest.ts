@@ -132,6 +132,7 @@ const manifest: StudioManifest = {
   libraries: snapshot.libraries.map((library) => ({
     id: library.id,
     name: library.name,
+    ...(library.folded ? { folded: true as const } : {}),
     items: libraryItems(library, installed),
   })),
   theme,

@@ -13,11 +13,14 @@ const snapshotPath = resolve(webRoot, "src/features/design-studio/registries.sna
 /** shadcn/ui's source on GitHub: `public/r/index.json` is what ui.shadcn.com/r/index.json serves, and the docs pages'
  *  frontmatter holds the one-line descriptions the registry JSON leaves out. */
 const shadcnSource = "https://raw.githubusercontent.com/shadcn-ui/ui/main/apps/v4";
+/** Magic UI's registry, what magicui.design/r/registry.json serves, with each item's description. */
+const magicSource = "https://raw.githubusercontent.com/magicuidesign/magicui/main/apps/www/public/r/registry.json";
 
 type IndexItem = {
   name: string;
   type: string;
   registryDependencies?: string[];
+  description?: string;
   meta?: { links?: Record<string, { docs?: string }> };
 };
 
@@ -51,12 +54,31 @@ async function readShadcn(base: string) {
   );
 }
 
+/** Magic UI's components. Its items name shadcn/ui's by their bare names ("button"), which the manifest points at this
+ *  repo's primitives when they are installed. */
+async function readMagic() {
+  const source = await get(magicSource);
+  if (!source) throw new Error(`Magic UI's registry is gone from ${magicSource}; the snapshot is left as it was.`);
+  const items = (JSON.parse(source) as { items: IndexItem[] }).items.filter((item) => item.type === "registry:ui");
+  if (!items.length) throw new Error("Magic UI's registry lists no components; the snapshot is left as it was.");
+  return items.map((item) => ({
+    name: item.name,
+    ...(item.description ? { description: item.description } : {}),
+    uses: (item.registryDependencies ?? []).filter((name) => /^[a-z0-9-]+$/.test(name)),
+    docs: `https://magicui.design/docs/components/${item.name}`,
+  }));
+}
+
 const config = JSON.parse(readFileSync(resolve(webRoot, "components.json"), "utf8")) as { style: string };
 const base = config.style.split("-")[0];
 
 async function main() {
   const snapshot: RegistrySnapshot = {
-    libraries: [{ id: "shadcn", name: "shadcn/ui", items: await readShadcn(base) }],
+    libraries: [
+      { id: "shadcn", name: "shadcn/ui", items: await readShadcn(base) },
+      // Folded on the canvas until its branch is opened, since its 78 cards would bury shadcn/ui's.
+      { id: "magicui", name: "Magic UI", folded: true, items: await readMagic() },
+    ],
   };
   writeFileSync(snapshotPath, `${JSON.stringify(snapshot, null, 2)}\n`, "utf8");
   console.log(

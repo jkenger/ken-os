@@ -46,13 +46,20 @@ export type LibraryItem = {
 };
 
 /** A library other than this repo, such as shadcn/ui, as one branch of the tree. */
-export type StudioLibrary = { id: string; name: string; items: LibraryItem[] };
+export type StudioLibrary = {
+  id: string;
+  name: string;
+  /** A large library whose cards stay off the canvas until its tree branch is opened, as Magic UI's. */
+  folded?: true;
+  items: LibraryItem[];
+};
 
 /** What scripts/fetch-studio-registries.ts commits: each library's items as its registry names them. */
 export type RegistrySnapshot = {
   libraries: {
     id: string;
     name: string;
+    folded?: true;
     items: { name: string; description?: string; uses: string[]; docs?: string }[];
   }[];
 };
@@ -75,7 +82,7 @@ export type StudioManifest = {
 
 /** "dropdown-menu" -> "DropdownMenu". */
 export function pascal(slug: string) {
-  return slug.replace(/(^|-)([a-z])/g, (_, __, letter: string) => letter.toUpperCase());
+  return slug.replace(/(^|-)([a-z0-9])/g, (_, __, letter: string) => letter.toUpperCase());
 }
 
 /** "SectionTitle" -> "section-title", "selectedRow" -> "selected-row". */
@@ -84,22 +91,27 @@ export function kebab(name: string) {
 }
 
 /** A library's items as the studio lists them: named in Pascal case, marked installed when this repo has a primitive
- *  of the same name, and using only the library's own components, pointed at this repo's where installed. */
+ *  of the same name, and using the library's own components or this repo's primitives (Magic UI's buttons use
+ *  shadcn/ui's Button), pointed at this repo's where installed. A to Z, like the tree's other branches. */
 export function libraryItems(
   library: RegistrySnapshot["libraries"][number],
   primitives: Set<string>,
 ): StudioLibrary["items"] {
   const names = new Set(library.items.map((item) => item.name));
   const local = (name: string) => (primitives.has(`ui/${name}`) ? `ui/${name}` : undefined);
-  return library.items.map((item) => ({
-    id: `${library.id}/${item.name}`,
-    name: pascal(item.name),
-    ...(item.description ? { description: item.description } : {}),
-    uses: item.uses.filter((name) => names.has(name)).map((name) => local(name) ?? `${library.id}/${name}`),
-    ...(local(item.name) ? { installed: local(item.name) } : {}),
-    add: `pnpm dlx shadcn@latest add @${library.id}/${item.name}`,
-    ...(item.docs ? { docs: item.docs } : {}),
-  }));
+  return library.items
+    .map((item) => ({
+      id: `${library.id}/${item.name}`,
+      name: pascal(item.name),
+      ...(item.description ? { description: item.description } : {}),
+      uses: item.uses
+        .filter((name) => names.has(name) || local(name))
+        .map((name) => local(name) ?? `${library.id}/${name}`),
+      ...(local(item.name) ? { installed: local(item.name) } : {}),
+      add: `pnpm dlx shadcn@latest add @${library.id}/${item.name}`,
+      ...(item.docs ? { docs: item.docs } : {}),
+    }))
+    .sort((a, b) => a.name.localeCompare(b.name, "en", { sensitivity: "base" }));
 }
 
 /** The tree's order: primitives A to Z, each followed by the wrappers built on it, then wrappers that wrap nothing, A
@@ -140,6 +152,19 @@ export function filterTree(rows: ReturnType<typeof treeOrder>, query: string, ch
 /** The tree's filters besides find and Changed (B1): which library's branch to show ("all", "repo" or a library's id),
  *  and whether to list only what is installed here. */
 export type TreeFilters = { library: string; installedOnly: boolean };
+
+/** Whether a tree branch is open: opened by hand, picked in the Library filter, or forced open by find or Changed so
+ *  a match is never hidden. A folded library's cards are on the canvas only while this holds (decided after the
+ *  mockups). */
+export function branchOpen(
+  id: string,
+  open: Record<string, boolean>,
+  filters: TreeFilters,
+  query: string,
+  changedOnly: boolean,
+) {
+  return Boolean(query.trim()) || changedOnly || filters.library === id || Boolean(open[id]);
+}
 
 /** A library's items whose name matches the query, installed here with `installedOnly`, and with `changed`, installed
  *  as a This repo component that has a draft. */
