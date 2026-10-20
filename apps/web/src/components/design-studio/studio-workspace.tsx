@@ -160,8 +160,8 @@ export function StudioWorkspace({
             changed: changedOnly ? changed : undefined,
           }),
         )
-        .filter((item) => !item.installed)
-        .map((item) => item.id),
+        // An installed item is drawn once, as This repo's node (B4).
+        .map((item) => item.installed ?? item.id),
     ]);
   }, [rows, manifest.libraries, filters, query, changedOnly, changed]);
   const pick = useCallback(

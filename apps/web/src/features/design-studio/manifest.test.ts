@@ -215,3 +215,11 @@ test("layoutLibraries draws cards only for items not installed, in an area under
     ["shadcn/calendar>ui/button", "shadcn/chart>shadcn/calendar"],
   );
 });
+
+test("routeEdge keeps a card's arrow in the 32px gap above its row", () => {
+  // A second-row card to This repo's top-left node: 16 above the card, 28 above the node.
+  assert.equal(
+    routeEdge({ x: 320, y: 500 }, { x: 32, y: 64 }, { height: 96, fromGap: 32 }),
+    "M440 500 V484 H296 V36 H152 V64",
+  );
+});

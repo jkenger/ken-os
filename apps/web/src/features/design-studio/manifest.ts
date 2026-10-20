@@ -179,9 +179,21 @@ type Box = { x: number; y: number };
  *  to a neighbour in the same row; otherwise up out of the source's top into the gap above its row, along that gap to
  *  the column gap beside the source, along the column gap to the gap above the target's row, and down into the
  *  target's top. `start` and `end` spread the edges leaving or entering one node, and `lane` shifts the gap segments
- *  so edges sharing a gap run side by side. `height` is the nodes' height, 96 for another library's cards. */
-export function routeEdge(from: Box, to: Box, { start = 0, end = 0, lane = 0, height = graphGrid.height } = {}) {
-  const { width, columnGap, rowGap } = graphGrid;
+ *  so edges sharing a gap run side by side. `height` is the source's height and `fromGap` and `toGap` the gaps above
+ *  the source's and target's rows: 96 and 32 for another library's cards, whose rows sit closer than This repo's. */
+export function routeEdge(
+  from: Box,
+  to: Box,
+  {
+    start = 0,
+    end = 0,
+    lane = 0,
+    height = graphGrid.height,
+    fromGap = graphGrid.rowGap,
+    toGap = graphGrid.rowGap,
+  } = {},
+) {
+  const { width, columnGap } = graphGrid;
   if (from.y === to.y && Math.abs(from.x - to.x) === width + columnGap) {
     const y = from.y + height / 2 + start;
     const [x1, x2] = from.x < to.x ? [from.x + width, to.x] : [from.x, to.x + width];
@@ -189,10 +201,10 @@ export function routeEdge(from: Box, to: Box, { start = 0, end = 0, lane = 0, he
   }
   const x1 = from.x + width / 2 + start;
   const x2 = to.x + width / 2 + end;
-  const above = (box: Box) => box.y - rowGap / 2 + lane;
-  if (from.y === to.y) return `M${x1} ${from.y} V${above(from)} H${x2} V${to.y}`;
+  const above = (box: Box, gap: number) => box.y - gap / 2 + lane;
+  if (from.y === to.y) return `M${x1} ${from.y} V${above(from, fromGap)} H${x2} V${to.y}`;
   const side = to.x < from.x ? from.x - columnGap / 2 : from.x + width + columnGap / 2;
-  return `M${x1} ${from.y} V${above(from)} H${side + lane} V${above(to)} H${x2} V${to.y}`;
+  return `M${x1} ${from.y} V${above(from, fromGap)} H${side + lane} V${above(to, toGap)} H${x2} V${to.y}`;
 }
 
 /** Where each component sits on the canvas, the size of the This repo area around them, and the dependency edges. */
@@ -285,6 +297,7 @@ export function layoutLibraries(libraries: StudioLibrary[], repo: ReturnType<typ
     ...repo.nodes.map((node): [string, Box] => [node.component.id, node]),
     ...cards.map((card): [string, Box] => [card.item.id, card]),
   ]);
+  const cardIds = new Set(cards.map((card) => card.item.id));
   const links = cards.flatMap(({ item }) =>
     item.uses.filter((target) => at.has(target)).map((target) => ({ source: item.id, target })),
   );
@@ -305,6 +318,8 @@ export function layoutLibraries(libraries: StudioLibrary[], repo: ReturnType<typ
         end: spread(into, id, 8),
         lane: ((index % 5) - 2) * 4,
         height: cardGrid.height,
+        fromGap: cardGrid.rowGap,
+        toGap: cardIds.has(target) ? cardGrid.rowGap : graphGrid.rowGap,
       }),
     };
   });

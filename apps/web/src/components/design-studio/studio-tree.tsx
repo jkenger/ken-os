@@ -140,7 +140,8 @@ export function StudioTree({
   const pickedLibrary = libraries.find((library) => library.items.some((item) => item.id === picked))?.id;
   useEffect(() => {
     if (pickedLibrary) setOpen((all) => (all[pickedLibrary] ? all : { ...all, [pickedLibrary]: true }));
-  }, [pickedLibrary]);
+    // Every pick, so a branch folded after an earlier pick in it opens again.
+  }, [picked, pickedLibrary]);
   const pickedOpen = pickedLibrary ? Boolean(open[pickedLibrary]) : true;
   useEffect(() => {
     list.current?.querySelector<HTMLElement>("[aria-current=page]")?.scrollIntoView({ block: "nearest" });
