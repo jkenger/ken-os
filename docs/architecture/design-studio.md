@@ -105,7 +105,10 @@ To build a step: open the named frames on the canvas before writing UI (their ar
    - Look is offered where the studio can style the live element: primitives whose first export passes its className to a `data-slot` element (not Radix roots such as Dialog), and wrappers built on one that pass it classes (today the kit Badge). Others read "Nothing to restyle";
    - the tree's Changed switch sits under Find on its own, since the Library and Installed filters beside it come with step 4.
 
-4. **Other libraries.** shadcn/ui and chosen registries as metadata branches and graph cards. Frames: B1's Library, Installed and Changed filters, B4, C3, D7.
+4. **Other libraries.** shadcn/ui and chosen registries as metadata branches and graph cards. Frames: B1's Library, Installed and Changed filters, B4, C3, D7. Built in small PRs: the registry snapshot, the tree, the graph cards, the inspector, then Magic UI.
+   - `pnpm --filter @ken-os/web studio:registries` fetches each library into `features/design-studio/registries.snapshot.json`, which is committed; `studio:generate`, `pnpm check` and the build read only the snapshot, so none of them needs the network. Run it by hand to pick up a registry's changes, then `studio:generate`.
+   - shadcn/ui is read from its source on GitHub: `apps/v4/public/r/index.json` (what `ui.shadcn.com/r/index.json` serves) for the items and their registry dependencies, and each docs page's frontmatter for its one-liner. Only items with docs for this repo's base (the `radix` of `radix-luma`) are listed, since `shadcn add` can't install the others here; the mockups' Attachment, Bubble, Form and the other Aria-only items are therefore missing.
+   - The manifest gains `libraries`: each item's id (`shadcn/form`), name, description, the components it uses (this repo's id when installed here, such as `ui/button`), `installed` when this repo has a primitive of the same name, its `shadcn add` command and its docs link.
 5. **Connector export.** The drafts tool and the apply-through-Claude flow. Frames: E3, and the E4 note.
 
 Later, once the inspector has been used: decide on an AI tab (shadcn's AI Elements needs the Vercel AI SDK and a model key in the app).

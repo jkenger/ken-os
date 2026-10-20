@@ -1173,6 +1173,553 @@ export const studioManifest: StudioManifest = {
       ]
     }
   ],
+  "libraries": [
+    {
+      "id": "shadcn",
+      "name": "shadcn/ui",
+      "items": [
+        {
+          "id": "shadcn/accordion",
+          "name": "Accordion",
+          "description": "A vertically stacked set of interactive headings that each reveal a section of content.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @shadcn/accordion",
+          "docs": "https://ui.shadcn.com/docs/components/radix/accordion"
+        },
+        {
+          "id": "shadcn/alert",
+          "name": "Alert",
+          "description": "Displays a callout for user attention.",
+          "uses": [],
+          "installed": "ui/alert",
+          "add": "pnpm dlx shadcn@latest add @shadcn/alert",
+          "docs": "https://ui.shadcn.com/docs/components/radix/alert"
+        },
+        {
+          "id": "shadcn/alert-dialog",
+          "name": "AlertDialog",
+          "description": "A modal dialog that interrupts the user with important content and expects a response.",
+          "uses": [
+            "ui/button"
+          ],
+          "add": "pnpm dlx shadcn@latest add @shadcn/alert-dialog",
+          "docs": "https://ui.shadcn.com/docs/components/radix/alert-dialog"
+        },
+        {
+          "id": "shadcn/aspect-ratio",
+          "name": "AspectRatio",
+          "description": "Displays content within a desired ratio.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @shadcn/aspect-ratio",
+          "docs": "https://ui.shadcn.com/docs/components/radix/aspect-ratio"
+        },
+        {
+          "id": "shadcn/avatar",
+          "name": "Avatar",
+          "description": "An image element with a fallback for representing the user.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @shadcn/avatar",
+          "docs": "https://ui.shadcn.com/docs/components/radix/avatar"
+        },
+        {
+          "id": "shadcn/badge",
+          "name": "Badge",
+          "description": "Displays a badge or a component that looks like a badge.",
+          "uses": [],
+          "installed": "ui/badge",
+          "add": "pnpm dlx shadcn@latest add @shadcn/badge",
+          "docs": "https://ui.shadcn.com/docs/components/radix/badge"
+        },
+        {
+          "id": "shadcn/breadcrumb",
+          "name": "Breadcrumb",
+          "description": "Displays the path to the current resource using a hierarchy of links.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @shadcn/breadcrumb",
+          "docs": "https://ui.shadcn.com/docs/components/radix/breadcrumb"
+        },
+        {
+          "id": "shadcn/button",
+          "name": "Button",
+          "description": "Displays a button or a component that looks like a button.",
+          "uses": [],
+          "installed": "ui/button",
+          "add": "pnpm dlx shadcn@latest add @shadcn/button",
+          "docs": "https://ui.shadcn.com/docs/components/radix/button"
+        },
+        {
+          "id": "shadcn/button-group",
+          "name": "ButtonGroup",
+          "description": "A container that groups related buttons together with consistent styling.",
+          "uses": [
+            "ui/separator"
+          ],
+          "add": "pnpm dlx shadcn@latest add @shadcn/button-group",
+          "docs": "https://ui.shadcn.com/docs/components/radix/button-group"
+        },
+        {
+          "id": "shadcn/calendar",
+          "name": "Calendar",
+          "description": "A calendar component that allows users to select a date or a range of dates.",
+          "uses": [
+            "ui/button"
+          ],
+          "add": "pnpm dlx shadcn@latest add @shadcn/calendar",
+          "docs": "https://ui.shadcn.com/docs/components/radix/calendar"
+        },
+        {
+          "id": "shadcn/card",
+          "name": "Card",
+          "description": "Displays a card with header, content, and footer.",
+          "uses": [],
+          "installed": "ui/card",
+          "add": "pnpm dlx shadcn@latest add @shadcn/card",
+          "docs": "https://ui.shadcn.com/docs/components/radix/card"
+        },
+        {
+          "id": "shadcn/carousel",
+          "name": "Carousel",
+          "description": "A carousel with motion and swipe built using Embla.",
+          "uses": [
+            "ui/button"
+          ],
+          "add": "pnpm dlx shadcn@latest add @shadcn/carousel",
+          "docs": "https://ui.shadcn.com/docs/components/radix/carousel"
+        },
+        {
+          "id": "shadcn/chart",
+          "name": "Chart",
+          "description": "Beautiful charts. Built using Recharts. Copy and paste into your apps.",
+          "uses": [
+            "ui/card"
+          ],
+          "add": "pnpm dlx shadcn@latest add @shadcn/chart",
+          "docs": "https://ui.shadcn.com/docs/components/radix/chart"
+        },
+        {
+          "id": "shadcn/checkbox",
+          "name": "Checkbox",
+          "description": "A control that allows the user to toggle between checked and not checked.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @shadcn/checkbox",
+          "docs": "https://ui.shadcn.com/docs/components/radix/checkbox"
+        },
+        {
+          "id": "shadcn/code-block",
+          "name": "CodeBlock",
+          "description": "Displays code, terminal output and diffs with an optional header, line numbers and a copy button.",
+          "uses": [
+            "ui/button"
+          ],
+          "add": "pnpm dlx shadcn@latest add @shadcn/code-block",
+          "docs": "https://ui.shadcn.com/docs/components/radix/code-block"
+        },
+        {
+          "id": "shadcn/collapsible",
+          "name": "Collapsible",
+          "description": "An interactive component which expands/collapses a panel.",
+          "uses": [],
+          "installed": "ui/collapsible",
+          "add": "pnpm dlx shadcn@latest add @shadcn/collapsible",
+          "docs": "https://ui.shadcn.com/docs/components/radix/collapsible"
+        },
+        {
+          "id": "shadcn/combobox",
+          "name": "Combobox",
+          "description": "Autocomplete input with a list of suggestions.",
+          "uses": [
+            "ui/button",
+            "ui/input-group"
+          ],
+          "add": "pnpm dlx shadcn@latest add @shadcn/combobox",
+          "docs": "https://ui.shadcn.com/docs/components/radix/combobox"
+        },
+        {
+          "id": "shadcn/command",
+          "name": "Command",
+          "description": "Command menu for search and quick actions.",
+          "uses": [
+            "ui/dialog",
+            "ui/input-group"
+          ],
+          "installed": "ui/command",
+          "add": "pnpm dlx shadcn@latest add @shadcn/command",
+          "docs": "https://ui.shadcn.com/docs/components/radix/command"
+        },
+        {
+          "id": "shadcn/context-menu",
+          "name": "ContextMenu",
+          "description": "Displays a menu of actions triggered by a right click.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @shadcn/context-menu",
+          "docs": "https://ui.shadcn.com/docs/components/radix/context-menu"
+        },
+        {
+          "id": "shadcn/dialog",
+          "name": "Dialog",
+          "description": "A window overlaid on either the primary window or another dialog window, rendering the content underneath inert.",
+          "uses": [
+            "ui/button"
+          ],
+          "installed": "ui/dialog",
+          "add": "pnpm dlx shadcn@latest add @shadcn/dialog",
+          "docs": "https://ui.shadcn.com/docs/components/radix/dialog"
+        },
+        {
+          "id": "shadcn/direction",
+          "name": "Direction",
+          "description": "A provider component that sets the text direction for your application.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @shadcn/direction",
+          "docs": "https://ui.shadcn.com/docs/components/radix/direction"
+        },
+        {
+          "id": "shadcn/drawer",
+          "name": "Drawer",
+          "description": "A drawer component for React.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @shadcn/drawer",
+          "docs": "https://ui.shadcn.com/docs/components/radix/drawer"
+        },
+        {
+          "id": "shadcn/dropdown-menu",
+          "name": "DropdownMenu",
+          "description": "Displays a menu to the user — such as a set of actions or functions — triggered by a button.",
+          "uses": [],
+          "installed": "ui/dropdown-menu",
+          "add": "pnpm dlx shadcn@latest add @shadcn/dropdown-menu",
+          "docs": "https://ui.shadcn.com/docs/components/radix/dropdown-menu"
+        },
+        {
+          "id": "shadcn/empty",
+          "name": "Empty",
+          "description": "Use the Empty component to display an empty state.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @shadcn/empty",
+          "docs": "https://ui.shadcn.com/docs/components/radix/empty"
+        },
+        {
+          "id": "shadcn/field",
+          "name": "Field",
+          "description": "Combine labels, controls, and help text to compose accessible form fields and grouped inputs.",
+          "uses": [
+            "ui/label",
+            "ui/separator"
+          ],
+          "add": "pnpm dlx shadcn@latest add @shadcn/field",
+          "docs": "https://ui.shadcn.com/docs/components/radix/field"
+        },
+        {
+          "id": "shadcn/hover-card",
+          "name": "HoverCard",
+          "description": "For sighted users to preview content available behind a link.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @shadcn/hover-card",
+          "docs": "https://ui.shadcn.com/docs/components/radix/hover-card"
+        },
+        {
+          "id": "shadcn/input",
+          "name": "Input",
+          "description": "A text input component for forms and user data entry with built-in styling and accessibility features.",
+          "uses": [],
+          "installed": "ui/input",
+          "add": "pnpm dlx shadcn@latest add @shadcn/input",
+          "docs": "https://ui.shadcn.com/docs/components/radix/input"
+        },
+        {
+          "id": "shadcn/input-group",
+          "name": "InputGroup",
+          "description": "Add addons, buttons, and helper content to inputs.",
+          "uses": [
+            "ui/button",
+            "ui/input",
+            "ui/textarea"
+          ],
+          "installed": "ui/input-group",
+          "add": "pnpm dlx shadcn@latest add @shadcn/input-group",
+          "docs": "https://ui.shadcn.com/docs/components/radix/input-group"
+        },
+        {
+          "id": "shadcn/input-otp",
+          "name": "InputOtp",
+          "description": "Accessible one-time password component with copy-paste functionality.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @shadcn/input-otp",
+          "docs": "https://ui.shadcn.com/docs/components/radix/input-otp"
+        },
+        {
+          "id": "shadcn/item",
+          "name": "Item",
+          "description": "A versatile component for displaying content with media, title, description, and actions.",
+          "uses": [
+            "ui/separator"
+          ],
+          "add": "pnpm dlx shadcn@latest add @shadcn/item",
+          "docs": "https://ui.shadcn.com/docs/components/radix/item"
+        },
+        {
+          "id": "shadcn/kbd",
+          "name": "Kbd",
+          "description": "Used to display textual user input from keyboard.",
+          "uses": [],
+          "installed": "ui/kbd",
+          "add": "pnpm dlx shadcn@latest add @shadcn/kbd",
+          "docs": "https://ui.shadcn.com/docs/components/radix/kbd"
+        },
+        {
+          "id": "shadcn/label",
+          "name": "Label",
+          "description": "Renders an accessible label associated with controls.",
+          "uses": [],
+          "installed": "ui/label",
+          "add": "pnpm dlx shadcn@latest add @shadcn/label",
+          "docs": "https://ui.shadcn.com/docs/components/radix/label"
+        },
+        {
+          "id": "shadcn/menubar",
+          "name": "Menubar",
+          "description": "A visually persistent menu common in desktop applications that provides quick access to a consistent set of commands.",
+          "uses": [
+            "ui/dropdown-menu"
+          ],
+          "add": "pnpm dlx shadcn@latest add @shadcn/menubar",
+          "docs": "https://ui.shadcn.com/docs/components/radix/menubar"
+        },
+        {
+          "id": "shadcn/native-select",
+          "name": "NativeSelect",
+          "description": "A styled native HTML select element with consistent design system integration.",
+          "uses": [],
+          "installed": "ui/native-select",
+          "add": "pnpm dlx shadcn@latest add @shadcn/native-select",
+          "docs": "https://ui.shadcn.com/docs/components/radix/native-select"
+        },
+        {
+          "id": "shadcn/navigation-menu",
+          "name": "NavigationMenu",
+          "description": "A collection of links for navigating websites.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @shadcn/navigation-menu",
+          "docs": "https://ui.shadcn.com/docs/components/radix/navigation-menu"
+        },
+        {
+          "id": "shadcn/pagination",
+          "name": "Pagination",
+          "description": "Pagination with page navigation, next and previous links.",
+          "uses": [
+            "ui/button"
+          ],
+          "add": "pnpm dlx shadcn@latest add @shadcn/pagination",
+          "docs": "https://ui.shadcn.com/docs/components/radix/pagination"
+        },
+        {
+          "id": "shadcn/popover",
+          "name": "Popover",
+          "description": "Displays rich content in a portal, triggered by a button.",
+          "uses": [],
+          "installed": "ui/popover",
+          "add": "pnpm dlx shadcn@latest add @shadcn/popover",
+          "docs": "https://ui.shadcn.com/docs/components/radix/popover"
+        },
+        {
+          "id": "shadcn/progress",
+          "name": "Progress",
+          "description": "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
+          "uses": [],
+          "installed": "ui/progress",
+          "add": "pnpm dlx shadcn@latest add @shadcn/progress",
+          "docs": "https://ui.shadcn.com/docs/components/radix/progress"
+        },
+        {
+          "id": "shadcn/questionnaire",
+          "name": "Questionnaire",
+          "description": "A multi-step questionnaire with single-choice, multiple-choice, freeform, and skippable questions.",
+          "uses": [
+            "ui/button"
+          ],
+          "add": "pnpm dlx shadcn@latest add @shadcn/questionnaire",
+          "docs": "https://ui.shadcn.com/docs/components/radix/questionnaire"
+        },
+        {
+          "id": "shadcn/radio-group",
+          "name": "RadioGroup",
+          "description": "A set of checkable buttons—known as radio buttons—where no more than one of the buttons can be checked at a time.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @shadcn/radio-group",
+          "docs": "https://ui.shadcn.com/docs/components/radix/radio-group"
+        },
+        {
+          "id": "shadcn/resizable",
+          "name": "Resizable",
+          "description": "Accessible resizable panel groups and layouts with keyboard support.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @shadcn/resizable",
+          "docs": "https://ui.shadcn.com/docs/components/radix/resizable"
+        },
+        {
+          "id": "shadcn/scroll-area",
+          "name": "ScrollArea",
+          "description": "Augments native scroll functionality for custom, cross-browser styling.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @shadcn/scroll-area",
+          "docs": "https://ui.shadcn.com/docs/components/radix/scroll-area"
+        },
+        {
+          "id": "shadcn/select",
+          "name": "Select",
+          "description": "Displays a list of options for the user to pick from—triggered by a button.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @shadcn/select",
+          "docs": "https://ui.shadcn.com/docs/components/radix/select"
+        },
+        {
+          "id": "shadcn/separator",
+          "name": "Separator",
+          "description": "Visually or semantically separates content.",
+          "uses": [],
+          "installed": "ui/separator",
+          "add": "pnpm dlx shadcn@latest add @shadcn/separator",
+          "docs": "https://ui.shadcn.com/docs/components/radix/separator"
+        },
+        {
+          "id": "shadcn/sheet",
+          "name": "Sheet",
+          "description": "Extends the Dialog component to display content that complements the main content of the screen.",
+          "uses": [
+            "ui/button"
+          ],
+          "installed": "ui/sheet",
+          "add": "pnpm dlx shadcn@latest add @shadcn/sheet",
+          "docs": "https://ui.shadcn.com/docs/components/radix/sheet"
+        },
+        {
+          "id": "shadcn/sidebar",
+          "name": "Sidebar",
+          "description": "A composable, themeable and customizable sidebar component.",
+          "uses": [
+            "ui/button",
+            "ui/input",
+            "ui/separator",
+            "ui/sheet",
+            "ui/skeleton",
+            "ui/tooltip"
+          ],
+          "installed": "ui/sidebar",
+          "add": "pnpm dlx shadcn@latest add @shadcn/sidebar",
+          "docs": "https://ui.shadcn.com/docs/components/radix/sidebar"
+        },
+        {
+          "id": "shadcn/skeleton",
+          "name": "Skeleton",
+          "description": "Use to show a placeholder while content is loading.",
+          "uses": [],
+          "installed": "ui/skeleton",
+          "add": "pnpm dlx shadcn@latest add @shadcn/skeleton",
+          "docs": "https://ui.shadcn.com/docs/components/radix/skeleton"
+        },
+        {
+          "id": "shadcn/slider",
+          "name": "Slider",
+          "description": "An input where the user selects a value from within a given range.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @shadcn/slider",
+          "docs": "https://ui.shadcn.com/docs/components/radix/slider"
+        },
+        {
+          "id": "shadcn/sonner",
+          "name": "Sonner",
+          "description": "An opinionated toast component for React.",
+          "uses": [],
+          "installed": "ui/sonner",
+          "add": "pnpm dlx shadcn@latest add @shadcn/sonner",
+          "docs": "https://ui.shadcn.com/docs/components/radix/sonner"
+        },
+        {
+          "id": "shadcn/spinner",
+          "name": "Spinner",
+          "description": "An indicator that can be used to show a loading state.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @shadcn/spinner",
+          "docs": "https://ui.shadcn.com/docs/components/radix/spinner"
+        },
+        {
+          "id": "shadcn/switch",
+          "name": "Switch",
+          "description": "A control that allows the user to toggle between checked and not checked.",
+          "uses": [],
+          "installed": "ui/switch",
+          "add": "pnpm dlx shadcn@latest add @shadcn/switch",
+          "docs": "https://ui.shadcn.com/docs/components/radix/switch"
+        },
+        {
+          "id": "shadcn/table",
+          "name": "Table",
+          "description": "A responsive table component.",
+          "uses": [],
+          "installed": "ui/table",
+          "add": "pnpm dlx shadcn@latest add @shadcn/table",
+          "docs": "https://ui.shadcn.com/docs/components/radix/table"
+        },
+        {
+          "id": "shadcn/tabs",
+          "name": "Tabs",
+          "description": "A set of layered sections of content—known as tab panels—that are displayed one at a time.",
+          "uses": [],
+          "installed": "ui/tabs",
+          "add": "pnpm dlx shadcn@latest add @shadcn/tabs",
+          "docs": "https://ui.shadcn.com/docs/components/radix/tabs"
+        },
+        {
+          "id": "shadcn/textarea",
+          "name": "Textarea",
+          "description": "Displays a form textarea or a component that looks like a textarea.",
+          "uses": [],
+          "installed": "ui/textarea",
+          "add": "pnpm dlx shadcn@latest add @shadcn/textarea",
+          "docs": "https://ui.shadcn.com/docs/components/radix/textarea"
+        },
+        {
+          "id": "shadcn/toggle",
+          "name": "Toggle",
+          "description": "A two-state button that can be either on or off.",
+          "uses": [],
+          "installed": "ui/toggle",
+          "add": "pnpm dlx shadcn@latest add @shadcn/toggle",
+          "docs": "https://ui.shadcn.com/docs/components/radix/toggle"
+        },
+        {
+          "id": "shadcn/toggle-group",
+          "name": "ToggleGroup",
+          "description": "A set of two-state buttons that can be toggled on or off.",
+          "uses": [
+            "ui/toggle"
+          ],
+          "installed": "ui/toggle-group",
+          "add": "pnpm dlx shadcn@latest add @shadcn/toggle-group",
+          "docs": "https://ui.shadcn.com/docs/components/radix/toggle-group"
+        },
+        {
+          "id": "shadcn/tooltip",
+          "name": "Tooltip",
+          "description": "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
+          "uses": [],
+          "installed": "ui/tooltip",
+          "add": "pnpm dlx shadcn@latest add @shadcn/tooltip",
+          "docs": "https://ui.shadcn.com/docs/components/radix/tooltip"
+        },
+        {
+          "id": "shadcn/trace",
+          "name": "Trace",
+          "description": "The building block for reasoning, tool calls, sources and more.",
+          "uses": [
+            "ui/collapsible"
+          ],
+          "add": "pnpm dlx shadcn@latest add @shadcn/trace",
+          "docs": "https://ui.shadcn.com/docs/components/radix/trace"
+        }
+      ]
+    }
+  ],
   "theme": [
     {
       "name": "card",

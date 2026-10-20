@@ -1,7 +1,14 @@
 import { readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { kebab, pascal, type StudioComponent, type StudioManifest } from "../src/features/design-studio/manifest";
+import {
+  kebab,
+  libraryItems,
+  pascal,
+  type RegistrySnapshot,
+  type StudioComponent,
+  type StudioManifest,
+} from "../src/features/design-studio/manifest";
 import {
   readBlock,
   readExports,
@@ -116,9 +123,17 @@ const surfaces: StudioComponent[] = readExports(surfaceSource).map((name) => ({
 }));
 
 const config = JSON.parse(read("../components.json")) as { style: string };
+/** Other libraries come from the snapshot studio:registries commits, so this script never goes to the network. */
+const snapshot = JSON.parse(read("features/design-studio/registries.snapshot.json")) as RegistrySnapshot;
+const installed = new Set(primitives.map((primitive) => primitive.id));
 const manifest: StudioManifest = {
   style: config.style,
   components: [...primitives, ...wrappers, ...surfaces],
+  libraries: snapshot.libraries.map((library) => ({
+    id: library.id,
+    name: library.name,
+    items: libraryItems(library, installed),
+  })),
   theme,
   globals: {
     file: globalsFile,
@@ -137,7 +152,9 @@ export const studioManifest: StudioManifest = ${JSON.stringify(manifest, null, 2
 
 if (mode === "--write") {
   writeFileSync(path, content, "utf8");
-  console.log(`Studio manifest generated: ${manifest.components.length} components.`);
+  console.log(
+    `Studio manifest generated: ${manifest.components.length} components, ${manifest.libraries.map((library) => `${library.items.length} in ${library.name}`).join(", ")}.`,
+  );
 } else {
   let actual = "";
   try {

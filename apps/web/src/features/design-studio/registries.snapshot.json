@@ -1,0 +1,408 @@
+{
+  "libraries": [
+    {
+      "id": "shadcn",
+      "name": "shadcn/ui",
+      "items": [
+        {
+          "name": "accordion",
+          "description": "A vertically stacked set of interactive headings that each reveal a section of content.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/accordion"
+        },
+        {
+          "name": "alert",
+          "description": "Displays a callout for user attention.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/alert"
+        },
+        {
+          "name": "alert-dialog",
+          "description": "A modal dialog that interrupts the user with important content and expects a response.",
+          "uses": [
+            "button"
+          ],
+          "docs": "https://ui.shadcn.com/docs/components/radix/alert-dialog"
+        },
+        {
+          "name": "aspect-ratio",
+          "description": "Displays content within a desired ratio.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/aspect-ratio"
+        },
+        {
+          "name": "avatar",
+          "description": "An image element with a fallback for representing the user.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/avatar"
+        },
+        {
+          "name": "badge",
+          "description": "Displays a badge or a component that looks like a badge.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/badge"
+        },
+        {
+          "name": "breadcrumb",
+          "description": "Displays the path to the current resource using a hierarchy of links.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/breadcrumb"
+        },
+        {
+          "name": "button",
+          "description": "Displays a button or a component that looks like a button.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/button"
+        },
+        {
+          "name": "button-group",
+          "description": "A container that groups related buttons together with consistent styling.",
+          "uses": [
+            "separator"
+          ],
+          "docs": "https://ui.shadcn.com/docs/components/radix/button-group"
+        },
+        {
+          "name": "calendar",
+          "description": "A calendar component that allows users to select a date or a range of dates.",
+          "uses": [
+            "button"
+          ],
+          "docs": "https://ui.shadcn.com/docs/components/radix/calendar"
+        },
+        {
+          "name": "card",
+          "description": "Displays a card with header, content, and footer.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/card"
+        },
+        {
+          "name": "carousel",
+          "description": "A carousel with motion and swipe built using Embla.",
+          "uses": [
+            "button"
+          ],
+          "docs": "https://ui.shadcn.com/docs/components/radix/carousel"
+        },
+        {
+          "name": "chart",
+          "description": "Beautiful charts. Built using Recharts. Copy and paste into your apps.",
+          "uses": [
+            "card"
+          ],
+          "docs": "https://ui.shadcn.com/docs/components/radix/chart"
+        },
+        {
+          "name": "checkbox",
+          "description": "A control that allows the user to toggle between checked and not checked.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/checkbox"
+        },
+        {
+          "name": "code-block",
+          "description": "Displays code, terminal output and diffs with an optional header, line numbers and a copy button.",
+          "uses": [
+            "button",
+            "use-highlighted-code"
+          ],
+          "docs": "https://ui.shadcn.com/docs/components/radix/code-block"
+        },
+        {
+          "name": "collapsible",
+          "description": "An interactive component which expands/collapses a panel.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/collapsible"
+        },
+        {
+          "name": "combobox",
+          "description": "Autocomplete input with a list of suggestions.",
+          "uses": [
+            "button",
+            "input-group"
+          ],
+          "docs": "https://ui.shadcn.com/docs/components/radix/combobox"
+        },
+        {
+          "name": "command",
+          "description": "Command menu for search and quick actions.",
+          "uses": [
+            "dialog",
+            "input-group"
+          ],
+          "docs": "https://ui.shadcn.com/docs/components/radix/command"
+        },
+        {
+          "name": "context-menu",
+          "description": "Displays a menu of actions triggered by a right click.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/context-menu"
+        },
+        {
+          "name": "dialog",
+          "description": "A window overlaid on either the primary window or another dialog window, rendering the content underneath inert.",
+          "uses": [
+            "button"
+          ],
+          "docs": "https://ui.shadcn.com/docs/components/radix/dialog"
+        },
+        {
+          "name": "direction",
+          "description": "A provider component that sets the text direction for your application.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/direction"
+        },
+        {
+          "name": "drawer",
+          "description": "A drawer component for React.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/drawer"
+        },
+        {
+          "name": "dropdown-menu",
+          "description": "Displays a menu to the user — such as a set of actions or functions — triggered by a button.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/dropdown-menu"
+        },
+        {
+          "name": "empty",
+          "description": "Use the Empty component to display an empty state.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/empty"
+        },
+        {
+          "name": "field",
+          "description": "Combine labels, controls, and help text to compose accessible form fields and grouped inputs.",
+          "uses": [
+            "label",
+            "separator"
+          ],
+          "docs": "https://ui.shadcn.com/docs/components/radix/field"
+        },
+        {
+          "name": "hover-card",
+          "description": "For sighted users to preview content available behind a link.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/hover-card"
+        },
+        {
+          "name": "input",
+          "description": "A text input component for forms and user data entry with built-in styling and accessibility features.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/input"
+        },
+        {
+          "name": "input-group",
+          "description": "Add addons, buttons, and helper content to inputs.",
+          "uses": [
+            "button",
+            "input",
+            "textarea"
+          ],
+          "docs": "https://ui.shadcn.com/docs/components/radix/input-group"
+        },
+        {
+          "name": "input-otp",
+          "description": "Accessible one-time password component with copy-paste functionality.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/input-otp"
+        },
+        {
+          "name": "item",
+          "description": "A versatile component for displaying content with media, title, description, and actions.",
+          "uses": [
+            "separator"
+          ],
+          "docs": "https://ui.shadcn.com/docs/components/radix/item"
+        },
+        {
+          "name": "kbd",
+          "description": "Used to display textual user input from keyboard.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/kbd"
+        },
+        {
+          "name": "label",
+          "description": "Renders an accessible label associated with controls.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/label"
+        },
+        {
+          "name": "menubar",
+          "description": "A visually persistent menu common in desktop applications that provides quick access to a consistent set of commands.",
+          "uses": [
+            "dropdown-menu"
+          ],
+          "docs": "https://ui.shadcn.com/docs/components/radix/menubar"
+        },
+        {
+          "name": "native-select",
+          "description": "A styled native HTML select element with consistent design system integration.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/native-select"
+        },
+        {
+          "name": "navigation-menu",
+          "description": "A collection of links for navigating websites.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/navigation-menu"
+        },
+        {
+          "name": "pagination",
+          "description": "Pagination with page navigation, next and previous links.",
+          "uses": [
+            "button"
+          ],
+          "docs": "https://ui.shadcn.com/docs/components/radix/pagination"
+        },
+        {
+          "name": "popover",
+          "description": "Displays rich content in a portal, triggered by a button.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/popover"
+        },
+        {
+          "name": "progress",
+          "description": "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/progress"
+        },
+        {
+          "name": "questionnaire",
+          "description": "A multi-step questionnaire with single-choice, multiple-choice, freeform, and skippable questions.",
+          "uses": [
+            "button"
+          ],
+          "docs": "https://ui.shadcn.com/docs/components/radix/questionnaire"
+        },
+        {
+          "name": "radio-group",
+          "description": "A set of checkable buttons—known as radio buttons—where no more than one of the buttons can be checked at a time.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/radio-group"
+        },
+        {
+          "name": "resizable",
+          "description": "Accessible resizable panel groups and layouts with keyboard support.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/resizable"
+        },
+        {
+          "name": "scroll-area",
+          "description": "Augments native scroll functionality for custom, cross-browser styling.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/scroll-area"
+        },
+        {
+          "name": "select",
+          "description": "Displays a list of options for the user to pick from—triggered by a button.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/select"
+        },
+        {
+          "name": "separator",
+          "description": "Visually or semantically separates content.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/separator"
+        },
+        {
+          "name": "sheet",
+          "description": "Extends the Dialog component to display content that complements the main content of the screen.",
+          "uses": [
+            "button"
+          ],
+          "docs": "https://ui.shadcn.com/docs/components/radix/sheet"
+        },
+        {
+          "name": "sidebar",
+          "description": "A composable, themeable and customizable sidebar component.",
+          "uses": [
+            "button",
+            "input",
+            "separator",
+            "sheet",
+            "skeleton",
+            "tooltip",
+            "use-mobile"
+          ],
+          "docs": "https://ui.shadcn.com/docs/components/radix/sidebar"
+        },
+        {
+          "name": "skeleton",
+          "description": "Use to show a placeholder while content is loading.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/skeleton"
+        },
+        {
+          "name": "slider",
+          "description": "An input where the user selects a value from within a given range.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/slider"
+        },
+        {
+          "name": "sonner",
+          "description": "An opinionated toast component for React.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/sonner"
+        },
+        {
+          "name": "spinner",
+          "description": "An indicator that can be used to show a loading state.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/spinner"
+        },
+        {
+          "name": "switch",
+          "description": "A control that allows the user to toggle between checked and not checked.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/switch"
+        },
+        {
+          "name": "table",
+          "description": "A responsive table component.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/table"
+        },
+        {
+          "name": "tabs",
+          "description": "A set of layered sections of content—known as tab panels—that are displayed one at a time.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/tabs"
+        },
+        {
+          "name": "textarea",
+          "description": "Displays a form textarea or a component that looks like a textarea.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/textarea"
+        },
+        {
+          "name": "toggle",
+          "description": "A two-state button that can be either on or off.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/toggle"
+        },
+        {
+          "name": "toggle-group",
+          "description": "A set of two-state buttons that can be toggled on or off.",
+          "uses": [
+            "toggle"
+          ],
+          "docs": "https://ui.shadcn.com/docs/components/radix/toggle-group"
+        },
+        {
+          "name": "tooltip",
+          "description": "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
+          "uses": [],
+          "docs": "https://ui.shadcn.com/docs/components/radix/tooltip"
+        },
+        {
+          "name": "trace",
+          "description": "The building block for reasoning, tool calls, sources and more.",
+          "uses": [
+            "collapsible"
+          ],
+          "docs": "https://ui.shadcn.com/docs/components/radix/trace"
+        }
+      ]
+    }
+  ]
+}
