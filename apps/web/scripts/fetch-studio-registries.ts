@@ -30,8 +30,13 @@ async function get(url: string) {
 
 /** shadcn/ui's components for this repo's base (the "radix" of "radix-luma"), with their docs descriptions. */
 async function readShadcn(base: string) {
-  const index = JSON.parse((await get(`${shadcnSource}/public/r/index.json`)) ?? "[]") as IndexItem[];
+  const source = await get(`${shadcnSource}/public/r/index.json`);
+  if (!source) throw new Error(`shadcn/ui's index is gone from ${shadcnSource}; the snapshot is left as it was.`);
+  const index = JSON.parse(source) as IndexItem[];
   const items = index.filter((item) => item.type === "registry:ui" && item.meta?.links?.[base]);
+  // An empty list means the index changed shape, not that shadcn/ui has no components: keep the committed snapshot.
+  if (!items.length)
+    throw new Error(`shadcn/ui's index lists no components for ${base}; the snapshot is left as it was.`);
   return Promise.all(
     items.map(async (item) => {
       const docs = await get(`${shadcnSource}/content/docs/components/${base}/${item.name}.mdx`);
