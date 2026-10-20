@@ -1,13 +1,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  filterLibrary,
   filterTree,
   kebab,
   layoutGraph,
+  layoutLibraries,
   libraryItems,
   pascal,
   routeEdge,
   treeOrder,
+  type LibraryItem,
   type StudioComponent,
 } from "./manifest";
 import { studioManifest } from "./manifest.generated";
@@ -159,4 +162,56 @@ test("every installed shadcn/ui item is a primitive in this repo", () => {
   const ids = new Set(studioManifest.components.map((component) => component.id));
   for (const library of studioManifest.libraries)
     for (const item of library.items) if (item.installed) assert.ok(ids.has(item.installed), item.id);
+});
+
+test("filterLibrary finds by name, keeps installed items with installedOnly, and drafts with changed", () => {
+  const items: LibraryItem[] = [
+    { id: "shadcn/button", name: "Button", uses: [], installed: "ui/button", add: "" },
+    { id: "shadcn/button-group", name: "ButtonGroup", uses: [], add: "" },
+    { id: "shadcn/card", name: "Card", uses: [], installed: "ui/card", add: "" },
+  ];
+  const ids = (list: LibraryItem[]) => list.map((item) => item.id);
+  assert.deepEqual(ids(filterLibrary(items, " but", { installedOnly: false })), [
+    "shadcn/button",
+    "shadcn/button-group",
+  ]);
+  assert.deepEqual(ids(filterLibrary(items, "", { installedOnly: true })), ["shadcn/button", "shadcn/card"]);
+  assert.deepEqual(ids(filterLibrary(items, "", { installedOnly: false, changed: new Set(["ui/card"]) })), [
+    "shadcn/card",
+  ]);
+});
+
+test("layoutLibraries draws cards only for items not installed, in an area under This repo", () => {
+  const repo = layoutGraph([component("ui/button", "Button")]);
+  const item = (name: string, uses: string[] = [], installed?: string): LibraryItem => ({
+    id: `shadcn/${kebab(name)}`,
+    name,
+    uses,
+    add: "",
+    ...(installed ? { installed } : {}),
+  });
+  const { cards, areas, edges } = layoutLibraries(
+    [
+      {
+        id: "shadcn",
+        name: "shadcn/ui",
+        items: [item("Button", [], "ui/button"), item("Calendar", ["ui/button"]), item("Chart", ["shadcn/calendar"])],
+      },
+    ],
+    repo,
+  );
+  assert.deepEqual(
+    cards.map((card) => [card.item.id, card.x, card.y]),
+    [
+      ["shadcn/calendar", 32, repo.area.height + 64 + 64],
+      ["shadcn/chart", 320, repo.area.height + 64 + 64],
+    ],
+  );
+  assert.deepEqual(areas, [
+    { id: "shadcn", name: "shadcn/ui", count: 2, y: repo.area.height + 64, width: repo.area.width, height: 192 },
+  ]);
+  assert.deepEqual(
+    edges.map((edge) => edge.id),
+    ["shadcn/calendar>ui/button", "shadcn/chart>shadcn/calendar"],
+  );
 });

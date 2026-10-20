@@ -2,7 +2,7 @@
 
 import { useEffect, useLayoutEffect, useState, type ComponentProps, type ReactNode } from "react";
 import Link from "next/link";
-import { Check, CircleAlert, Eye, Layers, LoaderCircle } from "lucide-react";
+import { Check, CircleAlert, Copy, ExternalLink, Eye, Layers, LoaderCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,12 +13,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { InputGroup, InputGroupAddon, InputGroupInput, InputGroupText } from "@/components/ui/input-group";
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+  InputGroupText,
+} from "@/components/ui/input-group";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "@/components/ui/toaster";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   canRestyle,
@@ -32,7 +39,13 @@ import {
   type LookProp,
   type TokenChange,
 } from "@/features/design-studio/drafts";
-import type { StudioComponent, StudioManifest, ThemeToken } from "@/features/design-studio/manifest";
+import type {
+  LibraryItem,
+  StudioComponent,
+  StudioLibrary,
+  StudioManifest,
+  ThemeToken,
+} from "@/features/design-studio/manifest";
 import { cn } from "@/lib/utils";
 import { previewProps, type PreviewProps } from "./previews";
 import type { SaveStatus } from "./use-drafts";
@@ -98,6 +111,75 @@ export function InspectorFacts({ component, manifest }: { component?: StudioComp
       <dt className="text-muted-foreground">File</dt>
       <dd className="font-mono break-all">apps/web/src/{component.file}</dd>
     </dl>
+  );
+}
+
+/** A library item's facts (D7): only its library, since it has no file here. */
+export function LibraryFacts({ library }: { library: StudioLibrary }) {
+  return (
+    <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-3.5 gap-y-1.5 text-xs">
+      <dt className="text-muted-foreground">Library</dt>
+      <dd className="font-semibold">{library.name}</dd>
+    </dl>
+  );
+}
+
+/** A library item that isn't installed (D7): what it uses, the command that adds it, and its docs. It has no Preview,
+ *  Look or Tokens, since the studio never runs another library's code. */
+export function LibraryItemBody({ item, manifest }: { item: LibraryItem; manifest: StudioManifest }) {
+  const nameOf = (id: string) =>
+    manifest.components.find((component) => component.id === id)?.name ??
+    manifest.libraries.flatMap((library) => library.items).find((other) => other.id === id)?.name ??
+    id;
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(item.add);
+      toast({ tone: "success", title: "Command copied" });
+    } catch {
+      toast({ tone: "error", title: "Couldn't copy" });
+    }
+  };
+  return (
+    <div className="grid gap-5 p-4">
+      {item.uses.length > 0 && (
+        <section aria-labelledby="library-uses" className="grid gap-2">
+          <h3 id="library-uses" className="text-xs font-semibold text-muted-foreground">
+            Uses
+          </h3>
+          <div className="flex flex-wrap gap-1.5">
+            {item.uses.map((id) => (
+              <Button key={id} variant="outline" size="xs" asChild>
+                <Link href={`/studio?c=${encodeURIComponent(id)}`} scroll={false}>
+                  {nameOf(id)}
+                </Link>
+              </Button>
+            ))}
+          </div>
+        </section>
+      )}
+      <section aria-labelledby="library-add" className="grid gap-2">
+        <h3 id="library-add" className="text-xs font-semibold text-muted-foreground">
+          Add
+        </h3>
+        <InputGroup>
+          <InputGroupInput readOnly value={item.add} aria-label="Install command" className="font-mono text-xs" />
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton size="xs" onClick={() => void copy()}>
+              <Copy aria-hidden="true" />
+              Copy
+            </InputGroupButton>
+          </InputGroupAddon>
+        </InputGroup>
+      </section>
+      {item.docs && (
+        <Button variant="outline" size="sm" className="justify-self-start" asChild>
+          <a href={item.docs} target="_blank" rel="noreferrer">
+            Docs
+            <ExternalLink aria-hidden="true" />
+          </a>
+        </Button>
+      )}
+    </div>
   );
 }
 
