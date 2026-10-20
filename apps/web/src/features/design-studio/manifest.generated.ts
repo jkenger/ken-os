@@ -1718,6 +1718,642 @@ export const studioManifest: StudioManifest = {
           "docs": "https://ui.shadcn.com/docs/components/radix/trace"
         }
       ]
+    },
+    {
+      "id": "magicui",
+      "name": "Magic UI",
+      "folded": true,
+      "items": [
+        {
+          "id": "magicui/android",
+          "name": "Android",
+          "description": "A mockup of an Android device.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/android",
+          "docs": "https://magicui.design/docs/components/android"
+        },
+        {
+          "id": "magicui/animated-beam",
+          "name": "AnimatedBeam",
+          "description": "An animated beam of light which travels along a path. Useful for showcasing the integration features of a website.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/animated-beam",
+          "docs": "https://magicui.design/docs/components/animated-beam"
+        },
+        {
+          "id": "magicui/animated-circular-progress-bar",
+          "name": "AnimatedCircularProgressBar",
+          "description": "Animated Circular Progress Bar is a component that displays a circular gauge with a percentage value.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/animated-circular-progress-bar",
+          "docs": "https://magicui.design/docs/components/animated-circular-progress-bar"
+        },
+        {
+          "id": "magicui/animated-gradient-text",
+          "name": "AnimatedGradientText",
+          "description": "An animated gradient background which transitions between colors for text.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/animated-gradient-text",
+          "docs": "https://magicui.design/docs/components/animated-gradient-text"
+        },
+        {
+          "id": "magicui/animated-grid-pattern",
+          "name": "AnimatedGridPattern",
+          "description": "A animated background grid pattern made with SVGs, fully customizable using Tailwind CSS.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/animated-grid-pattern",
+          "docs": "https://magicui.design/docs/components/animated-grid-pattern"
+        },
+        {
+          "id": "magicui/animated-list",
+          "name": "AnimatedList",
+          "description": "A list that animates each item in sequence with a delay. Used to showcase notifications or events on your landing page.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/animated-list",
+          "docs": "https://magicui.design/docs/components/animated-list"
+        },
+        {
+          "id": "magicui/animated-shiny-text",
+          "name": "AnimatedShinyText",
+          "description": "A light glare effect which pans across text making it appear as if it is shimmering.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/animated-shiny-text",
+          "docs": "https://magicui.design/docs/components/animated-shiny-text"
+        },
+        {
+          "id": "magicui/animated-theme-toggler",
+          "name": "AnimatedThemeToggler",
+          "description": "Theme toggle with View Transitions and animated clip-path masks (circle, polygons, star), optional viewport-centered origin.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/animated-theme-toggler",
+          "docs": "https://magicui.design/docs/components/animated-theme-toggler"
+        },
+        {
+          "id": "magicui/aurora-text",
+          "name": "AuroraText",
+          "description": "A beautiful aurora text effect",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/aurora-text",
+          "docs": "https://magicui.design/docs/components/aurora-text"
+        },
+        {
+          "id": "magicui/avatar-circles",
+          "name": "AvatarCircles",
+          "description": "Overlapping circles of avatars.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/avatar-circles",
+          "docs": "https://magicui.design/docs/components/avatar-circles"
+        },
+        {
+          "id": "magicui/backlight",
+          "name": "Backlight",
+          "description": "A backlight glow effect for videos, images, and SVGs.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/backlight",
+          "docs": "https://magicui.design/docs/components/backlight"
+        },
+        {
+          "id": "magicui/bento-grid",
+          "name": "BentoGrid",
+          "description": "Bento grid is a layout used to showcase the features of a product in a simple and elegant way.",
+          "uses": [
+            "ui/button"
+          ],
+          "add": "pnpm dlx shadcn@latest add @magicui/bento-grid",
+          "docs": "https://magicui.design/docs/components/bento-grid"
+        },
+        {
+          "id": "magicui/blur-fade",
+          "name": "BlurFade",
+          "description": "Blur fade in and out animation. Used to smoothly fade in and out content.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/blur-fade",
+          "docs": "https://magicui.design/docs/components/blur-fade"
+        },
+        {
+          "id": "magicui/border-beam",
+          "name": "BorderBeam",
+          "description": "An animated beam of light which travels along the border of its container.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/border-beam",
+          "docs": "https://magicui.design/docs/components/border-beam"
+        },
+        {
+          "id": "magicui/client-tweet-card",
+          "name": "ClientTweetCard",
+          "description": "A client-side version of the tweet card that displays a tweet with the author's name, handle, and profile picture.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/client-tweet-card",
+          "docs": "https://magicui.design/docs/components/client-tweet-card"
+        },
+        {
+          "id": "magicui/code-comparison",
+          "name": "CodeComparison",
+          "description": "A component which compares two code snippets.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/code-comparison",
+          "docs": "https://magicui.design/docs/components/code-comparison"
+        },
+        {
+          "id": "magicui/comic-text",
+          "name": "ComicText",
+          "description": "Comic text animation",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/comic-text",
+          "docs": "https://magicui.design/docs/components/comic-text"
+        },
+        {
+          "id": "magicui/confetti",
+          "name": "Confetti",
+          "description": "Confetti animations are best used to delight your users when something special happens",
+          "uses": [
+            "ui/button"
+          ],
+          "add": "pnpm dlx shadcn@latest add @magicui/confetti",
+          "docs": "https://magicui.design/docs/components/confetti"
+        },
+        {
+          "id": "magicui/cool-mode",
+          "name": "CoolMode",
+          "description": "Cool mode effect for buttons, links, and other DOMs",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/cool-mode",
+          "docs": "https://magicui.design/docs/components/cool-mode"
+        },
+        {
+          "id": "magicui/dia-text-reveal",
+          "name": "DiaTextReveal",
+          "description": "A horizontal color band sweeps across text, revealing a gradient shine before settling on the base color.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/dia-text-reveal",
+          "docs": "https://magicui.design/docs/components/dia-text-reveal"
+        },
+        {
+          "id": "magicui/dock",
+          "name": "Dock",
+          "description": "An implementation of the MacOS dock using react + tailwindcss + motion",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/dock",
+          "docs": "https://magicui.design/docs/components/dock"
+        },
+        {
+          "id": "magicui/dot-pattern",
+          "name": "DotPattern",
+          "description": "A background dot pattern made with SVGs, fully customizable using Tailwind CSS.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/dot-pattern",
+          "docs": "https://magicui.design/docs/components/dot-pattern"
+        },
+        {
+          "id": "magicui/dotted-map",
+          "name": "DottedMap",
+          "description": "A component with a dotted map.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/dotted-map",
+          "docs": "https://magicui.design/docs/components/dotted-map"
+        },
+        {
+          "id": "magicui/file-tree",
+          "name": "FileTree",
+          "description": "A component used to showcase the folder and file structure of a directory.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/file-tree",
+          "docs": "https://magicui.design/docs/components/file-tree"
+        },
+        {
+          "id": "magicui/flickering-grid",
+          "name": "FlickeringGrid",
+          "description": "A flickering grid background made with SVGs, fully customizable using Tailwind CSS.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/flickering-grid",
+          "docs": "https://magicui.design/docs/components/flickering-grid"
+        },
+        {
+          "id": "magicui/floating-3d-particles",
+          "name": "Floating3dParticles",
+          "description": "A canvas-based pseudo-3D particle field with perspective projection, continuous rotation and buoyant drift.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/floating-3d-particles",
+          "docs": "https://magicui.design/docs/components/floating-3d-particles"
+        },
+        {
+          "id": "magicui/glare-hover",
+          "name": "GlareHover",
+          "description": "A diagonal glare on hover using a ::before gradient and CSS variables (angle, size, duration, color).",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/glare-hover",
+          "docs": "https://magicui.design/docs/components/glare-hover"
+        },
+        {
+          "id": "magicui/globe",
+          "name": "Globe",
+          "description": "An autorotating, interactive, and highly performant globe made using WebGL.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/globe",
+          "docs": "https://magicui.design/docs/components/globe"
+        },
+        {
+          "id": "magicui/glyph-matrix",
+          "name": "GlyphMatrix",
+          "description": "An animated grid of subtly shifting glyphs with fade effect and theme support.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/glyph-matrix",
+          "docs": "https://magicui.design/docs/components/glyph-matrix"
+        },
+        {
+          "id": "magicui/grid-pattern",
+          "name": "GridPattern",
+          "description": "A background grid pattern made with SVGs, fully customizable using Tailwind CSS.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/grid-pattern",
+          "docs": "https://magicui.design/docs/components/grid-pattern"
+        },
+        {
+          "id": "magicui/hero-video-dialog",
+          "name": "HeroVideoDialog",
+          "description": "A hero video dialog component.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/hero-video-dialog",
+          "docs": "https://magicui.design/docs/components/hero-video-dialog"
+        },
+        {
+          "id": "magicui/hexagon-pattern",
+          "name": "HexagonPattern",
+          "description": "A background hexagon pattern made with SVGs, fully customizable using Tailwind CSS.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/hexagon-pattern",
+          "docs": "https://magicui.design/docs/components/hexagon-pattern"
+        },
+        {
+          "id": "magicui/highlighter",
+          "name": "Highlighter",
+          "description": "A text highlighter that mimics the effect of a human-drawn marker stroke.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/highlighter",
+          "docs": "https://magicui.design/docs/components/highlighter"
+        },
+        {
+          "id": "magicui/hyper-text",
+          "name": "HyperText",
+          "description": "A text animation that scrambles letters before revealing the final text.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/hyper-text",
+          "docs": "https://magicui.design/docs/components/hyper-text"
+        },
+        {
+          "id": "magicui/icon-cloud",
+          "name": "IconCloud",
+          "description": "An interactive 3D tag cloud component",
+          "uses": [
+            "ui/button"
+          ],
+          "add": "pnpm dlx shadcn@latest add @magicui/icon-cloud",
+          "docs": "https://magicui.design/docs/components/icon-cloud"
+        },
+        {
+          "id": "magicui/interactive-grid-pattern",
+          "name": "InteractiveGridPattern",
+          "description": "A interactive background grid pattern made with SVGs, fully customizable using Tailwind CSS.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/interactive-grid-pattern",
+          "docs": "https://magicui.design/docs/components/interactive-grid-pattern"
+        },
+        {
+          "id": "magicui/interactive-hover-button",
+          "name": "InteractiveHoverButton",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/interactive-hover-button",
+          "docs": "https://magicui.design/docs/components/interactive-hover-button"
+        },
+        {
+          "id": "magicui/iphone",
+          "name": "Iphone",
+          "description": "A mockup of the iPhone",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/iphone",
+          "docs": "https://magicui.design/docs/components/iphone"
+        },
+        {
+          "id": "magicui/kinetic-text",
+          "name": "KineticText",
+          "description": "A text component that animates font weight of characters on hover.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/kinetic-text",
+          "docs": "https://magicui.design/docs/components/kinetic-text"
+        },
+        {
+          "id": "magicui/lens",
+          "name": "Lens",
+          "description": "A interactive component that enables zooming into images, videos and other elements.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/lens",
+          "docs": "https://magicui.design/docs/components/lens"
+        },
+        {
+          "id": "magicui/light-rays",
+          "name": "LightRays",
+          "description": "A component with animated light rays which shine down from above.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/light-rays",
+          "docs": "https://magicui.design/docs/components/light-rays"
+        },
+        {
+          "id": "magicui/line-shadow-text",
+          "name": "LineShadowText",
+          "description": "A text component with a moving line shadow.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/line-shadow-text",
+          "docs": "https://magicui.design/docs/components/line-shadow-text"
+        },
+        {
+          "id": "magicui/magic-card",
+          "name": "MagicCard",
+          "description": "A spotlight effect that follows your mouse cursor and highlights borders on hover.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/magic-card",
+          "docs": "https://magicui.design/docs/components/magic-card"
+        },
+        {
+          "id": "magicui/marquee",
+          "name": "Marquee",
+          "description": "An infinite scrolling component that can be used to display text, images, or videos.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/marquee",
+          "docs": "https://magicui.design/docs/components/marquee"
+        },
+        {
+          "id": "magicui/meteors",
+          "name": "Meteors",
+          "description": "A meteor shower effect.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/meteors",
+          "docs": "https://magicui.design/docs/components/meteors"
+        },
+        {
+          "id": "magicui/morphing-text",
+          "name": "MorphingText",
+          "description": "A dynamic text morphing component for Magic UI.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/morphing-text",
+          "docs": "https://magicui.design/docs/components/morphing-text"
+        },
+        {
+          "id": "magicui/neon-gradient-card",
+          "name": "NeonGradientCard",
+          "description": "A beautiful neon card effect",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/neon-gradient-card",
+          "docs": "https://magicui.design/docs/components/neon-gradient-card"
+        },
+        {
+          "id": "magicui/noise-texture",
+          "name": "NoiseTexture",
+          "description": "An SVG fractal noise layer using feTurbulence, desaturation, and contrast controls for subtle texture overlays.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/noise-texture",
+          "docs": "https://magicui.design/docs/components/noise-texture"
+        },
+        {
+          "id": "magicui/number-ticker",
+          "name": "NumberTicker",
+          "description": "Animate numbers to count up or down to a target number",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/number-ticker",
+          "docs": "https://magicui.design/docs/components/number-ticker"
+        },
+        {
+          "id": "magicui/orbiting-circles",
+          "name": "OrbitingCircles",
+          "description": "A collection of circles which move in orbit along a circular path",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/orbiting-circles",
+          "docs": "https://magicui.design/docs/components/orbiting-circles"
+        },
+        {
+          "id": "magicui/particles",
+          "name": "Particles",
+          "description": "Particles are a fun way to add some visual flair to your website. They can be used to create a sense of depth, movement, and interactivity.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/particles",
+          "docs": "https://magicui.design/docs/components/particles"
+        },
+        {
+          "id": "magicui/pixel-image",
+          "name": "PixelImage",
+          "description": "A component that displays an image with a pixelated effect, creating a retro aesthetic.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/pixel-image",
+          "docs": "https://magicui.design/docs/components/pixel-image"
+        },
+        {
+          "id": "magicui/pointer",
+          "name": "Pointer",
+          "description": "A component that displays a pointer when hovering over an element",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/pointer",
+          "docs": "https://magicui.design/docs/components/pointer"
+        },
+        {
+          "id": "magicui/progressive-blur",
+          "name": "ProgressiveBlur",
+          "description": "The Progressive Blur component adds a smooth blur gradient effect to scrollable content, indicating more content below or above.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/progressive-blur",
+          "docs": "https://magicui.design/docs/components/progressive-blur"
+        },
+        {
+          "id": "magicui/pulsating-button",
+          "name": "PulsatingButton",
+          "description": "An animated pulsating button useful for capturing attention of users.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/pulsating-button",
+          "docs": "https://magicui.design/docs/components/pulsating-button"
+        },
+        {
+          "id": "magicui/rainbow-button",
+          "name": "RainbowButton",
+          "description": "An animated button with a rainbow effect.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/rainbow-button",
+          "docs": "https://magicui.design/docs/components/rainbow-button"
+        },
+        {
+          "id": "magicui/retro-grid",
+          "name": "RetroGrid",
+          "description": "An animated scrolling retro grid effect",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/retro-grid",
+          "docs": "https://magicui.design/docs/components/retro-grid"
+        },
+        {
+          "id": "magicui/ripple",
+          "name": "Ripple",
+          "description": "An animated ripple effect typically used behind elements to emphasize them.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/ripple",
+          "docs": "https://magicui.design/docs/components/ripple"
+        },
+        {
+          "id": "magicui/ripple-button",
+          "name": "RippleButton",
+          "description": "An animated button with ripple useful for user engagement.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/ripple-button",
+          "docs": "https://magicui.design/docs/components/ripple-button"
+        },
+        {
+          "id": "magicui/safari",
+          "name": "Safari",
+          "description": "A safari browser mockup to showcase your website.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/safari",
+          "docs": "https://magicui.design/docs/components/safari"
+        },
+        {
+          "id": "magicui/scroll-based-velocity",
+          "name": "ScrollBasedVelocity",
+          "description": "Scrolling text whose speed changes based on scroll speed",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/scroll-based-velocity",
+          "docs": "https://magicui.design/docs/components/scroll-based-velocity"
+        },
+        {
+          "id": "magicui/scroll-progress",
+          "name": "ScrollProgress",
+          "description": "Animated Scroll Progress for your pages",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/scroll-progress",
+          "docs": "https://magicui.design/docs/components/scroll-progress"
+        },
+        {
+          "id": "magicui/shimmer-button",
+          "name": "ShimmerButton",
+          "description": "A button with a shimmering light which travels around the perimeter.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/shimmer-button",
+          "docs": "https://magicui.design/docs/components/shimmer-button"
+        },
+        {
+          "id": "magicui/shine-border",
+          "name": "ShineBorder",
+          "description": "Shine border is an animated background border effect.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/shine-border",
+          "docs": "https://magicui.design/docs/components/shine-border"
+        },
+        {
+          "id": "magicui/shiny-button",
+          "name": "ShinyButton",
+          "description": "A shiny button component with dynamic styles in the dark mode or light mode.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/shiny-button",
+          "docs": "https://magicui.design/docs/components/shiny-button"
+        },
+        {
+          "id": "magicui/smooth-cursor",
+          "name": "SmoothCursor",
+          "description": "A customizable, physics-based smooth cursor animation component with spring animations and rotation effects",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/smooth-cursor",
+          "docs": "https://magicui.design/docs/components/smooth-cursor"
+        },
+        {
+          "id": "magicui/sparkles-text",
+          "name": "SparklesText",
+          "description": "A dynamic text that generates continuous sparkles with smooth transitions, perfect for highlighting text with animated stars.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/sparkles-text",
+          "docs": "https://magicui.design/docs/components/sparkles-text"
+        },
+        {
+          "id": "magicui/spinning-text",
+          "name": "SpinningText",
+          "description": "The Spinning Text component animates text in a circular motion with customizable speed, direction, color, and transitions for dynamic and engaging effects.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/spinning-text",
+          "docs": "https://magicui.design/docs/components/spinning-text"
+        },
+        {
+          "id": "magicui/striped-pattern",
+          "name": "StripedPattern",
+          "description": "A background striped pattern made with SVGs, fully customizable using Tailwind CSS.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/striped-pattern",
+          "docs": "https://magicui.design/docs/components/striped-pattern"
+        },
+        {
+          "id": "magicui/terminal",
+          "name": "Terminal",
+          "description": "A terminal component",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/terminal",
+          "docs": "https://magicui.design/docs/components/terminal"
+        },
+        {
+          "id": "magicui/text-3d-flip",
+          "name": "Text3dFlip",
+          "description": "A text effect that flips each letter in 3D with a staggered animation on hover.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/text-3d-flip",
+          "docs": "https://magicui.design/docs/components/text-3d-flip"
+        },
+        {
+          "id": "magicui/text-animate",
+          "name": "TextAnimate",
+          "description": "A text animation component that animates text using a variety of different animations.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/text-animate",
+          "docs": "https://magicui.design/docs/components/text-animate"
+        },
+        {
+          "id": "magicui/text-reveal",
+          "name": "TextReveal",
+          "description": "Fade in text as you scroll down the page.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/text-reveal",
+          "docs": "https://magicui.design/docs/components/text-reveal"
+        },
+        {
+          "id": "magicui/tweet-card",
+          "name": "TweetCard",
+          "description": "A card that displays a tweet with the author's name, handle, and profile picture.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/tweet-card",
+          "docs": "https://magicui.design/docs/components/tweet-card"
+        },
+        {
+          "id": "magicui/typing-animation",
+          "name": "TypingAnimation",
+          "description": "Characters appearing in typed animation",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/typing-animation",
+          "docs": "https://magicui.design/docs/components/typing-animation"
+        },
+        {
+          "id": "magicui/video-text",
+          "name": "VideoText",
+          "description": "A component that displays text with a video playing in the background.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/video-text",
+          "docs": "https://magicui.design/docs/components/video-text"
+        },
+        {
+          "id": "magicui/warp-background",
+          "name": "WarpBackground",
+          "description": "A card with a time warping background effect.",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/warp-background",
+          "docs": "https://magicui.design/docs/components/warp-background"
+        },
+        {
+          "id": "magicui/word-rotate",
+          "name": "WordRotate",
+          "description": "A vertical rotation of words",
+          "uses": [],
+          "add": "pnpm dlx shadcn@latest add @magicui/word-rotate",
+          "docs": "https://magicui.design/docs/components/word-rotate"
+        }
+      ]
     }
   ],
   "theme": [

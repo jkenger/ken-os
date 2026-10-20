@@ -12,6 +12,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { draftStyles, type Draft, type LookChange } from "@/features/design-studio/drafts";
 import {
+  branchOpen,
   filterLibrary,
   filterTree,
   treeOrder,
@@ -135,6 +136,9 @@ export function StudioWorkspace({
   const [changedOnly, setChangedOnly] = useState(false);
   // All, not Installed, so the catalogue is visible (decided after the mockups).
   const [filters, setFilters] = useState<TreeFilters>({ library: "all", installedOnly: false });
+  // This repo starts open and the other libraries folded (B1).
+  const [branches, setBranches] = useState<Record<string, boolean>>({ repo: true });
+  const openBranch = useCallback((id: string, open: boolean) => setBranches((all) => ({ ...all, [id]: open })), []);
   const [preview, setPreview] = useState<Record<string, PreviewProps>>({});
   const [ringed, setRinged] = useState<Set<string>>(() => new Set());
   const find = useRef<HTMLInputElement>(null);
@@ -154,16 +158,18 @@ export function StudioWorkspace({
       ...(repo ? filterTree(rows, query, changedOnly ? changed : undefined).map((row) => row.component.id) : []),
       ...manifest.libraries
         .filter((library) => filters.library === "all" || filters.library === library.id)
+        // A large library's cards stay off the canvas while its branch is folded (decided after the mockups).
+        .filter((library) => !library.folded || branchOpen(library.id, branches, filters, query, changedOnly))
         .flatMap((library) =>
           filterLibrary(library.items, query, {
             installedOnly: filters.installedOnly,
             changed: changedOnly ? changed : undefined,
           }),
         )
-        .filter((item) => !item.installed)
-        .map((item) => item.id),
+        // An installed item is drawn once, as This repo's node (B4).
+        .map((item) => item.installed ?? item.id),
     ]);
-  }, [rows, manifest.libraries, filters, query, changedOnly, changed]);
+  }, [rows, manifest.libraries, filters, branches, query, changedOnly, changed]);
   const pick = useCallback(
     (id: string) => router.push(`/studio?c=${encodeURIComponent(id)}`, { scroll: false }),
     [router],
@@ -267,6 +273,8 @@ export function StudioWorkspace({
     changed,
     changedOnly,
     filters,
+    open: branches,
+    onOpen: openBranch,
     query,
   };
 

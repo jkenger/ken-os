@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type ReactNode, type RefObject } from "react";
+import { useEffect, useId, useRef, type ReactNode, type RefObject } from "react";
 import Link from "next/link";
 import { Check, ChevronDown, ChevronRight, Layers, Search, Square, SquareDashed } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
+  branchOpen,
   filterLibrary,
   filterTree,
   treeOrder,
@@ -78,6 +79,8 @@ export function StudioTree({
   onChangedOnly,
   filters,
   onFilters,
+  open,
+  onOpen,
   query,
   onQueryChange,
   findRef,
@@ -93,6 +96,9 @@ export function StudioTree({
   onChangedOnly: (on: boolean) => void;
   filters: TreeFilters;
   onFilters: (filters: TreeFilters) => void;
+  /** Branches opened or folded by hand, the workspace's since a folded library stays off the canvas. */
+  open: Record<string, boolean>;
+  onOpen: (id: string, open: boolean) => void;
   query: string;
   onQueryChange: (query: string) => void;
   /** The find field, for the canvas toolbar's Find button. */
@@ -100,8 +106,6 @@ export function StudioTree({
   onPick?: () => void;
   className?: string;
 }) {
-  // This repo starts open and the other libraries folded (B1); a large one stays folded until it is opened.
-  const [open, setOpen] = useState<Record<string, boolean>>({ repo: true });
   const switchId = useId();
   const ownFind = useRef<HTMLInputElement>(null);
   const find = findRef ?? ownFind;
@@ -119,9 +123,8 @@ export function StudioTree({
       }),
     }))
     .filter((branch) => branch.items.length);
-  const forced = Boolean(query.trim()) || changedOnly;
-  const isOpen = (id: string) => forced || filters.library === id || Boolean(open[id]);
-  const setBranch = (id: string) => (next: boolean) => setOpen((all) => ({ ...all, [id]: next }));
+  const isOpen = (id: string) => branchOpen(id, open, filters, query, changedOnly);
+  const setBranch = (id: string) => (next: boolean) => onOpen(id, next);
 
   // "/" finds a component, unless the owner is already typing somewhere.
   useEffect(() => {
@@ -139,8 +142,9 @@ export function StudioTree({
   // Opening /studio?c=shadcn/form opens its branch, and the picked row is kept in view.
   const pickedLibrary = libraries.find((library) => library.items.some((item) => item.id === picked))?.id;
   useEffect(() => {
-    if (pickedLibrary) setOpen((all) => (all[pickedLibrary] ? all : { ...all, [pickedLibrary]: true }));
-  }, [pickedLibrary]);
+    // Every pick, so a branch folded after an earlier pick in it opens again.
+    if (pickedLibrary) onOpen(pickedLibrary, true);
+  }, [picked, pickedLibrary, onOpen]);
   const pickedOpen = pickedLibrary ? Boolean(open[pickedLibrary]) : true;
   useEffect(() => {
     list.current?.querySelector<HTMLElement>("[aria-current=page]")?.scrollIntoView({ block: "nearest" });

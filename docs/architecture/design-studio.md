@@ -1,6 +1,6 @@
 # Design Studio — architecture spec
 
-Status: agreed with the owner on 19 Oct 2026. Steps 1 (manifest and tree), 2 (graph) and 3 (inspector and drafts) are built; steps 4 and 5 are not. The screens are drawn from [the mockup brief](../mockups/design-studio.md).
+Status: agreed with the owner on 19 Oct 2026. Steps 1 (manifest and tree), 2 (graph), 3 (inspector and drafts) and 4 (other libraries) are built; step 5 is not. The screens are drawn from [the mockup brief](../mockups/design-studio.md).
 
 The Design Studio is a private workspace in Loots for seeing and tuning the app's components. It lists every component in the repo and in the shadcn libraries the owner might add, renders the installed ones live, and lets the owner change their look with instant feedback. Changes are saved as drafts and turned into code by export. The studio does not write to the codebase itself.
 
@@ -105,13 +105,14 @@ To build a step: open the named frames on the canvas before writing UI (their ar
    - Look is offered where the studio can style the live element: primitives whose first export passes its className to a `data-slot` element (not Radix roots such as Dialog), and wrappers built on one that pass it classes (today the kit Badge). Others read "Nothing to restyle";
    - the tree's Changed switch sits under Find on its own, since the Library and Installed filters beside it come with step 4.
 
-4. **Other libraries.** shadcn/ui and chosen registries as metadata branches and graph cards. Frames: B1's Library, Installed and Changed filters, B4, C3, D7. Built in small PRs: the registry snapshot; the tree, the inspector and the graph cards; then Magic UI.
+4. **Other libraries.** shadcn/ui and chosen registries as metadata branches and graph cards. Frames: B1's Library, Installed and Changed filters, B4, C3, D7. Built in three PRs: the registry snapshot; the tree, the inspector and the graph cards; then Magic UI.
    - `pnpm --filter @ken-os/web studio:registries` fetches each library into `features/design-studio/registries.snapshot.json`, which is committed; `studio:generate`, `pnpm check` and the build read only the snapshot, so none of them needs the network. Run it by hand to pick up a registry's changes, then `studio:generate`.
    - shadcn/ui is read from its source on GitHub: `apps/v4/public/r/index.json` (what `ui.shadcn.com/r/index.json` serves) for the items and their registry dependencies, and each docs page's frontmatter for its one-liner. Only items with docs for this repo's base (the `radix` of `radix-luma`) are listed, since `shadcn add` can't install the others here; the mockups' Attachment, Bubble, Form and the other Aria-only items are therefore missing.
    - The manifest gains `libraries`: each item's id (`shadcn/form`), name, description, the components it uses (this repo's id when installed here, such as `ui/button`), `installed` when this repo has a primitive of the same name, its `shadcn add` command and its docs link.
    - The tree gains B1's Library select, Installed and All, and the Changed switch beside them, and a branch per library (B4). An installed item reads Installed and picks This repo's node; Changed keeps installed items whose This repo component has a draft. Picking a library is the same as opening its branch.
    - An item that isn't installed opens its own inspector (D7): Not installed, its description, Library, Uses as links, the add command with Copy, and Docs. It has no tabs.
    - The canvas draws each library's items that aren't installed as cards in an area under This repo (C3): 96 high, 32 apart, with the description, Not installed and "Uses n". Their arrows go to This repo's node when what they use is installed, and show only while either end is picked or hovered. The tree's Library, Installed and Changed filters and find hide areas and cards in place, as find does nodes.
+   - Magic UI is read from its public registry JSON on GitHub (`apps/www/public/r/registry.json`, what `magicui.design/r/registry.json` serves), which carries descriptions. Its items use shadcn/ui's by bare name (`button`), which point at this repo's primitive when installed. Its 78 cards are folded off the canvas until its tree branch is opened, picked in the Library filter, or opened by find or Changed (`folded` on the library, `branchOpen` in `manifest.ts`). Every library's items are A to Z.
 5. **Connector export.** The drafts tool and the apply-through-Claude flow. Frames: E3, and the E4 note.
 
 Later, once the inspector has been used: decide on an AI tab (shadcn's AI Elements needs the Vercel AI SDK and a model key in the app).

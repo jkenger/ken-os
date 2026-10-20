@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  branchOpen,
   filterLibrary,
   filterTree,
   kebab,
@@ -214,4 +215,30 @@ test("layoutLibraries draws cards only for items not installed, in an area under
     edges.map((edge) => edge.id),
     ["shadcn/calendar>ui/button", "shadcn/chart>shadcn/calendar"],
   );
+});
+
+test("routeEdge keeps a card's arrow in the 32px gap above its row", () => {
+  // A second-row card to This repo's top-left node: 16 above the card, 28 above the node.
+  assert.equal(
+    routeEdge({ x: 320, y: 500 }, { x: 32, y: 64 }, { height: 96, fromGap: 32 }),
+    "M440 500 V484 H296 V36 H152 V64",
+  );
+});
+
+test("libraryItems points another library's bare names at this repo's primitives", () => {
+  const [item] = libraryItems(
+    { id: "magicui", name: "Magic UI", items: [{ name: "shimmer-button", uses: ["button", "missing"] }] },
+    new Set(["ui/button"]),
+  );
+  assert.deepEqual(item.uses, ["ui/button"]);
+  assert.equal(item.add, "pnpm dlx shadcn@latest add @magicui/shimmer-button");
+});
+
+test("branchOpen opens a branch by hand, by the Library filter, or while find or Changed is on", () => {
+  const filters = { library: "all", installedOnly: false };
+  assert.equal(branchOpen("magicui", {}, filters, "", false), false);
+  assert.equal(branchOpen("magicui", { magicui: true }, filters, "", false), true);
+  assert.equal(branchOpen("magicui", {}, { ...filters, library: "magicui" }, "", false), true);
+  assert.equal(branchOpen("magicui", {}, filters, "marq", false), true);
+  assert.equal(branchOpen("magicui", {}, filters, "", true), true);
 });
