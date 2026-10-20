@@ -25,7 +25,7 @@ Database checks need `pnpm db:up` (Docker Postgres on `127.0.0.1:5435`) and `pnp
 - `pnpm --filter @ken-os/web test:db:auth`
 - `pnpm --filter @ken-os/web test:db:memory`
 
-After editing the curriculum YAML, a lesson or a lab, run `pnpm --filter @ken-os/web lab:generate` before `pnpm check`. After changing a component, run `pnpm --filter @ken-os/web studio:generate`.
+After editing the curriculum YAML, a lesson or a lab, run `pnpm --filter @ken-os/web lab:generate` before `pnpm check`. After changing a component or a token in `globals.css`, run `pnpm --filter @ken-os/web studio:generate`.
 
 `.claude/settings.json` hooks run Prettier on every file Claude writes or edits, then `pnpm check` after every `.ts` or `.tsx` edit.
 

@@ -11,6 +11,7 @@ const component = (id: string, name: string, wraps?: string, uses: string[] = []
   exports: [name],
   variants: [],
   uses,
+  tokens: [],
   ...(wraps ? { wraps } : {}),
 });
 

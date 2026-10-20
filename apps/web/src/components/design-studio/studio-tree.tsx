@@ -1,22 +1,29 @@
 "use client";
 
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useId, useRef, useState, type RefObject } from "react";
 import Link from "next/link";
 import { ChevronDown, ChevronRight, Layers, Search, Square } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { filterTree, treeOrder, type StudioComponent } from "@/features/design-studio/manifest";
 import { cn } from "@/lib/utils";
+import { ChangedDot } from "./studio-inspector";
 
-/** The studio's component tree (mockup frames B1, B2, B5, B6): find, then one branch per library with each component
- *  as a row and Loots wrappers nested under the primitive they're built on. Only This repo exists until step 4, so the
- *  Library, Installed and Changed filters wait for it. The find query is the workspace's, since it filters the canvas
- *  too. */
+/** The studio's component tree (mockup frames B1 to B3, B5 to B7): find and Changed, then one branch per library with
+ *  each component as a row, a dot on the ones with a draft, and Loots wrappers nested under the primitive they're built
+ *  on. Only This repo exists until step 4, so the Library and Installed filters wait for it. The find query and Changed
+ *  are the workspace's, since they filter the canvas too. */
 export function StudioTree({
   components,
   picked,
+  changed,
+  changedOnly,
+  onChangedOnly,
   query,
   onQueryChange,
   findRef,
@@ -25,6 +32,10 @@ export function StudioTree({
 }: {
   components: StudioComponent[];
   picked: string;
+  /** Ids with a draft. */
+  changed: Set<string>;
+  changedOnly: boolean;
+  onChangedOnly: (on: boolean) => void;
   query: string;
   onQueryChange: (query: string) => void;
   /** The find field, for the canvas toolbar's Find button. */
@@ -33,11 +44,12 @@ export function StudioTree({
   className?: string;
 }) {
   const [open, setOpen] = useState(true);
+  const switchId = useId();
   const ownFind = useRef<HTMLInputElement>(null);
   const find = findRef ?? ownFind;
   const list = useRef<HTMLDivElement>(null);
   const rows = treeOrder(components);
-  const shown = filterTree(rows, query);
+  const shown = filterTree(rows, query, changedOnly ? changed : undefined);
 
   // "/" finds a component, unless the owner is already typing somewhere.
   useEffect(() => {
@@ -75,18 +87,24 @@ export function StudioTree({
             <kbd className="rounded border bg-muted px-1.5 font-mono text-xs text-muted-foreground">/</kbd>
           </InputGroupAddon>
         </InputGroup>
+        <div className="mt-3 flex items-center gap-2">
+          <Switch id={`${switchId}-changed`} size="sm" checked={changedOnly} onCheckedChange={onChangedOnly} />
+          <Label htmlFor={`${switchId}-changed`} className="font-normal">
+            Changed
+          </Label>
+        </div>
       </div>
 
       <div ref={list} className="min-h-0 flex-1 overflow-y-auto p-2">
         {shown.length ? (
-          <Collapsible open={open || Boolean(query.trim())} onOpenChange={setOpen}>
+          <Collapsible open={open || Boolean(query.trim()) || changedOnly} onOpenChange={setOpen}>
             <CollapsibleTrigger asChild>
               <Button
                 variant="ghost"
                 size="sm"
                 className="w-full justify-start gap-1.5 px-2 font-semibold aria-expanded:bg-transparent hover:aria-expanded:bg-muted"
               >
-                {open || query.trim() ? (
+                {open || query.trim() || changedOnly ? (
                   <ChevronDown className="text-muted-foreground" aria-hidden="true" />
                 ) : (
                   <ChevronRight className="text-muted-foreground" aria-hidden="true" />
@@ -116,6 +134,14 @@ export function StudioTree({
                       >
                         <Icon className="size-4 shrink-0 text-muted-foreground" strokeWidth={1.8} aria-hidden="true" />
                         <span className="truncate">{component.name}</span>
+                        {changed.has(component.id) && (
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <ChangedDot />
+                            </TooltipTrigger>
+                            <TooltipContent>Changed</TooltipContent>
+                          </Tooltip>
+                        )}
                         {component.kind === "wrapper" && (
                           <Badge variant="outline" className="ml-auto shrink-0">
                             Loots
@@ -128,10 +154,19 @@ export function StudioTree({
               </ul>
             </CollapsibleContent>
           </Collapsible>
+        ) : changedOnly && !changed.size ? (
+          <p className="px-4 py-10 text-center text-sm font-semibold">No changes yet</p>
         ) : (
           <div className="grid justify-items-center gap-3 px-4 py-10 text-center">
             <p className="text-sm font-semibold">No components match</p>
-            <Button variant="outline" size="sm" onClick={() => onQueryChange("")}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                onQueryChange("");
+                onChangedOnly(false);
+              }}
+            >
               Clear filters
             </Button>
           </div>

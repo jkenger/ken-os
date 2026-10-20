@@ -24,7 +24,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { graphGrid, layoutGraph, type StudioComponent } from "@/features/design-studio/manifest";
 import { cn } from "@/lib/utils";
-import { previews } from "./previews";
+import { previews, type PreviewProps } from "./previews";
+import { ChangedDot } from "./studio-inspector";
 
 // The studio's canvas (docs/architecture/design-studio.md, step 2; mockup frames A1, A2 and C1 to C8): every component
 // in This repo as a live node on a five-column grid in tree order, with an arrow to each primitive it uses and a
@@ -53,13 +54,13 @@ export class PreviewBoundary extends Component<{ children: ReactNode }, { failed
   }
 }
 
-/** The component's sample, live, or "No preview" when it has none. */
-export function Preview({ id }: { id: string }) {
+/** The component's sample, live with the Preview tab's props, or "No preview" when it has none. */
+export function Preview({ id, props = {} }: { id: string; props?: PreviewProps }) {
   const Sample = previews[id];
   if (!Sample) return <p className="text-sm text-muted-foreground">No preview</p>;
   return (
     <PreviewBoundary key={id}>
-      <Sample />
+      <Sample {...props} />
     </PreviewBoundary>
   );
 }
@@ -68,6 +69,11 @@ type ComponentData = {
   component: StudioComponent;
   picked: boolean;
   hovered: boolean;
+  /** Has a draft: a dot after the name. */
+  changed: boolean;
+  /** Briefly ringed after a token it uses changes (F). */
+  ringed: boolean;
+  props: PreviewProps;
   theme: Theme;
   onPick: (id: string) => void;
 };
@@ -88,7 +94,7 @@ function Handles() {
 
 /** One component (C1, C2): a header that picks it, with Loots on a wrapper, over the component rendered live. */
 function ComponentNode({ data }: NodeProps<Node<ComponentData, "component">>) {
-  const { component, picked, hovered, theme, onPick } = data;
+  const { component, picked, hovered, changed, ringed, props, theme, onPick } = data;
   const nameOnly = useStore((state) => state.transform[2] < NAME_ONLY_ZOOM);
   return (
     <figure
@@ -99,6 +105,7 @@ function ComponentNode({ data }: NodeProps<Node<ComponentData, "component">>) {
         hovered && !picked && "border-foreground/30",
         picked && "border-selected/55 ring-3 ring-selected/15",
         picked && nameOnly && "border-3 border-selected ring-8 ring-selected/25",
+        ringed && "ring-3 ring-selected/40",
       )}
     >
       <Handles />
@@ -115,6 +122,7 @@ function ComponentNode({ data }: NodeProps<Node<ComponentData, "component">>) {
         )}
       >
         <span className={cn(!nameOnly && "truncate")}>{component.name}</span>
+        {changed && !nameOnly && <ChangedDot />}
         {component.kind === "wrapper" && !nameOnly && (
           <Badge variant="outline" className="ml-auto shrink-0">
             Loots
@@ -122,8 +130,14 @@ function ComponentNode({ data }: NodeProps<Node<ComponentData, "component">>) {
         )}
       </Button>
       {!nameOnly && (
-        <div className="nodrag nopan mx-2 mb-2 flex min-h-0 flex-1 cursor-auto flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border bg-background p-2.5 text-foreground">
-          <Preview id={component.id} />
+        <div
+          data-studio-preview={component.id}
+          data-studio-variant={
+            props.variant ?? component.variants.find((group) => group.name === "variant")?.defaultOption
+          }
+          className="nodrag nopan mx-2 mb-2 flex min-h-0 flex-1 cursor-auto flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border bg-background p-2.5 text-foreground"
+        >
+          <Preview id={component.id} props={props} />
         </div>
       )}
     </figure>
@@ -193,6 +207,10 @@ function Graph({
   components,
   shown,
   picked,
+  changed,
+  ringed,
+  previewProps,
+  noChanges,
   theme,
   onPick,
   onClear,
@@ -202,7 +220,13 @@ function Graph({
   components: StudioComponent[];
   /** Ids the tree's find leaves in view; the rest are hidden in place. */
   shown: Set<string>;
+  /** The picked id, or "" for none. */
   picked: string;
+  changed: Set<string>;
+  ringed: Set<string>;
+  previewProps: (id: string) => PreviewProps;
+  /** Changed is on with no drafts, so the empty canvas says that rather than offering to clear (B7). */
+  noChanges: boolean;
   theme: Theme;
   onPick: (id: string) => void;
   onClear: () => void;
@@ -246,12 +270,15 @@ function Graph({
           component,
           picked: component.id === picked,
           hovered: component.id === hovered,
+          changed: changed.has(component.id),
+          ringed: ringed.has(component.id),
+          props: previewProps(component.id),
           theme,
           onPick,
         },
       })),
     ],
-    [layout, components.length, shown, picked, hovered, theme, onPick],
+    [layout, components.length, shown, picked, hovered, changed, ringed, previewProps, theme, onPick],
   );
 
   const edges = useMemo<RouteEdge[]>(
@@ -345,12 +372,16 @@ function Graph({
         />
         {shown.size === 0 && (
           <div className="absolute inset-0 grid place-items-center">
-            <div className="grid justify-items-center gap-3 px-4 text-center">
-              <p className="text-sm font-semibold">No components match</p>
-              <Button variant="outline" size="sm" onClick={onClear}>
-                Clear filters
-              </Button>
-            </div>
+            {noChanges ? (
+              <p className="text-sm font-semibold">No changes yet</p>
+            ) : (
+              <div className="grid justify-items-center gap-3 px-4 text-center">
+                <p className="text-sm font-semibold">No components match</p>
+                <Button variant="outline" size="sm" onClick={onClear}>
+                  Clear filters
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readExports, readUses, readVariants, readWraps } from "./source";
+import { readBlock, readExports, readRoot, readTheme, readTokens, readUses, readVariants, readWraps } from "./source";
 
 test("readExports lists functions, consts and export lists, without types", () => {
   const source = `
@@ -69,4 +69,75 @@ import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 `;
   assert.deepEqual(readUses(source), ["button", "tooltip"]);
+});
+
+test("readTheme reads :root and .dark, with later blocks winning", () => {
+  const css = `
+:root {
+  --radius: 0.625rem;
+  --primary: oklch(0.2 0 0);
+}
+.dark {
+  --primary: oklch(0.9 0 0);
+}
+@theme inline { --color-primary: var(--primary); }
+:root {
+  --selected: var(--topic-active);
+  --primary: oklch(0.3 0 0);
+}
+`;
+  assert.deepEqual(readTheme(css), [
+    { name: "radius", light: "0.625rem" },
+    { name: "primary", light: "oklch(0.3 0 0)", dark: "oklch(0.9 0 0)" },
+    { name: "selected", light: "var(--topic-active)" },
+  ]);
+});
+
+test("readTokens finds tokens in utility classes, radius from rounded and border from a bare border", () => {
+  const names = ["primary", "primary-foreground", "ring", "border", "radius", "muted"];
+  const source = `cva("rounded-lg border bg-primary/90 text-primary-foreground focus-visible:ring-ring/50")`;
+  assert.deepEqual(readTokens(source, names), ["primary", "primary-foreground", "ring", "border", "radius"]);
+  assert.deepEqual(readTokens(`"text-primary-foreground border-input"`, names), ["primary-foreground"]);
+});
+
+test("readRoot finds the element a component's className reaches, and readBlock a function's own lines", () => {
+  const table = `function Table({ className, ...props }: React.ComponentProps<"table">) {
+  return (
+    <div data-slot="table-container" className="relative">
+      <table data-slot="table" className={cn("w-full", className)} {...props} />
+    </div>
+  );
+}`;
+  assert.deepEqual(readRoot(table, "Table"), { slot: "table", variant: false });
+  const select = `function NativeSelect({ className, variant, ...props }: Props) {
+  return (
+    <div className={cn("relative", className)} data-slot="native-select-wrapper">
+      <select data-slot="native-select" {...props} />
+    </div>
+  );
+}`;
+  assert.deepEqual(readRoot(select, "NativeSelect"), { slot: "native-select-wrapper", variant: true });
+  // A Radix root renders no element of its own, so there is nothing to restyle.
+  assert.equal(
+    readRoot(`function Dialog({ ...props }) {\n  return <Root data-slot="dialog" {...props} />\n}`, "Dialog"),
+    undefined,
+  );
+  const source = `import x from "y";
+
+/** Doc. */
+export function Badge({ children }: { children: ReactNode }) {
+  return <ShadcnBadge variant="secondary">{children}</ShadcnBadge>;
+}
+
+export function Back() {}
+`;
+  assert.deepEqual(readBlock(source, "Badge"), {
+    start: 4,
+    lines: [
+      "export function Badge({ children }: { children: ReactNode }) {",
+      '  return <ShadcnBadge variant="secondary">{children}</ShadcnBadge>;',
+      "}",
+    ],
+  });
+  assert.equal(readBlock(source, "Missing"), undefined);
 });

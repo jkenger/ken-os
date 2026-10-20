@@ -1,4 +1,4 @@
-import type { VariantGroup } from "./manifest";
+import type { ThemeToken, VariantGroup } from "./manifest";
 
 // Reads component source for scripts/generate-studio-manifest.ts. A small scanner, not a parser: it handles the
 // shapes the shadcn registry and the Loots wrappers are written in, and the tests pin those shapes.
@@ -183,4 +183,72 @@ export function readWraps(source: string) {
 export function readUses(source: string) {
   const slugs = [...source.matchAll(/\bfrom\s*["']@\/components\/ui\/([^"']+)["']/g)].map((match) => match[1]);
   return [...new Set(slugs)];
+}
+
+/** Every custom property set in a `:root` or `.dark` block of a stylesheet, in first-seen order. A later block wins,
+ *  as in the cascade, so the Loots section's values replace shadcn's. */
+export function readTheme(css: string) {
+  const tokens = new Map<string, ThemeToken>();
+  for (const block of css.matchAll(/^(:root|\.dark)\s*\{([^}]*)\}/gm)) {
+    for (const line of block[2].matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)) {
+      const [, name, value] = line;
+      const token = tokens.get(name) ?? { name, light: "" };
+      if (block[1] === ":root") token.light = value.trim();
+      else token.dark = value.trim();
+      tokens.set(name, token);
+    }
+  }
+  return [...tokens.values()].filter((token) => token.light);
+}
+
+/** The theme tokens a piece of source styles with, from its utility classes: `bg-primary`, `ring-ring/50`,
+ *  `text-muted-foreground`, any `rounded` class for `radius`, and a bare `border` for `border`. */
+export function readTokens(source: string, names: string[]) {
+  const used = new Set<string>();
+  const prefix =
+    "(?:bg|text|border(?:-[trblxyse])?|ring|outline|fill|stroke|divide|placeholder|caret|from|via|to|shadow|decoration)";
+  for (const name of names) {
+    const pattern = new RegExp(`(?<![\\w-])${prefix}-${name}(?![\\w-])`);
+    if (pattern.test(source)) used.add(name);
+  }
+  if (names.includes("radius") && /(?<![\w-])rounded(?![\w])/.test(source)) used.add("radius");
+  if (names.includes("border") && /(?<![\w-])border(?:-[trblxyse])?(?![\w-])/.test(source)) used.add("border");
+  return names.filter((name) => used.has(name));
+}
+
+/** The element a primitive's own `className` reaches, named by its data-slot, and whether the function takes a
+ *  `variant` prop. A Look edit styles that element, and its exported wrapper passes classes the same way, so both
+ *  agree. Undefined when the function passes no className on, as Radix roots and providers do. */
+export function readRoot(source: string, name: string) {
+  const code = blank(source);
+  const match = new RegExp(`^(?:export\\s+)?function\\s+${name}\\b`, "m").exec(code);
+  if (!match) return undefined;
+  const params = code.indexOf("(", match.index);
+  const paramsEnd = matching(code, params, "()");
+  const end = closing(code, code.indexOf("{", paramsEnd));
+  // The first use of className as a value, as in cn("...", className) or className={className}. A component with
+  // branches, such as Sidebar, styles its first one, which is the one its sample renders.
+  const use = /\bclassName\b(?!\s*=)/.exec(code.slice(paramsEnd, end));
+  if (use?.index === undefined) return undefined;
+  const at = paramsEnd + use.index;
+  const tag = [...code.slice(0, at).matchAll(/<[A-Za-z]/g)].pop()?.index;
+  if (tag === undefined) return undefined;
+  const next = code.slice(at).search(/<[A-Za-z/]/);
+  const element = source.slice(tag, next === -1 ? end : at + next);
+  const slot = /data-slot="([\w-]+)"/.exec(element)?.[1];
+  if (!slot) return undefined;
+  return { slot, variant: /\bvariant\b/.test(code.slice(params, paramsEnd)) };
+}
+
+/** An exported function's lines, from `export function <name>` to its closing brace, with the 1-based line it starts
+ *  on, so a patch can change them in place. */
+export function readBlock(source: string, name: string) {
+  const code = blank(source);
+  const match = new RegExp(`^export\\s+function\\s+${name}\\b`, "m").exec(code);
+  if (!match) return undefined;
+  const params = code.indexOf("(", match.index);
+  const open = code.indexOf("{", matching(code, params, "()"));
+  const end = closing(code, open);
+  const start = source.slice(0, match.index).split("\n").length;
+  return { start, lines: source.slice(match.index, end).split("\n") };
 }

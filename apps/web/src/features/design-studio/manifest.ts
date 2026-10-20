@@ -18,12 +18,29 @@ export type StudioComponent = {
   uses: string[];
   /** For a wrapper: the id of the primitive it is built on, when it is built on exactly one. */
   wraps?: string;
+  /** The theme tokens its classes use (`radius` for any rounded class), for the inspector's Tokens tab. */
+  tokens: string[];
+  /** The `data-slot` of the element a primitive's first export passes its className to, which the studio's Look
+   *  edits style in the live preview. Missing when that export styles nothing, as a Radix root doesn't. */
+  slot?: string;
+  /** Whether that export takes a `variant` prop, so a Look edit can be limited to one variant. */
+  scoped?: true;
+  /** A wrapper function's own lines and the line they start on, which a Look edit's patch changes in place. */
+  source?: { start: number; lines: string[] };
 };
+
+/** A theme token from globals.css: its `:root` value and, when it has one, its `.dark` value. */
+export type ThemeToken = { name: string; light: string; dark?: string };
 
 export type StudioManifest = {
   /** The shadcn style in components.json, such as "radix-luma". */
   style: string;
   components: StudioComponent[];
+  /** Every token set in globals.css, with the Loots section's values over shadcn's. */
+  theme: ThemeToken[];
+  /** globals.css's length, last lines and whether it ends with a newline, so a token patch can append to its Loots
+   *  section. */
+  globals: { file: string; lines: number; tail: string[]; newline: boolean };
 };
 
 /** "dropdown-menu" -> "DropdownMenu". */
@@ -56,11 +73,13 @@ export function treeOrder(components: StudioComponent[]) {
     ]);
 }
 
-/** Rows whose name matches the query, keeping a wrapper's parent so the nesting still reads. */
-export function filterTree(rows: ReturnType<typeof treeOrder>, query: string) {
+/** Rows whose name matches the query and, with `changed`, that have a draft, keeping a wrapper's parent so the nesting
+ *  still reads. */
+export function filterTree(rows: ReturnType<typeof treeOrder>, query: string, changed?: Set<string>) {
   const needle = query.trim().toLowerCase();
-  if (!needle) return rows;
-  const matches = (row: (typeof rows)[number]) => row.component.name.toLowerCase().includes(needle);
+  if (!needle && !changed) return rows;
+  const matches = (row: (typeof rows)[number]) =>
+    row.component.name.toLowerCase().includes(needle) && (!changed || changed.has(row.component.id));
   return rows.filter(
     (row) =>
       matches(row) ||
