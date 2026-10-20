@@ -1281,7 +1281,7 @@ export const studioManifest: StudioManifest = {
     },
     {
       "name": "radius",
-      "light": "0.375rem"
+      "light": "0.25rem"
     },
     {
       "name": "sidebar",
@@ -1424,7 +1424,7 @@ export const studioManifest: StudioManifest = {
     "lines": 210,
     "tail": [
       ":root {",
-      "  --radius: 0.375rem;",
+      "  --radius: 0.25rem;",
       "}"
     ],
     "newline": true
