@@ -29,6 +29,34 @@ export type StudioComponent = {
   source?: { start: number; lines: string[] };
 };
 
+/** A component another library offers, known from its registry JSON only: the studio never runs its code. */
+export type LibraryItem = {
+  /** `<library>/<registry name>`, the value of `?c=` in the studio's address. */
+  id: string;
+  name: string;
+  /** The docs one-liner, when the library's docs have one. */
+  description?: string;
+  /** Ids of the components it uses: This repo's when installed here, else the library's own. */
+  uses: string[];
+  /** The id of this repo's primitive when it is installed here. */
+  installed?: string;
+  /** The command that adds it. */
+  add: string;
+  docs?: string;
+};
+
+/** A library other than this repo, such as shadcn/ui, as one branch of the tree. */
+export type StudioLibrary = { id: string; name: string; items: LibraryItem[] };
+
+/** What scripts/fetch-studio-registries.ts commits: each library's items as its registry names them. */
+export type RegistrySnapshot = {
+  libraries: {
+    id: string;
+    name: string;
+    items: { name: string; description?: string; uses: string[]; docs?: string }[];
+  }[];
+};
+
 /** A theme token from globals.css: its `:root` value and, when it has one, its `.dark` value. */
 export type ThemeToken = { name: string; light: string; dark?: string };
 
@@ -36,6 +64,8 @@ export type StudioManifest = {
   /** The shadcn style in components.json, such as "radix-luma". */
   style: string;
   components: StudioComponent[];
+  /** The other libraries, from the committed registry snapshot. */
+  libraries: StudioLibrary[];
   /** Every token set in globals.css, with the Loots section's values over shadcn's. */
   theme: ThemeToken[];
   /** globals.css's length, last lines and whether it ends with a newline, so a token patch can append to its Loots
@@ -51,6 +81,25 @@ export function pascal(slug: string) {
 /** "SectionTitle" -> "section-title", "selectedRow" -> "selected-row". */
 export function kebab(name: string) {
   return name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+}
+
+/** A library's items as the studio lists them: named in Pascal case, marked installed when this repo has a primitive
+ *  of the same name, and using only the library's own components, pointed at this repo's where installed. */
+export function libraryItems(
+  library: RegistrySnapshot["libraries"][number],
+  primitives: Set<string>,
+): StudioLibrary["items"] {
+  const names = new Set(library.items.map((item) => item.name));
+  const local = (name: string) => (primitives.has(`ui/${name}`) ? `ui/${name}` : undefined);
+  return library.items.map((item) => ({
+    id: `${library.id}/${item.name}`,
+    name: pascal(item.name),
+    ...(item.description ? { description: item.description } : {}),
+    uses: item.uses.filter((name) => names.has(name)).map((name) => local(name) ?? `${library.id}/${name}`),
+    ...(local(item.name) ? { installed: local(item.name) } : {}),
+    add: `pnpm dlx shadcn@latest add @${library.id}/${item.name}`,
+    ...(item.docs ? { docs: item.docs } : {}),
+  }));
 }
 
 /** The tree's order: primitives A to Z, each followed by the wrappers built on it, then wrappers that wrap nothing, A

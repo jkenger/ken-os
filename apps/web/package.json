@@ -18,6 +18,7 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "lab:generate": "tsx scripts/generate-lab-content.ts --write",
     "studio:generate": "tsx scripts/generate-studio-manifest.ts --write",
+    "studio:registries": "tsx scripts/fetch-studio-registries.ts",
     "test:db:engineering": "tsx scripts/verify-engineering.ts",
     "test:db:terms": "tsx scripts/verify-terms.ts",
     "test:db:connector": "tsx scripts/verify-connector.ts",

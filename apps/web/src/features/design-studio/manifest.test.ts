@@ -1,6 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { filterTree, kebab, layoutGraph, pascal, routeEdge, treeOrder, type StudioComponent } from "./manifest";
+import {
+  filterTree,
+  kebab,
+  layoutGraph,
+  libraryItems,
+  pascal,
+  routeEdge,
+  treeOrder,
+  type StudioComponent,
+} from "./manifest";
 import { studioManifest } from "./manifest.generated";
 
 const component = (id: string, name: string, wraps?: string, uses: string[] = []): StudioComponent => ({
@@ -106,4 +115,48 @@ test("the generated manifest's uses point at other primitives", () => {
     for (const used of c.uses) assert.ok(ids.includes(used) && used !== c.id, `${c.id} uses ${used}`);
   const sidebar = studioManifest.components.find((c) => c.id === "ui/sidebar");
   assert.ok(sidebar?.uses.includes("ui/sheet"));
+});
+
+test("libraryItems marks installed items and points their uses at this repo's primitives", () => {
+  const items = libraryItems(
+    {
+      id: "shadcn",
+      name: "shadcn/ui",
+      items: [
+        { name: "button", description: "A button.", uses: [] },
+        { name: "calendar", uses: ["button", "use-mobile"] },
+        { name: "chart", uses: ["calendar"], docs: "https://ui.shadcn.com/docs/components/radix/chart" },
+      ],
+    },
+    new Set(["ui/button"]),
+  );
+  assert.deepEqual(items, [
+    {
+      id: "shadcn/button",
+      name: "Button",
+      description: "A button.",
+      uses: [],
+      installed: "ui/button",
+      add: "pnpm dlx shadcn@latest add @shadcn/button",
+    },
+    {
+      id: "shadcn/calendar",
+      name: "Calendar",
+      uses: ["ui/button"],
+      add: "pnpm dlx shadcn@latest add @shadcn/calendar",
+    },
+    {
+      id: "shadcn/chart",
+      name: "Chart",
+      uses: ["shadcn/calendar"],
+      add: "pnpm dlx shadcn@latest add @shadcn/chart",
+      docs: "https://ui.shadcn.com/docs/components/radix/chart",
+    },
+  ]);
+});
+
+test("every installed shadcn/ui item is a primitive in this repo", () => {
+  const ids = new Set(studioManifest.components.map((component) => component.id));
+  for (const library of studioManifest.libraries)
+    for (const item of library.items) if (item.installed) assert.ok(ids.has(item.installed), item.id);
 });
