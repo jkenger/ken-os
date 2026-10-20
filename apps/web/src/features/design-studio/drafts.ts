@@ -89,7 +89,8 @@ export function parseDraft(
     const tokens = new Set(manifest.theme.map((token) => token.name));
     const valid: Record<LookProp | "scope", (value: string) => boolean> = {
       variant: (value) => slug.test(value),
-      scope: (value) => slug.test(value),
+      // Only a primitive whose root takes `variant` can limit an edit to one; its wrapper checks props.variant.
+      scope: (value) => Boolean(component.scoped) && slug.test(value),
       radius: (value) => value in radiusScale || value === "full" || value === "none",
       height: (value) => pixels.test(value),
       padding: (value) => pixels.test(value),
@@ -127,29 +128,47 @@ export function isEmptyDraft(draft: Draft) {
 
 /** The CSS that shows the drafts on every live preview at once (mockup frame F): token overrides on each preview
  *  surface, light and dark apart, then each component's Look on its root element inside its own node. Previews mark
- *  their surface with `data-studio-preview="<id>"`. Values are checked again here, since they go into a style tag. */
-export function draftStyles(drafts: Draft[], components: StudioComponent[]) {
-  const light: string[] = [];
-  const dark: string[] = [];
-  const rules: string[] = [];
+ *  their surface with `data-studio-preview="<id>"` and the variant they show with `data-studio-variant`. Values are
+ *  checked again here, since they go into a style tag. */
+export function draftStyles(drafts: Draft[], components: StudioComponent[], theme: ThemeToken[]) {
+  const light = new Map<string, string>();
+  const dark = new Map<string, string>();
   for (const draft of drafts) {
     if (draft.kind !== "token" || !/^[\w-]+$/.test(draft.target)) continue;
     const { light: l, dark: d } = draft.change;
-    if (l && isTokenValue(l)) light.push(`--${draft.target}: ${l};`);
-    if (d && isTokenValue(d)) dark.push(`--${draft.target}: ${d};`);
+    if (l && isTokenValue(l)) light.set(draft.target, l);
+    if (d && isTokenValue(d)) dark.set(draft.target, d);
     // A token with no dark value, such as radius, is the same in both.
-    else if (l && isTokenValue(l) && draft.target === "radius") dark.push(`--${draft.target}: ${l};`);
+    else if (l && isTokenValue(l) && draft.target === "radius") dark.set(draft.target, l);
   }
-  if (light.length) rules.push(`[data-studio-preview]:not(.dark, .dark *) { ${light.join(" ")} }`);
-  if (dark.length) rules.push(`[data-studio-preview].dark, .dark [data-studio-preview] { ${dark.join(" ")} }`);
+  // A token defined as var(--other) resolves where it is declared, on :root, so a preview must declare it again for
+  // an override of the other to reach it, as it does once the patch lands in globals.css.
+  for (const [side, values] of [
+    ["light", light],
+    ["dark", dark],
+  ] as const) {
+    for (let grew = true; grew;) {
+      grew = false;
+      for (const token of theme) {
+        const value = side === "dark" ? (token.dark ?? token.light) : token.light;
+        if (values.has(token.name) || ![...values.keys()].some((name) => value.includes(`var(--${name})`))) continue;
+        values.set(token.name, value);
+        grew = true;
+      }
+    }
+  }
+  const declare = (values: Map<string, string>) => [...values].map(([name, value]) => `--${name}: ${value};`).join(" ");
+  const rules: string[] = [];
+  if (light.size) rules.push(`[data-studio-preview]:not(.dark, .dark *) { ${declare(light)} }`);
+  if (dark.size) rules.push(`[data-studio-preview].dark, .dark [data-studio-preview] { ${declare(dark)} }`);
   for (const draft of drafts) {
     if (draft.kind !== "component") continue;
     const component = components.find((item) => item.id === draft.target);
     const slot = component && rootSlot(component, components);
     const css = lookCss(draft.change);
     if (!component || !slot || !css) continue;
-    const scope = draft.change.scope ? `[data-variant="${draft.change.scope}"]` : "";
-    rules.push(`[data-studio-preview="${component.id}"] [data-slot="${slot}"]${scope} { ${css} }`);
+    const scope = draft.change.scope && component.scoped ? `[data-studio-variant="${draft.change.scope}"]` : "";
+    rules.push(`[data-studio-preview="${component.id}"]${scope} [data-slot="${slot}"] { ${css} }`);
   }
   return rules.join("\n");
 }
@@ -286,11 +305,12 @@ function primitivePatch(component: StudioComponent, change: LookChange): FilePat
   const base = `Shadcn${name}`;
   const classes = JSON.stringify(lookClasses(change));
   const defaultScope = component.variants.find((group) => group.name === "variant")?.defaultOption;
-  const condition = change.scope
-    ? change.scope === defaultScope
-      ? `(props.variant ?? ${JSON.stringify(defaultScope)}) === ${JSON.stringify(change.scope)} && ${classes}`
-      : `props.variant === ${JSON.stringify(change.scope)} && ${classes}`
-    : classes;
+  const condition =
+    change.scope && component.scoped
+      ? change.scope === defaultScope
+        ? `(props.variant ?? ${JSON.stringify(defaultScope)}) === ${JSON.stringify(change.scope)} && ${classes}`
+        : `props.variant === ${JSON.stringify(change.scope)} && ${classes}`
+      : classes;
   const lines = [
     'import type { ComponentProps } from "react";',
     `import { ${name} as ${base} } from "@/${component.file.replace(/\.tsx$/, "")}";`,

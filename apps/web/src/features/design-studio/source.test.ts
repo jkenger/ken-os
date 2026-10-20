@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readBlock, readExports, readSlot, readTheme, readTokens, readUses, readVariants, readWraps } from "./source";
+import { readBlock, readExports, readRoot, readTheme, readTokens, readUses, readVariants, readWraps } from "./source";
 
 test("readExports lists functions, consts and export lists, without types", () => {
   const source = `
@@ -100,8 +100,28 @@ test("readTokens finds tokens in utility classes, radius from rounded and border
   assert.deepEqual(readTokens(`"text-primary-foreground border-input"`, names), ["primary-foreground"]);
 });
 
-test("readSlot and readBlock find the root slot and a function's own lines", () => {
-  assert.equal(readSlot(`<div data-slot="card" /><div data-slot="card-title" />`), "card");
+test("readRoot finds the element a component's className reaches, and readBlock a function's own lines", () => {
+  const table = `function Table({ className, ...props }: React.ComponentProps<"table">) {
+  return (
+    <div data-slot="table-container" className="relative">
+      <table data-slot="table" className={cn("w-full", className)} {...props} />
+    </div>
+  );
+}`;
+  assert.deepEqual(readRoot(table, "Table"), { slot: "table", variant: false });
+  const select = `function NativeSelect({ className, variant, ...props }: Props) {
+  return (
+    <div className={cn("relative", className)} data-slot="native-select-wrapper">
+      <select data-slot="native-select" {...props} />
+    </div>
+  );
+}`;
+  assert.deepEqual(readRoot(select, "NativeSelect"), { slot: "native-select-wrapper", variant: true });
+  // A Radix root renders no element of its own, so there is nothing to restyle.
+  assert.equal(
+    readRoot(`function Dialog({ ...props }) {\n  return <Root data-slot="dialog" {...props} />\n}`, "Dialog"),
+    undefined,
+  );
   const source = `import x from "y";
 
 /** Doc. */

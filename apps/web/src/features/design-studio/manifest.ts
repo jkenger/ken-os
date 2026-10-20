@@ -20,8 +20,11 @@ export type StudioComponent = {
   wraps?: string;
   /** The theme tokens its classes use (`radius` for any rounded class), for the inspector's Tokens tab. */
   tokens: string[];
-  /** A primitive's root `data-slot`, which the studio's Look edits style in the live preview. */
+  /** The `data-slot` of the element a primitive's first export passes its className to, which the studio's Look
+   *  edits style in the live preview. Missing when that export styles nothing, as a Radix root doesn't. */
   slot?: string;
+  /** Whether that export takes a `variant` prop, so a Look edit can be limited to one variant. */
+  scoped?: true;
   /** A wrapper function's own lines and the line they start on, which a Look edit's patch changes in place. */
   source?: { start: number; lines: string[] };
 };

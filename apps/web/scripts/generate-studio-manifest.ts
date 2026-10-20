@@ -5,7 +5,7 @@ import { kebab, pascal, type StudioComponent, type StudioManifest } from "../src
 import {
   readBlock,
   readExports,
-  readSlot,
+  readRoot,
   readTheme,
   readTokens,
   readUses,
@@ -43,21 +43,37 @@ const primitives: StudioComponent[] = readdirSync(resolve(src, "components/ui"))
     const file = `components/ui/${name}`;
     const slug = name.replace(/\.tsx$/, "");
     const source = read(file);
+    const exports = readExports(source);
+    const root = readRoot(source, exports[0] ?? "");
     return {
       id: `ui/${slug}`,
       name: pascal(slug),
       kind: "primitive",
       file,
-      exports: readExports(source),
+      exports,
       variants: readVariants(source),
       uses: readUses(source)
         .filter((used) => used !== slug)
         .map((used) => `ui/${used}`),
       tokens: readTokens(source, names),
-      ...(readSlot(source) ? { slot: readSlot(source) } : {}),
+      ...(root ? { slot: root.slot } : {}),
+      ...(root?.variant ? { scoped: true as const } : {}),
     };
   });
-const tokensOf = new Map(primitives.map((primitive) => [primitive.id, primitive.tokens]));
+/** A primitive's tokens, with those of the primitives it renders, since a token change reaches it through them. */
+const reach = (id: string, seen = new Set<string>()): string[] => {
+  const primitive = primitives.find((item) => item.id === id);
+  if (!primitive || seen.has(id)) return [];
+  seen.add(id);
+  return [...primitive.tokens, ...primitive.uses.flatMap((used) => reach(used, seen))];
+};
+const tokensOf = new Map(
+  primitives.map((primitive) => {
+    const all = new Set(reach(primitive.id));
+    return [primitive.id, names.filter((name) => all.has(name))];
+  }),
+);
+for (const primitive of primitives) primitive.tokens = tokensOf.get(primitive.id) ?? [];
 /** A wrapper's tokens: its own classes', and those of the primitive it is built on. */
 const withBase = (own: string[], wraps?: string) =>
   names.filter((name) => own.includes(name) || (wraps ? tokensOf.get(wraps)?.includes(name) : false));

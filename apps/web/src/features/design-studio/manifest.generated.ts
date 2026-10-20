@@ -35,7 +35,8 @@ export const studioManifest: StudioManifest = {
         "radius",
         "foreground"
       ],
-      "slot": "alert"
+      "slot": "alert",
+      "scoped": true
     },
     {
       "id": "ui/badge",
@@ -74,7 +75,8 @@ export const studioManifest: StudioManifest = {
         "radius",
         "foreground"
       ],
-      "slot": "badge"
+      "slot": "badge",
+      "scoped": true
     },
     {
       "id": "ui/button",
@@ -128,7 +130,8 @@ export const studioManifest: StudioManifest = {
         "background",
         "foreground"
       ],
-      "slot": "button"
+      "slot": "button",
+      "scoped": true
     },
     {
       "id": "ui/card",
@@ -184,8 +187,7 @@ export const studioManifest: StudioManifest = {
       ],
       "variants": [],
       "uses": [],
-      "tokens": [],
-      "slot": "collapsible"
+      "tokens": []
     },
     {
       "id": "ui/command",
@@ -211,11 +213,18 @@ export const studioManifest: StudioManifest = {
       "tokens": [
         "popover",
         "popover-foreground",
+        "primary",
+        "primary-foreground",
+        "secondary",
+        "secondary-foreground",
         "muted",
         "muted-foreground",
+        "destructive",
         "border",
         "input",
+        "ring",
         "radius",
+        "background",
         "foreground"
       ],
       "slot": "command"
@@ -244,12 +253,20 @@ export const studioManifest: StudioManifest = {
       "tokens": [
         "popover",
         "popover-foreground",
+        "primary",
+        "primary-foreground",
         "secondary",
+        "secondary-foreground",
+        "muted",
         "muted-foreground",
+        "destructive",
+        "border",
+        "input",
+        "ring",
         "radius",
+        "background",
         "foreground"
-      ],
-      "slot": "dialog"
+      ]
     },
     {
       "id": "ui/disclosure-summary",
@@ -297,8 +314,7 @@ export const studioManifest: StudioManifest = {
         "border",
         "radius",
         "foreground"
-      ],
-      "slot": "dropdown-menu"
+      ]
     },
     {
       "id": "ui/input-group",
@@ -341,12 +357,19 @@ export const studioManifest: StudioManifest = {
         "ui/textarea"
       ],
       "tokens": [
+        "primary",
+        "primary-foreground",
+        "secondary",
+        "secondary-foreground",
+        "muted",
         "muted-foreground",
         "destructive",
         "border",
         "input",
         "ring",
-        "radius"
+        "radius",
+        "background",
+        "foreground"
       ],
       "slot": "input-group"
     },
@@ -437,7 +460,19 @@ export const studioManifest: StudioManifest = {
       "uses": [
         "ui/badge"
       ],
-      "tokens": []
+      "tokens": [
+        "primary",
+        "primary-foreground",
+        "secondary",
+        "secondary-foreground",
+        "muted",
+        "muted-foreground",
+        "destructive",
+        "border",
+        "ring",
+        "radius",
+        "foreground"
+      ]
     },
     {
       "id": "ui/popover",
@@ -461,8 +496,7 @@ export const studioManifest: StudioManifest = {
         "muted-foreground",
         "radius",
         "foreground"
-      ],
-      "slot": "popover"
+      ]
     },
     {
       "id": "ui/progress",
@@ -518,12 +552,20 @@ export const studioManifest: StudioManifest = {
       "tokens": [
         "popover",
         "popover-foreground",
+        "primary",
+        "primary-foreground",
         "secondary",
+        "secondary-foreground",
+        "muted",
         "muted-foreground",
+        "destructive",
         "border",
+        "input",
+        "ring",
+        "radius",
+        "background",
         "foreground"
-      ],
-      "slot": "sheet"
+      ]
     },
     {
       "id": "ui/sidebar",
@@ -584,8 +626,18 @@ export const studioManifest: StudioManifest = {
         "ui/tooltip"
       ],
       "tokens": [
+        "popover",
+        "popover-foreground",
+        "primary",
+        "primary-foreground",
+        "secondary",
+        "secondary-foreground",
+        "muted",
+        "muted-foreground",
+        "destructive",
         "border",
         "input",
+        "ring",
         "radius",
         "sidebar",
         "sidebar-foreground",
@@ -593,9 +645,11 @@ export const studioManifest: StudioManifest = {
         "sidebar-accent-foreground",
         "sidebar-border",
         "sidebar-ring",
-        "background"
+        "background",
+        "foreground"
       ],
-      "slot": "sidebar-wrapper"
+      "slot": "sidebar-container",
+      "scoped": true
     },
     {
       "id": "ui/skeleton",
@@ -670,7 +724,7 @@ export const studioManifest: StudioManifest = {
         "border",
         "foreground"
       ],
-      "slot": "table-container"
+      "slot": "table"
     },
     {
       "id": "ui/tabs",
@@ -758,10 +812,15 @@ export const studioManifest: StudioManifest = {
       ],
       "tokens": [
         "muted",
+        "destructive",
         "border",
-        "radius"
+        "input",
+        "ring",
+        "radius",
+        "foreground"
       ],
-      "slot": "toggle-group"
+      "slot": "toggle-group",
+      "scoped": true
     },
     {
       "id": "ui/toggle",
@@ -801,7 +860,8 @@ export const studioManifest: StudioManifest = {
         "radius",
         "foreground"
       ],
-      "slot": "toggle"
+      "slot": "toggle",
+      "scoped": true
     },
     {
       "id": "ui/tooltip",
@@ -820,8 +880,7 @@ export const studioManifest: StudioManifest = {
         "radius",
         "background",
         "foreground"
-      ],
-      "slot": "tooltip-provider"
+      ]
     },
     {
       "id": "kit/badge",

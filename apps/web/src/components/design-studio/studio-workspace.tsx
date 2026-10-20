@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Download, Moon, PanelLeft, Sun } from "lucide-react";
+import { Download, Moon, Palette, PanelLeft, Sun } from "lucide-react";
 import { DockedPanel, useDocked } from "@/components/docked-panel";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Badge } from "@/components/ui/badge";
@@ -122,6 +122,8 @@ export function StudioWorkspace({
   const [theme, setTheme] = useState<Theme>("light");
   const [treeOpen, setTreeOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  /** From 1024 to 1279px the Theme has no docked panel, so the title row's Theme button opens it as a Sheet. */
+  const [themeOpen, setThemeOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [changedOnly, setChangedOnly] = useState(false);
   const [preview, setPreview] = useState<Record<string, PreviewProps>>({});
@@ -196,9 +198,18 @@ export function StudioWorkspace({
   const body = <InspectorBody key={current?.id ?? "theme"} {...inspector} />;
   const panel = (isDocked: boolean) => (
     <DockedPanel
-      open={isDocked || Boolean(current)}
+      open={isDocked || Boolean(current) || themeOpen}
       docked={isDocked}
-      onClose={current ? unpick : undefined}
+      onClose={
+        current
+          ? () => {
+              setThemeOpen(false);
+              unpick();
+            }
+          : isDocked
+            ? undefined
+            : () => setThemeOpen(false)
+      }
       closeLabel={`Close ${current?.name ?? "inspector"}`}
       badges={current?.kind === "wrapper" && <Badge variant="outline">Loots</Badge>}
       title={current?.name ?? "Theme"}
@@ -212,11 +223,24 @@ export function StudioWorkspace({
 
   return (
     <WorkspaceShell email={email} active="studio">
-      <style>{draftStyles(drafts, manifest.components)}</style>
+      <style>{draftStyles(drafts, manifest.components, manifest.theme)}</style>
       <div className="flex flex-col xl:h-[calc(100svh-75px)]">
         <div className="flex shrink-0 items-center justify-between gap-4 px-4 py-4 lg:h-16 lg:py-0">
           <h1 className="font-heading text-2xl font-bold tracking-tight">Design Studio</h1>
           <div className="flex items-center gap-2">
+            {wide && !docked && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setThemeOpen(true);
+                  if (current) unpick();
+                }}
+              >
+                <Palette aria-hidden="true" />
+                Theme
+              </Button>
+            )}
             {drafts.length > 0 && <Badge variant="secondary">Changed {drafts.length}</Badge>}
             <ExportButton count={drafts.length} onOpen={() => setExportOpen(true)} />
           </div>
@@ -291,7 +315,7 @@ export function StudioWorkspace({
           {wide && docked && panel(true)}
         </div>
 
-        {/* From 1024 to 1279px the inspector is a Sheet over the page when something is picked (G2). */}
+        {/* From 1024 to 1279px the inspector is a Sheet over the page when something is picked or Theme is open (G2). */}
         {wide && !docked && panel(false)}
 
         {/* On a phone, the inspector's header and tabs stack under the preview (G3). */}

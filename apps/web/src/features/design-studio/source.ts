@@ -216,9 +216,27 @@ export function readTokens(source: string, names: string[]) {
   return names.filter((name) => used.has(name));
 }
 
-/** The first `data-slot` a file sets, which shadcn puts on each component's root element. */
-export function readSlot(source: string) {
-  return /data-slot="([\w-]+)"/.exec(source)?.[1];
+/** The element a primitive's own `className` reaches, named by its data-slot, and whether the function takes a
+ *  `variant` prop. A Look edit styles that element, and its exported wrapper passes classes the same way, so both
+ *  agree. Undefined when the function passes no className on, as Radix roots and providers do. */
+export function readRoot(source: string, name: string) {
+  const code = blank(source);
+  const match = new RegExp(`^(?:export\\s+)?function\\s+${name}\\b`, "m").exec(code);
+  if (!match) return undefined;
+  const params = code.indexOf("(", match.index);
+  const paramsEnd = matching(code, params, "()");
+  const end = closing(code, code.indexOf("{", paramsEnd));
+  // The last use of className as a value, as in cn("...", className) or className={className}.
+  const use = [...code.slice(paramsEnd, end).matchAll(/\bclassName\b(?!\s*=)/g)].pop();
+  if (use?.index === undefined) return undefined;
+  const at = paramsEnd + use.index;
+  const tag = [...code.slice(0, at).matchAll(/<[A-Za-z]/g)].pop()?.index;
+  if (tag === undefined) return undefined;
+  const next = code.slice(at).search(/<[A-Za-z/]/);
+  const element = source.slice(tag, next === -1 ? end : at + next);
+  const slot = /data-slot="([\w-]+)"/.exec(element)?.[1];
+  if (!slot) return undefined;
+  return { slot, variant: /\bvariant\b/.test(code.slice(params, paramsEnd)) };
 }
 
 /** An exported function's lines, from `export function <name>` to its closing brace, with the 1-based line it starts

@@ -92,7 +92,7 @@ To build a step: open the named frames on the canvas before writing UI (their ar
 3. **Inspector and drafts.** Variant, prop and token controls, live re-render, the drafts table, Copy as patch. Frames: D1 to D6, D8, F, A3, A4, B3, B7, E1, E2, E5, G2's inspector sheet. Built 20 Oct 2026; screenshots beside the frames are in project files, `design-studio-mockups/step-3-check`. How it works:
    - The manifest gains each component's theme `tokens` (from its utility classes, `radius` for any rounded class), a primitive's root `slot`, a Loots wrapper's own `source` lines, the `theme` (every `:root` and `.dark` token in `globals.css`), and the end of `globals.css` for the token patch.
    - Nothing in the address shows the Theme (D1); picking a component shows its Preview, Look and Tokens tabs. Preview props come from `previewProps` in `previews.tsx` and never make a draft.
-   - Edits re-render at once through one generated style tag (`draftStyles` in `features/design-studio/drafts.ts`): token overrides on every preview surface (`data-studio-preview`), light and dark apart, and each Look on its node's root `data-slot`. Studio chrome never changes. A token change rings the nodes that use it for a second (F).
+   - Edits re-render at once through one generated style tag (`draftStyles` in `features/design-studio/drafts.ts`): token overrides on every preview surface (`data-studio-preview`), light and dark apart, and each Look on the `data-slot` element its node's className reaches (a one-variant Look also matches the preview's `data-studio-variant`). A token defined as `var(--other)`, such as `--selected`, is declared again on previews so an override of the other reaches it. Studio chrome never changes. A token change rings the nodes that use it for a second (F).
    - Drafts save 1 second after the last change through `PUT /api/studio/drafts`, which checks every value against the manifest; Reset, Discard and Discard all delete at once.
    - Copy as patch writes a unified diff that `git apply` takes: token overrides appended to the Loots section of `globals.css`, a primitive's Look as a new wrapper in `components/loots/<name>.tsx`, and a wrapper's Look as an edit of its own lines (its `variant` and the classes in its first `cn()`).
 
@@ -102,7 +102,7 @@ To build a step: open the named frames on the canvas before writing UI (their ar
    - Export has no Patch and Claude tabs, only the patch; the Claude tab (E3) comes with the connector tool in step 5;
    - Look's Variant select for a primitive starts on All variants, and a wrapper's Look has the same parts as a primitive's (D6 draws only Variant, Radius, Height and Font weight);
    - Look's colours start on Default with an empty swatch, since a computed colour can't be named as a token;
-   - Look is offered where the studio can style the live element: primitives with a root slot, and wrappers built on one that pass it classes (today the kit Badge). Others read "Nothing to restyle";
+   - Look is offered where the studio can style the live element: primitives whose first export passes its className to a `data-slot` element (not Radix roots such as Dialog), and wrappers built on one that pass it classes (today the kit Badge). Others read "Nothing to restyle";
    - the tree's Changed switch sits under Find on its own, since the Library and Installed filters beside it come with step 4.
 
 4. **Other libraries.** shadcn/ui and chosen registries as metadata branches and graph cards. Frames: B1's Library, Installed and Changed filters, B4, C3, D7.

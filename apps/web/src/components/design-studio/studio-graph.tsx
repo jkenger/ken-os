@@ -132,6 +132,9 @@ function ComponentNode({ data }: NodeProps<Node<ComponentData, "component">>) {
       {!nameOnly && (
         <div
           data-studio-preview={component.id}
+          data-studio-variant={
+            props.variant ?? component.variants.find((group) => group.name === "variant")?.defaultOption
+          }
           className="nodrag nopan mx-2 mb-2 flex min-h-0 flex-1 cursor-auto flex-col items-center justify-center gap-2 overflow-hidden rounded-lg border bg-background p-2.5 text-foreground"
         >
           <Preview id={component.id} props={props} />

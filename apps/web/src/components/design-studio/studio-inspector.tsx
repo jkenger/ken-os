@@ -401,7 +401,7 @@ function LookTab({
           />
         </div>
       )}
-      {!wrapper && variants && (
+      {!wrapper && variants && component.scoped && (
         <div className="grid gap-2">
           <ControlLabel htmlFor="lk-scope" name="Variant" />
           <NativeSelect

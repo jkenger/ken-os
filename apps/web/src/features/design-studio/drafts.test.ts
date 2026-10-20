@@ -32,6 +32,9 @@ test("parseDraft keeps known tokens and Look parts, and refuses values that coul
   assert.deepEqual(parseDraft({ kind: "component", target: "ui/button", change: { weight: "650" } }, studioManifest), {
     error: "Invalid weight",
   });
+  assert.deepEqual(parseDraft({ kind: "component", target: "ui/tabs", change: { scope: "line" } }, studioManifest), {
+    error: "Invalid scope",
+  });
   assert.deepEqual(parseDraft({ kind: "component", target: "ui/nope", change: {} }, studioManifest), {
     error: "Unknown component",
   });
@@ -47,10 +50,24 @@ test("draftStyles overrides tokens on previews only, light and dark apart, and s
   const css = draftStyles(
     [radius, { kind: "token", target: "primary", change: { dark: "oklch(0.8 0 0)" } }, button],
     studioManifest.components,
+    studioManifest.theme,
   );
   assert.match(css, /\[data-studio-preview\]:not\(\.dark, \.dark \*\) \{ --radius: 0\.5rem; \}/);
   assert.match(css, /\.dark \[data-studio-preview\] \{ --radius: 0\.5rem; --primary: oklch\(0\.8 0 0\); \}/);
   assert.match(css, /\[data-studio-preview="ui\/button"\] \[data-slot="button"\] \{ font-weight: 600; \}/);
+});
+
+test("draftStyles declares aliases again on previews, and scopes a Look by the variant its preview shows", () => {
+  const css = draftStyles(
+    [
+      { kind: "token", target: "topic-active", change: { light: "oklch(0.6 0.1 200)" } },
+      { kind: "component", target: "ui/alert", change: { scope: "destructive", weight: "600" } },
+    ],
+    studioManifest.components,
+    studioManifest.theme,
+  );
+  assert.match(css, /--topic-active: oklch\(0\.6 0\.1 200\); --selected: var\(--topic-active\);/);
+  assert.match(css, /\[data-studio-preview="ui\/alert"\]\[data-studio-variant="destructive"\] \[data-slot="alert"\]/);
 });
 
 test("lookClasses writes Tailwind classes, on the spacing scale where it can", () => {
@@ -65,6 +82,8 @@ test("canRestyle allows primitives with a root slot and wrappers that pass class
   assert.equal(canRestyle(find("ui/button"), studioManifest.components), true);
   assert.equal(canRestyle(find("kit/badge"), studioManifest.components), true);
   assert.equal(canRestyle(find("kit/rail"), studioManifest.components), false);
+  // Dialog's first export is a Radix root, which takes no className.
+  assert.equal(canRestyle(find("ui/dialog"), studioManifest.components), false);
 });
 
 test("draftPatch appends token overrides to globals.css, adds a Loots wrapper and edits a wrapper in place", () => {
