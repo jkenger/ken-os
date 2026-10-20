@@ -203,3 +203,8 @@
   text-decoration: underline dotted 1.5px var(--muted-foreground);
 }
 [data-term-hover] { cursor: help; }
+
+/* Corners one step squarer than the shadcn default (0.625rem). The whole radius scale above derives from this. */
+:root {
+  --radius: 0.25rem;
+}

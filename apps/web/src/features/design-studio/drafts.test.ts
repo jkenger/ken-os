@@ -41,7 +41,7 @@ test("parseDraft keeps known tokens and Look parts, and refuses values that coul
 });
 
 test("describeDraft says what changed in a few words (E1)", () => {
-  assert.equal(describeDraft(radius, studioManifest.theme), "0.625rem → 0.5rem");
+  assert.equal(describeDraft(radius, studioManifest.theme), "0.25rem → 0.5rem");
   assert.equal(describeDraft(button, studioManifest.theme), "Font weight 500 → 600");
   assert.equal(describeDraft(kitBadge, studioManifest.theme), "Variant secondary → outline");
 });

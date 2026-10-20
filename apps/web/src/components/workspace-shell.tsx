@@ -334,7 +334,13 @@ function ShellInset({ title, sections, children }: { title: string; sections: Se
   const { open } = useSidebar();
   const currentSection = sections.find((section) => section.selected);
   return (
-    <SidebarInset className="min-w-0 md:m-2 md:ml-0 md:min-h-[calc(100svh-16px)] md:rounded-xl md:border">
+    // An 8px gap from the icon rail; only the open section column (from 1024px) sits flush against the inset.
+    <SidebarInset
+      className={cn(
+        "min-w-0 md:m-2 md:min-h-[calc(100svh-16px)] md:rounded-xl md:border",
+        sections.length > 0 && "lg:peer-data-[state=expanded]:ml-0",
+      )}
+    >
       <header className="flex h-14 shrink-0 items-center justify-between gap-4 px-3 md:border-b md:border-border md:px-4">
         <div className="flex min-w-0 items-center gap-2 text-sm">
           <SidebarTrigger className="md:hidden" aria-label="Open menu" />
