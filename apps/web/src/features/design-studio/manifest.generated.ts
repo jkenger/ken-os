@@ -648,7 +648,7 @@ export const studioManifest: StudioManifest = {
         "background",
         "foreground"
       ],
-      "slot": "sidebar-container",
+      "slot": "sidebar",
       "scoped": true
     },
     {

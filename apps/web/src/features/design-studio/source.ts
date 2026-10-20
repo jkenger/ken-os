@@ -226,8 +226,9 @@ export function readRoot(source: string, name: string) {
   const params = code.indexOf("(", match.index);
   const paramsEnd = matching(code, params, "()");
   const end = closing(code, code.indexOf("{", paramsEnd));
-  // The last use of className as a value, as in cn("...", className) or className={className}.
-  const use = [...code.slice(paramsEnd, end).matchAll(/\bclassName\b(?!\s*=)/g)].pop();
+  // The first use of className as a value, as in cn("...", className) or className={className}. A component with
+  // branches, such as Sidebar, styles its first one, which is the one its sample renders.
+  const use = /\bclassName\b(?!\s*=)/.exec(code.slice(paramsEnd, end));
   if (use?.index === undefined) return undefined;
   const at = paramsEnd + use.index;
   const tag = [...code.slice(0, at).matchAll(/<[A-Za-z]/g)].pop()?.index;

@@ -42,7 +42,8 @@ export function useDrafts(initial: Draft[]) {
     // Only saves show "Draft saved"; a discard alone leaves the footer quiet, as before it was sent.
     let saved = false;
     try {
-      while (clearAll.current || pending.current.size) {
+      // A change made while a request is out waits for its own debounce, so typing still saves once.
+      while ((clearAll.current || pending.current.size) && !timer.current) {
         if (clearAll.current) {
           await send("DELETE", { all: true });
           clearAll.current = false;
@@ -56,7 +57,7 @@ export function useDrafts(initial: Draft[]) {
         // A change made while this one was in flight stays queued and goes out next.
         if (pending.current.get(key) === next) pending.current.delete(key);
       }
-      setStatus(saved ? "saved" : "idle");
+      setStatus(timer.current ? "saving" : saved ? "saved" : "idle");
     } catch {
       setStatus("failed");
     } finally {
