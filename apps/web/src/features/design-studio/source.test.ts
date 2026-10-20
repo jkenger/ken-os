@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readExports, readUses, readVariants, readWraps } from "./source";
+import { readBlock, readExports, readSlot, readTheme, readTokens, readUses, readVariants, readWraps } from "./source";
 
 test("readExports lists functions, consts and export lists, without types", () => {
   const source = `
@@ -69,4 +69,55 @@ import { buttonVariants } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 `;
   assert.deepEqual(readUses(source), ["button", "tooltip"]);
+});
+
+test("readTheme reads :root and .dark, with later blocks winning", () => {
+  const css = `
+:root {
+  --radius: 0.625rem;
+  --primary: oklch(0.2 0 0);
+}
+.dark {
+  --primary: oklch(0.9 0 0);
+}
+@theme inline { --color-primary: var(--primary); }
+:root {
+  --selected: var(--topic-active);
+  --primary: oklch(0.3 0 0);
+}
+`;
+  assert.deepEqual(readTheme(css), [
+    { name: "radius", light: "0.625rem" },
+    { name: "primary", light: "oklch(0.3 0 0)", dark: "oklch(0.9 0 0)" },
+    { name: "selected", light: "var(--topic-active)" },
+  ]);
+});
+
+test("readTokens finds tokens in utility classes, radius from rounded and border from a bare border", () => {
+  const names = ["primary", "primary-foreground", "ring", "border", "radius", "muted"];
+  const source = `cva("rounded-lg border bg-primary/90 text-primary-foreground focus-visible:ring-ring/50")`;
+  assert.deepEqual(readTokens(source, names), ["primary", "primary-foreground", "ring", "border", "radius"]);
+  assert.deepEqual(readTokens(`"text-primary-foreground border-input"`, names), ["primary-foreground"]);
+});
+
+test("readSlot and readBlock find the root slot and a function's own lines", () => {
+  assert.equal(readSlot(`<div data-slot="card" /><div data-slot="card-title" />`), "card");
+  const source = `import x from "y";
+
+/** Doc. */
+export function Badge({ children }: { children: ReactNode }) {
+  return <ShadcnBadge variant="secondary">{children}</ShadcnBadge>;
+}
+
+export function Back() {}
+`;
+  assert.deepEqual(readBlock(source, "Badge"), {
+    start: 4,
+    lines: [
+      "export function Badge({ children }: { children: ReactNode }) {",
+      '  return <ShadcnBadge variant="secondary">{children}</ShadcnBadge>;',
+      "}",
+    ],
+  });
+  assert.equal(readBlock(source, "Missing"), undefined);
 });

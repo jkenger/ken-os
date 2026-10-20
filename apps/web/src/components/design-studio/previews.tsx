@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import type { ComponentProps, JSXElementConstructor, ReactNode } from "react";
 import { ChevronsUpDown, FlaskConical, Search, UserRound } from "lucide-react";
 import { Back, Badge as KitBadge, Coverage, Fact, Notice, Rail, SectionTitle } from "@/components/engineering/kit";
 import { panel, selectedRow, selectedSurface } from "@/components/surfaces";
@@ -60,7 +60,29 @@ import { cn } from "@/lib/utils";
 
 // One sample per component in the studio manifest, keyed by its id, small enough for a 240 by 180 canvas node. Each
 // renders the real component with sample content from Loots. Overlays show their trigger; opening one uses the real component. A component with no entry
-// shows "No preview" in the studio.
+// shows "No preview" in the studio. Samples listed in previewProps take those props, which the inspector's Preview tab
+// changes (mockup frame D2); they change the sample only and never make a draft.
+
+/** Props the Preview tab changes: a variant group's option, a boolean, or a text. */
+export type PreviewProps = Record<string, string | boolean>;
+
+/** Each sample's props and their defaults. A key named like one of the component's variant groups is a choice of its
+ *  options; `children` is the label. */
+export const previewProps: Record<string, PreviewProps> = {
+  "ui/alert": { variant: "default" },
+  "ui/badge": { variant: "default", children: "Due Oct 5" },
+  "ui/button": { variant: "default", size: "default", disabled: false, children: "Run tests" },
+  "ui/input": { disabled: false, placeholder: "Topic name" },
+  "ui/kbd": { children: "Ctrl K" },
+  "ui/switch": { disabled: false },
+  "ui/tabs": { variant: "default" },
+  "ui/textarea": { disabled: false, placeholder: "Your own words" },
+  "ui/toggle": { variant: "outline", size: "default", disabled: false, children: "Bold" },
+  "kit/badge": { children: "In progress" },
+};
+
+/** Spreads a sample's props onto a component, typed as that component's props. */
+const as = <T extends JSXElementConstructor<any>>(props: PreviewProps) => props as unknown as ComponentProps<T>;
 
 const topics = [
   { topic: "Effects & dependencies", status: "Learned" },
@@ -72,15 +94,15 @@ function Row({ children }: { children: ReactNode }) {
   return <div className="flex flex-wrap items-center gap-2">{children}</div>;
 }
 
-export const previews: Record<string, () => ReactNode> = {
-  "ui/alert": () => (
-    <Alert>
+export const previews: Record<string, (props: PreviewProps) => ReactNode> = {
+  "ui/alert": (props) => (
+    <Alert {...as<typeof Alert>(props)}>
       <AlertTitle>Exercise saved</AlertTitle>
       <AlertDescription>Claude can read it now.</AlertDescription>
     </Alert>
   ),
-  "ui/badge": () => <Badge>Due Oct 5</Badge>,
-  "ui/button": () => <Button>Run tests</Button>,
+  "ui/badge": (props) => <Badge {...as<typeof Badge>(props)} />,
+  "ui/button": (props) => <Button {...as<typeof Button>(props)} />,
   "ui/card": () => (
     <Card className="w-full gap-1 px-4 py-3">
       <CardTitle>Retry & backoff</CardTitle>
@@ -151,7 +173,7 @@ export const previews: Record<string, () => ReactNode> = {
       </DropdownMenuContent>
     </DropdownMenu>
   ),
-  "ui/input": () => <Input placeholder="Topic name" aria-label="Topic name" />,
+  "ui/input": (props) => <Input aria-label="Topic name" {...as<typeof Input>(props)} />,
   "ui/input-group": () => (
     <InputGroup>
       <InputGroupAddon>
@@ -160,7 +182,7 @@ export const previews: Record<string, () => ReactNode> = {
       <InputGroupInput placeholder="Find a topic" aria-label="Find a topic" />
     </InputGroup>
   ),
-  "ui/kbd": () => <Kbd>Ctrl K</Kbd>,
+  "ui/kbd": (props) => <Kbd {...as<typeof Kbd>(props)} />,
   "ui/label": () => (
     <div className="grid w-full gap-2">
       <Label htmlFor="studio-label-sample">Project link</Label>
@@ -242,9 +264,9 @@ export const previews: Record<string, () => ReactNode> = {
       Show a toast
     </Button>
   ),
-  "ui/switch": () => (
+  "ui/switch": (props) => (
     <div className="flex items-center gap-2 text-sm">
-      <Switch id="studio-switch-sample" defaultChecked />
+      <Switch id="studio-switch-sample" defaultChecked {...as<typeof Switch>(props)} />
       <Label htmlFor="studio-switch-sample">Changed</Label>
     </div>
   ),
@@ -266,25 +288,21 @@ export const previews: Record<string, () => ReactNode> = {
       </TableBody>
     </Table>
   ),
-  "ui/tabs": () => (
+  "ui/tabs": (props) => (
     <Tabs defaultValue="topic">
-      <TabsList>
+      <TabsList {...as<typeof TabsList>(props)}>
         <TabsTrigger value="topic">Topic</TabsTrigger>
         <TabsTrigger value="review">Review</TabsTrigger>
       </TabsList>
     </Tabs>
   ),
-  "ui/textarea": () => <Textarea placeholder="Your own words" aria-label="Your own words" />,
+  "ui/textarea": (props) => <Textarea aria-label="Your own words" {...as<typeof Textarea>(props)} />,
   "ui/toaster": () => (
     <Button variant="outline" onClick={() => toast({ title: "Copied. Paste it in Claude" })}>
       Show a toast
     </Button>
   ),
-  "ui/toggle": () => (
-    <Toggle variant="outline" defaultPressed aria-label="Bold">
-      Bold
-    </Toggle>
-  ),
+  "ui/toggle": (props) => <Toggle defaultPressed aria-label="Bold" {...as<typeof Toggle>(props)} />,
   "ui/toggle-group": () => (
     <ToggleGroup type="single" defaultValue="graph" variant="outline" aria-label="View">
       <ToggleGroupItem value="lanes">Lanes</ToggleGroupItem>
@@ -299,7 +317,15 @@ export const previews: Record<string, () => ReactNode> = {
       <TooltipContent>Search across topics</TooltipContent>
     </Tooltip>
   ),
-  "kit/badge": () => <KitBadge>In progress</KitBadge>,
+  // A Look edit to the wrapper's variant (D6) shows on the primitive it passes it to, with the wrapper's own class.
+  "kit/badge": ({ variant, children }) =>
+    typeof variant === "string" ? (
+      <Badge variant={variant as ComponentProps<typeof Badge>["variant"]} className="align-middle">
+        {children}
+      </Badge>
+    ) : (
+      <KitBadge>{children}</KitBadge>
+    ),
   "kit/back": () => <Back href="/studio">Design Studio</Back>,
   "kit/fact": () => (
     <dl className="w-full">

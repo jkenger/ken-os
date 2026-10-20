@@ -25,7 +25,17 @@ export const studioManifest: StudioManifest = {
           "defaultOption": "default"
         }
       ],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "card",
+        "card-foreground",
+        "muted-foreground",
+        "destructive",
+        "border",
+        "radius",
+        "foreground"
+      ],
+      "slot": "alert"
     },
     {
       "id": "ui/badge",
@@ -50,7 +60,21 @@ export const studioManifest: StudioManifest = {
           "defaultOption": "default"
         }
       ],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "primary",
+        "primary-foreground",
+        "secondary",
+        "secondary-foreground",
+        "muted",
+        "muted-foreground",
+        "destructive",
+        "border",
+        "ring",
+        "radius",
+        "foreground"
+      ],
+      "slot": "badge"
     },
     {
       "id": "ui/button",
@@ -89,7 +113,22 @@ export const studioManifest: StudioManifest = {
           "defaultOption": "default"
         }
       ],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "primary",
+        "primary-foreground",
+        "secondary",
+        "secondary-foreground",
+        "muted",
+        "destructive",
+        "border",
+        "input",
+        "ring",
+        "radius",
+        "background",
+        "foreground"
+      ],
+      "slot": "button"
     },
     {
       "id": "ui/card",
@@ -106,7 +145,16 @@ export const studioManifest: StudioManifest = {
         "CardContent"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "card",
+        "card-foreground",
+        "muted-foreground",
+        "border",
+        "radius",
+        "foreground"
+      ],
+      "slot": "card"
     },
     {
       "id": "ui/code-editor",
@@ -117,7 +165,12 @@ export const studioManifest: StudioManifest = {
         "CodeEditor"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "border",
+        "radius",
+        "background"
+      ]
     },
     {
       "id": "ui/collapsible",
@@ -130,7 +183,9 @@ export const studioManifest: StudioManifest = {
         "CollapsibleContent"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [],
+      "slot": "collapsible"
     },
     {
       "id": "ui/command",
@@ -152,7 +207,18 @@ export const studioManifest: StudioManifest = {
       "uses": [
         "ui/dialog",
         "ui/input-group"
-      ]
+      ],
+      "tokens": [
+        "popover",
+        "popover-foreground",
+        "muted",
+        "muted-foreground",
+        "border",
+        "input",
+        "radius",
+        "foreground"
+      ],
+      "slot": "command"
     },
     {
       "id": "ui/dialog",
@@ -174,7 +240,16 @@ export const studioManifest: StudioManifest = {
       "variants": [],
       "uses": [
         "ui/button"
-      ]
+      ],
+      "tokens": [
+        "popover",
+        "popover-foreground",
+        "secondary",
+        "muted-foreground",
+        "radius",
+        "foreground"
+      ],
+      "slot": "dialog"
     },
     {
       "id": "ui/disclosure-summary",
@@ -185,7 +260,8 @@ export const studioManifest: StudioManifest = {
         "DisclosureSummary"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": []
     },
     {
       "id": "ui/dropdown-menu",
@@ -210,7 +286,19 @@ export const studioManifest: StudioManifest = {
         "DropdownMenuSubContent"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "popover",
+        "popover-foreground",
+        "muted-foreground",
+        "accent",
+        "accent-foreground",
+        "destructive",
+        "border",
+        "radius",
+        "foreground"
+      ],
+      "slot": "dropdown-menu"
     },
     {
       "id": "ui/input-group",
@@ -251,7 +339,16 @@ export const studioManifest: StudioManifest = {
         "ui/button",
         "ui/input",
         "ui/textarea"
-      ]
+      ],
+      "tokens": [
+        "muted-foreground",
+        "destructive",
+        "border",
+        "input",
+        "ring",
+        "radius"
+      ],
+      "slot": "input-group"
     },
     {
       "id": "ui/input",
@@ -262,7 +359,17 @@ export const studioManifest: StudioManifest = {
         "Input"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "muted-foreground",
+        "destructive",
+        "border",
+        "input",
+        "ring",
+        "radius",
+        "foreground"
+      ],
+      "slot": "input"
     },
     {
       "id": "ui/kbd",
@@ -273,7 +380,13 @@ export const studioManifest: StudioManifest = {
         "Kbd"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "muted",
+        "muted-foreground",
+        "radius"
+      ],
+      "slot": "kbd"
     },
     {
       "id": "ui/label",
@@ -284,7 +397,9 @@ export const studioManifest: StudioManifest = {
         "Label"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [],
+      "slot": "label"
     },
     {
       "id": "ui/native-select",
@@ -297,7 +412,18 @@ export const studioManifest: StudioManifest = {
         "NativeSelectOption"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "primary",
+        "primary-foreground",
+        "muted-foreground",
+        "destructive",
+        "border",
+        "input",
+        "ring",
+        "radius"
+      ],
+      "slot": "native-select-wrapper"
     },
     {
       "id": "ui/pill",
@@ -310,7 +436,8 @@ export const studioManifest: StudioManifest = {
       "variants": [],
       "uses": [
         "ui/badge"
-      ]
+      ],
+      "tokens": []
     },
     {
       "id": "ui/popover",
@@ -327,7 +454,15 @@ export const studioManifest: StudioManifest = {
         "PopoverTrigger"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "popover",
+        "popover-foreground",
+        "muted-foreground",
+        "radius",
+        "foreground"
+      ],
+      "slot": "popover"
     },
     {
       "id": "ui/progress",
@@ -338,7 +473,13 @@ export const studioManifest: StudioManifest = {
         "Progress"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "primary",
+        "muted",
+        "radius"
+      ],
+      "slot": "progress"
     },
     {
       "id": "ui/separator",
@@ -349,7 +490,11 @@ export const studioManifest: StudioManifest = {
         "Separator"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "border"
+      ],
+      "slot": "separator"
     },
     {
       "id": "ui/sheet",
@@ -369,7 +514,16 @@ export const studioManifest: StudioManifest = {
       "variants": [],
       "uses": [
         "ui/button"
-      ]
+      ],
+      "tokens": [
+        "popover",
+        "popover-foreground",
+        "secondary",
+        "muted-foreground",
+        "border",
+        "foreground"
+      ],
+      "slot": "sheet"
     },
     {
       "id": "ui/sidebar",
@@ -428,7 +582,20 @@ export const studioManifest: StudioManifest = {
         "ui/sheet",
         "ui/skeleton",
         "ui/tooltip"
-      ]
+      ],
+      "tokens": [
+        "border",
+        "input",
+        "radius",
+        "sidebar",
+        "sidebar-foreground",
+        "sidebar-accent",
+        "sidebar-accent-foreground",
+        "sidebar-border",
+        "sidebar-ring",
+        "background"
+      ],
+      "slot": "sidebar-wrapper"
     },
     {
       "id": "ui/skeleton",
@@ -439,7 +606,12 @@ export const studioManifest: StudioManifest = {
         "Skeleton"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "muted",
+        "radius"
+      ],
+      "slot": "skeleton"
     },
     {
       "id": "ui/sonner",
@@ -450,7 +622,8 @@ export const studioManifest: StudioManifest = {
         "Toaster"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": []
     },
     {
       "id": "ui/switch",
@@ -461,7 +634,18 @@ export const studioManifest: StudioManifest = {
         "Switch"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "primary",
+        "primary-foreground",
+        "destructive",
+        "input",
+        "ring",
+        "radius",
+        "background",
+        "foreground"
+      ],
+      "slot": "switch"
     },
     {
       "id": "ui/table",
@@ -479,7 +663,14 @@ export const studioManifest: StudioManifest = {
         "TableCaption"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "muted",
+        "muted-foreground",
+        "border",
+        "foreground"
+      ],
+      "slot": "table-container"
     },
     {
       "id": "ui/tabs",
@@ -503,7 +694,18 @@ export const studioManifest: StudioManifest = {
           "defaultOption": "default"
         }
       ],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "muted",
+        "muted-foreground",
+        "border",
+        "input",
+        "ring",
+        "radius",
+        "background",
+        "foreground"
+      ],
+      "slot": "tabs"
     },
     {
       "id": "ui/textarea",
@@ -514,7 +716,16 @@ export const studioManifest: StudioManifest = {
         "Textarea"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "muted-foreground",
+        "destructive",
+        "border",
+        "input",
+        "ring",
+        "radius"
+      ],
+      "slot": "textarea"
     },
     {
       "id": "ui/toaster",
@@ -529,7 +740,8 @@ export const studioManifest: StudioManifest = {
       "variants": [],
       "uses": [
         "ui/sonner"
-      ]
+      ],
+      "tokens": []
     },
     {
       "id": "ui/toggle-group",
@@ -543,7 +755,13 @@ export const studioManifest: StudioManifest = {
       "variants": [],
       "uses": [
         "ui/toggle"
-      ]
+      ],
+      "tokens": [
+        "muted",
+        "border",
+        "radius"
+      ],
+      "slot": "toggle-group"
     },
     {
       "id": "ui/toggle",
@@ -573,7 +791,17 @@ export const studioManifest: StudioManifest = {
           "defaultOption": "default"
         }
       ],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "muted",
+        "destructive",
+        "border",
+        "input",
+        "ring",
+        "radius",
+        "foreground"
+      ],
+      "slot": "toggle"
     },
     {
       "id": "ui/tooltip",
@@ -587,7 +815,13 @@ export const studioManifest: StudioManifest = {
         "TooltipTrigger"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "radius",
+        "background",
+        "foreground"
+      ],
+      "slot": "tooltip-provider"
     },
     {
       "id": "kit/badge",
@@ -599,7 +833,32 @@ export const studioManifest: StudioManifest = {
       ],
       "variants": [],
       "uses": [],
-      "wraps": "ui/badge"
+      "wraps": "ui/badge",
+      "tokens": [
+        "primary",
+        "primary-foreground",
+        "secondary",
+        "secondary-foreground",
+        "muted",
+        "muted-foreground",
+        "destructive",
+        "border",
+        "ring",
+        "radius",
+        "foreground"
+      ],
+      "source": {
+        "start": 14,
+        "lines": [
+          "export function Badge({ children, className }: { children: ReactNode; className?: string }) {",
+          "  return (",
+          "    <ShadcnBadge variant=\"secondary\" className={cn(\"align-middle\", className)}>",
+          "      {children}",
+          "    </ShadcnBadge>",
+          "  );",
+          "}"
+        ]
+      }
     },
     {
       "id": "kit/back",
@@ -610,7 +869,27 @@ export const studioManifest: StudioManifest = {
         "Back"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "muted-foreground",
+        "foreground"
+      ],
+      "source": {
+        "start": 22,
+        "lines": [
+          "export function Back({ href, children }: { href: string; children: ReactNode }) {",
+          "  return (",
+          "    <Link",
+          "      href={href}",
+          "      className=\"mx-1 mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground md:mx-3.5\"",
+          "    >",
+          "      <IconArrowLeft size={17} aria-hidden=\"true\" />",
+          "      {children}",
+          "    </Link>",
+          "  );",
+          "}"
+        ]
+      }
     },
     {
       "id": "kit/fact",
@@ -621,7 +900,23 @@ export const studioManifest: StudioManifest = {
         "Fact"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "muted-foreground"
+      ],
+      "source": {
+        "start": 34,
+        "lines": [
+          "export function Fact({ label, children, first }: { label: string; children: ReactNode; first?: boolean }) {",
+          "  return (",
+          "    <div className=\"contents\">",
+          "      <dt className={cn(\"text-xs text-muted-foreground\", !first && \"md:mt-2.5\")}>{label}</dt>",
+          "      <dd className=\"text-xs font-semibold md:text-sm\">{children}</dd>",
+          "    </div>",
+          "  );",
+          "}"
+        ]
+      }
     },
     {
       "id": "kit/rail",
@@ -632,7 +927,41 @@ export const studioManifest: StudioManifest = {
         "Rail"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "primary",
+        "muted",
+        "muted-foreground",
+        "radius"
+      ],
+      "source": {
+        "start": 44,
+        "lines": [
+          "export function Rail({ level, soft = false, label }: { level: Level | null; soft?: boolean; label?: string }) {",
+          "  const lit = levelRank(level);",
+          "  return (",
+          "    <div className=\"mt-1 min-w-0\" role=\"img\" aria-label={label ?? `Level: ${level ?? \"Developing\"}`}>",
+          "      <div className=\"flex gap-0.5\">",
+          "        {LEVELS.map((item, index) => (",
+          "          <span",
+          "            key={item}",
+          "            className={cn(",
+          "              \"h-2 flex-1 rounded-full\",",
+          "              index === lit ? (soft ? \"bg-primary/40\" : \"bg-primary\") : \"bg-muted\",",
+          "            )}",
+          "          />",
+          "        ))}",
+          "      </div>",
+          "      <small className=\"mt-1 flex justify-between gap-1 text-xs text-muted-foreground lg:text-xs\">",
+          "        <span>Junior</span>",
+          "        <span>Mid</span>",
+          "        <span>Senior</span>",
+          "      </small>",
+          "    </div>",
+          "  );",
+          "}"
+        ]
+      }
     },
     {
       "id": "kit/coverage",
@@ -643,7 +972,33 @@ export const studioManifest: StudioManifest = {
         "Coverage"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "primary",
+        "muted",
+        "muted-foreground",
+        "radius"
+      ],
+      "source": {
+        "start": 69,
+        "lines": [
+          "export function Coverage({ met, total }: { met: number; total: number }) {",
+          "  if (!total) return <span className=\"text-xs text-muted-foreground\">Nothing required</span>;",
+          "  return (",
+          "    <div className=\"mt-1 min-w-0\" role=\"img\" aria-label={`${met} of ${total} requirements met`}>",
+          "      <div className=\"flex gap-0.5\">",
+          "        {Array.from({ length: total }, (_, index) => (",
+          "          <span key={index} className={cn(\"h-2 flex-1 rounded-full\", index < met ? \"bg-primary/40\" : \"bg-muted\")} />",
+          "        ))}",
+          "      </div>",
+          "      <small className=\"mt-1 block text-xs text-muted-foreground lg:text-xs\">",
+          "        {met} of {total} met",
+          "      </small>",
+          "    </div>",
+          "  );",
+          "}"
+        ]
+      }
     },
     {
       "id": "kit/section-title",
@@ -654,7 +1009,21 @@ export const studioManifest: StudioManifest = {
         "SectionTitle"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [],
+      "source": {
+        "start": 85,
+        "lines": [
+          "export function SectionTitle({ title, action }: { title: string; action?: ReactNode }) {",
+          "  return (",
+          "    <div className=\"mb-3.5 flex items-center justify-between gap-4\">",
+          "      <h3 className=\"text-base font-semibold\">{title}</h3>",
+          "      {action}",
+          "    </div>",
+          "  );",
+          "}"
+        ]
+      }
     },
     {
       "id": "kit/notice",
@@ -665,7 +1034,34 @@ export const studioManifest: StudioManifest = {
         "Notice"
       ],
       "variants": [],
-      "uses": []
+      "uses": [],
+      "tokens": [
+        "card",
+        "muted",
+        "destructive",
+        "border",
+        "radius",
+        "foreground"
+      ],
+      "source": {
+        "start": 94,
+        "lines": [
+          "export function Notice({ tone = \"info\", children }: { tone?: \"info\" | \"error\" | \"success\"; children: ReactNode }) {",
+          "  return (",
+          "    <div",
+          "      className={cn(",
+          "        \"my-5 rounded-md px-4 py-3.5 text-sm leading-relaxed\",",
+          "        tone === \"info\" && \"border bg-card text-foreground\",",
+          "        tone === \"error\" && \"bg-destructive/10 text-destructive\",",
+          "        tone === \"success\" && \"bg-muted text-foreground\",",
+          "      )}",
+          "    >",
+          "      {children}",
+          "    </div>",
+          "  );",
+          "}"
+        ]
+      }
     },
     {
       "id": "surfaces/panel",
@@ -677,7 +1073,12 @@ export const studioManifest: StudioManifest = {
       ],
       "variants": [],
       "uses": [],
-      "wraps": "ui/card"
+      "wraps": "ui/card",
+      "tokens": [
+        "card",
+        "border",
+        "radius"
+      ]
     },
     {
       "id": "surfaces/selected-surface",
@@ -689,7 +1090,11 @@ export const studioManifest: StudioManifest = {
       ],
       "variants": [],
       "uses": [],
-      "wraps": "ui/card"
+      "wraps": "ui/card",
+      "tokens": [
+        "card",
+        "selected"
+      ]
     },
     {
       "id": "surfaces/selected-row",
@@ -701,7 +1106,268 @@ export const studioManifest: StudioManifest = {
       ],
       "variants": [],
       "uses": [],
-      "wraps": "ui/card"
+      "wraps": "ui/card",
+      "tokens": [
+        "card",
+        "radius",
+        "selected"
+      ]
     }
-  ]
+  ],
+  "theme": [
+    {
+      "name": "card",
+      "light": "oklch(1 0 0)",
+      "dark": "oklch(0.214 0.009 43.1)"
+    },
+    {
+      "name": "card-foreground",
+      "light": "oklch(0.147 0.004 49.3)",
+      "dark": "oklch(0.986 0.002 67.8)"
+    },
+    {
+      "name": "popover",
+      "light": "oklch(1 0 0)",
+      "dark": "oklch(0.214 0.009 43.1)"
+    },
+    {
+      "name": "popover-foreground",
+      "light": "oklch(0.147 0.004 49.3)",
+      "dark": "oklch(0.986 0.002 67.8)"
+    },
+    {
+      "name": "primary",
+      "light": "oklch(0.214 0.009 43.1)",
+      "dark": "oklch(0.922 0.005 34.3)"
+    },
+    {
+      "name": "primary-foreground",
+      "light": "oklch(0.986 0.002 67.8)",
+      "dark": "oklch(0.214 0.009 43.1)"
+    },
+    {
+      "name": "secondary",
+      "light": "oklch(0.96 0.002 17.2)",
+      "dark": "oklch(0.268 0.011 36.5)"
+    },
+    {
+      "name": "secondary-foreground",
+      "light": "oklch(0.214 0.009 43.1)",
+      "dark": "oklch(0.986 0.002 67.8)"
+    },
+    {
+      "name": "muted",
+      "light": "oklch(0.96 0.002 17.2)",
+      "dark": "oklch(0.268 0.011 36.5)"
+    },
+    {
+      "name": "muted-foreground",
+      "light": "oklch(0.547 0.021 43.1)",
+      "dark": "oklch(0.714 0.014 41.2)"
+    },
+    {
+      "name": "accent",
+      "light": "oklch(0.214 0.009 43.1)",
+      "dark": "oklch(0.922 0.005 34.3)"
+    },
+    {
+      "name": "accent-foreground",
+      "light": "oklch(0.986 0.002 67.8)",
+      "dark": "oklch(0.214 0.009 43.1)"
+    },
+    {
+      "name": "destructive",
+      "light": "oklch(0.577 0.245 27.325)",
+      "dark": "oklch(0.704 0.191 22.216)"
+    },
+    {
+      "name": "border",
+      "light": "oklch(0.922 0.005 34.3)",
+      "dark": "oklch(1 0 0 / 10%)"
+    },
+    {
+      "name": "input",
+      "light": "oklch(0.922 0.005 34.3)",
+      "dark": "oklch(1 0 0 / 15%)"
+    },
+    {
+      "name": "ring",
+      "light": "oklch(0.714 0.014 41.2)",
+      "dark": "oklch(0.547 0.021 43.1)"
+    },
+    {
+      "name": "chart-1",
+      "light": "oklch(0.868 0.007 39.5)",
+      "dark": "oklch(0.868 0.007 39.5)"
+    },
+    {
+      "name": "chart-2",
+      "light": "oklch(0.547 0.021 43.1)",
+      "dark": "oklch(0.547 0.021 43.1)"
+    },
+    {
+      "name": "chart-3",
+      "light": "oklch(0.438 0.017 39.3)",
+      "dark": "oklch(0.438 0.017 39.3)"
+    },
+    {
+      "name": "chart-4",
+      "light": "oklch(0.367 0.016 35.7)",
+      "dark": "oklch(0.367 0.016 35.7)"
+    },
+    {
+      "name": "chart-5",
+      "light": "oklch(0.268 0.011 36.5)",
+      "dark": "oklch(0.268 0.011 36.5)"
+    },
+    {
+      "name": "radius",
+      "light": "0.625rem"
+    },
+    {
+      "name": "sidebar",
+      "light": "oklch(0.986 0.002 67.8)",
+      "dark": "oklch(0.214 0.009 43.1)"
+    },
+    {
+      "name": "sidebar-foreground",
+      "light": "oklch(0.147 0.004 49.3)",
+      "dark": "oklch(0.986 0.002 67.8)"
+    },
+    {
+      "name": "sidebar-primary",
+      "light": "oklch(0.214 0.009 43.1)",
+      "dark": "oklch(0.488 0.243 264.376)"
+    },
+    {
+      "name": "sidebar-primary-foreground",
+      "light": "oklch(0.986 0.002 67.8)",
+      "dark": "oklch(0.986 0.002 67.8)"
+    },
+    {
+      "name": "sidebar-accent",
+      "light": "oklch(0.96 0.002 17.2)",
+      "dark": "oklch(0.268 0.011 36.5)"
+    },
+    {
+      "name": "sidebar-accent-foreground",
+      "light": "oklch(0.214 0.009 43.1)",
+      "dark": "oklch(0.986 0.002 67.8)"
+    },
+    {
+      "name": "sidebar-border",
+      "light": "oklch(0.922 0.005 34.3)",
+      "dark": "oklch(1 0 0 / 10%)"
+    },
+    {
+      "name": "sidebar-ring",
+      "light": "oklch(0.714 0.014 41.2)",
+      "dark": "oklch(0.547 0.021 43.1)"
+    },
+    {
+      "name": "background",
+      "light": "oklch(1 0 0)",
+      "dark": "oklch(0.147 0.004 49.3)"
+    },
+    {
+      "name": "foreground",
+      "light": "oklch(0.147 0.004 49.3)",
+      "dark": "oklch(0.986 0.002 67.8)"
+    },
+    {
+      "name": "topic-learned",
+      "light": "oklch(0.5 0.12 152)",
+      "dark": "oklch(0.78 0.13 152)"
+    },
+    {
+      "name": "topic-learned-soft",
+      "light": "oklch(0.955 0.03 152)",
+      "dark": "oklch(0.3 0.05 152)"
+    },
+    {
+      "name": "topic-active",
+      "light": "oklch(0.48 0.14 262)",
+      "dark": "oklch(0.78 0.11 262)"
+    },
+    {
+      "name": "topic-active-soft",
+      "light": "oklch(0.955 0.022 262)",
+      "dark": "oklch(0.3 0.06 262)"
+    },
+    {
+      "name": "chapter-1",
+      "light": "oklch(0.45 0.07 150)",
+      "dark": "oklch(0.8 0.07 150)"
+    },
+    {
+      "name": "chapter-1-soft",
+      "light": "oklch(0.945 0.025 150)",
+      "dark": "oklch(0.3 0.03 150)"
+    },
+    {
+      "name": "chapter-2",
+      "light": "oklch(0.45 0.08 258)",
+      "dark": "oklch(0.8 0.07 258)"
+    },
+    {
+      "name": "chapter-2-soft",
+      "light": "oklch(0.945 0.02 258)",
+      "dark": "oklch(0.3 0.03 258)"
+    },
+    {
+      "name": "chapter-3",
+      "light": "oklch(0.47 0.09 48)",
+      "dark": "oklch(0.8 0.08 55)"
+    },
+    {
+      "name": "chapter-3-soft",
+      "light": "oklch(0.945 0.025 55)",
+      "dark": "oklch(0.3 0.03 55)"
+    },
+    {
+      "name": "chapter-4",
+      "light": "oklch(0.45 0.06 190)",
+      "dark": "oklch(0.8 0.06 190)"
+    },
+    {
+      "name": "chapter-4-soft",
+      "light": "oklch(0.945 0.02 190)",
+      "dark": "oklch(0.3 0.03 190)"
+    },
+    {
+      "name": "chapter-5",
+      "light": "oklch(0.45 0.08 318)",
+      "dark": "oklch(0.8 0.07 318)"
+    },
+    {
+      "name": "chapter-5-soft",
+      "light": "oklch(0.945 0.02 318)",
+      "dark": "oklch(0.3 0.03 318)"
+    },
+    {
+      "name": "chapter-6",
+      "light": "oklch(0.47 0.08 85)",
+      "dark": "oklch(0.8 0.08 90)"
+    },
+    {
+      "name": "chapter-6-soft",
+      "light": "oklch(0.945 0.03 90)",
+      "dark": "oklch(0.3 0.03 90)"
+    },
+    {
+      "name": "selected",
+      "light": "var(--topic-active)",
+      "dark": "var(--topic-active)"
+    }
+  ],
+  "globals": {
+    "file": "app/globals.css",
+    "lines": 205,
+    "tail": [
+      "  text-decoration: underline dotted 1.5px var(--muted-foreground);",
+      "}",
+      "[data-term-hover] { cursor: help; }"
+    ],
+    "newline": false
+  }
 };

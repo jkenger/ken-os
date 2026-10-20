@@ -21,6 +21,7 @@ import type { PortfolioSnapshot } from "@ken-os/portfolio";
 import type { BuildEvidence } from "../features/engineering-lab/build-evidence";
 import type { ReviewSheet } from "../features/engineering-lab/review-sheet";
 import type { Difficulty, TopicMaterial } from "../features/engineering-lab/topic-material";
+import type { LookChange, TokenChange } from "../features/design-studio/drafts";
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -130,6 +131,22 @@ export const portfolios = pgTable("portfolios", {
   }),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/** The Design Studio's unexported edits, one per token or component: a token edit (`target` is the token name) or a
+ *  Look edit (`target` is the component id). Export turns them into code. Spec: docs/architecture/design-studio.md. */
+export const designStudioDrafts = pgTable(
+  "design_studio_drafts",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    kind: text("kind").$type<"token" | "component">().notNull(),
+    target: text("target").notNull(),
+    change: jsonb("change").$type<TokenChange | LookChange>().notNull(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.kind, table.target] })],
+);
 
 export const memoryProjects = pgTable("memory_projects", {
   id: text("id").primaryKey(),

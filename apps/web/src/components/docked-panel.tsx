@@ -41,7 +41,8 @@ export function DockedPanel({
   open: boolean;
   /** From useDocked: beside the page when true, a Sheet otherwise. */
   docked: boolean;
-  onClose: () => void;
+  /** Without it the panel has no close button, as the Design Studio's Theme, which is what closing goes back to. */
+  onClose?: () => void;
   /** The close button's name, as in "Close topic". */
   closeLabel: string;
   /** Chips above the title. */
@@ -78,7 +79,7 @@ export function DockedPanel({
   // Docked, Escape closes the panel wherever focus is, as the Sheet does. A dialog or menu that Escape closes first calls
   // preventDefault, so it never closes the panel too.
   useEffect(() => {
-    if (!docked || !open) return;
+    if (!docked || !open || !onClose) return;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && !event.defaultPrevented) onClose();
     };
@@ -97,16 +98,18 @@ export function DockedPanel({
         <div className="grid gap-2.5 border-b p-4">
           <div className="flex items-center gap-2">
             {badges}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              aria-label={closeLabel}
-              className="ml-auto"
-              onClick={onClose}
-            >
-              <IconX aria-hidden="true" />
-            </Button>
+            {onClose && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label={closeLabel}
+                className="ml-auto"
+                onClick={onClose}
+              >
+                <IconX aria-hidden="true" />
+              </Button>
+            )}
           </div>
           <h2 id={titleId} className="font-heading text-xl leading-tight font-bold tracking-tight">
             {title}
@@ -120,7 +123,7 @@ export function DockedPanel({
   }
 
   return (
-    <Sheet open={open} onOpenChange={(next) => !next && onClose()}>
+    <Sheet open={open} onOpenChange={(next) => !next && onClose?.()}>
       <SheetContent className="gap-0 overflow-y-auto data-[side=right]:w-full data-[side=right]:sm:max-w-md">
         <SheetHeader className="border-b">
           <div className="pr-8">{badges}</div>
