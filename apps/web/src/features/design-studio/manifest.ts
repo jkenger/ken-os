@@ -179,9 +179,9 @@ type Box = { x: number; y: number };
  *  to a neighbour in the same row; otherwise up out of the source's top into the gap above its row, along that gap to
  *  the column gap beside the source, along the column gap to the gap above the target's row, and down into the
  *  target's top. `start` and `end` spread the edges leaving or entering one node, and `lane` shifts the gap segments
- *  so edges sharing a gap run side by side. */
-export function routeEdge(from: Box, to: Box, { start = 0, end = 0, lane = 0 } = {}) {
-  const { width, height, columnGap, rowGap } = graphGrid;
+ *  so edges sharing a gap run side by side. `height` is the nodes' height, 96 for another library's cards. */
+export function routeEdge(from: Box, to: Box, { start = 0, end = 0, lane = 0, height = graphGrid.height } = {}) {
+  const { width, columnGap, rowGap } = graphGrid;
   if (from.y === to.y && Math.abs(from.x - to.x) === width + columnGap) {
     const y = from.y + height / 2 + start;
     const [x1, x2] = from.x < to.x ? [from.x + width, to.x] : [from.x, to.x + width];
@@ -241,4 +241,72 @@ export function layoutGraph(components: StudioComponent[]) {
       height: top + rows * height + (rows - 1) * rowGap + bottom,
     },
   };
+}
+
+/** Another library's cards (mockup frame C3): 96 high, 32 apart, in an area 64 under the one above it. */
+export const cardGrid = { height: 96, rowGap: 32, areaGap: 64 };
+
+/** An area of the canvas: a library's id ("repo" for this repo), its name, how many it holds, and where it sits. */
+export type GraphArea = { id: string; name: string; count: number; y: number; width: number; height: number };
+
+/** Where each library's cards sit under This repo, A to Z in an area of their own, and their edges to what they use.
+ *  Installed items are drawn once, as This repo's nodes, so only the others get a card (C3). */
+export function layoutLibraries(libraries: StudioLibrary[], repo: ReturnType<typeof layoutGraph>) {
+  const { columns, width, columnGap, left, top, bottom } = graphGrid;
+  const { height, rowGap, areaGap } = cardGrid;
+  let y = repo.area.height;
+  const areas: GraphArea[] = [];
+  const cards: { item: LibraryItem; library: string; x: number; y: number }[] = [];
+  for (const library of libraries) {
+    const missing = library.items.filter((item) => !item.installed);
+    if (!missing.length) continue;
+    const areaTop = y + areaGap;
+    const rows = Math.ceil(missing.length / columns);
+    const areaHeight = top + rows * height + (rows - 1) * rowGap + bottom;
+    areas.push({
+      id: library.id,
+      name: library.name,
+      count: missing.length,
+      y: areaTop,
+      width: repo.area.width,
+      height: areaHeight,
+    });
+    missing.forEach((item, index) =>
+      cards.push({
+        item,
+        library: library.id,
+        x: left + (index % columns) * (width + columnGap),
+        y: areaTop + top + Math.floor(index / columns) * (height + rowGap),
+      }),
+    );
+    y = areaTop + areaHeight;
+  }
+  const at = new Map<string, Box>([
+    ...repo.nodes.map((node): [string, Box] => [node.component.id, node]),
+    ...cards.map((card): [string, Box] => [card.item.id, card]),
+  ]);
+  const links = cards.flatMap(({ item }) =>
+    item.uses.filter((target) => at.has(target)).map((target) => ({ source: item.id, target })),
+  );
+  // As in This repo: edges leaving one card start 10px apart, edges entering one node end 8px apart (Button takes
+  // 14), and edges sharing a gap run side by side.
+  const spread = (ids: string[], id: string, step: number) => (ids.indexOf(id) - (ids.length - 1) / 2) * step;
+  const edges: GraphEdge[] = links.map(({ source, target }, index) => {
+    const id = `${source}>${target}`;
+    const out = links.filter((link) => link.source === source).map((link) => `${link.source}>${link.target}`);
+    const into = links.filter((link) => link.target === target).map((link) => `${link.source}>${link.target}`);
+    return {
+      id,
+      source,
+      target,
+      kind: "uses" as const,
+      path: routeEdge(at.get(source)!, at.get(target)!, {
+        start: spread(out, id, 10),
+        end: spread(into, id, 8),
+        lane: ((index % 5) - 2) * 4,
+        height: cardGrid.height,
+      }),
+    };
+  });
+  return { cards, areas, edges };
 }

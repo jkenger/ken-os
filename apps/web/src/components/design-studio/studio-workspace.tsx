@@ -12,6 +12,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { draftStyles, type Draft, type LookChange } from "@/features/design-studio/drafts";
 import {
+  filterLibrary,
   filterTree,
   treeOrder,
   type StudioComponent,
@@ -146,10 +147,23 @@ export function StudioWorkspace({
     () => new Set(drafts.filter((draft) => draft.kind === "component").map((draft) => draft.target)),
     [drafts],
   );
-  const shown = useMemo(
-    () => new Set(filterTree(rows, query, changedOnly ? changed : undefined).map((row) => row.component.id)),
-    [rows, query, changedOnly, changed],
-  );
+  // The tree's find and filters leave the same components in view on the canvas.
+  const shown = useMemo(() => {
+    const repo = filters.library === "all" || filters.library === "repo";
+    return new Set([
+      ...(repo ? filterTree(rows, query, changedOnly ? changed : undefined).map((row) => row.component.id) : []),
+      ...manifest.libraries
+        .filter((library) => filters.library === "all" || filters.library === library.id)
+        .flatMap((library) =>
+          filterLibrary(library.items, query, {
+            installedOnly: filters.installedOnly,
+            changed: changedOnly ? changed : undefined,
+          }),
+        )
+        .filter((item) => !item.installed)
+        .map((item) => item.id),
+    ]);
+  }, [rows, manifest.libraries, filters, query, changedOnly, changed]);
   const pick = useCallback(
     (id: string) => router.push(`/studio?c=${encodeURIComponent(id)}`, { scroll: false }),
     [router],
@@ -324,8 +338,9 @@ export function StudioWorkspace({
               {wide ? (
                 <StudioGraph
                   components={manifest.components}
+                  libraries={manifest.libraries}
                   shown={shown}
-                  picked={current?.id ?? ""}
+                  picked={current?.id ?? missing?.item.id ?? ""}
                   changed={changed}
                   ringed={ringed}
                   previewProps={propsOf}
@@ -335,6 +350,7 @@ export function StudioWorkspace({
                   onClear={() => {
                     setQuery("");
                     setChangedOnly(false);
+                    setFilters({ library: "all", installedOnly: false });
                   }}
                   onFind={() => find.current?.focus()}
                   themeToggle={<ThemeToggle theme={theme} onChange={setTheme} />}

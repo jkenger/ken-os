@@ -5,6 +5,7 @@ import {
   filterTree,
   kebab,
   layoutGraph,
+  layoutLibraries,
   libraryItems,
   pascal,
   routeEdge,
@@ -178,4 +179,39 @@ test("filterLibrary finds by name, keeps installed items with installedOnly, and
   assert.deepEqual(ids(filterLibrary(items, "", { installedOnly: false, changed: new Set(["ui/card"]) })), [
     "shadcn/card",
   ]);
+});
+
+test("layoutLibraries draws cards only for items not installed, in an area under This repo", () => {
+  const repo = layoutGraph([component("ui/button", "Button")]);
+  const item = (name: string, uses: string[] = [], installed?: string): LibraryItem => ({
+    id: `shadcn/${kebab(name)}`,
+    name,
+    uses,
+    add: "",
+    ...(installed ? { installed } : {}),
+  });
+  const { cards, areas, edges } = layoutLibraries(
+    [
+      {
+        id: "shadcn",
+        name: "shadcn/ui",
+        items: [item("Button", [], "ui/button"), item("Calendar", ["ui/button"]), item("Chart", ["shadcn/calendar"])],
+      },
+    ],
+    repo,
+  );
+  assert.deepEqual(
+    cards.map((card) => [card.item.id, card.x, card.y]),
+    [
+      ["shadcn/calendar", 32, repo.area.height + 64 + 64],
+      ["shadcn/chart", 320, repo.area.height + 64 + 64],
+    ],
+  );
+  assert.deepEqual(areas, [
+    { id: "shadcn", name: "shadcn/ui", count: 2, y: repo.area.height + 64, width: repo.area.width, height: 192 },
+  ]);
+  assert.deepEqual(
+    edges.map((edge) => edge.id),
+    ["shadcn/calendar>ui/button", "shadcn/chart>shadcn/calendar"],
+  );
 });

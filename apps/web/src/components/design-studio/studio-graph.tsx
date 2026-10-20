@@ -22,7 +22,15 @@ import "@xyflow/react/dist/style.css";
 import { CircleAlert, Minus, Plus, Scan, Search } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { graphGrid, layoutGraph, type StudioComponent } from "@/features/design-studio/manifest";
+import {
+  cardGrid,
+  graphGrid,
+  layoutGraph,
+  layoutLibraries,
+  type LibraryItem,
+  type StudioComponent,
+  type StudioLibrary,
+} from "@/features/design-studio/manifest";
 import { cn } from "@/lib/utils";
 import { previews, type PreviewProps } from "./previews";
 import { ChangedDot } from "./studio-inspector";
@@ -30,7 +38,9 @@ import { ChangedDot } from "./studio-inspector";
 // The studio's canvas (docs/architecture/design-studio.md, step 2; mockup frames A1, A2 and C1 to C8): every component
 // in This repo as a live node on a five-column grid in tree order, with an arrow to each primitive it uses and a
 // dashed one from a Loots wrapper to what it wraps. Arrows touching the picked node are drawn in the selected colour
-// and the rest fade; hovering a node darkens its own. Under 50% a node shows its name only.
+// and the rest fade; hovering a node darkens its own. Under 50% a node shows its name only. Under This repo, each other
+// library's items that aren't installed are cards with their description (step 4, C3); their arrows show only for the
+// picked or hovered node.
 
 export type Theme = "light" | "dark";
 
@@ -77,8 +87,9 @@ type ComponentData = {
   theme: Theme;
   onPick: (id: string) => void;
 };
-type AreaData = { name: string; count: number; theme: Theme };
-type GraphNode = Node<ComponentData, "component"> | Node<AreaData, "area">;
+type CardData = { item: LibraryItem; picked: boolean; hovered: boolean; onPick: (id: string) => void };
+type AreaData = { name: string; count: string; theme: Theme };
+type GraphNode = Node<ComponentData, "component"> | Node<CardData, "card"> | Node<AreaData, "area">;
 
 const hidden: CSSProperties = { opacity: 0, pointerEvents: "none" };
 
@@ -144,6 +155,51 @@ function ComponentNode({ data }: NodeProps<Node<ComponentData, "component">>) {
   );
 }
 
+/** Another library's item that isn't installed (C3): a header that picks it, its description, Not installed and how
+ *  many components it uses. The studio never runs its code, so there is no preview. */
+function CardNode({ data }: NodeProps<Node<CardData, "card">>) {
+  const { item, picked, hovered, onPick } = data;
+  const nameOnly = useStore((state) => state.transform[2] < NAME_ONLY_ZOOM);
+  return (
+    <article
+      aria-label={`${item.name}, not installed`}
+      className={cn(
+        "relative flex size-full flex-col overflow-hidden rounded-[14px] border bg-card text-card-foreground",
+        hovered && !picked && "border-foreground/30",
+        picked && "border-selected/55 ring-3 ring-selected/15",
+        picked && nameOnly && "border-3 border-selected ring-8 ring-selected/25",
+      )}
+    >
+      <Handles />
+      <Button
+        type="button"
+        variant="ghost"
+        aria-pressed={picked}
+        onClick={() => onPick(item.id)}
+        title={`${item.name}, Not installed`}
+        className={cn(
+          "h-8 shrink-0 justify-start rounded-none px-3 text-left hover:bg-transparent focus-visible:ring-inset aria-pressed:bg-transparent",
+          nameOnly &&
+            "h-full justify-center p-3 text-center text-3xl leading-tight font-semibold wrap-anywhere whitespace-normal",
+        )}
+      >
+        <span className={cn(!nameOnly && "truncate")}>{item.name}</span>
+      </Button>
+      {!nameOnly && (
+        <div className="flex min-h-0 flex-1 flex-col gap-1 px-3 pb-2">
+          {item.description && (
+            <p className="line-clamp-2 shrink-0 text-xs text-muted-foreground">{item.description}</p>
+          )}
+          <p className="mt-auto flex items-center gap-2">
+            <Badge variant="outline">Not installed</Badge>
+            {item.uses.length > 0 && <span className="text-xs text-muted-foreground">Uses {item.uses.length}</span>}
+          </p>
+        </div>
+      )}
+    </article>
+  );
+}
+
 /** A library's area behind its nodes, with its name and count (A1). */
 function AreaNode({ data }: NodeProps<Node<AreaData, "area">>) {
   return (
@@ -161,7 +217,7 @@ function AreaNode({ data }: NodeProps<Node<AreaData, "area">>) {
   );
 }
 
-const nodeTypes: NodeTypes = { component: ComponentNode, area: AreaNode };
+const nodeTypes: NodeTypes = { component: ComponentNode, card: CardNode, area: AreaNode };
 
 /** The canvas toolbar (C6): Find, the preview theme, then Fit and zoom. */
 function Toolbar({ onFind, themeToggle }: { onFind: () => void; themeToggle: ReactNode }) {
@@ -205,6 +261,7 @@ const flowStyle = { "--xy-background-color": "transparent" } as CSSProperties;
 
 function Graph({
   components,
+  libraries,
   shown,
   picked,
   changed,
@@ -218,7 +275,8 @@ function Graph({
   themeToggle,
 }: {
   components: StudioComponent[];
-  /** Ids the tree's find leaves in view; the rest are hidden in place. */
+  libraries: StudioLibrary[];
+  /** Ids the tree's find and filters leave in view; the rest are hidden in place. */
   shown: Set<string>;
   /** The picked id, or "" for none. */
   picked: string;
@@ -237,7 +295,15 @@ function Graph({
   const frame = useRef<HTMLDivElement>(null);
   const [hovered, setHovered] = useState<string | null>(null);
   const layout = useMemo(() => layoutGraph(components), [components]);
-  const at = useMemo(() => new Map(layout.nodes.map((node) => [node.component.id, node])), [layout]);
+  const others = useMemo(() => layoutLibraries(libraries, layout), [libraries, layout]);
+  const at = useMemo(
+    () =>
+      new Map([
+        ...layout.nodes.map(({ component, x, y }) => [component.id, { x, y, height: graphGrid.height }] as const),
+        ...others.cards.map(({ item, x, y }) => [item.id, { x, y, height: cardGrid.height }] as const),
+      ]),
+    [layout, others],
+  );
 
   const nodes = useMemo<GraphNode[]>(
     () => [
@@ -249,11 +315,37 @@ function Graph({
         height: layout.area.height,
         style: { width: layout.area.width, height: layout.area.height },
         zIndex: -1,
-        hidden: shown.size === 0,
+        hidden: !layout.nodes.some((node) => shown.has(node.component.id)),
         draggable: false,
         selectable: false,
-        data: { name: "This repo", count: components.length, theme },
+        data: { name: "This repo", count: String(components.length), theme },
       },
+      ...others.areas.map((area): GraphNode => ({
+        id: `area:${area.id}`,
+        type: "area",
+        position: { x: 0, y: area.y },
+        width: area.width,
+        height: area.height,
+        style: { width: area.width, height: area.height },
+        zIndex: -1,
+        hidden: !others.cards.some((card) => card.library === area.id && shown.has(card.item.id)),
+        draggable: false,
+        selectable: false,
+        data: { name: area.name, count: `${area.count} not installed`, theme },
+      })),
+      ...others.cards.map(({ item, x, y }): GraphNode => ({
+        id: item.id,
+        type: "card",
+        position: { x, y },
+        width: graphGrid.width,
+        height: cardGrid.height,
+        style: { width: graphGrid.width, height: cardGrid.height },
+        zIndex: 1,
+        hidden: !shown.has(item.id),
+        draggable: false,
+        selectable: true,
+        data: { item, picked: item.id === picked, hovered: item.id === hovered, onPick },
+      })),
       ...layout.nodes.map(({ component, x, y }): GraphNode => ({
         id: component.id,
         type: "component",
@@ -278,13 +370,16 @@ function Graph({
         },
       })),
     ],
-    [layout, components.length, shown, picked, hovered, changed, ringed, previewProps, theme, onPick],
+    [layout, others, components.length, shown, picked, hovered, changed, ringed, previewProps, theme, onPick],
   );
 
   const edges = useMemo<RouteEdge[]>(
     () =>
-      layout.edges.map((edge): RouteEdge => {
+      [...layout.edges, ...others.edges].map((edge): RouteEdge => {
         const touches = (id: string | null) => id !== null && (edge.source === id || edge.target === id);
+        // An arrow from another library's card shows only while either end is picked or hovered (decided after the
+        // mockups), since 30 of them would cross This repo's.
+        const card = !layout.edges.includes(edge);
         const tone = touches(picked)
           ? { stroke: "var(--selected)", width: 2 }
           : touches(hovered)
@@ -298,7 +393,7 @@ function Graph({
           target: edge.target,
           type: "route",
           data: { path: edge.path },
-          hidden: !shown.has(edge.source) || !shown.has(edge.target),
+          hidden: !shown.has(edge.source) || !shown.has(edge.target) || (card && !touches(picked) && !touches(hovered)),
           selectable: false,
           focusable: false,
           // Lit edges above faded ones, all under the nodes.
@@ -311,7 +406,7 @@ function Graph({
           },
         };
       }),
-    [layout, shown, picked, hovered],
+    [layout, others, shown, picked, hovered],
   );
 
   // First open is 100% on the top row of This repo, with the picked node in view and the area's edge 24px in.
@@ -340,8 +435,8 @@ function Graph({
       left >= 0 &&
       top >= 0 &&
       left + graphGrid.width * zoom <= box.clientWidth &&
-      top + graphGrid.height * zoom <= box.clientHeight;
-    if (!inView) flow.setCenter(node.x + graphGrid.width / 2, node.y + graphGrid.height / 2, { zoom, duration: 300 });
+      top + node.height * zoom <= box.clientHeight;
+    if (!inView) flow.setCenter(node.x + graphGrid.width / 2, node.y + node.height / 2, { zoom, duration: 300 });
   }, [picked, at, flow]);
 
   return (
@@ -359,7 +454,7 @@ function Graph({
           edgeTypes={edgeTypes}
           nodeOrigin={[0, 0]}
           onInit={open}
-          onNodeMouseEnter={(_, node) => node.type === "component" && setHovered(node.id)}
+          onNodeMouseEnter={(_, node) => node.type !== "area" && setHovered(node.id)}
           onNodeMouseLeave={() => setHovered(null)}
           minZoom={0.2}
           maxZoom={1.5}
