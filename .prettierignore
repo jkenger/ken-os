@@ -27,3 +27,7 @@ apps/web/src/components/ui
 
 # The shadcn default exactly as `shadcn init` writes it (see AGENTS.md)
 apps/web/src/app/globals.css
+
+# Impeccable skill, vendored as upstream ships it (pbakaus/impeccable); refresh by copying, never reformat
+.claude/skills/impeccable
+.claude/agents/impeccable-*.md

@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-20T15:05:00Z",
+  "title": "Design System: Loots",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Warm Ink",
+        "canonical": "oklch(0.214 0.009 43.1)",
+        "tonalRamp": [
+          "oklch(0.15 0.009 43.1)",
+          "oklch(0.214 0.009 43.1)",
+          "oklch(0.35 0.009 43.1)",
+          "oklch(0.5 0.009 43.1)",
+          "oklch(0.65 0.009 43.1)",
+          "oklch(0.78 0.009 43.1)",
+          "oklch(0.88 0.009 43.1)",
+          "oklch(0.95 0.009 43.1)"
+        ]
+      },
+      "foreground": { "role": "neutral", "displayName": "Charcoal Ink", "canonical": "oklch(0.147 0.004 49.3)" },
+      "background": { "role": "neutral", "displayName": "Paper", "canonical": "oklch(1 0 0)" },
+      "secondary": { "role": "neutral", "displayName": "Stone Wash", "canonical": "oklch(0.96 0.002 17.2)" },
+      "muted-foreground": { "role": "neutral", "displayName": "Taupe Grey", "canonical": "oklch(0.547 0.021 43.1)" },
+      "border": { "role": "neutral", "displayName": "Hairline", "canonical": "oklch(0.922 0.005 34.3)" },
+      "ring": { "role": "neutral", "displayName": "Focus Taupe", "canonical": "oklch(0.714 0.014 41.2)" },
+      "destructive": { "role": "error", "displayName": "Signal Red", "canonical": "oklch(0.577 0.245 27.325)" },
+      "topic-learned": {
+        "role": "tertiary",
+        "displayName": "Learned Green",
+        "canonical": "oklch(0.5 0.12 152)",
+        "tonalRamp": [
+          "oklch(0.3 0.05 152)",
+          "oklch(0.4 0.1 152)",
+          "oklch(0.5 0.12 152)",
+          "oklch(0.62 0.13 152)",
+          "oklch(0.72 0.13 152)",
+          "oklch(0.78 0.13 152)",
+          "oklch(0.88 0.06 152)",
+          "oklch(0.955 0.03 152)"
+        ]
+      },
+      "topic-active": {
+        "role": "tertiary",
+        "displayName": "In Progress Blue",
+        "canonical": "oklch(0.48 0.14 262)",
+        "tonalRamp": [
+          "oklch(0.3 0.06 262)",
+          "oklch(0.4 0.12 262)",
+          "oklch(0.48 0.14 262)",
+          "oklch(0.6 0.13 262)",
+          "oklch(0.7 0.12 262)",
+          "oklch(0.78 0.11 262)",
+          "oklch(0.88 0.05 262)",
+          "oklch(0.955 0.022 262)"
+        ]
+      },
+      "chapter-1": { "role": "tertiary", "displayName": "Chapter One Green", "canonical": "oklch(0.45 0.07 150)" },
+      "chapter-2": { "role": "tertiary", "displayName": "Chapter Two Blue", "canonical": "oklch(0.45 0.08 258)" },
+      "chapter-3": { "role": "tertiary", "displayName": "Chapter Three Amber", "canonical": "oklch(0.47 0.09 48)" },
+      "chapter-4": { "role": "tertiary", "displayName": "Chapter Four Teal", "canonical": "oklch(0.45 0.06 190)" },
+      "chapter-5": { "role": "tertiary", "displayName": "Chapter Five Plum", "canonical": "oklch(0.45 0.08 318)" },
+      "chapter-6": { "role": "tertiary", "displayName": "Chapter Six Ochre", "canonical": "oklch(0.47 0.08 85)" }
+    },
+    "typographyMeta": {
+      "page-title": { "displayName": "Page title", "purpose": "One per page, through PageHeading." },
+      "panel-title": { "displayName": "Panel title", "purpose": "Docked panel and sheet titles." },
+      "body": { "displayName": "Body", "purpose": "All reading and control text." },
+      "label": { "displayName": "Section label", "purpose": "Section labels inside panels, in muted-foreground." },
+      "eyebrow": { "displayName": "Eyebrow", "purpose": "Module name above a page title, uppercase." },
+      "numeric": { "displayName": "Numeric", "purpose": "Numbers that line up: counts, percentages, chapter numbers." }
+    },
+    "shadows": [
+      {
+        "name": "graph-card",
+        "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
+        "purpose": "Roadmap graph topic cards only (shadow-xs)."
+      },
+      {
+        "name": "floating",
+        "value": "shadcn shadow-md to shadow-2xl",
+        "purpose": "Menus, popovers, dialogs and sheets; never in-page panels."
+      }
+    ],
+    "motion": [
+      {
+        "name": "control-transition",
+        "value": "transition-all, Tailwind default 150ms ease",
+        "purpose": "Button, badge and input state changes."
+      },
+      { "name": "press", "value": "translateY(1px)", "purpose": "Button active state." }
+    ],
+    "breakpoints": [
+      { "name": "phone-floor", "value": "390px" },
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "dock", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one main action in a header or panel footer.",
+      "html": "<button class=\"ds-btn ds-btn-primary\">Continue topic</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; padding: 0 12px; border-radius: 26px; border: 1px solid transparent; font: 500 14px/1 'Public Sans', sans-serif; cursor: pointer; transition: all 150ms ease; } .ds-btn-primary { background: var(--primary, oklch(0.214 0.009 43.1)); color: var(--primary-foreground, oklch(0.986 0.002 67.8)); } .ds-btn-primary:hover { background: color-mix(in oklch, var(--primary, oklch(0.214 0.009 43.1)) 80%, transparent); } .ds-btn:focus-visible { outline: none; border-color: var(--ring, oklch(0.714 0.014 41.2)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.714 0.014 41.2)) 30%, transparent); } .ds-btn:active { transform: translateY(1px); }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary actions such as Claude setup.",
+      "html": "<button class=\"ds-btn-outline\">Claude setup</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; height: 36px; padding: 0 12px; border-radius: 26px; border: 1px solid var(--border, oklch(0.922 0.005 34.3)); background: var(--background, #fff); color: var(--foreground, oklch(0.147 0.004 49.3)); font: 500 14px/1 'Public Sans', sans-serif; cursor: pointer; transition: all 150ms ease; } .ds-btn-outline:hover { background: var(--muted, oklch(0.96 0.002 17.2)); } .ds-btn-outline:focus-visible { outline: none; border-color: var(--ring, oklch(0.714 0.014 41.2)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.714 0.014 41.2)) 30%, transparent); }"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Filled pill input, no border at rest.",
+      "html": "<input class=\"ds-input\" placeholder=\"Find a topic\" />",
+      "css": ".ds-input { height: 36px; width: 240px; padding: 4px 12px; border-radius: 22px; border: 1px solid transparent; background: color-mix(in oklch, var(--input, oklch(0.922 0.005 34.3)) 50%, transparent); color: var(--foreground, oklch(0.147 0.004 49.3)); font: 400 14px 'Public Sans', sans-serif; outline: none; transition: box-shadow 150ms ease, border-color 150ms ease; } .ds-input::placeholder { color: var(--muted-foreground, oklch(0.547 0.021 43.1)); } .ds-input:focus-visible { border-color: var(--ring, oklch(0.714 0.014 41.2)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.714 0.014 41.2)) 30%, transparent); }"
+    },
+    {
+      "name": "Status Chip",
+      "kind": "chip",
+      "refersTo": "status-chip-learned",
+      "description": "Topic status as icon, word and soft fill. Never colour alone.",
+      "html": "<span class=\"ds-chip ds-chip-learned\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1.2 14.2-4-4 1.4-1.4 2.6 2.6 5.6-5.6 1.4 1.4-7 7Z\"/></svg>Learned</span> <span class=\"ds-chip ds-chip-active\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"M12 3a9 9 0 0 1 0 18Z\" fill=\"currentColor\"/></svg>In progress</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 2px 8px; border-radius: 22px; font: 500 12px/1 'Public Sans', sans-serif; } .ds-chip-learned { background: var(--topic-learned-soft, oklch(0.955 0.03 152)); color: var(--topic-learned, oklch(0.5 0.12 152)); } .ds-chip-active { background: var(--topic-active-soft, oklch(0.955 0.022 262)); color: var(--topic-active, oklch(0.48 0.14 262)); }"
+    },
+    {
+      "name": "Panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Flat bordered card surface; selected rows take an inset outline.",
+      "html": "<div class=\"ds-panel\"><div class=\"ds-row\">Not started topic</div><div class=\"ds-row ds-row-selected\">Picked topic</div><div class=\"ds-row\">Another topic</div></div>",
+      "css": ".ds-panel { width: 280px; border-radius: 14px; border: 1px solid var(--border, oklch(0.922 0.005 34.3)); background: var(--card, #fff); color: var(--card-foreground, oklch(0.147 0.004 49.3)); font: 400 14px 'Public Sans', sans-serif; } .ds-row { padding: 10px 14px; border-top: 1px solid var(--border, oklch(0.922 0.005 34.3)); } .ds-row:first-child { border-top: 0; border-radius: 14px 14px 0 0; } .ds-row:last-child { border-radius: 0 0 14px 14px; } .ds-row-selected { box-shadow: inset 0 0 0 1px var(--selected, oklch(0.48 0.14 262)); }"
+    },
+    {
+      "name": "Section Label",
+      "kind": "custom",
+      "refersTo": "label",
+      "description": "Muted semibold label above a group inside a panel, with a mono count.",
+      "html": "<div class=\"ds-label\">Mastery criteria <span class=\"ds-num\">3 of 5</span></div>",
+      "css": ".ds-label { display: flex; gap: 8px; align-items: baseline; font: 600 12px 'Public Sans', sans-serif; color: var(--muted-foreground, oklch(0.547 0.021 43.1)); } .ds-num { font: 400 12px 'Geist Mono', monospace; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Quiet Workbench",
+    "overview": "Loots is one person's bench, not a storefront. The frame is the untouched shadcn Luma default on a warm taupe neutral, kept on purpose as the base to build on, and Loots adds to it one deliberate change at a time. The tools stay quiet and in the same place every visit; colour is spent only where it carries meaning: a topic's status, the item you picked, and which chapter a topic belongs to.",
+    "keyCharacteristics": [
+      "Warm near-black and off-white neutrals (taupe base, hue ~40), no brand accent hue.",
+      "Flat bordered panels; shadows only on floating layers.",
+      "Pill-shaped controls (Luma preset) against softly rounded panels.",
+      "Colour always paired with an icon and a word.",
+      "Full light and dark themes, every Loots token defined in both."
+    ],
+    "rules": [
+      {
+        "name": "The Three Families Rule",
+        "body": "Status, selection and grouping colours never stand in for one another. A chapter colour never means a status; a status colour never decorates.",
+        "section": "colors"
+      },
+      {
+        "name": "The Icon And Word Rule",
+        "body": "No colour carries meaning alone. Every status has its own icon shape (filled check, half circle, dashed ring, skip arrow) and its word, in the accessible name too.",
+        "section": "colors"
+      },
+      {
+        "name": "The Accent Is A Menu Rule",
+        "body": "In Luma, `accent` is near-black. Never put `bg-accent` on a hover or selected state outside a menu.",
+        "section": "colors"
+      },
+      {
+        "name": "The Mono For Alignment Rule",
+        "body": "Mono is for numbers that line up in a column or strip, never for decoration or code-flavoured styling.",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat Panel Rule",
+        "body": "An in-page panel is `rounded-xl border bg-card` with no shadow. If something casts a shadow, it floats.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do build every control from `components/ui`; add a missing one from the registry and use it as shipped.",
+      "Do add new colours as role tokens in the Loots section of `globals.css`, with light and dark values and an `@theme inline` entry.",
+      "Do check 4.5:1 for text and 3:1 for an outline that is the only cue, in both themes.",
+      "Do pair every meaning colour with an icon and a word.",
+      "Do keep panels flat and bordered; save shadows for floating layers.",
+      "Do write screen copy as names, actions and states, with no em dashes."
+    ],
+    "donts": [
+      "Don't edit the shadcn default part of `globals.css` or a primitive in `components/ui` (the only edit is the font line in `sonner.tsx`).",
+      "Don't use hex colour classes or old Studio names (`bg-canvas`, `text-quiet`, `shadow-panel`, `font-display`, `status-*`, `tint`); `shadcn-default.test.ts` fails on them.",
+      "Don't put `bg-accent` on hover or selected states outside a menu.",
+      "Don't use a chapter colour for status, or a status colour for decoration.",
+      "Don't add Google Fonts links; fonts load through `next/font`.",
+      "Don't align layouts across modules as a sweep; layout differences are module choices."
+    ]
+  }
+}

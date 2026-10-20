@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { test } from "node:test";
 
-// The app runs on shadcn's default setup (the Nova preset), and the Loots look is built on top of it one deliberate
+// The app runs on shadcn's default setup (the Luma preset), and the Loots look is built on top of it one deliberate
 // change at a time. This test keeps the old Studio values from creeping back: no Loots-only colour, shadow, font or
 // radius names, no Google Fonts link (fonts come from next/font), and no hex colours in class strings. Additions go in
 // the "Loots" section at the end of globals.css. See docs/architecture/design-system-shadcn-setup.md.
