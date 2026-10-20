@@ -1,5 +1,7 @@
 # Reset to the shadcn default setup
 
+Partly superseded on 13 Oct 2026: the app moved from the Nova preset described below to the Luma preset (`radix-luma`, base colour `taupe`, Public Sans body, DM Sans headings, Geist Mono) in commit `650cb33`. Building on an untouched shadcn default still holds; the Nova values and the Geist body font below are history.
+
 Status: approved by the owner, 10 Oct 2026. Implemented on 10 Oct 2026 on branch `refactor/shadcn-default`, with shadcn CLI 4.21.4. The owner checked the hosted preview on 10 Oct 2026, so every point in §11 is met.
 
 Implementation notes:

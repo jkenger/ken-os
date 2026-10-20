@@ -258,8 +258,8 @@ and look at the roadmap (topic colours, the docked panel), Terms, Profile and a 
    `.prettierignore` line for that folder go too.
 6. **`docs/ui-package-done`**: `AGENTS.md`, `.claude/CLAUDE.md` (the stack line), `design-system.md`,
    `design-system-shadcn-setup.md`, `design-studio.md` and the `design-system-sync` skill name the new paths, and this
-   doc becomes Implemented. Fix the preset name there too: `components.json` says `radix-luma`, while `AGENTS.md` and
-   the `shadcn-default.test.ts` comment still say Nova. PRs 2 to 5 each already fix the `AGENTS.md` line that names a
+   doc becomes Implemented. The preset name in `AGENTS.md` and the `shadcn-default.test.ts` comment was fixed to Luma on
+   20 Oct 2026. PRs 2 to 5 each already fix the `AGENTS.md` line that names a
    path they move.
 
 ## Later: apps/portfolio
