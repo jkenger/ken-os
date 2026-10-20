@@ -137,6 +137,26 @@ export function filterTree(rows: ReturnType<typeof treeOrder>, query: string, ch
   );
 }
 
+/** The tree's filters besides find and Changed (B1): which library's branch to show ("all", "repo" or a library's id),
+ *  and whether to list only what is installed here. */
+export type TreeFilters = { library: string; installedOnly: boolean };
+
+/** A library's items whose name matches the query, installed here with `installedOnly`, and with `changed`, installed
+ *  as a This repo component that has a draft. */
+export function filterLibrary(
+  items: LibraryItem[],
+  query: string,
+  { installedOnly, changed }: { installedOnly: boolean; changed?: Set<string> },
+) {
+  const needle = query.trim().toLowerCase();
+  return items.filter(
+    (item) =>
+      item.name.toLowerCase().includes(needle) &&
+      (!installedOnly || item.installed) &&
+      (!changed || (item.installed !== undefined && changed.has(item.installed))),
+  );
+}
+
 /** The canvas grid (mockup frame A1): five columns of 240 by 180 nodes inside This repo's area, in tree order. */
 export const graphGrid = {
   columns: 5,

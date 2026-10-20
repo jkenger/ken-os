@@ -11,12 +11,18 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { draftStyles, type Draft, type LookChange } from "@/features/design-studio/drafts";
-import { filterTree, treeOrder, type StudioComponent, type StudioManifest } from "@/features/design-studio/manifest";
+import {
+  filterTree,
+  treeOrder,
+  type StudioComponent,
+  type StudioManifest,
+  type TreeFilters,
+} from "@/features/design-studio/manifest";
 import { cn } from "@/lib/utils";
 import { previewProps, type PreviewProps } from "./previews";
 import { StudioExport } from "./studio-export";
 import { Preview, StudioGraph, type Theme } from "./studio-graph";
-import { InspectorBody, InspectorFacts, type InspectorProps } from "./studio-inspector";
+import { InspectorBody, InspectorFacts, LibraryFacts, LibraryItemBody, type InspectorProps } from "./studio-inspector";
 import { StudioTree } from "./studio-tree";
 import { useDrafts } from "./use-drafts";
 
@@ -126,6 +132,8 @@ export function StudioWorkspace({
   const [themeOpen, setThemeOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [changedOnly, setChangedOnly] = useState(false);
+  // All, not Installed, so the catalogue is visible (decided after the mockups).
+  const [filters, setFilters] = useState<TreeFilters>({ library: "all", installedOnly: false });
   const [preview, setPreview] = useState<Record<string, PreviewProps>>({});
   const [ringed, setRinged] = useState<Set<string>>(() => new Set());
   const find = useRef<HTMLInputElement>(null);
@@ -147,8 +155,12 @@ export function StudioWorkspace({
     [router],
   );
   const unpick = useCallback(() => router.push("/studio", { scroll: false }), [router]);
-  // Nothing in the address shows the Theme (A1, D1); the canvas still opens on the top row of This repo.
-  const current = manifest.components.find((component) => component.id === selected);
+  // Nothing in the address shows the Theme (A1, D1); the canvas still opens on the top row of This repo. Another
+  // library's item installed here is This repo's component (B4); one that isn't shows its own inspector (D7).
+  const listed = manifest.libraries.flatMap((library) => library.items.map((item) => ({ library, item })));
+  const fromLibrary = listed.find(({ item }) => item.id === selected);
+  const current = manifest.components.find((component) => component.id === (fromLibrary?.item.installed ?? selected));
+  const missing = current ? undefined : fromLibrary;
 
   /** A sample's props: its defaults, the Preview tab's changes, and a wrapper's Look variant (D6). */
   const propsOf = useCallback(
@@ -196,30 +208,53 @@ export function StudioWorkspace({
   };
   // Keyed by component, so each opens on Preview with its own fields.
   const body = <InspectorBody key={current?.id ?? "theme"} {...inspector} />;
-  const panel = (isDocked: boolean) => (
-    <DockedPanel
-      open={isDocked || Boolean(current) || themeOpen}
-      docked={isDocked}
-      onClose={
-        current
-          ? () => {
-              setThemeOpen(false);
-              unpick();
-            }
-          : isDocked
-            ? undefined
-            : () => setThemeOpen(false)
-      }
-      closeLabel={`Close ${current?.name ?? "inspector"}`}
-      badges={current?.kind === "wrapper" && <Badge variant="outline">Loots</Badge>}
-      title={current?.name ?? "Theme"}
-      descriptionFallback={current ? `${current.name} inspector` : "Theme tokens"}
-      facts={<InspectorFacts component={current} manifest={manifest} />}
-    >
-      {body}
-    </DockedPanel>
-  );
-  const tree = { components: manifest.components, picked: current?.id ?? "", changed, changedOnly, query };
+  const panel = (isDocked: boolean) =>
+    missing ? (
+      <DockedPanel
+        open
+        docked={isDocked}
+        onClose={unpick}
+        closeLabel={`Close ${missing.item.name}`}
+        badges={<Badge variant="outline">Not installed</Badge>}
+        title={missing.item.name}
+        description={missing.item.description}
+        descriptionFallback={`${missing.item.name} inspector`}
+        facts={<LibraryFacts library={missing.library} />}
+      >
+        <LibraryItemBody item={missing.item} manifest={manifest} />
+      </DockedPanel>
+    ) : (
+      <DockedPanel
+        open={isDocked || Boolean(current) || themeOpen}
+        docked={isDocked}
+        onClose={
+          current
+            ? () => {
+                setThemeOpen(false);
+                unpick();
+              }
+            : isDocked
+              ? undefined
+              : () => setThemeOpen(false)
+        }
+        closeLabel={`Close ${current?.name ?? "inspector"}`}
+        badges={current?.kind === "wrapper" && <Badge variant="outline">Loots</Badge>}
+        title={current?.name ?? "Theme"}
+        descriptionFallback={current ? `${current.name} inspector` : "Theme tokens"}
+        facts={<InspectorFacts component={current} manifest={manifest} />}
+      >
+        {body}
+      </DockedPanel>
+    );
+  const tree = {
+    components: manifest.components,
+    libraries: manifest.libraries,
+    picked: current?.id ?? missing?.item.id ?? "",
+    changed,
+    changedOnly,
+    filters,
+    query,
+  };
 
   return (
     <WorkspaceShell email={email} active="studio">
@@ -261,6 +296,7 @@ export function StudioWorkspace({
               <StudioTree
                 {...tree}
                 onChangedOnly={setChangedOnly}
+                onFilters={setFilters}
                 onQueryChange={setQuery}
                 onPick={() => setTreeOpen(false)}
                 className="flex-1"
@@ -274,6 +310,7 @@ export function StudioWorkspace({
           <StudioTree
             {...tree}
             onChangedOnly={setChangedOnly}
+            onFilters={setFilters}
             onQueryChange={setQuery}
             findRef={find}
             className="mb-4 hidden w-70 shrink-0 rounded-xl border bg-card lg:sticky lg:top-2 lg:row-span-2 lg:flex lg:h-[calc(100svh-160px)] xl:static xl:h-auto"
@@ -322,12 +359,22 @@ export function StudioWorkspace({
         {!wide && (
           <section aria-labelledby="studio-picked" className="mt-4 flex flex-col border-t">
             <div className="grid gap-2.5 p-4">
+              {missing && (
+                <Badge variant="outline" className="justify-self-start">
+                  Not installed
+                </Badge>
+              )}
               <h2 id="studio-picked" className="font-heading text-xl leading-tight font-bold tracking-tight">
-                {current?.name ?? "Theme"}
+                {missing?.item.name ?? current?.name ?? "Theme"}
               </h2>
-              <InspectorFacts component={current} manifest={manifest} />
+              {missing?.item.description && <p className="text-sm text-muted-foreground">{missing.item.description}</p>}
+              {missing ? (
+                <LibraryFacts library={missing.library} />
+              ) : (
+                <InspectorFacts component={current} manifest={manifest} />
+              )}
             </div>
-            {body}
+            {missing ? <LibraryItemBody item={missing.item} manifest={manifest} /> : body}
           </section>
         )}
       </div>
