@@ -1281,7 +1281,7 @@ export const studioManifest: StudioManifest = {
     },
     {
       "name": "radius",
-      "light": "0.625rem"
+      "light": "0.375rem"
     },
     {
       "name": "sidebar",
@@ -1421,12 +1421,12 @@ export const studioManifest: StudioManifest = {
   ],
   "globals": {
     "file": "app/globals.css",
-    "lines": 205,
+    "lines": 210,
     "tail": [
-      "  text-decoration: underline dotted 1.5px var(--muted-foreground);",
-      "}",
-      "[data-term-hover] { cursor: help; }"
+      ":root {",
+      "  --radius: 0.375rem;",
+      "}"
     ],
-    "newline": false
+    "newline": true
   }
 };
