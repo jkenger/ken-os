@@ -69,7 +69,16 @@
       "body": { "displayName": "Body", "purpose": "All reading and control text." },
       "label": { "displayName": "Section label", "purpose": "Section labels inside panels, in muted-foreground." },
       "eyebrow": { "displayName": "Eyebrow", "purpose": "Module name above a page title, uppercase." },
-      "numeric": { "displayName": "Numeric", "purpose": "Numbers that line up: counts, percentages, chapter numbers." }
+      "numeric": { "displayName": "Numeric", "purpose": "Numbers that line up: counts, percentages, chapter numbers." },
+      "lane-title": { "displayName": "Lane title", "purpose": "Chapter title on a roadmap lane card. Roadmap only." },
+      "graph-card-title": {
+        "displayName": "Graph card title",
+        "purpose": "Topic title on a roadmap graph card. Roadmap only."
+      },
+      "graph-card-meta": {
+        "displayName": "Graph card meta",
+        "purpose": "Status word on a graph card and the chapter heading above an area. Roadmap only."
+      }
     },
     "shadows": [
       {

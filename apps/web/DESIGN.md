@@ -52,6 +52,20 @@ typography:
     fontFamily: "Geist Mono, monospace"
     fontSize: "0.75rem"
     fontWeight: 400
+  lane-title:
+    fontFamily: "DM Sans, sans-serif"
+    fontSize: "0.9375rem"
+    fontWeight: 600
+    lineHeight: 1.375
+  graph-card-title:
+    fontFamily: "Public Sans, sans-serif"
+    fontSize: "0.8125rem"
+    fontWeight: 500
+    lineHeight: 1.375
+  graph-card-meta:
+    fontFamily: "Public Sans, sans-serif"
+    fontSize: "0.6875rem"
+    fontWeight: 400
 rounded:
   sm: "0.375rem"
   md: "0.5rem"
@@ -170,7 +184,10 @@ A warm, almost colourless neutral base, with three small families of meaning col
 
 - **Page title** (bold, 30px rising to 36px on wide screens in list modules; 24px to 30px on the roadmap, line-height 1, tight tracking): one per page, through `PageHeading`.
 - **Panel title** (bold, 20px): docked panel and sheet titles.
-- **Card title** (medium, 16px, heading font): shadcn Card titles; lane titles are 15px semibold.
+- **Card title** (medium, 16px, heading font): shadcn Card titles.
+- **Lane title** (semibold, 15px, heading font): the chapter title on each roadmap lane card. Roadmap only.
+- **Graph card title** (medium, 13px, up to two lines): topic cards in the roadmap graph. Roadmap only.
+- **Graph card meta** (regular, 11px, muted; the area heading is semibold, uppercase, wide tracking): the status word on a graph card and the chapter heading above each area. Roadmap only.
 - **Body** (regular, 14px; 16px in inputs on phones to avoid zoom): everything else.
 - **Label** (semibold, 12px, muted-foreground): section labels inside panels.
 - **Eyebrow** (semibold, 12px, uppercase, wide tracking, muted): the module name above a page title.
