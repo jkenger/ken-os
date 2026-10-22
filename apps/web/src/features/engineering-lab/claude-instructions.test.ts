@@ -40,3 +40,11 @@ test("the instructions have Claude teach from the topic's material: its tasks in
   assert.match(text, /tick build with report_progress, passing my final code word for word/);
   assert.match(text, /for explain, .*own words/);
 });
+
+test("the instructions have Claude explain new ideas first and treat I don't know as a cue to explain", () => {
+  const text = CLAUDE_PROJECT_INSTRUCTIONS.toLowerCase();
+  assert.match(text, /explain first: while an idea is new to me, .*worked example/);
+  assert.match(text, /when i say i don't know, explain instead of asking again/);
+  assert.match(text, /give me the fix when i ask for it/);
+  assert.doesNotMatch(text, /unless i ask twice/);
+});
