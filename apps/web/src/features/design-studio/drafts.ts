@@ -284,7 +284,9 @@ function tokenPatch(drafts: Extract<Draft, { kind: "token" }>[], manifest: Studi
   const dark = drafts.filter((draft) => draft.change.dark);
   if (!light.length && !dark.length) return undefined;
   const added = ["", "/* Design Studio: token overrides */"];
-  if (light.length) added.push(":root {", ...light.map((draft) => `  --${draft.target}: ${draft.change.light};`), "}");
+  // `.light` too: globals.css sets the light values on `.light` previews directly, so `:root` alone would not reach them.
+  if (light.length)
+    added.push(":root,", ".light {", ...light.map((draft) => `  --${draft.target}: ${draft.change.light};`), "}");
   if (dark.length) added.push(".dark {", ...dark.map((draft) => `  --${draft.target}: ${draft.change.dark};`), "}");
   const { lines, tail, newline } = manifest.globals;
   const start = lines - tail.length + 1;

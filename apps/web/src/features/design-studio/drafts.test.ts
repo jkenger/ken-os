@@ -95,8 +95,8 @@ test("draftPatch appends token overrides to globals.css, adds a Loots wrapper an
   const { lines, tail } = studioManifest.globals;
   const start = lines - tail.length + 1;
   assert.ok(text.startsWith("--- a/apps/web/src/app/globals.css\n+++ b/apps/web/src/app/globals.css\n"));
-  assert.ok(text.includes(`@@ -${start},3 +${start},8 @@\n ${tail[0]}`));
-  assert.ok(text.includes("+:root {\n+  --radius: 0.5rem;\n+}\n"));
+  assert.ok(text.includes(`@@ -${start},3 +${start},9 @@\n ${tail[0]}`));
+  assert.ok(text.includes("+:root,\n+.light {\n+  --radius: 0.5rem;\n+}\n"));
   assert.ok(text.includes("--- /dev/null\n+++ b/apps/web/src/components/loots/button.tsx\n@@ -0,0 +1,8 @@\n"));
   assert.ok(text.includes('+import { Button as ShadcnButton } from "@/components/ui/button";'));
   assert.ok(text.includes('+  return <ShadcnButton className={cn("font-semibold", className)} {...props} />;'));
