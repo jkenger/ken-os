@@ -7,7 +7,7 @@ inventing its own. It covers what was built and proved on this screen only; it i
 ## What the screen is
 
 - **Header.** The roadmap title (with the roadmap switcher), then three actions: Search reviews as an icon button with
-  a tooltip, Claude setup as a quiet button (hidden while the setup checklist is on the page, so setup has one way in;
+  a tooltip, Claude setup as a quiet button (hidden while the setup checklist is on the page, so setup has one way in; each finished step there keeps an Edit button;
   24 Oct 2026), and one primary button, Continue topic, which opens the topic you're on. The menu beside the title is
   named Roadmaps. An empty roadmap shows Plan with Claude.
   The view switch (Lanes, Graph) sits just above the roadmap it changes, not in the header (17 Oct 2026, when the
