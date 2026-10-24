@@ -3,7 +3,7 @@
 import type { ComponentProps, JSXElementConstructor, ReactNode } from "react";
 import { ChevronsUpDown, FlaskConical, Search, UserRound } from "lucide-react";
 import { Back, Badge as KitBadge, Coverage, Fact, Notice, Rail, SectionTitle } from "@/components/engineering/kit";
-import { panel, selectedRow, selectedSurface } from "@/components/surfaces";
+import { panel, selectedInset, selectedRow, selectedSurface } from "@/components/surfaces";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -364,6 +364,13 @@ export const previews: Record<string, (props: PreviewProps) => ReactNode> = {
       <li className="px-3 py-2">Caching</li>
       <li className={cn("px-3 py-2", selectedRow)}>Retry & backoff</li>
       <li className="px-3 py-2">Queues</li>
+    </ul>
+  ),
+  "surfaces/selected-inset": () => (
+    <ul className="grid w-full gap-px text-sm">
+      <li className="rounded-md px-3 py-2">Closures</li>
+      <li className={cn("rounded-md px-3 py-2", selectedInset)}>State & rendering</li>
+      <li className="rounded-md px-3 py-2">Event loop</li>
     </ul>
   ),
 };

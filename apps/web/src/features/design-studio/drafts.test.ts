@@ -52,8 +52,11 @@ test("draftStyles overrides tokens on previews only, light and dark apart, and s
     studioManifest.components,
     studioManifest.theme,
   );
-  assert.match(css, /\[data-studio-preview\]:not\(\.dark, \.dark \*\) \{ --radius: 0\.5rem; \}/);
-  assert.match(css, /\.dark \[data-studio-preview\] \{ --radius: 0\.5rem; --primary: oklch\(0\.8 0 0\); \}/);
+  assert.match(css, /\[data-studio-preview\]:is\(\.light, \.light \*\) \{ --radius: 0\.5rem; \}/);
+  assert.match(
+    css,
+    /\[data-studio-preview\]:is\(\.dark, \.dark \*\):not\(\.light \*\) \{ --radius: 0\.5rem; --primary: oklch\(0\.8 0 0\); \}/,
+  );
   assert.match(css, /\[data-studio-preview="ui\/button"\] \[data-slot="button"\] \{ font-weight: 600; \}/);
 });
 

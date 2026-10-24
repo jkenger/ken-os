@@ -159,8 +159,9 @@ export function draftStyles(drafts: Draft[], components: StudioComponent[], them
   }
   const declare = (values: Map<string, string>) => [...values].map(([name, value]) => `--${name}: ${value};`).join(" ");
   const rules: string[] = [];
-  if (light.size) rules.push(`[data-studio-preview]:not(.dark, .dark *) { ${declare(light)} }`);
-  if (dark.size) rules.push(`[data-studio-preview].dark, .dark [data-studio-preview] { ${declare(dark)} }`);
+  // Previews always sit inside their own theme boundary (`.light` or `.dark`), whatever the page's theme.
+  if (light.size) rules.push(`[data-studio-preview]:is(.light, .light *) { ${declare(light)} }`);
+  if (dark.size) rules.push(`[data-studio-preview]:is(.dark, .dark *):not(.light *) { ${declare(dark)} }`);
   for (const draft of drafts) {
     if (draft.kind !== "component") continue;
     const component = components.find((item) => item.id === draft.target);

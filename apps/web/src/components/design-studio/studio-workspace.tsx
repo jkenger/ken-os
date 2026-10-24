@@ -85,7 +85,7 @@ function Node({ component, theme, props }: { component: StudioComponent; theme: 
         data-studio-preview={component.id}
         className={cn(
           "mx-2 mb-2 flex min-h-48 flex-col items-center justify-center gap-4 rounded-[10px] border bg-background p-6 text-foreground",
-          theme === "dark" && "dark",
+          theme === "dark" ? "dark" : "light",
         )}
       >
         <Preview id={component.id} props={props} />

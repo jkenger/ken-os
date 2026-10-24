@@ -112,7 +112,7 @@ function ComponentNode({ data }: NodeProps<Node<ComponentData, "component">>) {
       aria-label={`${component.name} preview`}
       className={cn(
         "relative flex size-full flex-col overflow-hidden rounded-[14px] border bg-card text-card-foreground",
-        theme === "dark" && "dark",
+        theme === "dark" ? "dark" : "light",
         hovered && !picked && "border-foreground/30",
         picked && "border-selected/55 ring-3 ring-selected/15",
         picked && nameOnly && "border-3 border-selected ring-8 ring-selected/25",
@@ -206,7 +206,7 @@ function AreaNode({ data }: NodeProps<Node<AreaData, "area">>) {
     <div
       className={cn(
         "size-full rounded-[18px] bg-[color-mix(in_oklch,var(--muted)_45%,var(--background))]",
-        data.theme === "dark" && "dark",
+        data.theme === "dark" ? "dark" : "light",
       )}
     >
       <p className="flex items-baseline gap-2.5 pt-5 pl-8">
