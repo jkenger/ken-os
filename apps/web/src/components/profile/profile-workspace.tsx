@@ -12,11 +12,13 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import type { EngineeringLine } from "@/features/engineering-lab/roadmap-store";
 import { engineering as engineeringRoutes } from "@/features/engineering-lab/routes";
 import { toast } from "@/components/ui/toaster";
+import type { ResumeFile } from "@/features/profile/resume-files-store";
 import type { ProfileState } from "@/features/profile/store";
 import { send } from "@/lib/api-client";
 import { shortDate } from "./dates";
 import { DetailsForm } from "./details-form";
 import { DriveFile, type DriveFileState } from "./drive-file";
+import { ResumeFiles } from "./resume-files";
 import { RewritePanel } from "./rewrite-panel";
 
 // Profile: the owner's career details and the Drive resume they can be imported from. Spec: docs/product/profile-resume.md.
@@ -42,11 +44,14 @@ export function ProfileWorkspace({
   email,
   profile,
   drive,
+  resumes,
   engineering,
 }: {
   email: string;
   profile: ProfileState;
   drive: DriveFileState;
+  /** Uploaded resume files, newest first. */
+  resumes: ResumeFile[];
   /** The Engineering goal and progress, linking to the roadmap. Null when it couldn't load. */
   engineering: EngineeringLine[] | null;
 }) {
@@ -143,6 +148,7 @@ export function ProfileWorkspace({
           {engineering?.map((line) => (
             <EngineeringSummary key={line.roadmapId ?? "path"} {...line} />
           ))}
+          <ResumeFiles initial={resumes} />
           <DriveFile state={drive} importing={importing} onImport={importDrive} />
           <RewritePanel key={`rewrite-${formVersion}`} details={details} setDetails={setDetails} />
           <DetailsForm key={formVersion} details={details} edit={edit} />

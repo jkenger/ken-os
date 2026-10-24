@@ -1,5 +1,16 @@
 import { relations, sql } from "drizzle-orm";
-import { boolean, index, integer, jsonb, pgTable, primaryKey, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import {
+  boolean,
+  customType,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  primaryKey,
+  text,
+  timestamp,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
 import type {
   ClaudeRunner,
   CodeRun,
@@ -65,6 +76,27 @@ export const profiles = pgTable("profiles", {
   paper: text("paper").$type<PaperSize>().notNull().default("letter"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+const bytea = customType<{ data: Buffer; driverData: Buffer }>({ dataType: () => "bytea" });
+
+/** Resume files the owner uploaded, kept as they came in. Uploading reads nothing into the Profile; Autofill does,
+ *  on request. Spec: docs/product/profile-resume.md, "Step 5 design". */
+export const profileResumes = pgTable(
+  "profile_resumes",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    fileName: text("file_name").notNull(),
+    /** Detected from the file's first bytes, never taken from the browser. */
+    contentType: text("content_type").notNull(),
+    size: integer("size").notNull(),
+    data: bytea("data").notNull(),
+    uploadedAt: timestamp("uploaded_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("profile_resumes_user_idx").on(table.userId, table.uploadedAt)],
+);
 
 /** Each read of a Drive resume into Profile fields. Append-only: a draft is `pending` until the owner saves it, then
  *  `applied`. `drive_modified_time` is the file's version at import, for spotting later Drive edits. */

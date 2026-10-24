@@ -1,6 +1,6 @@
 # Profile and resume builder
 
-Status: step 1 built 12 Oct 2026, step 2 built 13 Oct 2026, step 3 built 14 Oct 2026, step 4 built 24 Oct 2026; step 5 on hold and being redefined (24 Oct 2026: Drive stops being a source of truth, an uploaded resume autofills the Profile instead). Replaces the Resume module. Decisions below were agreed with the owner in chat on 12 Oct 2026.
+Status: step 1 built 12 Oct 2026, step 2 built 13 Oct 2026, step 3 built 14 Oct 2026, step 4 built 24 Oct 2026; step 5 redefined 24 Oct 2026 as resume uploads with Autofill (Drive dropped), part 1 built. Replaces the Resume module. Decisions below were agreed with the owner in chat on 12 Oct 2026.
 
 ## The idea in one line
 
@@ -90,9 +90,19 @@ Two one-way paths, never a loop.
 2. **Templates and preview.** Three templates, preview with a switcher, PDF download.
 3. **AI rewrite.** Rewrite with accept or undo per change.
 4. **Public link.** Built 24 Oct 2026 as the Portfolio's public resume PDF; see "Step 4 design".
-5. **Drive sync.** On hold, being redefined as resume upload with autofill (24 Oct 2026). Don't build the Drive sync below.
+5. **Uploads and Autofill.** Replaces Drive sync (dropped 24 Oct 2026); see "Step 5 design". The Drive sections above are the older plan.
 
 Each step ships on its own and leaves the app working.
+
+## Step 5 design
+
+Agreed with the owner 24 Oct 2026. Google Drive stops being a source of truth: the whole Drive plan (import, Picker, Drive file section, Open in Drive, saving to Drive, the Drive sign-in permission) is dropped.
+
+- **Uploads:** PDF or Word (.docx), up to 4 MB (Vercel takes request bodies up to 4.5 MB). The type comes from the file's first bytes and must match the extension. Every upload is kept, so the Profile holds many resumes; uploading again adds another. Each can be opened, downloaded or deleted (up to 50 kept).
+- **Storage:** Postgres, table `profile_resumes` (migration `0029_profile_resumes`) with the bytes in a `bytea` column. No new service or keys, and the files are backed up with the rest of the data.
+- **Uploading changes nothing else.** Each file gets an Autofill from this resume button; only that reads it, with the Claude API (PDF sent as a document, DOCX as extracted text), and shows the changes against the form to accept field by field, section by section or all. Nothing is stored until Save.
+- **Build order:** 1. uploads (built), 2. Autofill, replacing the OpenAI import and needing `ANTHROPIC_API_KEY`, 3. remove Drive (old tables stay, per the migration rule).
+- **API:** `GET/POST /api/profile/resumes` (list, upload as form field `file`), `GET/DELETE /api/profile/resumes/<id>` (a PDF opens inline unless `download=1`).
 
 ## Step 4 design
 

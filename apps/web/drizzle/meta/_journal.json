@@ -204,6 +204,13 @@
       "when": 1792830090568,
       "tag": "0028_portfolio_show_email",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1792834822802,
+      "tag": "0029_profile_resumes",
+      "breakpoints": true
     }
   ]
 }
