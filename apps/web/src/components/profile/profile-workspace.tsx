@@ -223,8 +223,18 @@ export function ProfileWorkspace({
           descriptionFallback="Section details"
         >
           <DetailsForm key={formVersion} details={details} edit={edit} only={opened} />
-          {/* As a sheet the panel covers the page's Save bar, so it carries its own. */}
-          {!docked && <div className="sticky bottom-0 mt-auto border-t bg-background">{saveBar}</div>}
+          {/* As a sheet the panel covers the page's Save bar and its error, so it carries its own. */}
+          {!docked && (
+            <div className="sticky bottom-0 mt-auto border-t bg-background">
+              {problem && (
+                <Alert variant="destructive" className="mx-3 mt-3 w-auto md:mx-5">
+                  <AlertCircle />
+                  <AlertTitle>{problem}</AlertTitle>
+                </Alert>
+              )}
+              {saveBar}
+            </div>
+          )}
         </DockedPanel>
       </div>
 
