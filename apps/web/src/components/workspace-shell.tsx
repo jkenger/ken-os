@@ -15,6 +15,7 @@ import {
   Library,
   Search,
   Sparkles,
+  Upload,
   UserRound,
   X,
 } from "lucide-react";
@@ -75,6 +76,7 @@ const moduleDetails: Record<
     sections: [
       { label: "Details", href: "/profile", icon: UserRound },
       { label: "Resume", href: "/profile/resume", icon: FileText },
+      { label: "Uploads", href: "/profile#resumes", icon: Upload },
       { label: "Drive file", href: "/profile#drive-file", icon: FolderOpen },
     ],
   },

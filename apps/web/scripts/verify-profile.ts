@@ -100,6 +100,30 @@ async function main() {
       (error: Error) => error instanceof store.ProfileInputError && /No resume chosen/.test(error.message),
     );
     console.log("ok - import needs a chosen resume");
+
+    const files = await import("../src/features/profile/resume-files-store");
+    const pdf = Buffer.from("%PDF-1.7\nresume");
+    const older = await files.addResumeFile(userId, "Old CV.pdf", pdf);
+    const newer = await files.addResumeFile(userId, "New CV.pdf", pdf);
+    await assert.rejects(files.addResumeFile(userId, "CV.pdf", Buffer.from("<html>")), Error);
+    assert.deepEqual(
+      (await files.listResumeFiles(userId)).map((file) => file.fileName),
+      ["New CV.pdf", "Old CV.pdf"],
+      "every upload is kept, newest first",
+    );
+    assert.equal(
+      (await files.getResumeFile(userId, older.id))?.data.toString(),
+      pdf.toString(),
+      "bytes come back as sent",
+    );
+    assert.equal(await files.getResumeFile(otherId, older.id), null, "another user can't read it");
+    assert.equal(await files.deleteResumeFile(otherId, older.id), false, "or delete it");
+    assert.equal(await files.deleteResumeFile(userId, older.id), true);
+    assert.deepEqual(
+      (await files.listResumeFiles(userId)).map((file) => file.id),
+      [newer.id],
+    );
+    console.log("ok - uploaded resumes are kept per user, newest first, and can be deleted");
   } finally {
     await db().delete(users).where(eq(users.id, userId));
     await db().delete(users).where(eq(users.id, otherId));
