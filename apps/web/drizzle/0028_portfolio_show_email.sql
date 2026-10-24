@@ -1,0 +1,1 @@
+ALTER TABLE "portfolios" ADD COLUMN "show_email" boolean DEFAULT false NOT NULL;

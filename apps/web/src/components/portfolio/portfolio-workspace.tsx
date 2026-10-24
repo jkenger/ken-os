@@ -9,10 +9,12 @@ import { shortDate } from "@/components/profile/dates";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/toaster";
 import type { PortfolioState } from "@/features/portfolio/store";
-import { post } from "@/lib/api-client";
+import { post, send } from "@/lib/api-client";
 
 // Portfolio: what the public site shows, and one Publish for all of it. Spec: docs/architecture/portfolio.md.
 
@@ -27,8 +29,9 @@ const included = [
   "Projects",
   "Certifications",
   "Languages",
+  "Resume PDF, with your Resume template",
 ];
-const excluded = ["Email", "Phone", "Local fields", "Education notes"];
+const excluded = ["Email, unless Show email is on", "Phone", "Local fields", "Education notes"];
 
 function List({ title, items }: { title: string; items: string[] }) {
   return (
@@ -49,10 +52,9 @@ function List({ title, items }: { title: string; items: string[] }) {
 
 export function PortfolioWorkspace({ email, portfolio }: { email: string; portfolio: PortfolioState }) {
   const [state, setState] = useState(portfolio);
-  const [busy, setBusy] = useState<"publish" | "unpublish" | null>(null);
+  const [busy, setBusy] = useState<"publish" | "unpublish" | "email" | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
-  const { live, latest, profileSavedAt } = state;
-  const stale = Boolean(live && profileSavedAt && profileSavedAt > live.publishedAt);
+  const { live, latest, profileSavedAt, unpublishedChanges } = state;
 
   async function run(action: "publish" | "unpublish") {
     setBusy(action);
@@ -67,12 +69,25 @@ export function PortfolioWorkspace({ email, portfolio }: { email: string; portfo
     }
   }
 
+  async function toggleEmail(showEmail: boolean) {
+    setBusy("email");
+    setProblem(null);
+    try {
+      setState(await send<PortfolioState>("/api/portfolio/settings", "PUT", { showEmail }));
+      toast({ tone: "success", title: showEmail ? "Email shows after Publish" : "Email hidden after Publish" });
+    } catch (error) {
+      setProblem(error instanceof Error ? error.message : "Couldn't save. Try again");
+    } finally {
+      setBusy(null);
+    }
+  }
+
   return (
     <WorkspaceShell email={email} active="portfolio">
       <div className="mx-auto max-w-5xl px-3 pt-6 pb-24 md:px-5 md:pt-7.5">
         <PageHeading
           title="Publish"
-          badge={live ? (stale ? "Changes not published" : "Live") : "Not published"}
+          badge={live ? (unpublishedChanges ? "Changes not published" : "Live") : "Not published"}
           facts={
             <>
               <dt className="text-xs text-muted-foreground">Version</dt>
@@ -105,18 +120,43 @@ export function PortfolioWorkspace({ email, portfolio }: { email: string; portfo
           )}
           <List title="Included from Profile" items={included} />
           <List title="Never published" items={excluded} />
+          <Card>
+            <CardHeader>
+              <CardTitle>Public resume</CardTitle>
+              <CardDescription>Changes go live on the next Publish</CardDescription>
+            </CardHeader>
+            <CardContent className="flex items-center justify-between gap-4">
+              <Label htmlFor="show-email" className="font-normal">
+                Show email
+              </Label>
+              <Switch
+                id="show-email"
+                checked={state.showEmail}
+                onCheckedChange={(checked) => void toggleEmail(checked)}
+                disabled={busy !== null}
+              />
+            </CardContent>
+          </Card>
         </div>
       </div>
 
       <div className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-end gap-2 px-3 py-3 md:px-5">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-end gap-2 px-3 py-3 md:px-5">
           {live && (
-            <Button asChild variant="link" className="mr-auto px-0">
-              <a href="/api/public/portfolio" target="_blank" rel="noopener noreferrer">
-                Open snapshot
-                <ExternalLink aria-hidden="true" />
-              </a>
-            </Button>
+            <div className="mr-auto flex basis-full items-center gap-4 sm:basis-auto">
+              <Button asChild variant="link" className="px-0">
+                <a href="/api/public/portfolio" target="_blank" rel="noopener noreferrer">
+                  Open snapshot
+                  <ExternalLink aria-hidden="true" />
+                </a>
+              </Button>
+              <Button asChild variant="link" className="px-0">
+                <a href="/api/public/portfolio/resume" target="_blank" rel="noopener noreferrer">
+                  Open resume
+                  <ExternalLink aria-hidden="true" />
+                </a>
+              </Button>
+            </div>
           )}
           {live && (
             <Button type="button" variant="ghost" onClick={() => void run("unpublish")} disabled={busy !== null}>

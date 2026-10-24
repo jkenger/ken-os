@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { isPaperSize, isResumeTemplate, resumeFileName } from "@ken-os/domain";
-import { profileRoute } from "@/features/profile/api";
+import { profileRoute, resumePdfHeaders } from "@/features/profile/api";
 import { renderResumePdf } from "@/features/profile/resume-pdf";
 import { getProfile, saveResumeSettings } from "@/features/profile/store";
 import { messages } from "@/lib/messages";
@@ -27,15 +27,9 @@ export async function GET(request: Request) {
       isResumeTemplate(template) ? template : profile.resume.template,
       isPaperSize(paper) ? paper : profile.resume.paper,
     );
-    const name = resumeFileName(profile.details);
-    const disposition = params.get("download") === "1" ? "attachment" : "inline";
+    const download = params.get("download") === "1";
     return new NextResponse(new Uint8Array(pdf), {
-      headers: {
-        "Content-Type": "application/pdf",
-        "Content-Disposition": `${disposition}; filename="${name.replace(/[^\x20-\x7e]/g, "")}"; filename*=UTF-8''${encodeURIComponent(name)}`,
-        "Cache-Control": "private, no-store",
-        "X-Content-Type-Options": "nosniff",
-      },
+      headers: resumePdfHeaders(resumeFileName(profile.details), download),
     });
   } catch (error) {
     console.error("resume pdf failed", error instanceof Error ? error.message : error);

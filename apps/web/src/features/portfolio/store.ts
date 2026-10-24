@@ -24,12 +24,20 @@ export interface PortfolioState {
   latest: { version: number; publishedAt: string } | null;
   /** When the Profile was last saved; Publish needs saved details. */
   profileSavedAt: string | null;
+  /** Whether the next Publish includes the Profile email. */
+  showEmail: boolean;
+  /** Whether the next Publish would change what visitors see: Profile edits, Show email, or the resume template. */
+  unpublishedChanges: boolean;
 }
 
 export async function getPortfolio(userId: string): Promise<PortfolioState> {
-  const [[state], [latest], [profile]] = await Promise.all([
+  const [[state], [latest], [profile], [settings]] = await Promise.all([
     db()
-      .select({ version: portfolioPublications.version, publishedAt: portfolioPublications.publishedAt })
+      .select({
+        version: portfolioPublications.version,
+        publishedAt: portfolioPublications.publishedAt,
+        resume: sql<PortfolioSnapshot["resume"] | null>`${portfolioPublications.snapshot}->'resume'`,
+      })
       .from(portfolios)
       .innerJoin(portfolioPublications, eq(portfolioPublications.id, portfolios.currentPublicationId))
       .where(eq(portfolios.userId, userId))
@@ -40,11 +48,36 @@ export async function getPortfolio(userId: string): Promise<PortfolioState> {
       .where(eq(portfolioPublications.userId, userId))
       .orderBy(desc(portfolioPublications.version))
       .limit(1),
-    db().select({ updatedAt: profiles.updatedAt }).from(profiles).where(eq(profiles.userId, userId)).limit(1),
+    db()
+      .select({ updatedAt: profiles.updatedAt, template: profiles.template, paper: profiles.paper })
+      .from(profiles)
+      .where(eq(profiles.userId, userId))
+      .limit(1),
+    db()
+      .select({ showEmail: portfolios.showEmail, updatedAt: portfolios.updatedAt })
+      .from(portfolios)
+      .where(eq(portfolios.userId, userId))
+      .limit(1),
   ]);
+  // Publish stamps `portfolios.updated_at` with the publication time, so a later stamp means Show email changed since.
+  const published = state?.resume ?? { template: "classic", paper: "letter" };
+  const unpublishedChanges = Boolean(
+    state &&
+    profile &&
+    (profile.updatedAt > state.publishedAt ||
+      (settings && settings.updatedAt > state.publishedAt) ||
+      profile.template !== published.template ||
+      profile.paper !== published.paper),
+  );
   const shape = (row?: { version: number; publishedAt: Date }) =>
     row ? { version: row.version, publishedAt: row.publishedAt.toISOString() } : null;
-  return { live: shape(state), latest: shape(latest), profileSavedAt: profile?.updatedAt.toISOString() ?? null };
+  return {
+    live: shape(state),
+    latest: shape(latest),
+    profileSavedAt: profile?.updatedAt.toISOString() ?? null,
+    showEmail: settings?.showEmail ?? false,
+    unpublishedChanges,
+  };
 }
 
 /** Snapshots the saved Profile as the next publication and makes it live, in one transaction. */
@@ -55,7 +88,7 @@ export async function publishPortfolio(userId: string): Promise<PortfolioState> 
   await db().transaction(async (tx) => {
     // Locks the owner's row so two Publish clicks can't pick the same version.
     await tx.insert(portfolios).values({ userId }).onConflictDoNothing();
-    await tx.select().from(portfolios).where(eq(portfolios.userId, userId)).for("update");
+    const [portfolio] = await tx.select().from(portfolios).where(eq(portfolios.userId, userId)).for("update");
     const [{ next }] = await tx
       .select({ next: sql<number>`coalesce(max(${portfolioPublications.version}), 0) + 1` })
       .from(portfolioPublications)
@@ -66,11 +99,28 @@ export async function publishPortfolio(userId: string): Promise<PortfolioState> 
       id,
       userId,
       version: Number(next),
-      snapshot: buildSnapshot(details, Number(next), now),
+      snapshot: buildSnapshot(
+        details,
+        { template: profile.template, paper: profile.paper },
+        { showEmail: portfolio.showEmail },
+        Number(next),
+        now,
+      ),
       publishedAt: now,
     });
     await tx.update(portfolios).set({ currentPublicationId: id, updatedAt: now }).where(eq(portfolios.userId, userId));
   });
+  return getPortfolio(userId);
+}
+
+/** Turns Show email on or off. Like every other choice, it goes live on the next Publish. */
+export async function setShowEmail(userId: string, input: Record<string, unknown>): Promise<PortfolioState> {
+  if (typeof input.showEmail !== "boolean") throw new PortfolioInputError("Choose on or off");
+  const showEmail = input.showEmail;
+  await db()
+    .insert(portfolios)
+    .values({ userId, showEmail })
+    .onConflictDoUpdate({ target: portfolios.userId, set: { showEmail, updatedAt: new Date() } });
   return getPortfolio(userId);
 }
 

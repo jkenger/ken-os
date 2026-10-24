@@ -34,3 +34,13 @@ export async function profileRoute(
     );
   }
 }
+
+/** Headers for a resume PDF: shown in the page, or sent as a file named like "Ken Gervacio Resume.pdf". */
+export function resumePdfHeaders(name: string, download: boolean): Record<string, string> {
+  return {
+    "Content-Type": "application/pdf",
+    "Content-Disposition": `${download ? "attachment" : "inline"}; filename="${name.replace(/[^\x20-\x7e]/g, "")}"; filename*=UTF-8''${encodeURIComponent(name)}`,
+    "Cache-Control": "private, no-store",
+    "X-Content-Type-Options": "nosniff",
+  };
+}

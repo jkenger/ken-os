@@ -17,7 +17,7 @@ The portfolio is the owner's public site, for hiring and for showing what he bui
 | First content            | Profile, and Engineering as learning in public.                                                              |
 | Engineering explanations | The owner's own explanation behind a Learned topic is a per-topic switch, off by default.                    |
 | Experiments              | The portfolio may build features Loots lacks; ones the owner wants privately move into Loots later.          |
-| Resume public link       | Not built on its own. Profile step 4 (`/r/<slug>`) is replaced by the portfolio's resume section, later.     |
+| Resume public link       | A PDF of the live snapshot at `/api/public/portfolio/resume`, built 24 Oct 2026 as Profile step 4. No slug.  |
 | Visitor chat             | Not planned. The owner's own AI agent comes later and reads the same endpoint.                               |
 
 Rejected: a separate repo (more friction, nothing gained for one owner), the portfolio reading Postgres (it would hold database credentials and could reach private tables), MCP as the data source (it is Claude's way into Loots, not a website's), and a live read without Publish.
@@ -36,7 +36,8 @@ Visitor ── apps/portfolio (own domain) ── GET /api/public/portfolio ─�
 
 - **Portfolio module** at `/portfolio`, behind the owner session like every other module. It shows what the next snapshot will contain, the per-topic explanation switches, and Publish and Unpublish. Code in `src/features/portfolio/`.
 - **Snapshot**: Publish reads Profile and Engineering, builds one JSON document that matches the contract, and inserts it into `portfolio_publications` (append only: version, document, published time) with a current-publication pointer, in one transaction. Unpublish clears the pointer. This follows the Blog spec's publish protocol (`blog-writing-studio.md`).
-- **What a snapshot never holds**: email, phone, address, user id, Drive ids, tokens, notes, exercises, and any explanation the owner has not switched on. The builder copies allowed fields, never strips a full record.
+- **What a snapshot never holds**: phone, address, user id, Drive ids, tokens, notes, exercises, and any explanation the owner has not switched on. Email is off too, unless the owner turns on Show email (`portfolios.show_email`, migration `0028_portfolio_show_email`, agreed 24 Oct 2026 so recruiters can reach him). The builder copies allowed fields, never strips a full record.
+- **Public resume** `GET /api/public/portfolio/resume`: the same live snapshot printed by the Profile resume renderer, with the template and paper the Resume page had at Publish (`snapshot.resume`). `noindex`, `download=1` sends it as a file, 404 when unpublished. The site links to it rather than drawing its own PDF.
 - **Public endpoint** `GET /api/public/portfolio`: no session, reads only the current publication, returns 404 when nothing is published. It is the first Loots route outside the owner gate, so `auth-sign-in.md` and `overview.md` get a public-routes section when it ships.
 - **Notify**: after Publish or Unpublish, Loots calls the portfolio's revalidate route with a shared secret (`PORTFOLIO_REVALIDATE_SECRET`). A failed call does not undo the Publish; the screen shows it and offers a retry.
 
