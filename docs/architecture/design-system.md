@@ -40,7 +40,7 @@ A panel or card is `rounded-xl border bg-card` with no shadow (`panel` in `compo
 - When the outline is the only visual cue, it must reach 3:1 against the card. `selectedRow` does (19.8:1 light, 16.9:1
   dark), and so does the roadmap's softer `selectedSurface` border at 55% (4.4:1 light, 5.9:1 dark), which is also
   backed by `aria-pressed` and the topic panel it opens.
-- A panel that docks moves focus to its title when it opens and back to what opened it when it closes; one already
+- A panel that docks moves focus to its title once the content has loaded and back to what opened it when it closes; one already
   open when the page loads leaves focus alone (`DockedPanel`).
 - Keep what was picked in the address when a link or a reload should reopen it (`?topic=` on the roadmap, `#term-` on
   Terms).

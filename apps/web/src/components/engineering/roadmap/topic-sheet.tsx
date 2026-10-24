@@ -511,7 +511,8 @@ export function TopicSheet({
         onClose={onClose}
         closeLabel="Close topic"
         badges={heading}
-        title={panel?.title ?? " "}
+        title={panel?.title ?? "Loading topic"}
+        ready={Boolean(panel)}
         description={descriptionText}
         descriptionFallback={panel?.chapter ?? "Topic"}
         facts={<TopicFacts plan={panel?.plan ?? null} />}
