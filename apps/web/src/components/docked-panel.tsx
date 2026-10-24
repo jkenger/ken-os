@@ -128,7 +128,7 @@ export function DockedPanel({
       <aside
         ref={asideRef}
         aria-labelledby={titleId}
-        className="sticky top-2 flex h-[calc(100svh-5rem)] w-96 shrink-0 flex-col overflow-y-auto border-l bg-card"
+        className="sticky top-0 flex h-[calc(100svh-3rem)] w-96 shrink-0 flex-col overflow-y-auto border-l bg-card"
       >
         <div className="grid gap-2.5 border-b p-4">
           <div className="flex items-center gap-2">
@@ -150,7 +150,7 @@ export function DockedPanel({
             id={titleId}
             ref={headingRef}
             tabIndex={-1}
-            className="font-heading text-xl leading-tight font-bold tracking-tight outline-none"
+            className="font-heading text-xl leading-tight font-semibold tracking-tight outline-none"
           >
             {title}
           </h2>

@@ -907,7 +907,7 @@ export const studioManifest: StudioManifest = {
         "foreground"
       ],
       "source": {
-        "start": 14,
+        "start": 13,
         "lines": [
           "export function Badge({ children, className }: { children: ReactNode; className?: string }) {",
           "  return (",
@@ -934,7 +934,7 @@ export const studioManifest: StudioManifest = {
         "foreground"
       ],
       "source": {
-        "start": 22,
+        "start": 21,
         "lines": [
           "export function Back({ href, children }: { href: string; children: ReactNode }) {",
           "  return (",
@@ -964,7 +964,7 @@ export const studioManifest: StudioManifest = {
         "muted-foreground"
       ],
       "source": {
-        "start": 34,
+        "start": 33,
         "lines": [
           "export function Fact({ label, children, first }: { label: string; children: ReactNode; first?: boolean }) {",
           "  return (",
@@ -994,7 +994,7 @@ export const studioManifest: StudioManifest = {
         "radius"
       ],
       "source": {
-        "start": 44,
+        "start": 43,
         "lines": [
           "export function Rail({ level, soft = false, label }: { level: Level | null; soft?: boolean; label?: string }) {",
           "  const lit = levelRank(level);",
@@ -1039,7 +1039,7 @@ export const studioManifest: StudioManifest = {
         "radius"
       ],
       "source": {
-        "start": 69,
+        "start": 68,
         "lines": [
           "export function Coverage({ met, total }: { met: number; total: number }) {",
           "  if (!total) return <span className=\"text-xs text-muted-foreground\">Nothing required</span>;",
@@ -1071,7 +1071,7 @@ export const studioManifest: StudioManifest = {
       "uses": [],
       "tokens": [],
       "source": {
-        "start": 85,
+        "start": 84,
         "lines": [
           "export function SectionTitle({ title, action }: { title: string; action?: ReactNode }) {",
           "  return (",
@@ -1103,7 +1103,7 @@ export const studioManifest: StudioManifest = {
         "foreground"
       ],
       "source": {
-        "start": 95,
+        "start": 94,
         "lines": [
           "export function Notice({",
           "  tone = \"info\",",
@@ -1117,7 +1117,7 @@ export const studioManifest: StudioManifest = {
           "  return (",
           "    <div",
           "      className={cn(",
-          "        \"rounded-xl px-4 py-3.5 text-sm leading-relaxed\",",
+          "        \"rounded-lg px-4 py-3.5 text-sm leading-relaxed\",",
           "        className,",
           "        tone === \"info\" && \"border bg-card text-foreground\",",
           "        tone === \"error\" && \"bg-destructive/10 text-destructive\",",
@@ -1162,6 +1162,21 @@ export const studioManifest: StudioManifest = {
       "tokens": [
         "card",
         "selected"
+      ]
+    },
+    {
+      "id": "surfaces/selected-inset",
+      "name": "selectedInset",
+      "kind": "wrapper",
+      "file": "components/surfaces.ts",
+      "exports": [
+        "selectedInset"
+      ],
+      "variants": [],
+      "uses": [],
+      "wraps": "ui/card",
+      "tokens": [
+        "muted"
       ]
     },
     {
@@ -2368,83 +2383,83 @@ export const studioManifest: StudioManifest = {
   "theme": [
     {
       "name": "card",
-      "light": "oklch(1 0 0)",
-      "dark": "oklch(0.214 0.009 43.1)"
+      "light": "oklch(0.995 0.001 265)",
+      "dark": "oklch(0.235 0.005 265)"
     },
     {
       "name": "card-foreground",
-      "light": "oklch(0.147 0.004 49.3)",
-      "dark": "oklch(0.986 0.002 67.8)"
+      "light": "oklch(0.22 0.005 265)",
+      "dark": "oklch(0.93 0.004 100)"
     },
     {
       "name": "popover",
-      "light": "oklch(1 0 0)",
-      "dark": "oklch(0.214 0.009 43.1)"
+      "light": "oklch(0.995 0.001 265)",
+      "dark": "oklch(0.255 0.006 265)"
     },
     {
       "name": "popover-foreground",
-      "light": "oklch(0.147 0.004 49.3)",
-      "dark": "oklch(0.986 0.002 67.8)"
+      "light": "oklch(0.22 0.005 265)",
+      "dark": "oklch(0.93 0.004 100)"
     },
     {
       "name": "primary",
-      "light": "oklch(0.214 0.009 43.1)",
-      "dark": "oklch(0.922 0.005 34.3)"
+      "light": "oklch(0.22 0.005 265)",
+      "dark": "oklch(0.93 0.004 100)"
     },
     {
       "name": "primary-foreground",
-      "light": "oklch(0.986 0.002 67.8)",
-      "dark": "oklch(0.214 0.009 43.1)"
+      "light": "oklch(0.985 0.001 265)",
+      "dark": "oklch(0.205 0.004 265)"
     },
     {
       "name": "secondary",
-      "light": "oklch(0.96 0.002 17.2)",
-      "dark": "oklch(0.268 0.011 36.5)"
+      "light": "oklch(0.945 0.003 265)",
+      "dark": "oklch(0.275 0.006 265)"
     },
     {
       "name": "secondary-foreground",
-      "light": "oklch(0.214 0.009 43.1)",
-      "dark": "oklch(0.986 0.002 67.8)"
+      "light": "oklch(0.22 0.005 265)",
+      "dark": "oklch(0.93 0.004 100)"
     },
     {
       "name": "muted",
-      "light": "oklch(0.96 0.002 17.2)",
-      "dark": "oklch(0.268 0.011 36.5)"
+      "light": "oklch(0.945 0.003 265)",
+      "dark": "oklch(0.275 0.006 265)"
     },
     {
       "name": "muted-foreground",
-      "light": "oklch(0.547 0.021 43.1)",
-      "dark": "oklch(0.714 0.014 41.2)"
+      "light": "oklch(0.48 0.008 265)",
+      "dark": "oklch(0.74 0.006 100)"
     },
     {
       "name": "accent",
-      "light": "oklch(0.214 0.009 43.1)",
-      "dark": "oklch(0.922 0.005 34.3)"
+      "light": "oklch(0.925 0.004 265)",
+      "dark": "oklch(0.3 0.007 265)"
     },
     {
       "name": "accent-foreground",
-      "light": "oklch(0.986 0.002 67.8)",
-      "dark": "oklch(0.214 0.009 43.1)"
+      "light": "oklch(0.22 0.005 265)",
+      "dark": "oklch(0.93 0.004 100)"
     },
     {
       "name": "destructive",
-      "light": "oklch(0.577 0.245 27.325)",
-      "dark": "oklch(0.704 0.191 22.216)"
+      "light": "oklch(0.53 0.19 25)",
+      "dark": "oklch(0.72 0.15 20)"
     },
     {
       "name": "border",
-      "light": "oklch(0.922 0.005 34.3)",
-      "dark": "oklch(1 0 0 / 10%)"
+      "light": "oklch(0.885 0.004 265)",
+      "dark": "oklch(0.33 0.008 265)"
     },
     {
       "name": "input",
-      "light": "oklch(0.922 0.005 34.3)",
-      "dark": "oklch(1 0 0 / 15%)"
+      "light": "oklch(0.885 0.004 265)",
+      "dark": "oklch(0.33 0.008 265)"
     },
     {
       "name": "ring",
-      "light": "oklch(0.714 0.014 41.2)",
-      "dark": "oklch(0.547 0.021 43.1)"
+      "light": "oklch(0.52 0.16 262)",
+      "dark": "oklch(0.76 0.11 262)"
     },
     {
       "name": "chart-1",
@@ -2477,146 +2492,146 @@ export const studioManifest: StudioManifest = {
     },
     {
       "name": "sidebar",
-      "light": "oklch(0.986 0.002 67.8)",
-      "dark": "oklch(0.214 0.009 43.1)"
+      "light": "oklch(0.955 0.003 265)",
+      "dark": "oklch(0.18 0.004 265)"
     },
     {
       "name": "sidebar-foreground",
-      "light": "oklch(0.147 0.004 49.3)",
-      "dark": "oklch(0.986 0.002 67.8)"
+      "light": "oklch(0.22 0.005 265)",
+      "dark": "oklch(0.93 0.004 100)"
     },
     {
       "name": "sidebar-primary",
-      "light": "oklch(0.214 0.009 43.1)",
-      "dark": "oklch(0.488 0.243 264.376)"
+      "light": "oklch(0.22 0.005 265)",
+      "dark": "oklch(0.93 0.004 100)"
     },
     {
       "name": "sidebar-primary-foreground",
-      "light": "oklch(0.986 0.002 67.8)",
-      "dark": "oklch(0.986 0.002 67.8)"
+      "light": "oklch(0.985 0.001 265)",
+      "dark": "oklch(0.18 0.004 265)"
     },
     {
       "name": "sidebar-accent",
-      "light": "oklch(0.96 0.002 17.2)",
-      "dark": "oklch(0.268 0.011 36.5)"
+      "light": "oklch(0.915 0.004 265)",
+      "dark": "oklch(0.275 0.006 265)"
     },
     {
       "name": "sidebar-accent-foreground",
-      "light": "oklch(0.214 0.009 43.1)",
-      "dark": "oklch(0.986 0.002 67.8)"
+      "light": "oklch(0.2 0.005 265)",
+      "dark": "oklch(0.96 0.003 100)"
     },
     {
       "name": "sidebar-border",
-      "light": "oklch(0.922 0.005 34.3)",
-      "dark": "oklch(1 0 0 / 10%)"
+      "light": "oklch(0.885 0.004 265)",
+      "dark": "oklch(0.3 0.007 265)"
     },
     {
       "name": "sidebar-ring",
-      "light": "oklch(0.714 0.014 41.2)",
-      "dark": "oklch(0.547 0.021 43.1)"
+      "light": "oklch(0.52 0.16 262)",
+      "dark": "oklch(0.76 0.11 262)"
     },
     {
       "name": "background",
-      "light": "oklch(1 0 0)",
-      "dark": "oklch(0.147 0.004 49.3)"
+      "light": "oklch(0.975 0.002 265)",
+      "dark": "oklch(0.205 0.004 265)"
     },
     {
       "name": "foreground",
-      "light": "oklch(0.147 0.004 49.3)",
-      "dark": "oklch(0.986 0.002 67.8)"
+      "light": "oklch(0.22 0.005 265)",
+      "dark": "oklch(0.93 0.004 100)"
     },
     {
       "name": "topic-learned",
-      "light": "oklch(0.5 0.12 152)",
-      "dark": "oklch(0.78 0.13 152)"
+      "light": "oklch(0.5 0.13 150)",
+      "dark": "oklch(0.8 0.13 150)"
     },
     {
       "name": "topic-learned-soft",
-      "light": "oklch(0.955 0.03 152)",
-      "dark": "oklch(0.3 0.05 152)"
+      "light": "oklch(0.95 0.035 150)",
+      "dark": "oklch(0.29 0.04 150)"
     },
     {
       "name": "topic-active",
-      "light": "oklch(0.48 0.14 262)",
-      "dark": "oklch(0.78 0.11 262)"
+      "light": "oklch(0.5 0.11 70)",
+      "dark": "oklch(0.82 0.1 80)"
     },
     {
       "name": "topic-active-soft",
-      "light": "oklch(0.955 0.022 262)",
-      "dark": "oklch(0.3 0.06 262)"
+      "light": "oklch(0.955 0.04 85)",
+      "dark": "oklch(0.3 0.04 80)"
     },
     {
       "name": "chapter-1",
-      "light": "oklch(0.45 0.07 150)",
-      "dark": "oklch(0.8 0.07 150)"
+      "light": "var(--muted-foreground)",
+      "dark": "var(--muted-foreground)"
     },
     {
       "name": "chapter-1-soft",
-      "light": "oklch(0.945 0.025 150)",
-      "dark": "oklch(0.3 0.03 150)"
+      "light": "var(--muted)",
+      "dark": "var(--muted)"
     },
     {
       "name": "chapter-2",
-      "light": "oklch(0.45 0.08 258)",
-      "dark": "oklch(0.8 0.07 258)"
+      "light": "var(--muted-foreground)",
+      "dark": "var(--muted-foreground)"
     },
     {
       "name": "chapter-2-soft",
-      "light": "oklch(0.945 0.02 258)",
-      "dark": "oklch(0.3 0.03 258)"
+      "light": "var(--muted)",
+      "dark": "var(--muted)"
     },
     {
       "name": "chapter-3",
-      "light": "oklch(0.47 0.09 48)",
-      "dark": "oklch(0.8 0.08 55)"
+      "light": "var(--muted-foreground)",
+      "dark": "var(--muted-foreground)"
     },
     {
       "name": "chapter-3-soft",
-      "light": "oklch(0.945 0.025 55)",
-      "dark": "oklch(0.3 0.03 55)"
+      "light": "var(--muted)",
+      "dark": "var(--muted)"
     },
     {
       "name": "chapter-4",
-      "light": "oklch(0.45 0.06 190)",
-      "dark": "oklch(0.8 0.06 190)"
+      "light": "var(--muted-foreground)",
+      "dark": "var(--muted-foreground)"
     },
     {
       "name": "chapter-4-soft",
-      "light": "oklch(0.945 0.02 190)",
-      "dark": "oklch(0.3 0.03 190)"
+      "light": "var(--muted)",
+      "dark": "var(--muted)"
     },
     {
       "name": "chapter-5",
-      "light": "oklch(0.45 0.08 318)",
-      "dark": "oklch(0.8 0.07 318)"
+      "light": "var(--muted-foreground)",
+      "dark": "var(--muted-foreground)"
     },
     {
       "name": "chapter-5-soft",
-      "light": "oklch(0.945 0.02 318)",
-      "dark": "oklch(0.3 0.03 318)"
+      "light": "var(--muted)",
+      "dark": "var(--muted)"
     },
     {
       "name": "chapter-6",
-      "light": "oklch(0.47 0.08 85)",
-      "dark": "oklch(0.8 0.08 90)"
+      "light": "var(--muted-foreground)",
+      "dark": "var(--muted-foreground)"
     },
     {
       "name": "chapter-6-soft",
-      "light": "oklch(0.945 0.03 90)",
-      "dark": "oklch(0.3 0.03 90)"
+      "light": "var(--muted)",
+      "dark": "var(--muted)"
     },
     {
       "name": "selected",
-      "light": "var(--foreground)",
-      "dark": "var(--foreground)"
+      "light": "var(--ring)",
+      "dark": "var(--ring)"
     }
   ],
   "globals": {
     "file": "app/globals.css",
-    "lines": 210,
+    "lines": 338,
     "tail": [
-      ":root {",
-      "  --radius: 0.25rem;",
+      ".font-mono {",
+      "  font-variant-numeric: tabular-nums;",
       "}"
     ],
     "newline": true

@@ -1,95 +1,190 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-20T15:05:00Z",
+  "generatedAt": "2026-10-24T12:00:00Z",
   "title": "Design System: Loots",
   "extensions": {
     "colorMeta": {
-      "primary": {
-        "role": "primary",
-        "displayName": "Warm Ink",
-        "canonical": "oklch(0.214 0.009 43.1)",
+      "background": { "role": "neutral", "displayName": "Ground", "canonical": "oklch(0.975 0.002 265)" },
+      "foreground": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "oklch(0.22 0.005 265)",
         "tonalRamp": [
-          "oklch(0.15 0.009 43.1)",
-          "oklch(0.214 0.009 43.1)",
-          "oklch(0.35 0.009 43.1)",
-          "oklch(0.5 0.009 43.1)",
-          "oklch(0.65 0.009 43.1)",
-          "oklch(0.78 0.009 43.1)",
-          "oklch(0.88 0.009 43.1)",
-          "oklch(0.95 0.009 43.1)"
+          "oklch(0.15 0.005 265)",
+          "oklch(0.22 0.005 265)",
+          "oklch(0.35 0.006 265)",
+          "oklch(0.48 0.008 265)",
+          "oklch(0.62 0.007 265)",
+          "oklch(0.75 0.005 265)",
+          "oklch(0.885 0.004 265)",
+          "oklch(0.975 0.002 265)"
         ]
       },
-      "foreground": { "role": "neutral", "displayName": "Charcoal Ink", "canonical": "oklch(0.147 0.004 49.3)" },
-      "background": { "role": "neutral", "displayName": "Paper", "canonical": "oklch(1 0 0)" },
-      "secondary": { "role": "neutral", "displayName": "Stone Wash", "canonical": "oklch(0.96 0.002 17.2)" },
-      "muted-foreground": { "role": "neutral", "displayName": "Taupe Grey", "canonical": "oklch(0.547 0.021 43.1)" },
-      "border": { "role": "neutral", "displayName": "Hairline", "canonical": "oklch(0.922 0.005 34.3)" },
-      "ring": { "role": "neutral", "displayName": "Focus Taupe", "canonical": "oklch(0.714 0.014 41.2)" },
-      "destructive": { "role": "error", "displayName": "Signal Red", "canonical": "oklch(0.577 0.245 27.325)" },
-      "topic-learned": {
-        "role": "tertiary",
-        "displayName": "Learned Green",
-        "canonical": "oklch(0.5 0.12 152)",
+      "card": { "role": "neutral", "displayName": "Panel", "canonical": "oklch(0.995 0.001 265)" },
+      "popover": { "role": "neutral", "displayName": "Panel (floating)", "canonical": "oklch(0.995 0.001 265)" },
+      "primary": { "role": "primary", "displayName": "Graphite Ink", "canonical": "oklch(0.22 0.005 265)" },
+      "primary-foreground": { "role": "neutral", "displayName": "Inverse Ink", "canonical": "oklch(0.985 0.001 265)" },
+      "secondary": { "role": "neutral", "displayName": "Wash", "canonical": "oklch(0.945 0.003 265)" },
+      "muted": { "role": "neutral", "displayName": "Wash", "canonical": "oklch(0.945 0.003 265)" },
+      "muted-foreground": { "role": "neutral", "displayName": "Graphite Grey", "canonical": "oklch(0.48 0.008 265)" },
+      "accent": { "role": "neutral", "displayName": "Menu Accent", "canonical": "oklch(0.925 0.004 265)" },
+      "border": { "role": "neutral", "displayName": "Seam", "canonical": "oklch(0.885 0.004 265)" },
+      "input": { "role": "neutral", "displayName": "Seam (input)", "canonical": "oklch(0.885 0.004 265)" },
+      "ring": {
+        "role": "secondary",
+        "displayName": "Console Blue",
+        "canonical": "oklch(0.52 0.16 262)",
         "tonalRamp": [
-          "oklch(0.3 0.05 152)",
-          "oklch(0.4 0.1 152)",
-          "oklch(0.5 0.12 152)",
-          "oklch(0.62 0.13 152)",
-          "oklch(0.72 0.13 152)",
-          "oklch(0.78 0.13 152)",
-          "oklch(0.88 0.06 152)",
-          "oklch(0.955 0.03 152)"
+          "oklch(0.3 0.1 262)",
+          "oklch(0.4 0.14 262)",
+          "oklch(0.52 0.16 262)",
+          "oklch(0.62 0.15 262)",
+          "oklch(0.7 0.13 262)",
+          "oklch(0.76 0.11 262)",
+          "oklch(0.86 0.06 262)",
+          "oklch(0.95 0.02 262)"
         ]
+      },
+      "destructive": {
+        "role": "error",
+        "displayName": "Signal Red",
+        "canonical": "oklch(0.53 0.19 25)",
+        "tonalRamp": [
+          "oklch(0.3 0.1 25)",
+          "oklch(0.42 0.16 25)",
+          "oklch(0.53 0.19 25)",
+          "oklch(0.62 0.18 22)",
+          "oklch(0.72 0.15 20)",
+          "oklch(0.8 0.1 20)",
+          "oklch(0.88 0.05 20)",
+          "oklch(0.95 0.02 20)"
+        ]
+      },
+      "sidebar": { "role": "neutral", "displayName": "Rail", "canonical": "oklch(0.955 0.003 265)" },
+      "sidebar-accent": { "role": "neutral", "displayName": "Rail Active", "canonical": "oklch(0.915 0.004 265)" },
+      "topic-learned": {
+        "role": "secondary",
+        "displayName": "Learned Green",
+        "canonical": "oklch(0.5 0.13 150)",
+        "tonalRamp": [
+          "oklch(0.29 0.04 150)",
+          "oklch(0.4 0.1 150)",
+          "oklch(0.5 0.13 150)",
+          "oklch(0.62 0.14 150)",
+          "oklch(0.72 0.14 150)",
+          "oklch(0.8 0.13 150)",
+          "oklch(0.88 0.07 150)",
+          "oklch(0.95 0.035 150)"
+        ]
+      },
+      "topic-learned-soft": {
+        "role": "secondary",
+        "displayName": "Learned Soft",
+        "canonical": "oklch(0.95 0.035 150)"
       },
       "topic-active": {
-        "role": "tertiary",
-        "displayName": "In Progress Blue",
-        "canonical": "oklch(0.48 0.14 262)",
+        "role": "secondary",
+        "displayName": "In Progress Amber",
+        "canonical": "oklch(0.5 0.11 70)",
         "tonalRamp": [
-          "oklch(0.3 0.06 262)",
-          "oklch(0.4 0.12 262)",
-          "oklch(0.48 0.14 262)",
-          "oklch(0.6 0.13 262)",
-          "oklch(0.7 0.12 262)",
-          "oklch(0.78 0.11 262)",
-          "oklch(0.88 0.05 262)",
-          "oklch(0.955 0.022 262)"
+          "oklch(0.3 0.04 80)",
+          "oklch(0.4 0.09 70)",
+          "oklch(0.5 0.11 70)",
+          "oklch(0.62 0.12 75)",
+          "oklch(0.72 0.12 78)",
+          "oklch(0.82 0.1 80)",
+          "oklch(0.9 0.06 85)",
+          "oklch(0.955 0.04 85)"
         ]
       },
-      "chapter-1": { "role": "tertiary", "displayName": "Chapter One Green", "canonical": "oklch(0.45 0.07 150)" },
-      "chapter-2": { "role": "tertiary", "displayName": "Chapter Two Blue", "canonical": "oklch(0.45 0.08 258)" },
-      "chapter-3": { "role": "tertiary", "displayName": "Chapter Three Amber", "canonical": "oklch(0.47 0.09 48)" },
-      "chapter-4": { "role": "tertiary", "displayName": "Chapter Four Teal", "canonical": "oklch(0.45 0.06 190)" },
-      "chapter-5": { "role": "tertiary", "displayName": "Chapter Five Plum", "canonical": "oklch(0.45 0.08 318)" },
-      "chapter-6": { "role": "tertiary", "displayName": "Chapter Six Ochre", "canonical": "oklch(0.47 0.08 85)" }
+      "topic-active-soft": {
+        "role": "secondary",
+        "displayName": "In Progress Soft",
+        "canonical": "oklch(0.955 0.04 85)"
+      },
+      "background-dark": { "role": "neutral", "displayName": "Ground (dark)", "canonical": "oklch(0.205 0.004 265)" },
+      "foreground-dark": { "role": "neutral", "displayName": "Ink (dark)", "canonical": "oklch(0.93 0.004 100)" },
+      "card-dark": { "role": "neutral", "displayName": "Panel (dark)", "canonical": "oklch(0.235 0.005 265)" },
+      "popover-dark": {
+        "role": "neutral",
+        "displayName": "Panel floating (dark)",
+        "canonical": "oklch(0.255 0.006 265)"
+      },
+      "primary-dark": { "role": "primary", "displayName": "Graphite Ink (dark)", "canonical": "oklch(0.93 0.004 100)" },
+      "primary-foreground-dark": {
+        "role": "neutral",
+        "displayName": "Inverse Ink (dark)",
+        "canonical": "oklch(0.205 0.004 265)"
+      },
+      "secondary-dark": { "role": "neutral", "displayName": "Wash (dark)", "canonical": "oklch(0.275 0.006 265)" },
+      "muted-dark": { "role": "neutral", "displayName": "Wash (dark)", "canonical": "oklch(0.275 0.006 265)" },
+      "muted-foreground-dark": {
+        "role": "neutral",
+        "displayName": "Graphite Grey (dark)",
+        "canonical": "oklch(0.74 0.006 100)"
+      },
+      "accent-dark": { "role": "neutral", "displayName": "Menu Accent (dark)", "canonical": "oklch(0.3 0.007 265)" },
+      "border-dark": { "role": "neutral", "displayName": "Seam (dark)", "canonical": "oklch(0.33 0.008 265)" },
+      "input-dark": { "role": "neutral", "displayName": "Seam input (dark)", "canonical": "oklch(0.33 0.008 265)" },
+      "ring-dark": { "role": "secondary", "displayName": "Console Blue (dark)", "canonical": "oklch(0.76 0.11 262)" },
+      "destructive-dark": { "role": "error", "displayName": "Signal Red (dark)", "canonical": "oklch(0.72 0.15 20)" },
+      "sidebar-dark": { "role": "neutral", "displayName": "Rail (dark)", "canonical": "oklch(0.18 0.004 265)" },
+      "sidebar-accent-dark": {
+        "role": "neutral",
+        "displayName": "Rail Active (dark)",
+        "canonical": "oklch(0.275 0.006 265)"
+      },
+      "topic-learned-dark": {
+        "role": "secondary",
+        "displayName": "Learned Green (dark)",
+        "canonical": "oklch(0.8 0.13 150)"
+      },
+      "topic-learned-soft-dark": {
+        "role": "secondary",
+        "displayName": "Learned Soft (dark)",
+        "canonical": "oklch(0.29 0.04 150)"
+      },
+      "topic-active-dark": {
+        "role": "secondary",
+        "displayName": "In Progress Amber (dark)",
+        "canonical": "oklch(0.82 0.1 80)"
+      },
+      "topic-active-soft-dark": {
+        "role": "secondary",
+        "displayName": "In Progress Soft (dark)",
+        "canonical": "oklch(0.3 0.04 80)"
+      }
     },
     "typographyMeta": {
-      "page-title": { "displayName": "Page title", "purpose": "One per page, through PageHeading." },
-      "panel-title": { "displayName": "Panel title", "purpose": "Docked panel and sheet titles." },
-      "body": { "displayName": "Body", "purpose": "All reading and control text." },
-      "label": { "displayName": "Section label", "purpose": "Section labels inside panels, in muted-foreground." },
-      "eyebrow": { "displayName": "Eyebrow", "purpose": "Module name above a page title, uppercase." },
-      "numeric": { "displayName": "Numeric", "purpose": "Numbers that line up: counts, percentages, chapter numbers." },
-      "lane-title": { "displayName": "Lane title", "purpose": "Chapter title on a roadmap lane card. Roadmap only." },
-      "graph-card-title": {
-        "displayName": "Graph card title",
-        "purpose": "Topic title on a roadmap graph card. Roadmap only."
+      "page-title": {
+        "displayName": "Page title",
+        "purpose": "One per page, 24px semibold over a 1px seam, no label above it."
       },
-      "graph-card-meta": {
-        "displayName": "Graph card meta",
-        "purpose": "Status word on a graph card and the chapter heading above an area. Roadmap only."
+      "panel-title": { "displayName": "Panel title", "purpose": "DockedPanel and sheet titles." },
+      "section-title": {
+        "displayName": "Section title",
+        "purpose": "Sections inside a long page, over a 1px seam; 16px in a side column."
+      },
+      "progress-count": {
+        "displayName": "Progress count",
+        "purpose": "The learned count in the progress strip, Geist with tabular figures."
+      },
+      "body": { "displayName": "Body", "purpose": "All reading and control text." },
+      "label": { "displayName": "Meta", "purpose": "Muted meta line under a title." },
+      "panel-head": {
+        "displayName": "Panel head",
+        "purpose": "Uppercase heading of its panel or strip cell (.panel-head); never a label above a heading."
+      },
+      "numeric": {
+        "displayName": "Numeric",
+        "purpose": "Topic numbers, counts, percentages, chapter numbers, dates in Terms."
       }
     },
     "shadows": [
       {
-        "name": "graph-card",
-        "value": "0 1px 2px 0 rgb(0 0 0 / 0.05)",
-        "purpose": "Roadmap graph topic cards only (shadow-xs)."
-      },
-      {
         "name": "floating",
-        "value": "shadcn shadow-md to shadow-2xl",
-        "purpose": "Menus, popovers, dialogs and sheets; never in-page panels."
+        "value": "the primitives' own shadow-md to shadow-2xl",
+        "purpose": "Menus, popovers, dialogs, sheets and toasts only; every in-page surface is shadowless."
       }
     ],
     "motion": [
@@ -98,7 +193,12 @@
         "value": "transition-all, Tailwind default 150ms ease",
         "purpose": "Button, badge and input state changes."
       },
-      { "name": "press", "value": "translateY(1px)", "purpose": "Button active state." }
+      { "name": "press", "value": "translateY(1px)", "purpose": "Button active state." },
+      {
+        "name": "theme",
+        "value": "prefers-color-scheme, applied before first paint and followed live",
+        "purpose": "Light or dark from the system setting; no switch."
+      }
     ],
     "breakpoints": [
       { "name": "phone-floor", "value": "390px" },
@@ -113,65 +213,95 @@
       "name": "Primary Button",
       "kind": "button",
       "refersTo": "button-primary",
-      "description": "The one main action in a header or panel footer.",
+      "description": "The one main action in a header.",
       "html": "<button class=\"ds-btn ds-btn-primary\">Continue topic</button>",
-      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; padding: 0 12px; border-radius: 26px; border: 1px solid transparent; font: 500 14px/1 'Public Sans', sans-serif; cursor: pointer; transition: all 150ms ease; } .ds-btn-primary { background: var(--primary, oklch(0.214 0.009 43.1)); color: var(--primary-foreground, oklch(0.986 0.002 67.8)); } .ds-btn-primary:hover { background: color-mix(in oklch, var(--primary, oklch(0.214 0.009 43.1)) 80%, transparent); } .ds-btn:focus-visible { outline: none; border-color: var(--ring, oklch(0.714 0.014 41.2)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.714 0.014 41.2)) 30%, transparent); } .ds-btn:active { transform: translateY(1px); }"
+      "css": ".ds-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 36px; padding: 0 12px; border-radius: 10.4px; border: 1px solid transparent; font: 500 14px/1 Geist, sans-serif; cursor: pointer; transition: all 150ms ease; } .ds-btn-primary { background: var(--primary, oklch(0.22 0.005 265)); color: var(--primary-foreground, oklch(0.985 0.001 265)); } .ds-btn-primary:hover { background: color-mix(in oklch, var(--primary, oklch(0.22 0.005 265)) 80%, transparent); } .ds-btn:focus-visible { outline: none; border-color: var(--ring, oklch(0.52 0.16 262)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.52 0.16 262)) 30%, transparent); } .ds-btn:active { transform: translateY(1px); }"
     },
     {
       "name": "Outline Button",
       "kind": "button",
       "refersTo": "button-outline",
-      "description": "Secondary actions such as Claude setup.",
-      "html": "<button class=\"ds-btn-outline\">Claude setup</button>",
-      "css": ".ds-btn-outline { display: inline-flex; align-items: center; height: 36px; padding: 0 12px; border-radius: 26px; border: 1px solid var(--border, oklch(0.922 0.005 34.3)); background: var(--background, #fff); color: var(--foreground, oklch(0.147 0.004 49.3)); font: 500 14px/1 'Public Sans', sans-serif; cursor: pointer; transition: all 150ms ease; } .ds-btn-outline:hover { background: var(--muted, oklch(0.96 0.002 17.2)); } .ds-btn-outline:focus-visible { outline: none; border-color: var(--ring, oklch(0.714 0.014 41.2)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.714 0.014 41.2)) 30%, transparent); }"
+      "description": "Secondary actions such as Connect and Jump to a module.",
+      "html": "<button class=\"ds-btn-outline\">Connect</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; height: 36px; padding: 0 12px; border-radius: 10.4px; border: 1px solid var(--border, oklch(0.885 0.004 265)); background: var(--background, oklch(0.975 0.002 265)); color: var(--foreground, oklch(0.22 0.005 265)); font: 500 14px/1 Geist, sans-serif; cursor: pointer; transition: all 150ms ease; } .ds-btn-outline:hover { background: var(--muted, oklch(0.945 0.003 265)); } .ds-btn-outline:focus-visible { outline: none; border-color: var(--ring, oklch(0.52 0.16 262)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.52 0.16 262)) 30%, transparent); }"
+    },
+    {
+      "name": "Destructive Outline Button",
+      "kind": "button",
+      "refersTo": "button-destructive-outline",
+      "description": "Per-item Remove and Reject: outlined red, set apart by space at the item's end.",
+      "html": "<div class=\"ds-actions\"><button class=\"ds-btn-danger\"><svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" aria-hidden=\"true\"><path d=\"M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14\"/></svg>Remove</button></div>",
+      "css": ".ds-actions { display: flex; gap: 24px; } .ds-btn-danger { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px; border-radius: 10.4px; border: 1px solid color-mix(in oklch, var(--destructive, oklch(0.53 0.19 25)) 40%, transparent); background: transparent; color: var(--destructive, oklch(0.53 0.19 25)); font: 500 14px/1 Geist, sans-serif; cursor: pointer; transition: all 150ms ease; } .ds-btn-danger:hover { background: color-mix(in oklch, var(--destructive, oklch(0.53 0.19 25)) 10%, transparent); } .ds-btn-danger:focus-visible { outline: none; border-color: var(--ring, oklch(0.52 0.16 262)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.52 0.16 262)) 30%, transparent); }"
     },
     {
       "name": "Text Field",
       "kind": "input",
       "refersTo": "input",
-      "description": "Filled pill input, no border at rest.",
-      "html": "<input class=\"ds-input\" placeholder=\"Find a topic\" />",
-      "css": ".ds-input { height: 36px; width: 240px; padding: 4px 12px; border-radius: 22px; border: 1px solid transparent; background: color-mix(in oklch, var(--input, oklch(0.922 0.005 34.3)) 50%, transparent); color: var(--foreground, oklch(0.147 0.004 49.3)); font: 400 14px 'Public Sans', sans-serif; outline: none; transition: box-shadow 150ms ease, border-color 150ms ease; } .ds-input::placeholder { color: var(--muted-foreground, oklch(0.547 0.021 43.1)); } .ds-input:focus-visible { border-color: var(--ring, oklch(0.714 0.014 41.2)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.714 0.014 41.2)) 30%, transparent); }"
+      "description": "Wash-filled field, no border at rest, blue ring on focus.",
+      "html": "<input class=\"ds-input\" placeholder=\"Search terms\" />",
+      "css": ".ds-input { height: 36px; width: 240px; padding: 4px 12px; border-radius: 8.8px; border: 1px solid transparent; background: var(--muted, oklch(0.945 0.003 265)); color: var(--foreground, oklch(0.22 0.005 265)); font: 400 14px Geist, sans-serif; outline: none; transition: box-shadow 150ms ease, border-color 150ms ease; } .ds-input::placeholder { color: var(--muted-foreground, oklch(0.48 0.008 265)); } .ds-input:focus-visible { border-color: var(--ring, oklch(0.52 0.16 262)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.52 0.16 262)) 30%, transparent); }"
     },
     {
-      "name": "Status Chip",
+      "name": "Status Chips and Now",
       "kind": "chip",
       "refersTo": "status-chip-learned",
-      "description": "Topic status as icon, word and soft fill. Never colour alone.",
-      "html": "<span class=\"ds-chip ds-chip-learned\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1.2 14.2-4-4 1.4-1.4 2.6 2.6 5.6-5.6 1.4 1.4-7 7Z\"/></svg>Learned</span> <span class=\"ds-chip ds-chip-active\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"M12 3a9 9 0 0 1 0 18Z\" fill=\"currentColor\"/></svg>In progress</span>",
-      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 2px 8px; border-radius: 22px; font: 500 12px/1 'Public Sans', sans-serif; } .ds-chip-learned { background: var(--topic-learned-soft, oklch(0.955 0.03 152)); color: var(--topic-learned, oklch(0.5 0.12 152)); } .ds-chip-active { background: var(--topic-active-soft, oklch(0.955 0.022 262)); color: var(--topic-active, oklch(0.48 0.14 262)); }"
+      "description": "Status as icon, word and soft state fill; Now is a neutral outline badge.",
+      "html": "<span class=\"ds-chip ds-chip-learned\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm-1.2 14.2-4-4 1.4-1.4 2.6 2.6 5.6-5.6 1.4 1.4-7 7Z\"/></svg>Learned</span> <span class=\"ds-chip ds-chip-active\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"/><path d=\"M12 3a9 9 0 0 1 0 18Z\" fill=\"currentColor\"/></svg>In progress</span> <span class=\"ds-chip ds-chip-now\">Now</span>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 2px 8px; border-radius: 8.8px; border: 1px solid transparent; font: 500 12px/1 Geist, sans-serif; } .ds-chip-learned { background: var(--topic-learned-soft, oklch(0.95 0.035 150)); color: var(--topic-learned, oklch(0.5 0.13 150)); } .ds-chip-active { background: var(--topic-active-soft, oklch(0.955 0.04 85)); color: var(--topic-active, oklch(0.5 0.11 70)); } .ds-chip-now { border-color: var(--border, oklch(0.885 0.004 265)); color: var(--foreground, oklch(0.22 0.005 265)); }"
     },
     {
-      "name": "Panel",
+      "name": "Panel Head",
+      "kind": "custom",
+      "refersTo": "panel-head",
+      "description": "The uppercase heading of its panel, never a label above a heading.",
+      "html": "<section class=\"ds-cell\"><h3 class=\"ds-panel-head\">Progress</h3><p class=\"ds-count\">0 of 4 <span>learned</span></p></section>",
+      "css": ".ds-cell { display: flex; flex-direction: column; gap: 6px; padding: 12px 16px; background: var(--card, oklch(0.995 0.001 265)); } .ds-panel-head { margin: 0; font: 600 11px Geist, sans-serif; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-foreground, oklch(0.48 0.008 265)); } .ds-count { margin: 0; font: 600 20px Geist, sans-serif; letter-spacing: -0.025em; font-variant-numeric: tabular-nums; color: var(--foreground, oklch(0.22 0.005 265)); } .ds-count span { font: 400 14px Geist, sans-serif; letter-spacing: 0; color: var(--muted-foreground, oklch(0.48 0.008 265)); }"
+    },
+    {
+      "name": "Progress Strip",
       "kind": "card",
       "refersTo": "panel",
-      "description": "Flat bordered card surface; selected rows take an inset outline.",
-      "html": "<div class=\"ds-panel\"><div class=\"ds-row\">Not started topic</div><div class=\"ds-row ds-row-selected\">Picked topic</div><div class=\"ds-row\">Another topic</div></div>",
-      "css": ".ds-panel { width: 280px; border-radius: 14px; border: 1px solid var(--border, oklch(0.922 0.005 34.3)); background: var(--card, #fff); color: var(--card-foreground, oklch(0.147 0.004 49.3)); font: 400 14px 'Public Sans', sans-serif; } .ds-row { padding: 10px 14px; border-top: 1px solid var(--border, oklch(0.922 0.005 34.3)); } .ds-row:first-child { border-top: 0; border-radius: 14px 14px 0 0; } .ds-row:last-child { border-radius: 0 0 14px 14px; } .ds-row-selected { box-shadow: inset 0 0 0 1px var(--selected, oklch(0.147 0.004 49.3)); }"
+      "description": "Cells tiled with 1px seams over the border colour, each headed by a panel head.",
+      "html": "<div class=\"ds-strip\"><div class=\"ds-strip-cell\"><span class=\"ds-ph\">Progress</span><b>0 of 4</b><span class=\"ds-mono\">0%</span></div><div class=\"ds-strip-cell\"><span class=\"ds-ph\">Now</span><b>Closures</b></div><div class=\"ds-strip-cell\"><span class=\"ds-ph\">Next</span><b>State &amp; rendering</b></div></div>",
+      "css": ".ds-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; width: 520px; overflow: hidden; border-radius: 4px; border: 1px solid var(--border, oklch(0.885 0.004 265)); background: var(--border, oklch(0.885 0.004 265)); font-family: Geist, sans-serif; } .ds-strip-cell { display: flex; flex-direction: column; gap: 6px; padding: 12px 16px; background: var(--card, oklch(0.995 0.001 265)); color: var(--foreground, oklch(0.22 0.005 265)); font-size: 14px; } .ds-ph { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-foreground, oklch(0.48 0.008 265)); } .ds-mono { font: 400 12px 'Geist Mono', monospace; font-variant-numeric: tabular-nums; color: var(--muted-foreground, oklch(0.48 0.008 265)); }"
     },
     {
-      "name": "Section Label",
-      "kind": "custom",
-      "refersTo": "label",
-      "description": "Muted semibold label above a group inside a panel, with a mono count.",
-      "html": "<div class=\"ds-label\">Mastery criteria <span class=\"ds-num\">3 of 5</span></div>",
-      "css": ".ds-label { display: flex; gap: 8px; align-items: baseline; font: 600 12px 'Public Sans', sans-serif; color: var(--muted-foreground, oklch(0.547 0.021 43.1)); } .ds-num { font: 400 12px 'Geist Mono', monospace; }"
+      "name": "Roadmap Lane",
+      "kind": "card",
+      "refersTo": "row-picked",
+      "description": "Chapter panel: neutral numbered tile, panel head, mono count; rows read number, title, status icon; the picked row takes the selected inset.",
+      "html": "<section class=\"ds-lane\"><div class=\"ds-lane-head\"><span class=\"ds-tile\">01</span><h3 class=\"ds-lane-title\">React basics</h3><span class=\"ds-n\">0/4</span></div><ul class=\"ds-rows\"><li><button class=\"ds-row ds-row-picked\"><span class=\"ds-n\">1.1</span><span class=\"ds-t\">Closures</span><span class=\"ds-now\">Now</span><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-dasharray=\"3 3\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg></button></li><li><button class=\"ds-row\"><span class=\"ds-n\">1.2</span><span class=\"ds-t\">State &amp; rendering</span><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-dasharray=\"3 3\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\"/></svg></button></li></ul></section>",
+      "css": ".ds-lane { width: 270px; border-radius: 4px; border: 1px solid var(--border, oklch(0.885 0.004 265)); background: var(--card, oklch(0.995 0.001 265)); color: var(--foreground, oklch(0.22 0.005 265)); font: 400 14px Geist, sans-serif; overflow: hidden; } .ds-lane-head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid var(--border, oklch(0.885 0.004 265)); } .ds-tile { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 3.2px; background: var(--muted, oklch(0.945 0.003 265)); color: var(--muted-foreground, oklch(0.48 0.008 265)); font: 500 12px 'Geist Mono', monospace; } .ds-lane-title { flex: 1; margin: 0; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-foreground, oklch(0.48 0.008 265)); } .ds-n { width: 28px; font: 400 12px 'Geist Mono', monospace; font-variant-numeric: tabular-nums; color: var(--muted-foreground, oklch(0.48 0.008 265)); } .ds-rows { list-style: none; margin: 0; padding: 4px 6px 8px; display: grid; gap: 1px; } .ds-row { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 36px; padding: 8px; border: 1px solid transparent; border-radius: 10.4px; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; } .ds-row svg { color: var(--muted-foreground, oklch(0.48 0.008 265)); } .ds-row:hover { background: var(--muted, oklch(0.945 0.003 265)); } .ds-row:focus-visible { outline: none; border-color: var(--ring, oklch(0.52 0.16 262)); box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring, oklch(0.52 0.16 262)) 30%, transparent); } .ds-row-picked { background: var(--muted, oklch(0.945 0.003 265)); box-shadow: inset 2px 0 0 var(--ring, oklch(0.52 0.16 262)); font-weight: 600; } .ds-t { flex: 1; } .ds-now { height: 20px; padding: 0 8px; display: inline-flex; align-items: center; border-radius: 8.8px; border: 1px solid var(--border, oklch(0.885 0.004 265)); font-size: 12px; font-weight: 500; }"
+    },
+    {
+      "name": "Top Bar and Rail",
+      "kind": "nav",
+      "refersTo": "panel",
+      "description": "Flush console frame: 48px icon rail and 48px top bar on one ground, split by seams.",
+      "html": "<div class=\"ds-frame\"><nav class=\"ds-rail\" aria-label=\"Modules\"><span class=\"ds-mark\">K</span><span class=\"ds-ico ds-ico-on\"></span><span class=\"ds-ico\"></span></nav><header class=\"ds-bar\"><span class=\"ds-crumb\">Engineering &rsaquo; <b>Roadmap</b></span><span class=\"ds-crumb\">Sign out</span></header></div>",
+      "css": ".ds-frame { display: grid; grid-template-columns: 48px 1fr; width: 560px; height: 120px; background: var(--background, oklch(0.975 0.002 265)); font: 400 14px Geist, sans-serif; color: var(--foreground, oklch(0.22 0.005 265)); } .ds-rail { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0; background: var(--sidebar, oklch(0.955 0.003 265)); border-right: 1px solid var(--border, oklch(0.885 0.004 265)); } .ds-mark { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 4px; background: var(--primary, oklch(0.22 0.005 265)); color: var(--primary-foreground, oklch(0.985 0.001 265)); font-weight: 800; } .ds-ico { width: 32px; height: 32px; border-radius: 4px; } .ds-ico-on { background: var(--sidebar-accent, oklch(0.915 0.004 265)); } .ds-bar { display: flex; align-items: center; justify-content: space-between; height: 48px; padding: 0 16px; border-bottom: 1px solid var(--border, oklch(0.885 0.004 265)); } .ds-crumb { color: var(--muted-foreground, oklch(0.48 0.008 265)); } .ds-crumb b { font-weight: 400; color: var(--foreground, oklch(0.22 0.005 265)); }"
     }
   ],
   "narrative": {
-    "northStar": "The Quiet Workbench",
-    "overview": "Loots is one person's bench, not a storefront. The frame is the untouched shadcn Luma default on a warm taupe neutral, kept on purpose as the base to build on, and Loots adds to it one deliberate change at a time. The tools stay quiet and in the same place every visit; colour is spent only where it carries meaning: a topic's status, the item you picked, and which chapter a topic belongs to.",
+    "northStar": "The Console",
+    "overview": "Loots is a graphite working surface in two themes. Light is a cool light grey ground with graphite ink; dark is a neutral graphite ground with near-white text. The theme follows the system setting and there is no switch. The icon rail, the section column and the page sit flush on one ground, split by 1px seams; panels sit one step off the ground and tile against each other with seams instead of shadows. Colour is spent only on state: green for Learned, amber for In progress, blue for the picked item and keyboard focus, red for anything destructive. Everything else is graphite.\n\nDensity is a working tool's: a 48px top bar, 14px body, 36px controls, 24px titles. Panels read as persistent instruments the owner returns to daily, not cards on a marketing page. Personality lives in content (Claude's answers, lessons, term explanations), never in the chrome. Loots shares tokens and interaction rules across modules, not layouts; each module keeps its own page padding.\n\nThe source of truth is code. The shadcn default block at the top of `src/app/globals.css` stays exactly as `shadcn init` wrote it; every Loots token lives after the \"Loots: additions on top of the shadcn default\" comment, and the console overrides the shadcn neutrals there, in the \"Console (DESIGN.md)\" block, rather than in the default block. The white SaaS card grid and the warm paper look are the confirmed rejections.",
     "keyCharacteristics": [
-      "Warm near-black and off-white neutrals (taupe base, hue ~40), no brand accent hue.",
-      "Flat bordered panels; shadows only on floating layers.",
-      "Pill-shaped controls (Luma preset) against softly rounded panels.",
-      "Colour always paired with an icon and a word.",
-      "Full light and dark themes, every Loots token defined in both."
+      "Cool graphite neutrals (hue 265, chroma under 0.01) in both themes, no brand hue.",
+      "One ground, panels one step off it, 1px seams instead of shadows.",
+      "Colour only on state: green, amber, blue, red; chapters are neutral.",
+      "Geist for everything you read, Geist Mono for every number that lines up.",
+      "Squared corners (4px panels), softly rounded controls.",
+      "Theme from the system setting, set before first paint; every token defined in both themes."
     ],
     "rules": [
       {
+        "name": "The State Only Rule",
+        "body": "Colour appears only where something has a state: Learned, In progress, picked or focused, destructive. A screen with nothing in those states is entirely graphite.",
+        "section": "colors"
+      },
+      {
         "name": "The Three Families Rule",
-        "body": "Status, selection and grouping colours never stand in for one another. A chapter colour never means a status; a status colour never decorates.",
+        "body": "Status (green, amber), the picked item and focus (blue) and chapters (number and name on a neutral tile) never stand in for one another. Blue never means a status; a status colour never marks the picked item; chapters are never told apart by hue.",
         "section": "colors"
       },
       {
@@ -181,33 +311,52 @@
       },
       {
         "name": "The Accent Is A Menu Rule",
-        "body": "In Luma, `accent` is near-black. Never put `bg-accent` on a hover or selected state outside a menu.",
+        "body": "`accent` belongs to menus and command items. In-page hover uses `muted`; a picked row uses the selected inset. Never put `bg-accent` on a hover or picked state outside a menu.",
         "section": "colors"
       },
       {
-        "name": "The Mono For Alignment Rule",
-        "body": "Mono is for numbers that line up in a column or strip, never for decoration or code-flavoured styling.",
+        "name": "The Panel Head Is The Heading Rule",
+        "body": "An uppercase tracked line is the heading of the panel it sits in, set with the `.panel-head` class. It is never a small label stacked above another heading.",
+        "section": "typography"
+      },
+      {
+        "name": "The Mono For Figures Rule",
+        "body": "Mono is for numbers that line up in a column, strip or list, never for words, decoration or code-flavoured styling.",
         "section": "typography"
       },
       {
         "name": "The Flat Panel Rule",
-        "body": "An in-page panel is `rounded-xl border bg-card` with no shadow. If something casts a shadow, it floats.",
+        "body": "An in-page panel is a card fill, a 1px seam and a 4px corner, with no shadow. If something casts a shadow, it floats.",
+        "section": "elevation"
+      },
+      {
+        "name": "The Seam Rule",
+        "body": "Panels that belong together are split by a 1px seam (`gap-px` over the border colour), not by gaps and shadows. A seam is decoration at about 1.4:1; anything the owner must notice gets an icon, a word or a state colour as well.",
         "section": "elevation"
       }
     ],
     "dos": [
       "Do build every control from `components/ui`; add a missing one from the registry and use it as shipped.",
       "Do add new colours as role tokens in the Loots section of `globals.css`, with light and dark values and an `@theme inline` entry.",
-      "Do check 4.5:1 for text and 3:1 for an outline that is the only cue, in both themes.",
-      "Do pair every meaning colour with an icon and a word.",
-      "Do keep panels flat and bordered; save shadows for floating layers.",
+      "Do spend colour only on state: green Learned, amber In progress, blue for the picked item and focus, red for destructive.",
+      "Do pair every state colour with an icon and a word.",
+      "Do tile related panels with 1px seams (`gap-px` on the border colour) and keep every in-page panel shadowless.",
+      "Do set every page title at 24px semibold over a 1px seam, with no label above it.",
+      "Do use `.panel-head` (11px semibold uppercase, 0.08em) as the heading of its panel and nowhere else.",
+      "Do set topic numbers, counts, percentages and dates in Geist Mono.",
+      "Do mark a picked row with the selected inset (Wash fill plus a 2px blue left edge), never with the focus ring's look.",
+      "Do measure 4.5:1 for text and 3:1 for an outline that is the only cue, in both themes separately.",
       "Do write screen copy as names, actions and states, with no em dashes."
     ],
     "donts": [
       "Don't edit the shadcn default part of `globals.css` or a primitive in `components/ui` (the only edit is the font line in `sonner.tsx`).",
       "Don't use hex colour classes or old Studio names (`bg-canvas`, `text-quiet`, `shadow-panel`, `font-display`, `status-*`, `tint`); `shadcn-default.test.ts` fails on them.",
-      "Don't put `bg-accent` on hover or selected states outside a menu.",
-      "Don't use a chapter colour for status, or a status colour for decoration.",
+      "Don't give chapters a hue; they are told apart by number and name on a neutral tile.",
+      "Don't use blue for a status or a status colour for the picked item; the Now badge stays neutral.",
+      "Don't put `bg-accent` on hover or picked states outside a menu.",
+      "Don't put a small uppercase label above a heading; the module name already lives in the breadcrumb.",
+      "Don't add a theme switch; the theme follows the system setting.",
+      "Don't let a seam be the only cue for anything.",
       "Don't add Google Fonts links; fonts load through `next/font`.",
       "Don't align layouts across modules as a sweep; layout differences are module choices."
     ]

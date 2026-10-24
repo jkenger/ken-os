@@ -208,3 +208,131 @@
 :root {
   --radius: 0.25rem;
 }
+
+/* Console (DESIGN.md): a graphite working surface in two themes, light and dark, picked from the system setting
+   (layout.tsx). Panels sit one step off the ground, split by 1px seams instead of shadows; colour is spent only on
+   state (green Learned, amber In progress, blue for the picked item and focus, red for destructive), so chapters are
+   told apart by number and name, not hue. Overrides the shadcn neutrals here rather than above, so the default block
+   stays as shadcn init wrote it. Text pairs keep 4.5:1 in both themes. */
+:root {
+  color-scheme: light;
+  --background: oklch(0.975 0.002 265);
+  --foreground: oklch(0.22 0.005 265);
+  --card: oklch(0.995 0.001 265);
+  --card-foreground: oklch(0.22 0.005 265);
+  --popover: oklch(0.995 0.001 265);
+  --popover-foreground: oklch(0.22 0.005 265);
+  --primary: oklch(0.22 0.005 265);
+  --primary-foreground: oklch(0.985 0.001 265);
+  --secondary: oklch(0.945 0.003 265);
+  --secondary-foreground: oklch(0.22 0.005 265);
+  --muted: oklch(0.945 0.003 265);
+  --muted-foreground: oklch(0.48 0.008 265);
+  --accent: oklch(0.925 0.004 265);
+  --accent-foreground: oklch(0.22 0.005 265);
+  --destructive: oklch(0.53 0.19 25);
+  --border: oklch(0.885 0.004 265);
+  --input: oklch(0.885 0.004 265);
+  --ring: oklch(0.52 0.16 262);
+  --sidebar: oklch(0.955 0.003 265);
+  --sidebar-foreground: oklch(0.22 0.005 265);
+  --sidebar-primary: oklch(0.22 0.005 265);
+  --sidebar-primary-foreground: oklch(0.985 0.001 265);
+  --sidebar-accent: oklch(0.915 0.004 265);
+  --sidebar-accent-foreground: oklch(0.2 0.005 265);
+  --sidebar-border: oklch(0.885 0.004 265);
+  --sidebar-ring: oklch(0.52 0.16 262);
+  --topic-learned: oklch(0.5 0.13 150);
+  --topic-learned-soft: oklch(0.95 0.035 150);
+  --topic-active: oklch(0.5 0.11 70);
+  --topic-active-soft: oklch(0.955 0.04 85);
+  --chapter-1: var(--muted-foreground);
+  --chapter-1-soft: var(--muted);
+  --chapter-2: var(--muted-foreground);
+  --chapter-2-soft: var(--muted);
+  --chapter-3: var(--muted-foreground);
+  --chapter-3-soft: var(--muted);
+  --chapter-4: var(--muted-foreground);
+  --chapter-4-soft: var(--muted);
+  --chapter-5: var(--muted-foreground);
+  --chapter-5-soft: var(--muted);
+  --chapter-6: var(--muted-foreground);
+  --chapter-6-soft: var(--muted);
+  --selected: var(--ring);
+}
+
+.dark {
+  color-scheme: dark;
+  --background: oklch(0.205 0.004 265);
+  --foreground: oklch(0.93 0.004 100);
+  --card: oklch(0.235 0.005 265);
+  --card-foreground: oklch(0.93 0.004 100);
+  --popover: oklch(0.255 0.006 265);
+  --popover-foreground: oklch(0.93 0.004 100);
+  --primary: oklch(0.93 0.004 100);
+  --primary-foreground: oklch(0.205 0.004 265);
+  --secondary: oklch(0.275 0.006 265);
+  --secondary-foreground: oklch(0.93 0.004 100);
+  --muted: oklch(0.275 0.006 265);
+  --muted-foreground: oklch(0.74 0.006 100);
+  --accent: oklch(0.3 0.007 265);
+  --accent-foreground: oklch(0.93 0.004 100);
+  --destructive: oklch(0.72 0.15 20);
+  --border: oklch(0.33 0.008 265);
+  --input: oklch(0.33 0.008 265);
+  --ring: oklch(0.76 0.11 262);
+  --sidebar: oklch(0.18 0.004 265);
+  --sidebar-foreground: oklch(0.93 0.004 100);
+  --sidebar-primary: oklch(0.93 0.004 100);
+  --sidebar-primary-foreground: oklch(0.18 0.004 265);
+  --sidebar-accent: oklch(0.275 0.006 265);
+  --sidebar-accent-foreground: oklch(0.96 0.003 100);
+  --sidebar-border: oklch(0.3 0.007 265);
+  --sidebar-ring: oklch(0.76 0.11 262);
+  --topic-learned: oklch(0.8 0.13 150);
+  --topic-learned-soft: oklch(0.29 0.04 150);
+  --topic-active: oklch(0.82 0.1 80);
+  --topic-active-soft: oklch(0.3 0.04 80);
+  --chapter-1: var(--muted-foreground);
+  --chapter-1-soft: var(--muted);
+  --chapter-2: var(--muted-foreground);
+  --chapter-2-soft: var(--muted);
+  --chapter-3: var(--muted-foreground);
+  --chapter-3-soft: var(--muted);
+  --chapter-4: var(--muted-foreground);
+  --chapter-4-soft: var(--muted);
+  --chapter-5: var(--muted-foreground);
+  --chapter-5-soft: var(--muted);
+  --chapter-6: var(--muted-foreground);
+  --chapter-6-soft: var(--muted);
+  --selected: var(--ring);
+}
+
+/* Every card is a panel: card fill, a 1px seam, no shadow or ring. The shadcn Card itself stays untouched. */
+[data-slot="card"] {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: none;
+}
+
+/* Panel heads: small uppercase with tracking. They are the heading of their panel, never a label above one. */
+.panel-head {
+  font-family: var(--font-heading);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+
+/* Browser surfaces in the console palette: selection, caret, scrollbars, figures that line up. */
+::selection {
+  background: color-mix(in oklch, var(--ring) 30%, transparent);
+}
+:root {
+  caret-color: var(--ring);
+  scrollbar-color: var(--border) transparent;
+}
+.font-mono {
+  font-variant-numeric: tabular-nums;
+}

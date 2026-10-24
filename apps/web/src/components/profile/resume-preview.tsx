@@ -47,7 +47,7 @@ export function ResumePreview({
   return (
     <WorkspaceShell email={email} active="profile">
       <div className="mx-auto max-w-5xl px-3 pt-6 pb-10 md:px-5 md:pt-7.5">
-        <PageHeading kicker="Profile" title="Resume" />
+        <PageHeading title="Resume" />
         {!savedAt ? (
           <Card>
             <CardHeader>
@@ -108,7 +108,7 @@ export function ResumePreview({
             {/* White on purpose: a PDF page is drawn on white whatever the theme. */}
             <iframe
               key={`${choice.template}-${choice.paper}`}
-              className="h-[80vh] min-h-160 w-full rounded-xl border bg-white"
+              className="h-[80vh] min-h-160 w-full rounded-lg border bg-white"
               title="Resume preview"
               src={pdfUrl(choice)}
             />

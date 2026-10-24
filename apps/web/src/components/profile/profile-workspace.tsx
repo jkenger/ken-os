@@ -26,13 +26,12 @@ function EngineeringSummary({ roadmapId, headline, detail }: EngineeringLine) {
   return (
     <Link
       href={engineeringRoutes.roadmap(null, roadmapId)}
-      className="rounded-xl focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+      className="rounded-lg focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
     >
       <Card className="transition-colors hover:bg-muted/50">
         <CardHeader>
-          <CardDescription>Engineering</CardDescription>
           <CardTitle>{headline}</CardTitle>
-          <CardDescription>{detail}</CardDescription>
+          <CardDescription>Engineering · {detail}</CardDescription>
         </CardHeader>
       </Card>
     </Link>
@@ -125,7 +124,7 @@ export function ProfileWorkspace({
   return (
     <WorkspaceShell email={email} active="profile">
       <div className="mx-auto max-w-5xl px-3 pt-6 pb-24 md:px-5 md:pt-7.5">
-        <PageHeading kicker="Profile" title="Details" />
+        <PageHeading title="Details" />
 
         <div className="flex flex-col gap-4">
           {review && (

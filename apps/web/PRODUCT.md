@@ -32,7 +32,7 @@ Built for exactly one person, with Claude as a working participant rather than a
 - Single owner; another Google account cannot get in. OAuth, session and origin checks are deliberate boundaries.
 - Agent access to Drive is read only. Any future write to an outside system needs an explicit approval step.
 - Everything Claude saves is untrusted input and is shown only after checks (exercises run only in the browser runner).
-- Next.js app with shadcn/ui primitives on the shadcn default setup (Luma preset, taupe base), Tailwind 4, DM Sans headings, Public Sans body and Geist Mono. Every control is built from a shadcn primitive; no raw form or table elements outside `components/ui` (enforced by `src/lib/shadcn-primitives.test.ts`).
+- Next.js app with shadcn/ui primitives on the shadcn default setup (Luma preset, taupe base), Tailwind 4, Geist for headings and body, and Geist Mono, in light and dark themes that follow the system setting. Every control is built from a shadcn primitive; no raw form or table elements outside `components/ui` (enforced by `src/lib/shadcn-primitives.test.ts`).
 - Undecided: up to 3 Engineering roadmaps at once (`docs/architecture/engineering-roadmaps.md`, proposed); later modules in `docs/product/brief.md` are candidates, not commitments.
 
 ## Brand Commitments

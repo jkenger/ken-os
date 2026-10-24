@@ -108,7 +108,7 @@ async function main() {
     .replace("@custom-variant dark (&:is(.dark *));", "@custom-variant dark (&:is(.ken-os-dark-theme *));")
     .concat("\nhtml { color-scheme: light !important; }\n")
     .concat(
-      `\n:root { --font-sans: "Public Sans", ui-sans-serif, system-ui, sans-serif; --font-heading: "DM Sans", ui-sans-serif, system-ui, sans-serif; --font-mono: "Geist Mono", ui-monospace, monospace; }\nhtml { font-family: var(--font-sans); }\n`,
+      `\n:root { --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif; --font-heading: "Geist", ui-sans-serif, system-ui, sans-serif; --font-mono: "Geist Mono", ui-monospace, monospace; }\nhtml { font-family: var(--font-sans); }\n`,
     )
     .replace(
       `@import "tailwindcss";`,
