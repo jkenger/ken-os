@@ -19,7 +19,7 @@ async function main() {
   await db().insert(users).values({ id: userId, email, name: "Portfolio Check" });
   try {
     const empty = await store.getPortfolio(userId);
-    assert.deepEqual(empty, { live: null, latest: null, profileSavedAt: null });
+    assert.deepEqual(empty, { live: null, latest: null, profileSavedAt: null, showEmail: false });
     await assert.rejects(
       store.publishPortfolio(userId),
       (error: Error) => error instanceof store.PortfolioInputError && error.status === 409,
@@ -45,23 +45,42 @@ async function main() {
     const parsed = parsePortfolioSnapshot(live);
     assert.equal(parsed.profile.summary, "Builds things");
     assert.ok(!JSON.stringify(live).includes("0917"), "the phone is never published");
-    assert.ok(!JSON.stringify(live).toLowerCase().includes(email.toLowerCase()), "the email is never published");
+    assert.ok(!JSON.stringify(live).toLowerCase().includes(email.toLowerCase()), "the email is off by default");
+    assert.deepEqual(parsed.resume, { template: "classic", paper: "letter" });
     console.log("ok - Publish makes a snapshot live, without contact details");
+
+    await profile.saveResumeSettings(userId, { template: "technical", paper: "a4" });
+    await store.publishPortfolio(userId);
+    assert.deepEqual((await store.liveSnapshot(email.toLowerCase()))?.resume, { template: "technical", paper: "a4" });
+    console.log("ok - Publish copies the Resume page's template and paper");
+
+    assert.equal((await store.setShowEmail(userId, { showEmail: true })).showEmail, true);
+    assert.ok(
+      !JSON.stringify(await store.liveSnapshot(email.toLowerCase())).includes(email),
+      "not live before Publish",
+    );
+    await store.publishPortfolio(userId);
+    assert.equal((await store.liveSnapshot(email.toLowerCase()))?.profile.email, email);
+    await store.setShowEmail(userId, { showEmail: false });
+    await store.publishPortfolio(userId);
+    assert.equal((await store.liveSnapshot(email.toLowerCase()))?.profile.email, undefined);
+    await assert.rejects(store.setShowEmail(userId, { showEmail: "yes" }), store.PortfolioInputError);
+    console.log("ok - Show email publishes the email only while it is on");
 
     await profile.saveProfile(userId, { ...details, summary: "Builds more" }, null);
     assert.equal((await store.liveSnapshot(email.toLowerCase()))?.profile.summary, "Builds things");
     const [second] = await Promise.all([store.publishPortfolio(userId), store.publishPortfolio(userId)]);
     const after = await store.getPortfolio(userId);
-    assert.equal(after.latest?.version, 3, "two Publish clicks at once get their own versions");
+    assert.equal(after.latest?.version, 6, "two Publish clicks at once get their own versions");
     assert.ok(second.live);
     assert.equal((await store.liveSnapshot(email.toLowerCase()))?.profile.summary, "Builds more");
     console.log("ok - edits go live only on the next Publish");
 
     const off = await store.unpublishPortfolio(userId);
     assert.equal(off.live, null);
-    assert.equal(off.latest?.version, 3, "past publications stay");
+    assert.equal(off.latest?.version, 6, "past publications stay");
     assert.equal(await store.liveSnapshot(email.toLowerCase()), null);
-    assert.equal((await store.publishPortfolio(userId)).live?.version, 4);
+    assert.equal((await store.publishPortfolio(userId)).live?.version, 7);
     console.log("ok - Unpublish takes it offline, and the count continues");
   } finally {
     await db().delete(users).where(eq(users.id, userId));

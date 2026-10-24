@@ -1,14 +1,25 @@
-import type { ProfileDetails } from "@ken-os/domain";
-import { PORTFOLIO_SNAPSHOT_VERSION, type PortfolioProfile, type PortfolioSnapshot } from "@ken-os/portfolio";
+import { emptyProfile, type ProfileDetails } from "@ken-os/domain";
+import {
+  PORTFOLIO_SNAPSHOT_VERSION,
+  type PortfolioProfile,
+  type PortfolioResume,
+  type PortfolioSnapshot,
+} from "@ken-os/portfolio";
 
 // Builds the public snapshot from the saved Profile. It copies allowed fields one by one and never spreads a record, so
 // a field added to the Profile later stays private until it is added here. Spec: docs/architecture/portfolio.md.
 
-export function portfolioProfile(details: ProfileDetails): PortfolioProfile {
+/** What the owner chose to publish beyond the default. */
+export interface PublishChoices {
+  showEmail: boolean;
+}
+
+export function portfolioProfile(details: ProfileDetails, choices: PublishChoices): PortfolioProfile {
   const { contact } = details;
   return {
     name: contact.fullName,
     headline: contact.headline,
+    ...(choices.showEmail && contact.email ? { email: contact.email } : {}),
     location: [contact.city, contact.country].filter(Boolean).join(", "),
     summary: details.summary,
     links: contact.links.map(({ label, url }) => ({ label, url })),
@@ -39,11 +50,40 @@ export function portfolioProfile(details: ProfileDetails): PortfolioProfile {
   };
 }
 
-export function buildSnapshot(details: ProfileDetails, publication: number, publishedAt: Date): PortfolioSnapshot {
+export function buildSnapshot(
+  details: ProfileDetails,
+  resume: PortfolioResume,
+  choices: PublishChoices,
+  publication: number,
+  publishedAt: Date,
+): PortfolioSnapshot {
   return {
     version: PORTFOLIO_SNAPSHOT_VERSION,
     publication,
     publishedAt: publishedAt.toISOString(),
-    profile: portfolioProfile(details),
+    profile: portfolioProfile(details, choices),
+    resume: { template: resume.template, paper: resume.paper },
   };
+}
+
+/** The published Profile back in the shape the resume renderer prints. Only what was published is in it, so the
+ *  public PDF can't show anything the snapshot left out. */
+export function publishedResumeDetails(profile: PortfolioProfile): ProfileDetails {
+  const details = emptyProfile();
+  details.contact = {
+    ...details.contact,
+    fullName: profile.name,
+    headline: profile.headline,
+    email: profile.email ?? "",
+    city: profile.location,
+    links: profile.links.map(({ label, url }) => ({ label, url })),
+  };
+  details.summary = profile.summary;
+  details.experience = profile.experience.map((role) => ({ ...role, bullets: [...role.bullets] }));
+  details.education = profile.education.map((school) => ({ ...school, notes: "" }));
+  details.skills = profile.skills.map(({ name, items }) => ({ name, items: [...items] }));
+  details.projects = profile.projects.map((project) => ({ ...project, bullets: [...project.bullets] }));
+  details.certifications = profile.certifications.map((cert) => ({ ...cert }));
+  details.languages = profile.languages.map((language) => ({ ...language }));
+  return details;
 }

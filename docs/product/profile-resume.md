@@ -1,6 +1,6 @@
 # Profile and resume builder
 
-Status: step 1 built 12 Oct 2026, step 2 built 13 Oct 2026, step 3 built 14 Oct 2026; steps 4 and 5 proposed. Replaces the Resume module. Decisions below were agreed with the owner in chat on 12 Oct 2026.
+Status: step 1 built 12 Oct 2026, step 2 built 13 Oct 2026, step 3 built 14 Oct 2026, step 4 built 24 Oct 2026; step 5 on hold and being redefined (24 Oct 2026: Drive stops being a source of truth, an uploaded resume autofills the Profile instead). Replaces the Resume module. Decisions below were agreed with the owner in chat on 12 Oct 2026.
 
 ## The idea in one line
 
@@ -89,10 +89,19 @@ Two one-way paths, never a loop.
 1. **Profile and import.** Profile page, form, import from Drive with review, prefill, navigation change, Engineering rename.
 2. **Templates and preview.** Three templates, preview with a switcher, PDF download.
 3. **AI rewrite.** Rewrite with accept or undo per change.
-4. **Public link.** Not built on its own: replaced by the portfolio's resume section (`docs/architecture/portfolio.md`, agreed 18 Oct 2026).
-5. **Drive sync.** Change detection and review, saving to Drive.
+4. **Public link.** Built 24 Oct 2026 as the Portfolio's public resume PDF; see "Step 4 design".
+5. **Drive sync.** On hold, being redefined as resume upload with autofill (24 Oct 2026). Don't build the Drive sync below.
 
 Each step ships on its own and leaves the app working.
+
+## Step 4 design
+
+Built 24 Oct 2026 inside the Portfolio's one Publish (`docs/architecture/portfolio.md`) instead of a separate `/r/<slug>` page with its own publish. That keeps one Publish and one public read path; the "Public link" section above is the older plan.
+
+- **Link:** `GET /api/public/portfolio/resume`, the live snapshot printed by the same renderer as the Resume page. There is one owner, so there is no slug. `download=1` sends it as a file.
+- **What prints:** only what the snapshot holds (`publishedResumeDetails` in `apps/web/src/features/portfolio/snapshot.ts`): no phone, local fields or education notes, and no email unless Show email is on in Portfolio (off by default, agreed 24 Oct 2026; it goes live on the next Publish).
+- **Template and paper:** Publish copies the Resume page's choice into `snapshot.resume`. Changing it goes live on the next Publish, like every other edit. Snapshots from before have none and print as Classic on Letter.
+- **Public rules:** no session, `noindex`, `no-store`, 404 when unpublished. The Portfolio page has an Open resume link next to Open snapshot.
 
 ## Step 3 design
 

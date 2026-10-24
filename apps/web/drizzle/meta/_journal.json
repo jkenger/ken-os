@@ -197,6 +197,13 @@
       "when": 1792501893173,
       "tag": "0027_design_studio_drafts",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1792830090568,
+      "tag": "0028_portfolio_show_email",
+      "breakpoints": true
     }
   ]
 }

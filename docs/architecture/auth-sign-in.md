@@ -45,8 +45,9 @@ Out of scope: more users or sign-in methods, and a single guard replacing the pe
 | `/api/auth/signout`            | POST only, origin-checked as today                                                     | Clears the session, redirects to `/sign-in?signed_out=1` |
 | API routes                     | 401 JSON, as today                                                                     | Unchanged                                                |
 | `/api/public/portfolio`        | The live Portfolio snapshot, or 404 when unpublished. Reads no session                 | Same                                                     |
+| `/api/public/portfolio/resume` | The live snapshot as a resume PDF, or 404 when unpublished. Reads no session           | Same                                                     |
 
-`/api/public/portfolio` is the one route outside the owner gate. It reads only the live published snapshot (`docs/architecture/portfolio.md`); any new public route follows the same rule.
+`/api/public/portfolio` and `/api/public/portfolio/resume` are the only routes outside the owner gate. They read only the live published snapshot (`docs/architecture/portfolio.md`); any new public route follows the same rule.
 
 The signed-out branch moves out of `app/page.tsx` into `app/sign-in/page.tsx`.
 

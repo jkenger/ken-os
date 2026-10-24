@@ -129,6 +129,8 @@ export const portfolios = pgTable("portfolios", {
   currentPublicationId: text("current_publication_id").references(() => portfolioPublications.id, {
     onDelete: "set null",
   }),
+  /** Publish copies the Profile email into the snapshot only when this is on. */
+  showEmail: boolean("show_email").notNull().default(false),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
