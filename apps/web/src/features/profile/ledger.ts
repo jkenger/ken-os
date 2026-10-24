@@ -27,6 +27,8 @@ export interface LedgerRow {
   /** A one-line glimpse of what is there; empty when nothing is. */
   glimpse: string;
   state: LedgerState;
+  /** Whether a Publish of the saved Profile would change this section on the public resume, whatever the row shows. */
+  publishChanges: boolean;
 }
 
 type PublicPart = (profile: PortfolioProfile) => unknown;
@@ -148,12 +150,14 @@ export function ledgerRows(
   return SECTIONS.map(({ id, title, count, glimpse, publicPart }) => {
     const filled = count(details);
     const key = id === "local-fields" ? "local" : id;
+    const publishChanges = Boolean(publicPart && published && !same(publicPart(next), publicPart(published)));
     let state: LedgerState;
     if (!same(details[key], saved[key])) state = "unsaved";
+    // Before Empty: a section emptied since the Publish still changes the public resume.
+    else if (publishChanges) state = "changed";
     else if (!filled) state = "empty";
     else if (!publicPart) state = "private";
-    else if (!published) state = "not-published";
-    else state = same(publicPart(next), publicPart(published)) ? "published" : "changed";
-    return { id, title, count: filled, glimpse: glimpse(details), state };
+    else state = published ? "published" : "not-published";
+    return { id, title, count: filled, glimpse: glimpse(details), state, publishChanges };
   });
 }

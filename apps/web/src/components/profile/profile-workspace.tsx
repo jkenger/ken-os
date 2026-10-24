@@ -149,6 +149,22 @@ export function ProfileWorkspace({
     }
   }
 
+  const saveBar = (
+    <div className="flex items-center justify-end gap-2 px-3 py-3 md:px-5">
+      <span className="mr-auto text-sm text-muted-foreground">
+        {changed || review ? "Unsaved changes" : savedAt ? `Saved ${shortDate(savedAt)}` : "Not saved"}
+      </span>
+      {(changed || review) && (
+        <Button type="button" variant="ghost" onClick={discard} disabled={saving}>
+          Discard
+        </Button>
+      )}
+      <Button type="button" onClick={save} disabled={saving || !canSave}>
+        {saving ? "Saving…" : "Save"}
+      </Button>
+    </div>
+  );
+
   return (
     <WorkspaceShell email={email} active="profile">
       <div className="flex min-w-0 items-start">
@@ -185,7 +201,7 @@ export function ProfileWorkspace({
                 </Alert>
               )}
 
-              <PublicResumeBar live={published.live} changed={rows.filter((row) => row.state === "changed").length} />
+              <PublicResumeBar live={published.live} changed={rows.filter((row) => row.publishChanges).length} />
               <LedgerList rows={rows} opened={opened} onOpen={setOpened} />
               <ResumeFiles initial={resumes} />
               {engineering?.map((line) => (
@@ -204,26 +220,16 @@ export function ProfileWorkspace({
           closeLabel="Close section"
           badges={openRow && <StateBadge state={openRow.state} />}
           title={openRow?.title ?? ""}
-          descriptionFallback="Edit this section. Save keeps it"
+          descriptionFallback="Section details"
         >
           <DetailsForm key={formVersion} details={details} edit={edit} only={opened} />
+          {/* As a sheet the panel covers the page's Save bar, so it carries its own. */}
+          {!docked && <div className="sticky bottom-0 mt-auto border-t bg-background">{saveBar}</div>}
         </DockedPanel>
       </div>
 
       <div className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-end gap-2 px-3 py-3 md:px-5">
-          <span className="mr-auto text-sm text-muted-foreground">
-            {changed || review ? "Unsaved changes" : savedAt ? `Saved ${shortDate(savedAt)}` : "Not saved"}
-          </span>
-          {(changed || review) && (
-            <Button type="button" variant="ghost" onClick={discard} disabled={saving}>
-              Discard
-            </Button>
-          )}
-          <Button type="button" onClick={save} disabled={saving || !canSave}>
-            {saving ? "Saving…" : "Save"}
-          </Button>
-        </div>
+        <div className="mx-auto max-w-5xl">{saveBar}</div>
       </div>
     </WorkspaceShell>
   );

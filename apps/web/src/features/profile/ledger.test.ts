@@ -55,3 +55,16 @@ test("Show email turned on changes Contact, local fields stay private", () => {
   assert.equal(stateOf(rows, "contact"), "changed");
   assert.equal(stateOf(rows, "local-fields"), "private");
 });
+
+test("a section emptied since the Publish is Changed and still counted while being edited", () => {
+  const before = saved();
+  const published = portfolioProfile(before, hidden);
+  const after = saved();
+  after.projects = [];
+  assert.equal(stateOf(ledgerRows(after, after, published, hidden), "projects"), "changed");
+  const typed = structuredClone(after);
+  typed.projects = [{ name: "New", link: "", description: "", bullets: [] }];
+  const row = ledgerRows(typed, after, published, hidden).find((item) => item.id === "projects");
+  assert.equal(row?.state, "unsaved");
+  assert.equal(row?.publishChanges, true);
+});
