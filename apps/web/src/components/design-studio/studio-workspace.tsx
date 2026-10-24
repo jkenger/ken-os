@@ -282,8 +282,8 @@ export function StudioWorkspace({
     <WorkspaceShell email={email} active="studio">
       <style>{draftStyles(drafts, manifest.components, manifest.theme)}</style>
       <div className="flex flex-col xl:h-[calc(100svh-75px)]">
-        <div className="flex shrink-0 items-center justify-between gap-4 px-4 py-4 lg:h-16 lg:py-0">
-          <h1 className="font-heading text-2xl font-bold tracking-tight">Design Studio</h1>
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b px-4 py-4 lg:py-5">
+          <h1 className="font-heading text-3xl leading-none font-semibold tracking-tight">Design Studio</h1>
           <div className="flex items-center gap-2">
             {wide && !docked && (
               <Button
@@ -388,7 +388,7 @@ export function StudioWorkspace({
                   Not installed
                 </Badge>
               )}
-              <h2 id="studio-picked" className="font-heading text-xl leading-tight font-bold tracking-tight">
+              <h2 id="studio-picked" className="font-heading text-xl leading-tight font-semibold tracking-tight">
                 {missing?.item.name ?? current?.name ?? "Theme"}
               </h2>
               {missing?.item.description && <p className="text-sm text-muted-foreground">{missing.item.description}</p>}

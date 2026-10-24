@@ -67,7 +67,7 @@ export function SetupChecklist({
     <Collapsible open={open} onOpenChange={setOpen} asChild>
       <section aria-labelledby="setup-title" className={panel}>
         <div className={cn("flex flex-wrap items-center gap-x-3 gap-y-2 px-4 py-3", open && "border-b")}>
-          <h2 id="setup-title" className="font-semibold">
+          <h2 id="setup-title" className="font-heading text-base font-semibold">
             Set up
           </h2>
           <Badge variant="outline">
@@ -100,9 +100,12 @@ export function SetupChecklist({
                 >
                   <span
                     aria-hidden="true"
-                    className="flex size-7 items-center justify-center rounded-full border text-xs font-semibold"
+                    className={cn(
+                      "font-heading text-xl leading-none font-semibold tabular-nums",
+                      item.done && "text-muted-foreground",
+                    )}
                   >
-                    {item.done ? <IconCheck className="size-4" /> : index + 1}
+                    {item.done ? <IconCheck className="size-5" /> : index + 1}
                   </span>
                   <div className="min-w-0">
                     <p className="text-sm font-medium">

@@ -30,9 +30,8 @@ function EngineeringSummary({ roadmapId, headline, detail }: EngineeringLine) {
     >
       <Card className="transition-colors hover:bg-muted/50">
         <CardHeader>
-          <CardDescription>Engineering</CardDescription>
           <CardTitle>{headline}</CardTitle>
-          <CardDescription>{detail}</CardDescription>
+          <CardDescription>Engineering · {detail}</CardDescription>
         </CardHeader>
       </Card>
     </Link>

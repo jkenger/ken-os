@@ -203,39 +203,25 @@ function ShellSidebar({
     const close = () => setOpenMobile(false);
     return (
       <Sidebar>
-        <SidebarHeader className="flex-row items-center justify-between">
-          <span className="flex items-center gap-2 text-sm font-semibold">
-            <Brand />
-            Loots
-          </span>
-          <Button variant="ghost" size="icon" aria-label="Close menu" onClick={close}>
-            <X />
-          </Button>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel>Modules</SidebarGroupLabel>
-            <SidebarMenu className="gap-1" aria-label="Modules">
-              {moduleList.map(({ id, label, href, icon: Icon }) => (
-                <SidebarMenuItem key={id}>
-                  <SidebarMenuButton asChild isActive={active === id}>
-                    <Link href={href} aria-current={active === id ? "page" : undefined} onClick={close}>
-                      <Icon strokeWidth={1.8} aria-hidden="true" />
-                      <span>{label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroup>
-          {sections.length > 0 && (
+        {/* The sheet passes no class to its panel, so the cover colour goes on a wrapper inside it. */}
+        <div className="catalog-rail flex h-full flex-col bg-sidebar text-sidebar-foreground">
+          <SidebarHeader className="flex-row items-center justify-between">
+            <span className="flex items-center gap-2 text-sm font-semibold">
+              <Brand />
+              Loots
+            </span>
+            <Button variant="ghost" size="icon" aria-label="Close menu" onClick={close}>
+              <X />
+            </Button>
+          </SidebarHeader>
+          <SidebarContent>
             <SidebarGroup>
-              <SidebarGroupLabel>{title}</SidebarGroupLabel>
-              <SidebarMenu className="gap-1" aria-label={`${title} sections`}>
-                {sections.map(({ key, label, href, icon: Icon, selected }) => (
-                  <SidebarMenuItem key={key}>
-                    <SidebarMenuButton asChild isActive={selected}>
-                      <Link href={href} aria-current={selected ? "location" : undefined} onClick={close}>
+              <SidebarGroupLabel>Modules</SidebarGroupLabel>
+              <SidebarMenu className="gap-1" aria-label="Modules">
+                {moduleList.map(({ id, label, href, icon: Icon }) => (
+                  <SidebarMenuItem key={id}>
+                    <SidebarMenuButton asChild isActive={active === id}>
+                      <Link href={href} aria-current={active === id ? "page" : undefined} onClick={close}>
                         <Icon strokeWidth={1.8} aria-hidden="true" />
                         <span>{label}</span>
                       </Link>
@@ -244,11 +230,28 @@ function ShellSidebar({
                 ))}
               </SidebarMenu>
             </SidebarGroup>
-          )}
-        </SidebarContent>
-        <SidebarFooter>
-          <p className="truncate px-2 text-xs text-muted-foreground">{email}</p>
-        </SidebarFooter>
+            {sections.length > 0 && (
+              <SidebarGroup>
+                <SidebarGroupLabel>{title}</SidebarGroupLabel>
+                <SidebarMenu className="gap-1" aria-label={`${title} sections`}>
+                  {sections.map(({ key, label, href, icon: Icon, selected }) => (
+                    <SidebarMenuItem key={key}>
+                      <SidebarMenuButton asChild isActive={selected}>
+                        <Link href={href} aria-current={selected ? "location" : undefined} onClick={close}>
+                          <Icon strokeWidth={1.8} aria-hidden="true" />
+                          <span>{label}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroup>
+            )}
+          </SidebarContent>
+          <SidebarFooter>
+            <p className="truncate px-2 text-xs text-muted-foreground">{email}</p>
+          </SidebarFooter>
+        </div>
       </Sidebar>
     );
   }
@@ -344,6 +347,8 @@ function ShellInset({ title, sections, children }: { title: string; sections: Se
         sections.length > 0 && "lg:peer-data-[state=expanded]:ml-0",
       )}
     >
+      {/* On a phone the rail lives in the menu sheet, so a strip of the cover colour keeps the shell on screen. */}
+      <div aria-hidden="true" className="h-1 shrink-0 bg-oxblood md:hidden" />
       <header className="flex h-14 shrink-0 items-center justify-between gap-4 px-3 md:border-b md:border-border md:px-4">
         <div className="flex min-w-0 items-center gap-2 text-sm">
           <SidebarTrigger className="md:hidden" aria-label="Open menu" />

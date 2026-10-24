@@ -24,5 +24,5 @@ export * from "@/components/ui/toggle";
 export * from "@/components/ui/toggle-group";
 export * from "@/components/ui/tooltip";
 export { toast, dismissToast, Toaster } from "@/components/ui/toaster";
-export { Fact, Rail, Coverage, SectionTitle, Notice, panel, eyebrow } from "@/components/engineering/kit";
+export { Fact, Rail, Coverage, SectionTitle, Notice, panel } from "@/components/engineering/kit";
 export { PageHeading } from "@/components/page-heading";

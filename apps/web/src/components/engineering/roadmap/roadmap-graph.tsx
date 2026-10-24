@@ -51,12 +51,12 @@ function AreaNode({ data }: NodeProps<GraphNode>) {
   const tone = chapterClasses(area.order - 1);
   return (
     <div className={cn("size-full rounded-2xl border px-3.5 pt-3", tone.area)}>
-      <p className="flex items-center gap-2 text-[0.6875rem] font-semibold tracking-wider uppercase">
-        <span className="font-heading text-sm tracking-normal tabular-nums">{String(area.order).padStart(2, "0")}</span>
+      <p className="flex items-baseline gap-2.5 font-heading text-sm font-semibold">
+        <span className="text-lg leading-none tabular-nums">{String(area.order).padStart(2, "0")}</span>
         <span className="truncate">{area.title}</span>
-        <span className="ml-auto font-normal tracking-normal whitespace-nowrap text-muted-foreground normal-case">
+        <span className="ml-auto font-sans text-[0.6875rem] font-normal whitespace-nowrap text-muted-foreground">
           {area.done ? "Done · " : ""}
-          {area.learned} of {area.total}
+          <span className="font-mono">{area.learned}</span> of <span className="font-mono">{area.total}</span>
         </span>
       </p>
     </div>
@@ -74,7 +74,7 @@ function TopicNode({ data }: NodeProps<GraphNode>) {
       aria-pressed={topic.selected}
       title={topic.title}
       className={cn(
-        "nodrag size-full justify-start gap-2.5 rounded-xl bg-card px-3 text-left font-normal whitespace-normal shadow-xs",
+        "nodrag size-full justify-start gap-2.5 rounded-xl bg-card px-3 text-left font-normal whitespace-normal shadow-xs dark:bg-card",
         topic.selected && selectedSurface,
       )}
     >
@@ -103,7 +103,7 @@ const nodeTypes: NodeTypes = { area: AreaNode, topic: TopicNode };
 const flowStyle = {
   "--xy-background-color": "transparent",
   "--xy-background-pattern-color": "var(--border)",
-  "--xy-edge-stroke": "var(--ring)",
+  "--xy-edge-stroke": "var(--muted-foreground)",
   "--xy-minimap-background-color": "var(--card)",
   "--xy-minimap-mask-background-color": "color-mix(in oklch, var(--muted) 70%, transparent)",
   "--xy-controls-button-background-color": "var(--card)",

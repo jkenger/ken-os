@@ -907,7 +907,7 @@ export const studioManifest: StudioManifest = {
         "foreground"
       ],
       "source": {
-        "start": 14,
+        "start": 13,
         "lines": [
           "export function Badge({ children, className }: { children: ReactNode; className?: string }) {",
           "  return (",
@@ -934,7 +934,7 @@ export const studioManifest: StudioManifest = {
         "foreground"
       ],
       "source": {
-        "start": 22,
+        "start": 21,
         "lines": [
           "export function Back({ href, children }: { href: string; children: ReactNode }) {",
           "  return (",
@@ -964,7 +964,7 @@ export const studioManifest: StudioManifest = {
         "muted-foreground"
       ],
       "source": {
-        "start": 34,
+        "start": 33,
         "lines": [
           "export function Fact({ label, children, first }: { label: string; children: ReactNode; first?: boolean }) {",
           "  return (",
@@ -994,7 +994,7 @@ export const studioManifest: StudioManifest = {
         "radius"
       ],
       "source": {
-        "start": 44,
+        "start": 43,
         "lines": [
           "export function Rail({ level, soft = false, label }: { level: Level | null; soft?: boolean; label?: string }) {",
           "  const lit = levelRank(level);",
@@ -1039,7 +1039,7 @@ export const studioManifest: StudioManifest = {
         "radius"
       ],
       "source": {
-        "start": 69,
+        "start": 68,
         "lines": [
           "export function Coverage({ met, total }: { met: number; total: number }) {",
           "  if (!total) return <span className=\"text-xs text-muted-foreground\">Nothing required</span>;",
@@ -1071,7 +1071,7 @@ export const studioManifest: StudioManifest = {
       "uses": [],
       "tokens": [],
       "source": {
-        "start": 85,
+        "start": 84,
         "lines": [
           "export function SectionTitle({ title, action }: { title: string; action?: ReactNode }) {",
           "  return (",
@@ -1103,7 +1103,7 @@ export const studioManifest: StudioManifest = {
         "foreground"
       ],
       "source": {
-        "start": 94,
+        "start": 93,
         "lines": [
           "export function Notice({ tone = \"info\", children }: { tone?: \"info\" | \"error\" | \"success\"; children: ReactNode }) {",
           "  return (",
@@ -2359,63 +2359,63 @@ export const studioManifest: StudioManifest = {
   "theme": [
     {
       "name": "card",
-      "light": "oklch(1 0 0)",
-      "dark": "oklch(0.214 0.009 43.1)"
+      "light": "oklch(0.987 0.006 84)",
+      "dark": "oklch(0.225 0.013 48)"
     },
     {
       "name": "card-foreground",
-      "light": "oklch(0.147 0.004 49.3)",
-      "dark": "oklch(0.986 0.002 67.8)"
+      "light": "oklch(0.215 0.018 42)",
+      "dark": "oklch(0.935 0.012 78)"
     },
     {
       "name": "popover",
-      "light": "oklch(1 0 0)",
-      "dark": "oklch(0.214 0.009 43.1)"
+      "light": "oklch(0.996 0.003 84)",
+      "dark": "oklch(0.225 0.013 48)"
     },
     {
       "name": "popover-foreground",
-      "light": "oklch(0.147 0.004 49.3)",
-      "dark": "oklch(0.986 0.002 67.8)"
+      "light": "oklch(0.215 0.018 42)",
+      "dark": "oklch(0.935 0.012 78)"
     },
     {
       "name": "primary",
-      "light": "oklch(0.214 0.009 43.1)",
-      "dark": "oklch(0.922 0.005 34.3)"
+      "light": "oklch(0.24 0.02 40)",
+      "dark": "oklch(0.92 0.014 78)"
     },
     {
       "name": "primary-foreground",
-      "light": "oklch(0.986 0.002 67.8)",
-      "dark": "oklch(0.214 0.009 43.1)"
+      "light": "oklch(0.985 0.006 84)",
+      "dark": "oklch(0.225 0.013 48)"
     },
     {
       "name": "secondary",
-      "light": "oklch(0.96 0.002 17.2)",
-      "dark": "oklch(0.268 0.011 36.5)"
+      "light": "oklch(0.945 0.012 78)",
+      "dark": "oklch(0.275 0.014 48)"
     },
     {
       "name": "secondary-foreground",
-      "light": "oklch(0.214 0.009 43.1)",
-      "dark": "oklch(0.986 0.002 67.8)"
+      "light": "oklch(0.24 0.02 40)",
+      "dark": "oklch(0.935 0.012 78)"
     },
     {
       "name": "muted",
-      "light": "oklch(0.96 0.002 17.2)",
-      "dark": "oklch(0.268 0.011 36.5)"
+      "light": "oklch(0.945 0.012 78)",
+      "dark": "oklch(0.275 0.014 48)"
     },
     {
       "name": "muted-foreground",
-      "light": "oklch(0.547 0.021 43.1)",
-      "dark": "oklch(0.714 0.014 41.2)"
+      "light": "oklch(0.475 0.026 48)",
+      "dark": "oklch(0.74 0.022 66)"
     },
     {
       "name": "accent",
-      "light": "oklch(0.214 0.009 43.1)",
-      "dark": "oklch(0.922 0.005 34.3)"
+      "light": "oklch(0.24 0.02 40)",
+      "dark": "oklch(0.92 0.014 78)"
     },
     {
       "name": "accent-foreground",
-      "light": "oklch(0.986 0.002 67.8)",
-      "dark": "oklch(0.214 0.009 43.1)"
+      "light": "oklch(0.985 0.006 84)",
+      "dark": "oklch(0.225 0.013 48)"
     },
     {
       "name": "destructive",
@@ -2424,18 +2424,18 @@ export const studioManifest: StudioManifest = {
     },
     {
       "name": "border",
-      "light": "oklch(0.922 0.005 34.3)",
-      "dark": "oklch(1 0 0 / 10%)"
+      "light": "oklch(0.885 0.015 72)",
+      "dark": "oklch(0.935 0.012 78 / 12%)"
     },
     {
       "name": "input",
-      "light": "oklch(0.922 0.005 34.3)",
-      "dark": "oklch(1 0 0 / 15%)"
+      "light": "oklch(0.885 0.015 72)",
+      "dark": "oklch(0.935 0.012 78 / 16%)"
     },
     {
       "name": "ring",
-      "light": "oklch(0.714 0.014 41.2)",
-      "dark": "oklch(0.547 0.021 43.1)"
+      "light": "oklch(0.52 0.11 24)",
+      "dark": "oklch(0.7 0.1 24)"
     },
     {
       "name": "chart-1",
@@ -2468,53 +2468,53 @@ export const studioManifest: StudioManifest = {
     },
     {
       "name": "sidebar",
-      "light": "oklch(0.986 0.002 67.8)",
-      "dark": "oklch(0.214 0.009 43.1)"
+      "light": "oklch(0.958 0.013 78)",
+      "dark": "oklch(0.165 0.011 48)"
     },
     {
       "name": "sidebar-foreground",
-      "light": "oklch(0.147 0.004 49.3)",
-      "dark": "oklch(0.986 0.002 67.8)"
+      "light": "oklch(0.215 0.018 42)",
+      "dark": "oklch(0.935 0.012 78)"
     },
     {
       "name": "sidebar-primary",
-      "light": "oklch(0.214 0.009 43.1)",
-      "dark": "oklch(0.488 0.243 264.376)"
+      "light": "oklch(0.24 0.02 40)",
+      "dark": "oklch(0.92 0.014 78)"
     },
     {
       "name": "sidebar-primary-foreground",
-      "light": "oklch(0.986 0.002 67.8)",
-      "dark": "oklch(0.986 0.002 67.8)"
+      "light": "oklch(0.985 0.006 84)",
+      "dark": "oklch(0.225 0.013 48)"
     },
     {
       "name": "sidebar-accent",
-      "light": "oklch(0.96 0.002 17.2)",
-      "dark": "oklch(0.268 0.011 36.5)"
+      "light": "oklch(0.925 0.016 74)",
+      "dark": "oklch(0.275 0.014 48)"
     },
     {
       "name": "sidebar-accent-foreground",
-      "light": "oklch(0.214 0.009 43.1)",
-      "dark": "oklch(0.986 0.002 67.8)"
+      "light": "oklch(0.215 0.018 42)",
+      "dark": "oklch(0.935 0.012 78)"
     },
     {
       "name": "sidebar-border",
-      "light": "oklch(0.922 0.005 34.3)",
-      "dark": "oklch(1 0 0 / 10%)"
+      "light": "oklch(0.885 0.015 72)",
+      "dark": "oklch(0.935 0.012 78 / 10%)"
     },
     {
       "name": "sidebar-ring",
-      "light": "oklch(0.714 0.014 41.2)",
-      "dark": "oklch(0.547 0.021 43.1)"
+      "light": "oklch(0.52 0.11 24)",
+      "dark": "oklch(0.7 0.1 24)"
     },
     {
       "name": "background",
-      "light": "oklch(1 0 0)",
-      "dark": "oklch(0.147 0.004 49.3)"
+      "light": "oklch(0.987 0.006 84)",
+      "dark": "oklch(0.19 0.012 48)"
     },
     {
       "name": "foreground",
-      "light": "oklch(0.147 0.004 49.3)",
-      "dark": "oklch(0.986 0.002 67.8)"
+      "light": "oklch(0.215 0.018 42)",
+      "dark": "oklch(0.935 0.012 78)"
     },
     {
       "name": "topic-learned",
@@ -2528,13 +2528,13 @@ export const studioManifest: StudioManifest = {
     },
     {
       "name": "topic-active",
-      "light": "oklch(0.48 0.14 262)",
-      "dark": "oklch(0.78 0.11 262)"
+      "light": "oklch(0.46 0.13 25)",
+      "dark": "oklch(0.8 0.09 28)"
     },
     {
       "name": "topic-active-soft",
-      "light": "oklch(0.955 0.022 262)",
-      "dark": "oklch(0.3 0.06 262)"
+      "light": "oklch(0.945 0.028 22)",
+      "dark": "oklch(0.31 0.055 22)"
     },
     {
       "name": "chapter-1",
@@ -2600,14 +2600,24 @@ export const studioManifest: StudioManifest = {
       "name": "selected",
       "light": "var(--topic-active)",
       "dark": "var(--topic-active)"
+    },
+    {
+      "name": "oxblood",
+      "light": "oklch(0.36 0.095 22)",
+      "dark": "oklch(0.3 0.075 22)"
+    },
+    {
+      "name": "oxblood-soft",
+      "light": "oklch(0.92 0.03 22)",
+      "dark": "oklch(0.36 0.07 22)"
     }
   ],
   "globals": {
     "file": "app/globals.css",
-    "lines": 210,
+    "lines": 318,
     "tail": [
-      ":root {",
-      "  --radius: 0.25rem;",
+      "  border-bottom: 1px solid var(--border);",
+      "  padding-bottom: 1rem;",
       "}"
     ],
     "newline": true

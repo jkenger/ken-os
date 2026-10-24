@@ -139,8 +139,8 @@
 :root {
   --topic-learned: oklch(0.5 0.12 152);
   --topic-learned-soft: oklch(0.955 0.03 152);
-  --topic-active: oklch(0.48 0.14 262);
-  --topic-active-soft: oklch(0.955 0.022 262);
+  --topic-active: oklch(0.46 0.13 25);
+  --topic-active-soft: oklch(0.945 0.028 22);
   --chapter-1: oklch(0.45 0.07 150);
   --chapter-1-soft: oklch(0.945 0.025 150);
   --chapter-2: oklch(0.45 0.08 258);
@@ -161,8 +161,8 @@
 .dark {
   --topic-learned: oklch(0.78 0.13 152);
   --topic-learned-soft: oklch(0.3 0.05 152);
-  --topic-active: oklch(0.78 0.11 262);
-  --topic-active-soft: oklch(0.3 0.06 262);
+  --topic-active: oklch(0.8 0.09 28);
+  --topic-active-soft: oklch(0.31 0.055 22);
   --chapter-1: oklch(0.8 0.07 150);
   --chapter-1-soft: oklch(0.3 0.03 150);
   --chapter-2: oklch(0.8 0.07 258);
@@ -214,7 +214,7 @@
 :root {
   --background: oklch(0.987 0.006 84);
   --foreground: oklch(0.215 0.018 42);
-  --card: oklch(0.996 0.003 84);
+  --card: oklch(0.987 0.006 84);
   --card-foreground: oklch(0.215 0.018 42);
   --popover: oklch(0.996 0.003 84);
   --popover-foreground: oklch(0.215 0.018 42);
@@ -291,9 +291,28 @@
   --color-oxblood-soft: var(--oxblood-soft);
 }
 
-/* Browser surfaces in the catalog palette: text selection and the caret. */
+/* Browser surfaces in the catalog palette: text selection, the caret, scrollbars and figures that line up. */
 ::selection {
   background: var(--oxblood-soft);
   color: var(--foreground);
 }
-:root { caret-color: var(--ring); }
+:root {
+  caret-color: var(--ring);
+  scrollbar-color: var(--border) transparent;
+}
+.font-mono {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Every card is a printed sheet: paper, a hairline edge, no shadow or ring, the panel corner. A card head that has
+   content under it gets the hairline rule every catalog heading carries, except a record (`data-entry`) that reads as one
+   block. The shadcn Card itself stays untouched. */
+[data-slot="card"] {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: none;
+}
+[data-slot="card"]:not([data-entry]) > [data-slot="card-header"]:not(:last-child) {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 1rem;
+}

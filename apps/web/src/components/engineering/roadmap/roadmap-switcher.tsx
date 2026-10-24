@@ -70,7 +70,7 @@ export function RoadmapSwitcher({
   const router = useRouter();
   return (
     <div className="flex items-start gap-2">
-      <h1 className="min-w-0 font-heading text-2xl leading-tight font-bold tracking-tight md:text-3xl">{title}</h1>
+      <h1 className="min-w-0 font-heading text-2xl leading-tight font-semibold tracking-tight md:text-3xl">{title}</h1>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button

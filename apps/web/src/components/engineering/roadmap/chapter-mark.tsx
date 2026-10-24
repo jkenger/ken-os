@@ -54,12 +54,24 @@ export function ChapterMark({ index, className }: { index: number; className?: s
     <span
       aria-hidden="true"
       className={cn(
-        "w-8 shrink-0 font-heading text-2xl leading-none font-semibold tabular-nums",
+        "shrink-0 font-heading text-2xl leading-none font-semibold tabular-nums",
         chapterClasses(index).text,
         className,
       )}
     >
       {String(index + 1).padStart(2, "0")}
+    </span>
+  );
+}
+
+/** A topic's place in its chapter, hung in the same margin as the chapter number, as in "1.2". */
+export function StepMark({ chapter, step, className }: { chapter: number; step: number; className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={cn("font-heading text-sm leading-none text-muted-foreground tabular-nums", className)}
+    >
+      {chapter + 1}.{step + 1}
     </span>
   );
 }

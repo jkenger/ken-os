@@ -111,7 +111,7 @@ export function DockedPanel({
               </Button>
             )}
           </div>
-          <h2 id={titleId} className="font-heading text-xl leading-tight font-bold tracking-tight">
+          <h2 id={titleId} className="font-heading text-xl leading-tight font-semibold tracking-tight">
             {title}
           </h2>
           {description && <p className="text-sm text-muted-foreground">{description}</p>}

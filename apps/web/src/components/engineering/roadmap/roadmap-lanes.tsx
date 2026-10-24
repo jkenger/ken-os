@@ -6,12 +6,14 @@ import type { RoadmapView } from "@/features/engineering-lab/roadmap-store";
 import { isChapterDone } from "@/features/engineering-lab/topic-steps";
 import { cn } from "@/lib/utils";
 import { selectedSurface } from "../kit";
-import { ChapterBar, ChapterMark } from "./chapter-mark";
+import { ChapterBar, ChapterMark, StepMark } from "./chapter-mark";
 import { StatusIcon, statusWords } from "./status";
 
 // The roadmap as lanes (docs/architecture/engineering-claude-first.md, section 1, and docs/architecture/roadmap-ui.md):
 // one card per chapter in roadmap order, wrapping into as many columns as fit, with its topics listed inside. The topic
-// you're on reads "Now"; the open topic has a dark outline. On a phone the cards stack.
+// you're on reads "Now"; the open topic has a dark outline. On a phone the cards stack. Chapter and topic
+// numbers hang in a left margin outside one shared text edge, as a course catalog sets its course numbers; each topic's
+// status icon closes its row.
 
 export function RoadmapLanes({
   view,
@@ -34,23 +36,23 @@ export function RoadmapLanes({
             aria-labelledby={`lane-${chapter.id}`}
             className="min-w-0 overflow-hidden rounded-xl border bg-card"
           >
-            <div className="grid gap-2.5 px-3.5 pt-3 pb-2.5">
-              <div className="flex items-start gap-2.5">
-                <ChapterMark index={index} />
-                <div className="min-w-0">
-                  <h2 id={`lane-${chapter.id}`} className="font-heading text-[0.9375rem] leading-snug font-semibold">
-                    {chapter.title}
-                  </h2>
-                  <p className="text-xs text-muted-foreground">
-                    {done ? "Done · " : ""}
-                    {learned} of {chapter.topics.length} learned · {chapter.area}
-                  </p>
-                </div>
+            <div className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-y-2.5 px-3.5 pt-3.5 pb-3">
+              <ChapterMark index={index} className="pt-0.5" />
+              <div className="min-w-0">
+                <h2 id={`lane-${chapter.id}`} className="font-heading text-[0.9375rem] leading-snug font-semibold">
+                  {chapter.title}
+                </h2>
+                <p className="text-xs text-muted-foreground">
+                  {done ? "Done · " : ""}
+                  {learned} of {chapter.topics.length} learned · {chapter.area}
+                </p>
               </div>
-              <ChapterBar index={index} learned={learned} total={chapter.topics.length} />
+              <div className="col-start-2">
+                <ChapterBar index={index} learned={learned} total={chapter.topics.length} />
+              </div>
             </div>
             <ul className="grid gap-px border-t px-1.5 pt-1 pb-2">
-              {chapter.topics.map((topic) => {
+              {chapter.topics.map((topic, step) => {
                 const isSelected = topic.id === selected;
                 const isNow = topic.id === currentId;
                 return (
@@ -68,7 +70,7 @@ export function RoadmapLanes({
                         topic.status === "skipped" && "text-muted-foreground",
                       )}
                     >
-                      <StatusIcon status={topic.status} />
+                      <StepMark chapter={index} step={step} className="w-[1.625rem] shrink-0" />
                       <span className="min-w-0 flex-1">{topic.title}</span>
                       {isNow && (
                         <Badge variant="secondary" className="bg-topic-active-soft text-topic-active">
@@ -80,6 +82,7 @@ export function RoadmapLanes({
                           Claude
                         </span>
                       )}
+                      <StatusIcon status={topic.status} />
                     </Button>
                   </li>
                 );

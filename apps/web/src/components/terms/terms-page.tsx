@@ -62,7 +62,7 @@ export function TermsPage({ email, terms }: { email: string; terms: SavedTerm[] 
   return (
     <WorkspaceShell email={email} active="terms">
       <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-6xl px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-        <h1 className="text-3xl leading-none font-bold tracking-tight md:text-4xl xl:text-4xl xl:leading-none">
+        <h1 className="border-b pb-5 font-heading text-3xl leading-none font-semibold tracking-tight md:pb-6 md:text-4xl xl:leading-none">
           Terms
         </h1>
 

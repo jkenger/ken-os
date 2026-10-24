@@ -83,7 +83,7 @@ export function SuccessView({ title, children, action }: { title: string; childr
       <span className="grid size-12 place-items-center rounded-full bg-muted text-foreground">
         <IconCheck size={28} aria-hidden="true" />
       </span>
-      <h2 className="mt-4 mb-3 text-2xl font-bold tracking-tight md:text-2xl">{title}</h2>
+      <h2 className="mt-4 mb-3 font-heading text-2xl font-semibold tracking-tight">{title}</h2>
       {children && <div className="mb-4 max-w-xl text-sm leading-normal text-muted-foreground">{children}</div>}
       {action}
     </div>
@@ -114,7 +114,7 @@ export function Dialog({
         aria-describedby={undefined}
         className="max-h-[85vh] w-full max-w-[calc(100%-1.75rem)] gap-0 overflow-auto p-5 sm:max-w-2xl md:p-7"
       >
-        <DialogTitle className="mb-3.5 pr-8 text-2xl leading-tight font-bold tracking-tight md:text-2xl">
+        <DialogTitle className="mb-3.5 pr-8 font-heading text-2xl leading-tight font-semibold tracking-tight">
           {title}
         </DialogTitle>
         <div className="text-sm leading-relaxed text-muted-foreground [&_h3]:mt-6 [&_h3]:mb-2 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-foreground">

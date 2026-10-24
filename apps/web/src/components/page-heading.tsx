@@ -25,7 +25,10 @@ export function PageHeading({
         <h1 className="font-heading text-3xl leading-none font-semibold tracking-tight md:text-4xl xl:leading-none">
           {title}
           {badge && (
-            <Badge variant="secondary" className="mt-2.5 table align-middle md:mt-0 md:ml-3 md:inline-flex">
+            <Badge
+              variant="secondary"
+              className="mt-2.5 table align-middle font-sans tracking-normal md:mt-0 md:ml-3 md:inline-flex"
+            >
               {badge}
             </Badge>
           )}

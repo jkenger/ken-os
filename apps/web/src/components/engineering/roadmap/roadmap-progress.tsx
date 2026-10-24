@@ -78,7 +78,7 @@ export function RoadmapProgress({
       >
         <Cell label={summary ? "Complete" : "Progress"}>
           <p className="flex items-baseline gap-1.5">
-            <span className="font-heading text-xl font-bold tracking-tight">
+            <span className="text-xl font-semibold tabular-nums">
               {counts.learned} of {counts.total}
             </span>
             <span className="text-sm text-muted-foreground">learned</span>
