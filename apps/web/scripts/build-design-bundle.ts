@@ -117,7 +117,7 @@ async function main() {
   const plugin = tailwind({ optimize: { minify: true } }) as AcceptedPlugin;
   const css = await postcss([plugin]).process(source, { from: globalsPath });
   // The font link must be the first rule: an @import after any other rule is ignored.
-  const fonts = `@import url("https://fonts.googleapis.com/css2?family=Public+Sans:wght@100..900&family=DM+Sans:opsz,wght@9..40,100..1000&family=Geist+Mono:wght@100..900&display=swap");\n`;
+  const fonts = `@import url("https://fonts.googleapis.com/css2?family=Public+Sans:wght@100..900&family=Source+Serif+4:opsz,wght@8..60,200..900&family=Geist+Mono:wght@100..900&display=swap");\n`;
   writeFileSync(resolve(out, "bundle.css"), fonts + css.css);
   sizes["bundle.css"] = fonts.length + css.css.length;
 
