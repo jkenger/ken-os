@@ -10,7 +10,8 @@ catalog look from PR #143. Private link with all three: https://claude.ai/artifa
 
 ## What every direction draws
 
-- **Resumes:** several stored files, newest first. Uploading again adds another; nothing is replaced. Each file shows its
+- **Resumes:** several stored files, newest first, added only by Upload. Uploading again adds another; nothing is
+  replaced. Each file shows its
   date, page count and state (In review, Applied Oct 14, Not used) and has its own Autofill button.
 - **Autofill review:** a field-by-field diff between the saved profile and one resume. Each change is accepted or left
   out on its own; nothing is saved until "Accept 4 changes". Matching fields are folded away.
@@ -36,7 +37,8 @@ A came first in the roll; B and C were dealt from the same ranked list (Impeccab
   already has (rows, badges, `DockedPanel`).
 - **B** fits Course catalog best, since the page becomes a printed sheet. Under a dark look the sheet stays light, like
   a document preview.
-- No "Dark Console" PR exists on GitHub as of 24 Oct 2026, so it was not drawn. A and C would take it without changes.
+- The Dark Console look (PR #145, the alternative to #143) is not drawn yet. It gets drawn for the chosen direction
+  once one is picked. A and C use only shared roles, so they should take it without layout changes.
 
 ## Screenshots
 
@@ -69,5 +71,9 @@ The phone number is shown only as "Hidden".
 
 1. Which direction? Recommended: **A**, because it holds up under any app-wide look and reuses `DockedPanel`; borrow
    C's side-by-side table for the Autofill panel if the checklist feels too narrow.
-2. Does Drive import stay beside Upload, or do uploads replace choosing a file in Drive? The prototypes show Upload only.
-3. Can a resume be deleted, or only marked Not used? The prototypes keep every upload.
+2. Can a resume be deleted, or only marked Not used? The prototypes keep every upload.
+
+## Decided
+
+- **No Drive.** Resumes come only from Upload; choosing a file in Google Drive is dropped, and Drive is no longer a
+  source for Profile (24 Oct 2026). None of the three directions shows a Drive option.
