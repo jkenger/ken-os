@@ -61,7 +61,7 @@ export function ResumeFiles({ initial }: { initial: ResumeFile[] }) {
   return (
     <Card id="resumes" className="scroll-mt-24">
       <CardHeader>
-        <CardTitle>Uploaded resumes</CardTitle>
+        <CardTitle>Resumes</CardTitle>
         <CardDescription>PDF or Word, up to 4 MB</CardDescription>
         <CardAction>
           <Input

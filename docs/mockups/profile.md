@@ -1,6 +1,7 @@
 # Profile: design directions
 
-Status: proposed, 24 Oct 2026. Three directions for the owner to choose from; no app code changes. Spec:
+Status: decided, 24 Oct 2026. The owner picked **A. Ledger**; it is built on Profile (screenshots in
+[`docs/design/profile-ledger/`](../design/profile-ledger/)). The Autofill panel comes with the resume Autofill work. Spec:
 [profile-resume.md](../product/profile-resume.md) for the stored profile, Autofill and the public link; the public
 resume itself now lives in the Portfolio module ([portfolio.md](../architecture/portfolio.md)).
 
@@ -69,11 +70,13 @@ The phone number is shown only as "Hidden".
 
 ## Open questions
 
-1. Which direction? Recommended: **A**, because it holds up under any app-wide look and reuses `DockedPanel`; borrow
-   C's side-by-side table for the Autofill panel if the checklist feels too narrow.
-2. Can a resume be deleted, or only marked Not used? The prototypes keep every upload.
+None.
 
 ## Decided
 
+- **A. Ledger** (24 Oct 2026). Each section row opens its form in the side panel; the row states are Unsaved, Empty,
+  Private (Local fields), Not published, Changed (a Publish would change it) and Published.
+- **Delete allowed.** A stored resume can be deleted (resume uploads, PR #147).
 - **No Drive.** Resumes come only from Upload; choosing a file in Google Drive is dropped, and Drive is no longer a
-  source for Profile (24 Oct 2026). None of the three directions shows a Drive option.
+  source for Profile (24 Oct 2026). None of the three directions shows a Drive option. The Drive card stays on Profile
+  until the Drive removal PR.
