@@ -52,7 +52,7 @@ function AreaNode({ data }: NodeProps<GraphNode>) {
   return (
     <div className={cn("size-full rounded-2xl border px-3.5 pt-3", tone.area)}>
       <p className="flex items-center gap-2 text-[0.6875rem] font-semibold tracking-wider uppercase">
-        <span className="font-mono opacity-80">{String(area.order).padStart(2, "0")}</span>
+        <span className="font-heading text-sm tracking-normal tabular-nums">{String(area.order).padStart(2, "0")}</span>
         <span className="truncate">{area.title}</span>
         <span className="ml-auto font-normal tracking-normal whitespace-nowrap text-muted-foreground normal-case">
           {area.done ? "Done · " : ""}

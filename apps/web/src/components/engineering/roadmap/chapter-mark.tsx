@@ -7,31 +7,37 @@ import { cn } from "@/lib/utils";
 const tones = {
   1: {
     tile: "bg-chapter-1-soft text-chapter-1",
+    text: "text-chapter-1",
     fill: "bg-chapter-1",
     area: "border-chapter-1/15 bg-chapter-1-soft/60 text-chapter-1",
   },
   2: {
     tile: "bg-chapter-2-soft text-chapter-2",
+    text: "text-chapter-2",
     fill: "bg-chapter-2",
     area: "border-chapter-2/15 bg-chapter-2-soft/60 text-chapter-2",
   },
   3: {
     tile: "bg-chapter-3-soft text-chapter-3",
+    text: "text-chapter-3",
     fill: "bg-chapter-3",
     area: "border-chapter-3/15 bg-chapter-3-soft/60 text-chapter-3",
   },
   4: {
     tile: "bg-chapter-4-soft text-chapter-4",
+    text: "text-chapter-4",
     fill: "bg-chapter-4",
     area: "border-chapter-4/15 bg-chapter-4-soft/60 text-chapter-4",
   },
   5: {
     tile: "bg-chapter-5-soft text-chapter-5",
+    text: "text-chapter-5",
     fill: "bg-chapter-5",
     area: "border-chapter-5/15 bg-chapter-5-soft/60 text-chapter-5",
   },
   6: {
     tile: "bg-chapter-6-soft text-chapter-6",
+    text: "text-chapter-6",
     fill: "bg-chapter-6",
     area: "border-chapter-6/15 bg-chapter-6-soft/60 text-chapter-6",
   },
@@ -42,14 +48,14 @@ export function chapterClasses(index: number) {
   return tones[chapterTone(index)];
 }
 
-/** The chapter's number on its accent, as in "01". */
+/** The chapter's number hung in the margin like a catalog's course number, a serif numeral in its accent, as in "01". */
 export function ChapterMark({ index, className }: { index: number; className?: string }) {
   return (
     <span
       aria-hidden="true"
       className={cn(
-        "flex size-8 shrink-0 items-center justify-center rounded-lg font-mono text-xs font-medium",
-        chapterClasses(index).tile,
+        "w-8 shrink-0 font-heading text-2xl leading-none font-semibold tabular-nums",
+        chapterClasses(index).text,
         className,
       )}
     >

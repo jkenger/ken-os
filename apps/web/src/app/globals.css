@@ -208,3 +208,92 @@
 :root {
   --radius: 0.25rem;
 }
+
+/* Course catalog (DESIGN.md): warm uncoated paper, brown-black ink and an oxblood rail. Overrides the shadcn neutrals
+   here rather than above, so the default block stays as `shadcn init` wrote it. Text pairs keep 4.5:1 in both themes. */
+:root {
+  --background: oklch(0.987 0.006 84);
+  --foreground: oklch(0.215 0.018 42);
+  --card: oklch(0.996 0.003 84);
+  --card-foreground: oklch(0.215 0.018 42);
+  --popover: oklch(0.996 0.003 84);
+  --popover-foreground: oklch(0.215 0.018 42);
+  --primary: oklch(0.24 0.02 40);
+  --primary-foreground: oklch(0.985 0.006 84);
+  --secondary: oklch(0.945 0.012 78);
+  --secondary-foreground: oklch(0.24 0.02 40);
+  --muted: oklch(0.945 0.012 78);
+  --muted-foreground: oklch(0.475 0.026 48);
+  --accent: oklch(0.24 0.02 40);
+  --accent-foreground: oklch(0.985 0.006 84);
+  --border: oklch(0.885 0.015 72);
+  --input: oklch(0.885 0.015 72);
+  --ring: oklch(0.52 0.11 24);
+  --sidebar: oklch(0.958 0.013 78);
+  --sidebar-foreground: oklch(0.215 0.018 42);
+  --sidebar-primary: oklch(0.24 0.02 40);
+  --sidebar-primary-foreground: oklch(0.985 0.006 84);
+  --sidebar-accent: oklch(0.925 0.016 74);
+  --sidebar-accent-foreground: oklch(0.215 0.018 42);
+  --sidebar-border: oklch(0.885 0.015 72);
+  --sidebar-ring: oklch(0.52 0.11 24);
+  /* The catalog's cover colour: the module rail (`catalog-rail`) and text selection. */
+  --oxblood: oklch(0.36 0.095 22);
+  --oxblood-soft: oklch(0.92 0.03 22);
+}
+
+.dark {
+  --background: oklch(0.19 0.012 48);
+  --foreground: oklch(0.935 0.012 78);
+  --card: oklch(0.225 0.013 48);
+  --card-foreground: oklch(0.935 0.012 78);
+  --popover: oklch(0.225 0.013 48);
+  --popover-foreground: oklch(0.935 0.012 78);
+  --primary: oklch(0.92 0.014 78);
+  --primary-foreground: oklch(0.225 0.013 48);
+  --secondary: oklch(0.275 0.014 48);
+  --secondary-foreground: oklch(0.935 0.012 78);
+  --muted: oklch(0.275 0.014 48);
+  --muted-foreground: oklch(0.74 0.022 66);
+  --accent: oklch(0.92 0.014 78);
+  --accent-foreground: oklch(0.225 0.013 48);
+  --border: oklch(0.935 0.012 78 / 12%);
+  --input: oklch(0.935 0.012 78 / 16%);
+  --ring: oklch(0.7 0.1 24);
+  --sidebar: oklch(0.165 0.011 48);
+  --sidebar-foreground: oklch(0.935 0.012 78);
+  --sidebar-primary: oklch(0.92 0.014 78);
+  --sidebar-primary-foreground: oklch(0.225 0.013 48);
+  --sidebar-accent: oklch(0.275 0.014 48);
+  --sidebar-accent-foreground: oklch(0.935 0.012 78);
+  --sidebar-border: oklch(0.935 0.012 78 / 10%);
+  --sidebar-ring: oklch(0.7 0.1 24);
+  --oxblood: oklch(0.3 0.075 22);
+  --oxblood-soft: oklch(0.36 0.07 22);
+}
+
+/* The module rail in the cover colour. Rescopes the sidebar tokens, so the shadcn Sidebar stays untouched. */
+.catalog-rail {
+  --sidebar: var(--oxblood);
+  --sidebar-foreground: oklch(0.93 0.025 70);
+  --sidebar-primary: oklch(0.97 0.012 80);
+  --sidebar-primary-foreground: var(--oxblood);
+  --sidebar-accent: oklch(1 0 0 / 14%);
+  --sidebar-accent-foreground: oklch(0.99 0.006 84);
+  --sidebar-border: oklch(0 0 0 / 18%);
+  --sidebar-ring: oklch(0.85 0.06 40);
+  --secondary: oklch(1 0 0 / 14%);
+  --muted-foreground: oklch(0.93 0.025 70);
+}
+
+@theme inline {
+  --color-oxblood: var(--oxblood);
+  --color-oxblood-soft: var(--oxblood-soft);
+}
+
+/* Browser surfaces in the catalog palette: text selection and the caret. */
+::selection {
+  background: var(--oxblood-soft);
+  color: var(--foreground);
+}
+:root { caret-color: var(--ring); }

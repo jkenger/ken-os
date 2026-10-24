@@ -259,7 +259,10 @@ function ShellSidebar({
       aria-label="Workspace sidebar"
       className="overflow-hidden group-data-[side=left]:border-r-0 *:data-[sidebar=sidebar]:flex-row"
     >
-      <Sidebar collapsible="none" className="w-(--sidebar-width-icon) shrink-0 border-r border-sidebar-border">
+      <Sidebar
+        collapsible="none"
+        className="catalog-rail w-(--sidebar-width-icon) shrink-0 border-r border-sidebar-border"
+      >
         <SidebarHeader>
           <Link href="/" aria-label="Loots home">
             <Brand />

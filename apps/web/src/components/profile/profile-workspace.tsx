@@ -125,7 +125,7 @@ export function ProfileWorkspace({
   return (
     <WorkspaceShell email={email} active="profile">
       <div className="mx-auto max-w-5xl px-3 pt-6 pb-24 md:px-5 md:pt-7.5">
-        <PageHeading kicker="Profile" title="Details" />
+        <PageHeading title="Details" />
 
         <div className="flex flex-col gap-4">
           {review && (
