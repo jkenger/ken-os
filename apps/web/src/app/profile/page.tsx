@@ -3,6 +3,7 @@ import { getDriveFile } from "@ken-os/drive";
 import { ProfileWorkspace } from "@/components/profile/profile-workspace";
 import { listResumeFiles } from "@/features/profile/resume-files-store";
 import { getProfile } from "@/features/profile/store";
+import { getPortfolio, liveSnapshotFor } from "@/features/portfolio/store";
 import { engineeringSummary } from "@/features/engineering-lab/roadmap-store";
 import { driveErrorText } from "@/lib/auth-errors";
 import { DriveAccessError, getGoogleAccessToken, hasDriveConnection, type DriveAccess } from "@/lib/google";
@@ -18,13 +19,15 @@ export default async function ProfilePage({
 }) {
   const session = await requireSession("/profile");
   const { drive_error } = await searchParams;
-  const [profile, resumes, selection, connected, engineering] = await Promise.all([
+  const [profile, resumes, selection, connected, engineering, portfolio, snapshot] = await Promise.all([
     getProfile(session.userId),
     listResumeFiles(session.userId),
     getSelectedResume(session.userId),
     hasDriveConnection(session.userId),
     // The Engineering line is a convenience; Profile still loads if it fails.
     engineeringSummary(session.userId).catch(() => null),
+    getPortfolio(session.userId),
+    liveSnapshotFor(session.userId),
   ]);
   let drive: DriveAccess = connected ? "connected" : "not_connected";
   let file: Artifact | null = null;
@@ -53,6 +56,7 @@ export default async function ProfilePage({
       profile={profile}
       resumes={resumes}
       engineering={engineering}
+      published={{ live: portfolio.live, profile: snapshot?.profile ?? null, showEmail: portfolio.showEmail }}
       drive={{
         access: drive,
         selection,

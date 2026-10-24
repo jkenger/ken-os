@@ -144,3 +144,14 @@ export async function liveSnapshot(ownerEmail: string): Promise<PortfolioSnapsho
     .limit(1);
   return row?.snapshot ?? null;
 }
+
+/** The live snapshot of this owner, for Profile to tell which sections a Publish would change. Null when unpublished. */
+export async function liveSnapshotFor(userId: string): Promise<PortfolioSnapshot | null> {
+  const [row] = await db()
+    .select({ snapshot: portfolioPublications.snapshot })
+    .from(portfolios)
+    .innerJoin(portfolioPublications, eq(portfolioPublications.id, portfolios.currentPublicationId))
+    .where(eq(portfolios.userId, userId))
+    .limit(1);
+  return row?.snapshot ?? null;
+}
