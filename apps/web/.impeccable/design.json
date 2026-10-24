@@ -147,7 +147,7 @@
       "refersTo": "panel",
       "description": "Flat bordered card surface; selected rows take an inset outline.",
       "html": "<div class=\"ds-panel\"><div class=\"ds-row\">Not started topic</div><div class=\"ds-row ds-row-selected\">Picked topic</div><div class=\"ds-row\">Another topic</div></div>",
-      "css": ".ds-panel { width: 280px; border-radius: 14px; border: 1px solid var(--border, oklch(0.922 0.005 34.3)); background: var(--card, #fff); color: var(--card-foreground, oklch(0.147 0.004 49.3)); font: 400 14px 'Public Sans', sans-serif; } .ds-row { padding: 10px 14px; border-top: 1px solid var(--border, oklch(0.922 0.005 34.3)); } .ds-row:first-child { border-top: 0; border-radius: 14px 14px 0 0; } .ds-row:last-child { border-radius: 0 0 14px 14px; } .ds-row-selected { box-shadow: inset 0 0 0 1px var(--selected, oklch(0.48 0.14 262)); }"
+      "css": ".ds-panel { width: 280px; border-radius: 14px; border: 1px solid var(--border, oklch(0.922 0.005 34.3)); background: var(--card, #fff); color: var(--card-foreground, oklch(0.147 0.004 49.3)); font: 400 14px 'Public Sans', sans-serif; } .ds-row { padding: 10px 14px; border-top: 1px solid var(--border, oklch(0.922 0.005 34.3)); } .ds-row:first-child { border-top: 0; border-radius: 14px 14px 0 0; } .ds-row:last-child { border-radius: 0 0 14px 14px; } .ds-row-selected { box-shadow: inset 0 0 0 1px var(--selected, oklch(0.147 0.004 49.3)); }"
     },
     {
       "name": "Section Label",

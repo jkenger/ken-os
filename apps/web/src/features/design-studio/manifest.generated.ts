@@ -1103,13 +1103,22 @@ export const studioManifest: StudioManifest = {
         "foreground"
       ],
       "source": {
-        "start": 94,
+        "start": 95,
         "lines": [
-          "export function Notice({ tone = \"info\", children }: { tone?: \"info\" | \"error\" | \"success\"; children: ReactNode }) {",
+          "export function Notice({",
+          "  tone = \"info\",",
+          "  className,",
+          "  children,",
+          "}: {",
+          "  tone?: \"info\" | \"error\" | \"success\";",
+          "  className?: string;",
+          "  children: ReactNode;",
+          "}) {",
           "  return (",
           "    <div",
           "      className={cn(",
-          "        \"my-5 rounded-md px-4 py-3.5 text-sm leading-relaxed\",",
+          "        \"rounded-xl px-4 py-3.5 text-sm leading-relaxed\",",
+          "        className,",
           "        tone === \"info\" && \"border bg-card text-foreground\",",
           "        tone === \"error\" && \"bg-destructive/10 text-destructive\",",
           "        tone === \"success\" && \"bg-muted text-foreground\",",
@@ -2598,8 +2607,8 @@ export const studioManifest: StudioManifest = {
     },
     {
       "name": "selected",
-      "light": "var(--topic-active)",
-      "dark": "var(--topic-active)"
+      "light": "var(--foreground)",
+      "dark": "var(--foreground)"
     }
   ],
   "globals": {

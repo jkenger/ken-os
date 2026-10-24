@@ -7,7 +7,9 @@ inventing its own. It covers what was built and proved on this screen only; it i
 ## What the screen is
 
 - **Header.** The roadmap title (with the roadmap switcher), then three actions: Search reviews as an icon button with
-  a tooltip, Claude setup as a quiet button, and one primary button, Continue topic, which opens the topic you're on.
+  a tooltip, Claude setup as a quiet button (hidden while the setup checklist is on the page, so setup has one way in;
+  24 Oct 2026), and one primary button, Continue topic, which opens the topic you're on. The menu beside the title is
+  named Roadmaps. An empty roadmap shows Plan with Claude.
   The view switch (Lanes, Graph) sits just above the roadmap it changes, not in the header (17 Oct 2026, when the
   header row got too crowded). Re-plan was taken off the header on 17 Oct 2026 until it is redesigned;
   `replanMessage` stays in `features/engineering-lab/ask-claude.ts`, unused.
@@ -35,7 +37,9 @@ inventing its own. It covers what was built and proved on this screen only; it i
   visible and clickable; Escape (wherever focus is, unless it is closing a dialog or menu first) or the close button
   closes it. Below 1280px it is the same content in a Sheet. Both come from the shared `DockedPanel`. Lanes
   and Graph share the selected topic, and the open topic lives in the address. It has two modes:
-  - **Overview**, beside the graph: status, chapter, description, task progress, Next in path, and **Open in lanes**.
+  - **Overview**, beside the graph: status, chapter, description, task progress, Next in path, the main button (the
+    same as Detail's), and a quiet **Open in lanes** that shows Lanes for this visit without saving it as your layout
+    (24 Oct 2026). Graph cards mark the topic you're on with a Now badge, as Lanes do.
   - **Detail**, beside the lanes: Tasks, Mastery criteria (the topic's points: Claude's criteria once written), Status, Link chat and
     Sessions in the Topic tab; the review sheet and notes in the Review tab. A review opened from search always shows
     Detail. The main button is the first task left to do, or Next topic once the topic is finished.

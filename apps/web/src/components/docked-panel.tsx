@@ -87,6 +87,29 @@ export function DockedPanel({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [docked, open, onClose]);
 
+  // Docked, the panel is not a dialog, so nothing moves focus for it: opening it focuses its title, so keyboard and
+  // screen reader users land in it, and closing it hands focus back to what opened it (the Sheet does both itself).
+  // A panel already open when the page loads (a link to a topic, the Design Studio's Theme) leaves focus alone.
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const returnTo = useRef<HTMLElement | null>(null);
+  const openedAt = useRef(open);
+  const opened = open && !openedAt.current;
+  useEffect(() => {
+    openedAt.current = openedAt.current && open;
+  }, [open]);
+  useEffect(() => {
+    if (!docked || !open || !opened) return;
+    const active = document.activeElement;
+    returnTo.current = active instanceof HTMLElement && !asideRef.current?.contains(active) ? active : null;
+    headingRef.current?.focus({ preventScroll: true });
+    return () => {
+      const back = returnTo.current;
+      const lost = !document.activeElement || document.activeElement === document.body;
+      if (back?.isConnected && lost) back.focus({ preventScroll: true });
+      returnTo.current = null;
+    };
+  }, [docked, open]);
+
   if (docked) {
     if (!open) return null;
     return (
@@ -111,7 +134,12 @@ export function DockedPanel({
               </Button>
             )}
           </div>
-          <h2 id={titleId} className="font-heading text-xl leading-tight font-bold tracking-tight">
+          <h2
+            id={titleId}
+            ref={headingRef}
+            tabIndex={-1}
+            className="font-heading text-xl leading-tight font-bold tracking-tight outline-none"
+          >
             {title}
           </h2>
           {description && <p className="text-sm text-muted-foreground">{description}</p>}

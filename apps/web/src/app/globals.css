@@ -153,9 +153,9 @@
   --chapter-5-soft: oklch(0.945 0.02 318);
   --chapter-6: oklch(0.47 0.08 85);
   --chapter-6-soft: oklch(0.945 0.03 90);
-  /* The item you picked (a row, a card, the lines touching it). It shares the In progress hue today; components use
-     this name, so selection can change without touching status. */
-  --selected: var(--topic-active);
+  /* The item you picked (a row, a card, the lines touching it): the text ink, so it never reads as a status. Components use
+     this name, so selection can change without touching status (split from In progress blue on 24 Oct 2026). */
+  --selected: var(--foreground);
 }
 
 .dark {
@@ -175,7 +175,7 @@
   --chapter-5-soft: oklch(0.3 0.03 318);
   --chapter-6: oklch(0.8 0.08 90);
   --chapter-6-soft: oklch(0.3 0.03 90);
-  --selected: var(--topic-active);
+  --selected: var(--foreground);
 }
 
 @theme inline {

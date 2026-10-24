@@ -191,6 +191,8 @@ export function RoadmapPage({
     projectLinked: Boolean(projectUrl),
     planned: view.planned,
   };
+  // While the checklist is on the page it is the one way into Claude setup; the header button comes back once it folds away.
+  const setupShown = setupChecklist(facts).show;
   return (
     <WorkspaceShell email={email} active="lab" tab="roadmap">
       <div className="flex min-w-0 items-start">
@@ -222,6 +224,7 @@ export function RoadmapPage({
                 alert={setupAlert(facts)}
                 open={setupOpen}
                 onOpenChange={setSetupOpen}
+                showTrigger={!setupShown}
               />
               {current && !summary && (
                 <Button type="button" size="sm" onClick={() => select(current.id)}>
@@ -246,7 +249,7 @@ export function RoadmapPage({
               </div>
             </Notice>
           )}
-          {setupChecklist(facts).show && (
+          {setupShown && (
             <SetupChecklist facts={facts} projectUrl={projectUrl} onOpenSetup={() => setSetupOpen(true)} />
           )}
           <RoadmapProgress view={view} summary={summary} onSelect={select} />
@@ -260,8 +263,17 @@ export function RoadmapPage({
           )}
           {view.chapters.length === 0 ? (
             <Notice>
-              <p className="font-semibold">No topics yet</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">Plan a roadmap with Claude to fill it</p>
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="font-semibold">No topics yet</p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">Plan a roadmap with Claude to fill it</p>
+                </div>
+                {view.active && (
+                  <Button type="button" size="sm" onClick={() => setNewOpen(true)}>
+                    Plan with Claude
+                  </Button>
+                )}
+              </div>
             </Notice>
           ) : (
             <div className="grid gap-3">
@@ -298,7 +310,7 @@ export function RoadmapPage({
           projectUrl={projectUrl}
           mode={topicMode}
           tab={topicTab}
-          onOpenDetail={() => changeLayout("lanes")}
+          onOpenDetail={() => setLayout("lanes")}
           chapterIndex={chapterIndex < 0 ? null : chapterIndex}
           onTabChange={setTopicTab}
           onClose={() => select(null)}

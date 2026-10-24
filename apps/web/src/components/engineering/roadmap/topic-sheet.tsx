@@ -25,7 +25,8 @@ import { chapterClasses } from "./chapter-mark";
 import { cn } from "@/lib/utils";
 
 // The roadmap's topic panel (docs/architecture/engineering-claude-first.md, section 1, and docs/architecture/roadmap-ui.md)
-// in two modes. Overview, beside the graph: task progress and the next topic, with Open in lanes. Detail, beside the
+// in two modes. Overview, beside the graph: task progress and the next topic, with the main button and Open in lanes
+// under it (which shows Lanes for this visit without saving it as your layout). Detail, beside the
 // lanes, in two tabs. Topic: the tasks (Read, Build, Explain), mastery criteria, the status with a menu to change it,
 // Link chat, and the sessions timeline from Claude's reports. Review: the review sheet and notes (section 9h). The main
 // button is the first task left to do, or Next topic once it's done (engineering-progressive-flow.md, sections 2 and 3).
@@ -308,7 +309,7 @@ export function TopicSheet({
   /** Topic or Review, in Detail; the page holds it, so search can open a topic on its review. */
   tab: TopicTab;
   onTabChange: (tab: TopicTab) => void;
-  /** Open in lanes: the page switches to Lanes, and the panel to Detail. */
+  /** Open in lanes: the page switches to Lanes for this visit (not saved as the layout), and the panel to Detail. */
   onOpenDetail: () => void;
   /** The roadmap it's opened on, for Next topic and chapter done. */
   roadmapId: string | null;
@@ -462,19 +463,18 @@ export function TopicSheet({
 
   const footer = panel && (
     <div className="sticky bottom-0 mt-auto grid gap-2 border-t bg-card p-4">
-      {mode === "overview" ? (
-        <Button type="button" onClick={onOpenDetail}>
+      <TopicTaskAction
+        panel={panel}
+        projectUrl={projectUrl}
+        onPractice={() => setCoding(true)}
+        onSelect={onSelect}
+        showNext={roadmapActive}
+      />
+      {mode === "overview" && (
+        <Button type="button" variant="ghost" onClick={onOpenDetail}>
           Open in lanes
           <IconArrowRight aria-hidden="true" />
         </Button>
-      ) : (
-        <TopicTaskAction
-          panel={panel}
-          projectUrl={projectUrl}
-          onPractice={() => setCoding(true)}
-          onSelect={onSelect}
-          showNext={roadmapActive}
-        />
       )}
     </div>
   );

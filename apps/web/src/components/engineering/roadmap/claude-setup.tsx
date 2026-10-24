@@ -77,6 +77,7 @@ export function ClaudeSetup({
   alert,
   open,
   onOpenChange,
+  showTrigger = true,
 }: {
   mcpUrl: string;
   connections: Connection[];
@@ -86,18 +87,22 @@ export function ClaudeSetup({
   alert: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** False while the setup checklist is on the page, so setup has one way in; the checklist opens this sheet. */
+  showTrigger?: boolean;
 }) {
   const router = useRouter();
   const connected = connections.length > 0;
   const updated = formatDate(`${CLAUDE_INSTRUCTIONS_UPDATED}T12:00:00`);
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetTrigger asChild>
-        <Button type="button" variant="ghost" size="sm">
-          Claude setup
-          {alert && <Badge variant="destructive">{alert}</Badge>}
-        </Button>
-      </SheetTrigger>
+      {showTrigger && (
+        <SheetTrigger asChild>
+          <Button type="button" variant="ghost" size="sm">
+            Claude setup
+            {alert && <Badge variant="destructive">{alert}</Badge>}
+          </Button>
+        </SheetTrigger>
+      )}
       <SheetContent className="gap-0 overflow-y-auto data-[side=right]:w-full data-[side=right]:sm:max-w-md">
         <SheetHeader className="border-b">
           <SheetTitle className="text-xl">Claude setup</SheetTitle>
