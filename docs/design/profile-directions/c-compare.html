@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Profile C: Compare</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&family=Public+Sans:wght@400;500;600&family=Geist+Mono&family=Source+Serif+4:opsz,wght@8..60,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="proto.css" />
+    <style>
+      .strip {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 20px;
+        border-bottom: 1px solid var(--border);
+        font-size: 13px;
+      }
+      .strip b {
+        font-weight: 600;
+      }
+      .strip .url {
+        font: 12px var(--font-mono);
+        color: var(--muted-foreground);
+      }
+      .strip .gap {
+        flex: 1;
+      }
+      .files {
+        width: 300px;
+        flex: none;
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+      .files-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 16px 12px;
+      }
+      .files-head h1 {
+        font-size: 24px;
+        line-height: 1;
+      }
+      .flist {
+        list-style: none;
+        margin: 0;
+        padding: 0 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        overflow: auto;
+      }
+      .fitem {
+        display: grid;
+        grid-template-columns: 44px 1fr;
+        gap: 10px;
+        padding: 8px;
+        border-radius: var(--r-panel);
+        align-items: center;
+      }
+      .fitem[aria-current] {
+        box-shadow: inset 0 0 0 1px var(--foreground);
+      }
+      .fitem.profile {
+        grid-template-columns: 44px 1fr;
+      }
+      .thumb {
+        width: 44px;
+        height: 56px;
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        background: var(--sheet);
+        padding: 6px 5px;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      .thumb i {
+        display: block;
+        height: 2px;
+        background: oklch(0 0 0 / 0.16);
+        border-radius: 1px;
+      }
+      .thumb i.h {
+        height: 4px;
+        width: 70%;
+        background: oklch(0 0 0 / 0.38);
+      }
+      .thumb i.s {
+        width: 60%;
+      }
+      .avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: var(--r-panel);
+        background: var(--secondary);
+        display: grid;
+        place-items: center;
+        font: 600 14px var(--font-heading);
+      }
+      .fitem b {
+        font-weight: 600;
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .fitem .meta {
+        font-size: 12px;
+        color: var(--muted-foreground);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .flist .label {
+        padding: 12px 8px 4px;
+      }
+      .eng {
+        margin: auto 16px 16px;
+        padding: 10px 12px;
+        font-size: 13px;
+      }
+      .eng b {
+        font-weight: 600;
+        display: block;
+      }
+      .cmp {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+      .cmp-head {
+        padding: 16px 24px 0;
+        display: flex;
+        align-items: flex-end;
+        gap: 16px;
+        border-bottom: 1px solid var(--border);
+      }
+      .cmp-head .title {
+        padding-bottom: 12px;
+      }
+      .cmp-head h2 {
+        font-size: 20px;
+      }
+      .cmp-head .sub {
+        color: var(--muted-foreground);
+        margin-top: 2px;
+      }
+      .tabs {
+        display: flex;
+        gap: 18px;
+        margin-left: auto;
+      }
+      .tab {
+        padding: 0 2px 10px;
+        font-weight: 500;
+        color: var(--muted-foreground);
+        border-bottom: 2px solid transparent;
+        display: inline-flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .tab[aria-selected="true"] {
+        color: var(--foreground);
+        border-color: var(--foreground);
+      }
+      .tab .mono {
+        color: inherit;
+      }
+      .grid-scroll {
+        flex: 1;
+        overflow: auto;
+        padding: 0 24px 24px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: fixed;
+      }
+      thead th {
+        position: sticky;
+        top: 0;
+        background: var(--background);
+        text-align: left;
+        font: 600 12px var(--font-sans);
+        color: var(--muted-foreground);
+        padding: 14px 10px 8px;
+        border-bottom: 1px solid var(--border);
+      }
+      th.f,
+      td.f {
+        width: 120px;
+      }
+      th.g,
+      td.g {
+        width: 92px;
+        text-align: center;
+      }
+      th.s,
+      td.s {
+        width: 30px;
+        padding-left: 0;
+        padding-right: 0;
+      }
+      tbody th {
+        text-align: left;
+        font: 600 11px var(--font-sans);
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted-foreground);
+        padding: 18px 10px 6px;
+      }
+      td {
+        padding: 10px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+      td.f {
+        font-weight: 600;
+      }
+      tr.same td:not(.f) {
+        color: var(--muted-foreground);
+      }
+      tr.take td.res {
+        background: var(--diff-add-soft);
+      }
+      tr.take.merge td.cur,
+      tr.take td.cur.muted {
+        background: none;
+      }
+      tr.take td.cur {
+        background: var(--diff-remove-soft);
+      }
+      .cur s {
+        text-decoration-thickness: 1px;
+        color: var(--diff-remove);
+      }
+      td.res ins {
+        text-decoration: none;
+        color: var(--diff-add);
+      }
+      .use {
+        height: 26px;
+        padding: 0 8px;
+      }
+      .use[aria-pressed="true"] {
+        background: var(--primary);
+        color: var(--primary-foreground);
+      }
+      .eq {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        color: var(--muted-foreground);
+        padding-top: 4px;
+      }
+      .foot {
+        border-top: 1px solid var(--border);
+        padding: 12px 24px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .foot .muted {
+        margin-right: auto;
+        font-size: 13px;
+      }
+      @media (max-width: 1100px) {
+        .files {
+          width: 240px;
+        }
+      }
+      @media (max-width: 767px) {
+        .strip {
+          flex-wrap: wrap;
+          padding: 10px 14px;
+        }
+        .strip .gap {
+          display: none;
+        }
+        .body {
+          display: flex;
+          flex-direction: column;
+        }
+        .files {
+          width: auto;
+          border-right: 0;
+          border-bottom: 1px solid var(--border);
+        }
+        .flist {
+          flex-direction: row;
+          overflow-x: auto;
+          padding-bottom: 10px;
+        }
+        .flist .label,
+        .eng {
+          display: none;
+        }
+        .fitem {
+          min-width: 230px;
+        }
+        .cmp-head {
+          flex-wrap: wrap;
+          padding: 14px 14px 0;
+        }
+        .tabs {
+          margin-left: 0;
+        }
+        .grid-scroll {
+          padding: 0 14px 14px;
+          overflow: visible;
+        }
+        /* Phones: each field becomes a stacked row, the Use button on the right. */
+        table,
+        tbody,
+        tr,
+        td,
+        tbody th {
+          display: block;
+          width: auto !important;
+        }
+        thead,
+        td.s {
+          display: none;
+        }
+        tr:has(td) {
+          display: grid;
+          grid-template-columns: 1fr auto;
+          gap: 4px 12px;
+          padding: 10px 0;
+          border-bottom: 1px solid var(--border);
+        }
+        td {
+          border: 0;
+          padding: 2px 6px;
+          border-radius: 3px;
+          grid-column: 1;
+        }
+        td.f {
+          padding: 0;
+        }
+        td.g {
+          grid-column: 2;
+          grid-row: 1 / span 3;
+          align-self: center;
+          padding: 0;
+        }
+        td:nth-child(2)::before,
+        td:nth-child(4)::before {
+          display: block;
+          font-size: 11px;
+          color: var(--muted-foreground);
+        }
+        td:nth-child(2)::before {
+          content: "Saved";
+        }
+        td:nth-child(4)::before {
+          content: "Resume";
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <nav class="rail" aria-label="Modules">
+        <div class="mark">L</div>
+        <a href="#" aria-current="page" aria-label="Profile"
+          ><svg class="icon"><use href="#i-user" /></svg
+        ></a>
+        <a href="#" aria-label="Portfolio"
+          ><svg class="icon"><use href="#i-globe" /></svg
+        ></a>
+        <a href="#" aria-label="Project Memory"
+          ><svg class="icon"><use href="#i-book" /></svg
+        ></a>
+        <a href="#" aria-label="Engineering"
+          ><svg class="icon"><use href="#i-flask" /></svg
+        ></a>
+        <a href="#" aria-label="Terms"
+          ><svg class="icon"><use href="#i-library" /></svg
+        ></a>
+        <a href="#" aria-label="Studio"
+          ><svg class="icon"><use href="#i-palette" /></svg
+        ></a>
+      </nav>
+      <nav class="sections" aria-label="Profile">
+        <h2>Profile</h2>
+        <a href="#" aria-current="page">Details</a>
+        <a href="#">Resumes <span class="mono">3</span></a>
+        <a href="#">Public link</a>
+      </nav>
+      <main class="inset">
+        <header class="top">
+          <button class="btn icon-only menu" aria-label="Menu">
+            <svg class="icon"><use href="#i-menu" /></svg>
+          </button>
+          <div class="search">
+            <svg class="icon sm"><use href="#i-search" /></svg>Jump to a module…<kbd>Ctrl K</kbd>
+          </div>
+        </header>
+        <div class="strip">
+          <svg class="icon"><use href="#i-globe" /></svg><b>Public resume</b>
+          <span class="badge live"
+            ><svg class="icon sm"><use href="#i-filled" /></svg>Live</span
+          >
+          <span class="url">[domain]/resume</span>
+          <span class="muted">Version 4, Oct 18 · 2 sections changed since</span>
+          <span class="gap"></span>
+          <button class="btn xs outline">
+            <svg class="icon sm"><use href="#i-copy" /></svg>Copy link
+          </button>
+          <button class="btn xs outline">
+            Open Portfolio<svg class="icon sm"><use href="#i-external" /></svg>
+          </button>
+        </div>
+        <div class="body">
+          <aside class="files" aria-label="Sources">
+            <div class="files-head">
+              <h1>Profile</h1>
+              <button class="btn xs outline">
+                <svg class="icon sm"><use href="#i-upload" /></svg>Upload
+              </button>
+            </div>
+            <ul class="flist">
+              <li class="fitem profile">
+                <span class="avatar">JK</span>
+                <div><b>Saved profile</b><span class="meta">Saved Oct 12 · 5 of 9 sections</span></div>
+              </li>
+              <li class="label">Resumes</li>
+              <li class="fitem" aria-current="true">
+                <span class="thumb"
+                  ><i class="h"></i><i></i><i class="s"></i><i></i><i></i><i class="s"></i><i></i
+                ></span>
+                <div>
+                  <b>JKG-Resume-2026-10.pdf</b><span class="meta">Oct 22 · 2 pages</span
+                  ><span class="meta"
+                    ><svg class="icon sm"><use href="#i-changed" /></svg>6 differences</span
+                  >
+                </div>
+              </li>
+              <li class="fitem">
+                <span class="thumb"><i class="h"></i><i class="s"></i><i></i><i></i><i class="s"></i><i></i></span>
+                <div>
+                  <b>JKG-Resume-2026-08.docx</b><span class="meta">Aug 30 · 2 pages</span
+                  ><span class="meta"
+                    ><svg class="icon sm"><use href="#i-check" /></svg>Applied Oct 14</span
+                  >
+                </div>
+              </li>
+              <li class="fitem">
+                <span class="thumb"><i class="h"></i><i></i><i></i><i class="s"></i></span>
+                <div>
+                  <b>JKG-Resume-2025-03.pdf</b><span class="meta">Mar 3, 2025 · 1 page</span
+                  ><span class="meta">Not used</span>
+                </div>
+              </li>
+            </ul>
+            <a class="panel eng" href="#" style="color: inherit; text-decoration: none"
+              ><b>Full-stack Engineer with applied AI</b><span class="muted">3 of 41 learned · Engineering</span></a
+            >
+          </aside>
+
+          <section class="cmp" aria-labelledby="cmp-title">
+            <div class="cmp-head">
+              <div class="title">
+                <h2 id="cmp-title">JKG-Resume-2026-10.pdf</h2>
+                <div class="sub">Autofill · Uploaded Oct 22</div>
+              </div>
+              <div class="tabs" role="tablist">
+                <span class="tab" role="tab" aria-selected="true">Differences <span class="mono">6</span></span>
+                <span class="tab" role="tab" aria-selected="false">All fields <span class="mono">31</span></span>
+                <span class="tab" role="tab" aria-selected="false">File</span>
+              </div>
+            </div>
+            <div class="grid-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th class="f">Field</th>
+                    <th>Saved profile</th>
+                    <th class="g"></th>
+                    <th>In this resume</th>
+                    <th class="s"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th colspan="5">Contact</th>
+                  </tr>
+                  <tr class="take">
+                    <td class="f">Headline</td>
+                    <td class="cur"><s>Full-stack Engineer</s></td>
+                    <td class="g">
+                      <button class="btn use outline" aria-pressed="true">
+                        <svg class="icon sm"><use href="#i-arrowLeft" /></svg>Using
+                      </button>
+                    </td>
+                    <td class="res"><ins>Full-stack Engineer, applied AI</ins></td>
+                    <td class="s"></td>
+                  </tr>
+                  <tr class="take">
+                    <td class="f">City</td>
+                    <td class="cur"><s>Binangonan</s></td>
+                    <td class="g">
+                      <button class="btn use outline" aria-pressed="true">
+                        <svg class="icon sm"><use href="#i-arrowLeft" /></svg>Using
+                      </button>
+                    </td>
+                    <td class="res"><ins>Binangonan, Rizal</ins></td>
+                    <td class="s"></td>
+                  </tr>
+                  <tr>
+                    <td class="f">Links</td>
+                    <td>github.com/jkenger</td>
+                    <td class="g">
+                      <button class="btn use outline">
+                        <svg class="icon sm"><use href="#i-plus" /></svg>Add
+                      </button>
+                    </td>
+                    <td>github.com/jkenger<br />linkedin.com/in/[handle]</td>
+                    <td class="s"></td>
+                  </tr>
+                  <tr class="same">
+                    <td class="f">Email</td>
+                    <td>johnkgervacio@gmail.com</td>
+                    <td class="g">
+                      <span class="eq"
+                        ><svg class="icon sm"><use href="#i-check" /></svg>Same</span
+                      >
+                    </td>
+                    <td>johnkgervacio@gmail.com</td>
+                    <td class="s"></td>
+                  </tr>
+                  <tr>
+                    <th colspan="5">Summary</th>
+                  </tr>
+                  <tr>
+                    <td class="f">Summary</td>
+                    <td>Sample</td>
+                    <td class="g">
+                      <button class="btn use outline">
+                        <svg class="icon sm"><use href="#i-arrowLeft" /></svg>Use
+                      </button>
+                    </td>
+                    <td>[3 lines from the resume]</td>
+                    <td class="s"></td>
+                  </tr>
+                  <tr>
+                    <th colspan="5">Skills</th>
+                  </tr>
+                  <tr class="take">
+                    <td class="f">Stack</td>
+                    <td class="cur muted">Empty</td>
+                    <td class="g">
+                      <button class="btn use outline" aria-pressed="true">
+                        <svg class="icon sm"><use href="#i-arrowLeft" /></svg>Using
+                      </button>
+                    </td>
+                    <td class="res"><ins>TypeScript, React, Next.js, PostgreSQL</ins></td>
+                    <td class="s"></td>
+                  </tr>
+                  <tr>
+                    <th colspan="5">Experience</th>
+                  </tr>
+                  <tr class="take merge">
+                    <td class="f">[Company]</td>
+                    <td class="cur">[Title] · 2 bullets</td>
+                    <td class="g">
+                      <button class="btn use outline" aria-pressed="true">
+                        <svg class="icon sm"><use href="#i-arrowLeft" /></svg>Using
+                      </button>
+                    </td>
+                    <td class="res">[Title] · 2 bullets<br /><ins>+ [Bullet from the resume]</ins></td>
+                    <td class="s"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="foot">
+              <span class="muted">Using 4 of 6 · Nothing changes until you accept</span
+              ><button class="btn">Discard</button><button class="btn primary">Accept 4 changes</button>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+    <script src="proto.js"></script>
+  </body>
+</html>

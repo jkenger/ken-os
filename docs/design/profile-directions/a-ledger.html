@@ -1,0 +1,645 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Profile A: Ledger</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@500;600;700&family=Public+Sans:wght@400;500;600&family=Geist+Mono&family=Source+Serif+4:opsz,wght@8..60,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="proto.css" />
+    <style>
+      .page {
+        max-width: 760px;
+        padding: 28px 28px 48px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .head {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        align-items: flex-end;
+      }
+      .head h1 {
+        font-size: 30px;
+        line-height: 1;
+      }
+      .who {
+        margin-top: 8px;
+        display: flex;
+        gap: 14px;
+        color: var(--muted-foreground);
+        flex-wrap: wrap;
+      }
+      .who span {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .facts {
+        display: grid;
+        grid-template-columns: auto auto;
+        gap: 4px 14px;
+        font-size: 13px;
+      }
+      .facts dt {
+        color: var(--muted-foreground);
+      }
+      .facts dd {
+        margin: 0;
+      }
+      .public {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+      }
+      .public .url {
+        font-family: var(--font-mono);
+        font-size: 12px;
+      }
+      .public .grow {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .public .line {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+      }
+      .block-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        padding: 0 2px;
+      }
+      .block-head h2 {
+        font-size: 16px;
+      }
+      .rows {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .rows li + li {
+        border-top: 1px solid var(--border);
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 18px 128px 1fr 64px 150px 16px;
+        align-items: center;
+        gap: 12px;
+        padding: 0 14px;
+        height: 44px;
+      }
+      .row .name {
+        font-weight: 600;
+      }
+      .row .sum {
+        color: var(--muted-foreground);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .row .count {
+        text-align: right;
+        color: var(--muted-foreground);
+      }
+      .row .chev {
+        color: var(--muted-foreground);
+      }
+      .row .badge {
+        justify-self: start;
+      }
+      .row .st-filled {
+        color: var(--learned);
+      }
+      .row .st-empty {
+        color: var(--muted-foreground);
+      }
+      .file {
+        display: grid;
+        grid-template-columns: 18px 1fr 120px 132px auto;
+        align-items: center;
+        gap: 12px;
+        padding: 0 8px 0 14px;
+        height: 52px;
+      }
+      .file .fname {
+        font-weight: 600;
+      }
+      .file .meta {
+        color: var(--muted-foreground);
+        font-size: 12px;
+      }
+      .file.picked {
+        box-shadow: inset 0 0 0 1px var(--foreground);
+        border-radius: var(--r-panel);
+      }
+      .state {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 13px;
+      }
+      .eng {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+      }
+      .eng .grow {
+        flex: 1;
+      }
+      .eng b {
+        font-weight: 600;
+      }
+      /* Docked panel: Autofill review. */
+      .dock {
+        width: 432px;
+        flex: none;
+        border-left: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        background: var(--card);
+      }
+      .dock-head {
+        padding: 18px 20px 14px;
+        border-bottom: 1px solid var(--border);
+      }
+      .dock-head .badges {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .dock-head .badges .btn {
+        margin-left: auto;
+      }
+      .dock-head h2 {
+        font-size: 20px;
+        margin-top: 10px;
+        overflow-wrap: anywhere;
+      }
+      .dock-head .facts {
+        margin-top: 10px;
+      }
+      .dock-body {
+        flex: 1;
+        overflow: auto;
+        padding: 6px 20px 16px;
+      }
+      .group {
+        padding-top: 14px;
+      }
+      .group > .label {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 6px;
+      }
+      .change {
+        display: grid;
+        grid-template-columns: 16px 1fr;
+        gap: 10px;
+        padding: 10px 0;
+        border-top: 1px solid var(--border);
+      }
+      .change:first-of-type {
+        border-top: 0;
+      }
+      .change .what {
+        font-weight: 600;
+        margin-bottom: 4px;
+      }
+      .pair {
+        display: grid;
+        grid-template-columns: 52px 1fr;
+        gap: 3px 8px;
+        font-size: 13px;
+        align-items: baseline;
+      }
+      .pair dt {
+        font-size: 12px;
+        color: var(--muted-foreground);
+      }
+      .pair dd {
+        margin: 0;
+      }
+      .match {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted-foreground);
+        padding: 10px 0;
+        border-top: 1px solid var(--border);
+      }
+      .dock-foot {
+        border-top: 1px solid var(--border);
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .dock-foot .muted {
+        margin-right: auto;
+        font-size: 13px;
+      }
+      @media (max-width: 1279px) {
+        .dock {
+          position: fixed;
+          inset: 0 0 0 auto;
+          width: min(432px, 100vw);
+          box-shadow: -12px 0 32px oklch(0 0 0 / 0.12);
+          z-index: 5;
+        }
+      }
+      @media (max-width: 767px) {
+        .page {
+          padding: 20px 14px 40px;
+        }
+        .head {
+          display: block;
+        }
+        .facts {
+          margin-top: 14px;
+        }
+        .public {
+          flex-wrap: wrap;
+        }
+        .public .grow {
+          flex-basis: calc(100% - 40px);
+        }
+        .public .btn {
+          flex: 1;
+          justify-content: center;
+        }
+        .row {
+          grid-template-columns: 18px 1fr auto 16px;
+        }
+        .row .sum,
+        .row .count {
+          display: none;
+        }
+        .file {
+          grid-template-columns: 18px 1fr auto;
+          height: auto;
+          padding: 10px 8px 10px 14px;
+        }
+        .file .meta,
+        .file .state {
+          grid-column: 2;
+        }
+        .file .btn {
+          grid-column: 3;
+          grid-row: 1 / span 3;
+        }
+        .dock {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <nav class="rail" aria-label="Modules">
+        <div class="mark">L</div>
+        <a href="#" aria-current="page" aria-label="Profile"
+          ><svg class="icon"><use href="#i-user" /></svg
+        ></a>
+        <a href="#" aria-label="Portfolio"
+          ><svg class="icon"><use href="#i-globe" /></svg
+        ></a>
+        <a href="#" aria-label="Project Memory"
+          ><svg class="icon"><use href="#i-book" /></svg
+        ></a>
+        <a href="#" aria-label="Engineering"
+          ><svg class="icon"><use href="#i-flask" /></svg
+        ></a>
+        <a href="#" aria-label="Terms"
+          ><svg class="icon"><use href="#i-library" /></svg
+        ></a>
+        <a href="#" aria-label="Studio"
+          ><svg class="icon"><use href="#i-palette" /></svg
+        ></a>
+      </nav>
+      <nav class="sections" aria-label="Profile">
+        <h2>Profile</h2>
+        <a href="#" aria-current="page">Details <span class="mono">9</span></a>
+        <a href="#">Resumes <span class="mono">3</span></a>
+        <a href="#">Public link</a>
+      </nav>
+      <main class="inset">
+        <header class="top">
+          <button class="btn icon-only menu" aria-label="Menu">
+            <svg class="icon"><use href="#i-menu" /></svg>
+          </button>
+          <div class="search">
+            <svg class="icon sm"><use href="#i-search" /></svg>Jump to a module…<kbd>Ctrl K</kbd>
+          </div>
+        </header>
+        <div class="body">
+          <div class="scroll">
+            <div class="page">
+              <div class="head">
+                <div>
+                  <h1>Profile</h1>
+                  <div class="who">
+                    <span>John Kenneth Gervacio</span><span>Full-stack Engineer</span>
+                    <span
+                      ><svg class="icon sm"><use href="#i-pin" /></svg>Binangonan, Philippines</span
+                    >
+                  </div>
+                </div>
+                <dl class="facts">
+                  <dt>Saved</dt>
+                  <dd>Oct 12</dd>
+                  <dt>Public</dt>
+                  <dd>Version 4, Oct 18</dd>
+                </dl>
+              </div>
+
+              <section class="panel public" aria-label="Public link">
+                <svg class="icon"><use href="#i-globe" /></svg>
+                <div class="grow">
+                  <div class="line">
+                    Public resume
+                    <span class="badge live"
+                      ><svg class="icon sm"><use href="#i-filled" /></svg>Live</span
+                    >
+                  </div>
+                  <div class="muted"><span class="url">[domain]/resume</span> · 2 sections changed since Oct 18</div>
+                </div>
+                <button class="btn outline">
+                  <svg class="icon sm"><use href="#i-copy" /></svg>Copy link
+                </button>
+                <button class="btn outline">
+                  Open Portfolio<svg class="icon sm"><use href="#i-external" /></svg>
+                </button>
+              </section>
+
+              <section aria-labelledby="details">
+                <div class="block-head">
+                  <h2 id="details">Details</h2>
+                  <span class="muted">5 of 9 filled</span>
+                </div>
+                <ul class="panel rows">
+                  <li class="row">
+                    <svg class="icon st-filled"><use href="#i-filled" /></svg><span class="name">Contact</span
+                    ><span class="sum">johnkgervacio@gmail.com, github.com/jkenger</span
+                    ><span class="mono count">7</span><span class="badge outline">Published</span
+                    ><svg class="icon sm chev"><use href="#i-chevron" /></svg>
+                  </li>
+                  <li class="row">
+                    <svg class="icon st-filled"><use href="#i-filled" /></svg><span class="name">Summary</span
+                    ><span class="sum">Sample</span><span class="mono count">1</span
+                    ><span class="badge changed"
+                      ><svg class="icon sm"><use href="#i-changed" /></svg>Changed Oct 20</span
+                    ><svg class="icon sm chev"><use href="#i-chevron" /></svg>
+                  </li>
+                  <li class="row">
+                    <svg class="icon st-filled"><use href="#i-filled" /></svg><span class="name">Experience</span
+                    ><span class="sum">[Company], [Title]</span><span class="mono count">1</span
+                    ><span class="badge outline">Published</span
+                    ><svg class="icon sm chev"><use href="#i-chevron" /></svg>
+                  </li>
+                  <li class="row">
+                    <svg class="icon st-empty"><use href="#i-empty" /></svg><span class="name">Education</span
+                    ><span class="sum"></span><span class="mono count">0</span><span class="badge empty">Empty</span
+                    ><svg class="icon sm chev"><use href="#i-chevron" /></svg>
+                  </li>
+                  <li class="row">
+                    <svg class="icon st-empty"><use href="#i-empty" /></svg><span class="name">Skills</span
+                    ><span class="sum"></span><span class="mono count">0</span><span class="badge empty">Empty</span
+                    ><svg class="icon sm chev"><use href="#i-chevron" /></svg>
+                  </li>
+                  <li class="row">
+                    <svg class="icon st-filled"><use href="#i-filled" /></svg><span class="name">Projects</span
+                    ><span class="sum">Loots</span><span class="mono count">1</span
+                    ><span class="badge changed"
+                      ><svg class="icon sm"><use href="#i-changed" /></svg>Changed Oct 21</span
+                    ><svg class="icon sm chev"><use href="#i-chevron" /></svg>
+                  </li>
+                  <li class="row">
+                    <svg class="icon st-empty"><use href="#i-empty" /></svg><span class="name">Certifications</span
+                    ><span class="sum"></span><span class="mono count">0</span><span class="badge empty">Empty</span
+                    ><svg class="icon sm chev"><use href="#i-chevron" /></svg>
+                  </li>
+                  <li class="row">
+                    <svg class="icon st-empty"><use href="#i-empty" /></svg><span class="name">Languages</span
+                    ><span class="sum"></span><span class="mono count">0</span><span class="badge empty">Empty</span
+                    ><svg class="icon sm chev"><use href="#i-chevron" /></svg>
+                  </li>
+                  <li class="row">
+                    <svg class="icon st-filled"><use href="#i-filled" /></svg><span class="name">Phone</span
+                    ><span class="sum">Saved, not on the public resume</span><span class="mono count">1</span
+                    ><span class="badge outline"
+                      ><svg class="icon sm"><use href="#i-eyeOff" /></svg>Hidden</span
+                    ><svg class="icon sm chev"><use href="#i-chevron" /></svg>
+                  </li>
+                </ul>
+              </section>
+
+              <section aria-labelledby="resumes">
+                <div class="block-head">
+                  <h2 id="resumes">Resumes</h2>
+                  <button class="btn outline">
+                    <svg class="icon sm"><use href="#i-upload" /></svg>Upload resume
+                  </button>
+                </div>
+                <ul class="panel rows">
+                  <li class="file picked">
+                    <svg class="icon"><use href="#i-file" /></svg>
+                    <div>
+                      <div class="fname">JKG-Resume-2026-10.pdf</div>
+                      <div class="meta">PDF · 2 pages</div>
+                    </div>
+                    <span class="meta">Uploaded Oct 22</span
+                    ><span class="state"
+                      ><svg class="icon sm"><use href="#i-changed" /></svg>In review</span
+                    ><button class="btn secondary xs">
+                      <svg class="icon sm"><use href="#i-autofill" /></svg>Autofill
+                    </button>
+                  </li>
+                  <li class="file">
+                    <svg class="icon"><use href="#i-file" /></svg>
+                    <div>
+                      <div class="fname">JKG-Resume-2026-08.docx</div>
+                      <div class="meta">DOCX · 2 pages</div>
+                    </div>
+                    <span class="meta">Uploaded Aug 30</span
+                    ><span class="state"
+                      ><svg class="icon sm"><use href="#i-check" /></svg>Applied Oct 14</span
+                    ><button class="btn secondary xs">
+                      <svg class="icon sm"><use href="#i-autofill" /></svg>Autofill
+                    </button>
+                  </li>
+                  <li class="file">
+                    <svg class="icon"><use href="#i-file" /></svg>
+                    <div>
+                      <div class="fname">JKG-Resume-2025-03.pdf</div>
+                      <div class="meta">PDF · 1 page</div>
+                    </div>
+                    <span class="meta">Uploaded Mar 3, 2025</span><span class="state muted">Not used</span
+                    ><button class="btn secondary xs">
+                      <svg class="icon sm"><use href="#i-autofill" /></svg>Autofill
+                    </button>
+                  </li>
+                </ul>
+              </section>
+
+              <a class="panel eng" href="#" style="color: inherit; text-decoration: none">
+                <svg class="icon"><use href="#i-flask" /></svg>
+                <div class="grow">
+                  <b>Full-stack Engineer with applied AI</b>
+                  <div class="muted">3 of 41 learned · 2 in progress</div>
+                </div>
+                <svg class="icon sm muted"><use href="#i-chevron" /></svg>
+              </a>
+            </div>
+          </div>
+
+          <aside class="dock" aria-labelledby="dock-title">
+            <div class="dock-head">
+              <div class="badges">
+                <span class="badge">Autofill</span><span class="badge outline">PDF</span
+                ><button class="btn icon-only" aria-label="Close">
+                  <svg class="icon"><use href="#i-x" /></svg>
+                </button>
+              </div>
+              <h2 id="dock-title">JKG-Resume-2026-10.pdf</h2>
+              <dl class="facts">
+                <dt>Uploaded</dt>
+                <dd>Oct 22</dd>
+                <dt>Changes</dt>
+                <dd>6, 4 selected</dd>
+              </dl>
+            </div>
+            <div class="dock-body">
+              <div class="group">
+                <div class="label"><span>Contact</span><span>2 of 3</span></div>
+                <div class="change">
+                  <span class="check on"
+                    ><svg class="icon"><use href="#i-check" /></svg
+                  ></span>
+                  <div>
+                    <div class="what">Headline</div>
+                    <dl class="pair">
+                      <dt>Now</dt>
+                      <dd><span class="remove">Full-stack Engineer</span></dd>
+                      <dt>Resume</dt>
+                      <dd><span class="add">Full-stack Engineer, applied AI</span></dd>
+                    </dl>
+                  </div>
+                </div>
+                <div class="change">
+                  <span class="check on"
+                    ><svg class="icon"><use href="#i-check" /></svg
+                  ></span>
+                  <div>
+                    <div class="what">City</div>
+                    <dl class="pair">
+                      <dt>Now</dt>
+                      <dd><span class="remove">Binangonan</span></dd>
+                      <dt>Resume</dt>
+                      <dd><span class="add">Binangonan, Rizal</span></dd>
+                    </dl>
+                  </div>
+                </div>
+                <div class="change">
+                  <span class="check"></span>
+                  <div>
+                    <div class="what">Links</div>
+                    <dl class="pair">
+                      <dt>Now</dt>
+                      <dd class="muted">Not set</dd>
+                      <dt>Resume</dt>
+                      <dd>
+                        <span class="add"
+                          ><svg class="icon sm"><use href="#i-plus" /></svg>LinkedIn, linkedin.com/in/[handle]</span
+                        >
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+              <div class="group">
+                <div class="label"><span>Skills</span><span>1 of 1</span></div>
+                <div class="change">
+                  <span class="check on"
+                    ><svg class="icon"><use href="#i-check" /></svg
+                  ></span>
+                  <div>
+                    <div class="what">New group: Stack</div>
+                    <dl class="pair">
+                      <dt>Now</dt>
+                      <dd class="muted">Empty</dd>
+                      <dt>Resume</dt>
+                      <dd>
+                        <span class="add"
+                          ><svg class="icon sm"><use href="#i-plus" /></svg>TypeScript, React, Next.js, PostgreSQL</span
+                        >
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+              <div class="group">
+                <div class="label"><span>Experience</span><span>1 of 1</span></div>
+                <div class="change">
+                  <span class="check on"
+                    ><svg class="icon"><use href="#i-check" /></svg
+                  ></span>
+                  <div>
+                    <div class="what">[Company], [Title]</div>
+                    <dl class="pair">
+                      <dt>Now</dt>
+                      <dd class="muted">2 bullets</dd>
+                      <dt>Resume</dt>
+                      <dd>
+                        <span class="add"
+                          ><svg class="icon sm"><use href="#i-plus" /></svg>1 bullet added</span
+                        >
+                      </dd>
+                    </dl>
+                  </div>
+                </div>
+              </div>
+              <div class="group">
+                <div class="label"><span>Summary</span><span>0 of 1</span></div>
+                <div class="change">
+                  <span class="check"></span>
+                  <div>
+                    <div class="what">Summary</div>
+                    <dl class="pair">
+                      <dt>Now</dt>
+                      <dd><span class="remove">Sample</span></dd>
+                      <dt>Resume</dt>
+                      <dd><span class="add">[3 lines from the resume]</span></dd>
+                    </dl>
+                  </div>
+                </div>
+                <div class="match">
+                  <svg class="icon sm"><use href="#i-check" /></svg>Projects, Education: match
+                </div>
+              </div>
+            </div>
+            <div class="dock-foot">
+              <span class="muted">4 of 6</span><button class="btn">Discard</button
+              ><button class="btn primary">Accept 4 changes</button>
+            </div>
+          </aside>
+        </div>
+      </main>
+    </div>
+    <script src="proto.js"></script>
+  </body>
+</html>

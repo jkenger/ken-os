@@ -1,0 +1,433 @@
+/* Profile directions: shared tokens and shell. Mockup only; the app's real tokens live in apps/web/src/app/globals.css.
+   Default = Loots on main today. ?theme=catalog and ?theme=catalog-dark = the Course catalog look from PR #143. */
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.147 0.004 49.3);
+  --card: oklch(1 0 0);
+  --primary: oklch(0.214 0.009 43.1);
+  --primary-foreground: oklch(0.986 0.002 67.8);
+  --secondary: oklch(0.96 0.002 17.2);
+  --muted: oklch(0.96 0.002 17.2);
+  --muted-foreground: oklch(0.525 0.021 43.1); /* main: 0.547, which is 4.40:1 on --muted; see brief */
+  --border: oklch(0.922 0.005 34.3);
+  --input: oklch(0.922 0.005 34.3);
+  --ring: oklch(0.714 0.014 41.2);
+  --destructive: oklch(0.577 0.245 27.325);
+  --shell: oklch(0.986 0.002 67.8);
+  --rail: oklch(0.986 0.002 67.8);
+  --rail-fg: oklch(0.147 0.004 49.3);
+  --rail-muted: oklch(0.525 0.021 43.1);
+  --rail-active: oklch(0.93 0.004 30);
+  --learned: oklch(0.5 0.12 152);
+  --learned-soft: oklch(0.955 0.03 152);
+  --active: oklch(0.48 0.14 262);
+  --active-soft: oklch(0.955 0.022 262);
+  /* Proposed tokens: the Autofill diff. Always paired with a +/- icon and a word. */
+  --diff-add: oklch(0.45 0.11 152);
+  --diff-add-soft: oklch(0.96 0.03 152);
+  --diff-remove: oklch(0.5 0.16 27);
+  --diff-remove-soft: oklch(0.965 0.02 27);
+  --sheet: oklch(1 0 0);
+  --sheet-fg: oklch(0.18 0.006 49);
+  --font-heading: "DM Sans", system-ui, sans-serif;
+  --font-sans: "Public Sans", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --heading-weight: 700;
+  --r-row: 4px;
+  --r-panel: 6px;
+  --r-field: 9px;
+  --r-control: 10px;
+}
+
+:root[data-theme="catalog"] {
+  --background: oklch(0.987 0.006 84);
+  --foreground: oklch(0.215 0.018 42);
+  --card: oklch(0.987 0.006 84);
+  --primary: oklch(0.24 0.02 40);
+  --primary-foreground: oklch(0.985 0.006 84);
+  --secondary: oklch(0.945 0.012 78);
+  --muted: oklch(0.945 0.012 78);
+  --muted-foreground: oklch(0.475 0.026 48);
+  --border: oklch(0.885 0.015 72);
+  --input: oklch(0.885 0.015 72);
+  --ring: oklch(0.52 0.11 24);
+  --shell: oklch(0.958 0.013 78);
+  --rail: oklch(0.36 0.095 22);
+  --rail-fg: oklch(0.99 0.006 84);
+  --rail-muted: oklch(0.93 0.025 70);
+  --rail-active: oklch(1 0 0 / 14%);
+  --active: oklch(0.46 0.13 25);
+  --active-soft: oklch(0.945 0.028 22);
+  --sheet: oklch(0.995 0.004 84);
+  --font-heading: "Source Serif 4", Georgia, serif;
+  --heading-weight: 600;
+}
+
+:root[data-theme="catalog-dark"] {
+  --background: oklch(0.19 0.012 48);
+  --foreground: oklch(0.935 0.012 78);
+  --card: oklch(0.225 0.013 48);
+  --primary: oklch(0.92 0.014 78);
+  --primary-foreground: oklch(0.225 0.013 48);
+  --secondary: oklch(0.275 0.014 48);
+  --muted: oklch(0.275 0.014 48);
+  --muted-foreground: oklch(0.74 0.022 66);
+  --border: oklch(0.935 0.012 78 / 12%);
+  --input: oklch(0.935 0.012 78 / 16%);
+  --ring: oklch(0.7 0.1 24);
+  --shell: oklch(0.165 0.011 48);
+  --rail: oklch(0.3 0.075 22);
+  --rail-fg: oklch(0.99 0.006 84);
+  --rail-muted: oklch(0.9 0.025 70);
+  --rail-active: oklch(1 0 0 / 14%);
+  --learned: oklch(0.78 0.13 152);
+  --learned-soft: oklch(0.3 0.05 152);
+  --active: oklch(0.8 0.09 28);
+  --active-soft: oklch(0.31 0.055 22);
+  --diff-add: oklch(0.8 0.12 152);
+  --diff-add-soft: oklch(0.3 0.05 152);
+  --diff-remove: oklch(0.8 0.1 27);
+  --diff-remove-soft: oklch(0.31 0.06 27);
+  --sheet: oklch(0.96 0.008 80);
+  --sheet-fg: oklch(0.2 0.015 45);
+  --font-heading: "Source Serif 4", Georgia, serif;
+  --heading-weight: 600;
+}
+
+* {
+  box-sizing: border-box;
+}
+html,
+body {
+  margin: 0;
+  height: 100%;
+}
+body {
+  background: var(--shell);
+  color: var(--foreground);
+  font: 400 14px/1.43 var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+::selection {
+  background: var(--active-soft);
+  color: var(--foreground);
+}
+:focus-visible {
+  outline: 3px solid color-mix(in oklch, var(--ring) 50%, transparent);
+  outline-offset: 1px;
+}
+h1,
+h2,
+h3 {
+  font-family: var(--font-heading);
+  font-weight: var(--heading-weight);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+.muted {
+  color: var(--muted-foreground);
+}
+.icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.icon.sm {
+  width: 14px;
+  height: 14px;
+}
+
+/* Shell: icon rail, module section list, inset page with a 56px header. */
+.app {
+  display: grid;
+  grid-template-columns: 48px 208px 1fr;
+  height: 100vh;
+}
+.rail {
+  background: var(--rail);
+  color: var(--rail-fg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 0;
+}
+.rail .mark {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-panel);
+  background: var(--rail-fg);
+  color: var(--rail);
+  display: grid;
+  place-items: center;
+  font: 700 14px var(--font-heading);
+  margin-bottom: 10px;
+}
+.rail a {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--r-panel);
+  color: var(--rail-muted);
+}
+.rail a[aria-current] {
+  background: var(--rail-active);
+  color: var(--rail-fg);
+}
+.sections {
+  padding: 16px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sections h2 {
+  font-size: 14px;
+  padding: 4px 8px 10px;
+}
+.sections a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  border-radius: var(--r-row);
+  color: var(--foreground);
+  text-decoration: none;
+}
+.sections a[aria-current] {
+  background: var(--rail-active);
+  font-weight: 600;
+}
+:root[data-theme^="catalog"] .sections a[aria-current] {
+  background: var(--secondary);
+}
+.sections a .mono {
+  color: var(--muted-foreground);
+}
+.sections a[aria-current] .mono {
+  color: var(--foreground);
+}
+.inset {
+  margin: 8px 8px 8px 0;
+  background: var(--background);
+  border: 1px solid var(--border);
+  border-radius: var(--r-panel);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.top {
+  height: 56px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+}
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 300px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: var(--r-field);
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+.search kbd {
+  margin-left: auto;
+  font: 11px var(--font-mono);
+  border: 1px solid var(--border);
+  background: var(--background);
+  padding: 0 5px;
+  border-radius: 4px;
+}
+.top .menu {
+  display: none;
+}
+.body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+.scroll {
+  flex: 1;
+  min-width: 0;
+  overflow: auto;
+}
+
+/* Primitives, shaped like the shadcn ones on main. */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--r-control);
+  border: 1px solid transparent;
+  font: 500 13px var(--font-sans);
+  color: var(--foreground);
+  background: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.btn.primary {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+.btn.outline {
+  border-color: var(--border);
+  background: var(--background);
+}
+.btn.secondary {
+  background: var(--secondary);
+}
+.btn.xs {
+  height: 26px;
+  padding: 0 9px;
+  font-size: 12px;
+}
+.btn.icon-only {
+  width: 32px;
+  padding: 0;
+  justify-content: center;
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: var(--r-field);
+  font: 500 12px var(--font-sans);
+  background: var(--secondary);
+  color: var(--primary);
+  white-space: nowrap;
+}
+.badge.outline {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--foreground);
+}
+.badge.live {
+  background: var(--learned-soft);
+  color: var(--learned);
+}
+.badge.changed {
+  background: var(--active-soft);
+  color: var(--active);
+}
+.badge.empty {
+  background: var(--muted);
+  color: var(--muted-foreground);
+}
+.panel {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r-panel);
+}
+.label {
+  font: 600 12px var(--font-sans);
+  color: var(--muted-foreground);
+}
+.field {
+  height: 34px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  border-radius: var(--r-field);
+  background: color-mix(in oklch, var(--input) 50%, transparent);
+}
+.check {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--background);
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+.check.on {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: var(--primary-foreground);
+}
+.check.on .icon {
+  width: 12px;
+  height: 12px;
+  stroke-width: 3;
+}
+.add,
+.remove {
+  display: inline-flex;
+  gap: 4px;
+  align-items: baseline;
+  border-radius: 3px;
+  padding: 0 3px;
+}
+.add {
+  background: var(--diff-add-soft);
+  color: var(--diff-add);
+}
+.remove {
+  background: var(--diff-remove-soft);
+  color: var(--diff-remove);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+}
+
+/* Phones: no rail or section list; a sheet menu from the header. */
+@media (max-width: 767px) {
+  .app {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: 100vh;
+  }
+  .rail,
+  .sections {
+    display: none;
+  }
+  .inset {
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+  }
+  .top {
+    padding: 0 12px;
+  }
+  .top .menu {
+    display: inline-flex;
+  }
+  .search {
+    width: auto;
+    flex: 1;
+  }
+  .search kbd {
+    display: none;
+  }
+  .body {
+    display: block;
+  }
+}
+@media (min-width: 768px) and (max-width: 1023px) {
+  .app {
+    grid-template-columns: 48px 1fr;
+  }
+  .sections {
+    display: none;
+  }
+}
