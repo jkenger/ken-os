@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { config } from "dotenv";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { emptyProfile } from "@ken-os/domain";
 import { parsePortfolioSnapshot } from "@ken-os/portfolio";
 import { closeDb, db } from "../src/lib/db";
-import { users } from "../src/lib/schema";
+import { portfolioPublications, users } from "../src/lib/schema";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
@@ -19,7 +19,13 @@ async function main() {
   await db().insert(users).values({ id: userId, email, name: "Portfolio Check" });
   try {
     const empty = await store.getPortfolio(userId);
-    assert.deepEqual(empty, { live: null, latest: null, profileSavedAt: null, showEmail: false });
+    assert.deepEqual(empty, {
+      live: null,
+      latest: null,
+      profileSavedAt: null,
+      showEmail: false,
+      unpublishedChanges: false,
+    });
     await assert.rejects(
       store.publishPortfolio(userId),
       (error: Error) => error instanceof store.PortfolioInputError && error.status === 409,
@@ -50,11 +56,14 @@ async function main() {
     console.log("ok - Publish makes a snapshot live, without contact details");
 
     await profile.saveResumeSettings(userId, { template: "technical", paper: "a4" });
-    await store.publishPortfolio(userId);
+    assert.equal((await store.getPortfolio(userId)).unpublishedChanges, true, "a new template waits for Publish");
+    assert.equal((await store.publishPortfolio(userId)).unpublishedChanges, false);
     assert.deepEqual((await store.liveSnapshot(email.toLowerCase()))?.resume, { template: "technical", paper: "a4" });
     console.log("ok - Publish copies the Resume page's template and paper");
 
-    assert.equal((await store.setShowEmail(userId, { showEmail: true })).showEmail, true);
+    const shown = await store.setShowEmail(userId, { showEmail: true });
+    assert.equal(shown.showEmail, true);
+    assert.equal(shown.unpublishedChanges, true, "Show email waits for Publish");
     assert.ok(
       !JSON.stringify(await store.liveSnapshot(email.toLowerCase())).includes(email),
       "not live before Publish",
@@ -82,6 +91,45 @@ async function main() {
     assert.equal(await store.liveSnapshot(email.toLowerCase()), null);
     assert.equal((await store.publishPortfolio(userId)).live?.version, 7);
     console.log("ok - Unpublish takes it offline, and the count continues");
+
+    const { publicResumeResponse } = await import("../src/features/portfolio/public-resume");
+    // The real renderer is covered by resume.test.ts; here only what is printed and how it is served matter.
+    const printed: string[] = [];
+    const GET = (request: Request) =>
+      publicResumeResponse(request, async (details, template, paper) => {
+        printed.push(`${details.contact.fullName} ${template} ${paper}`);
+        return Buffer.from("%PDF-1.4");
+      });
+    const ownerBefore = process.env.OWNER_EMAIL;
+    process.env.OWNER_EMAIL = email;
+    try {
+      const url = "http://loots.test/api/public/portfolio/resume";
+      const shown = await GET(new Request(url));
+      assert.equal(shown.status, 200);
+      assert.equal(printed.at(-1), "Portfolio Check technical a4");
+      assert.equal(shown.headers.get("content-type"), "application/pdf");
+      assert.equal(shown.headers.get("cache-control"), "no-store");
+      assert.equal(shown.headers.get("x-robots-tag"), "noindex");
+      assert.match(shown.headers.get("content-disposition") ?? "", /^inline; filename="Portfolio Check Resume\.pdf"/);
+      const download = await GET(new Request(`${url}?download=1`));
+      assert.match(download.headers.get("content-disposition") ?? "", /^attachment;/);
+
+      await db()
+        .update(portfolioPublications)
+        .set({ snapshot: sql`${portfolioPublications.snapshot} - 'resume'` })
+        .where(eq(portfolioPublications.userId, userId));
+      assert.equal((await GET(new Request(url))).status, 200, "a snapshot from before resume settings still prints");
+      assert.equal(printed.at(-1), "Portfolio Check classic letter");
+
+      await store.unpublishPortfolio(userId);
+      const gone = await GET(new Request(url));
+      assert.equal(gone.status, 404);
+      assert.equal(gone.headers.get("x-robots-tag"), "noindex");
+      assert.equal(gone.headers.get("cache-control"), "no-store");
+      console.log("ok - the public resume serves the live snapshot as a PDF and 404s once unpublished");
+    } finally {
+      process.env.OWNER_EMAIL = ownerBefore;
+    }
   } finally {
     await db().delete(users).where(eq(users.id, userId));
     await closeDb();

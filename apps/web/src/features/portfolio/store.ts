@@ -26,12 +26,18 @@ export interface PortfolioState {
   profileSavedAt: string | null;
   /** Whether the next Publish includes the Profile email. */
   showEmail: boolean;
+  /** Whether the next Publish would change what visitors see: Profile edits, Show email, or the resume template. */
+  unpublishedChanges: boolean;
 }
 
 export async function getPortfolio(userId: string): Promise<PortfolioState> {
   const [[state], [latest], [profile], [settings]] = await Promise.all([
     db()
-      .select({ version: portfolioPublications.version, publishedAt: portfolioPublications.publishedAt })
+      .select({
+        version: portfolioPublications.version,
+        publishedAt: portfolioPublications.publishedAt,
+        resume: sql<PortfolioSnapshot["resume"] | null>`${portfolioPublications.snapshot}->'resume'`,
+      })
       .from(portfolios)
       .innerJoin(portfolioPublications, eq(portfolioPublications.id, portfolios.currentPublicationId))
       .where(eq(portfolios.userId, userId))
@@ -42,9 +48,27 @@ export async function getPortfolio(userId: string): Promise<PortfolioState> {
       .where(eq(portfolioPublications.userId, userId))
       .orderBy(desc(portfolioPublications.version))
       .limit(1),
-    db().select({ updatedAt: profiles.updatedAt }).from(profiles).where(eq(profiles.userId, userId)).limit(1),
-    db().select({ showEmail: portfolios.showEmail }).from(portfolios).where(eq(portfolios.userId, userId)).limit(1),
+    db()
+      .select({ updatedAt: profiles.updatedAt, template: profiles.template, paper: profiles.paper })
+      .from(profiles)
+      .where(eq(profiles.userId, userId))
+      .limit(1),
+    db()
+      .select({ showEmail: portfolios.showEmail, updatedAt: portfolios.updatedAt })
+      .from(portfolios)
+      .where(eq(portfolios.userId, userId))
+      .limit(1),
   ]);
+  // Publish stamps `portfolios.updated_at` with the publication time, so a later stamp means Show email changed since.
+  const published = state?.resume ?? { template: "classic", paper: "letter" };
+  const unpublishedChanges = Boolean(
+    state &&
+    profile &&
+    (profile.updatedAt > state.publishedAt ||
+      (settings && settings.updatedAt > state.publishedAt) ||
+      profile.template !== published.template ||
+      profile.paper !== published.paper),
+  );
   const shape = (row?: { version: number; publishedAt: Date }) =>
     row ? { version: row.version, publishedAt: row.publishedAt.toISOString() } : null;
   return {
@@ -52,6 +76,7 @@ export async function getPortfolio(userId: string): Promise<PortfolioState> {
     latest: shape(latest),
     profileSavedAt: profile?.updatedAt.toISOString() ?? null,
     showEmail: settings?.showEmail ?? false,
+    unpublishedChanges,
   };
 }
 

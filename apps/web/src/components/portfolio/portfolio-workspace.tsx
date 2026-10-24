@@ -54,8 +54,7 @@ export function PortfolioWorkspace({ email, portfolio }: { email: string; portfo
   const [state, setState] = useState(portfolio);
   const [busy, setBusy] = useState<"publish" | "unpublish" | "email" | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
-  const { live, latest, profileSavedAt } = state;
-  const stale = Boolean(live && profileSavedAt && profileSavedAt > live.publishedAt);
+  const { live, latest, profileSavedAt, unpublishedChanges } = state;
 
   async function run(action: "publish" | "unpublish") {
     setBusy(action);
@@ -89,7 +88,7 @@ export function PortfolioWorkspace({ email, portfolio }: { email: string; portfo
         <PageHeading
           kicker="Portfolio"
           title="Publish"
-          badge={live ? (stale ? "Changes not published" : "Live") : "Not published"}
+          badge={live ? (unpublishedChanges ? "Changes not published" : "Live") : "Not published"}
           facts={
             <>
               <dt className="text-xs text-muted-foreground">Version</dt>
