@@ -27,6 +27,7 @@ import {
   type LayoutNode,
 } from "@/features/engineering-lab/roadmap-layout";
 import type { RoadmapView } from "@/features/engineering-lab/roadmap-store";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { selectedSurface } from "../kit";
@@ -38,7 +39,7 @@ import { StatusIcon, statusWords } from "./status";
 // and between chapters side by side; prerequisites Claude saved curve between topics. Lines touching the open topic
 // are drawn in the selected colour.
 
-type Flags = { selected?: boolean; onPick?: () => void };
+type Flags = { selected?: boolean; now?: boolean; onPick?: () => void };
 type GraphNode = Node<LayoutNode["data"] & Flags>;
 
 /** The smallest zoom the graph opens at, where a topic's title is still readable. */
@@ -70,7 +71,7 @@ function TopicNode({ data }: NodeProps<GraphNode>) {
       type="button"
       variant="outline"
       onClick={topic.onPick}
-      aria-label={`${topic.title}, ${statusWords[topic.status]}`}
+      aria-label={`${topic.title}, ${statusWords[topic.status]}${topic.now ? ", now" : ""}`}
       aria-pressed={topic.selected}
       title={topic.title}
       className={cn(
@@ -90,7 +91,17 @@ function TopicNode({ data }: NodeProps<GraphNode>) {
         >
           {topic.title}
         </span>
-        <span className="text-[0.6875rem] text-muted-foreground">{statusWords[topic.status]}</span>
+        <span className="flex items-center gap-1.5 text-[0.6875rem] text-muted-foreground">
+          {statusWords[topic.status]}
+          {topic.now && (
+            <Badge
+              variant="secondary"
+              className="h-4 bg-topic-active-soft px-1.5 text-[0.6875rem] font-semibold text-topic-active"
+            >
+              Now
+            </Badge>
+          )}
+        </span>
       </span>
       <Handle type="source" position={Position.Right} style={hidden} isConnectable={false} />
     </Button>
@@ -128,6 +139,7 @@ export function RoadmapGraph({
   onSelect: (topicId: string) => void;
 }) {
   const activeChapter = chapterOf(view, selected) ?? view.current?.chapterId ?? null;
+  const currentId = view.current?.id ?? null;
 
   const { nodes, edges } = useMemo(() => {
     const prerequisites = Object.fromEntries(
@@ -149,7 +161,12 @@ export function RoadmapGraph({
         selectable: node.type === "topic",
         data:
           node.type === "topic"
-            ? { ...node.data, selected: node.data.topicId === selected, onPick: () => onSelect(node.data.topicId) }
+            ? {
+                ...node.data,
+                selected: node.data.topicId === selected,
+                now: node.data.topicId === currentId,
+                onPick: () => onSelect(node.data.topicId),
+              }
             : node.data,
       })),
       edges: layout.edges.map((edge): Edge => {
@@ -172,7 +189,7 @@ export function RoadmapGraph({
         };
       }),
     };
-  }, [view, selected, onSelect]);
+  }, [view, selected, currentId, onSelect]);
 
   // Open on the row of chapters holding the one you're on (else the first row), fitted across and pinned to the top,
   // with the rest a scroll away. Where the row only fits below a readable size (a narrow window, or the docked panel

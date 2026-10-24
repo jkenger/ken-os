@@ -33,6 +33,7 @@ export function DockedPanel({
   closeLabel,
   badges,
   title,
+  ready = true,
   description,
   descriptionFallback,
   facts,
@@ -48,6 +49,8 @@ export function DockedPanel({
   /** Chips above the title. */
   badges?: ReactNode;
   title: string;
+  /** False while the content is still loading: the title is a placeholder then, so focus waits. Defaults to true. */
+  ready?: boolean;
   /** A line under the title; when absent, descriptionFallback names the Sheet for screen readers only. */
   description?: string | null;
   descriptionFallback: string;
@@ -87,6 +90,38 @@ export function DockedPanel({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [docked, open, onClose]);
 
+  // Docked, the panel is not a dialog, so nothing moves focus for it: opening it focuses its title, so keyboard and
+  // screen reader users land in it, and closing it hands focus back to what opened it (the Sheet does both itself).
+  // A panel already open when the page loads (a link to a topic, the Design Studio's Theme) leaves focus alone.
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const returnTo = useRef<HTMLElement | null>(null);
+  const openedAt = useRef(open);
+  const opened = open && !openedAt.current;
+  useEffect(() => {
+    openedAt.current = openedAt.current && open;
+  }, [open]);
+  // Remember what had focus when the panel opened, and hand focus back when it closes.
+  useEffect(() => {
+    if (!docked || !open || !opened) return;
+    const active = document.activeElement;
+    returnTo.current = active instanceof HTMLElement && !asideRef.current?.contains(active) ? active : null;
+    return () => {
+      const back = returnTo.current;
+      const lost = !document.activeElement || document.activeElement === document.body;
+      if (back?.isConnected && lost) back.focus({ preventScroll: true });
+      returnTo.current = null;
+    };
+  }, [docked, open]);
+  // Focus waits for `ready`, so a panel whose content loads after it opens lands on the real title, not a placeholder.
+  // It happens once per opening: picking another topic while the panel is open leaves focus where it is.
+  const focused = useRef(false);
+  useEffect(() => {
+    if (!open) focused.current = false;
+    if (!docked || !open || !opened || !ready || focused.current) return;
+    focused.current = true;
+    headingRef.current?.focus({ preventScroll: true });
+  }, [docked, open, ready]);
+
   if (docked) {
     if (!open) return null;
     return (
@@ -111,7 +146,12 @@ export function DockedPanel({
               </Button>
             )}
           </div>
-          <h2 id={titleId} className="font-heading text-xl leading-tight font-bold tracking-tight">
+          <h2
+            id={titleId}
+            ref={headingRef}
+            tabIndex={-1}
+            className="font-heading text-xl leading-tight font-bold tracking-tight outline-none"
+          >
             {title}
           </h2>
           {description && <p className="text-sm text-muted-foreground">{description}</p>}

@@ -161,7 +161,7 @@ A warm, almost colourless neutral base, with three small families of meaning col
 ### Tertiary: meaning colours
 
 - **Learned Green** (topic-learned, with -soft fill): Learned status icon and chip.
-- **In Progress Blue** (topic-active, with -soft fill): In progress status, and today also `selected`.
+- **In Progress Blue** (topic-active, with -soft fill): In progress status only. `selected` points at the text ink (foreground) since 24 Oct 2026.
 - **Chapter One to Six** (chapter-1 to chapter-6, each with -soft fill): low-chroma mid tones (green, blue, amber, teal, plum, ochre) that tell chapters apart by roadmap position. Lightness ~0.45 in light mode and ~0.8 in dark.
 
 ### Named Rules

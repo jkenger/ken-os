@@ -60,13 +60,13 @@ test("draftStyles overrides tokens on previews only, light and dark apart, and s
 test("draftStyles declares aliases again on previews, and scopes a Look by the variant its preview shows", () => {
   const css = draftStyles(
     [
-      { kind: "token", target: "topic-active", change: { light: "oklch(0.6 0.1 200)" } },
+      { kind: "token", target: "foreground", change: { light: "oklch(0.2 0.02 250)" } },
       { kind: "component", target: "ui/alert", change: { scope: "destructive", weight: "600" } },
     ],
     studioManifest.components,
     studioManifest.theme,
   );
-  assert.match(css, /--topic-active: oklch\(0\.6 0\.1 200\); --selected: var\(--topic-active\);/);
+  assert.match(css, /--foreground: oklch\(0\.2 0\.02 250\); --selected: var\(--foreground\);/);
   assert.match(css, /\[data-studio-preview="ui\/alert"\]\[data-studio-variant="destructive"\] \[data-slot="alert"\]/);
 });
 

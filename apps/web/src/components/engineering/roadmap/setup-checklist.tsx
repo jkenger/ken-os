@@ -115,7 +115,21 @@ export function SetupChecklist({
                   </div>
                   <div className="col-start-2 sm:col-start-3">
                     {item.done ? (
-                      <Badge variant="secondary">Done</Badge>
+                      <div className="flex items-center gap-1">
+                        <Badge variant="secondary">Done</Badge>
+                        {/* A finished step can still be wrong (a mistyped Project link), so it keeps a way back in. */}
+                        {item.id !== "plan" && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            aria-label={`Edit ${row.title}`}
+                            onClick={onOpenSetup}
+                          >
+                            Edit
+                          </Button>
+                        )}
+                      </div>
                     ) : (
                       <Action
                         id={item.id}

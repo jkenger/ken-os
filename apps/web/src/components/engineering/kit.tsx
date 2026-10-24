@@ -91,11 +91,21 @@ export function SectionTitle({ title, action }: { title: string; action?: ReactN
   );
 }
 
-export function Notice({ tone = "info", children }: { tone?: "info" | "error" | "success"; children: ReactNode }) {
+/** A notice block. It has no margin of its own, so the layout around it sets the spacing; corners match `panel`. */
+export function Notice({
+  tone = "info",
+  className,
+  children,
+}: {
+  tone?: "info" | "error" | "success";
+  className?: string;
+  children: ReactNode;
+}) {
   return (
     <div
       className={cn(
-        "my-5 rounded-md px-4 py-3.5 text-sm leading-relaxed",
+        "rounded-xl px-4 py-3.5 text-sm leading-relaxed",
+        className,
         tone === "info" && "border bg-card text-foreground",
         tone === "error" && "bg-destructive/10 text-destructive",
         tone === "success" && "bg-muted text-foreground",

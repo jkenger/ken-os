@@ -231,7 +231,7 @@ export function Exercise({
       <div className={twoColumns}>
         <section className={cn(panel, "min-w-0 p-5 @2xl:p-7.5")}>
           {data.newer && (
-            <Notice>
+            <Notice className="mb-5">
               <p className="font-semibold">New exercise from Claude</p>
               <p className="mt-0.5 text-xs text-muted-foreground">
                 Version {data.newer.version} · starts a fresh attempt
@@ -248,7 +248,7 @@ export function Exercise({
             </Notice>
           )}
           {data.invalid && (
-            <Notice tone="error">
+            <Notice tone="error" className="mb-5">
               <p className="font-semibold">This exercise doesn&apos;t check out</p>
               <p className="mt-0.5 text-xs">
                 Version {data.invalid.version} · {data.invalid.problem}

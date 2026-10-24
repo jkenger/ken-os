@@ -77,7 +77,7 @@ export function RoadmapSwitcher({
             type="button"
             variant="ghost"
             size="icon-sm"
-            aria-label="Switch roadmap"
+            aria-label="Roadmaps"
             className="mt-0.5 shrink-0 md:mt-1"
           >
             <IconChevronDown aria-hidden="true" />

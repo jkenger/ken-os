@@ -22,8 +22,8 @@ value and an `@theme inline` entry, so they are Tailwind classes (`text-topic-ac
 | Selection        | `selected`                                                | The picked item's outline or ring, and lines touching it                   |
 | Topic status     | `topic-learned`, `topic-active`, each with `-soft`        | Learned and In progress icons and chips. Not started and Skipped use muted |
 
-`selected` points at `topic-active` today, so selection and In progress share a hue. Components name `selected`, so
-the two can be split without touching status.
+`selected` points at the text ink (`foreground`) since 24 Oct 2026, so a picked topic never reads as In progress.
+Before that it shared the In progress blue. Components name `selected`, so it can change again without touching status.
 
 ### Surfaces
 
@@ -37,8 +37,11 @@ A panel or card is `rounded-xl border bg-card` with no shadow (`panel` in `compo
   takes `selectedRow`: an inset outline at full strength. Both are in `components/surfaces.ts`.
 - The state is also in the markup: `aria-pressed` on a toggle button (roadmap topics), `aria-current` on the item a
   link opened (Terms).
-- When the outline is the only visual cue, it must reach 3:1 against the card. `selectedRow` does (6.7:1 light, 8.9:1
-  dark). The roadmap's softer `selectedSurface` is backed by `aria-pressed` and the topic panel it opens.
+- When the outline is the only visual cue, it must reach 3:1 against the card. `selectedRow` does (19.8:1 light, 16.9:1
+  dark), and so does the roadmap's softer `selectedSurface` border at 55% (4.4:1 light, 5.9:1 dark), which is also
+  backed by `aria-pressed` and the topic panel it opens.
+- A panel that docks moves focus to its title once the content has loaded and back to what opened it when it closes; one already
+  open when the page loads leaves focus alone (`DockedPanel`).
 - Keep what was picked in the address when a link or a reload should reopen it (`?topic=` on the roadmap, `#term-` on
   Terms).
 
