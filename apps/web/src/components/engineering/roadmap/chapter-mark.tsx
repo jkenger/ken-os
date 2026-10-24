@@ -1,8 +1,9 @@
 import { chapterTone } from "@/features/engineering-lab/roadmap-layout";
 import { cn } from "@/lib/utils";
 
-// A chapter's accent (docs/architecture/roadmap-ui.md): one of six colours in roadmap order, so chapters are easy to
-// tell apart in Lanes and Graph. Chapter colours never mean a status. Class names are spelled out for Tailwind.
+// A chapter's accent (docs/architecture/roadmap-ui.md): six tokens in roadmap order. In the console theme they are all
+// neutral, since colour means state only; chapters read by number and name. They stay tokens so a theme can tint them
+// again without touching components. Chapter colours never mean a status. Class names are spelled out for Tailwind.
 
 const tones = {
   1: {

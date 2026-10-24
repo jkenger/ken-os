@@ -62,12 +62,10 @@ export function TermsPage({ email, terms }: { email: string; terms: SavedTerm[] 
   return (
     <WorkspaceShell email={email} active="terms">
       <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-6xl px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
-        <h1 className="text-3xl leading-none font-bold tracking-tight md:text-4xl xl:text-4xl xl:leading-none">
-          Terms
-        </h1>
+        <h1 className="border-b pb-5 font-heading text-2xl leading-tight font-semibold tracking-tight">Terms</h1>
 
         {terms.length > 0 && (
-          <InputGroup className="mt-6 max-w-md rounded-full">
+          <InputGroup className="mt-6 max-w-md">
             <InputGroupAddon>
               <Search size={16} aria-hidden="true" />
             </InputGroupAddon>
@@ -114,14 +112,14 @@ export function TermsPage({ email, terms }: { email: string; terms: SavedTerm[] 
                         <ExternalLink size={12} aria-hidden="true" />
                       </a>
                     )}
-                    <span className="text-muted-foreground">Saved {saved(term.savedAt)}</span>
+                    <span className="font-mono text-xs text-muted-foreground">Saved {saved(term.savedAt)}</span>
                   </p>
                 </div>
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  className="justify-self-start"
+                  className="justify-self-start border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
                   disabled={removing === term.id}
                   onClick={() => void remove(term)}
                   aria-label={`Remove ${term.term}`}
@@ -136,7 +134,7 @@ export function TermsPage({ email, terms }: { email: string; terms: SavedTerm[] 
             )}
           </ul>
         ) : (
-          <div className="mt-8 max-w-xl rounded-xl border border-dashed border-input p-6 text-sm leading-6">
+          <div className="mt-8 max-w-xl rounded-lg border border-dashed border-input p-6 text-sm leading-6">
             <p className="font-semibold">No terms yet</p>
             <p className="mt-1 text-muted-foreground">Select text on any page and press E</p>
           </div>

@@ -16,7 +16,7 @@ import { StatusIcon, statusWords } from "./status";
 function Cell({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex min-w-0 flex-col gap-1.5 bg-card px-4 py-3">
-      <p className="text-xs font-semibold text-muted-foreground">{label}</p>
+      <p className="panel-head">{label}</p>
       {children}
     </div>
   );
@@ -74,11 +74,11 @@ export function RoadmapProgress({
     <div className="@container">
       <section
         aria-label="Progress"
-        className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border bg-border @lg:grid-cols-2 @3xl:grid-cols-4"
+        className="grid grid-cols-1 gap-px overflow-hidden rounded-lg border bg-border @lg:grid-cols-2 @3xl:grid-cols-4"
       >
         <Cell label={summary ? "Complete" : "Progress"}>
           <p className="flex items-baseline gap-1.5">
-            <span className="font-heading text-xl font-bold tracking-tight">
+            <span className="text-xl font-semibold tracking-tight tabular-nums">
               {counts.learned} of {counts.total}
             </span>
             <span className="text-sm text-muted-foreground">learned</span>

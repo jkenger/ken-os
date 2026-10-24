@@ -7,8 +7,7 @@ import { cn } from "@/lib/utils";
 
 // Loots page building blocks, on the shadcn default look (see docs/architecture/design-system-shadcn-setup.md).
 
-export { panel, selectedSurface } from "@/components/surfaces";
-export const eyebrow = "mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground";
+export { panel, selectedInset, selectedSurface } from "@/components/surfaces";
 
 /** The page-heading badge: shadcn's Badge in the secondary look. */
 export function Badge({ children, className }: { children: ReactNode; className?: string }) {
@@ -104,7 +103,7 @@ export function Notice({
   return (
     <div
       className={cn(
-        "rounded-xl px-4 py-3.5 text-sm leading-relaxed",
+        "rounded-lg px-4 py-3.5 text-sm leading-relaxed",
         className,
         tone === "info" && "border bg-card text-foreground",
         tone === "error" && "bg-destructive/10 text-destructive",

@@ -159,7 +159,7 @@ export function TopicResources({ material }: { material: TopicPanelView["materia
 export function NotPlanned({ panel, projectUrl }: { panel: TopicPanelView; projectUrl: string | null }) {
   if (panel.material) return null;
   return (
-    <section aria-labelledby="not-planned-title" className="grid gap-2 rounded-xl border border-dashed p-3">
+    <section aria-labelledby="not-planned-title" className="grid gap-2 rounded-lg border border-dashed p-3">
       <div>
         <h3 id="not-planned-title" className="text-sm font-semibold">
           Not planned yet

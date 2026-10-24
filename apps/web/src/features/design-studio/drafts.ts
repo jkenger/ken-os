@@ -159,8 +159,9 @@ export function draftStyles(drafts: Draft[], components: StudioComponent[], them
   }
   const declare = (values: Map<string, string>) => [...values].map(([name, value]) => `--${name}: ${value};`).join(" ");
   const rules: string[] = [];
-  if (light.size) rules.push(`[data-studio-preview]:not(.dark, .dark *) { ${declare(light)} }`);
-  if (dark.size) rules.push(`[data-studio-preview].dark, .dark [data-studio-preview] { ${declare(dark)} }`);
+  // Previews always sit inside their own theme boundary (`.light` or `.dark`), whatever the page's theme.
+  if (light.size) rules.push(`[data-studio-preview]:is(.light, .light *) { ${declare(light)} }`);
+  if (dark.size) rules.push(`[data-studio-preview]:is(.dark, .dark *):not(.light *) { ${declare(dark)} }`);
   for (const draft of drafts) {
     if (draft.kind !== "component") continue;
     const component = components.find((item) => item.id === draft.target);
@@ -283,7 +284,9 @@ function tokenPatch(drafts: Extract<Draft, { kind: "token" }>[], manifest: Studi
   const dark = drafts.filter((draft) => draft.change.dark);
   if (!light.length && !dark.length) return undefined;
   const added = ["", "/* Design Studio: token overrides */"];
-  if (light.length) added.push(":root {", ...light.map((draft) => `  --${draft.target}: ${draft.change.light};`), "}");
+  // `.light` too: globals.css sets the light values on `.light` previews directly, so `:root` alone would not reach them.
+  if (light.length)
+    added.push(":root,", ".light {", ...light.map((draft) => `  --${draft.target}: ${draft.change.light};`), "}");
   if (dark.length) added.push(".dark {", ...dark.map((draft) => `  --${draft.target}: ${draft.change.dark};`), "}");
   const { lines, tail, newline } = manifest.globals;
   const start = lines - tail.length + 1;

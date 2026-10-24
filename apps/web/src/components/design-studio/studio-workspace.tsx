@@ -85,7 +85,7 @@ function Node({ component, theme, props }: { component: StudioComponent; theme: 
         data-studio-preview={component.id}
         className={cn(
           "mx-2 mb-2 flex min-h-48 flex-col items-center justify-center gap-4 rounded-[10px] border bg-background p-6 text-foreground",
-          theme === "dark" && "dark",
+          theme === "dark" ? "dark" : "light",
         )}
       >
         <Preview id={component.id} props={props} />
@@ -281,9 +281,9 @@ export function StudioWorkspace({
   return (
     <WorkspaceShell email={email} active="studio">
       <style>{draftStyles(drafts, manifest.components, manifest.theme)}</style>
-      <div className="flex flex-col xl:h-[calc(100svh-75px)]">
-        <div className="flex shrink-0 items-center justify-between gap-4 px-4 py-4 lg:h-16 lg:py-0">
-          <h1 className="font-heading text-2xl font-bold tracking-tight">Design Studio</h1>
+      <div className="flex flex-col xl:h-[calc(100svh-49px)]">
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b px-4 py-4 lg:h-16 lg:py-0">
+          <h1 className="font-heading text-2xl font-semibold tracking-tight">Design Studio</h1>
           <div className="flex items-center gap-2">
             {wide && !docked && (
               <Button
@@ -335,7 +335,7 @@ export function StudioWorkspace({
             onFilters={setFilters}
             onQueryChange={setQuery}
             findRef={find}
-            className="mb-4 hidden w-70 shrink-0 rounded-xl border bg-card lg:sticky lg:top-2 lg:row-span-2 lg:flex lg:h-[calc(100svh-160px)] xl:static xl:h-auto"
+            className="mb-4 hidden w-70 shrink-0 rounded-lg border bg-card lg:sticky lg:top-2 lg:row-span-2 lg:flex lg:h-[calc(100svh-160px)] xl:static xl:h-auto"
           />
 
           {(wide || current) && (
@@ -388,7 +388,7 @@ export function StudioWorkspace({
                   Not installed
                 </Badge>
               )}
-              <h2 id="studio-picked" className="font-heading text-xl leading-tight font-bold tracking-tight">
+              <h2 id="studio-picked" className="font-heading text-xl leading-tight font-semibold tracking-tight">
                 {missing?.item.name ?? current?.name ?? "Theme"}
               </h2>
               {missing?.item.description && <p className="text-sm text-muted-foreground">{missing.item.description}</p>}

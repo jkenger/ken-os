@@ -51,8 +51,8 @@ function AreaNode({ data }: NodeProps<GraphNode>) {
   const area = data as AreaData;
   const tone = chapterClasses(area.order - 1);
   return (
-    <div className={cn("size-full rounded-2xl border px-3.5 pt-3", tone.area)}>
-      <p className="flex items-center gap-2 text-[0.6875rem] font-semibold tracking-wider uppercase">
+    <div className={cn("size-full rounded-lg border px-3.5 pt-3", tone.area)}>
+      <p className="panel-head flex items-center gap-2 text-current">
         <span className="font-mono opacity-80">{String(area.order).padStart(2, "0")}</span>
         <span className="truncate">{area.title}</span>
         <span className="ml-auto font-normal tracking-normal whitespace-nowrap text-muted-foreground normal-case">
@@ -75,7 +75,7 @@ function TopicNode({ data }: NodeProps<GraphNode>) {
       aria-pressed={topic.selected}
       title={topic.title}
       className={cn(
-        "nodrag size-full justify-start gap-2.5 rounded-xl bg-card px-3 text-left font-normal whitespace-normal shadow-xs",
+        "nodrag size-full justify-start gap-2.5 rounded-lg bg-card px-3 text-left font-normal whitespace-normal dark:bg-card",
         topic.selected && selectedSurface,
       )}
     >
@@ -94,10 +94,7 @@ function TopicNode({ data }: NodeProps<GraphNode>) {
         <span className="flex items-center gap-1.5 text-[0.6875rem] text-muted-foreground">
           {statusWords[topic.status]}
           {topic.now && (
-            <Badge
-              variant="secondary"
-              className="h-4 bg-topic-active-soft px-1.5 text-[0.6875rem] font-semibold text-topic-active"
-            >
+            <Badge variant="outline" className="h-4 px-1.5 text-[0.6875rem] font-semibold">
               Now
             </Badge>
           )}
@@ -114,7 +111,7 @@ const nodeTypes: NodeTypes = { area: AreaNode, topic: TopicNode };
 const flowStyle = {
   "--xy-background-color": "transparent",
   "--xy-background-pattern-color": "var(--border)",
-  "--xy-edge-stroke": "var(--ring)",
+  "--xy-edge-stroke": "var(--muted-foreground)",
   "--xy-minimap-background-color": "var(--card)",
   "--xy-minimap-mask-background-color": "color-mix(in oklch, var(--muted) 70%, transparent)",
   "--xy-controls-button-background-color": "var(--card)",
@@ -171,7 +168,7 @@ export function RoadmapGraph({
       })),
       edges: layout.edges.map((edge): Edge => {
         const lit = edge.source === selectedNode || edge.target === selectedNode;
-        const stroke = lit ? "var(--selected)" : "var(--ring)";
+        const stroke = lit ? "var(--selected)" : "var(--muted-foreground)";
         return {
           id: edge.id,
           source: edge.source,
@@ -214,7 +211,7 @@ export function RoadmapGraph({
 
   return (
     <div
-      className="h-[calc(100svh-17rem)] min-h-[32rem] w-full overflow-hidden rounded-xl border bg-muted/40"
+      className="h-[calc(100svh-17rem)] min-h-[32rem] w-full overflow-hidden rounded-lg border bg-muted/40"
       style={flowStyle}
     >
       <ReactFlow

@@ -276,10 +276,8 @@ export function MemoryWorkspace({ email, overview }: { email: string; overview: 
     <WorkspaceShell email={email} active="memory">
       <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-330 pb-8">
         <header className="px-5 pt-8 pb-2 sm:px-8 lg:px-10 lg:pt-10">
-          <div className="flex flex-wrap items-end justify-between gap-6">
-            <h1 className="text-3xl leading-none font-bold tracking-tight md:text-4xl xl:text-4xl xl:leading-none">
-              Project Memory
-            </h1>
+          <div className="flex flex-wrap items-end justify-between gap-6 border-b pb-5">
+            <h1 className="font-heading text-2xl leading-tight font-semibold tracking-tight">Project Memory</h1>
             <Button
               type="button"
               onClick={() =>
@@ -303,12 +301,12 @@ export function MemoryWorkspace({ email, overview }: { email: string; overview: 
         <div className="grid lg:grid-cols-[minmax(0,1.7fr)_minmax(300px,0.85fr)]">
           <div className="min-w-0">
             <section className="scroll-mt-24 px-5 py-6 sm:px-8 lg:px-10" id="handoff" aria-labelledby="handoff-title">
-              <h2 className="font-heading text-2xl font-semibold tracking-tighter" id="handoff-title">
+              <h2 className="border-b pb-2 font-heading text-lg font-semibold tracking-tight" id="handoff-title">
                 Handoff
               </h2>
               <p className="mt-2 text-sm leading-5 text-muted-foreground">Approved items only</p>
               {approvedDecisions.length === 0 && approvedReceipts.length === 0 ? (
-                <div className="mt-5 rounded-xl border border-dashed border-border p-5 text-sm text-muted-foreground">
+                <div className="mt-5 rounded-lg border border-dashed border-border p-5 text-sm text-muted-foreground">
                   <p className="font-semibold text-foreground">Nothing approved yet</p>
                   <p className="mt-1">Approve a decision or work log below</p>
                 </div>
@@ -362,7 +360,7 @@ export function MemoryWorkspace({ email, overview }: { email: string; overview: 
               id="decisions"
               aria-labelledby="decisions-title"
             >
-              <h2 className="font-heading text-2xl font-semibold tracking-tighter" id="decisions-title">
+              <h2 className="border-b pb-2 font-heading text-lg font-semibold tracking-tight" id="decisions-title">
                 Draft decisions
               </h2>
               {proposedDecisions.length === 0 ? (
@@ -422,10 +420,11 @@ export function MemoryWorkspace({ email, overview }: { email: string; overview: 
                       </CardContent>
                       <CardFooter className="flex flex-wrap justify-between gap-3 text-sm text-muted-foreground">
                         <EvidenceList evidence={item.evidence} />
-                        <div className="flex gap-2">
+                        <div className="flex gap-6">
                           <Button
                             size="sm"
                             variant="outline"
+                            className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
                             disabled={busy}
                             onClick={() => void review("decision", item.id, "reject")}
                           >
@@ -442,7 +441,7 @@ export function MemoryWorkspace({ email, overview }: { email: string; overview: 
               )}
             </section>
             <section className="scroll-mt-24 px-5 py-6 sm:px-8 lg:px-10" id="receipts" aria-labelledby="receipts-title">
-              <h2 className="font-heading text-2xl font-semibold tracking-tighter" id="receipts-title">
+              <h2 className="border-b pb-2 font-heading text-lg font-semibold tracking-tight" id="receipts-title">
                 Draft work logs
               </h2>
               {proposedReceipts.length === 0 ? (
@@ -493,10 +492,11 @@ export function MemoryWorkspace({ email, overview }: { email: string; overview: 
                       </CardContent>
                       <CardFooter className="flex flex-wrap justify-between gap-3 text-sm text-muted-foreground">
                         <EvidenceList evidence={item.evidence} />
-                        <div className="flex gap-2">
+                        <div className="flex gap-6">
                           <Button
                             size="sm"
                             variant="outline"
+                            className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive"
                             disabled={busy}
                             onClick={() => void review("receipt", item.id, "reject")}
                           >
@@ -516,9 +516,9 @@ export function MemoryWorkspace({ email, overview }: { email: string; overview: 
 
           <aside className="min-w-0" aria-label="New entry and settings">
             <section className="scroll-mt-24 px-5 py-6 sm:px-8 lg:px-9" id="capture">
-              <h2 className="font-heading text-xl font-semibold tracking-tight">New entry</h2>
+              <h2 className="border-b pb-2 font-heading text-base font-semibold tracking-tight">New entry</h2>
               <p className="mt-2 text-sm leading-5 text-muted-foreground">Saved as a draft</p>
-              <details className="group mt-5 rounded-xl border bg-card p-4">
+              <details className="group mt-5 rounded-lg border bg-card p-4">
                 <DisclosureSummary className="text-sm font-semibold">New decision</DisclosureSummary>
                 <form className="mt-4 grid gap-3" onSubmit={(event) => void submitDecision(event)}>
                   <Label className="block text-xs font-semibold">
@@ -591,7 +591,7 @@ export function MemoryWorkspace({ email, overview }: { email: string; overview: 
                   </Button>
                 </form>
               </details>
-              <details className="group mt-3 rounded-xl border bg-card p-4">
+              <details className="group mt-3 rounded-lg border bg-card p-4">
                 <DisclosureSummary className="text-sm font-semibold">New work log</DisclosureSummary>
                 <form className="mt-4 grid gap-3" onSubmit={(event) => void submitReceipt(event)}>
                   <Label className="block text-xs font-semibold">
@@ -664,7 +664,7 @@ export function MemoryWorkspace({ email, overview }: { email: string; overview: 
               </details>
             </section>
             <section className="scroll-mt-24 px-5 py-6 sm:px-8 lg:px-9" id="open-questions">
-              <h2 className="font-heading text-xl font-semibold tracking-tight">Open items</h2>
+              <h2 className="border-b pb-2 font-heading text-base font-semibold tracking-tight">Open items</h2>
               {openQuestions.length ? (
                 <ul className="mt-4 list-disc space-y-2 pl-5 text-sm text-muted-foreground">
                   {openQuestions.map((item, index) => (
@@ -676,7 +676,7 @@ export function MemoryWorkspace({ email, overview }: { email: string; overview: 
               )}
             </section>
             <section className="scroll-mt-24 px-5 py-6 sm:px-8 lg:px-9" id="policy">
-              <h2 className="font-heading text-xl font-semibold tracking-tight">Policy</h2>
+              <h2 className="border-b pb-2 font-heading text-base font-semibold tracking-tight">Policy</h2>
               <p className="mt-2 text-sm leading-5 text-muted-foreground">Loots only · no work or client content</p>
               <details className="group mt-4 text-sm">
                 <DisclosureSummary className="font-semibold">Capture rules</DisclosureSummary>
@@ -691,7 +691,7 @@ export function MemoryWorkspace({ email, overview }: { email: string; overview: 
               </details>
             </section>
             <section className="px-5 py-7 sm:px-8 lg:px-9" id="agent-capture">
-              <h2 className="font-heading text-xl font-semibold tracking-tight">Agent key</h2>
+              <h2 className="border-b pb-2 font-heading text-base font-semibold tracking-tight">Agent key</h2>
               <p className="mt-2 text-sm leading-5 text-muted-foreground">
                 Lets an agent read approved context and send drafts. It can&apos;t approve
               </p>

@@ -185,15 +185,15 @@ export function readUses(source: string) {
   return [...new Set(slugs)];
 }
 
-/** Every custom property set in a `:root` or `.dark` block of a stylesheet, in first-seen order. A later block wins,
- *  as in the cascade, so the Loots section's values replace shadcn's. */
+/** Every custom property set in a `:root` (or `:root, .light`) or `.dark` block of a stylesheet, in first-seen order. A
+ *  later block wins, as in the cascade, so the Loots section's values replace shadcn's. */
 export function readTheme(css: string) {
   const tokens = new Map<string, ThemeToken>();
-  for (const block of css.matchAll(/^(:root|\.dark)\s*\{([^}]*)\}/gm)) {
+  for (const block of css.matchAll(/^(:root(?:,\s*\.light)?|\.dark)\s*\{([^}]*)\}/gm)) {
     for (const line of block[2].matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)) {
       const [, name, value] = line;
       const token = tokens.get(name) ?? { name, light: "" };
-      if (block[1] === ":root") token.light = value.trim();
+      if (block[1].startsWith(":root")) token.light = value.trim();
       else token.dark = value.trim();
       tokens.set(name, token);
     }

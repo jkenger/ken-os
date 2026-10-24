@@ -71,7 +71,6 @@ export function PortfolioWorkspace({ email, portfolio }: { email: string; portfo
     <WorkspaceShell email={email} active="portfolio">
       <div className="mx-auto max-w-5xl px-3 pt-6 pb-24 md:px-5 md:pt-7.5">
         <PageHeading
-          kicker="Portfolio"
           title="Publish"
           badge={live ? (stale ? "Changes not published" : "Live") : "Not published"}
           facts={

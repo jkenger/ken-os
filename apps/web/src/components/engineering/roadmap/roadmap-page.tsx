@@ -197,7 +197,7 @@ export function RoadmapPage({
     <WorkspaceShell email={email} active="lab" tab="roadmap">
       <div className="flex min-w-0 items-start">
         <div className="grid min-w-0 flex-1 gap-5 px-4 pt-6 pb-10 md:px-7">
-          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b pb-4">
             <div className="min-w-0">
               {roadmaps.length > 0 || archived.length > 0 ? (
                 <RoadmapSwitcher
@@ -211,7 +211,7 @@ export function RoadmapPage({
                   onDelete={roadmapId ? () => setDeleteOpen(true) : null}
                 />
               ) : (
-                <h1 className="font-heading text-2xl leading-tight font-bold tracking-tight md:text-3xl">{goal}</h1>
+                <h1 className="font-heading text-2xl leading-tight font-semibold tracking-tight">{goal}</h1>
               )}
             </div>
             <div className="flex flex-wrap items-center gap-2">

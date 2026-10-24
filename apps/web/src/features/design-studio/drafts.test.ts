@@ -52,21 +52,24 @@ test("draftStyles overrides tokens on previews only, light and dark apart, and s
     studioManifest.components,
     studioManifest.theme,
   );
-  assert.match(css, /\[data-studio-preview\]:not\(\.dark, \.dark \*\) \{ --radius: 0\.5rem; \}/);
-  assert.match(css, /\.dark \[data-studio-preview\] \{ --radius: 0\.5rem; --primary: oklch\(0\.8 0 0\); \}/);
+  assert.match(css, /\[data-studio-preview\]:is\(\.light, \.light \*\) \{ --radius: 0\.5rem; \}/);
+  assert.match(
+    css,
+    /\[data-studio-preview\]:is\(\.dark, \.dark \*\):not\(\.light \*\) \{ --radius: 0\.5rem; --primary: oklch\(0\.8 0 0\); \}/,
+  );
   assert.match(css, /\[data-studio-preview="ui\/button"\] \[data-slot="button"\] \{ font-weight: 600; \}/);
 });
 
 test("draftStyles declares aliases again on previews, and scopes a Look by the variant its preview shows", () => {
   const css = draftStyles(
     [
-      { kind: "token", target: "foreground", change: { light: "oklch(0.2 0.02 250)" } },
+      { kind: "token", target: "ring", change: { light: "oklch(0.2 0.02 250)" } },
       { kind: "component", target: "ui/alert", change: { scope: "destructive", weight: "600" } },
     ],
     studioManifest.components,
     studioManifest.theme,
   );
-  assert.match(css, /--foreground: oklch\(0\.2 0\.02 250\); --selected: var\(--foreground\);/);
+  assert.match(css, /--ring: oklch\(0\.2 0\.02 250\); --selected: var\(--ring\);/);
   assert.match(css, /\[data-studio-preview="ui\/alert"\]\[data-studio-variant="destructive"\] \[data-slot="alert"\]/);
 });
 
@@ -92,8 +95,8 @@ test("draftPatch appends token overrides to globals.css, adds a Loots wrapper an
   const { lines, tail } = studioManifest.globals;
   const start = lines - tail.length + 1;
   assert.ok(text.startsWith("--- a/apps/web/src/app/globals.css\n+++ b/apps/web/src/app/globals.css\n"));
-  assert.ok(text.includes(`@@ -${start},3 +${start},8 @@\n ${tail[0]}`));
-  assert.ok(text.includes("+:root {\n+  --radius: 0.5rem;\n+}\n"));
+  assert.ok(text.includes(`@@ -${start},3 +${start},9 @@\n ${tail[0]}`));
+  assert.ok(text.includes("+:root,\n+.light {\n+  --radius: 0.5rem;\n+}\n"));
   assert.ok(text.includes("--- /dev/null\n+++ b/apps/web/src/components/loots/button.tsx\n@@ -0,0 +1,8 @@\n"));
   assert.ok(text.includes('+import { Button as ShadcnButton } from "@/components/ui/button";'));
   assert.ok(text.includes('+  return <ShadcnButton className={cn("font-semibold", className)} {...props} />;'));
