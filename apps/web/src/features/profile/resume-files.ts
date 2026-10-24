@@ -13,11 +13,12 @@ export type ResumeFileType = typeof PDF_MIME | typeof DOCX_MIME;
 
 export class ResumeFileError extends Error {}
 
-/** PDF starts with `%PDF-`; a .docx is a zip, which starts with `PK\x03\x04`. */
+/** PDF starts with `%PDF-`. A .docx is a zip, which starts with `PK\x03\x04`, and lists `word/document.xml` by name
+ *  (zip entry names are stored as plain text), which a plain zip renamed to .docx doesn't. */
 export function detectResumeType(bytes: Uint8Array): ResumeFileType | null {
   const starts = (prefix: number[]) => prefix.every((byte, index) => bytes[index] === byte);
   if (starts([0x25, 0x50, 0x44, 0x46, 0x2d])) return PDF_MIME;
-  if (starts([0x50, 0x4b, 0x03, 0x04])) return DOCX_MIME;
+  if (starts([0x50, 0x4b, 0x03, 0x04]) && Buffer.from(bytes).includes("word/document.xml")) return DOCX_MIME;
   return null;
 }
 

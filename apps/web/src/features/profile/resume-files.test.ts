@@ -10,12 +10,15 @@ import {
 } from "./resume-files";
 
 const pdf = new TextEncoder().encode("%PDF-1.7\n...");
-const docx = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00]);
+/** The start of a zip entry for `word/document.xml`, as every .docx has. */
+const docx = Buffer.concat([Buffer.from([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00]), Buffer.from("word/document.xml")]);
+const zip = Buffer.concat([Buffer.from([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00]), Buffer.from("photos/cat.jpg")]);
 
 test("the file type comes from the first bytes", () => {
   assert.equal(detectResumeType(pdf), PDF_MIME);
   assert.equal(detectResumeType(docx), DOCX_MIME);
   assert.equal(detectResumeType(new TextEncoder().encode("<html>")), null);
+  assert.equal(detectResumeType(zip), null, "a plain zip isn't a Word file");
 });
 
 test("PDF and Word files with a matching name are accepted", () => {
@@ -29,6 +32,7 @@ test("other files, renamed files, empty and oversized files are refused", () => 
   refused("resume.pdf", new TextEncoder().encode("<html>"));
   refused("resume.docx", pdf);
   refused("resume.zip", docx);
+  refused("resume.docx", zip);
   refused("resume.pdf", new Uint8Array());
   const big = new Uint8Array(RESUME_FILE_MAX_BYTES + 1);
   big.set(pdf);

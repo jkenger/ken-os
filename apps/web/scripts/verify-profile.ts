@@ -124,6 +124,15 @@ async function main() {
       [newer.id],
     );
     console.log("ok - uploaded resumes are kept per user, newest first, and can be deleted");
+
+    for (let index = 1; index < 49; index += 1) await files.addResumeFile(userId, `CV ${index}.pdf`, pdf);
+    const racing = await Promise.allSettled([
+      files.addResumeFile(userId, "A.pdf", pdf),
+      files.addResumeFile(userId, "B.pdf", pdf),
+    ]);
+    assert.deepEqual(racing.map((result) => result.status).sort(), ["fulfilled", "rejected"]);
+    assert.equal((await files.listResumeFiles(userId)).length, 50, "two uploads at once can't pass the limit");
+    console.log("ok - at most 50 files, even with uploads at the same time");
   } finally {
     await db().delete(users).where(eq(users.id, userId));
     await db().delete(users).where(eq(users.id, otherId));

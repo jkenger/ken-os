@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, count, desc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { profileResumes } from "@/lib/schema";
+import { profileResumes, users } from "@/lib/schema";
 import { checkResumeFile, RESUME_FILE_MAX_COUNT, ResumeFileError } from "./resume-files";
 
 // Stored resume files, kept in Postgres. Spec: docs/product/profile-resume.md, "Step 5 design".
@@ -38,17 +38,21 @@ export async function listResumeFiles(userId: string): Promise<ResumeFile[]> {
 
 export async function addResumeFile(userId: string, name: string, bytes: Uint8Array): Promise<ResumeFile> {
   const { fileName, contentType } = checkResumeFile(name, bytes);
-  const [{ total }] = await db()
-    .select({ total: count() })
-    .from(profileResumes)
-    .where(eq(profileResumes.userId, userId));
-  if (total >= RESUME_FILE_MAX_COUNT)
-    throw new ResumeFileError(`You can keep up to ${RESUME_FILE_MAX_COUNT} files. Delete one first`);
-  const [row] = await db()
-    .insert(profileResumes)
-    .values({ id: randomUUID(), userId, fileName, contentType, size: bytes.byteLength, data: Buffer.from(bytes) })
-    .returning(listed);
-  return shape(row);
+  return db().transaction(async (tx) => {
+    // Locks the owner's row so two uploads at once can't both pass the count.
+    await tx.select({ id: users.id }).from(users).where(eq(users.id, userId)).for("update");
+    const [{ total }] = await tx
+      .select({ total: count() })
+      .from(profileResumes)
+      .where(eq(profileResumes.userId, userId));
+    if (total >= RESUME_FILE_MAX_COUNT)
+      throw new ResumeFileError(`You can keep up to ${RESUME_FILE_MAX_COUNT} files. Delete one first`);
+    const [row] = await tx
+      .insert(profileResumes)
+      .values({ id: randomUUID(), userId, fileName, contentType, size: bytes.byteLength, data: Buffer.from(bytes) })
+      .returning(listed);
+    return shape(row);
+  });
 }
 
 /** One file with its bytes, only when it belongs to the owner asking. */

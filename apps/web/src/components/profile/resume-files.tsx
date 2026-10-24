@@ -62,7 +62,7 @@ export function ResumeFiles({ initial }: { initial: ResumeFile[] }) {
     <Card id="resumes" className="scroll-mt-24">
       <CardHeader>
         <CardTitle>Uploaded resumes</CardTitle>
-        <CardDescription>PDF or Word, up to 4 MB. Uploading doesn&apos;t change your details</CardDescription>
+        <CardDescription>PDF or Word, up to 4 MB</CardDescription>
         <CardAction>
           <Input
             ref={input}
@@ -90,7 +90,10 @@ export function ResumeFiles({ initial }: { initial: ResumeFile[] }) {
           </Alert>
         )}
         {files.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No resumes uploaded</p>
+          <div className="text-sm">
+            <p>No resumes uploaded</p>
+            <p className="text-muted-foreground">Uploading keeps the file and doesn&apos;t change your details.</p>
+          </div>
         ) : (
           <ul className="divide-y">
             {files.map((file) => {
