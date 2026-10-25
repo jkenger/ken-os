@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { driveErrorCodes, driveErrorText, signInErrorCodes, signInNotice } from "./auth-errors";
+import { signInErrorCodes, signInNotice } from "./auth-errors";
 import {
   RENEW_AFTER,
   SESSION_IDLE,
@@ -55,9 +55,6 @@ test("every sign-in error code has alert text, and unknown codes never echo the 
   assert.equal(signInNotice({ expired: "1" })?.text, "Session ended. Sign in again");
   assert.equal(signInNotice({ signed_out: "1" })?.text, "Signed out");
   assert.equal(signInNotice({}), null);
-  for (const code of driveErrorCodes) assert.ok(driveErrorText(code));
-  assert.equal(driveErrorText(undefined), null);
-  assert.equal(driveErrorText("anything"), driveErrorText("google"));
 });
 
 test("the wrong-account alert never shows an email address", () => {

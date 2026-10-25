@@ -21,7 +21,7 @@ Database checks need `pnpm db:up` (Docker Postgres on `127.0.0.1:5435`) and `pnp
 
 - `pnpm --filter @ken-os/web test:db:engineering`
 - `pnpm --filter @ken-os/web test:db:terms`
-- `pnpm --filter @ken-os/web test:db:resume`
+- `pnpm --filter @ken-os/web test:db:profile`
 - `pnpm --filter @ken-os/web test:db:auth`
 - `pnpm --filter @ken-os/web test:db:memory`
 

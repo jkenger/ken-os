@@ -295,39 +295,3 @@ export function normalizeProfile(value: unknown, mode: ProfileMode): ProfileDeta
     },
   };
 }
-
-/**
- * Lays an imported draft over the form for review, including edits not saved yet. Sections the file filled replace the
- * form's; sections it left empty keep what's there, so importing a thin file never wipes details the owner typed. Local fields are
- * the owner's choice and only fill gaps.
- */
-export function mergeImport(saved: ProfileDetails, draft: ProfileDetails): ProfileDetails {
-  const pick = <T>(next: T[], current: T[]) => (next.length ? next : current);
-  const field = (key: Exclude<keyof ProfileContact, "links">) => draft.contact[key] || saved.contact[key];
-  return {
-    contact: {
-      fullName: field("fullName"),
-      headline: field("headline"),
-      email: field("email"),
-      phone: field("phone"),
-      city: field("city"),
-      country: field("country"),
-      links: pick(draft.contact.links, saved.contact.links),
-    },
-    summary: draft.summary || saved.summary,
-    experience: pick(draft.experience, saved.experience),
-    education: pick(draft.education, saved.education),
-    skills: pick(draft.skills, saved.skills),
-    projects: pick(draft.projects, saved.projects),
-    certifications: pick(draft.certifications, saved.certifications),
-    languages: pick(draft.languages, saved.languages),
-    local: {
-      enabled: saved.local.enabled,
-      birthdate: saved.local.birthdate || draft.local.birthdate,
-      civilStatus: saved.local.civilStatus || draft.local.civilStatus,
-      nationality: saved.local.nationality || draft.local.nationality,
-      address: saved.local.address || draft.local.address,
-      references: pick(saved.local.references, draft.local.references),
-    },
-  };
-}

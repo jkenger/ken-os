@@ -2,36 +2,34 @@
 
 ## Shape
 
-TypeScript pnpm monorepo with one deployable Next.js application and small shared packages. The default hosting target is Vercel plus managed PostgreSQL. PostgreSQL persists identity, encrypted Google refresh tokens, and artifact references. Google Drive remains the content store.
+TypeScript pnpm monorepo with one deployable Next.js application and small shared packages. The default hosting target is Vercel plus managed PostgreSQL. PostgreSQL persists identity, the owner's details and the resume files they upload.
 
 ```text
 Browser → Next.js app → PostgreSQL
-                 ↘ Google OAuth / Drive API / Picker
-                 ↘ OpenAI Agents SDK (Profile import, read only)
+                 ↘ Google OAuth (sign-in only)
+                 ↘ Claude API (Profile Autofill, read only)
+                 ↘ OpenAI Agents SDK (Profile rewrite, Terms)
 ```
 
 ## Packages
 
 - `apps/web`: UI, sessions, OAuth callback, API routes, database access.
 - `packages/domain`: stable artifact types and supported resume formats.
-- `packages/drive`: Google Drive metadata and content adapter.
 - `packages/agents`: read-only agent definition and execution.
 
 The next deployable process is a worker only when background jobs are needed. A separate service is not required for the first resume flow.
 
 ## Data ownership
 
-`users` identifies the configured owner. `google_connections` stores an encrypted refresh token. `artifact_selections` maps a purpose such as `primary_resume` to a Drive file ID. `profiles` holds the owner's career details as JSON, and `profile_imports` keeps each read of the Drive resume (append only). Document bytes are fetched from Drive on demand. Drizzle owns schema definitions and migrations; its first migration safely baselines the original handwritten tables.
+`users` identifies the configured owner. `profiles` holds the owner's career details as JSON, `profile_resumes` the uploaded resume files, and `profile_imports` each Autofill read of one (append only). `google_connections` and `artifact_selections` are left from the Drive integration (removed 25 Oct 2026) and nothing uses them. Drizzle owns schema definitions and migrations; its first migration safely baselines the original handwritten tables.
 
 ## Security boundary
 
 - OAuth state and PKCE protect the sign-in callback.
-- The configured owner email gates the session. Sign-in asks only for `openid email profile`; Drive (`drive.file`) is a separate grant from the Profile page (`/api/auth/google/drive`). See `docs/architecture/auth-sign-in.md`.
+- The configured owner email gates the session. Sign-in asks only for `openid email profile`, and no Google token is kept. See `docs/architecture/auth-sign-in.md`.
 - Sessions roll: 30 days from last use, renewed at most daily by `src/proxy.ts`, never past 90 days from sign-in. The proxy only renews; pages call `requireSession`.
-- The Google refresh token is encrypted at rest with `TOKEN_ENCRYPTION_KEY`.
 - API routes validate the session and mutation origin. The exceptions are `GET /api/public/portfolio` and `GET /api/public/portfolio/resume`, which need no session and read only the live published Portfolio snapshot ([portfolio.md](portfolio.md)).
-- Picker obtains a short-lived access token only after a valid session.
-- The Profile import reads the chosen resume's text and returns fields for review; no agent can modify Drive.
+- Autofill sends one uploaded file to Claude and returns fields for review; nothing changes until the owner saves.
 
 ## Future seams
 
