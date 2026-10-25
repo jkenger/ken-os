@@ -63,7 +63,6 @@ export async function GET(request: NextRequest) {
     console.warn(
       `Google sign-in failed: ${reason} ${detail}`.trim(),
       JSON.stringify({
-        intent: cookies.intent,
         code: Boolean(code),
         state: Boolean(state),
         stateCookie: Boolean(cookies.state),
@@ -73,7 +72,10 @@ export async function GET(request: NextRequest) {
       }),
     );
 
-  const fail = (reason: string) => finishRedirect(`/sign-in?${new URLSearchParams({ error: reason, next })}`);
+  const fail = (reason: string, detail?: string) => {
+    report(reason, detail);
+    return finishRedirect(`/sign-in?${new URLSearchParams({ error: reason, next })}`);
+  };
   if (googleError) return fail(googleError === "access_denied" ? "cancelled" : "google");
   if (!code || !stateMatches) return fail("expired");
   const result = await exchange(code, cookies.verifier!);
