@@ -24,3 +24,4 @@ export * from "./terms";
 export * from "./profile";
 export * from "./resume";
 export * from "./rewrite";
+export * from "./autofill";

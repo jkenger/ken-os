@@ -125,7 +125,30 @@ async function main() {
     );
     console.log("ok - uploaded resumes are kept per user, newest first, and can be deleted");
 
-    for (let index = 1; index < 49; index += 1) await files.addResumeFile(userId, `CV ${index}.pdf`, pdf);
+    assert.equal((await files.listResumeFiles(userId))[0].appliedAt, null, "a file no Autofill was saved from");
+    const autofillId = randomUUID();
+    await db().insert(profileImports).values({
+      id: autofillId,
+      userId,
+      resumeFileId: newer.id,
+      draft: details,
+      promptVersion: "check",
+      model: "check",
+    });
+    await store.saveProfile(userId, details, autofillId);
+    const appliedAt = (await files.listResumeFiles(userId))[0].appliedAt;
+    assert.ok(appliedAt && !Number.isNaN(Date.parse(appliedAt)), "saving the Autofill marks its file applied");
+    await assert.rejects(
+      store.autofillFromResume(otherId, newer.id),
+      (error: Error) => error instanceof store.ProfileInputError && error.status === 404,
+      "another user can't autofill from it",
+    );
+    await files.deleteResumeFile(userId, newer.id);
+    const [kept] = await db().select().from(profileImports).where(eq(profileImports.id, autofillId));
+    assert.equal(kept.resumeFileId, null, "deleting the file keeps the Autofill record");
+    console.log("ok - a saved Autofill marks its file applied, and outlives the file");
+
+    for (let index = 1; index < 50; index += 1) await files.addResumeFile(userId, `CV ${index}.pdf`, pdf);
     const racing = await Promise.allSettled([
       files.addResumeFile(userId, "A.pdf", pdf),
       files.addResumeFile(userId, "B.pdf", pdf),

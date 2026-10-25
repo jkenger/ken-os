@@ -15,12 +15,13 @@ Every module follows these.
 Loots tokens live in the "Loots" section at the end of `apps/web/src/app/globals.css`, each with a light and a dark
 value and an `@theme inline` entry, so they are Tailwind classes (`text-topic-active`, `ring-selected`).
 
-| Role             | Token                                                     | Use                                                                        |
-| ---------------- | --------------------------------------------------------- | -------------------------------------------------------------------------- |
-| Surfaces         | shadcn `background`, `card`, `muted`                      | Page, panels and cards, quiet fills and tracks                             |
-| Borders and text | shadcn `border`, `ring`, `foreground`, `muted-foreground` | Every line and every word                                                  |
-| Selection        | `selected`                                                | The picked item's outline or ring, and lines touching it                   |
-| Topic status     | `topic-learned`, `topic-active`, each with `-soft`        | Learned and In progress icons and chips. Not started and Skipped use muted |
+| Role             | Token                                                     | Use                                                                                                      |
+| ---------------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| Surfaces         | shadcn `background`, `card`, `muted`                      | Page, panels and cards, quiet fills and tracks                                                           |
+| Borders and text | shadcn `border`, `ring`, `foreground`, `muted-foreground` | Every line and every word                                                                                |
+| Selection        | `selected`                                                | The picked item's outline or ring, and lines touching it                                                 |
+| Topic status     | `topic-learned`, `topic-active`, each with `-soft`        | Learned and In progress icons and chips. Not started and Skipped use muted                               |
+| Diff             | `diff-add`, `diff-remove`, each with `-soft`              | Profile Autofill: what a resume adds and what it replaces, always beside Now or Resume and a strike or + |
 
 `selected` points at the text ink (`foreground`) since 24 Oct 2026, so a picked topic never reads as In progress.
 Before that it shared the In progress blue. Components name `selected`, so it can change again without touching status.

@@ -1,13 +1,17 @@
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import {
+  AutofillError,
+  autofillProfile,
   importProfile,
+  PROFILE_AUTOFILL_PROMPT_VERSION,
   PROFILE_IMPORT_PROMPT_VERSION,
   PROFILE_REWRITE_PROMPT_VERSION,
   rewriteProfile,
 } from "@ken-os/agents";
 import {
   emptyProfile,
+  PDF_MIME,
   isPaperSize,
   isResumeTemplate,
   normalizeProfile,
@@ -18,11 +22,13 @@ import {
   type ProfileDetails,
   type ResumeTemplate,
 } from "@ken-os/domain";
+import mammoth from "mammoth";
 import { DriveError, getDriveFile, getResumeText } from "@ken-os/drive";
 import { db } from "@/lib/db";
 import { DriveAccessError, getGoogleAccessToken } from "@/lib/google";
 import { getSelectedResume } from "@/lib/resume";
 import { profileImports, profileRewrites, profiles, users } from "@/lib/schema";
+import { getResumeFile } from "./resume-files-store";
 
 // The Profile: the owner's career details, typed in or imported from the Drive resume. Spec: docs/product/profile-resume.md.
 
@@ -190,4 +196,42 @@ export async function importFromDrive(
       model,
     });
   return { importId, draft, fileName: file.name };
+}
+
+/**
+ * Reads an uploaded resume into a draft with Claude. Like a Drive import, nothing changes until the owner saves: the
+ * draft is kept as a `pending` import and the page shows what it would change, field by field. A PDF goes to Claude as
+ * is; a Word file goes as its text.
+ */
+export async function autofillFromResume(
+  userId: string,
+  fileId: string,
+): Promise<{ importId: string; draft: ProfileDetails; fileName: string }> {
+  const file = await getResumeFile(userId, fileId);
+  if (!file) throw new ProfileInputError("File not found", 404);
+  let source: { pdf: Uint8Array } | { text: string };
+  if (file.contentType === PDF_MIME) source = { pdf: new Uint8Array(file.data) };
+  else {
+    const { value } = await mammoth.extractRawText({ buffer: Buffer.from(file.data) });
+    if (value.trim().length < MIN_RESUME_TEXT) throw new ProfileInputError("No text found in this file", 422);
+    source = { text: value };
+  }
+
+  let result: Awaited<ReturnType<typeof autofillProfile>>;
+  try {
+    result = await autofillProfile(source);
+  } catch (error) {
+    if (error instanceof AutofillError) throw new ProfileInputError(error.message, 422);
+    throw error;
+  }
+  const importId = randomUUID();
+  await db().insert(profileImports).values({
+    id: importId,
+    userId,
+    resumeFileId: file.id,
+    draft: result.draft,
+    promptVersion: PROFILE_AUTOFILL_PROMPT_VERSION,
+    model: result.model,
+  });
+  return { importId, draft: result.draft, fileName: file.fileName };
 }

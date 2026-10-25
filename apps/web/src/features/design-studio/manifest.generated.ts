@@ -160,6 +160,27 @@ export const studioManifest: StudioManifest = {
       "slot": "card"
     },
     {
+      "id": "ui/checkbox",
+      "name": "Checkbox",
+      "kind": "primitive",
+      "file": "components/ui/checkbox.tsx",
+      "exports": [
+        "Checkbox"
+      ],
+      "variants": [],
+      "uses": [],
+      "tokens": [
+        "primary",
+        "primary-foreground",
+        "destructive",
+        "border",
+        "input",
+        "ring",
+        "radius"
+      ],
+      "slot": "checkbox"
+    },
+    {
       "id": "ui/code-editor",
       "name": "CodeEditor",
       "kind": "primitive",
@@ -1325,6 +1346,7 @@ export const studioManifest: StudioManifest = {
           "name": "Checkbox",
           "description": "A control that allows the user to toggle between checked and not checked.",
           "uses": [],
+          "installed": "ui/checkbox",
           "add": "pnpm dlx shadcn@latest add @shadcn/checkbox",
           "docs": "https://ui.shadcn.com/docs/components/radix/checkbox"
         },
@@ -2624,11 +2646,31 @@ export const studioManifest: StudioManifest = {
       "name": "selected",
       "light": "var(--ring)",
       "dark": "var(--ring)"
+    },
+    {
+      "name": "diff-add",
+      "light": "oklch(0.45 0.11 152)",
+      "dark": "oklch(0.8 0.12 152)"
+    },
+    {
+      "name": "diff-add-soft",
+      "light": "oklch(0.96 0.03 152)",
+      "dark": "oklch(0.3 0.05 152)"
+    },
+    {
+      "name": "diff-remove",
+      "light": "oklch(0.5 0.16 27)",
+      "dark": "oklch(0.8 0.1 27)"
+    },
+    {
+      "name": "diff-remove-soft",
+      "light": "oklch(0.965 0.02 27)",
+      "dark": "oklch(0.31 0.06 27)"
     }
   ],
   "globals": {
     "file": "app/globals.css",
-    "lines": 343,
+    "lines": 360,
     "tail": [
       ".font-mono {",
       "  font-variant-numeric: tabular-nums;",

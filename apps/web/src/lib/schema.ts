@@ -107,7 +107,10 @@ export const profileImports = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    driveFileId: text("drive_file_id").notNull(),
+    /** Set for an import from Drive; null for an autofill from an uploaded file. */
+    driveFileId: text("drive_file_id"),
+    /** The uploaded file an autofill read. Null once that file is deleted. */
+    resumeFileId: text("resume_file_id").references(() => profileResumes.id, { onDelete: "set null" }),
     driveModifiedTime: text("drive_modified_time"),
     draft: jsonb("draft").$type<ProfileDetails>().notNull(),
     status: text("status").$type<"pending" | "applied">().notNull().default("pending"),
