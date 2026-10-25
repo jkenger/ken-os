@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertCircle, FileDown } from "lucide-react";
 import { IconChevronRight, IconFlask, IconMapPin } from "@tabler/icons-react";
@@ -149,8 +150,9 @@ export function ProfileWorkspace({
     const url = new URL(window.location.href);
     const wasOpen = url.searchParams.has("section");
     url.searchParams.set("section", id);
-    if (wasOpen) window.history.replaceState(window.history.state, "", url);
-    else window.history.pushState({ ...window.history.state, profileSection: true }, "", url);
+    // Our own state object, never a copy of Next's: Next skips syncing its router for a state that carries its markers.
+    if (wasOpen) window.history.replaceState({ profileSection: window.history.state?.profileSection }, "", url);
+    else window.history.pushState({ profileSection: true }, "", url);
     setOpened(id);
   }, []);
 
@@ -160,27 +162,43 @@ export function ProfileWorkspace({
     else {
       const url = new URL(window.location.href);
       url.searchParams.delete("section");
-      window.history.replaceState(window.history.state, "", url);
+      window.history.replaceState(null, "", url);
       setOpened(null);
     }
   }, []);
 
+  // The address decides the panel, whatever changed it: Back, a section link in the sidebar (Next navigates in place, so
+  // no popstate fires) or the pushState above, which Next also reports through useSearchParams.
+  const searchParams = useSearchParams();
+  const addressSection = searchParams.get("section");
   useEffect(() => {
-    const sync = () => {
-      const section = new URLSearchParams(window.location.search).get("section");
-      setOpened(section && isLedgerSection(section) ? section : null);
-    };
-    window.addEventListener("popstate", sync);
-    return () => window.removeEventListener("popstate", sync);
-  }, []);
+    setOpened(addressSection && isLedgerSection(addressSection) ? addressSection : null);
+  }, [addressSection]);
 
-  // One Save covers every section, so leaving with unsaved edits asks first.
+  // One Save covers every section, so leaving with unsaved edits asks first: a reload or tab close through
+  // beforeunload, and a link to another page in the app, which Next follows without unloading, through a click guard.
   const unsaved = changed || review !== null;
   useEffect(() => {
     if (!unsaved) return;
     const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+    const guard = (event: MouseEvent) => {
+      if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey) return;
+      const link = event.target instanceof Element ? event.target.closest("a[href]") : null;
+      if (!(link instanceof HTMLAnchorElement) || link.target === "_blank" || link.hasAttribute("download")) return;
+      const to = new URL(link.href, window.location.href);
+      // Profile's own links (a section, #resumes) keep the edits.
+      if (to.origin === window.location.origin && to.pathname === window.location.pathname) return;
+      if (!window.confirm("Leave Profile? Unsaved changes are lost")) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
     window.addEventListener("beforeunload", warn);
-    return () => window.removeEventListener("beforeunload", warn);
+    document.addEventListener("click", guard, true);
+    return () => {
+      window.removeEventListener("beforeunload", warn);
+      document.removeEventListener("click", guard, true);
+    };
   }, [unsaved]);
   const unsavedSections = rows.filter((row) => row.state === "unsaved").length;
 
