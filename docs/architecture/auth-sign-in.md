@@ -181,6 +181,19 @@ Slice 1 can ship on today's look; it moves to the shadcn default with the rest o
 6. The wrong account sees "This Google account doesn't have access" and can pick another.
 7. `pnpm test`, `pnpm check` and `pnpm build` pass, and all eight hand checks pass on the hosted app.
 
+## 11. Preview sign-in
+
+Google accepts no wildcard redirect URIs, so the one registered URI is production's `/api/auth/google/callback`, and production relays a preview's answer to that preview. Added 25 Oct 2026; it replaces re-pointing the `ken-os-preview.vercel.app` alias at each PR.
+
+1. A preview starts sign-in as usual, but sends Google production's callback as `redirect_uri` (`https://$VERCEL_PROJECT_PRODUCTION_URL/api/auth/google/callback`).
+2. The OAuth `state` is `nonce.origin.mac`: a random nonce, the starting app's origin (base64url), and an HMAC-SHA256 over both keyed by `SESSION_SECRET`, which production and previews share. The state cookie still holds the whole value.
+3. Production's callback reads the state. When the HMAC checks out, the origin isn't production's own, and the origin is one of this project's previews (`https://ken-os-*-jkengers-projects.vercel.app` or `https://ken-os-preview.vercel.app`, exact origin, no port or path), it 302s every query parameter unchanged to `<origin>/api/auth/google/callback`. It sets and clears no cookies.
+4. The preview's callback checks state against its cookie and exchanges the code with production's `redirect_uri` and its own PKCE verifier, as before.
+
+Anything else (no state, a bad HMAC, an origin outside the list) is finished locally, where the state cookie check fails it as `expired`. The HMAC stops anyone pointing production at a host of their choosing, the allowlist backs it up, and a code that leaks is useless without the preview's verifier cookie.
+
+On a preview with no `APP_URL`, `appUrl()` is the branch URL (`https://$VERCEL_BRANCH_URL`, the Preview link in Vercel's PR comment), so open a preview there. A Preview `APP_URL` still wins when set.
+
 ## Open questions
 
 - **Session lengths:** 30 days idle and 90 days maximum are a recommendation. Shorter is safer; this app holds a Drive token, so don't go longer.
