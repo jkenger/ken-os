@@ -75,7 +75,10 @@ export async function GET(request: NextRequest) {
 
   if (cookies.intent === "drive") {
     const session = await getSession();
-    if (!session) return finishRedirect(`/sign-in?${new URLSearchParams({ expired: "1", next })}`);
+    if (!session) {
+      report("drive without a session");
+      return finishRedirect(`/sign-in?${new URLSearchParams({ expired: "1", next })}`);
+    }
     const fail = (reason: "cancelled" | "scope" | "google", detail?: string) => {
       report(`drive ${reason}`, detail);
       return finishRedirect(withParam(next, "drive_error", reason));
