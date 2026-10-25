@@ -75,7 +75,12 @@ None.
 ## Decided
 
 - **A. Ledger** (24 Oct 2026). Each section row opens its form in the side panel; the row states are Unsaved, Empty,
-  Private (Local fields), Not published, Changed (a Publish would change it) and Published.
+  Hidden (Local fields, never on the public resume), Not published, Changed (a Publish would change it) and Published.
+- **Full width** (25 Oct 2026). Module pages fill the content inset, left-aligned, instead of a centered column.
+- **Differences from the frame** (25 Oct 2026). Changed carries no date: nothing records when one section changed, only
+  when the whole Profile was saved. There is no separate Phone row: the phone is part of Contact and never published.
+  Each resume row shows Not used and Download and Delete until Autofill exists. The section column keeps Resume and
+  Drive file until those pages are dropped.
 - **Delete allowed.** A stored resume can be deleted (resume uploads, PR #147).
 - **No Drive.** Resumes come only from Upload; choosing a file in Google Drive is dropped, and Drive is no longer a
   source for Profile (24 Oct 2026). None of the three directions shows a Drive option. The Drive card stays on Profile
