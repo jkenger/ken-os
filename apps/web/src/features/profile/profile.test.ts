@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { emptyProfile, mergeImport, normalizeProfile, ProfileFieldError, PROFILE_LIMITS } from "@ken-os/domain";
+import { emptyProfile, normalizeProfile, ProfileFieldError, PROFILE_LIMITS } from "@ken-os/domain";
 
 test("save trims, drops empty entries and missing keys become empty", () => {
   const details = normalizeProfile(
@@ -67,37 +67,6 @@ test("save names the field that's wrong; import cleans it instead", () => {
   assert.equal(imported.contact.headline.length, PROFILE_LIMITS.text, "import cuts overlong text");
   assert.equal(imported.experience[0].start, "", "import drops a date it can't read");
   assert.equal(imported.experience[0].end, "2024", "a year alone is fine");
-});
-
-test("an import fills from the file but never wipes what the file left out", () => {
-  const saved = normalizeProfile(
-    {
-      contact: { fullName: "Ken", email: "ken@example.com", phone: "+63 900" },
-      summary: "Saved summary",
-      education: [{ school: "UP", degree: "BS" }],
-      local: { enabled: true, civilStatus: "Single" },
-    },
-    "save",
-  );
-  const draft = normalizeProfile(
-    {
-      contact: { fullName: "Ken G", email: "", city: "Manila" },
-      experience: [{ company: "Acme", title: "Engineer" }],
-      local: { civilStatus: "Married", nationality: "Filipino" },
-    },
-    "import",
-  );
-  const merged = mergeImport(saved, draft);
-  assert.equal(merged.contact.fullName, "Ken G", "the file wins where it has a value");
-  assert.equal(merged.contact.email, "ken@example.com", "an empty field in the file keeps the saved one");
-  assert.equal(merged.contact.phone, "+63 900");
-  assert.equal(merged.contact.city, "Manila");
-  assert.equal(merged.summary, "Saved summary");
-  assert.equal(merged.experience[0].company, "Acme");
-  assert.equal(merged.education[0].school, "UP", "a section the file lacks is kept");
-  assert.equal(merged.local.enabled, true, "showing local fields stays the owner's choice");
-  assert.equal(merged.local.civilStatus, "Single", "local fields the owner typed are kept");
-  assert.equal(merged.local.nationality, "Filipino", "and gaps are filled from the file");
 });
 
 test("blank lines and a trailing comma never count toward a limit", () => {

@@ -11,10 +11,9 @@ export const OAUTH_COOKIES = {
   intent: "ken_os_oauth_intent",
 } as const;
 
-export type OAuthIntent = "signin" | "drive";
+export type OAuthIntent = "signin";
 
 export const SIGN_IN_SCOPES = "openid email profile";
-export const DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
 
 const cookieOptions = {
   httpOnly: true,
@@ -60,18 +59,9 @@ export function finishRedirect(target: string): NextResponse {
 }
 
 export function readOAuthCookies(request: NextRequest) {
-  const intent = request.cookies.get(OAUTH_COOKIES.intent)?.value;
   return {
     state: request.cookies.get(OAUTH_COOKIES.state)?.value,
     verifier: request.cookies.get(OAUTH_COOKIES.verifier)?.value,
     next: request.cookies.get(OAUTH_COOKIES.next)?.value,
-    intent: (intent === "drive" ? "drive" : "signin") as OAuthIntent,
   };
-}
-
-/** Adds one query parameter to an app path. */
-export function withParam(path: string, key: string, value: string): string {
-  const url = new URL(path, "http://ken-os.invalid");
-  url.searchParams.set(key, value);
-  return `${url.pathname}${url.search}`;
 }

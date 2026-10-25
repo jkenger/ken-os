@@ -8,8 +8,8 @@ import { ProfileInputError } from "./store";
 export async function profileRoute(
   request: Request,
   handler: (session: Session, body: Record<string, unknown>) => Promise<unknown>,
-  /** `ai` names the AI step for its errors. Autofill needs ANTHROPIC_API_KEY; Import and Rewrite need OPENAI_API_KEY. */
-  options: { write: boolean; ai?: "Import" | "Rewrite" | "Autofill" },
+  /** `ai` names the AI step for its errors. Autofill needs ANTHROPIC_API_KEY; Rewrite needs OPENAI_API_KEY. */
+  options: { write: boolean; ai?: "Rewrite" | "Autofill" },
 ) {
   if (options.write && !hasValidOrigin(request))
     return NextResponse.json({ error: messages.invalidOrigin }, { status: 403 });

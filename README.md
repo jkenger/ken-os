@@ -8,7 +8,7 @@ Loots was called Ken OS until October 2026. The repository, the `@ken-os/*` pack
 
 | Module         | Route          | What it does                                                                                                                                                                   |
 | -------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Profile        | `/profile`     | Career details stored as fields, typed in or imported from a resume picked in Google Drive. Resumes are rendered from those fields. The picked Drive file is only ever read.   |
+| Profile        | `/profile`     | Career details stored as fields, typed in or autofilled with Claude from an uploaded PDF or Word resume, reviewed field by field. Resumes are rendered from those fields.      |
 | Engineering    | `/engineering` | A learning roadmap for full-stack and AI engineering: chapters, topics, statuses, review sheets, notes and one code lab per topic. Claude teaches through the Loots connector. |
 | Terms          | `/terms`       | Select text anywhere in the app and press Explain (or E) for a short definition from trusted sources. Saved terms are underlined wherever they appear.                         |
 | Project Memory | `/memory`      | A pilot for recording decisions and work receipts on Loots itself, with owner review and a generated handoff.                                                                  |
@@ -25,8 +25,8 @@ Loots is also an MCP server (`/api/mcp`, with OAuth at `/oauth/authorize`). A Cl
 - Next.js (App Router) and React 19
 - Tailwind CSS 4 and shadcn/ui
 - PostgreSQL with Drizzle ORM and Drizzle Kit migrations
-- Google OAuth, Google Drive and Google Picker
-- OpenAI Agents SDK for the Profile import and rewrite and for term lookup
+- Google OAuth for sign-in
+- Claude API for Profile Autofill; OpenAI Agents SDK for the Profile rewrite and term lookup
 - Model Context Protocol SDK for the Claude connector
 - Vercel hosting
 
@@ -40,7 +40,6 @@ apps/web/            Next.js app: UI, API routes, auth, sessions, database
   drizzle/           SQL migrations
   scripts/           Migration, lab generation and database check scripts
 packages/domain/     Shared types and format rules
-packages/drive/      Google Drive adapter
 packages/agents/     Profile and term lookup agents
 content/             Engineering topic map, roles and curriculum (YAML)
 labs/                One code lab per Engineering topic (starter, solution, tests)
@@ -53,8 +52,8 @@ docs/                Product specs and architecture notes
 
 - Node.js and pnpm 10
 - Docker, for the local PostgreSQL container
-- A Google Cloud project with the Google Drive and Google Picker APIs enabled
-- An OpenAI API key, for the Profile import and term lookup
+- A Google Cloud project with an OAuth client, for sign-in
+- An Anthropic API key, for Profile Autofill, and an OpenAI API key, for the Profile rewrite and term lookup
 
 ### Setup
 
@@ -82,18 +81,18 @@ docs/                Product specs and architecture notes
 
 All variables are listed in [`apps/web/.env.example`](apps/web/.env.example).
 
-| Variable                                                                 | Purpose                                                                                     |
-| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
-| `APP_URL`                                                                | Public origin of the app                                                                    |
-| `OWNER_EMAIL`                                                            | The only Google account allowed to sign in                                                  |
-| `DATABASE_URL`                                                           | PostgreSQL connection string                                                                |
-| `DATABASE_URL_UNPOOLED`                                                  | Optional direct connection for migrations when `DATABASE_URL` is pooled                     |
-| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`                               | Google OAuth client                                                                         |
-| `NEXT_PUBLIC_GOOGLE_PICKER_API_KEY`, `NEXT_PUBLIC_GOOGLE_PROJECT_NUMBER` | Google Picker                                                                               |
-| `SESSION_SECRET`, `TOKEN_ENCRYPTION_KEY`                                 | Session signing and encryption of the stored Google refresh token (32 or more random chars) |
-| `OPENAI_API_KEY`                                                         | Profile import and rewrite, term lookup                                                     |
-| `MCP_ALLOWED_REDIRECT_HOSTS`                                             | Hosts allowed for Claude connector OAuth redirects (default `claude.ai,claude.com`)         |
-| `KEN_OS_CLAUDE_PROJECT_URL`                                              | Optional fallback Claude Project link for Ask Claude                                        |
+| Variable                                   | Purpose                                                                             |
+| ------------------------------------------ | ----------------------------------------------------------------------------------- |
+| `APP_URL`                                  | Public origin of the app                                                            |
+| `OWNER_EMAIL`                              | The only Google account allowed to sign in                                          |
+| `DATABASE_URL`                             | PostgreSQL connection string                                                        |
+| `DATABASE_URL_UNPOOLED`                    | Optional direct connection for migrations when `DATABASE_URL` is pooled             |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google OAuth client                                                                 |
+| `SESSION_SECRET`                           | Session signing (32 or more random chars)                                           |
+| `ANTHROPIC_API_KEY`                        | Profile Autofill                                                                    |
+| `OPENAI_API_KEY`                           | Profile rewrite, term lookup                                                        |
+| `MCP_ALLOWED_REDIRECT_HOSTS`               | Hosts allowed for Claude connector OAuth redirects (default `claude.ai,claude.com`) |
+| `KEN_OS_CLAUDE_PROJECT_URL`                | Optional fallback Claude Project link for Ask Claude                                |
 
 ## Scripts
 
@@ -125,7 +124,6 @@ Tests use Node's built-in test runner through `tsx --test` and do not call Googl
 
 ```sh
 pnpm --filter @ken-os/web test:db:profile
-pnpm --filter @ken-os/web test:db:resume
 pnpm --filter @ken-os/web test:db:engineering
 pnpm --filter @ken-os/web test:db:terms
 pnpm --filter @ken-os/web test:db:connector
@@ -145,14 +143,11 @@ Loots deploys to Vercel with a managed PostgreSQL database.
 
 Production deploys apply pending migrations after the build (`db:migrate:deploy` in `apps/web/vercel.json`); preview deploys never change the schema, and a failed migration fails the deploy. Because the schema changes just before new code goes live, each migration must work with the code already deployed: add tables and columns first, and remove old ones in a later release. Never run `db:migrate` against the hosted database by hand.
 
-When the Google OAuth app is an external app in Testing status, Drive refresh tokens expire after seven days. Move it to In production for lasting hosted use, or reconnect from the Profile page.
-
 ## Security
 
 - Sign-in is restricted to `OWNER_EMAIL`, with OAuth state and PKCE on the callback.
 - Sessions last 30 days from last use and never more than 90 days from sign-in.
-- The Google refresh token is encrypted at rest. API routes check the session and the request origin on mutations.
-- Drive access uses the per-file `drive.file` scope and is granted separately from sign-in. No agent can write to Drive.
+- Sign-in asks Google only for `openid email profile`; no Google token is stored. API routes check the session and the request origin on mutations.
 
 ## Documentation
 

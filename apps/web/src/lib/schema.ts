@@ -41,6 +41,7 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** Drive grants from before Drive was dropped (25 Oct 2026). Nothing reads or writes it; kept per the migration rule. */
 export const googleConnections = pgTable("google_connections", {
   userId: text("user_id")
     .primaryKey()
@@ -49,6 +50,8 @@ export const googleConnections = pgTable("google_connections", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** The Drive file once picked as the resume. Nothing reads or writes it since Drive was dropped; kept per the migration
+ *  rule. */
 export const artifactSelections = pgTable(
   "artifact_selections",
   {
@@ -98,8 +101,8 @@ export const profileResumes = pgTable(
   (table) => [index("profile_resumes_user_idx").on(table.userId, table.uploadedAt)],
 );
 
-/** Each read of a Drive resume into Profile fields. Append-only: a draft is `pending` until the owner saves it, then
- *  `applied`. `drive_modified_time` is the file's version at import, for spotting later Drive edits. */
+/** Each Autofill read of a resume into Profile fields. Append-only: a draft is `pending` until the owner saves it, then
+ *  `applied`. Older rows are Drive imports, with `drive_file_id` and `drive_modified_time` set. */
 export const profileImports = pgTable(
   "profile_imports",
   {
@@ -107,7 +110,7 @@ export const profileImports = pgTable(
     userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
-    /** Set for an import from Drive; null for an autofill from an uploaded file. */
+    /** Set only on old imports from Drive. */
     driveFileId: text("drive_file_id"),
     /** The uploaded file an autofill read. Null once that file is deleted. */
     resumeFileId: text("resume_file_id").references(() => profileResumes.id, { onDelete: "set null" }),
