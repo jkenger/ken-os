@@ -1,7 +1,8 @@
-import type { NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { finishDriveGrant, finishSignIn, type GoogleProfile, type GoogleTokens } from "@/lib/auth-flow";
-import { requiredEnv } from "@/lib/config";
-import { callbackUrl, finishRedirect, readOAuthCookies, withParam } from "@/lib/oauth";
+import { appUrl, requiredEnv } from "@/lib/config";
+import { finishRedirect, readOAuthCookies, withParam } from "@/lib/oauth";
+import { googleCallbackUrl, relayTarget } from "@/lib/oauth-relay";
 import { createSession, getSession, safeNext } from "@/lib/session";
 
 export const runtime = "nodejs";
@@ -17,7 +18,7 @@ async function exchange(code: string, verifier: string): Promise<Exchange> {
       code,
       client_id: requiredEnv("GOOGLE_CLIENT_ID"),
       client_secret: requiredEnv("GOOGLE_CLIENT_SECRET"),
-      redirect_uri: callbackUrl(),
+      redirect_uri: googleCallbackUrl(),
       grant_type: "authorization_code",
       code_verifier: verifier,
     }),
@@ -37,9 +38,14 @@ async function exchange(code: string, verifier: string): Promise<Exchange> {
   return { ok: true, tokens, profile: (await userResponse.json()) as GoogleProfile };
 }
 
-/** Finishes both flows. Every outcome is a redirect: `next` on success, the sign-in page or `?drive_error=` on failure. */
+/**
+ * Finishes both flows. Every outcome is a redirect: `next` on success, the sign-in page or `?drive_error=` on failure.
+ * Google's answer to a preview's sign-in arrives here in production first and goes straight on to that preview.
+ */
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams;
+  const relay = relayTarget(query, appUrl());
+  if (relay) return NextResponse.redirect(relay, { status: 302 });
   const cookies = readOAuthCookies(request);
   const next = safeNext(cookies.next);
   const googleError = query.get("error");

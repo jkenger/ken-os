@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
 import { appUrl, requiredEnv } from "./config";
+import { googleCallbackUrl, signState } from "./oauth-relay";
 
 /** Cookies that carry one Google round trip. All short-lived, deleted in the callback. */
 export const OAUTH_COOKIES = {
@@ -23,21 +24,19 @@ const cookieOptions = {
   maxAge: 600,
 };
 
-export const callbackUrl = () => `${appUrl()}/api/auth/google/callback`;
-
-/** Redirects to Google with state and PKCE, remembering where to return and which flow this is. */
+/** Redirects to Google with signed state and PKCE, remembering where to return and which flow this is. */
 export function startGoogleAuth(options: {
   intent: OAuthIntent;
   next: string;
   scope: string;
   extra: Record<string, string>;
 }): NextResponse {
-  const state = randomBytes(32).toString("base64url");
+  const state = signState(appUrl());
   const verifier = randomBytes(32).toString("base64url");
   const challenge = createHash("sha256").update(verifier).digest("base64url");
   const params = new URLSearchParams({
     client_id: requiredEnv("GOOGLE_CLIENT_ID"),
-    redirect_uri: callbackUrl(),
+    redirect_uri: googleCallbackUrl(),
     response_type: "code",
     scope: options.scope,
     ...options.extra,
