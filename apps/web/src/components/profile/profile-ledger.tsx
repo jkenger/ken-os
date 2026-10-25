@@ -43,12 +43,9 @@ export function StateBadge({ state }: { state: LedgerState }) {
   const Icon = state in stateIcons ? stateIcons[state as keyof typeof stateIcons] : null;
   return (
     <Badge
-      variant={state === "unsaved" ? "secondary" : state === "changed" || state === "empty" ? "default" : "outline"}
-      className={cn(
-        // The console blue, as the mockup's Changed: amber already means "in progress" on Engineering.
-        state === "changed" && "bg-selected/12 text-selected",
-        state === "empty" && "bg-muted text-muted-foreground",
-      )}
+      // Neutral fills: blue marks the picked row (DESIGN.md), so no state borrows it.
+      variant={state === "unsaved" || state === "changed" ? "secondary" : state === "empty" ? "default" : "outline"}
+      className={cn(state === "empty" && "bg-muted text-muted-foreground")}
     >
       {/* No data-icon: the row is a Button, which would pad itself for an icon it finds inside. */}
       {Icon && <Icon aria-hidden="true" />}
@@ -162,8 +159,16 @@ export function PublicResumeBar({
           {live ? (
             <>
               {/* The link gives way first, so the state after it stays readable in a narrow bar. */}
-              {link && <span className="min-w-0 truncate font-mono text-xs">{link.replace(/^https?:\/\//, "")}</span>}
-              {link && <span aria-hidden="true">·</span>}
+              {link && (
+                <span className="hidden min-w-0 truncate font-mono text-xs md:inline">
+                  {link.replace(/^https?:\/\//, "")}
+                </span>
+              )}
+              {link && (
+                <span aria-hidden="true" className="hidden md:inline">
+                  ·
+                </span>
+              )}
               <span className="shrink-0">
                 {changed
                   ? `${changed} ${changed === 1 ? "section" : "sections"} changed since ${shortDate(live.publishedAt)}`

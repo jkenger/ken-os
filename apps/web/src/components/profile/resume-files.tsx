@@ -11,6 +11,7 @@ import { panel } from "@/components/surfaces";
 import type { ResumeFile } from "@/features/profile/resume-files-store";
 import { send } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
+import { ConfirmDialog } from "./confirm-dialog";
 import { shortDate } from "./dates";
 
 // Resume files the owner uploaded, newest first. Uploading only keeps the file; nothing in the details changes.
@@ -31,6 +32,8 @@ export function ResumeFiles({
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
+  /** The file the Delete dialog asks about. */
+  const [deleting, setDeleting] = useState<ResumeFile | null>(null);
 
   async function upload(file: File) {
     setBusy("upload");
@@ -52,16 +55,17 @@ export function ResumeFiles({
   }
 
   async function remove(file: ResumeFile) {
-    if (!window.confirm(`Delete ${file.fileName}? This can't be undone.`)) return;
     setBusy(file.id);
     setProblem(null);
     try {
       await send(`/api/profile/resumes/${encodeURIComponent(file.id)}`, "DELETE");
       setFiles((current) => current.filter((item) => item.id !== file.id));
+      toast({ tone: "success", title: `${file.fileName} deleted` });
     } catch (error) {
       setProblem(error instanceof Error ? error.message : "Couldn't delete. Try again");
     } finally {
       setBusy(null);
+      setDeleting(null);
     }
   }
 
@@ -127,7 +131,7 @@ export function ResumeFiles({
                 </span>
                 {/* Autofill isn't built yet, so no file has filled the details. */}
                 <span className="col-start-2 text-sm text-muted-foreground md:col-start-auto">Not used</span>
-                <div className="col-start-3 row-span-3 row-start-1 flex md:col-start-auto md:row-span-1 md:row-start-auto">
+                <div className="col-start-3 row-span-3 row-start-1 flex gap-2 md:col-start-auto md:row-span-1 md:row-start-auto">
                   <Button asChild variant="ghost" size="icon" aria-label={`Download ${file.fileName}`} title="Download">
                     <a href={`${href}?download=1`}>
                       <Download />
@@ -139,7 +143,7 @@ export function ResumeFiles({
                     size="icon"
                     aria-label={`Delete ${file.fileName}`}
                     title="Delete"
-                    onClick={() => void remove(file)}
+                    onClick={() => setDeleting(file)}
                     disabled={busy !== null}
                   >
                     <Trash2 />
@@ -150,6 +154,15 @@ export function ResumeFiles({
           })}
         </ul>
       )}
+      <ConfirmDialog
+        open={deleting !== null}
+        title={`Delete ${deleting?.fileName ?? "resume"}?`}
+        description="Can't be undone · your details stay"
+        action="Delete resume"
+        busy={busy !== null}
+        onOpenChange={(open) => !open && setDeleting(null)}
+        onConfirm={() => deleting && void remove(deleting)}
+      />
     </section>
   );
 }

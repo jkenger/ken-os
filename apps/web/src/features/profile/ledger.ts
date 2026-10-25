@@ -16,6 +16,23 @@ export type LedgerSectionId =
   | "languages"
   | "local-fields";
 
+const SECTION_IDS: readonly string[] = [
+  "contact",
+  "summary",
+  "experience",
+  "education",
+  "skills",
+  "projects",
+  "certifications",
+  "languages",
+  "local-fields",
+] satisfies LedgerSectionId[];
+
+/** Whether a value from the address, as `?section=`, names a ledger section. */
+export function isLedgerSection(value: string): value is LedgerSectionId {
+  return SECTION_IDS.includes(value);
+}
+
 /** One state per row, in the order it wins: an edit not saved yet beats everything the server knows. */
 export type LedgerState = "unsaved" | "empty" | "private" | "not-published" | "changed" | "published";
 

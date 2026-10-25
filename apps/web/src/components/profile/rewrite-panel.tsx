@@ -98,7 +98,7 @@ export function RewritePanel({
               onChange={(event) => setTargetRole(event.target.value)}
             />
           </div>
-          <Button type="button" onClick={run} disabled={running}>
+          <Button type="button" variant="outline" onClick={run} disabled={running}>
             {running ? "Improving…" : suggestions ? "Run again" : "Improve writing"}
           </Button>
           {running && <ThinkingOrb state="composing" size={20} aria-hidden="true" className="mb-2" />}

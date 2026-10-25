@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AlertCircle, FileDown } from "lucide-react";
 import { IconChevronRight, IconFlask, IconMapPin } from "@tabler/icons-react";
 import { mergeImport, type ProfileDetails } from "@ken-os/domain";
@@ -14,11 +14,12 @@ import type { EngineeringLine } from "@/features/engineering-lab/roadmap-store";
 import { engineering as engineeringRoutes } from "@/features/engineering-lab/routes";
 import { toast } from "@/components/ui/toaster";
 import { panel } from "@/components/surfaces";
-import { ledgerRows, type LedgerSectionId } from "@/features/profile/ledger";
+import { isLedgerSection, ledgerRows, type LedgerSectionId } from "@/features/profile/ledger";
 import type { ResumeFile } from "@/features/profile/resume-files-store";
 import type { ProfileState } from "@/features/profile/store";
 import { send } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
+import { ConfirmDialog } from "./confirm-dialog";
 import { shortDate } from "./dates";
 import { DetailsForm } from "./details-form";
 import { DriveFile, type DriveFileState } from "./drive-file";
@@ -75,7 +76,7 @@ function ProfileHeading({
   return (
     <div className="block items-end justify-between gap-6 md:flex">
       <div className="min-w-0">
-        <h1 className="font-heading text-[30px] leading-none font-semibold tracking-tight">Profile</h1>
+        <h1 className="font-heading text-3xl leading-none font-semibold tracking-tight">Profile</h1>
         <p className="mt-2 flex flex-wrap gap-x-3.5 gap-y-1 text-muted-foreground">
           {fullName && <span>{fullName}</span>}
           {headline && <span>{headline}</span>}
@@ -87,7 +88,7 @@ function ProfileHeading({
           )}
         </p>
       </div>
-      <dl className="mt-3.5 grid shrink-0 grid-cols-[auto_auto] justify-start gap-x-3.5 gap-y-1 text-[13px] md:mt-0">
+      <dl className="mt-3.5 grid shrink-0 grid-cols-[auto_auto] justify-start gap-x-3.5 gap-y-1 text-sm md:mt-0">
         <dt className="text-muted-foreground">Saved</dt>
         <dd>{savedAt ? shortDate(savedAt) : "Not saved"}</dd>
         <dt className="text-muted-foreground">Public</dt>
@@ -104,8 +105,11 @@ export function ProfileWorkspace({
   resumes,
   engineering,
   published,
+  initialSection = null,
 }: {
   email: string;
+  /** The section open on load, from `?section=`, so a refresh or a shared link keeps it. */
+  initialSection?: LedgerSectionId | null;
   published: ProfilePublic;
   profile: ProfileState;
   drive: DriveFileState;
@@ -125,7 +129,8 @@ export function ProfileWorkspace({
   const [importing, setImporting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
-  const [opened, setOpened] = useState<LedgerSectionId | null>(null);
+  const [opened, setOpened] = useState<LedgerSectionId | null>(initialSection);
+  const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [files, setFiles] = useState(resumes);
   const docked = useDocked();
   const rows = useMemo(
@@ -137,6 +142,47 @@ export function ProfileWorkspace({
   const { fullName, headline, city, country } = saved.contact;
   // A reviewed import can always be saved, even when it matched what was there, so it's marked applied.
   const canSave = changed || savedAt === null || review !== null;
+
+  // The open section lives in `?section=`: opening one adds a history entry, so Back closes the panel (the phone's
+  // sheet above all) instead of leaving Profile, and a refresh reopens it. Only the address changes; no navigation.
+  const openSection = useCallback((id: LedgerSectionId) => {
+    const url = new URL(window.location.href);
+    const wasOpen = url.searchParams.has("section");
+    url.searchParams.set("section", id);
+    if (wasOpen) window.history.replaceState(window.history.state, "", url);
+    else window.history.pushState({ ...window.history.state, profileSection: true }, "", url);
+    setOpened(id);
+  }, []);
+
+  const closeSection = useCallback(() => {
+    // Opened from this page: step back over the entry it added. Opened from the address: drop the parameter in place.
+    if (window.history.state?.profileSection) window.history.back();
+    else {
+      const url = new URL(window.location.href);
+      url.searchParams.delete("section");
+      window.history.replaceState(window.history.state, "", url);
+      setOpened(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    const sync = () => {
+      const section = new URLSearchParams(window.location.search).get("section");
+      setOpened(section && isLedgerSection(section) ? section : null);
+    };
+    window.addEventListener("popstate", sync);
+    return () => window.removeEventListener("popstate", sync);
+  }, []);
+
+  // One Save covers every section, so leaving with unsaved edits asks first.
+  const unsaved = changed || review !== null;
+  useEffect(() => {
+    if (!unsaved) return;
+    const warn = (event: BeforeUnloadEvent) => event.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [unsaved]);
+  const unsavedSections = rows.filter((row) => row.state === "unsaved").length;
 
   function edit(change: (draft: ProfileDetails) => void) {
     setDetails((current) => {
@@ -161,7 +207,7 @@ export function ProfileWorkspace({
       );
       replaceForm(mergeImport(details, result.draft));
       setReview({ importId: result.importId, fileName: result.fileName });
-      setOpened("contact");
+      openSection("contact");
     } catch (error) {
       setProblem(error instanceof Error ? error.message : "Import failed. Try again");
     } finally {
@@ -173,6 +219,7 @@ export function ProfileWorkspace({
     replaceForm(saved);
     setReview(null);
     setProblem(null);
+    setConfirmDiscard(false);
   }
 
   async function save() {
@@ -197,11 +244,17 @@ export function ProfileWorkspace({
   const saveBar = (
     <div className="flex items-center justify-end gap-2 px-3 py-3 md:px-5">
       <span className="mr-auto text-sm text-muted-foreground">
-        {changed || review ? "Unsaved changes" : savedAt ? `Saved ${shortDate(savedAt)}` : "Not saved"}
+        {review
+          ? "Import not saved"
+          : unsavedSections
+            ? `${unsavedSections} ${unsavedSections === 1 ? "section" : "sections"} unsaved`
+            : savedAt
+              ? `Saved ${shortDate(savedAt)}`
+              : "Not saved"}
       </span>
-      {(changed || review) && (
-        <Button type="button" variant="ghost" onClick={discard} disabled={saving}>
-          Discard
+      {unsaved && (
+        <Button type="button" variant="ghost" onClick={() => setConfirmDiscard(true)} disabled={saving}>
+          {unsavedSections > 1 || review ? "Discard all" : "Discard"}
         </Button>
       )}
       <Button type="button" onClick={save} disabled={saving || !canSave}>
@@ -241,7 +294,7 @@ export function ProfileWorkspace({
               )}
 
               <PublicResumeBar live={published.live} changed={rows.filter((row) => row.publishChanges).length} />
-              <LedgerList rows={rows} opened={opened} onOpen={setOpened} />
+              <LedgerList rows={rows} opened={opened} onOpen={openSection} />
               <ResumeFiles files={files} setFiles={setFiles} />
               {engineering?.map((line) => (
                 <EngineeringSummary key={line.roadmapId ?? "path"} {...line} />
@@ -255,7 +308,7 @@ export function ProfileWorkspace({
         <DockedPanel
           open={openRow !== null}
           docked={docked}
-          onClose={() => setOpened(null)}
+          onClose={closeSection}
           closeLabel="Close section"
           badges={openRow && <StateBadge state={openRow.state} />}
           title={openRow?.title ?? ""}
@@ -274,6 +327,19 @@ export function ProfileWorkspace({
           </div>
         </DockedPanel>
       </div>
+
+      <ConfirmDialog
+        open={confirmDiscard}
+        title={unsavedSections > 1 ? `Discard ${unsavedSections} sections?` : "Discard changes?"}
+        description={
+          review
+            ? `Can't be undone · drops the import from ${review.fileName}`
+            : `Can't be undone · back to ${savedAt ? `Saved ${shortDate(savedAt)}` : "empty"}`
+        }
+        action={unsavedSections > 1 || review ? "Discard all" : "Discard"}
+        onOpenChange={setConfirmDiscard}
+        onConfirm={discard}
+      />
 
       {/* With no section open, a Save bar shows only when there is something to save (an import, a rewrite). */}
       {canSave && openRow === null && (

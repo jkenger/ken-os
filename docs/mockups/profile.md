@@ -81,6 +81,9 @@ None.
   when the whole Profile was saved. There is no separate Phone row: the phone is part of Contact and never published.
   Each resume row shows Not used and Download and Delete until Autofill exists. The section column keeps Resume and
   Drive file until those pages are dropped.
+- **After the Impeccable critique** (25 Oct 2026). Changed is a neutral badge, since blue marks only the picked row
+  (DESIGN.md). One Save still covers every section: the panel says how many sections are unsaved, Discard asks first,
+  and leaving with edits warns. The open section is in `?section=`, so a refresh keeps it and Back closes it.
 - **Delete allowed.** A stored resume can be deleted (resume uploads, PR #147).
 - **No Drive.** Resumes come only from Upload; choosing a file in Google Drive is dropped, and Drive is no longer a
   source for Profile (24 Oct 2026). None of the three directions shows a Drive option. The Drive card stays on Profile
