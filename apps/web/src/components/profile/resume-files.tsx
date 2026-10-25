@@ -72,7 +72,7 @@ export function ResumeFiles({
   return (
     <section id="resumes" aria-labelledby="resumes-title" className="scroll-mt-24">
       <div className="mb-2 flex items-center justify-between px-0.5">
-        <h2 id="resumes-title" className="font-heading text-base font-semibold">
+        <h2 id="resumes-title" className="font-heading text-base font-bold">
           Resumes
         </h2>
         <Input
@@ -87,7 +87,14 @@ export function ResumeFiles({
             if (file) void upload(file);
           }}
         />
-        <Button type="button" variant="outline" onClick={() => input.current?.click()} disabled={busy !== null}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="text-[13px]"
+          onClick={() => input.current?.click()}
+          disabled={busy !== null}
+        >
           <Upload data-icon="inline-start" aria-hidden="true" />
           {busy === "upload" ? "Uploading…" : "Upload resume"}
         </Button>
@@ -131,7 +138,7 @@ export function ResumeFiles({
                   Uploaded {shortDate(file.uploadedAt)}
                 </span>
                 {/* Autofill isn't built yet, so no file has filled the details. */}
-                <span className="col-start-2 text-sm text-muted-foreground md:col-start-auto">Not used</span>
+                <span className="col-start-2 text-[13px] text-muted-foreground md:col-start-auto">Not used</span>
                 <div className="col-start-3 row-span-3 row-start-1 flex gap-2 md:col-start-auto md:row-span-1 md:row-start-auto">
                   <Button asChild variant="ghost" size="icon" aria-label={`Download ${file.fileName}`} title="Download">
                     <a href={`${href}?download=1`} download={file.fileName}>

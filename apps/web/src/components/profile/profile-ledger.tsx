@@ -43,9 +43,12 @@ export function StateBadge({ state }: { state: LedgerState }) {
   const Icon = state in stateIcons ? stateIcons[state as keyof typeof stateIcons] : null;
   return (
     <Badge
-      // Neutral fills: blue marks the picked row (DESIGN.md), so no state borrows it.
-      variant={state === "unsaved" || state === "changed" ? "secondary" : state === "empty" ? "default" : "outline"}
-      className={cn(state === "empty" && "bg-muted text-muted-foreground")}
+      variant={state === "unsaved" ? "secondary" : state === "changed" || state === "empty" ? "default" : "outline"}
+      className={cn(
+        // Blue, as the Ledger frame draws it: the owner chose this over DESIGN.md's blue-only-for-selection rule.
+        state === "changed" && "bg-selected/12 text-selected",
+        state === "empty" && "bg-muted text-muted-foreground",
+      )}
     >
       {/* No data-icon: the row is a Button, which would pad itself for an icon it finds inside. */}
       {Icon && <Icon aria-hidden="true" />}
@@ -67,7 +70,7 @@ export function LedgerList({
   return (
     <section aria-labelledby="ledger-title">
       <div className="mb-2 flex items-baseline justify-between px-0.5">
-        <h2 id="ledger-title" className="font-heading text-base font-semibold">
+        <h2 id="ledger-title" className="font-heading text-base font-bold">
           Details
         </h2>
         <span className="text-sm text-muted-foreground">
@@ -181,12 +184,18 @@ export function PublicResumeBar({
         </p>
       </div>
       {live && (
-        <Button type="button" variant="outline" className="max-md:flex-1" onClick={() => void copy()}>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="text-[13px] max-md:flex-1"
+          onClick={() => void copy()}
+        >
           <IconCopy data-icon="inline-start" aria-hidden="true" />
           Copy link
         </Button>
       )}
-      <Button asChild variant="outline" className="max-md:flex-1">
+      <Button asChild variant="outline" size="sm" className="text-[13px] max-md:flex-1">
         <Link href="/portfolio">
           Open Portfolio
           <IconExternalLink data-icon="inline-end" aria-hidden="true" />

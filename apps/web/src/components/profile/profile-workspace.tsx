@@ -77,7 +77,7 @@ function ProfileHeading({
   return (
     <div className="block items-end justify-between gap-6 md:flex">
       <div className="min-w-0">
-        <h1 className="font-heading text-3xl leading-none font-semibold tracking-tight">Profile</h1>
+        <h1 className="font-heading text-3xl leading-none font-bold tracking-tight">Profile</h1>
         <p className="mt-2 flex flex-wrap gap-x-3.5 gap-y-1 text-muted-foreground">
           {fullName && <span>{fullName}</span>}
           {headline && <span>{headline}</span>}
@@ -89,7 +89,7 @@ function ProfileHeading({
           )}
         </p>
       </div>
-      <dl className="mt-3.5 grid shrink-0 grid-cols-[auto_auto] justify-start gap-x-3.5 gap-y-1 text-sm md:mt-0">
+      <dl className="mt-3.5 grid shrink-0 grid-cols-[auto_auto] justify-start gap-x-3.5 gap-y-1 text-[13px] md:mt-0">
         <dt className="text-muted-foreground">Saved</dt>
         <dd>{savedAt ? shortDate(savedAt) : "Not saved"}</dd>
         <dt className="text-muted-foreground">Public</dt>
@@ -289,7 +289,7 @@ export function ProfileWorkspace({
     >
       <div className="flex min-w-0 items-start">
         <div className="min-w-0 flex-1">
-          <div className="mx-auto max-w-5xl px-3.5 pt-5 pb-10 md:px-7 md:pt-7 md:pb-12">
+          <div className="mx-auto max-w-5xl px-3.5 pt-5 pb-10 text-sm md:px-7 md:pt-7 md:pb-12">
             <div className="flex flex-col gap-5">
               <ProfileHeading
                 fullName={fullName}
