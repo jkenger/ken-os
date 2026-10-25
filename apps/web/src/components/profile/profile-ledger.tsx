@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import {
   IconChevronRight,
   IconCircleCheck,
   IconCircleDashed,
   IconCopy,
+  IconExternalLink,
   IconEyeOff,
   IconHistory,
   IconPencil,
@@ -25,7 +27,7 @@ import { shortDate } from "./dates";
 const stateWords: Record<LedgerState, string> = {
   unsaved: "Unsaved",
   empty: "Empty",
-  private: "Private",
+  private: "Hidden",
   "not-published": "Not published",
   changed: "Changed",
   published: "Published",
@@ -41,8 +43,12 @@ export function StateBadge({ state }: { state: LedgerState }) {
   const Icon = state in stateIcons ? stateIcons[state as keyof typeof stateIcons] : null;
   return (
     <Badge
-      variant={state === "unsaved" || state === "changed" ? "secondary" : "outline"}
-      className={cn(state === "empty" && "text-muted-foreground")}
+      variant={state === "unsaved" ? "secondary" : state === "changed" || state === "empty" ? "default" : "outline"}
+      className={cn(
+        // Blue, as the Ledger frame draws it: the owner chose this over DESIGN.md's blue-only-for-selection rule.
+        state === "changed" && "bg-selected/12 text-selected",
+        state === "empty" && "bg-muted text-muted-foreground",
+      )}
     >
       {/* No data-icon: the row is a Button, which would pad itself for an icon it finds inside. */}
       {Icon && <Icon aria-hidden="true" />}
@@ -64,7 +70,7 @@ export function LedgerList({
   return (
     <section aria-labelledby="ledger-title">
       <div className="mb-2 flex items-baseline justify-between px-0.5">
-        <h2 id="ledger-title" className="font-heading text-base font-semibold">
+        <h2 id="ledger-title" className="font-heading text-base font-bold">
           Details
         </h2>
         <span className="text-sm text-muted-foreground">
@@ -82,12 +88,12 @@ export function LedgerList({
                 aria-expanded={opened === row.id}
                 aria-label={`${row.title}, ${row.count ? `${row.count} filled` : "empty"}, ${stateWords[row.state]}`}
                 onClick={() => onOpen(row.id)}
-                className="grid h-11 w-full grid-cols-[16px_minmax(0,1fr)_auto_16px] items-center justify-stretch gap-3 rounded-none px-3.5 text-left font-normal hover:bg-muted/50 md:grid-cols-[16px_128px_minmax(0,1fr)_40px_136px_16px]"
+                className="grid h-11 w-full grid-cols-[18px_minmax(0,1fr)_auto_16px] items-center justify-stretch gap-3 rounded-none px-3.5 text-left font-normal hover:bg-muted/50 md:grid-cols-[18px_128px_minmax(0,1fr)_64px_150px_16px]"
               >
                 <Filled
-                  size={16}
+                  size={18}
                   aria-hidden="true"
-                  className={row.count ? "text-foreground" : "text-muted-foreground"}
+                  className={row.count ? "text-topic-learned" : "text-muted-foreground"}
                 />
                 <span className="truncate font-semibold">{row.title}</span>
                 <span className="hidden truncate text-muted-foreground md:block">{row.glimpse}</span>
@@ -105,6 +111,14 @@ export function LedgerList({
   );
 }
 
+/** The public resume's address as it is copied, shown without the scheme. Read after mount: the server doesn't know
+ *  which host the page is on. */
+function useResumeLink() {
+  const [link, setLink] = useState<string | null>(null);
+  useEffect(() => setLink(new URL("/api/public/portfolio/resume", window.location.origin).toString()), []);
+  return link;
+}
+
 /** The Portfolio's resume as visitors get it: live or not, and how many sections a Publish would change. */
 export function PublicResumeBar({
   live,
@@ -113,10 +127,12 @@ export function PublicResumeBar({
   live: { version: number; publishedAt: string } | null;
   changed: number;
 }) {
+  const link = useResumeLink();
+
   async function copy() {
-    const url = new URL("/api/public/portfolio/resume", window.location.origin).toString();
+    if (!link) return;
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(link);
       toast({ tone: "success", title: "Link copied" });
     } catch {
       toast({ tone: "error", title: "Couldn't copy. Try again" });
@@ -124,41 +140,67 @@ export function PublicResumeBar({
   }
 
   return (
-    <section aria-label="Public resume" className={cn(panel, "flex flex-wrap items-center gap-3 px-3.5 py-3")}>
-      <IconWorld size={16} aria-hidden="true" className="shrink-0" />
-      <div className="flex min-w-0 flex-1 basis-56 flex-col gap-0.5">
-        <div className="flex items-center gap-2 text-sm font-semibold">
+    <section
+      id="public-link"
+      aria-label="Public link"
+      className={cn(panel, "flex scroll-mt-24 flex-wrap items-center gap-3 px-3.5 py-3 md:flex-nowrap")}
+    >
+      <IconWorld size={18} aria-hidden="true" className="shrink-0" />
+      <div className="flex min-w-0 flex-1 basis-[calc(100%-2.5rem)] flex-col gap-0.5 md:basis-auto">
+        <div className="flex items-center gap-2 font-semibold">
           Public resume
           {live ? (
-            <Badge variant="outline">
+            <Badge className="bg-topic-learned-soft text-topic-learned">
               <IconCircleCheck data-icon="inline-start" aria-hidden="true" />
               Live
             </Badge>
           ) : (
-            <Badge variant="outline" className="text-muted-foreground">
-              Not published
-            </Badge>
+            <Badge className="bg-muted text-muted-foreground">Not published</Badge>
           )}
         </div>
-        <p className="text-sm text-muted-foreground">
-          {live
-            ? `Version ${live.version}, ${shortDate(live.publishedAt)} · ${
-                changed ? `${changed} ${changed === 1 ? "section" : "sections"} changed since` : "Up to date"
-              }`
-            : "Publish from Portfolio"}
+        <p className="flex min-w-0 items-baseline gap-1 text-sm whitespace-nowrap text-muted-foreground">
+          {live ? (
+            <>
+              {/* The link gives way first, so the state after it stays readable in a narrow bar. */}
+              {link && (
+                <span className="hidden min-w-0 truncate font-mono text-xs md:inline">
+                  {link.replace(/^https?:\/\//, "")}
+                </span>
+              )}
+              {link && (
+                <span aria-hidden="true" className="hidden md:inline">
+                  ·
+                </span>
+              )}
+              <span className="shrink-0">
+                {changed
+                  ? `${changed} ${changed === 1 ? "section" : "sections"} changed since ${shortDate(live.publishedAt)}`
+                  : `Up to date, version ${live.version}`}
+              </span>
+            </>
+          ) : (
+            "Publish from Portfolio"
+          )}
         </p>
       </div>
-      <div className="flex gap-2 max-sm:w-full">
-        {live && (
-          <Button type="button" variant="outline" className="max-sm:flex-1" onClick={() => void copy()}>
-            <IconCopy data-icon="inline-start" aria-hidden="true" />
-            Copy link
-          </Button>
-        )}
-        <Button asChild variant="outline" className="max-sm:flex-1">
-          <Link href="/portfolio">Open Portfolio</Link>
+      {live && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="text-[13px] max-md:flex-1"
+          onClick={() => void copy()}
+        >
+          <IconCopy data-icon="inline-start" aria-hidden="true" />
+          Copy link
         </Button>
-      </div>
+      )}
+      <Button asChild variant="outline" size="sm" className="text-[13px] max-md:flex-1">
+        <Link href="/portfolio">
+          Open Portfolio
+          <IconExternalLink data-icon="inline-end" aria-hidden="true" />
+        </Link>
+      </Button>
     </section>
   );
 }

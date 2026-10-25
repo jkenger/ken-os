@@ -75,7 +75,16 @@ None.
 ## Decided
 
 - **A. Ledger** (24 Oct 2026). Each section row opens its form in the side panel; the row states are Unsaved, Empty,
-  Private (Local fields), Not published, Changed (a Publish would change it) and Published.
+  Hidden (Local fields, never on the public resume), Not published, Changed (a Publish would change it) and Published.
+- **Page width** (25 Oct 2026). Module pages sit in a centered column capped at 1024px (max-w-5xl; Project Memory
+  keeps its 1320px), wider than the old 768px Profile column.
+- **Differences from the frame** (25 Oct 2026). Changed carries no date: nothing records when one section changed, only
+  when the whole Profile was saved. There is no separate Phone row: the phone is part of Contact and never published.
+  Each resume row shows Not used and Download and Delete until Autofill exists. The section column keeps Resume and
+  Drive file until those pages are dropped.
+- **After the Impeccable critique** (25 Oct 2026). Changed was made neutral, then the owner put it back to the
+  frame's blue (an accepted exception to DESIGN.md's blue-only-for-selection rule). One Save still covers every section: the panel says how many sections are unsaved, Discard asks first,
+  and leaving with edits warns. The open section is in `?section=`, so a refresh keeps it and Back closes it.
 - **Delete allowed.** A stored resume can be deleted (resume uploads, PR #147).
 - **No Drive.** Resumes come only from Upload; choosing a file in Google Drive is dropped, and Drive is no longer a
   source for Profile (24 Oct 2026). None of the three directions shows a Drive option. The Drive card stays on Profile

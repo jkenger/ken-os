@@ -191,7 +191,7 @@ export function DriveFile({
         )}
         <div className="flex flex-wrap items-center gap-2">
           {!connected ? (
-            <Button asChild>
+            <Button asChild variant="outline">
               <a href={connectDriveHref}>
                 {access === "disconnected" ? "Reconnect Google Drive" : "Connect Google Drive"}
                 <ArrowUpRight data-icon="inline-end" aria-hidden="true" />
@@ -200,11 +200,11 @@ export function DriveFile({
           ) : (
             <>
               {file && state.canImport && (
-                <Button type="button" onClick={onImport} disabled={importing}>
+                <Button type="button" variant="outline" onClick={onImport} disabled={importing}>
                   {importing ? "Importing…" : "Import into Profile"}
                 </Button>
               )}
-              <Button type="button" variant={file ? "outline" : "default"} onClick={openPicker} disabled={busy}>
+              <Button type="button" variant="outline" onClick={openPicker} disabled={busy}>
                 {busy ? "Opening…" : "Choose resume"}
               </Button>
               {file && file.canDownload !== false && (

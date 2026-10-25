@@ -61,7 +61,7 @@ export function TermsPage({ email, terms }: { email: string; terms: SavedTerm[] 
 
   return (
     <WorkspaceShell email={email} active="terms">
-      <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-6xl px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
+      <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-5xl px-5 py-8 sm:px-8 lg:px-10 lg:py-10">
         <h1 className="border-b pb-5 font-heading text-2xl leading-tight font-semibold tracking-tight">Terms</h1>
 
         {terms.length > 0 && (

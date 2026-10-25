@@ -2,6 +2,7 @@ import { DOCX_MIME, type Artifact } from "@ken-os/domain";
 import { getDriveFile } from "@ken-os/drive";
 import { ProfileWorkspace } from "@/components/profile/profile-workspace";
 import { listResumeFiles } from "@/features/profile/resume-files-store";
+import { isLedgerSection } from "@/features/profile/ledger";
 import { getProfile } from "@/features/profile/store";
 import { getPortfolio, liveSnapshotFor } from "@/features/portfolio/store";
 import { engineeringSummary } from "@/features/engineering-lab/roadmap-store";
@@ -15,10 +16,11 @@ export const dynamic = "force-dynamic";
 export default async function ProfilePage({
   searchParams,
 }: {
-  searchParams: Promise<{ drive_error?: string | string[] }>;
+  searchParams: Promise<{ drive_error?: string | string[]; section?: string | string[] }>;
 }) {
   const session = await requireSession("/profile");
-  const { drive_error } = await searchParams;
+  const { drive_error, section } = await searchParams;
+  const opened = Array.isArray(section) ? section[0] : section;
   const [profile, resumes, selection, connected, engineering, portfolio, snapshot] = await Promise.all([
     getProfile(session.userId),
     listResumeFiles(session.userId),
@@ -56,6 +58,7 @@ export default async function ProfilePage({
       profile={profile}
       resumes={resumes}
       engineering={engineering}
+      initialSection={opened && isLedgerSection(opened) ? opened : null}
       published={{ live: portfolio.live, profile: snapshot?.profile ?? null, showEmail: portfolio.showEmail }}
       drive={{
         access: drive,

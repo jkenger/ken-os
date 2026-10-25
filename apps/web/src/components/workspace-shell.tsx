@@ -43,6 +43,7 @@ import {
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
+  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
@@ -75,8 +76,9 @@ const moduleDetails: Record<
     title: "Profile",
     sections: [
       { label: "Details", href: "/profile", icon: UserRound },
+      { label: "Resumes", href: "/profile#resumes", icon: Upload },
+      { label: "Public link", href: "/profile#public-link", icon: Globe },
       { label: "Resume", href: "/profile/resume", icon: FileText },
-      { label: "Uploads", href: "/profile#resumes", icon: Upload },
       { label: "Drive file", href: "/profile#drive-file", icon: FolderOpen },
     ],
   },
@@ -100,7 +102,14 @@ const moduleDetails: Record<
   studio: { title: "Design Studio", sections: [] },
 };
 
-type Section = { key: string; label: string; href: string; icon: typeof FileText; selected: boolean };
+type Section = {
+  key: string;
+  label: string;
+  href: string;
+  icon: typeof FileText;
+  selected: boolean;
+  count?: number;
+};
 type ModuleLink = (typeof modules)[number];
 
 /** Today in the owner's time zone, like "Tue, Oct 6, 2026". */
@@ -234,7 +243,7 @@ function ShellSidebar({
             <SidebarGroup>
               <SidebarGroupLabel>{title}</SidebarGroupLabel>
               <SidebarMenu className="gap-1" aria-label={`${title} sections`}>
-                {sections.map(({ key, label, href, icon: Icon, selected }) => (
+                {sections.map(({ key, label, href, icon: Icon, selected, count }) => (
                   <SidebarMenuItem key={key}>
                     <SidebarMenuButton asChild isActive={selected}>
                       <Link href={href} aria-current={selected ? "location" : undefined} onClick={close}>
@@ -242,6 +251,7 @@ function ShellSidebar({
                         <span>{label}</span>
                       </Link>
                     </SidebarMenuButton>
+                    {count !== undefined && <SidebarMenuBadge className="font-mono">{count}</SidebarMenuBadge>}
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
@@ -312,7 +322,7 @@ function ShellSidebar({
           <SidebarContent>
             <SidebarGroup>
               <SidebarMenu className="gap-1" aria-label={`${title} sections`}>
-                {sections.map(({ key, label, href, icon: Icon, selected }) => (
+                {sections.map(({ key, label, href, icon: Icon, selected, count }) => (
                   <SidebarMenuItem key={key}>
                     <SidebarMenuButton asChild isActive={selected}>
                       <Link href={href} aria-current={selected ? "location" : undefined}>
@@ -320,6 +330,7 @@ function ShellSidebar({
                         <span>{label}</span>
                       </Link>
                     </SidebarMenuButton>
+                    {count !== undefined && <SidebarMenuBadge className="font-mono">{count}</SidebarMenuBadge>}
                   </SidebarMenuItem>
                 ))}
               </SidebarMenu>
@@ -424,12 +435,15 @@ export function WorkspaceShell({
   children,
   termLookup = true,
   tab,
+  sectionCounts,
 }: {
   email: string;
   active: Module;
   children: ReactNode;
   termLookup?: boolean;
   tab?: EngineeringTab;
+  /** A count beside a section in the column, by the section's href, as Profile's "Details 9". */
+  sectionCounts?: Record<string, number>;
 }) {
   const detail = moduleDetails[active];
   const pathname = usePathname();
@@ -454,7 +468,7 @@ export function WorkspaceShell({
     const selected = engineeringTab
       ? tabForPath(href) === engineeringTab
       : href === pathname + hash || (index === 0 && pathname === href && !hash);
-    return { key: href, label, href, icon, selected };
+    return { key: href, label, href, icon, selected, count: sectionCounts?.[href] };
   });
   const content = termLookup ? <TermLookup module={detail.title}>{children}</TermLookup> : children;
 

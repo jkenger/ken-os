@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { emptyProfile } from "@ken-os/domain";
 import { portfolioProfile } from "@/features/portfolio/snapshot";
-import { ledgerRows } from "./ledger";
+import { isLedgerSection, ledgerRows } from "./ledger";
 
 const hidden = { showEmail: false };
 
@@ -67,4 +67,10 @@ test("a section emptied since the Publish is Changed and still counted while bei
   const row = ledgerRows(typed, after, published, hidden).find((item) => item.id === "projects");
   assert.equal(row?.state, "unsaved");
   assert.equal(row?.publishChanges, true);
+});
+
+test("isLedgerSection accepts only section ids from the address", () => {
+  assert.equal(isLedgerSection("local-fields"), true);
+  assert.equal(isLedgerSection("resumes"), false);
+  assert.equal(isLedgerSection(""), false);
 });
