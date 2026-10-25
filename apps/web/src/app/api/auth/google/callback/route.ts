@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { finishDriveGrant, finishSignIn, type GoogleProfile, type GoogleTokens } from "@/lib/auth-flow";
+import { finishSignIn, type GoogleProfile, type GoogleTokens } from "@/lib/auth-flow";
 import { appUrl, requiredEnv } from "@/lib/config";
-import { finishRedirect, readOAuthCookies, withParam } from "@/lib/oauth";
+import { finishRedirect, readOAuthCookies } from "@/lib/oauth";
 import { googleCallbackUrl, relayTarget } from "@/lib/oauth-relay";
-import { createSession, getSession, safeNext } from "@/lib/session";
+import { createSession, safeNext } from "@/lib/session";
 
 export const runtime = "nodejs";
 
@@ -39,8 +39,8 @@ async function exchange(code: string, verifier: string): Promise<Exchange> {
 }
 
 /**
- * Finishes both flows. Every outcome is a redirect: `next` on success, the sign-in page or `?drive_error=` on failure.
- * Google's answer to a preview's sign-in arrives here in production first and goes straight on to that preview.
+ * Finishes sign-in. Every outcome is a redirect: `next` on success, the sign-in page on failure. Google's answer to a
+ * preview's sign-in arrives here in production first and goes straight on to that preview.
  */
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams;
@@ -52,18 +52,6 @@ export async function GET(request: NextRequest) {
   const code = query.get("code");
   const state = query.get("state");
   const stateMatches = Boolean(state && cookies.state && state === cookies.state && cookies.verifier);
-
-  if (cookies.intent === "drive") {
-    const session = await getSession();
-    if (!session) return finishRedirect(`/sign-in?${new URLSearchParams({ expired: "1", next })}`);
-    const fail = (reason: "cancelled" | "scope" | "google") => finishRedirect(withParam(next, "drive_error", reason));
-    if (googleError) return fail(googleError === "access_denied" ? "cancelled" : "google");
-    if (!code || !stateMatches) return fail("google");
-    const result = await exchange(code, cookies.verifier!);
-    if (!result.ok) return fail("google");
-    const granted = await finishDriveGrant(session.userId, result.tokens, result.profile);
-    return granted.ok ? finishRedirect(next) : fail(granted.code);
-  }
 
   const fail = (reason: string) => finishRedirect(`/sign-in?${new URLSearchParams({ error: reason, next })}`);
   if (googleError) return fail(googleError === "access_denied" ? "cancelled" : "google");

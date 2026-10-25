@@ -2,6 +2,8 @@
 
 Status: implemented 10 Oct 2026 on `feat/auth-sign-in` (all three slices on one branch). The eight hand checks in §8 still need the hosted app.
 
+**25 Oct 2026: the Drive grant (§4) is removed.** Drive stopped being a source for Profile (resumes are uploaded instead, `docs/product/profile-resume.md`, "Step 5 design"), so `/api/auth/google/drive`, the `drive` intent, `finishDriveGrant`, `drive_error` and `src/lib/google.ts` are gone. Sign-in is the only Google flow and no Google token is stored. The `google_connections` table stays, unused, per the migration rule. The Drive parts below are history.
+
 ### Implementation notes
 
 - `requireSession(path, query)` takes the page's query too, so a deep link like `/engineering/learn?area=web` comes back whole.

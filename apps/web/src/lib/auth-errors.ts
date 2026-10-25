@@ -1,13 +1,10 @@
 /**
- * Every sign-in and Drive-grant outcome the app can show, keyed by the code in the URL. Pages map codes to this
+ * Every sign-in outcome the app can show, keyed by the code in the URL. Pages map codes to this
  * text and never show raw text from a URL. See docs/architecture/auth-sign-in.md §2 and §4.
  */
 
 export const signInErrorCodes = ["cancelled", "expired", "wrong_account", "unverified", "google"] as const;
 export type SignInErrorCode = (typeof signInErrorCodes)[number];
-
-export const driveErrorCodes = ["cancelled", "scope", "google"] as const;
-export type DriveErrorCode = (typeof driveErrorCodes)[number];
 
 export interface SignInNotice {
   text: string;
@@ -22,12 +19,6 @@ const signInErrors: Record<SignInErrorCode, SignInNotice> = {
   wrong_account: { text: "This Google account doesn't have access", variant: "destructive", action: "another" },
   unverified: { text: "This Google account's email isn't verified", variant: "destructive", action: "another" },
   google: { text: "Google sign-in failed. Try again", variant: "destructive", action: "continue" },
-};
-
-const driveErrors: Record<DriveErrorCode, string> = {
-  cancelled: "Google Drive not connected. Access cancelled",
-  scope: "Google Drive not connected. Allow Drive access to choose a resume",
-  google: "Couldn't connect Google Drive. Try again",
 };
 
 export const signInNotices = {
@@ -45,10 +36,4 @@ export function signInNotice(query: { error?: string; expired?: string; signed_o
   if (query.expired === "1") return signInNotices.expired;
   if (query.signed_out === "1") return signInNotices.signedOut;
   return null;
-}
-
-/** The Profile page alert for `?drive_error=`, or null. */
-export function driveErrorText(code: string | undefined): string | null {
-  if (code === undefined) return null;
-  return driveErrors[isOneOf(driveErrorCodes, code) ? code : "google"];
 }

@@ -11,7 +11,7 @@ export const PROFILE_AUTOFILL_MODEL = "claude-opus-5-5";
 
 const dated = { start: z.string(), end: z.string() };
 
-/** Every Profile field a resume can fill. Shared with the older Drive import. */
+/** Every Profile field a resume can fill. */
 export const profileFieldsSchema = z.object({
   contact: z.object({
     fullName: z.string(),
@@ -44,7 +44,7 @@ export const profileFieldsSchema = z.object({
   }),
 });
 
-export const PROFILE_READ_RULES = `Rules:
+const PROFILE_READ_RULES = `Rules:
 - Copy only what the resume says. Never add, improve, reword or guess. Leave a field "" or a list [] when the resume doesn't say it.
 - Keep bullet points word for word, one string per bullet, without the bullet character.
 - Dates: "YYYY-MM" when the month is given, "YYYY" when only the year is. end is "" for a current role (Present, Now, Current).

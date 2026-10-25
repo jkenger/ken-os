@@ -5,14 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, FileDown } from "lucide-react";
 import { IconChevronRight, IconFlask, IconMapPin } from "@tabler/icons-react";
-import {
-  applyAutofill,
-  autofillChanges,
-  mergeImport,
-  PDF_MIME,
-  type AutofillChange,
-  type ProfileDetails,
-} from "@ken-os/domain";
+import { applyAutofill, autofillChanges, PDF_MIME, type AutofillChange, type ProfileDetails } from "@ken-os/domain";
 import type { PortfolioProfile } from "@ken-os/portfolio";
 import { DockedPanel, useDocked } from "@/components/docked-panel";
 import { WorkspaceShell } from "@/components/workspace-shell";
@@ -32,7 +25,6 @@ import { AutofillReview } from "./autofill-review";
 import { ConfirmDialog } from "./confirm-dialog";
 import { shortDate } from "./dates";
 import { DetailsForm } from "./details-form";
-import { DriveFile, type DriveFileState } from "./drive-file";
 import { LedgerList, PublicResumeBar, StateBadge } from "./profile-ledger";
 import { ResumeFiles } from "./resume-files";
 import { RewritePanel } from "./rewrite-panel";
@@ -111,7 +103,6 @@ function ProfileHeading({
 export function ProfileWorkspace({
   email,
   profile,
-  drive,
   resumes,
   engineering,
   published,
@@ -122,7 +113,6 @@ export function ProfileWorkspace({
   initialSection?: LedgerSectionId | null;
   published: ProfilePublic;
   profile: ProfileState;
-  drive: DriveFileState;
   /** Uploaded resume files, newest first. */
   resumes: ResumeFile[];
   /** The Engineering goal and progress, linking to the roadmap. Null when it couldn't load. */
@@ -131,12 +121,11 @@ export function ProfileWorkspace({
   const [saved, setSaved] = useState(profile.details);
   const [savedAt, setSavedAt] = useState(profile.savedAt);
   const [details, setDetails] = useState(profile.details);
-  /** Bumped when the whole form is replaced (import, discard), so fields that keep their own typing state and
+  /** Bumped when the whole form is replaced (Autofill, discard), so fields that keep their own typing state and
    *  rewrite suggestions made for the old form reset. */
   const [formVersion, setFormVersion] = useState(0);
-  /** The import or accepted Autofill in the form, until it's saved or discarded. `fileId` is the uploaded file an
-   *  Autofill read; null for a Drive import. */
-  const [review, setReview] = useState<{ importId: string; fileName: string; fileId: string | null } | null>(null);
+  /** The accepted Autofill in the form, until it's saved or discarded. */
+  const [review, setReview] = useState<{ importId: string; fileName: string; fileId: string } | null>(null);
   /** The Autofill open in the side panel, before any of it reaches the form. */
   const [autofill, setAutofill] = useState<{
     file: ResumeFile;
@@ -151,7 +140,6 @@ export function ProfileWorkspace({
   /** The form as it is now, for an Autofill that comes back after the owner kept typing. */
   const latest = useRef(details);
   latest.current = details;
-  const [importing, setImporting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const [opened, setOpened] = useState<LedgerSectionId | null>(initialSection);
@@ -165,7 +153,7 @@ export function ProfileWorkspace({
   const openRow = rows.find((row) => row.id === opened) ?? null;
   const changed = JSON.stringify(details) !== JSON.stringify(saved);
   const { fullName, headline, city, country } = saved.contact;
-  // A reviewed import can always be saved, even when it matched what was there, so it's marked applied.
+  // An accepted Autofill can always be saved, even when it matched what was there, so it's marked applied.
   const canSave = changed || savedAt === null || review !== null;
 
   // The open section lives in `?section=`: opening one adds a history entry, so Back closes the panel (the phone's
@@ -242,24 +230,6 @@ export function ProfileWorkspace({
     setFormVersion((version) => version + 1);
   }
 
-  async function importDrive() {
-    setImporting(true);
-    setProblem(null);
-    try {
-      const result = await send<{ importId: string; draft: ProfileDetails; fileName: string }>(
-        "/api/profile/import",
-        "POST",
-      );
-      replaceForm(mergeImport(details, result.draft));
-      setReview({ importId: result.importId, fileName: result.fileName, fileId: null });
-      openSection("contact");
-    } catch (error) {
-      setProblem(error instanceof Error ? error.message : "Import failed. Try again");
-    } finally {
-      setImporting(false);
-    }
-  }
-
   /** Claude reads the file; what it found opens in the side panel, every change picked. */
   async function startAutofill(file: ResumeFile) {
     setAutofilling(file.id);
@@ -310,7 +280,7 @@ export function ProfileWorkspace({
       });
       setSaved(details);
       setSavedAt(result.savedAt);
-      if (review?.fileId)
+      if (review)
         setFiles((current) =>
           current.map((file) => (file.id === review.fileId ? { ...file, appliedAt: result.savedAt } : file)),
         );
@@ -327,9 +297,7 @@ export function ProfileWorkspace({
     <div className="flex items-center justify-end gap-2 px-3 py-3 md:px-5">
       <span className="mr-auto text-sm text-muted-foreground">
         {review
-          ? review.fileId
-            ? "Autofill not saved"
-            : "Import not saved"
+          ? "Autofill not saved"
           : unsavedSections
             ? `${unsavedSections} ${unsavedSections === 1 ? "section" : "sections"} unsaved`
             : savedAt
@@ -367,9 +335,7 @@ export function ProfileWorkspace({
               {review && (
                 <Alert>
                   <FileDown />
-                  <AlertTitle>
-                    {review.fileId ? "Autofill" : "Imported"} from {review.fileName}. Not saved yet
-                  </AlertTitle>
+                  <AlertTitle>Autofill from {review.fileName}. Not saved yet</AlertTitle>
                 </Alert>
               )}
               {problem && (
@@ -392,7 +358,6 @@ export function ProfileWorkspace({
               {engineering?.map((line) => (
                 <EngineeringSummary key={line.roadmapId ?? "path"} {...line} />
               ))}
-              <DriveFile state={drive} importing={importing} onImport={importDrive} />
               <RewritePanel key={`rewrite-${formVersion}`} details={details} setDetails={setDetails} />
             </div>
           </div>
@@ -479,7 +444,7 @@ export function ProfileWorkspace({
         title={unsavedSections > 1 ? `Discard ${unsavedSections} sections?` : "Discard changes?"}
         description={
           review
-            ? `Can't be undone · drops the import from ${review.fileName}`
+            ? `Can't be undone · drops the Autofill from ${review.fileName}`
             : `Can't be undone · back to ${savedAt ? `Saved ${shortDate(savedAt)}` : "empty"}`
         }
         action={unsavedSections > 1 || review ? "Discard all" : "Discard"}
@@ -487,7 +452,7 @@ export function ProfileWorkspace({
         onConfirm={discard}
       />
 
-      {/* With no section open, a Save bar shows only when there is something to save (an import, a rewrite). */}
+      {/* With no section open, a Save bar shows only when there is something to save (an Autofill, a rewrite). */}
       {canSave && openRow === null && !autofill && (
         <div className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur">
           <div className="mx-auto max-w-5xl">{saveBar}</div>

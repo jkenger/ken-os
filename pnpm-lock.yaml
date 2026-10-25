@@ -41,9 +41,6 @@ importers:
       '@ken-os/domain':
         specifier: workspace:*
         version: link:../../packages/domain
-      '@ken-os/drive':
-        specifier: workspace:*
-        version: link:../../packages/drive
       '@ken-os/portfolio':
         specifier: workspace:*
         version: link:../../packages/portfolio
@@ -179,18 +176,6 @@ importers:
         version: 4.6.5
 
   packages/domain: {}
-
-  packages/drive:
-    dependencies:
-      '@ken-os/domain':
-        specifier: workspace:*
-        version: link:../domain
-      mammoth:
-        specifier: ^1.13.0
-        version: 1.13.0
-      unpdf:
-        specifier: ^1.8.1
-        version: 1.8.1
 
   packages/portfolio:
     dependencies:

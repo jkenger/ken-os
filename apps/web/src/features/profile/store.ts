@@ -3,9 +3,7 @@ import { and, eq, sql } from "drizzle-orm";
 import {
   AutofillError,
   autofillProfile,
-  importProfile,
   PROFILE_AUTOFILL_PROMPT_VERSION,
-  PROFILE_IMPORT_PROMPT_VERSION,
   PROFILE_REWRITE_PROMPT_VERSION,
   rewriteProfile,
 } from "@ken-os/agents";
@@ -23,14 +21,11 @@ import {
   type ResumeTemplate,
 } from "@ken-os/domain";
 import mammoth from "mammoth";
-import { DriveError, getDriveFile, getResumeText } from "@ken-os/drive";
 import { db } from "@/lib/db";
-import { DriveAccessError, getGoogleAccessToken } from "@/lib/google";
-import { getSelectedResume } from "@/lib/resume";
 import { profileImports, profileRewrites, profiles, users } from "@/lib/schema";
 import { getResumeFile } from "./resume-files-store";
 
-// The Profile: the owner's career details, typed in or imported from the Drive resume. Spec: docs/product/profile-resume.md.
+// The Profile: the owner's career details, typed in or autofilled from an uploaded resume. Spec: docs/product/profile-resume.md.
 
 export class ProfileInputError extends Error {
   constructor(
@@ -41,7 +36,7 @@ export class ProfileInputError extends Error {
   }
 }
 
-/** Below this many characters a file has no usable text, usually a scanned PDF. */
+/** Below this many characters a Word file has no usable text. */
 const MIN_RESUME_TEXT = 50;
 
 export interface ProfileState {
@@ -83,7 +78,7 @@ export async function getProfile(userId: string): Promise<ProfileState> {
   return { details, savedAt: null, resume: DEFAULT_RESUME };
 }
 
-/** Saves what the owner typed. With an `importId`, it also marks that Drive import as applied. */
+/** Saves what the owner typed. With an `importId`, it also marks that Autofill as applied. */
 export async function saveProfile(
   userId: string,
   input: unknown,
@@ -106,21 +101,6 @@ export async function saveProfile(
     }
   });
   return { savedAt: now.toISOString() };
-}
-
-async function readChosenResume(userId: string) {
-  const selection = await getSelectedResume(userId);
-  if (!selection) throw new ProfileInputError("No resume chosen. Choose one from Drive first");
-  try {
-    const token = await getGoogleAccessToken(userId);
-    const file = await getDriveFile(selection.fileId, token);
-    if (file.trashed) throw new ProfileInputError("In Drive trash. Choose another file");
-    return { file, text: await getResumeText(file, token) };
-  } catch (error) {
-    if (error instanceof DriveAccessError) throw new ProfileInputError("Google Drive disconnected. Reconnect it", 409);
-    if (error instanceof DriveError) throw new ProfileInputError("Couldn't open the Drive file. Choose it again", 409);
-    throw error;
-  }
 }
 
 /** Remembers the Resume page's template and paper size. Needs saved details, since there's nothing to print before. */
@@ -171,35 +151,7 @@ export async function rewriteFromForm(
 }
 
 /**
- * Reads the chosen Drive resume into a draft for review. Nothing in the Profile changes until the owner saves; the
- * draft is kept as a `pending` import with the file's Drive version. The page lays it over the form with `mergeImport`,
- * so edits not saved yet survive.
- */
-export async function importFromDrive(
-  userId: string,
-): Promise<{ importId: string; draft: ProfileDetails; fileName: string }> {
-  const { file, text } = await readChosenResume(userId);
-  if (text.trim().length < MIN_RESUME_TEXT)
-    throw new ProfileInputError("No text found in this file. Use a Google Doc or a text PDF", 422);
-
-  const { draft, model } = await importProfile(text);
-  const importId = randomUUID();
-  await db()
-    .insert(profileImports)
-    .values({
-      id: importId,
-      userId,
-      driveFileId: file.id,
-      driveModifiedTime: file.modifiedTime ?? null,
-      draft,
-      promptVersion: PROFILE_IMPORT_PROMPT_VERSION,
-      model,
-    });
-  return { importId, draft, fileName: file.name };
-}
-
-/**
- * Reads an uploaded resume into a draft with Claude. Like a Drive import, nothing changes until the owner saves: the
+ * Reads an uploaded resume into a draft with Claude. Nothing changes until the owner saves: the
  * draft is kept as a `pending` import and the page shows what it would change, field by field. A PDF goes to Claude as
  * is; a Word file goes as its text.
  */

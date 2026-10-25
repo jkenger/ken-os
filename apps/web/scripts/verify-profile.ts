@@ -9,7 +9,7 @@ import { profileImports, users } from "../src/lib/schema";
 config({ path: ".env.local" });
 config({ path: ".env" });
 
-// Database check for Profile, with no AI or Drive calls. A throwaway user is created and deleted, cascading everything it made.
+// Database check for Profile, with no AI calls. A throwaway user is created and deleted, cascading everything it made.
 async function main() {
   const store = await import("../src/features/profile/store");
   const userId = `profile-check-${randomUUID()}`;
@@ -48,8 +48,6 @@ async function main() {
     const importId = randomUUID();
     const otherImport = randomUUID();
     const row = {
-      driveFileId: "file-1",
-      driveModifiedTime: "2026-10-12T00:00:00Z",
       draft: emptyProfile(),
       promptVersion: "check",
       model: "check",
@@ -94,12 +92,6 @@ async function main() {
       "the form is checked like a save before any AI call",
     );
     console.log("ok - rewrite checks its input before calling the AI");
-
-    await assert.rejects(
-      store.importFromDrive(userId),
-      (error: Error) => error instanceof store.ProfileInputError && /No resume chosen/.test(error.message),
-    );
-    console.log("ok - import needs a chosen resume");
 
     const files = await import("../src/features/profile/resume-files-store");
     const pdf = Buffer.from("%PDF-1.7\nresume");
