@@ -117,6 +117,7 @@ export function ResumeFiles({
                   <a
                     href={href}
                     target={file.contentType === PDF_MIME ? "_blank" : undefined}
+                    download={file.contentType === PDF_MIME ? undefined : file.fileName}
                     rel="noopener noreferrer"
                     className="block truncate font-semibold underline-offset-4 hover:underline"
                   >
@@ -133,7 +134,7 @@ export function ResumeFiles({
                 <span className="col-start-2 text-sm text-muted-foreground md:col-start-auto">Not used</span>
                 <div className="col-start-3 row-span-3 row-start-1 flex gap-2 md:col-start-auto md:row-span-1 md:row-start-auto">
                   <Button asChild variant="ghost" size="icon" aria-label={`Download ${file.fileName}`} title="Download">
-                    <a href={`${href}?download=1`}>
+                    <a href={`${href}?download=1`} download={file.fileName}>
                       <Download />
                     </a>
                   </Button>
