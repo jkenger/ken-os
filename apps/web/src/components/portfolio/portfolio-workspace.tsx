@@ -84,7 +84,7 @@ export function PortfolioWorkspace({ email, portfolio }: { email: string; portfo
 
   return (
     <WorkspaceShell email={email} active="portfolio">
-      <div className="px-3 pt-6 pb-24 md:px-5 md:pt-7.5">
+      <div className="mx-auto max-w-5xl px-3 pt-6 pb-24 md:px-5 md:pt-7.5">
         <PageHeading
           title="Publish"
           badge={live ? (unpublishedChanges ? "Changes not published" : "Live") : "Not published"}
@@ -141,7 +141,7 @@ export function PortfolioWorkspace({ email, portfolio }: { email: string; portfo
       </div>
 
       <div className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur">
-        <div className="flex flex-wrap items-center justify-end gap-2 px-3 py-3 md:px-5">
+        <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-end gap-2 px-3 py-3 md:px-5">
           {live && (
             <div className="mr-auto flex basis-full items-center gap-4 sm:basis-auto">
               <Button asChild variant="link" className="px-0">

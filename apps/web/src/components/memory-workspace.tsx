@@ -274,7 +274,7 @@ export function MemoryWorkspace({ email, overview }: { email: string; overview: 
 
   return (
     <WorkspaceShell email={email} active="memory">
-      <div className="min-h-[calc(100vh-88px)] w-full pb-8">
+      <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-330 pb-8">
         <header className="px-5 pt-8 pb-2 sm:px-8 lg:px-10 lg:pt-10">
           <div className="flex flex-wrap items-end justify-between gap-6 border-b pb-5">
             <h1 className="font-heading text-2xl leading-tight font-semibold tracking-tight">Project Memory</h1>

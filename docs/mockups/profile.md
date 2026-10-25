@@ -76,9 +76,8 @@ None.
 
 - **A. Ledger** (24 Oct 2026). Each section row opens its form in the side panel; the row states are Unsaved, Empty,
   Hidden (Local fields, never on the public resume), Not published, Changed (a Publish would change it) and Published.
-- **Full width** (25 Oct 2026). Module pages fill the content inset, left-aligned, instead of a centered column.
-  Profile is the exception: its column is centered with a 1024px cap, so the ledger does not stretch when no section
-  panel is open, and it fills the space beside the panel when one is (25 Oct 2026).
+- **Page width** (25 Oct 2026). Module pages sit in a centered column capped at 1024px (max-w-5xl; Project Memory
+  keeps its 1320px), wider than the old 768px Profile column.
 - **Differences from the frame** (25 Oct 2026). Changed carries no date: nothing records when one section changed, only
   when the whole Profile was saved. There is no separate Phone row: the phone is part of Contact and never published.
   Each resume row shows Not used and Download and Delete until Autofill exists. The section column keeps Resume and

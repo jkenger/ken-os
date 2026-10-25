@@ -289,8 +289,7 @@ export function ProfileWorkspace({
     >
       <div className="flex min-w-0 items-start">
         <div className="min-w-0 flex-1">
-          {/* Centered with a loose cap, so the ledger reads as one column when no section panel sits beside it. */}
-          <div className="mx-auto w-full max-w-5xl px-3.5 pt-5 pb-10 md:px-7 md:pt-7 md:pb-12">
+          <div className="mx-auto max-w-5xl px-3.5 pt-5 pb-10 md:px-7 md:pt-7 md:pb-12">
             <div className="flex flex-col gap-5">
               <ProfileHeading
                 fullName={fullName}
