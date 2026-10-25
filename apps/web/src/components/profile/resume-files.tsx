@@ -2,6 +2,7 @@
 
 import { useRef, useState, type Dispatch, type SetStateAction } from "react";
 import { AlertCircle, Download, FileText, Trash2, Upload } from "lucide-react";
+import { IconCheck, IconHistory, IconSparkles } from "@tabler/icons-react";
 import { PDF_MIME } from "@ken-os/domain";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,8 @@ import { cn } from "@/lib/utils";
 import { ConfirmDialog } from "./confirm-dialog";
 import { shortDate } from "./dates";
 
-// Resume files the owner uploaded, newest first. Uploading only keeps the file; nothing in the details changes.
+// Resume files the owner uploaded, newest first. Uploading only keeps the file; nothing in the details changes until
+// the owner runs Autofill on one and accepts what it found.
 // Spec: docs/product/profile-resume.md, "Step 5 design"; layout: docs/mockups/profile.md, direction A.
 
 function fileSize(bytes: number) {
@@ -24,10 +26,22 @@ function fileSize(bytes: number) {
 export function ResumeFiles({
   files,
   setFiles,
+  reviewing,
+  autofilling,
+  pending,
+  onAutofill,
 }: {
   /** Newest first; Profile holds them so the section column can count them. */
   files: ResumeFile[];
   setFiles: Dispatch<SetStateAction<ResumeFile[]>>;
+  /** The file whose Autofill is open or accepted but not saved yet. */
+  reviewing: string | null;
+  /** The file Claude is reading now. */
+  autofilling: string | null;
+  /** The file whose import or Autofill is in the form but not saved: another Autofill waits for Save or Discard, so
+   *  Save never marks one file applied for changes another made. */
+  pending: string | null;
+  onAutofill: (file: ResumeFile) => void;
 }) {
   const input = useRef<HTMLInputElement>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -117,7 +131,7 @@ export function ResumeFiles({
             return (
               <li
                 key={file.id}
-                className="grid grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-x-3 py-2.5 pr-2 pl-3.5 md:h-13 md:grid-cols-[18px_minmax(0,1fr)_120px_132px_auto] md:py-0"
+                className="grid grid-cols-[18px_minmax(0,1fr)_auto] items-center gap-x-3 py-2.5 pr-2 pl-3.5 md:h-13 md:grid-cols-[18px_minmax(0,1fr)_120px_120px_auto] md:py-0"
               >
                 <FileText className="size-4.5 text-muted-foreground" aria-hidden="true" />
                 <div className="min-w-0">
@@ -137,9 +151,21 @@ export function ResumeFiles({
                 <span className="col-start-2 text-xs text-muted-foreground md:col-start-auto">
                   Uploaded {shortDate(file.uploadedAt)}
                 </span>
-                {/* Autofill isn't built yet, so no file has filled the details. */}
-                <span className="col-start-2 text-[13px] text-muted-foreground md:col-start-auto">Not used</span>
-                <div className="col-start-3 row-span-3 row-start-1 flex gap-2 md:col-start-auto md:row-span-1 md:row-start-auto">
+                <FileState file={file} reviewing={reviewing === file.id} />
+                <div className="col-start-3 row-span-3 row-start-1 flex items-center gap-1 md:col-start-auto md:row-span-1 md:row-start-auto">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mr-1 text-[13px]"
+                    onClick={() => onAutofill(file)}
+                    disabled={busy !== null || autofilling !== null || pending !== null}
+                    title={pending ? `Save or discard the changes from ${pending} first` : undefined}
+                    aria-label={`Autofill from ${file.fileName}`}
+                  >
+                    <IconSparkles data-icon="inline-start" aria-hidden="true" />
+                    {autofilling === file.id ? "Reading…" : "Autofill"}
+                  </Button>
                   <Button asChild variant="ghost" size="icon" aria-label={`Download ${file.fileName}`} title="Download">
                     <a href={`${href}?download=1`} download={file.fileName}>
                       <Download />
@@ -152,7 +178,7 @@ export function ResumeFiles({
                     aria-label={`Delete ${file.fileName}`}
                     title="Delete"
                     onClick={() => setDeleting(file)}
-                    disabled={busy !== null}
+                    disabled={busy !== null || autofilling === file.id}
                   >
                     <Trash2 />
                   </Button>
@@ -173,4 +199,24 @@ export function ResumeFiles({
       />
     </section>
   );
+}
+
+/** In review while its Autofill is open or not saved, then when one was last saved, else Not used. */
+function FileState({ file, reviewing }: { file: ResumeFile; reviewing: boolean }) {
+  const place = "col-start-2 inline-flex items-center gap-1.5 text-[13px] md:col-start-auto";
+  if (reviewing)
+    return (
+      <span className={place}>
+        <IconHistory size={14} aria-hidden="true" />
+        In review
+      </span>
+    );
+  if (file.appliedAt)
+    return (
+      <span className={place}>
+        <IconCheck size={14} aria-hidden="true" />
+        Applied {shortDate(file.appliedAt)}
+      </span>
+    );
+  return <span className={cn(place, "text-muted-foreground")}>Not used</span>;
 }

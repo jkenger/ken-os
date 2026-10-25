@@ -85,6 +85,9 @@ None.
 - **After the Impeccable critique** (25 Oct 2026). Changed was made neutral, then the owner put it back to the
   frame's blue (an accepted exception to DESIGN.md's blue-only-for-selection rule). One Save still covers every section: the panel says how many sections are unsaved, Discard asks first,
   and leaving with edits warns. The open section is in `?section=`, so a refresh keeps it and Back closes it.
+- **Autofill built** (25 Oct 2026) as the frame's checklist in the side panel, with the proposed `diff-add` and
+  `diff-remove` tokens. One change per contact or local field and one per list section (the frame's "New group: Stack"
+  and "1 bullet added" are finer than that); a picked list section replaces that whole section.
 - **Delete allowed.** A stored resume can be deleted (resume uploads, PR #147).
 - **No Drive.** Resumes come only from Upload; choosing a file in Google Drive is dropped, and Drive is no longer a
   source for Profile (24 Oct 2026). None of the three directions shows a Drive option. The Drive card stays on Profile

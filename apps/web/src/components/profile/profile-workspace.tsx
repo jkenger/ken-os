@@ -2,14 +2,22 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, FileDown } from "lucide-react";
 import { IconChevronRight, IconFlask, IconMapPin } from "@tabler/icons-react";
-import { mergeImport, type ProfileDetails } from "@ken-os/domain";
+import {
+  applyAutofill,
+  autofillChanges,
+  mergeImport,
+  PDF_MIME,
+  type AutofillChange,
+  type ProfileDetails,
+} from "@ken-os/domain";
 import type { PortfolioProfile } from "@ken-os/portfolio";
 import { DockedPanel, useDocked } from "@/components/docked-panel";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Alert, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { EngineeringLine } from "@/features/engineering-lab/roadmap-store";
 import { engineering as engineeringRoutes } from "@/features/engineering-lab/routes";
@@ -20,6 +28,7 @@ import type { ResumeFile } from "@/features/profile/resume-files-store";
 import type { ProfileState } from "@/features/profile/store";
 import { send } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
+import { AutofillReview } from "./autofill-review";
 import { ConfirmDialog } from "./confirm-dialog";
 import { shortDate } from "./dates";
 import { DetailsForm } from "./details-form";
@@ -125,8 +134,23 @@ export function ProfileWorkspace({
   /** Bumped when the whole form is replaced (import, discard), so fields that keep their own typing state and
    *  rewrite suggestions made for the old form reset. */
   const [formVersion, setFormVersion] = useState(0);
-  /** The Drive import under review, until it's saved or discarded. */
-  const [review, setReview] = useState<{ importId: string; fileName: string } | null>(null);
+  /** The import or accepted Autofill in the form, until it's saved or discarded. `fileId` is the uploaded file an
+   *  Autofill read; null for a Drive import. */
+  const [review, setReview] = useState<{ importId: string; fileName: string; fileId: string | null } | null>(null);
+  /** The Autofill open in the side panel, before any of it reaches the form. */
+  const [autofill, setAutofill] = useState<{
+    file: ResumeFile;
+    importId: string;
+    draft: ProfileDetails;
+    changes: AutofillChange[];
+    matches: string[];
+  } | null>(null);
+  /** The changes picked in the open Autofill. */
+  const [picked, setPicked] = useState<string[]>([]);
+  const [autofilling, setAutofilling] = useState<string | null>(null);
+  /** The form as it is now, for an Autofill that comes back after the owner kept typing. */
+  const latest = useRef(details);
+  latest.current = details;
   const [importing, setImporting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
@@ -154,6 +178,7 @@ export function ProfileWorkspace({
     if (wasOpen) window.history.replaceState({ profileSection: window.history.state?.profileSection }, "", url);
     else window.history.pushState({ profileSection: true }, "", url);
     setOpened(id);
+    setAutofill(null);
   }, []);
 
   const closeSection = useCallback(() => {
@@ -172,7 +197,9 @@ export function ProfileWorkspace({
   const searchParams = useSearchParams();
   const addressSection = searchParams.get("section");
   useEffect(() => {
-    setOpened(addressSection && isLedgerSection(addressSection) ? addressSection : null);
+    const section = addressSection && isLedgerSection(addressSection) ? addressSection : null;
+    setOpened(section);
+    if (section) setAutofill(null);
   }, [addressSection]);
 
   // One Save covers every section, so leaving with unsaved edits asks first: a reload or tab close through
@@ -224,13 +251,46 @@ export function ProfileWorkspace({
         "POST",
       );
       replaceForm(mergeImport(details, result.draft));
-      setReview({ importId: result.importId, fileName: result.fileName });
+      setReview({ importId: result.importId, fileName: result.fileName, fileId: null });
       openSection("contact");
     } catch (error) {
       setProblem(error instanceof Error ? error.message : "Import failed. Try again");
     } finally {
       setImporting(false);
     }
+  }
+
+  /** Claude reads the file; what it found opens in the side panel, every change picked. */
+  async function startAutofill(file: ResumeFile) {
+    setAutofilling(file.id);
+    setProblem(null);
+    try {
+      const result = await send<{ importId: string; draft: ProfileDetails; fileName: string }>(
+        `/api/profile/resumes/${encodeURIComponent(file.id)}/autofill`,
+        "POST",
+      );
+      const { changes, matches } = autofillChanges(latest.current, result.draft);
+      if (opened) closeSection();
+      setAutofill({ file, importId: result.importId, draft: result.draft, changes, matches });
+      setPicked(changes.map((change) => change.id));
+    } catch (error) {
+      setProblem(error instanceof Error ? error.message : "Autofill failed. Try again");
+    } finally {
+      setAutofilling(null);
+    }
+  }
+
+  /** Puts the picked changes into the form; Save keeps them. */
+  function acceptAutofill() {
+    if (!autofill || !picked.length) return;
+    const { draft, file, importId } = autofill;
+    replaceForm(picked.reduce((next, id) => applyAutofill(next, draft, id), details));
+    setReview({ importId, fileName: file.fileName, fileId: file.id });
+    setAutofill(null);
+    toast({
+      tone: "success",
+      title: `${picked.length} ${picked.length === 1 ? "change" : "changes"} from ${file.fileName}. Save to keep them`,
+    });
   }
 
   function discard() {
@@ -250,6 +310,10 @@ export function ProfileWorkspace({
       });
       setSaved(details);
       setSavedAt(result.savedAt);
+      if (review?.fileId)
+        setFiles((current) =>
+          current.map((file) => (file.id === review.fileId ? { ...file, appliedAt: result.savedAt } : file)),
+        );
       setReview(null);
       toast({ tone: "success", title: "Profile saved" });
     } catch (error) {
@@ -263,7 +327,9 @@ export function ProfileWorkspace({
     <div className="flex items-center justify-end gap-2 px-3 py-3 md:px-5">
       <span className="mr-auto text-sm text-muted-foreground">
         {review
-          ? "Import not saved"
+          ? review.fileId
+            ? "Autofill not saved"
+            : "Import not saved"
           : unsavedSections
             ? `${unsavedSections} ${unsavedSections === 1 ? "section" : "sections"} unsaved`
             : savedAt
@@ -301,7 +367,9 @@ export function ProfileWorkspace({
               {review && (
                 <Alert>
                   <FileDown />
-                  <AlertTitle>Imported from {review.fileName}. Not saved yet</AlertTitle>
+                  <AlertTitle>
+                    {review.fileId ? "Autofill" : "Imported"} from {review.fileName}. Not saved yet
+                  </AlertTitle>
                 </Alert>
               )}
               {problem && (
@@ -313,7 +381,14 @@ export function ProfileWorkspace({
 
               <PublicResumeBar live={published.live} changed={rows.filter((row) => row.publishChanges).length} />
               <LedgerList rows={rows} opened={opened} onOpen={openSection} />
-              <ResumeFiles files={files} setFiles={setFiles} />
+              <ResumeFiles
+                files={files}
+                setFiles={setFiles}
+                reviewing={autofill?.file.id ?? review?.fileId ?? null}
+                autofilling={autofilling}
+                pending={review?.fileName ?? null}
+                onAutofill={(file) => void startAutofill(file)}
+              />
               {engineering?.map((line) => (
                 <EngineeringSummary key={line.roadmapId ?? "path"} {...line} />
               ))}
@@ -323,27 +398,80 @@ export function ProfileWorkspace({
           </div>
         </div>
 
-        <DockedPanel
-          open={openRow !== null}
-          docked={docked}
-          onClose={closeSection}
-          closeLabel="Close section"
-          badges={openRow && <StateBadge state={openRow.state} />}
-          title={openRow?.title ?? ""}
-          descriptionFallback="Section details"
-        >
-          <DetailsForm key={formVersion} details={details} edit={edit} only={opened} />
-          {/* The panel carries Save and its error, docked or as a sheet, so the page needs no Save bar while it's open. */}
-          <div className="sticky bottom-0 mt-auto border-t bg-card">
-            {problem && (
-              <Alert variant="destructive" className="mx-3 mt-3 w-auto md:mx-5">
-                <AlertCircle />
-                <AlertTitle>{problem}</AlertTitle>
-              </Alert>
-            )}
-            {saveBar}
-          </div>
-        </DockedPanel>
+        {autofill ? (
+          <DockedPanel
+            open
+            docked={docked}
+            onClose={() => setAutofill(null)}
+            closeLabel="Close Autofill"
+            badges={
+              <>
+                <Badge variant="secondary">Autofill</Badge>
+                <Badge variant="outline">{autofill.file.contentType === PDF_MIME ? "PDF" : "DOCX"}</Badge>
+              </>
+            }
+            title={autofill.file.fileName}
+            descriptionFallback="Changes from this resume"
+            facts={
+              <dl className="mt-2.5 grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-1 text-[13px]">
+                <dt className="text-muted-foreground">Uploaded</dt>
+                <dd>{shortDate(autofill.file.uploadedAt)}</dd>
+                <dt className="text-muted-foreground">Changes</dt>
+                <dd>
+                  {autofill.changes.length
+                    ? `${autofill.changes.length}, ${picked.length} selected`
+                    : "None, every field matches"}
+                </dd>
+              </dl>
+            }
+          >
+            <AutofillReview
+              changes={autofill.changes}
+              matches={autofill.matches}
+              selected={picked}
+              onToggle={(id, on) =>
+                setPicked((current) => (on ? [...current, id] : current.filter((item) => item !== id)))
+              }
+            />
+            <div className="sticky bottom-0 mt-auto flex items-center justify-end gap-2 border-t bg-card px-3 py-3 md:px-5">
+              {autofill.changes.length > 0 && (
+                <span className="mr-auto text-sm text-muted-foreground">
+                  {picked.length} of {autofill.changes.length}
+                </span>
+              )}
+              <Button type="button" variant="ghost" onClick={() => setAutofill(null)}>
+                {autofill.changes.length ? "Discard" : "Close"}
+              </Button>
+              {autofill.changes.length > 0 && (
+                <Button type="button" onClick={acceptAutofill} disabled={!picked.length}>
+                  Accept {picked.length} {picked.length === 1 ? "change" : "changes"}
+                </Button>
+              )}
+            </div>
+          </DockedPanel>
+        ) : (
+          <DockedPanel
+            open={openRow !== null}
+            docked={docked}
+            onClose={closeSection}
+            closeLabel="Close section"
+            badges={openRow && <StateBadge state={openRow.state} />}
+            title={openRow?.title ?? ""}
+            descriptionFallback="Section details"
+          >
+            <DetailsForm key={formVersion} details={details} edit={edit} only={opened} />
+            {/* The panel carries Save and its error, docked or as a sheet, so the page needs no Save bar while it's open. */}
+            <div className="sticky bottom-0 mt-auto border-t bg-card">
+              {problem && (
+                <Alert variant="destructive" className="mx-3 mt-3 w-auto md:mx-5">
+                  <AlertCircle />
+                  <AlertTitle>{problem}</AlertTitle>
+                </Alert>
+              )}
+              {saveBar}
+            </div>
+          </DockedPanel>
+        )}
       </div>
 
       <ConfirmDialog
@@ -360,7 +488,7 @@ export function ProfileWorkspace({
       />
 
       {/* With no section open, a Save bar shows only when there is something to save (an import, a rewrite). */}
-      {canSave && openRow === null && (
+      {canSave && openRow === null && !autofill && (
         <div className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur">
           <div className="mx-auto max-w-5xl">{saveBar}</div>
         </div>

@@ -8,14 +8,15 @@ import { ProfileInputError } from "./store";
 export async function profileRoute(
   request: Request,
   handler: (session: Session, body: Record<string, unknown>) => Promise<unknown>,
-  /** `ai` names the AI step (Import, Rewrite) for its errors, and needs OPENAI_API_KEY. */
-  options: { write: boolean; ai?: "Import" | "Rewrite" },
+  /** `ai` names the AI step for its errors. Autofill needs ANTHROPIC_API_KEY; Import and Rewrite need OPENAI_API_KEY. */
+  options: { write: boolean; ai?: "Import" | "Rewrite" | "Autofill" },
 ) {
   if (options.write && !hasValidOrigin(request))
     return NextResponse.json({ error: messages.invalidOrigin }, { status: 403 });
   const session = await getSession();
   if (!session) return NextResponse.json({ error: messages.signedOut }, { status: 401 });
-  if (options.ai && !process.env.OPENAI_API_KEY)
+  const key = options.ai === "Autofill" ? "ANTHROPIC_API_KEY" : "OPENAI_API_KEY";
+  if (options.ai && !process.env[key])
     return NextResponse.json({ error: `${options.ai} isn't set up` }, { status: 503 });
   try {
     const body = options.write ? await request.json().catch(() => null) : {};

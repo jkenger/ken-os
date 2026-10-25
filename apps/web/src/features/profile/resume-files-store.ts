@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
-import { and, count, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { profileResumes, users } from "@/lib/schema";
+import { profileImports, profileResumes, users } from "@/lib/schema";
 import { checkResumeFile, RESUME_FILE_MAX_COUNT, ResumeFileError } from "./resume-files";
 
 // Stored resume files, kept in Postgres. Spec: docs/product/profile-resume.md, "Step 5 design".
@@ -12,6 +12,8 @@ export interface ResumeFile {
   contentType: string;
   size: number;
   uploadedAt: string;
+  /** When an Autofill from this file was last saved into the details; null when none was. */
+  appliedAt: string | null;
 }
 
 const listed = {
@@ -22,14 +24,29 @@ const listed = {
   uploadedAt: profileResumes.uploadedAt,
 };
 
-function shape(row: { id: string; fileName: string; contentType: string; size: number; uploadedAt: Date }): ResumeFile {
-  return { ...row, uploadedAt: row.uploadedAt.toISOString() };
+function shape(row: {
+  id: string;
+  fileName: string;
+  contentType: string;
+  size: number;
+  uploadedAt: Date;
+  appliedAt?: string | null;
+}): ResumeFile {
+  return { ...row, uploadedAt: row.uploadedAt.toISOString(), appliedAt: row.appliedAt ?? null };
 }
 
 /** Newest first, without the file bytes. */
 export async function listResumeFiles(userId: string): Promise<ResumeFile[]> {
   const rows = await db()
-    .select(listed)
+    .select({
+      ...listed,
+      // Written out in full: Drizzle drops the table name from columns inside a select, which would point "id" at the
+      // subquery's own table.
+      appliedAt: sql<string | null>`(
+        select to_char(max(pi.applied_at) at time zone 'UTC', 'YYYY-MM-DD"T"HH24:MI:SS"Z"')
+        from profile_imports pi where pi.resume_file_id = "profile_resumes"."id"
+      )`,
+    })
     .from(profileResumes)
     .where(eq(profileResumes.userId, userId))
     .orderBy(desc(profileResumes.uploadedAt));

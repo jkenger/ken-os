@@ -48,6 +48,7 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -74,6 +75,7 @@ export const previewProps: Record<string, PreviewProps> = {
   "ui/button": { variant: "default", size: "default", disabled: false, children: "Run tests" },
   "ui/input": { disabled: false, placeholder: "Topic name" },
   "ui/kbd": { children: "Ctrl K" },
+  "ui/checkbox": { disabled: false },
   "ui/switch": { disabled: false },
   "ui/tabs": { variant: "default" },
   "ui/textarea": { disabled: false, placeholder: "Your own words" },
@@ -263,6 +265,12 @@ export const previews: Record<string, (props: PreviewProps) => ReactNode> = {
     <Button variant="outline" onClick={() => toast({ tone: "success", title: "Draft saved" })}>
       Show a toast
     </Button>
+  ),
+  "ui/checkbox": (props) => (
+    <div className="flex items-center gap-2 text-sm">
+      <Checkbox id="studio-checkbox-sample" defaultChecked {...as<typeof Checkbox>(props)} />
+      <Label htmlFor="studio-checkbox-sample">Headline</Label>
+    </div>
   ),
   "ui/switch": (props) => (
     <div className="flex items-center gap-2 text-sm">

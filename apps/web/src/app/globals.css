@@ -261,6 +261,12 @@
   --chapter-6: var(--muted-foreground);
   --chapter-6-soft: var(--muted);
   --selected: var(--ring);
+  /* Autofill review (docs/mockups/profile.md): green for what a resume adds, red for what it replaces. Always beside a
+     word (Now, Resume) and a strike or + mark, never colour alone. */
+  --diff-add: oklch(0.45 0.11 152);
+  --diff-add-soft: oklch(0.96 0.03 152);
+  --diff-remove: oklch(0.5 0.16 27);
+  --diff-remove-soft: oklch(0.965 0.02 27);
 }
 
 .dark {
@@ -308,6 +314,17 @@
   --chapter-6: var(--muted-foreground);
   --chapter-6-soft: var(--muted);
   --selected: var(--ring);
+  --diff-add: oklch(0.8 0.12 152);
+  --diff-add-soft: oklch(0.3 0.05 152);
+  --diff-remove: oklch(0.8 0.1 27);
+  --diff-remove-soft: oklch(0.31 0.06 27);
+}
+
+@theme inline {
+  --color-diff-add: var(--diff-add);
+  --color-diff-add-soft: var(--diff-add-soft);
+  --color-diff-remove: var(--diff-remove);
+  --color-diff-remove-soft: var(--diff-remove-soft);
 }
 
 /* `dark:` utilities stop at a `.light` boundary, the same way the tokens do. Redefines the variant above without editing it. */
