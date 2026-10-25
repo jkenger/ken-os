@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AlertCircle, FileDown } from "lucide-react";
 import { IconChevronRight, IconFlask, IconMapPin } from "@tabler/icons-react";
 import {
@@ -148,6 +148,9 @@ export function ProfileWorkspace({
   /** The changes picked in the open Autofill. */
   const [picked, setPicked] = useState<string[]>([]);
   const [autofilling, setAutofilling] = useState<string | null>(null);
+  /** The form as it is now, for an Autofill that comes back after the owner kept typing. */
+  const latest = useRef(details);
+  latest.current = details;
   const [importing, setImporting] = useState(false);
   const [saving, setSaving] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
@@ -266,7 +269,7 @@ export function ProfileWorkspace({
         `/api/profile/resumes/${encodeURIComponent(file.id)}/autofill`,
         "POST",
       );
-      const { changes, matches } = autofillChanges(details, result.draft);
+      const { changes, matches } = autofillChanges(latest.current, result.draft);
       if (opened) closeSection();
       setAutofill({ file, importId: result.importId, draft: result.draft, changes, matches });
       setPicked(changes.map((change) => change.id));
@@ -383,6 +386,7 @@ export function ProfileWorkspace({
                 setFiles={setFiles}
                 reviewing={autofill?.file.id ?? review?.fileId ?? null}
                 autofilling={autofilling}
+                pending={review?.fileName ?? null}
                 onAutofill={(file) => void startAutofill(file)}
               />
               {engineering?.map((line) => (

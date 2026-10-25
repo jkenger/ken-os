@@ -28,6 +28,7 @@ export function ResumeFiles({
   setFiles,
   reviewing,
   autofilling,
+  pending,
   onAutofill,
 }: {
   /** Newest first; Profile holds them so the section column can count them. */
@@ -37,6 +38,9 @@ export function ResumeFiles({
   reviewing: string | null;
   /** The file Claude is reading now. */
   autofilling: string | null;
+  /** The file whose import or Autofill is in the form but not saved: another Autofill waits for Save or Discard, so
+   *  Save never marks one file applied for changes another made. */
+  pending: string | null;
   onAutofill: (file: ResumeFile) => void;
 }) {
   const input = useRef<HTMLInputElement>(null);
@@ -155,7 +159,8 @@ export function ResumeFiles({
                     size="sm"
                     className="mr-1 text-[13px]"
                     onClick={() => onAutofill(file)}
-                    disabled={busy !== null || autofilling !== null}
+                    disabled={busy !== null || autofilling !== null || pending !== null}
+                    title={pending ? `Save or discard the changes from ${pending} first` : undefined}
                     aria-label={`Autofill from ${file.fileName}`}
                   >
                     <IconSparkles data-icon="inline-start" aria-hidden="true" />
@@ -173,7 +178,7 @@ export function ResumeFiles({
                     aria-label={`Delete ${file.fileName}`}
                     title="Delete"
                     onClick={() => setDeleting(file)}
-                    disabled={busy !== null}
+                    disabled={busy !== null || autofilling === file.id}
                   >
                     <Trash2 />
                   </Button>

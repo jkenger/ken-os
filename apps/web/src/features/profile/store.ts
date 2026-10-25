@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import {
   AutofillError,
   autofillProfile,
@@ -212,7 +212,12 @@ export async function autofillFromResume(
   let source: { pdf: Uint8Array } | { text: string };
   if (file.contentType === PDF_MIME) source = { pdf: new Uint8Array(file.data) };
   else {
-    const { value } = await mammoth.extractRawText({ buffer: Buffer.from(file.data) });
+    const value = await mammoth
+      .extractRawText({ buffer: Buffer.from(file.data) })
+      .then((result) => result.value)
+      .catch(() => {
+        throw new ProfileInputError("Couldn't read this Word file. Try saving it again or upload a PDF", 422);
+      });
     if (value.trim().length < MIN_RESUME_TEXT) throw new ProfileInputError("No text found in this file", 422);
     source = { text: value };
   }
@@ -225,13 +230,16 @@ export async function autofillFromResume(
     throw error;
   }
   const importId = randomUUID();
-  await db().insert(profileImports).values({
-    id: importId,
-    userId,
-    resumeFileId: file.id,
-    draft: result.draft,
-    promptVersion: PROFILE_AUTOFILL_PROMPT_VERSION,
-    model: result.model,
-  });
+  await db()
+    .insert(profileImports)
+    .values({
+      id: importId,
+      userId,
+      // Null when the file was deleted while Claude read it, so the draft still lands.
+      resumeFileId: sql`(select id from profile_resumes where id = ${file.id})`,
+      draft: result.draft,
+      promptVersion: PROFILE_AUTOFILL_PROMPT_VERSION,
+      model: result.model,
+    });
   return { importId, draft: result.draft, fileName: file.fileName };
 }

@@ -67,3 +67,15 @@ test("accepting a local field turns local fields on", () => {
 test("no changes when the file holds what is there", () => {
   assert.deepEqual(autofillChanges(current, current).changes, []);
 });
+
+test("a list section shows every field Accept would replace, bullets included", () => {
+  const withRole = normalizeProfile(
+    { experience: [{ company: "Acme", title: "Engineer", location: "Manila", start: "2024-01", bullets: ["Old"] }] },
+    "save",
+  );
+  const reworded = structuredClone(withRole);
+  reworded.experience[0].bullets = ["New"];
+  const [change] = autofillChanges(withRole, reworded).changes;
+  assert.deepEqual(change.before, ["Engineer, Acme · Manila · Jan 2024 – Present", "– Old"]);
+  assert.deepEqual(change.after, ["Engineer, Acme · Manila · Jan 2024 – Present", "– New"]);
+});

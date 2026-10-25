@@ -1,5 +1,5 @@
 import type { ProfileDetails } from "./profile";
-import { printDateRange } from "./resume";
+import { printDateRange, printMonth } from "./resume";
 
 // Autofill review: what a resume would change in the form, one change per contact or local field, the summary, and
 // each list section as a whole. Only fields the file fills count; a field the file leaves empty keeps what is there.
@@ -35,23 +35,29 @@ const LOCAL_FIELDS: [Exclude<keyof Local, "enabled" | "references">, string][] =
 ];
 
 const join = (parts: string[], separator = ", ") => parts.filter(Boolean).join(separator);
-/** "3 bullets", so an entry whose bullets changed doesn't print the same line twice. */
-const bullets = (items: string[]) =>
-  items.length ? `${items.length} ${items.length === 1 ? "bullet" : "bullets"}` : "";
+/** Each bullet on its own line under its entry. */
+const bulletLines = (items: string[]) => items.map((item) => `– ${item}`);
 
-/** The list sections, each printed one line per entry. */
+/**
+ * The list sections, printed with every field an entry holds, since Accept replaces the whole section: one line per
+ * entry, then a line per bullet or note.
+ */
 const LISTS = {
   experience: {
     label: "Experience",
     lines: (d: ProfileDetails) =>
-      d.experience.map((r) =>
-        join([join([r.title, r.company]), printDateRange(r.start, r.end), bullets(r.bullets)], " · "),
-      ),
+      d.experience.flatMap((r) => [
+        join([join([r.title, r.company]), r.location, printDateRange(r.start, r.end)], " · "),
+        ...bulletLines(r.bullets),
+      ]),
   },
   education: {
     label: "Education",
     lines: (d: ProfileDetails) =>
-      d.education.map((e) => join([join([e.school, e.degree, e.field]), printDateRange(e.start, e.end)], " · ")),
+      d.education.flatMap((e) => [
+        join([join([e.school, e.degree, e.field]), printDateRange(e.start, e.end)], " · "),
+        ...(e.notes ? [e.notes] : []),
+      ]),
   },
   skills: {
     label: "Skills",
@@ -59,11 +65,13 @@ const LISTS = {
   },
   projects: {
     label: "Projects",
-    lines: (d: ProfileDetails) => d.projects.map((p) => join([p.name, p.description, bullets(p.bullets)], " · ")),
+    lines: (d: ProfileDetails) =>
+      d.projects.flatMap((p) => [join([p.name, p.link, p.description], " · "), ...bulletLines(p.bullets)]),
   },
   certifications: {
     label: "Certifications",
-    lines: (d: ProfileDetails) => d.certifications.map((c) => join([c.name, c.issuer])),
+    lines: (d: ProfileDetails) =>
+      d.certifications.map((c) => join([join([c.name, c.issuer]), printMonth(c.date)], " · ")),
   },
   languages: {
     label: "Languages",
