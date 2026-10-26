@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { BrandMark } from "@/components/brand";
 import { TermLookup } from "@/components/terms/term-lookup";
 import { Toaster } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
@@ -38,13 +39,14 @@ import {
   SidebarContent,
   SidebarFooter,
   SidebarGroup,
-  SidebarGroupLabel,
   SidebarHeader,
   SidebarInset,
   SidebarMenu,
-  SidebarMenuBadge,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarProvider,
   SidebarTrigger,
   useSidebar,
@@ -183,184 +185,126 @@ function ModuleSearch() {
   );
 }
 
-function Brand() {
+/** Modules too wide for a labelled sidebar: they open with it folded to icons. Ctrl or Cmd + B unfolds it. */
+const wideModules: Module[] = ["studio", "lab"];
+
+/** The open module's sections, nested under it in the sidebar. A module with one section has nothing to nest. */
+function SectionList({ sections, onPick }: { sections: Section[]; onPick?: () => void }) {
   return (
-    <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-sidebar-primary font-heading text-sm font-extrabold text-sidebar-primary-foreground">
-      K
-    </span>
+    <SidebarMenuSub aria-label="Sections">
+      {sections.map(({ key, label, href, selected, count }) => (
+        <SidebarMenuSubItem key={key}>
+          <SidebarMenuSubButton asChild isActive={selected} size="md" className="max-md:h-11">
+            <Link href={href} aria-current={selected ? "location" : undefined} onClick={onPick}>
+              <span>{label}</span>
+              {count !== undefined && <span className="ml-auto font-mono text-xs text-muted-foreground">{count}</span>}
+            </Link>
+          </SidebarMenuSubButton>
+        </SidebarMenuSubItem>
+      ))}
+    </SidebarMenuSub>
   );
 }
 
-/** The Loots sidebar on shadcn's Sidebar (its nested icon block): an icon rail and a section column. On a phone,
- *  shadcn renders it as an 18rem sheet that holds both lists. */
+/** The KEOS sidebar on shadcn's Sidebar: the mark and name, every module with its label, the open module's sections
+ *  nested under it, and the signed-in account at the foot. It sits on the page ground, split from the content by one
+ *  1px seam, and folds to icons (Ctrl B). On a phone, shadcn renders the same list as a sheet. */
 function ShellSidebar({
   email,
   active,
   moduleList,
-  title,
   sections,
 }: {
   email: string;
   active: Module;
   moduleList: ModuleLink[];
-  title: string;
   sections: Section[];
 }) {
-  const { isMobile, state, setOpenMobile } = useSidebar();
+  const { isMobile, setOpenMobile } = useSidebar();
+  const close = isMobile ? () => setOpenMobile(false) : undefined;
+  const nested = sections.length > 1;
 
-  if (isMobile) {
-    const close = () => setOpenMobile(false);
-    return (
-      <Sidebar>
-        <SidebarHeader className="flex-row items-center justify-between">
-          <span className="flex items-center gap-2 text-sm font-semibold">
-            <Brand />
-            Loots
+  return (
+    <Sidebar collapsible="icon" aria-label="Workspace sidebar" className="group-data-[side=left]:border-r-0">
+      <SidebarHeader className="h-12 flex-row items-center justify-between border-b px-4 group-data-[collapsible=icon]:px-3.5">
+        <Link href="/" aria-label="KEOS home" className="flex items-center gap-2 rounded-md" onClick={close}>
+          <BrandMark />
+          <span className="font-heading text-base font-semibold tracking-tight group-data-[collapsible=icon]:hidden">
+            KEOS
           </span>
+        </Link>
+        {isMobile && (
           <Button variant="ghost" size="icon" aria-label="Close menu" onClick={close}>
             <X />
           </Button>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarGroupLabel>Modules</SidebarGroupLabel>
-            <SidebarMenu className="gap-1" aria-label="Modules">
-              {moduleList.map(({ id, label, href, icon: Icon }) => (
-                <SidebarMenuItem key={id}>
-                  <SidebarMenuButton asChild isActive={active === id}>
-                    <Link href={href} aria-current={active === id ? "page" : undefined} onClick={close}>
-                      <Icon strokeWidth={1.8} aria-hidden="true" />
-                      <span>{label}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroup>
-          {sections.length > 0 && (
-            <SidebarGroup>
-              <SidebarGroupLabel>{title}</SidebarGroupLabel>
-              <SidebarMenu className="gap-1" aria-label={`${title} sections`}>
-                {sections.map(({ key, label, href, icon: Icon, selected, count }) => (
-                  <SidebarMenuItem key={key}>
-                    <SidebarMenuButton asChild isActive={selected}>
-                      <Link href={href} aria-current={selected ? "location" : undefined} onClick={close}>
-                        <Icon strokeWidth={1.8} aria-hidden="true" />
-                        <span>{label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                    {count !== undefined && <SidebarMenuBadge className="font-mono">{count}</SidebarMenuBadge>}
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroup>
-          )}
-        </SidebarContent>
-        <SidebarFooter>
-          <p className="truncate px-2 text-xs text-muted-foreground">{email}</p>
-        </SidebarFooter>
-      </Sidebar>
-    );
-  }
-
-  return (
-    <Sidebar
-      collapsible="icon"
-      aria-label="Workspace sidebar"
-      className="overflow-hidden group-data-[side=left]:border-r-0 *:data-[sidebar=sidebar]:flex-row"
-    >
-      <Sidebar collapsible="none" className="w-(--sidebar-width-icon) shrink-0 border-r border-sidebar-border">
-        <SidebarHeader>
-          <Link href="/" aria-label="Loots home">
-            <Brand />
-          </Link>
-        </SidebarHeader>
-        <SidebarContent>
-          <SidebarGroup>
-            <SidebarMenu className="gap-1" aria-label="Modules">
-              {moduleList.map(({ id, label, href, icon: Icon }) => (
-                <SidebarMenuItem key={id}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={active === id}
-                    className="size-8 justify-center"
-                    tooltip={{ children: label, hidden: false, sideOffset: 6 }}
-                  >
-                    <Link href={href} aria-label={label} aria-current={active === id ? "page" : undefined}>
-                      <Icon strokeWidth={1.8} aria-hidden="true" />
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroup>
-        </SidebarContent>
-        <SidebarFooter>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span
-                className="grid size-8 place-items-center rounded-lg bg-secondary text-xs font-semibold text-muted-foreground"
-                tabIndex={0}
-                aria-label={`Signed in as ${email}`}
-              >
+        )}
+      </SidebarHeader>
+      <SidebarContent>
+        <SidebarGroup>
+          <SidebarMenu className="gap-1" aria-label="Modules">
+            {moduleList.map(({ id, label, href, icon: Icon }) => (
+              <SidebarMenuItem key={id}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={active === id}
+                  className="max-md:h-11"
+                  tooltip={{ children: label, sideOffset: 6 }}
+                >
+                  <Link href={href} aria-current={active === id ? "page" : undefined} onClick={close}>
+                    <Icon strokeWidth={1.5} aria-hidden="true" />
+                    <span>{label}</span>
+                  </Link>
+                </SidebarMenuButton>
+                {active === id && nested && <SectionList sections={sections} onPick={close} />}
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarGroup>
+      </SidebarContent>
+      <SidebarFooter className="border-t">
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div
+              className="flex min-w-0 items-center gap-2 rounded-md p-1 group-data-[collapsible=icon]:p-0.5"
+              tabIndex={0}
+              aria-label={`Signed in as ${email}`}
+            >
+              <span className="grid size-7 shrink-0 place-items-center rounded-full bg-sidebar-accent text-xs font-medium text-sidebar-accent-foreground">
                 {email.slice(0, 2).toUpperCase()}
               </span>
-            </TooltipTrigger>
-            <TooltipContent side="right" align="center" sideOffset={6}>
-              {email}
-            </TooltipContent>
-          </Tooltip>
-        </SidebarFooter>
-      </Sidebar>
-      {sections.length > 0 && (
-        <Sidebar collapsible="none" className="hidden w-52 shrink-0 lg:flex" inert={state === "collapsed" || undefined}>
-          <SidebarHeader className="h-12 justify-center border-b px-4">
-            <p className="truncate font-heading text-base font-semibold tracking-tight text-foreground">{title}</p>
-          </SidebarHeader>
-          <SidebarContent>
-            <SidebarGroup>
-              <SidebarMenu className="gap-1" aria-label={`${title} sections`}>
-                {sections.map(({ key, label, href, icon: Icon, selected, count }) => (
-                  <SidebarMenuItem key={key}>
-                    <SidebarMenuButton asChild isActive={selected}>
-                      <Link href={href} aria-current={selected ? "location" : undefined}>
-                        <Icon strokeWidth={1.8} aria-hidden="true" />
-                        <span>{label}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                    {count !== undefined && <SidebarMenuBadge className="font-mono">{count}</SidebarMenuBadge>}
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroup>
-          </SidebarContent>
-        </Sidebar>
-      )}
+              <span className="truncate text-xs text-muted-foreground group-data-[collapsible=icon]:hidden">
+                {email}
+              </span>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent side="right" align="center" sideOffset={6}>
+            {email}
+          </TooltipContent>
+        </Tooltip>
+      </SidebarFooter>
     </Sidebar>
   );
 }
 
-/** The raised content inset: a 56px header with the section toggle, breadcrumb, date, search and sign out. */
+/** The content beside the sidebar: a 48px header with the sidebar toggle, breadcrumb, date, search and sign out, then
+ *  the page. The sections show as a row of tabs only while the sidebar can't show them (folded, or on a phone); the
+ *  row wraps rather than scrolls, so no tab is cut off at the screen's edge. */
 function ShellInset({ title, sections, children }: { title: string; sections: Section[]; children: ReactNode }) {
-  const { open } = useSidebar();
+  const { open, isMobile } = useSidebar();
   const currentSection = sections.find((section) => section.selected);
+  const sectionTabs = sections.length > 1 && (isMobile || !open);
   return (
-    // Flush against the sidebar on one ground, split by a 1px seam, as the console tiles its panels.
+    // Flush against the sidebar on one ground, split by a 1px seam.
     <SidebarInset className="min-w-0 md:min-h-svh md:border-l">
-      <header className="flex h-12 shrink-0 items-center justify-between gap-4 border-b px-3 md:px-4">
+      <header className="flex h-12 shrink-0 items-center justify-between gap-4 border-b px-page">
         <div className="flex min-w-0 items-center gap-2 text-sm">
-          <SidebarTrigger className="md:hidden" aria-label="Open menu" />
-          {sections.length > 0 && (
-            <>
-              <SidebarTrigger
-                className="-ml-1 hidden lg:inline-flex"
-                aria-label={open ? "Hide sections" : "Show sections"}
-                aria-expanded={open}
-                title="Ctrl B"
-              />
-              <Separator orientation="vertical" className="mr-2 hidden h-4! lg:block" />
-            </>
-          )}
+          <SidebarTrigger
+            className="-ml-1.5"
+            aria-label={isMobile ? "Open menu" : open ? "Hide sidebar" : "Show sidebar"}
+            aria-expanded={isMobile ? undefined : open}
+            title="Ctrl B"
+          />
+          <Separator orientation="vertical" className="mr-1 hidden h-4! md:block" />
           <nav aria-label="Breadcrumb" className="min-w-0">
             <ol className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
               <li className={cn("truncate", currentSection && "hidden sm:inline-flex")}>
@@ -397,16 +341,13 @@ function ShellInset({ title, sections, children }: { title: string; sections: Se
           </form>
         </div>
       </header>
-      {sections.length > 1 && (
-        <nav
-          className={cn("flex gap-1 overflow-x-auto px-3 pt-3 md:px-4", open && "lg:hidden")}
-          aria-label={`${title} sections`}
-        >
+      {sectionTabs && (
+        <nav className="flex flex-wrap gap-1 px-page pt-3" aria-label={`${title} sections`}>
           {sections.map(({ key, label, href, selected }) => (
             <Link
               key={key}
               className={cn(
-                "h-8 shrink-0 rounded-md px-3 py-1.5 text-sm transition-colors",
+                "flex h-8 shrink-0 items-center rounded-md px-3 text-sm transition-colors max-md:h-11",
                 selected
                   ? "bg-sidebar-accent font-medium text-foreground"
                   : "text-sidebar-foreground hover:bg-sidebar-accent",
@@ -426,7 +367,6 @@ function ShellInset({ title, sections, children }: { title: string; sections: Se
     </SidebarInset>
   );
 }
-
 export function WorkspaceShell({
   email,
   active,
@@ -440,7 +380,7 @@ export function WorkspaceShell({
   children: ReactNode;
   termLookup?: boolean;
   tab?: EngineeringTab;
-  /** A count beside a section in the column, by the section's href, as Profile's "Details 9". */
+  /** A count beside a section in the sidebar, by the section's href, as Profile's "Details 9". */
   sectionCounts?: Record<string, number>;
 }) {
   const detail = moduleDetails[active];
@@ -448,8 +388,10 @@ export function WorkspaceShell({
   // Engineering's nested pages (a topic, the assessment, evidence) highlight one of its four sidebar sections.
   const engineeringTab = active === "lab" ? (tab ?? tabForPath(pathname)) : null;
   const [hash, setHash] = useState("");
-  // The section column's open state, kept in shadcn's sidebar_state cookie; Ctrl or Cmd + B toggles it.
-  const [sectionsOpen, setSectionsOpen] = useState(true);
+  // Whether the sidebar shows its labels, kept in shadcn's sidebar_state cookie; Ctrl or Cmd + B toggles it. Wide
+  // modules always open folded, whatever the cookie says.
+  const wide = wideModules.includes(active);
+  const [sidebarOpen, setSidebarOpen] = useState(!wide);
 
   useEffect(() => {
     const update = () => setHash(window.location.hash);
@@ -459,8 +401,8 @@ export function WorkspaceShell({
   }, [pathname]);
 
   useEffect(() => {
-    if (document.cookie.split("; ").includes("sidebar_state=false")) setSectionsOpen(false);
-  }, []);
+    if (!wide && document.cookie.split("; ").includes("sidebar_state=false")) setSidebarOpen(false);
+  }, [wide]);
 
   const sections = detail.sections.map(({ label, href, icon }, index) => {
     const selected = engineeringTab
@@ -470,20 +412,17 @@ export function WorkspaceShell({
   });
   const content = termLookup ? <TermLookup module={detail.title}>{children}</TermLookup> : children;
 
-  // The Loots shell, following shadcn/ui's sidebar anatomy (the nested icon sidebar block): an icon rail and a
-  // section column on the sidebar, beside one content inset. The column shows from 1024px.
+  // The KEOS shell, following shadcn/ui's sidebar anatomy: one labelled sidebar (232px, folding to a 48px icon rail)
+  // beside one content inset, both on the page ground.
   return (
     <TooltipProvider delayDuration={0}>
       <SidebarProvider
-        open={sectionsOpen}
-        onOpenChange={setSectionsOpen}
-        style={{ "--sidebar-width": "var(--shell-width)", "--sidebar-width-icon": "calc(3rem + 1px)" } as CSSProperties}
-        className={cn(
-          "min-h-screen bg-sidebar font-sans text-foreground [--shell-width:calc(3rem+1px)]",
-          sections.length > 0 && "lg:[--shell-width:calc(16rem+1px)]",
-        )}
+        open={sidebarOpen}
+        onOpenChange={setSidebarOpen}
+        style={{ "--sidebar-width": "14.5rem", "--sidebar-width-icon": "3rem" } as CSSProperties}
+        className="min-h-screen bg-sidebar font-sans text-foreground"
       >
-        <ShellSidebar email={email} active={active} moduleList={modules} title={detail.title} sections={sections} />
+        <ShellSidebar email={email} active={active} moduleList={modules} sections={sections} />
         <ShellInset title={detail.title} sections={sections}>
           {content}
         </ShellInset>

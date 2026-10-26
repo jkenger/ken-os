@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { AlertCircle, Info } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import type { SignInNotice } from "@/lib/auth-errors";
@@ -51,11 +52,13 @@ export function SignInCard({ href, notice, setupHint = null, disabled = false }:
   const label = notice?.action === "another" ? "Use another account" : "Continue with Google";
   const inactive = disabled || opening;
   return (
-    <div className="flex flex-col gap-6">
-      <div className="text-center font-heading text-lg font-semibold tracking-tight">Loots</div>
+    <div className="flex flex-col gap-block">
+      <Brand />
       <Card>
         <CardHeader>
-          <CardTitle>Sign in</CardTitle>
+          <CardTitle>
+            <h1>Sign in</h1>
+          </CardTitle>
           <CardDescription>Owner only</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">

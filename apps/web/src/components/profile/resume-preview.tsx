@@ -46,7 +46,7 @@ export function ResumePreview({
 
   return (
     <WorkspaceShell email={email} active="profile">
-      <div className="mx-auto max-w-5xl px-3 pt-6 pb-10 md:px-5 md:pt-7.5">
+      <div className="mx-auto max-w-5xl px-page pt-page pb-section">
         <PageHeading title="Resume" />
         {!savedAt ? (
           <Card>

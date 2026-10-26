@@ -153,9 +153,6 @@
   --chapter-5-soft: oklch(0.945 0.02 318);
   --chapter-6: oklch(0.47 0.08 85);
   --chapter-6-soft: oklch(0.945 0.03 90);
-  /* The item you picked (a row, a card, the lines touching it): the text ink, so it never reads as a status. Components use
-     this name, so selection can change without touching status (split from In progress blue on 24 Oct 2026). */
-  --selected: var(--foreground);
 }
 
 .dark {
@@ -175,7 +172,6 @@
   --chapter-5-soft: oklch(0.3 0.03 318);
   --chapter-6: oklch(0.8 0.08 90);
   --chapter-6-soft: oklch(0.3 0.03 90);
-  --selected: var(--foreground);
 }
 
 @theme inline {
@@ -204,45 +200,65 @@
 }
 [data-term-hover] { cursor: help; }
 
-/* Corners one step squarer than the shadcn default (0.625rem). The whole radius scale above derives from this. */
+/* Corners: the tight pair (6px panels, smaller controls through the derived scale above). Was 0.25rem until 26 Oct 2026. */
 :root {
-  --radius: 0.25rem;
+  --radius: 0.375rem;
 }
 
-/* Console (DESIGN.md): a graphite working surface in two themes, light and dark, picked from the system setting
-   (layout.tsx). Panels sit one step off the ground, split by 1px seams instead of shadows; colour is spent only on
-   state (green Learned, amber In progress, blue for the picked item and focus, red for destructive), so chapters are
-   told apart by number and name, not hue. Overrides the shadcn neutrals here rather than above, so the default block
-   stays as shadcn init wrote it. Text pairs keep 4.5:1 in both themes. `.light` repeats the light values inside a dark
-   page, so a Design Studio Light preview stays light whatever the system setting. */
+/* Spacing for every module page (docs/architecture/design-system.md): one 4px base, one page margin, one gap between
+   blocks, one gap between sections. Pages use `px-page`, `pt-page`, `gap-block` and `gap-section`, never their own
+   numbers. The margin is 20px on a phone and 24px from 768px. */
+:root {
+  --page: 1.25rem;
+  --block: 1rem;
+  --section: 2rem;
+}
+@media (min-width: 48rem) {
+  :root {
+    --page: 1.5rem;
+  }
+}
+@theme inline {
+  --spacing-page: var(--page);
+  --spacing-block: var(--block);
+  --spacing-section: var(--section);
+}
+
+/* Console (DESIGN.md): a blue-grey working surface in two themes, light and dark, picked from the system setting
+   (layout.tsx). The sidebar sits on the page ground; panels are white one step up, split by 1px seams instead of
+   shadows. Colour is spent only on state (green Learned, amber In progress, blue for the picked item and focus, red
+   for destructive), so chapters are told apart by number and name, not hue. Overrides the shadcn neutrals here rather
+   than above, so the default block stays as shadcn init wrote it. Text pairs keep 4.5:1 in both themes. `.light`
+   repeats the light values inside a dark page, so a Design Studio Light preview stays light whatever the system
+   setting. */
 :root,
 .light {
   color-scheme: light;
-  --background: oklch(0.975 0.002 265);
-  --foreground: oklch(0.22 0.005 265);
-  --card: oklch(0.995 0.001 265);
-  --card-foreground: oklch(0.22 0.005 265);
-  --popover: oklch(0.995 0.001 265);
-  --popover-foreground: oklch(0.22 0.005 265);
-  --primary: oklch(0.22 0.005 265);
+  --background: oklch(0.968 0.005 255);
+  --foreground: oklch(0.2 0.008 265);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.2 0.008 265);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.2 0.008 265);
+  --primary: oklch(0.2 0.008 265);
   --primary-foreground: oklch(0.985 0.001 265);
-  --secondary: oklch(0.945 0.003 265);
-  --secondary-foreground: oklch(0.22 0.005 265);
-  --muted: oklch(0.945 0.003 265);
-  --muted-foreground: oklch(0.48 0.008 265);
-  --accent: oklch(0.925 0.004 265);
-  --accent-foreground: oklch(0.22 0.005 265);
+  --secondary: oklch(0.94 0.006 258);
+  --secondary-foreground: oklch(0.2 0.008 265);
+  --muted: oklch(0.94 0.006 258);
+  --muted-foreground: oklch(0.47 0.012 260);
+  --accent: oklch(0.925 0.007 258);
+  --accent-foreground: oklch(0.2 0.008 265);
   --destructive: oklch(0.53 0.19 25);
-  --border: oklch(0.885 0.004 265);
-  --input: oklch(0.885 0.004 265);
+  --border: oklch(0.905 0.007 258);
+  --input: oklch(0.86 0.008 258);
   --ring: oklch(0.52 0.16 262);
-  --sidebar: oklch(0.955 0.003 265);
-  --sidebar-foreground: oklch(0.22 0.005 265);
-  --sidebar-primary: oklch(0.22 0.005 265);
+  --sidebar: oklch(0.968 0.005 255);
+  --sidebar-foreground: oklch(0.2 0.008 265);
+  --sidebar-primary: oklch(0.52 0.16 262);
   --sidebar-primary-foreground: oklch(0.985 0.001 265);
-  --sidebar-accent: oklch(0.915 0.004 265);
-  --sidebar-accent-foreground: oklch(0.2 0.005 265);
-  --sidebar-border: oklch(0.885 0.004 265);
+  --sidebar-accent: oklch(0.925 0.007 258);
+  --sidebar-accent-foreground: oklch(0.2 0.008 265);
+  --sidebar-border: oklch(0.905 0.007 258);
   --sidebar-ring: oklch(0.52 0.16 262);
   --topic-learned: oklch(0.5 0.13 150);
   --topic-learned-soft: oklch(0.95 0.035 150);
@@ -289,9 +305,9 @@
   --border: oklch(0.33 0.008 265);
   --input: oklch(0.33 0.008 265);
   --ring: oklch(0.76 0.11 262);
-  --sidebar: oklch(0.18 0.004 265);
+  --sidebar: oklch(0.205 0.004 265);
   --sidebar-foreground: oklch(0.93 0.004 100);
-  --sidebar-primary: oklch(0.93 0.004 100);
+  --sidebar-primary: oklch(0.76 0.11 262);
   --sidebar-primary-foreground: oklch(0.18 0.004 265);
   --sidebar-accent: oklch(0.275 0.006 265);
   --sidebar-accent-foreground: oklch(0.96 0.003 100);

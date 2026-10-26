@@ -196,7 +196,7 @@ export function RoadmapPage({
   return (
     <WorkspaceShell email={email} active="lab" tab="roadmap">
       <div className="flex min-w-0 items-start">
-        <div className="grid min-w-0 flex-1 gap-5 px-4 pt-6 pb-10 md:px-7">
+        <div className="grid min-w-0 flex-1 gap-block px-page pt-page pb-section">
           <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3 border-b pb-4">
             <div className="min-w-0">
               {roadmaps.length > 0 || archived.length > 0 ? (

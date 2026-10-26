@@ -7,7 +7,7 @@ import { getSession, safeNext } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = { title: "Sign in · Loots" };
+export const metadata: Metadata = { title: "Sign in · KEOS" };
 
 type Query = { next?: string; error?: string; expired?: string; signed_out?: string };
 
@@ -48,7 +48,7 @@ export default async function SignInPage({
 
 function Frame({ children }: { children: React.ReactNode }) {
   return (
-    <main className="flex min-h-svh w-full items-center justify-center bg-background p-6 md:p-10">
+    <main className="flex min-h-svh w-full items-center justify-center bg-background p-page">
       <div className="w-full max-w-sm">{children}</div>
     </main>
   );
