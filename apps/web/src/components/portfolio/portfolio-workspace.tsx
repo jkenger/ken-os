@@ -156,278 +156,286 @@ export function PortfolioWorkspace({ email, portfolio }: { email: string; portfo
 
   return (
     <WorkspaceShell email={email} active="portfolio">
-      <div className="mx-auto max-w-5xl px-3.5 pt-5 pb-10 text-sm md:px-7 md:pt-7 md:pb-12">
-        <div className="flex flex-col gap-5">
-          <div className="block items-end justify-between gap-6 md:flex">
-            <div className="min-w-0">
-              <h1 className="font-heading text-3xl leading-none font-bold tracking-tight">Portfolio</h1>
-              {state.contact?.name && <p className="mt-2 text-muted-foreground">{state.contact.name}</p>}
-            </div>
-            <dl className="mt-3.5 grid shrink-0 grid-cols-[auto_auto] justify-start gap-x-3.5 gap-y-1 text-[13px] md:mt-0">
-              <dt className="text-muted-foreground">Published</dt>
-              <dd>{latest ? shortDate(latest.publishedAt) : "Never"}</dd>
-              <dt className="text-muted-foreground">Profile saved</dt>
-              <dd>{profileSavedAt ? shortDate(profileSavedAt) : "Not saved"}</dd>
-              <dt className="text-muted-foreground">Site</dt>
-              <dd>Not set up</dd>
-            </dl>
-          </div>
-
-          {problem && (
-            <Alert variant="destructive">
-              <AlertCircle />
-              <AlertTitle>{problem}</AlertTitle>
-            </Alert>
-          )}
-          {!profileSavedAt && (
-            <Alert>
-              <AlertCircle />
-              <AlertTitle className="flex items-center gap-3">
-                No details saved
-                <Link href="/profile" className="ml-auto font-medium underline underline-offset-4">
-                  Open Profile
-                </Link>
-              </AlertTitle>
-            </Alert>
-          )}
-
-          <section
-            aria-label="Site"
-            className={cn(panel, "flex flex-wrap items-center gap-3 px-3.5 py-3 md:flex-nowrap")}
-          >
-            <IconWorld size={18} aria-hidden="true" className="shrink-0" />
-            <div className="flex min-w-0 flex-1 basis-[calc(100%-2.5rem)] flex-col gap-0.5 md:basis-auto">
-              <div className="flex items-center gap-2 font-semibold">
-                Site
-                <StateBadge tone={badge.tone}>
-                  {badge.tone === "public" && <IconCircleCheck aria-hidden="true" />}
-                  {badge.word}
-                </StateBadge>
+      {/* Fills the screen below the 3rem header so the footer sits at the bottom, not under short content. */}
+      <div className="flex min-h-[calc(100svh-3rem)] flex-col">
+        <div className="mx-auto w-full max-w-5xl px-3.5 pt-5 pb-10 text-sm md:px-7 md:pt-7 md:pb-12">
+          <div className="flex flex-col gap-5">
+            <div className="block items-end justify-between gap-6 md:flex">
+              <div className="min-w-0">
+                <h1 className="font-heading text-3xl leading-none font-bold tracking-tight">Portfolio</h1>
+                {state.contact?.name && <p className="mt-2 text-muted-foreground">{state.contact.name}</p>}
               </div>
-              <p className="truncate text-muted-foreground">
-                {live
-                  ? `Version ${live.version}, ${shortDate(live.publishedAt)}`
-                  : latest
-                    ? `Unpublished, last version ${latest.version}`
-                    : "Not published"}
-              </p>
+              <dl className="mt-3.5 grid shrink-0 grid-cols-[auto_auto] justify-start gap-x-3.5 gap-y-1 text-[13px] md:mt-0">
+                <dt className="text-muted-foreground">Published</dt>
+                <dd>{latest ? shortDate(latest.publishedAt) : "Never"}</dd>
+                <dt className="text-muted-foreground">Profile saved</dt>
+                <dd>{profileSavedAt ? shortDate(profileSavedAt) : "Not saved"}</dd>
+                <dt className="text-muted-foreground">Site</dt>
+                <dd>Not set up</dd>
+              </dl>
             </div>
-            {live && (
-              <>
-                <Button asChild variant="outline" size="sm" className="text-[13px] max-md:flex-1">
-                  <a href="/api/public/portfolio/resume" target="_blank" rel="noopener noreferrer">
-                    Open resume
-                    <IconExternalLink data-icon="inline-end" aria-hidden="true" />
-                  </a>
-                </Button>
-                <Button asChild variant="outline" size="sm" className="text-[13px] max-md:flex-1">
-                  <a href="/api/public/portfolio" target="_blank" rel="noopener noreferrer">
-                    Open snapshot
-                    <IconExternalLink data-icon="inline-end" aria-hidden="true" />
-                  </a>
-                </Button>
-              </>
+
+            {problem && (
+              <Alert variant="destructive">
+                <AlertCircle />
+                <AlertTitle>{problem}</AlertTitle>
+              </Alert>
             )}
-          </section>
+            {!profileSavedAt && (
+              <Alert>
+                <AlertCircle />
+                <AlertTitle className="flex items-center gap-3">
+                  No details saved
+                  <Link href="/profile" className="ml-auto font-medium underline underline-offset-4">
+                    Open Profile
+                  </Link>
+                </AlertTitle>
+              </Alert>
+            )}
 
-          <section aria-labelledby="public-title">
-            <SectionTitle id="public-title" title="What goes public" note="Changes go live on the next Publish" />
-            <ul className={cn(panel, "divide-y")}>
-              <Row
-                icon={profileSavedAt ? learnedIcon : <IconCircleDashed size={18} aria-hidden="true" />}
-                name="Profile"
-                summary="Name, headline, location, summary, links, experience, education, skills, projects"
-                href="/profile"
-                end={
-                  !profileSavedAt ? (
-                    <StateBadge tone="off">Not saved</StateBadge>
-                  ) : live && state.profileChanged ? (
-                    <StateBadge tone="changed">Changed</StateBadge>
-                  ) : live ? (
-                    <StateBadge tone="public">Public</StateBadge>
-                  ) : (
-                    <StateBadge tone="off">Not published</StateBadge>
-                  )
-                }
-              />
-              <Row
-                icon={learnedIcon}
-                name="Resume PDF"
-                summary={`${templateWords[resume.template] ?? resume.template}, ${paperWords[resume.paper] ?? resume.paper}, from Resume`}
-                href="/profile#resumes"
-                end={<StateBadge tone={live ? "public" : "off"}>{live ? "Public" : "Not published"}</StateBadge>}
-              />
-              <Row
-                icon={privateIcon}
-                name={
-                  <Label htmlFor="show-email" className="text-sm font-semibold">
-                    Email
-                  </Label>
-                }
-                summary={<span className="font-mono text-xs">{state.contact?.email || "No email saved"}</span>}
-                end={
-                  <>
-                    <StateBadge tone={state.showEmail ? "public" : "private"}>
-                      {state.showEmail ? "Shown" : "Private"}
-                    </StateBadge>
-                    <Switch
-                      id="show-email"
-                      aria-label="Show email"
-                      checked={state.showEmail}
-                      onCheckedChange={(checked) => void toggle("email", { showEmail: checked })}
-                      disabled={busy !== null}
-                    />
-                  </>
-                }
-              />
-              <Row
-                icon={privateIcon}
-                name="Never published"
-                summary="Phone, local fields, education notes"
-                end={<StateBadge tone="private">Private</StateBadge>}
-              />
-            </ul>
-          </section>
+            <section
+              aria-label="Site"
+              className={cn(panel, "flex flex-wrap items-center gap-3 px-3.5 py-3 md:flex-nowrap")}
+            >
+              <IconWorld size={18} aria-hidden="true" className="shrink-0" />
+              <div className="flex min-w-0 flex-1 basis-[calc(100%-2.5rem)] flex-col gap-0.5 md:basis-auto">
+                <div className="flex items-center gap-2 font-semibold">
+                  Site
+                  <StateBadge tone={badge.tone}>
+                    {badge.tone === "public" && <IconCircleCheck aria-hidden="true" />}
+                    {badge.word}
+                  </StateBadge>
+                </div>
+                <p className="truncate text-muted-foreground">
+                  {live
+                    ? `Version ${live.version}, ${shortDate(live.publishedAt)}`
+                    : latest
+                      ? `Unpublished, last version ${latest.version}`
+                      : "Not published"}
+                </p>
+              </div>
+              {live && (
+                <>
+                  <Button asChild variant="outline" size="sm" className="text-[13px] max-md:flex-1">
+                    <a href="/api/public/portfolio/resume" target="_blank" rel="noopener noreferrer">
+                      Open resume
+                      <IconExternalLink data-icon="inline-end" aria-hidden="true" />
+                    </a>
+                  </Button>
+                  <Button asChild variant="outline" size="sm" className="text-[13px] max-md:flex-1">
+                    <a href="/api/public/portfolio" target="_blank" rel="noopener noreferrer">
+                      Open snapshot
+                      <IconExternalLink data-icon="inline-end" aria-hidden="true" />
+                    </a>
+                  </Button>
+                </>
+              )}
+            </section>
 
-          <section aria-labelledby="engineering-title">
-            <SectionTitle id="engineering-title" title="Engineering" note="Chapters, statuses and Claude's reviews" />
-            <ul className={cn(panel, "divide-y")}>
-              {engineering.roadmaps.length === 0 && (
+            <section aria-labelledby="public-title">
+              <SectionTitle id="public-title" title="What goes public" note="Changes go live on the next Publish" />
+              <ul className={cn(panel, "divide-y")}>
                 <Row
-                  icon={<IconFlask size={18} aria-hidden="true" className="text-muted-foreground" />}
-                  name="No roadmap yet"
+                  icon={profileSavedAt ? learnedIcon : <IconCircleDashed size={18} aria-hidden="true" />}
+                  name="Profile"
+                  summary="Name, headline, location, summary, links, experience, education, skills, projects"
+                  href="/profile"
                   end={
-                    <Button asChild variant="outline" size="sm" className="text-[13px]">
-                      <Link href="/engineering">Open Engineering</Link>
-                    </Button>
+                    !profileSavedAt ? (
+                      <StateBadge tone="off">Not saved</StateBadge>
+                    ) : live && state.profileChanged ? (
+                      <StateBadge tone="changed">Changed</StateBadge>
+                    ) : live ? (
+                      <StateBadge tone="public">Public</StateBadge>
+                    ) : (
+                      <StateBadge tone="off">Not published</StateBadge>
+                    )
                   }
                 />
-              )}
-              {engineering.roadmaps.map((roadmap) => (
                 <Row
-                  key={roadmap.id}
-                  icon={
-                    <IconFlask
-                      size={18}
-                      aria-hidden="true"
-                      className={roadmap.shown ? undefined : "text-muted-foreground"}
-                    />
-                  }
+                  icon={learnedIcon}
+                  name="Resume PDF"
+                  summary={`${templateWords[resume.template] ?? resume.template}, ${paperWords[resume.paper] ?? resume.paper}, from Resume`}
+                  href="/profile#resumes"
+                  end={<StateBadge tone={live ? "public" : "off"}>{live ? "Public" : "Not published"}</StateBadge>}
+                />
+                <Row
+                  icon={privateIcon}
                   name={
-                    <Label htmlFor={`roadmap-${roadmap.id}`} className="inline text-sm leading-snug font-semibold">
-                      {roadmap.goal}
+                    <Label htmlFor="show-email" className="text-sm font-semibold">
+                      Email
                     </Label>
                   }
+                  summary={<span className="font-mono text-xs">{state.contact?.email || "No email saved"}</span>}
                   end={
                     <>
-                      <span className="font-mono text-xs text-muted-foreground">
-                        {roadmap.learned} of {roadmap.total}
-                      </span>
-                      <span className="max-md:hidden">
-                        <StateBadge tone={roadmap.shown ? "public" : "off"}>
-                          {roadmap.shown ? "Shown" : "Hidden"}
-                        </StateBadge>
-                      </span>
+                      <StateBadge tone={state.showEmail ? "public" : "private"}>
+                        {state.showEmail ? "Shown" : "Private"}
+                      </StateBadge>
                       <Switch
-                        id={`roadmap-${roadmap.id}`}
-                        aria-label="Show on site"
-                        checked={roadmap.shown}
-                        onCheckedChange={(checked) =>
-                          void toggle(`roadmap-${roadmap.id}`, { roadmapId: roadmap.id, shown: checked })
-                        }
+                        id="show-email"
+                        aria-label="Show email"
+                        checked={state.showEmail}
+                        onCheckedChange={(checked) => void toggle("email", { showEmail: checked })}
                         disabled={busy !== null}
                       />
                     </>
                   }
                 />
-              ))}
-              {anyShown && engineering.learned.length === 0 && (
-                <li className="px-3.5 py-3 text-muted-foreground">No learned topics yet</li>
-              )}
-              {engineering.learned.length > 0 && (
-                <li>
-                  <Collapsible>
-                    <CollapsibleTrigger className={cn(rowGrid, "group w-full text-left hover:bg-muted/50")}>
-                      <IconChevronDown
-                        size={16}
-                        aria-hidden="true"
-                        className="text-muted-foreground transition-transform group-data-[state=closed]:-rotate-90"
-                      />
-                      <span className="font-semibold md:col-span-2">My explanations</span>
-                      <span className="justify-self-end font-mono text-xs text-muted-foreground">
-                        {shownExplanations} of {engineering.learned.length} shown
-                      </span>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <ul className="px-3.5 pb-3 md:pl-12">
-                        {engineering.learned.map((topic) => (
-                          <li
-                            key={topic.topicId}
-                            className="grid grid-cols-[16px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-t py-2.5"
-                          >
-                            <StatusIcon status="learned" />
-                            <div className="min-w-0">
-                              <Label htmlFor={`explain-${topic.topicId}`} className="inline text-sm leading-snug font-medium">
-                                {topic.title}
-                              </Label>{" "}
-                              <span className="text-[12.5px] text-muted-foreground">
-                                {topic.explanation
-                                  ? topic.learnedAt
-                                    ? `Learned ${shortDate(topic.learnedAt)}`
-                                    : "Learned"
-                                  : "No explanation saved"}
-                              </span>
-                              {topic.explanation && !topic.shown && (
-                                <p className="truncate text-[12.5px] text-muted-foreground">{topic.explanation}</p>
-                              )}
-                            </div>
-                            <span className="flex items-center gap-2.5">
-                              {topic.shown && <StateBadge tone="changed">Shown</StateBadge>}
-                              <Switch
-                                id={`explain-${topic.topicId}`}
-                                aria-label="Show explanation"
-                                checked={topic.shown}
-                                onCheckedChange={(checked) =>
-                                  void toggle(`explain-${topic.topicId}`, { topicId: topic.topicId, shown: checked })
-                                }
-                                disabled={busy !== null || !topic.explanation}
-                              />
-                            </span>
-                            {topic.shown && topic.explanation && (
-                              <blockquote className="col-span-full rounded-md border bg-background px-3 py-2.5 text-[13.5px] whitespace-pre-line md:col-start-2">
-                                {topic.explanation}
-                              </blockquote>
-                            )}
-                          </li>
-                        ))}
-                      </ul>
-                    </CollapsibleContent>
-                  </Collapsible>
-                </li>
-              )}
-            </ul>
-            <p className="mt-2 px-0.5 text-[13px] text-muted-foreground">Never published: notes, exercises, sessions</p>
-          </section>
-        </div>
-      </div>
+                <Row
+                  icon={privateIcon}
+                  name="Never published"
+                  summary="Phone, local fields, education notes"
+                  end={<StateBadge tone="private">Private</StateBadge>}
+                />
+              </ul>
+            </section>
 
-      <div className="sticky bottom-0 z-10 mt-auto border-t bg-card">
-        <div className="flex items-center justify-end gap-2 px-3 py-3 md:px-5">
-          <span className="mr-auto text-sm text-muted-foreground">
-            {live
-              ? unpublishedChanges
-                ? "Changes not published"
-                : `Published ${shortDate(live.publishedAt)}`
-              : "Not published"}
-          </span>
-          {live && (
-            <Button type="button" variant="ghost" onClick={() => setConfirmUnpublish(true)} disabled={busy !== null}>
-              Unpublish
+            <section aria-labelledby="engineering-title">
+              <SectionTitle id="engineering-title" title="Engineering" note="Chapters, statuses and Claude's reviews" />
+              <ul className={cn(panel, "divide-y")}>
+                {engineering.roadmaps.length === 0 && (
+                  <Row
+                    icon={<IconFlask size={18} aria-hidden="true" className="text-muted-foreground" />}
+                    name="No roadmap yet"
+                    end={
+                      <Button asChild variant="outline" size="sm" className="text-[13px]">
+                        <Link href="/engineering">Open Engineering</Link>
+                      </Button>
+                    }
+                  />
+                )}
+                {engineering.roadmaps.map((roadmap) => (
+                  <Row
+                    key={roadmap.id}
+                    icon={
+                      <IconFlask
+                        size={18}
+                        aria-hidden="true"
+                        className={roadmap.shown ? undefined : "text-muted-foreground"}
+                      />
+                    }
+                    name={
+                      <Label htmlFor={`roadmap-${roadmap.id}`} className="inline text-sm leading-snug font-semibold">
+                        {roadmap.goal}
+                      </Label>
+                    }
+                    end={
+                      <>
+                        <span className="font-mono text-xs text-muted-foreground">
+                          {roadmap.learned} of {roadmap.total}
+                        </span>
+                        <span className="max-md:hidden">
+                          <StateBadge tone={roadmap.shown ? "public" : "off"}>
+                            {roadmap.shown ? "Shown" : "Hidden"}
+                          </StateBadge>
+                        </span>
+                        <Switch
+                          id={`roadmap-${roadmap.id}`}
+                          aria-label="Show on site"
+                          checked={roadmap.shown}
+                          onCheckedChange={(checked) =>
+                            void toggle(`roadmap-${roadmap.id}`, { roadmapId: roadmap.id, shown: checked })
+                          }
+                          disabled={busy !== null}
+                        />
+                      </>
+                    }
+                  />
+                ))}
+                {anyShown && engineering.learned.length === 0 && (
+                  <li className="px-3.5 py-3 text-muted-foreground">No learned topics yet</li>
+                )}
+                {engineering.learned.length > 0 && (
+                  <li>
+                    <Collapsible>
+                      <CollapsibleTrigger className={cn(rowGrid, "group w-full text-left hover:bg-muted/50")}>
+                        <IconChevronDown
+                          size={16}
+                          aria-hidden="true"
+                          className="text-muted-foreground transition-transform group-data-[state=closed]:-rotate-90"
+                        />
+                        <span className="font-semibold md:col-span-2">My explanations</span>
+                        <span className="justify-self-end font-mono text-xs text-muted-foreground">
+                          {shownExplanations} of {engineering.learned.length} shown
+                        </span>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <ul className="px-3.5 pb-3 md:pl-12">
+                          {engineering.learned.map((topic) => (
+                            <li
+                              key={topic.topicId}
+                              className="grid grid-cols-[16px_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 border-t py-2.5"
+                            >
+                              <StatusIcon status="learned" />
+                              <div className="min-w-0">
+                                <Label
+                                  htmlFor={`explain-${topic.topicId}`}
+                                  className="inline text-sm leading-snug font-medium"
+                                >
+                                  {topic.title}
+                                </Label>{" "}
+                                <span className="text-[12.5px] text-muted-foreground">
+                                  {topic.explanation
+                                    ? topic.learnedAt
+                                      ? `Learned ${shortDate(topic.learnedAt)}`
+                                      : "Learned"
+                                    : "No explanation saved"}
+                                </span>
+                                {topic.explanation && !topic.shown && (
+                                  <p className="truncate text-[12.5px] text-muted-foreground">{topic.explanation}</p>
+                                )}
+                              </div>
+                              <span className="flex items-center gap-2.5">
+                                {topic.shown && <StateBadge tone="changed">Shown</StateBadge>}
+                                <Switch
+                                  id={`explain-${topic.topicId}`}
+                                  aria-label="Show explanation"
+                                  checked={topic.shown}
+                                  onCheckedChange={(checked) =>
+                                    void toggle(`explain-${topic.topicId}`, { topicId: topic.topicId, shown: checked })
+                                  }
+                                  disabled={busy !== null || !topic.explanation}
+                                />
+                              </span>
+                              {topic.shown && topic.explanation && (
+                                <blockquote className="col-span-full rounded-md border bg-background px-3 py-2.5 text-[13.5px] whitespace-pre-line md:col-start-2">
+                                  {topic.explanation}
+                                </blockquote>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </li>
+                )}
+              </ul>
+              <p className="mt-2 px-0.5 text-[13px] text-muted-foreground">
+                Never published: notes, exercises, sessions
+              </p>
+            </section>
+          </div>
+        </div>
+
+        <div className="sticky bottom-0 z-10 mt-auto border-t bg-card">
+          <div className="flex items-center justify-end gap-2 px-3 py-3 md:px-5">
+            <span className="mr-auto text-sm text-muted-foreground">
+              {live
+                ? unpublishedChanges
+                  ? "Changes not published"
+                  : `Published ${shortDate(live.publishedAt)}`
+                : "Not published"}
+            </span>
+            {live && (
+              <Button type="button" variant="ghost" onClick={() => setConfirmUnpublish(true)} disabled={busy !== null}>
+                Unpublish
+              </Button>
+            )}
+            <Button type="button" onClick={() => void run("publish")} disabled={busy !== null || !profileSavedAt}>
+              {busy === "publish" ? "Publishing…" : "Publish"}
             </Button>
-          )}
-          <Button type="button" onClick={() => void run("publish")} disabled={busy !== null || !profileSavedAt}>
-            {busy === "publish" ? "Publishing…" : "Publish"}
-          </Button>
+          </div>
         </div>
       </div>
 
