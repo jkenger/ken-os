@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { cn } from "cn";
+import { InlineScript } from "@/components/inline-script";
 import "./globals.css";
 
 // One face for the whole console (DESIGN.md): Geist for headings and text, Geist Mono for figures.
@@ -30,7 +31,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       className={cn("antialiased", fontMono.variable, "font-sans", geistSans.variable, geistHeading.variable)}
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: systemTheme }} />
+        <InlineScript html={systemTheme} />
       </head>
       <body>{children}</body>
     </html>
