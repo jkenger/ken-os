@@ -1,10 +1,13 @@
 import { emptyProfile, type ProfileDetails } from "@ken-os/domain";
 import {
   PORTFOLIO_SNAPSHOT_VERSION,
+  type PortfolioEngineering,
   type PortfolioProfile,
   type PortfolioResume,
   type PortfolioSnapshot,
 } from "@ken-os/portfolio";
+import type { ReviewSheet } from "@/features/engineering-lab/review-sheet";
+import type { RoadmapView } from "@/features/engineering-lab/roadmap-store";
 
 // Builds the public snapshot from the saved Profile. It copies allowed fields one by one and never spreads a record, so
 // a field added to the Profile later stays private until it is added here. Spec: docs/architecture/portfolio.md.
@@ -50,12 +53,60 @@ export function portfolioProfile(details: ProfileDetails, choices: PublishChoice
   };
 }
 
+/** What Engineering publishes: the roadmaps shown, each topic's latest review, and only the explanations switched on. */
+export interface EngineeringSource {
+  roadmaps: RoadmapView[];
+  reviews: Map<string, ReviewSheet>;
+  explanations: Map<string, string>;
+}
+
+export function portfolioEngineering({ roadmaps, reviews, explanations }: EngineeringSource): PortfolioEngineering {
+  return {
+    roadmaps: roadmaps.map((roadmap) => ({
+      goal: roadmap.goal?.title ?? "",
+      counts: {
+        learned: roadmap.counts.learned,
+        inProgress: roadmap.counts.inProgress,
+        total: roadmap.counts.total,
+      },
+      chapters: roadmap.chapters.map((chapter) => ({
+        title: chapter.title,
+        area: chapter.area,
+        topics: chapter.topics.map((topic) => {
+          const review = reviews.get(topic.id);
+          const explanation = explanations.get(topic.id);
+          return {
+            id: topic.id,
+            title: topic.title,
+            status: topic.status,
+            learnedAt: topic.learnedAt,
+            // Point ids and the ownMistake flag stay private: the site needs only what each point says.
+            review: review
+              ? {
+                  points: review.points.map(({ question, explanation, example, mistake }) => ({
+                    question,
+                    explanation,
+                    example,
+                    mistake,
+                  })),
+                  terms: review.terms.map(({ term, meaning }) => ({ term, meaning })),
+                }
+              : null,
+            ...(explanation ? { explanation } : {}),
+          };
+        }),
+      })),
+    })),
+  };
+}
+
 export function buildSnapshot(
   details: ProfileDetails,
   resume: PortfolioResume,
   choices: PublishChoices,
   publication: number,
   publishedAt: Date,
+  engineering: PortfolioEngineering = { roadmaps: [] },
 ): PortfolioSnapshot {
   return {
     version: PORTFOLIO_SNAPSHOT_VERSION,
@@ -63,6 +114,7 @@ export function buildSnapshot(
     publishedAt: publishedAt.toISOString(),
     profile: portfolioProfile(details, choices),
     resume: { template: resume.template, paper: resume.paper },
+    engineering,
   };
 }
 

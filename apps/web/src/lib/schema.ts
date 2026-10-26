@@ -169,6 +169,10 @@ export const portfolios = pgTable("portfolios", {
   }),
   /** Publish copies the Profile email into the snapshot only when this is on. */
   showEmail: boolean("show_email").notNull().default(false),
+  /** Roadmap ids shown on the site. Null until the owner flips a switch: then the roadmap opened last is shown. */
+  shownRoadmaps: jsonb("shown_roadmaps").$type<string[]>(),
+  /** Topic ids whose Learned explanation the owner switched on. Off by default. */
+  shownExplanations: jsonb("shown_explanations").$type<string[]>().notNull().default([]),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

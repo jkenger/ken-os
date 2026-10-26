@@ -1,10 +1,12 @@
 import { randomUUID } from "node:crypto";
-import { desc, eq, sql } from "drizzle-orm";
-import type { PortfolioSnapshot } from "@ken-os/portfolio";
+import { and, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
+import type { PortfolioEngineering, PortfolioSnapshot } from "@ken-os/portfolio";
 import { normalizeProfile } from "@ken-os/domain";
+import { getRoadmaps, type RoadmapView } from "@/features/engineering-lab/roadmap-store";
+import type { ReviewSheet } from "@/features/engineering-lab/review-sheet";
 import { db } from "@/lib/db";
-import { portfolioPublications, portfolios, profiles, users } from "@/lib/schema";
-import { buildSnapshot } from "./snapshot";
+import { labReviews, labTopicEvents, portfolioPublications, portfolios, profiles, users } from "@/lib/schema";
+import { buildSnapshot, portfolioEngineering } from "./snapshot";
 
 // Portfolio: one Publish turns the saved Profile into a public snapshot. Spec: docs/architecture/portfolio.md.
 
@@ -26,17 +28,104 @@ export interface PortfolioState {
   profileSavedAt: string | null;
   /** Whether the next Publish includes the Profile email. */
   showEmail: boolean;
-  /** Whether the next Publish would change what visitors see: Profile edits, Show email, or the resume template. */
+  /** Whether the next Publish would change what visitors see: Profile edits, a switch, the resume template, or progress
+   *  on a shown roadmap. */
   unpublishedChanges: boolean;
+  /** Whether the Profile or the resume template changed since the live publication; part of `unpublishedChanges`. */
+  profileChanged: boolean;
+  /** The resume template and paper the next Publish prints with. */
+  resume: { template: string; paper: string } | null;
+  /** The saved Profile's name and email, for the heading and the Email row. */
+  contact: { name: string; email: string } | null;
+  engineering: {
+    /** Active roadmaps, opened last first, and whether each is shown on the site. */
+    roadmaps: { id: string; goal: string; learned: number; total: number; shown: boolean }[];
+    /** Learned topics on the shown roadmaps, newest first, with the owner's saved explanation if there is one. */
+    learned: { topicId: string; title: string; learnedAt: string | null; explanation: string | null; shown: boolean }[];
+  };
+}
+
+interface Settings {
+  showEmail: boolean;
+  shownRoadmaps: string[] | null;
+  shownExplanations: string[];
+}
+
+/** The owner's saved roadmaps, the ones shown on the site, and the reviews and explanations their topics have. */
+async function engineeringSource(userId: string, settings: Settings) {
+  // Without a saved roadmap, getRoadmaps returns the target role's path (id null): nothing to publish yet.
+  const roadmaps = (await getRoadmaps(userId)).filter((roadmap): roadmap is RoadmapView & { id: string } =>
+    Boolean(roadmap.id),
+  );
+  const shownIds = settings.shownRoadmaps ?? roadmaps.slice(0, 1).map((roadmap) => roadmap.id);
+  const shown = roadmaps.filter((roadmap) => shownIds.includes(roadmap.id));
+  const topics = shown.flatMap((roadmap) => roadmap.chapters.flatMap((chapter) => chapter.topics));
+  const topicIds = [...new Set(topics.map((topic) => topic.id))];
+  const [reviewRows, evidenceRows] = topicIds.length
+    ? await Promise.all([
+        db()
+          .select({ topicId: labReviews.topicId, sheet: labReviews.sheet })
+          .from(labReviews)
+          .where(and(eq(labReviews.userId, userId), inArray(labReviews.topicId, topicIds)))
+          .orderBy(desc(labReviews.version)),
+        db()
+          .select({ topicId: labTopicEvents.topicId, evidence: labTopicEvents.evidence })
+          .from(labTopicEvents)
+          .where(
+            and(
+              eq(labTopicEvents.userId, userId),
+              inArray(labTopicEvents.topicId, topicIds),
+              eq(labTopicEvents.kind, "report"),
+              isNotNull(labTopicEvents.evidence),
+            ),
+          )
+          .orderBy(desc(labTopicEvents.createdAt)),
+      ])
+    : [[], []];
+  // Rows come newest first, so the first one per topic is the latest sheet and the latest Learned explanation.
+  const reviews = new Map<string, ReviewSheet>();
+  for (const row of reviewRows) if (!reviews.has(row.topicId)) reviews.set(row.topicId, row.sheet);
+  const explanations = new Map<string, string>();
+  for (const row of evidenceRows)
+    if (row.evidence && !explanations.has(row.topicId)) explanations.set(row.topicId, row.evidence);
+  const learned = [
+    ...new Map(topics.filter((topic) => topic.status === "learned").map((t) => [t.id, t])).values(),
+  ].sort((a, b) => (b.learnedAt ?? "").localeCompare(a.learnedAt ?? ""));
+  return { roadmaps, shownIds, shown, reviews, explanations, learned };
+}
+
+function publishedEngineering(
+  source: Awaited<ReturnType<typeof engineeringSource>>,
+  settings: Settings,
+): PortfolioEngineering {
+  const switchedOn = new Map(
+    [...source.explanations].filter(([topicId]) => settings.shownExplanations.includes(topicId)),
+  );
+  return portfolioEngineering({ roadmaps: source.shown, reviews: source.reviews, explanations: switchedOn });
+}
+
+async function readSettings(userId: string): Promise<Settings & { updatedAt: Date | null }> {
+  const [row] = await db()
+    .select({
+      showEmail: portfolios.showEmail,
+      shownRoadmaps: portfolios.shownRoadmaps,
+      shownExplanations: portfolios.shownExplanations,
+      updatedAt: portfolios.updatedAt,
+    })
+    .from(portfolios)
+    .where(eq(portfolios.userId, userId))
+    .limit(1);
+  return row ?? { showEmail: false, shownRoadmaps: null, shownExplanations: [], updatedAt: null };
 }
 
 export async function getPortfolio(userId: string): Promise<PortfolioState> {
-  const [[state], [latest], [profile], [settings]] = await Promise.all([
+  const [[state], [latest], [profile], settings] = await Promise.all([
     db()
       .select({
         version: portfolioPublications.version,
         publishedAt: portfolioPublications.publishedAt,
         resume: sql<PortfolioSnapshot["resume"] | null>`${portfolioPublications.snapshot}->'resume'`,
+        engineering: sql<PortfolioSnapshot["engineering"] | null>`${portfolioPublications.snapshot}->'engineering'`,
       })
       .from(portfolios)
       .innerJoin(portfolioPublications, eq(portfolioPublications.id, portfolios.currentPublicationId))
@@ -49,25 +138,34 @@ export async function getPortfolio(userId: string): Promise<PortfolioState> {
       .orderBy(desc(portfolioPublications.version))
       .limit(1),
     db()
-      .select({ updatedAt: profiles.updatedAt, template: profiles.template, paper: profiles.paper })
+      .select({
+        updatedAt: profiles.updatedAt,
+        template: profiles.template,
+        paper: profiles.paper,
+        details: profiles.details,
+      })
       .from(profiles)
       .where(eq(profiles.userId, userId))
       .limit(1),
-    db()
-      .select({ showEmail: portfolios.showEmail, updatedAt: portfolios.updatedAt })
-      .from(portfolios)
-      .where(eq(portfolios.userId, userId))
-      .limit(1),
+    readSettings(userId),
   ]);
-  // Publish stamps `portfolios.updated_at` with the publication time, so a later stamp means Show email changed since.
+  const source = await engineeringSource(userId, settings);
+  // Publish stamps `portfolios.updated_at` with the publication time, so a later stamp means a switch changed since.
+  // Engineering is compared whole, so a topic learned after the publish counts too.
   const published = state?.resume ?? { template: "classic", paper: "letter" };
-  const unpublishedChanges = Boolean(
+  const profileChanged = Boolean(
     state &&
     profile &&
     (profile.updatedAt > state.publishedAt ||
-      (settings && settings.updatedAt > state.publishedAt) ||
       profile.template !== published.template ||
       profile.paper !== published.paper),
+  );
+  const unpublishedChanges = Boolean(
+    state &&
+    profile &&
+    (profileChanged ||
+      (settings.updatedAt && settings.updatedAt > state.publishedAt) ||
+      JSON.stringify(state.engineering ?? { roadmaps: [] }) !== JSON.stringify(publishedEngineering(source, settings))),
   );
   const shape = (row?: { version: number; publishedAt: Date }) =>
     row ? { version: row.version, publishedAt: row.publishedAt.toISOString() } : null;
@@ -75,8 +173,27 @@ export async function getPortfolio(userId: string): Promise<PortfolioState> {
     live: shape(state),
     latest: shape(latest),
     profileSavedAt: profile?.updatedAt.toISOString() ?? null,
-    showEmail: settings?.showEmail ?? false,
+    showEmail: settings.showEmail,
     unpublishedChanges,
+    profileChanged,
+    resume: profile ? { template: profile.template, paper: profile.paper } : null,
+    contact: profile ? contactOf(profile.details) : null,
+    engineering: {
+      roadmaps: source.roadmaps.map((roadmap) => ({
+        id: roadmap.id,
+        goal: roadmap.goal?.title ?? "",
+        learned: roadmap.counts.learned,
+        total: roadmap.counts.total,
+        shown: source.shownIds.includes(roadmap.id),
+      })),
+      learned: source.learned.map((topic) => ({
+        topicId: topic.id,
+        title: topic.title,
+        learnedAt: topic.learnedAt,
+        explanation: source.explanations.get(topic.id) ?? null,
+        shown: settings.shownExplanations.includes(topic.id) && source.explanations.has(topic.id),
+      })),
+    },
   };
 }
 
@@ -85,6 +202,8 @@ export async function publishPortfolio(userId: string): Promise<PortfolioState> 
   const [profile] = await db().select().from(profiles).where(eq(profiles.userId, userId)).limit(1);
   if (!profile) throw new PortfolioInputError("No details saved. Save Profile first", 409);
   const details = normalizeProfile(profile.details, "import");
+  const settings = await readSettings(userId);
+  const engineering = publishedEngineering(await engineeringSource(userId, settings), settings);
   await db().transaction(async (tx) => {
     // Locks the owner's row so two Publish clicks can't pick the same version.
     await tx.insert(portfolios).values({ userId }).onConflictDoNothing();
@@ -105,6 +224,7 @@ export async function publishPortfolio(userId: string): Promise<PortfolioState> 
         { showEmail: portfolio.showEmail },
         Number(next),
         now,
+        engineering,
       ),
       publishedAt: now,
     });
@@ -113,16 +233,39 @@ export async function publishPortfolio(userId: string): Promise<PortfolioState> 
   return getPortfolio(userId);
 }
 
-/** Turns Show email on or off. Like every other choice, it goes live on the next Publish. */
-export async function setShowEmail(userId: string, input: Record<string, unknown>): Promise<PortfolioState> {
-  if (typeof input.showEmail !== "boolean") throw new PortfolioInputError("Choose on or off");
-  const showEmail = input.showEmail;
+/** Saves one switch: Show email, Show on site for a roadmap, or Show explanation for a Learned topic. Like every other
+ *  choice, it goes live on the next Publish. */
+export async function updateSettings(userId: string, input: Record<string, unknown>): Promise<PortfolioState> {
+  if (typeof input.shown !== "boolean" && typeof input.showEmail !== "boolean")
+    throw new PortfolioInputError("Choose on or off");
+  const settings = await readSettings(userId);
+  const set: Partial<typeof portfolios.$inferInsert> = {};
+  if (typeof input.showEmail === "boolean") set.showEmail = input.showEmail;
+  else if (typeof input.roadmapId === "string") {
+    const { roadmaps, shownIds } = await engineeringSource(userId, settings);
+    if (!roadmaps.some((roadmap) => roadmap.id === input.roadmapId))
+      throw new PortfolioInputError("That roadmap isn't active", 404);
+    set.shownRoadmaps = toggle(shownIds, input.roadmapId, input.shown === true);
+  } else if (typeof input.topicId === "string") {
+    const { explanations } = await engineeringSource(userId, settings);
+    if (input.shown === true && !explanations.has(input.topicId))
+      throw new PortfolioInputError("No explanation saved", 409);
+    set.shownExplanations = toggle(settings.shownExplanations, input.topicId, input.shown === true);
+  } else throw new PortfolioInputError("Choose a switch");
   await db()
     .insert(portfolios)
-    .values({ userId, showEmail })
-    .onConflictDoUpdate({ target: portfolios.userId, set: { showEmail, updatedAt: new Date() } });
+    .values({ userId, ...set })
+    .onConflictDoUpdate({ target: portfolios.userId, set: { ...set, updatedAt: new Date() } });
   return getPortfolio(userId);
 }
+
+function contactOf(saved: unknown) {
+  const { contact } = normalizeProfile(saved, "import");
+  return { name: contact.fullName, email: contact.email };
+}
+
+const toggle = (ids: string[], id: string, on: boolean) =>
+  on ? [...new Set([...ids, id])] : ids.filter((item) => item !== id);
 
 /** Takes the portfolio offline. Past publications stay, private, so a later Publish continues the count. */
 export async function unpublishPortfolio(userId: string): Promise<PortfolioState> {

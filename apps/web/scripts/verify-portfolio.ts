@@ -5,7 +5,7 @@ import { eq, sql } from "drizzle-orm";
 import { emptyProfile } from "@ken-os/domain";
 import { parsePortfolioSnapshot } from "@ken-os/portfolio";
 import { closeDb, db } from "../src/lib/db";
-import { portfolioPublications, users } from "../src/lib/schema";
+import { labRoadmaps, portfolioPublications, users } from "../src/lib/schema";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
@@ -25,6 +25,10 @@ async function main() {
       profileSavedAt: null,
       showEmail: false,
       unpublishedChanges: false,
+      profileChanged: false,
+      resume: null,
+      contact: null,
+      engineering: { roadmaps: [], learned: [] },
     });
     await assert.rejects(
       store.publishPortfolio(userId),
@@ -61,7 +65,7 @@ async function main() {
     assert.deepEqual((await store.liveSnapshot(email.toLowerCase()))?.resume, { template: "technical", paper: "a4" });
     console.log("ok - Publish copies the Resume page's template and paper");
 
-    const shown = await store.setShowEmail(userId, { showEmail: true });
+    const shown = await store.updateSettings(userId, { showEmail: true });
     assert.equal(shown.showEmail, true);
     assert.equal(shown.unpublishedChanges, true, "Show email waits for Publish");
     assert.ok(
@@ -70,10 +74,10 @@ async function main() {
     );
     await store.publishPortfolio(userId);
     assert.equal((await store.liveSnapshot(email.toLowerCase()))?.profile.email, email);
-    await store.setShowEmail(userId, { showEmail: false });
+    await store.updateSettings(userId, { showEmail: false });
     await store.publishPortfolio(userId);
     assert.equal((await store.liveSnapshot(email.toLowerCase()))?.profile.email, undefined);
-    await assert.rejects(store.setShowEmail(userId, { showEmail: "yes" }), store.PortfolioInputError);
+    await assert.rejects(store.updateSettings(userId, { showEmail: "yes" }), store.PortfolioInputError);
     console.log("ok - Show email publishes the email only while it is on");
 
     await profile.saveProfile(userId, { ...details, summary: "Builds more" }, null);
@@ -91,6 +95,57 @@ async function main() {
     assert.equal(await store.liveSnapshot(email.toLowerCase()), null);
     assert.equal((await store.publishPortfolio(userId)).live?.version, 7);
     console.log("ok - Unpublish takes it offline, and the count continues");
+
+    const status = await import("../src/features/engineering-lab/status-store");
+    const roadmapId = randomUUID();
+    await db()
+      .insert(labRoadmaps)
+      .values({
+        id: roadmapId,
+        userId,
+        goal: "Check goal",
+        status: "active",
+        chapters: [{ id: "react", title: "React", topicIds: ["react.render_model", "react.effects"] }],
+      });
+    const words = "Each render sees state as a snapshot, so three setCount(count + 1) calls queue 1 three times.";
+    await status.reportProgress(userId, "react.render_model", {
+      summary: "Explained it",
+      status: "learned",
+      evidence: { explanation: words, note: "Unaided" },
+    });
+    const withRoadmap = await store.getPortfolio(userId);
+    assert.deepEqual(
+      withRoadmap.engineering.roadmaps.map(({ goal, learned, total, shown }) => ({ goal, learned, total, shown })),
+      [{ goal: "Check goal", learned: 1, total: 2, shown: true }],
+      "the roadmap opened last is shown by default",
+    );
+    assert.equal(withRoadmap.engineering.learned[0].explanation, words);
+    assert.equal(withRoadmap.engineering.learned[0].shown, false, "explanations are off by default");
+    assert.equal(withRoadmap.unpublishedChanges, true, "progress on a shown roadmap waits for Publish");
+    await store.publishPortfolio(userId);
+    let engineering = (await store.liveSnapshot(email.toLowerCase()))?.engineering;
+    assert.equal(engineering?.roadmaps[0].chapters[0].topics[0].status, "learned");
+    assert.ok(!JSON.stringify(engineering).includes(words), "the explanation stays private until switched on");
+
+    await assert.rejects(
+      store.updateSettings(userId, { topicId: "react.effects", shown: true }),
+      (error: Error) => error instanceof store.PortfolioInputError && error.status === 409,
+    );
+    const explained = await store.updateSettings(userId, { topicId: "react.render_model", shown: true });
+    assert.equal(explained.engineering.learned[0].shown, true);
+    assert.equal(explained.unpublishedChanges, true);
+    await store.publishPortfolio(userId);
+    engineering = (await store.liveSnapshot(email.toLowerCase()))?.engineering;
+    assert.equal(engineering?.roadmaps[0].chapters[0].topics[0].explanation, words);
+
+    const hidden = await store.updateSettings(userId, { roadmapId, shown: false });
+    assert.equal(hidden.engineering.roadmaps[0].shown, false);
+    assert.deepEqual(hidden.engineering.learned, [], "no explanations to show without a shown roadmap");
+    await store.publishPortfolio(userId);
+    assert.deepEqual((await store.liveSnapshot(email.toLowerCase()))?.engineering, { roadmaps: [] });
+    await assert.rejects(store.updateSettings(userId, { roadmapId: "nope", shown: true }), store.PortfolioInputError);
+    await assert.rejects(store.updateSettings(userId, { roadmapId, shown: "yes" }), store.PortfolioInputError);
+    console.log("ok - Engineering publishes the shown roadmaps, and an explanation only once switched on");
 
     const { publicResumeResponse } = await import("../src/features/portfolio/public-resume");
     // The real renderer is covered by resume.test.ts; here only what is printed and how it is served matter.
