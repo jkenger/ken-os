@@ -44,6 +44,37 @@ export const portfolioResumeSchema = z.object({
   paper: z.enum(["letter", "a4"]),
 });
 
+/** Claude's review sheet for a topic, as the site prints it. */
+export const portfolioReviewSchema = z.object({
+  points: z.array(
+    z.object({ question: z.string(), explanation: z.string(), example: z.string(), mistake: z.string() }),
+  ),
+  terms: z.array(z.object({ term: z.string(), meaning: z.string() })),
+});
+
+export const portfolioTopicSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  status: z.enum(["not_started", "in_progress", "learned", "skipped"]),
+  /** When it was marked Learned; null otherwise. */
+  learnedAt: z.string().nullable(),
+  /** Claude's latest review sheet, when there is one. */
+  review: portfolioReviewSchema.nullable(),
+  /** The owner's own explanation, word for word. Only when switched on for this topic before Publish. */
+  explanation: z.string().optional(),
+});
+
+/** The roadmaps the owner chose to show, in the order they were last opened. */
+export const portfolioEngineeringSchema = z.object({
+  roadmaps: z.array(
+    z.object({
+      goal: z.string(),
+      counts: z.object({ learned: z.number(), inProgress: z.number(), total: z.number() }),
+      chapters: z.array(z.object({ title: z.string(), area: z.string(), topics: z.array(portfolioTopicSchema) })),
+    }),
+  ),
+});
+
 export const portfolioSnapshotSchema = z.object({
   version: z.number().int().positive(),
   /** Which publication this is; goes up by one on every Publish. */
@@ -52,10 +83,15 @@ export const portfolioSnapshotSchema = z.object({
   profile: portfolioProfileSchema,
   /** Added after version 1 shipped, so snapshots published before it have none and print as Classic on Letter. */
   resume: portfolioResumeSchema.optional(),
+  /** Added after version 1 shipped (spec step 3), so older snapshots have none. */
+  engineering: portfolioEngineeringSchema.optional(),
 });
 
 export type PortfolioProfile = z.infer<typeof portfolioProfileSchema>;
 export type PortfolioResume = z.infer<typeof portfolioResumeSchema>;
+export type PortfolioReview = z.infer<typeof portfolioReviewSchema>;
+export type PortfolioTopic = z.infer<typeof portfolioTopicSchema>;
+export type PortfolioEngineering = z.infer<typeof portfolioEngineeringSchema>;
 export type PortfolioSnapshot = z.infer<typeof portfolioSnapshotSchema>;
 
 /** Checks a snapshot fetched from Loots. Unknown keys are dropped, so a newer Loots never breaks an older site. */
