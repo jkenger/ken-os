@@ -122,7 +122,7 @@ async function main() {
     assert.equal(withRoadmap.engineering.learned[0].explanation, words);
     assert.equal(withRoadmap.engineering.learned[0].shown, false, "explanations are off by default");
     assert.equal(withRoadmap.unpublishedChanges, true, "progress on a shown roadmap waits for Publish");
-    await store.publishPortfolio(userId);
+    assert.equal((await store.publishPortfolio(userId)).unpublishedChanges, false, "Publish clears the warning");
     let engineering = (await store.liveSnapshot(email.toLowerCase()))?.engineering;
     assert.equal(engineering?.roadmaps[0].chapters[0].topics[0].status, "learned");
     assert.ok(!JSON.stringify(engineering).includes(words), "the explanation stays private until switched on");
@@ -131,11 +131,38 @@ async function main() {
       store.updateSettings(userId, { topicId: "react.effects", shown: true }),
       (error: Error) => error instanceof store.PortfolioInputError && error.status === 409,
     );
-    const explained = await store.updateSettings(userId, { topicId: "react.render_model", shown: true });
-    assert.equal(explained.engineering.learned[0].shown, true);
+    const effectsWords =
+      "An effect syncs with something outside React after the render commits, and cleans up before the next.";
+    await status.reportProgress(userId, "react.effects", {
+      summary: "Explained it",
+      status: "learned",
+      evidence: { explanation: effectsWords, note: "Unaided" },
+    });
+    await Promise.all([
+      store.updateSettings(userId, { topicId: "react.render_model", shown: true }),
+      store.updateSettings(userId, { topicId: "react.effects", shown: true }),
+    ]);
+    const explained = await store.getPortfolio(userId);
+    assert.deepEqual(
+      explained.engineering.learned.map((topic) => topic.shown),
+      [true, true],
+      "two switches flipped at once both stay on",
+    );
     assert.equal(explained.unpublishedChanges, true);
+    assert.equal((await store.publishPortfolio(userId)).unpublishedChanges, false);
+    engineering = (await store.liveSnapshot(email.toLowerCase()))?.engineering;
+    assert.equal(engineering?.roadmaps[0].chapters[0].topics[0].explanation, words);
+    assert.equal(engineering?.roadmaps[0].chapters[0].topics[1].explanation, effectsWords);
+
+    await status.setStatus(userId, "react.effects", "in_progress");
+    assert.equal((await store.getPortfolio(userId)).unpublishedChanges, true);
     await store.publishPortfolio(userId);
     engineering = (await store.liveSnapshot(email.toLowerCase()))?.engineering;
+    assert.equal(
+      engineering?.roadmaps[0].chapters[0].topics[1].explanation,
+      undefined,
+      "a topic set back from Learned publishes no explanation",
+    );
     assert.equal(engineering?.roadmaps[0].chapters[0].topics[0].explanation, words);
 
     const hidden = await store.updateSettings(userId, { roadmapId, shown: false });

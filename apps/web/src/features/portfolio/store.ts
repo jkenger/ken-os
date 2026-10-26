@@ -98,8 +98,12 @@ function publishedEngineering(
   source: Awaited<ReturnType<typeof engineeringSource>>,
   settings: Settings,
 ): PortfolioEngineering {
+  // Only Learned topics have a switch on the page, so a topic set back from Learned publishes no explanation.
+  const learnedIds = new Set(source.learned.map((topic) => topic.id));
   const switchedOn = new Map(
-    [...source.explanations].filter(([topicId]) => settings.shownExplanations.includes(topicId)),
+    [...source.explanations].filter(
+      ([topicId]) => learnedIds.has(topicId) && settings.shownExplanations.includes(topicId),
+    ),
   );
   return portfolioEngineering({ roadmaps: source.shown, reviews: source.reviews, explanations: switchedOn });
 }
@@ -165,7 +169,7 @@ export async function getPortfolio(userId: string): Promise<PortfolioState> {
     profile &&
     (profileChanged ||
       (settings.updatedAt && settings.updatedAt > state.publishedAt) ||
-      JSON.stringify(state.engineering ?? { roadmaps: [] }) !== JSON.stringify(publishedEngineering(source, settings))),
+      canonical(state.engineering ?? { roadmaps: [] }) !== canonical(publishedEngineering(source, settings))),
   );
   const shape = (row?: { version: number; publishedAt: Date }) =>
     row ? { version: row.version, publishedAt: row.publishedAt.toISOString() } : null;
@@ -238,30 +242,48 @@ export async function publishPortfolio(userId: string): Promise<PortfolioState> 
 export async function updateSettings(userId: string, input: Record<string, unknown>): Promise<PortfolioState> {
   if (typeof input.shown !== "boolean" && typeof input.showEmail !== "boolean")
     throw new PortfolioInputError("Choose on or off");
-  const settings = await readSettings(userId);
-  const set: Partial<typeof portfolios.$inferInsert> = {};
-  if (typeof input.showEmail === "boolean") set.showEmail = input.showEmail;
-  else if (typeof input.roadmapId === "string") {
-    const { roadmaps, shownIds } = await engineeringSource(userId, settings);
-    if (!roadmaps.some((roadmap) => roadmap.id === input.roadmapId))
+  const on = input.shown === true;
+  let change: (saved: Settings) => Partial<typeof portfolios.$inferInsert>;
+  if (typeof input.showEmail === "boolean") {
+    const showEmail = input.showEmail;
+    change = () => ({ showEmail });
+  } else if (typeof input.roadmapId === "string") {
+    const roadmapId = input.roadmapId;
+    const { roadmaps } = await engineeringSource(userId, await readSettings(userId));
+    if (!roadmaps.some((roadmap) => roadmap.id === roadmapId))
       throw new PortfolioInputError("That roadmap isn't active", 404);
-    set.shownRoadmaps = toggle(shownIds, input.roadmapId, input.shown === true);
+    // Nothing saved yet means the roadmap opened last is shown.
+    change = (saved) => ({ shownRoadmaps: toggle(saved.shownRoadmaps ?? [roadmaps[0].id], roadmapId, on) });
   } else if (typeof input.topicId === "string") {
-    const { explanations } = await engineeringSource(userId, settings);
-    if (input.shown === true && !explanations.has(input.topicId))
-      throw new PortfolioInputError("No explanation saved", 409);
-    set.shownExplanations = toggle(settings.shownExplanations, input.topicId, input.shown === true);
+    const topicId = input.topicId;
+    const { explanations } = await engineeringSource(userId, await readSettings(userId));
+    if (on && !explanations.has(topicId)) throw new PortfolioInputError("No explanation saved", 409);
+    change = (saved) => ({ shownExplanations: toggle(saved.shownExplanations, topicId, on) });
   } else throw new PortfolioInputError("Choose a switch");
-  await db()
-    .insert(portfolios)
-    .values({ userId, ...set })
-    .onConflictDoUpdate({ target: portfolios.userId, set: { ...set, updatedAt: new Date() } });
+  await db().transaction(async (tx) => {
+    // Locks the owner's row so two switches flipped at once both keep their change to the same list.
+    await tx.insert(portfolios).values({ userId }).onConflictDoNothing();
+    const [saved] = await tx.select().from(portfolios).where(eq(portfolios.userId, userId)).for("update");
+    await tx
+      .update(portfolios)
+      .set({ ...change(saved), updatedAt: new Date() })
+      .where(eq(portfolios.userId, userId));
+  });
   return getPortfolio(userId);
 }
 
 function contactOf(saved: unknown) {
   const { contact } = normalizeProfile(saved, "import");
   return { name: contact.fullName, email: contact.email };
+}
+
+/** JSON with object keys sorted, since Postgres jsonb doesn't keep the key order a snapshot was written in. */
+function canonical(value: unknown): string {
+  return JSON.stringify(value, (_key, item: unknown) =>
+    item && typeof item === "object" && !Array.isArray(item)
+      ? Object.fromEntries(Object.entries(item).sort(([a], [b]) => a.localeCompare(b)))
+      : item,
+  );
 }
 
 const toggle = (ids: string[], id: string, on: boolean) =>
