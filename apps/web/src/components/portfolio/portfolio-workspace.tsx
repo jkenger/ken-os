@@ -158,11 +158,11 @@ export function PortfolioWorkspace({ email, portfolio }: { email: string; portfo
     <WorkspaceShell email={email} active="portfolio">
       {/* Fills the screen below the 3rem header so the footer sits at the bottom, not under short content. */}
       <div className="flex min-h-[calc(100svh-3rem)] flex-col">
-        <div className="mx-auto w-full max-w-5xl px-3.5 pt-5 pb-10 text-sm md:px-7 md:pt-7 md:pb-12">
-          <div className="flex flex-col gap-5">
+        <div className="mx-auto w-full max-w-5xl px-page pt-page pb-section text-sm">
+          <div className="flex flex-col gap-block">
             <div className="block items-end justify-between gap-6 md:flex">
               <div className="min-w-0">
-                <h1 className="font-heading text-3xl leading-none font-bold tracking-tight">Portfolio</h1>
+                <h1 className="font-heading text-2xl leading-tight font-semibold tracking-tight">Portfolio</h1>
                 {state.contact?.name && <p className="mt-2 text-muted-foreground">{state.contact.name}</p>}
               </div>
               <dl className="mt-3.5 grid shrink-0 grid-cols-[auto_auto] justify-start gap-x-3.5 gap-y-1 text-[13px] md:mt-0">

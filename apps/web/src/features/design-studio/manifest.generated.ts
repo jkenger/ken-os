@@ -2405,27 +2405,27 @@ export const studioManifest: StudioManifest = {
   "theme": [
     {
       "name": "card",
-      "light": "oklch(0.995 0.001 265)",
+      "light": "oklch(1 0 0)",
       "dark": "oklch(0.235 0.005 265)"
     },
     {
       "name": "card-foreground",
-      "light": "oklch(0.22 0.005 265)",
+      "light": "oklch(0.2 0.008 265)",
       "dark": "oklch(0.93 0.004 100)"
     },
     {
       "name": "popover",
-      "light": "oklch(0.995 0.001 265)",
+      "light": "oklch(1 0 0)",
       "dark": "oklch(0.255 0.006 265)"
     },
     {
       "name": "popover-foreground",
-      "light": "oklch(0.22 0.005 265)",
+      "light": "oklch(0.2 0.008 265)",
       "dark": "oklch(0.93 0.004 100)"
     },
     {
       "name": "primary",
-      "light": "oklch(0.22 0.005 265)",
+      "light": "oklch(0.2 0.008 265)",
       "dark": "oklch(0.93 0.004 100)"
     },
     {
@@ -2435,32 +2435,32 @@ export const studioManifest: StudioManifest = {
     },
     {
       "name": "secondary",
-      "light": "oklch(0.945 0.003 265)",
+      "light": "oklch(0.94 0.006 258)",
       "dark": "oklch(0.275 0.006 265)"
     },
     {
       "name": "secondary-foreground",
-      "light": "oklch(0.22 0.005 265)",
+      "light": "oklch(0.2 0.008 265)",
       "dark": "oklch(0.93 0.004 100)"
     },
     {
       "name": "muted",
-      "light": "oklch(0.945 0.003 265)",
+      "light": "oklch(0.94 0.006 258)",
       "dark": "oklch(0.275 0.006 265)"
     },
     {
       "name": "muted-foreground",
-      "light": "oklch(0.48 0.008 265)",
+      "light": "oklch(0.47 0.012 260)",
       "dark": "oklch(0.74 0.006 100)"
     },
     {
       "name": "accent",
-      "light": "oklch(0.925 0.004 265)",
+      "light": "oklch(0.925 0.007 258)",
       "dark": "oklch(0.3 0.007 265)"
     },
     {
       "name": "accent-foreground",
-      "light": "oklch(0.22 0.005 265)",
+      "light": "oklch(0.2 0.008 265)",
       "dark": "oklch(0.93 0.004 100)"
     },
     {
@@ -2470,12 +2470,12 @@ export const studioManifest: StudioManifest = {
     },
     {
       "name": "border",
-      "light": "oklch(0.885 0.004 265)",
+      "light": "oklch(0.905 0.007 258)",
       "dark": "oklch(0.33 0.008 265)"
     },
     {
       "name": "input",
-      "light": "oklch(0.885 0.004 265)",
+      "light": "oklch(0.86 0.008 258)",
       "dark": "oklch(0.33 0.008 265)"
     },
     {
@@ -2510,22 +2510,22 @@ export const studioManifest: StudioManifest = {
     },
     {
       "name": "radius",
-      "light": "0.25rem"
+      "light": "0.375rem"
     },
     {
       "name": "sidebar",
-      "light": "oklch(0.955 0.003 265)",
-      "dark": "oklch(0.18 0.004 265)"
+      "light": "oklch(0.968 0.005 255)",
+      "dark": "oklch(0.205 0.004 265)"
     },
     {
       "name": "sidebar-foreground",
-      "light": "oklch(0.22 0.005 265)",
+      "light": "oklch(0.2 0.008 265)",
       "dark": "oklch(0.93 0.004 100)"
     },
     {
       "name": "sidebar-primary",
-      "light": "oklch(0.22 0.005 265)",
-      "dark": "oklch(0.93 0.004 100)"
+      "light": "oklch(0.52 0.16 262)",
+      "dark": "oklch(0.76 0.11 262)"
     },
     {
       "name": "sidebar-primary-foreground",
@@ -2534,17 +2534,17 @@ export const studioManifest: StudioManifest = {
     },
     {
       "name": "sidebar-accent",
-      "light": "oklch(0.915 0.004 265)",
+      "light": "oklch(0.925 0.007 258)",
       "dark": "oklch(0.275 0.006 265)"
     },
     {
       "name": "sidebar-accent-foreground",
-      "light": "oklch(0.2 0.005 265)",
+      "light": "oklch(0.2 0.008 265)",
       "dark": "oklch(0.96 0.003 100)"
     },
     {
       "name": "sidebar-border",
-      "light": "oklch(0.885 0.004 265)",
+      "light": "oklch(0.905 0.007 258)",
       "dark": "oklch(0.3 0.007 265)"
     },
     {
@@ -2554,12 +2554,12 @@ export const studioManifest: StudioManifest = {
     },
     {
       "name": "background",
-      "light": "oklch(0.975 0.002 265)",
+      "light": "oklch(0.968 0.005 255)",
       "dark": "oklch(0.205 0.004 265)"
     },
     {
       "name": "foreground",
-      "light": "oklch(0.22 0.005 265)",
+      "light": "oklch(0.2 0.008 265)",
       "dark": "oklch(0.93 0.004 100)"
     },
     {
@@ -2643,6 +2643,18 @@ export const studioManifest: StudioManifest = {
       "dark": "var(--muted)"
     },
     {
+      "name": "page",
+      "light": "1.25rem"
+    },
+    {
+      "name": "block",
+      "light": "1rem"
+    },
+    {
+      "name": "section",
+      "light": "2rem"
+    },
+    {
       "name": "selected",
       "light": "var(--ring)",
       "dark": "var(--ring)"
@@ -2670,7 +2682,7 @@ export const studioManifest: StudioManifest = {
   ],
   "globals": {
     "file": "app/globals.css",
-    "lines": 360,
+    "lines": 376,
     "tail": [
       ".font-mono {",
       "  font-variant-numeric: tabular-nums;",

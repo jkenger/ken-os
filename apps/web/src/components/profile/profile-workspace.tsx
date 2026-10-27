@@ -323,8 +323,8 @@ export function ProfileWorkspace({
     >
       <div className="flex min-w-0 items-start">
         <div className="min-w-0 flex-1">
-          <div className="mx-auto max-w-5xl px-3.5 pt-5 pb-10 text-sm md:px-7 md:pt-7 md:pb-12">
-            <div className="flex flex-col gap-5">
+          <div className="mx-auto max-w-5xl px-page pt-page pb-section text-sm">
+            <div className="flex flex-col gap-block">
               <ProfileHeading
                 fullName={fullName}
                 headline={headline}

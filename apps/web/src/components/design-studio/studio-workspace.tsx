@@ -282,7 +282,7 @@ export function StudioWorkspace({
     <WorkspaceShell email={email} active="studio">
       <style>{draftStyles(drafts, manifest.components, manifest.theme)}</style>
       <div className="flex flex-col xl:h-[calc(100svh-49px)]">
-        <div className="flex shrink-0 items-center justify-between gap-4 border-b px-4 py-4 lg:h-16 lg:py-0">
+        <div className="flex shrink-0 items-center justify-between gap-4 border-b px-page py-4 lg:h-16 lg:py-0">
           <h1 className="font-heading text-2xl font-semibold tracking-tight">Design Studio</h1>
           <div className="flex items-center gap-2">
             {wide && !docked && (
