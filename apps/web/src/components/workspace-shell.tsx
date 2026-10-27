@@ -185,8 +185,9 @@ function ModuleSearch() {
   );
 }
 
-/** Modules too wide for a labelled sidebar: they open with it folded to icons. Ctrl or Cmd + B unfolds it. */
-const wideModules: Module[] = ["studio", "lab"];
+/** Modules too wide for a labelled sidebar: they open with it folded to icons. Ctrl or Cmd + B unfolds it. Profile is
+ *  one since 28 Oct 2026: its three columns need the width. */
+const wideModules: Module[] = ["studio", "lab", "profile"];
 
 /** The open module's sections, nested under it in the sidebar. A module with one section has nothing to nest. */
 function SectionList({ sections, onPick }: { sections: Section[]; onPick?: () => void }) {
@@ -288,11 +289,22 @@ function ShellSidebar({
 
 /** The content beside the sidebar: a 48px header with the sidebar toggle, breadcrumb, date, search and sign out, then
  *  the page. The sections show as a row of tabs only while the sidebar can't show them (folded, or on a phone); the
- *  row wraps rather than scrolls, so no tab is cut off at the screen's edge. */
-function ShellInset({ title, sections, children }: { title: string; sections: Section[]; children: ReactNode }) {
+ *  row wraps rather than scrolls, so no tab is cut off at the screen's edge. A page with its own section index turns
+ *  the row off. */
+function ShellInset({
+  title,
+  sections,
+  tabs,
+  children,
+}: {
+  title: string;
+  sections: Section[];
+  tabs: boolean;
+  children: ReactNode;
+}) {
   const { open, isMobile } = useSidebar();
   const currentSection = sections.find((section) => section.selected);
-  const sectionTabs = sections.length > 1 && (isMobile || !open);
+  const sectionTabs = tabs && sections.length > 1 && (isMobile || !open);
   return (
     // Flush against the sidebar on one ground, split by a 1px seam.
     <SidebarInset className="min-w-0 md:min-h-svh md:border-l">
@@ -367,11 +379,13 @@ function ShellInset({ title, sections, children }: { title: string; sections: Se
     </SidebarInset>
   );
 }
+
 export function WorkspaceShell({
   email,
   active,
   children,
   termLookup = true,
+  sectionTabs = true,
   tab,
   sectionCounts,
 }: {
@@ -379,6 +393,8 @@ export function WorkspaceShell({
   active: Module;
   children: ReactNode;
   termLookup?: boolean;
+  /** False when the page carries its own section index, so the folded shell doesn't repeat it as a row of tabs. */
+  sectionTabs?: boolean;
   tab?: EngineeringTab;
   /** A count beside a section in the sidebar, by the section's href, as Profile's "Details 9". */
   sectionCounts?: Record<string, number>;
@@ -423,7 +439,7 @@ export function WorkspaceShell({
         className="min-h-screen bg-sidebar font-sans text-foreground"
       >
         <ShellSidebar email={email} active={active} moduleList={modules} sections={sections} />
-        <ShellInset title={detail.title} sections={sections}>
+        <ShellInset title={detail.title} sections={sections} tabs={sectionTabs}>
           {content}
         </ShellInset>
       </SidebarProvider>

@@ -135,7 +135,8 @@ function CommaList({
 /** Dates are typed as 2024-03, or 2024 alone: a month picker can't show a bare year, which imports often have. */
 const MONTH_HINT = "2024-03";
 
-/** The one section to show, when the form sits in the Profile's side panel; null shows every section as a card. */
+/** The one section to show, when the form sits inside that section's panel on Profile; null shows every section as a
+ *  card. */
 const OnlySection = createContext<string | null>(null);
 
 function Section({
@@ -154,9 +155,10 @@ function Section({
   const only = useContext(OnlySection);
   if (only) {
     if (only !== id) return null;
-    // The panel already shows the title, so only the description and action stay above the fields.
+    // The section's own panel shows the title and owns the anchor, so only the description and action stay above the
+    // fields.
     return (
-      <div id={id} className="@container flex flex-col gap-4 p-4">
+      <div className="@container flex flex-col gap-4">
         {(description || action) && (
           <div className="flex min-h-8 items-center justify-between gap-3">
             <p className="text-sm text-muted-foreground">{description}</p>
@@ -236,7 +238,7 @@ export function DetailsForm({
 }: {
   details: ProfileDetails;
   edit: Edit;
-  /** Show just this section, without its card, as the Profile's side panel does. */
+  /** Show just this section, without its card, as Profile's in-place editing does. */
   only?: string | null;
 }) {
   const { contact, local } = details;
