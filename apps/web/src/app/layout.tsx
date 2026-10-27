@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Instrument_Sans } from "next/font/google";
 import { cn } from "cn";
+import { InlineScript } from "@/components/inline-script";
 import "./globals.css";
 
 // One face for the whole console (DESIGN.md): Instrument Sans for headings and text, loaded once and named twice so
@@ -35,7 +36,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       )}
     >
       <head>
-        <script dangerouslySetInnerHTML={{ __html: systemTheme }} />
+        <InlineScript html={systemTheme} />
       </head>
       <body>{children}</body>
     </html>
