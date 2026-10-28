@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AlertCircle, FileDown } from "lucide-react";
-import { IconChevronRight, IconFlask, IconMapPin } from "@tabler/icons-react";
+import { IconChevronRight, IconFlask } from "@tabler/icons-react";
 import { applyAutofill, autofillChanges, PDF_MIME, type AutofillChange, type ProfileDetails } from "@ken-os/domain";
 import type { PortfolioProfile } from "@ken-os/portfolio";
-import { DockedPanel, useDocked } from "@/components/docked-panel";
+import { DockedPanel } from "@/components/docked-panel";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,7 @@ import { toast } from "@/components/ui/toaster";
 import { panel } from "@/components/surfaces";
 import { isLedgerSection, ledgerRows, type LedgerSectionId } from "@/features/profile/ledger";
 import type { ResumeFile } from "@/features/profile/resume-files-store";
+import { reviewProfile } from "@/features/profile/review";
 import type { ProfileState } from "@/features/profile/store";
 import { send } from "@/lib/api-client";
 import { cn } from "@/lib/utils";
@@ -25,19 +26,35 @@ import { AutofillReview } from "./autofill-review";
 import { ConfirmDialog } from "./confirm-dialog";
 import { shortDate } from "./dates";
 import { DetailsForm } from "./details-form";
-import { LedgerList, PublicResumeBar, StateBadge } from "./profile-ledger";
+import { PublicResumeBar } from "./profile-ledger";
+import { ProfileHeader, ReviewPanel, SectionIndex } from "./profile-overview";
+import { MoreSections, OPTIONAL_SECTIONS, SectionPanel, SectionView } from "./profile-sections";
 import { ResumeFiles } from "./resume-files";
 import { RewritePanel } from "./rewrite-panel";
 
-// Profile: the owner's career details as a ledger of sections, each opening its form in the side panel, then the uploaded
-// resumes. Spec: docs/product/profile-resume.md; layout: docs/mockups/profile.md, direction A.
+// Profile in three columns: the section index on the left, the details readable in place in the centre (each section
+// edits in its own panel, one Save for all), and the resumes and public resume on the right. Autofill's review takes
+// over the right column while it's open. Spec: docs/product/profile-resume.md.
 
-/** What the live Portfolio holds, for the public resume bar and each section's Published or Changed state. */
+/** What the live Portfolio holds, for the public resume block and each section's Published or Changed state. */
 export interface ProfilePublic {
   live: { version: number; publishedAt: string } | null;
   /** The live snapshot's profile; null when nothing is live. */
   profile: PortfolioProfile | null;
   showEmail: boolean;
+}
+
+/** True from 1024px, where the right column sits beside the centre instead of under it. */
+function useBeside() {
+  const [beside, setBeside] = useState(false);
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 1024px)");
+    const update = () => setBeside(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
+  }, []);
+  return beside;
 }
 
 /** One line per Engineering roadmap: the goal and how many topics are learned, linking to that roadmap. */
@@ -48,55 +65,16 @@ function EngineeringSummary({ roadmapId, headline, detail }: EngineeringLine) {
       aria-label={`Engineering, ${headline}, ${detail}`}
       className={cn(
         panel,
-        "flex items-center gap-3 px-3.5 py-3 transition-colors hover:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+        "flex items-center gap-3 px-5 py-4 transition-colors hover:bg-muted/50 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
       )}
     >
       <IconFlask size={18} aria-hidden="true" className="shrink-0" />
       <div className="min-w-0 flex-1">
-        <p className="truncate font-semibold">{headline}</p>
-        <p className="text-sm text-muted-foreground">{detail}</p>
+        <p className="truncate font-medium">{headline}</p>
+        <p className="text-muted-foreground">{detail}</p>
       </div>
       <IconChevronRight size={14} aria-hidden="true" className="text-muted-foreground" />
     </Link>
-  );
-}
-
-/** The page head from the Ledger mockup: the title over who the Profile is, and the Saved and Public facts beside it. */
-function ProfileHeading({
-  fullName,
-  headline,
-  place,
-  savedAt,
-  live,
-}: {
-  fullName: string;
-  headline: string;
-  place: string;
-  savedAt: string | null;
-  live: ProfilePublic["live"];
-}) {
-  return (
-    <div className="block items-end justify-between gap-6 md:flex">
-      <div className="min-w-0">
-        <h1 className="font-heading text-3xl leading-none font-bold tracking-tight">Profile</h1>
-        <p className="mt-2 flex flex-wrap gap-x-3.5 gap-y-1 text-muted-foreground">
-          {fullName && <span>{fullName}</span>}
-          {headline && <span>{headline}</span>}
-          {place && (
-            <span className="inline-flex items-center gap-1.25">
-              <IconMapPin size={14} aria-hidden="true" />
-              {place}
-            </span>
-          )}
-        </p>
-      </div>
-      <dl className="mt-3.5 grid shrink-0 grid-cols-[auto_auto] justify-start gap-x-3.5 gap-y-1 text-[13px] md:mt-0">
-        <dt className="text-muted-foreground">Saved</dt>
-        <dd>{savedAt ? shortDate(savedAt) : "Not saved"}</dd>
-        <dt className="text-muted-foreground">Public</dt>
-        <dd>{live ? `Version ${live.version}, ${shortDate(live.publishedAt)}` : "Not published"}</dd>
-      </dl>
-    </div>
   );
 }
 
@@ -109,7 +87,7 @@ export function ProfileWorkspace({
   initialSection = null,
 }: {
   email: string;
-  /** The section open on load, from `?section=`, so a refresh or a shared link keeps it. */
+  /** The section being edited on load, from `?section=`, so a refresh or a shared link keeps it. */
   initialSection?: LedgerSectionId | null;
   published: ProfilePublic;
   profile: ProfileState;
@@ -126,7 +104,7 @@ export function ProfileWorkspace({
   const [formVersion, setFormVersion] = useState(0);
   /** The accepted Autofill in the form, until it's saved or discarded. */
   const [review, setReview] = useState<{ importId: string; fileName: string; fileId: string } | null>(null);
-  /** The Autofill open in the side panel, before any of it reaches the form. */
+  /** The Autofill open in the right column, before any of it reaches the form. */
   const [autofill, setAutofill] = useState<{
     file: ResumeFile;
     importId: string;
@@ -142,22 +120,23 @@ export function ProfileWorkspace({
   latest.current = details;
   const [saving, setSaving] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
+  /** The section whose form is open in its panel. */
   const [opened, setOpened] = useState<LedgerSectionId | null>(initialSection);
   const [confirmDiscard, setConfirmDiscard] = useState(false);
   const [files, setFiles] = useState(resumes);
-  const docked = useDocked();
+  const beside = useBeside();
   const rows = useMemo(
     () => ledgerRows(details, saved, published.profile, { showEmail: published.showEmail }),
     [details, saved, published],
   );
-  const openRow = rows.find((row) => row.id === opened) ?? null;
+  const issues = useMemo(() => reviewProfile(details), [details]);
+  const issuesIn = (id: LedgerSectionId) => issues.filter((issue) => issue.section === id).length;
   const changed = JSON.stringify(details) !== JSON.stringify(saved);
-  const { fullName, headline, city, country } = saved.contact;
   // An accepted Autofill can always be saved, even when it matched what was there, so it's marked applied.
   const canSave = changed || savedAt === null || review !== null;
 
-  // The open section lives in `?section=`: opening one adds a history entry, so Back closes the panel (the phone's
-  // sheet above all) instead of leaving Profile, and a refresh reopens it. Only the address changes; no navigation.
+  // The open section lives in `?section=`: opening one adds a history entry, so Back closes its form instead of leaving
+  // Profile, and a refresh reopens it. Only the address changes; no navigation.
   const openSection = useCallback((id: LedgerSectionId) => {
     const url = new URL(window.location.href);
     const wasOpen = url.searchParams.has("section");
@@ -180,8 +159,8 @@ export function ProfileWorkspace({
     }
   }, []);
 
-  // The address decides the panel, whatever changed it: Back, a section link in the sidebar (Next navigates in place, so
-  // no popstate fires) or the pushState above, which Next also reports through useSearchParams.
+  // The address decides which form is open, whatever changed it: Back, a link, or the pushState above, which Next also
+  // reports through useSearchParams.
   const searchParams = useSearchParams();
   const addressSection = searchParams.get("section");
   useEffect(() => {
@@ -189,6 +168,11 @@ export function ProfileWorkspace({
     setOpened(section);
     if (section) setAutofill(null);
   }, [addressSection]);
+
+  // An opened section scrolls to the top of the screen, so its form is in view wherever it was opened from.
+  useEffect(() => {
+    if (opened) document.getElementById(opened)?.scrollIntoView({ block: "start", behavior: "smooth" });
+  }, [opened]);
 
   // One Save covers every section, so leaving with unsaved edits asks first: a reload or tab close through
   // beforeunload, and a link to another page in the app, which Next follows without unloading, through a click guard.
@@ -230,7 +214,7 @@ export function ProfileWorkspace({
     setFormVersion((version) => version + 1);
   }
 
-  /** Claude reads the file; what it found opens in the side panel, every change picked. */
+  /** Claude reads the file; what it found opens in the right column, every change picked. */
   async function startAutofill(file: ResumeFile) {
     setAutofilling(file.id);
     setProblem(null);
@@ -293,151 +277,168 @@ export function ProfileWorkspace({
     }
   }
 
-  const saveBar = (
-    <div className="flex items-center justify-end gap-2 px-3 py-3 md:px-5">
-      <span className="mr-auto text-sm text-muted-foreground">
-        {review
-          ? "Autofill not saved"
-          : unsavedSections
-            ? `${unsavedSections} ${unsavedSections === 1 ? "section" : "sections"} unsaved`
-            : savedAt
-              ? `Saved ${shortDate(savedAt)}`
-              : "Not saved"}
-      </span>
-      {unsaved && (
-        <Button type="button" variant="ghost" onClick={() => setConfirmDiscard(true)} disabled={saving}>
-          {unsavedSections > 1 || review ? "Discard all" : "Discard"}
-        </Button>
-      )}
-      <Button type="button" onClick={save} disabled={saving || !canSave}>
-        {saving ? "Saving…" : "Save"}
-      </Button>
-    </div>
+  const formFor = (id: LedgerSectionId) => (
+    <DetailsForm key={`${formVersion}-${id}`} details={details} edit={edit} only={id} />
   );
+  // ledgerRows always returns Contact first; the header is that row.
+  const [contactRow, ...sectionRows] = rows;
+  const shownRows = sectionRows.filter(
+    (row) => !OPTIONAL_SECTIONS.includes(row.id) || row.count > 0 || row.state === "unsaved" || opened === row.id,
+  );
+  const waitingRows = sectionRows.filter((row) => !shownRows.includes(row));
+
+  const autofillTitle = autofill && (
+    <>
+      <Badge variant="secondary">Autofill</Badge>
+      <Badge variant="outline">{autofill.file.contentType === PDF_MIME ? "PDF" : "DOCX"}</Badge>
+    </>
+  );
+  const autofillFacts = autofill && (
+    <dl className="mt-2.5 grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-1 text-sm">
+      <dt className="text-muted-foreground">Uploaded</dt>
+      <dd>{shortDate(autofill.file.uploadedAt)}</dd>
+      <dt className="text-muted-foreground">Changes</dt>
+      <dd>
+        {autofill.changes.length
+          ? `${autofill.changes.length}, ${picked.length} selected`
+          : "None, every field matches"}
+      </dd>
+    </dl>
+  );
+  const autofillBody = autofill && (
+    <>
+      <AutofillReview
+        changes={autofill.changes}
+        matches={autofill.matches}
+        selected={picked}
+        onToggle={(id, on) => setPicked((current) => (on ? [...current, id] : current.filter((item) => item !== id)))}
+      />
+      <div className="sticky bottom-0 mt-auto flex items-center justify-end gap-2 border-t bg-card px-5 py-3">
+        {autofill.changes.length > 0 && (
+          <span className="mr-auto text-sm text-muted-foreground">
+            {picked.length} of {autofill.changes.length}
+          </span>
+        )}
+        <Button type="button" variant="ghost" onClick={() => setAutofill(null)}>
+          {autofill.changes.length ? "Discard" : "Close"}
+        </Button>
+        {autofill.changes.length > 0 && (
+          <Button type="button" onClick={acceptAutofill} disabled={!picked.length}>
+            Accept {picked.length} {picked.length === 1 ? "change" : "changes"}
+          </Button>
+        )}
+      </div>
+    </>
+  );
+
+  let right: ReactNode;
+  if (autofill && beside) {
+    right = (
+      <section aria-labelledby="autofill-title" className={cn(panel, "flex flex-col overflow-hidden")}>
+        <div className="border-b p-5">
+          <div className="flex items-center gap-2">{autofillTitle}</div>
+          <h2 id="autofill-title" className="mt-2 truncate font-heading text-base font-semibold">
+            {autofill.file.fileName}
+          </h2>
+          {autofillFacts}
+        </div>
+        {autofillBody}
+      </section>
+    );
+  } else {
+    right = (
+      <>
+        <ResumeFiles
+          files={files}
+          setFiles={setFiles}
+          reviewing={autofill?.file.id ?? review?.fileId ?? null}
+          autofilling={autofilling}
+          pending={review?.fileName ?? null}
+          onAutofill={(file) => void startAutofill(file)}
+        />
+        <PublicResumeBar live={published.live} changed={rows.filter((row) => row.publishChanges).length} />
+        {engineering?.map((line) => (
+          <EngineeringSummary key={line.roadmapId ?? "path"} {...line} />
+        ))}
+      </>
+    );
+  }
 
   return (
     <WorkspaceShell
       email={email}
       active="profile"
+      sectionTabs={false}
       sectionCounts={{ "/profile": rows.length, "/profile#resumes": files.length }}
     >
-      <div className="flex min-w-0 items-start">
-        <div className="min-w-0 flex-1">
-          <div className="mx-auto max-w-5xl px-page pt-page pb-section text-sm">
-            <div className="flex flex-col gap-block">
-              <ProfileHeading
-                fullName={fullName}
-                headline={headline}
-                place={[city, country].filter(Boolean).join(", ")}
-                savedAt={savedAt}
-                live={published.live}
-              />
-              {review && (
-                <Alert>
-                  <FileDown />
-                  <AlertTitle>Autofill from {review.fileName}. Not saved yet</AlertTitle>
-                </Alert>
-              )}
-              {problem && (
-                <Alert variant="destructive">
-                  <AlertCircle />
-                  <AlertTitle>{problem}</AlertTitle>
-                </Alert>
-              )}
+      <div className="px-page pt-page pb-section text-sm">
+        {/* At 1440 with the shell folded: 200 index + 16 + centre + 16 + 320 right fills the 1344px canvas. */}
+        <div className="mx-auto grid max-w-336 items-start gap-block lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[12.5rem_minmax(0,1fr)_20rem]">
+          <aside className="sticky top-page hidden xl:block">
+            <SectionIndex rows={rows} issues={issues} />
+          </aside>
 
-              <PublicResumeBar live={published.live} changed={rows.filter((row) => row.publishChanges).length} />
-              <LedgerList rows={rows} opened={opened} onOpen={openSection} />
-              <ResumeFiles
-                files={files}
-                setFiles={setFiles}
-                reviewing={autofill?.file.id ?? review?.fileId ?? null}
-                autofilling={autofilling}
-                pending={review?.fileName ?? null}
-                onAutofill={(file) => void startAutofill(file)}
-              />
-              {engineering?.map((line) => (
-                <EngineeringSummary key={line.roadmapId ?? "path"} {...line} />
-              ))}
-              <RewritePanel key={`rewrite-${formVersion}`} details={details} setDetails={setDetails} />
-            </div>
-          </div>
-        </div>
-
-        {autofill ? (
-          <DockedPanel
-            open
-            docked={docked}
-            onClose={() => setAutofill(null)}
-            closeLabel="Close Autofill"
-            badges={
-              <>
-                <Badge variant="secondary">Autofill</Badge>
-                <Badge variant="outline">{autofill.file.contentType === PDF_MIME ? "PDF" : "DOCX"}</Badge>
-              </>
-            }
-            title={autofill.file.fileName}
-            descriptionFallback="Changes from this resume"
-            facts={
-              <dl className="mt-2.5 grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-1 text-[13px]">
-                <dt className="text-muted-foreground">Uploaded</dt>
-                <dd>{shortDate(autofill.file.uploadedAt)}</dd>
-                <dt className="text-muted-foreground">Changes</dt>
-                <dd>
-                  {autofill.changes.length
-                    ? `${autofill.changes.length}, ${picked.length} selected`
-                    : "None, every field matches"}
-                </dd>
-              </dl>
-            }
-          >
-            <AutofillReview
-              changes={autofill.changes}
-              matches={autofill.matches}
-              selected={picked}
-              onToggle={(id, on) =>
-                setPicked((current) => (on ? [...current, id] : current.filter((item) => item !== id)))
-              }
+          <div className="flex min-w-0 flex-col gap-block">
+            {review && (
+              <Alert>
+                <FileDown />
+                <AlertTitle>Autofill from {review.fileName}. Not saved yet</AlertTitle>
+              </Alert>
+            )}
+            {problem && (
+              <Alert variant="destructive">
+                <AlertCircle />
+                <AlertTitle>{problem}</AlertTitle>
+              </Alert>
+            )}
+            <ProfileHeader
+              contact={details.contact}
+              row={contactRow}
+              issues={issuesIn("contact")}
+              savedAt={savedAt}
+              live={published.live}
+              editing={opened === "contact"}
+              onEdit={() => openSection("contact")}
+              onDone={closeSection}
+              form={formFor("contact")}
             />
-            <div className="sticky bottom-0 mt-auto flex items-center justify-end gap-2 border-t bg-card px-3 py-3 md:px-5">
-              {autofill.changes.length > 0 && (
-                <span className="mr-auto text-sm text-muted-foreground">
-                  {picked.length} of {autofill.changes.length}
-                </span>
-              )}
-              <Button type="button" variant="ghost" onClick={() => setAutofill(null)}>
-                {autofill.changes.length ? "Discard" : "Close"}
-              </Button>
-              {autofill.changes.length > 0 && (
-                <Button type="button" onClick={acceptAutofill} disabled={!picked.length}>
-                  Accept {picked.length} {picked.length === 1 ? "change" : "changes"}
-                </Button>
-              )}
-            </div>
-          </DockedPanel>
-        ) : (
-          <DockedPanel
-            open={openRow !== null}
-            docked={docked}
-            onClose={closeSection}
-            closeLabel="Close section"
-            badges={openRow && <StateBadge state={openRow.state} />}
-            title={openRow?.title ?? ""}
-            descriptionFallback="Section details"
-          >
-            <DetailsForm key={formVersion} details={details} edit={edit} only={opened} />
-            {/* The panel carries Save and its error, docked or as a sheet, so the page needs no Save bar while it's open. */}
-            <div className="sticky bottom-0 mt-auto border-t bg-card">
-              {problem && (
-                <Alert variant="destructive" className="mx-3 mt-3 w-auto md:mx-5">
-                  <AlertCircle />
-                  <AlertTitle>{problem}</AlertTitle>
-                </Alert>
-              )}
-              {saveBar}
-            </div>
-          </DockedPanel>
-        )}
+            <ReviewPanel issues={issues} rows={rows} onOpen={openSection} />
+            <RewritePanel key={`rewrite-${formVersion}`} details={details} setDetails={setDetails} />
+            {shownRows.map((row) => (
+              <SectionPanel
+                key={row.id}
+                row={row}
+                issues={issuesIn(row.id)}
+                editing={opened === row.id}
+                onEdit={() => openSection(row.id)}
+                onDone={closeSection}
+                form={formFor(row.id)}
+              >
+                <SectionView id={row.id} details={details} />
+              </SectionPanel>
+            ))}
+            <MoreSections rows={waitingRows} onAdd={openSection} />
+          </div>
+
+          <div className="flex min-w-0 flex-col gap-block">{right}</div>
+        </div>
       </div>
+
+      {/* Below 1024px the right column sits under the centre, so Autofill's review opens as a sheet instead. */}
+      {!beside && (
+        <DockedPanel
+          open={autofill !== null}
+          docked={false}
+          onClose={() => setAutofill(null)}
+          closeLabel="Close Autofill"
+          badges={autofillTitle}
+          title={autofill?.file.fileName ?? ""}
+          descriptionFallback="Changes from this resume"
+          facts={autofillFacts}
+        >
+          {autofillBody}
+        </DockedPanel>
+      )}
 
       <ConfirmDialog
         open={confirmDiscard}
@@ -452,10 +453,28 @@ export function ProfileWorkspace({
         onConfirm={discard}
       />
 
-      {/* With no section open, a Save bar shows only when there is something to save (an Autofill, a rewrite). */}
-      {canSave && openRow === null && !autofill && (
+      {/* One Save bar for the whole page: it shows while a form is open or there is something to save. */}
+      {(canSave || opened !== null) && (
         <div className="sticky bottom-0 z-10 border-t bg-background/95 backdrop-blur">
-          <div className="mx-auto max-w-5xl">{saveBar}</div>
+          <div className="flex items-center justify-end gap-2 px-page py-3">
+            <span className="mr-auto text-sm text-muted-foreground">
+              {review
+                ? "Autofill not saved"
+                : unsavedSections
+                  ? `${unsavedSections} ${unsavedSections === 1 ? "section" : "sections"} unsaved`
+                  : savedAt
+                    ? `Saved ${shortDate(savedAt)}`
+                    : "Not saved"}
+            </span>
+            {unsaved && (
+              <Button type="button" variant="ghost" onClick={() => setConfirmDiscard(true)} disabled={saving}>
+                {unsavedSections > 1 || review ? "Discard all" : "Discard"}
+              </Button>
+            )}
+            <Button type="button" onClick={save} disabled={saving || !canSave}>
+              {saving ? "Saving…" : "Save"}
+            </Button>
+          </div>
         </div>
       )}
     </WorkspaceShell>

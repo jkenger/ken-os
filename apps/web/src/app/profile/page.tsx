@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { ProfileWorkspace } from "@/components/profile/profile-workspace";
 import { listResumeFiles } from "@/features/profile/resume-files-store";
 import { isLedgerSection } from "@/features/profile/ledger";
@@ -7,6 +8,8 @@ import { engineeringSummary } from "@/features/engineering-lab/roadmap-store";
 import { requireSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = { title: "Profile · KEOS" };
 
 export default async function ProfilePage({
   searchParams,
