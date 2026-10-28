@@ -14,7 +14,6 @@ import {
   Library,
   Search,
   Sparkles,
-  Upload,
   UserRound,
   X,
 } from "lucide-react";
@@ -73,14 +72,8 @@ const moduleDetails: Record<
     sections: { label: string; href: string; icon: typeof FileText }[];
   }
 > = {
-  profile: {
-    title: "Profile",
-    sections: [
-      { label: "Details", href: "/profile", icon: UserRound },
-      { label: "Resumes", href: "/profile#resumes", icon: Upload },
-      { label: "Resume", href: "/profile/resume", icon: FileText },
-    ],
-  },
+  // No sub-items: Profile's page carries its own section index.
+  profile: { title: "Profile", sections: [] },
   portfolio: { title: "Portfolio", sections: [{ label: "Publish", href: "/portfolio", icon: Globe }] },
   memory: {
     title: "Project Memory",
@@ -395,7 +388,7 @@ export function WorkspaceShell({
   /** False when the page carries its own section index, so the folded shell doesn't repeat it as a row of tabs. */
   sectionTabs?: boolean;
   tab?: EngineeringTab;
-  /** A count beside a section in the sidebar, by the section's href, as Profile's "Details 9". */
+  /** A count beside a section in the sidebar, by the section's href. */
   sectionCounts?: Record<string, number>;
 }) {
   const detail = moduleDetails[active];

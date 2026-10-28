@@ -444,12 +444,7 @@ export function ProfileWorkspace({
   }
 
   return (
-    <WorkspaceShell
-      email={email}
-      active="profile"
-      sectionTabs={false}
-      sectionCounts={{ "/profile": rows.length, "/profile#resumes": files.length }}
-    >
+    <WorkspaceShell email={email} active="profile">
       <div className="px-page pt-page pb-section text-sm">
         {/* At 1440 with the shell folded: 200 index + 16 + centre + 16 + 320 right fills the 1344px canvas. */}
         <div className="mx-auto grid max-w-336 items-start gap-block lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[12.5rem_minmax(0,1fr)_20rem]">
