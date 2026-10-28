@@ -62,6 +62,52 @@ involved because the checker never signs in. The owner decides whether to build 
 
 This is also the fastest source: 30 minutes at most, against hours for the alert emails.
 
+## Existing tools
+
+Checked 28 Oct 2026. Jobs stays in Loots: no open tool reads the Profile, sends instant alerts, or covers OnlineJobs.
+
+| Tool                                                     | What it is                                                                                                                                                            | License                    |
+| -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------- |
+| [JobOps](https://github.com/DaKheera47/job-ops)          | Self-hosted Next.js app: searches about 13 boards, AI fit score 0 to 100, tailored CVs, application tracker, reads Gmail for replies. No job alerts. About 4.1k stars | AGPLv3 with Commons Clause |
+| [JobSpy](https://github.com/speedyapply/JobSpy)          | Python scraping library for LinkedIn, Indeed, Glassdoor, ZipRecruiter and others. JobOps uses it for its big boards. About 4.6k stars                                 | MIT                        |
+| [ts-jobspy](https://github.com/alpharomercoma/ts-jobspy) | TypeScript port of JobSpy for LinkedIn and Indeed. 7 stars, idle since Jan 2026                                                                                       | Not checked                |
+
+Loots borrows ideas only. No code is copied from JobOps because of its license.
+
+### How they get listings
+
+Four patterns, from the cleanest to the one Loots won't use:
+
+1. **Public search endpoint, no sign-in.** JobSpy's LinkedIn scraper calls the page LinkedIn uses to load more results
+   for signed-out visitors (`/jobs-guest/jobs/api/seeMoreJobPostings/search`), with `keywords`, `location`, a time
+   filter (`f_TPR=r<seconds>`) and a `start` offset. It returns HTML cards, read with CSS selectors. The full
+   description comes from one visit to `/jobs/view/<id>`. It waits 3 to 7 seconds between pages.
+2. **Pretending to be the phone app.** JobSpy's Indeed scraper posts GraphQL queries to `apis.indeed.com/graphql`
+   with the Indeed iPhone app's fixed key and user agent, 100 results a page, with filters for date, remote and job
+   type.
+3. **Stealth browser.** JobOps' Hiring Cafe extractor drives a disguised Firefox (Camoufox), and switches to a visible
+   window when it meets a bot check.
+4. **Rotating proxies.** Both send requests through a pool of addresses so a block on one doesn't stop the run.
+
+Loots uses only pattern 1, and only for OnlineJobs, whose search page is already plain public HTML. Patterns 2 to 4
+exist to get past a site's bot protection, which the spec rules out: they break the sites' terms, and they break
+whenever the site changes its app or its checks.
+
+### What Loots borrows
+
+- **One adapter per source, one posting shape.** JobOps gives each source its own package with a manifest, its own
+  tests, and the same output shape. In Loots, the LinkedIn email parser, the Indeed email parser and the OnlineJobs
+  checker each turn their input into the same `RawPosting`, and everything after step 3 below never knows the source.
+- **Stop rules for paging.** Stop at the first posting already seen, when a page has no new IDs, or when a page has
+  fewer cards than a full page.
+- **Spotting a block.** A page that should have postings but has none is treated as "probably blocked or changed", not
+  "no new jobs".
+- **Repeat check by the source's own ID**, prefixed by source (`li-123`, `oj-1757483`).
+- **Parser tests on saved pages.** A saved copy of each email or page goes in the tests, so a layout change fails a
+  test instead of quietly finding nothing.
+- **Guessing remote from the title and location** when a posting has no remote field, as JobSpy does; here the
+  extract step does it and marks it as a guess.
+
 ## How it works
 
 1. **Receive.** Resend receives each forwarded email and calls `/api/jobs/inbound` with it. Loots checks Resend's
