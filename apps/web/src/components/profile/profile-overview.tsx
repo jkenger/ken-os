@@ -2,15 +2,26 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { IconCheck, IconCircleCheck, IconCircleDashed, IconPencil } from "@tabler/icons-react";
+import {
+  IconCircleCheck,
+  IconCircleDashed,
+  IconDeviceFloppy,
+  IconLink,
+  IconMail,
+  IconMapPin,
+  IconPencil,
+  IconPhone,
+  type Icon,
+} from "@tabler/icons-react";
 import type { ProfileDetails } from "@ken-os/domain";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { InlineSeparator } from "@/components/inline-separator";
 import { panel } from "@/components/surfaces";
 import type { LedgerRow, LedgerSectionId } from "@/features/profile/ledger";
 import type { ReviewIssue } from "@/features/profile/review";
 import { cn } from "@/lib/utils";
 import { shortDate } from "./dates";
-import { StateBadge } from "./profile-ledger";
 import { IssueBadge } from "./profile-sections";
 
 // Profile's header, Review and section index. The header is the Contact section: the name is the page's h1, and its
@@ -18,11 +29,17 @@ import { IssueBadge } from "./profile-sections";
 
 const bare = (url: string) => url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
 
-function Fact({ label, children }: { label: string; children: ReactNode }) {
+/** One contact fact: its icon in a neutral box, the label, then the value. */
+function Fact({ label, icon: Icon, children }: { label: string; icon: Icon; children: ReactNode }) {
   return (
-    <div className="min-w-0">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="truncate">{children}</dd>
+    <div className="flex min-w-0 items-center gap-3">
+      <span className="grid size-9 shrink-0 place-items-center rounded-md border bg-muted/60 text-muted-foreground">
+        <Icon size={16} aria-hidden="true" />
+      </span>
+      <div className="min-w-0">
+        <dt className="text-xs text-muted-foreground">{label}</dt>
+        <dd className="truncate">{children}</dd>
+      </div>
     </div>
   );
 }
@@ -31,23 +48,18 @@ const missing = <span className="text-muted-foreground">-</span>;
 
 export function ProfileHeader({
   contact,
-  row,
   issues,
   savedAt,
-  live,
   editing,
   onEdit,
-  onDone,
   form,
 }: {
   contact: ProfileDetails["contact"];
-  row: LedgerRow;
   issues: number;
   savedAt: string | null;
-  live: { version: number; publishedAt: string } | null;
   editing: boolean;
   onEdit: () => void;
-  onDone: () => void;
+  /** The Contact form with its Save and Cancel, shown while editing. */
   form: ReactNode;
 }) {
   const place = [contact.city, contact.country].filter(Boolean).join(", ");
@@ -62,20 +74,17 @@ export function ProfileHeader({
           <h1 id="contact-title" className="font-heading text-2xl leading-tight font-semibold tracking-tight">
             {contact.fullName || "Your name"}
           </h1>
-          <p className="mt-1 text-muted-foreground">{[contact.headline, place].filter(Boolean).join(" · ")}</p>
+          <div className="mt-1 flex flex-wrap items-center gap-x-2.5 text-muted-foreground">
+            {contact.headline && <span>{contact.headline}</span>}
+            {contact.headline && place && <InlineSeparator />}
+            {place && <span>{place}</span>}
+          </div>
         </div>
         <div className="flex items-center gap-2">
-          <StateBadge state={row.state} />
           <IssueBadge count={issues} />
-          {editing ? (
-            <Button type="button" variant="outline" size="sm" onClick={onDone}>
-              <IconCheck data-icon="inline-start" aria-hidden="true" />
-              Done
-            </Button>
-          ) : (
-            <Button type="button" variant="ghost" size="sm" onClick={onEdit} aria-label="Edit Contact">
-              <IconPencil data-icon="inline-start" aria-hidden="true" />
-              Edit
+          {!editing && (
+            <Button type="button" variant="ghost" size="icon" onClick={onEdit} aria-label="Edit Contact" title="Edit">
+              <IconPencil aria-hidden="true" />
             </Button>
           )}
         </div>
@@ -84,11 +93,17 @@ export function ProfileHeader({
         {editing ? (
           form
         ) : (
-          <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
-            <Fact label="Email">{contact.email || missing}</Fact>
-            <Fact label="Phone">{contact.phone || missing}</Fact>
-            <Fact label="Location">{place || missing}</Fact>
-            <Fact label="Links">
+          <dl className="grid gap-x-6 gap-y-4 sm:grid-cols-2">
+            <Fact label="Email" icon={IconMail}>
+              {contact.email || missing}
+            </Fact>
+            <Fact label="Phone" icon={IconPhone}>
+              {contact.phone || missing}
+            </Fact>
+            <Fact label="Location" icon={IconMapPin}>
+              {place || missing}
+            </Fact>
+            <Fact label="Links" icon={IconLink}>
               {contact.links.length
                 ? contact.links.map((link, index) => (
                     <span key={index}>
@@ -105,9 +120,8 @@ export function ProfileHeader({
                   ))
                 : missing}
             </Fact>
-            <Fact label="Saved">{savedAt ? shortDate(savedAt) : "Not saved"}</Fact>
-            <Fact label="Public">
-              {live ? `Version ${live.version}, ${shortDate(live.publishedAt)}` : "Not published"}
+            <Fact label="Saved" icon={IconDeviceFloppy}>
+              {savedAt ? shortDate(savedAt) : "Not saved"}
             </Fact>
           </dl>
         )}
@@ -116,41 +130,34 @@ export function ProfileHeader({
   );
 }
 
-/** What a reader would miss, as a count and one line per issue that jumps to its section, and the filled sections
- *  as a bar at its true ratio. */
+/** How complete the Profile is and what's missing: each issue names what to add and how much it adds, and jumps to
+ *  its section. */
 export function ReviewPanel({
   issues,
+  score,
   rows,
   onOpen,
 }: {
   issues: ReviewIssue[];
+  /** 0 to 100, from profileScore. */
+  score: number;
   rows: LedgerRow[];
   onOpen: (id: LedgerSectionId) => void;
 }) {
-  const filled = rows.filter((row) => row.count > 0).length;
   const titles = Object.fromEntries(rows.map((row) => [row.id, row.title]));
   return (
     <section aria-labelledby="review-title" className={cn(panel, "p-5")}>
-      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
         <h2 id="review-title" className="font-heading text-base font-semibold">
           Review
         </h2>
-        <span className="text-muted-foreground">{issues.length ? `${issues.length} issues` : "No issues"}</span>
-      </div>
-      <div className="mt-3">
-        <div className="flex justify-between text-xs text-muted-foreground">
-          <span>Sections filled</span>
-          <span className="font-mono">
-            {filled} of {rows.length}
-          </span>
-        </div>
-        <div
-          className="mt-1 h-1.5 overflow-hidden rounded-full bg-muted"
-          role="img"
-          aria-label={`${filled} of ${rows.length} sections filled`}
-        >
-          <div className="h-full rounded-full bg-primary" style={{ width: `${(filled / rows.length) * 100}%` }} />
-        </div>
+        <Badge variant="outline" className="text-muted-foreground">
+          {issues.length ? `${issues.length} ${issues.length === 1 ? "issue" : "issues"}` : "No issues"}
+        </Badge>
+        <p className="ml-auto flex items-baseline gap-1.5">
+          <span className="font-heading text-2xl leading-none font-semibold tabular-nums">{score}%</span>
+          <span className="text-muted-foreground">complete</span>
+        </p>
       </div>
       {issues.length > 0 && (
         <ul className="mt-4 divide-y border-t">
@@ -159,11 +166,14 @@ export function ReviewPanel({
               <Button
                 type="button"
                 variant="ghost"
-                className="h-auto w-full justify-start gap-3 rounded-none px-0 py-2 text-left font-normal whitespace-normal hover:bg-transparent hover:underline"
+                className="-mx-2 h-auto w-[calc(100%+1rem)] justify-start gap-3 rounded-md px-2 py-2.5 text-left font-normal whitespace-normal hover:bg-muted/60"
                 onClick={() => onOpen(issue.section)}
               >
-                <span className="w-24 shrink-0 text-xs text-muted-foreground">{titles[issue.section]}</span>
+                <Badge variant="secondary" className="w-12 shrink-0 justify-center font-mono tabular-nums">
+                  +{Math.max(1, Math.round(issue.weight))}%
+                </Badge>
                 <span className="min-w-0 flex-1">{issue.text}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">{titles[issue.section]}</span>
               </Button>
             </li>
           ))}
@@ -205,7 +215,6 @@ export function SectionIndex({ rows, issues }: { rows: LedgerRow[]; issues: Revi
       <div className="my-2 border-t" />
       {[
         ["#resumes", "Resumes"],
-        ["#public-link", "Public resume"],
         ["/profile/resume", "Printable resume"],
       ].map(([href, label]) => (
         <Link

@@ -66,7 +66,7 @@ export function applyRewrite(details: ProfileDetails, id: string, text: string):
 }
 
 /** Every number written in the Profile, including years from dates, as the digits that appear. */
-function knownNumbers(details: ProfileDetails): Set<string> {
+export function knownNumbers(details: ProfileDetails): Set<string> {
   return new Set(JSON.stringify(details).match(/\d+(?:[.,]\d+)?/g) ?? []);
 }
 

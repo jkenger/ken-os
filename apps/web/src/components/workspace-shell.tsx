@@ -33,7 +33,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Separator } from "@/components/ui/separator";
+import { InlineSeparator } from "@/components/inline-separator";
 import {
   Sidebar,
   SidebarContent,
@@ -78,7 +78,6 @@ const moduleDetails: Record<
     sections: [
       { label: "Details", href: "/profile", icon: UserRound },
       { label: "Resumes", href: "/profile#resumes", icon: Upload },
-      { label: "Public link", href: "/profile#public-link", icon: Globe },
       { label: "Resume", href: "/profile/resume", icon: FileText },
     ],
   },
@@ -316,7 +315,7 @@ function ShellInset({
             aria-expanded={isMobile ? undefined : open}
             title="Ctrl B"
           />
-          <Separator orientation="vertical" className="mr-1 hidden h-4! md:block" />
+          <InlineSeparator className="mr-1 hidden h-4 md:block" />
           <nav aria-label="Breadcrumb" className="min-w-0">
             <ol className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
               <li className={cn("truncate", currentSection && "hidden sm:inline-flex")}>

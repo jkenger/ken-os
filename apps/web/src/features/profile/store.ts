@@ -1,8 +1,10 @@
 import { randomUUID } from "node:crypto";
-import { and, eq, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import {
+  analyzeProfile,
   AutofillError,
   autofillProfile,
+  PROFILE_ANALYZE_PROMPT_VERSION,
   PROFILE_AUTOFILL_PROMPT_VERSION,
   PROFILE_REWRITE_PROMPT_VERSION,
   rewriteProfile,
@@ -15,6 +17,7 @@ import {
   normalizeProfile,
   ProfileFieldError,
   REWRITE_TARGET_ROLE_MAX,
+  type ProfileAnalysis,
   type RewriteSuggestion,
   type PaperSize,
   type ProfileDetails,
@@ -22,7 +25,7 @@ import {
 } from "@ken-os/domain";
 import mammoth from "mammoth";
 import { db } from "@/lib/db";
-import { profileImports, profileRewrites, profiles, users } from "@/lib/schema";
+import { profileAnalyses, profileImports, profileRewrites, profiles, users } from "@/lib/schema";
 import { getResumeFile } from "./resume-files-store";
 
 // The Profile: the owner's career details, typed in or autofilled from an uploaded resume. Spec: docs/product/profile-resume.md.
@@ -148,6 +151,31 @@ export async function rewriteFromForm(
     .insert(profileRewrites)
     .values({ id: rewriteId, userId, targetRole, suggestions, promptVersion: PROFILE_REWRITE_PROMPT_VERSION, model });
   return { rewriteId, suggestions };
+}
+
+/**
+ * Runs the analyzer over the form as typed (saved or not) and keeps the report, so it is still there after a reload.
+ * The report judges the text it was given; Profile marks a section stale once its lines change.
+ */
+export async function analyzeFromForm(userId: string, input: Record<string, unknown>): Promise<ProfileAnalysis> {
+  const details = formDetails(input.details);
+  const { sections, model } = await analyzeProfile(details);
+  const [row] = await db()
+    .insert(profileAnalyses)
+    .values({ id: randomUUID(), userId, sections, promptVersion: PROFILE_ANALYZE_PROMPT_VERSION, model })
+    .returning({ createdAt: profileAnalyses.createdAt });
+  return { analyzedAt: row.createdAt.toISOString(), sections };
+}
+
+/** The newest analyzer report, or null before the first run. */
+export async function latestAnalysis(userId: string): Promise<ProfileAnalysis | null> {
+  const [row] = await db()
+    .select({ sections: profileAnalyses.sections, createdAt: profileAnalyses.createdAt })
+    .from(profileAnalyses)
+    .where(eq(profileAnalyses.userId, userId))
+    .orderBy(desc(profileAnalyses.createdAt))
+    .limit(1);
+  return row ? { analyzedAt: row.createdAt.toISOString(), sections: row.sections } : null;
 }
 
 /**

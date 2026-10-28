@@ -225,6 +225,13 @@
       "when": 1792989517318,
       "tag": "0031_portfolio_engineering",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1793123282774,
+      "tag": "0032_profile_analyses",
+      "breakpoints": true
     }
   ]
 }
