@@ -18,6 +18,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
+import { AccountMenu } from "@/components/account-menu";
 import { BrandMark } from "@/components/brand";
 import { TermLookup } from "@/components/terms/term-lookup";
 import { Toaster } from "@/components/ui/toaster";
@@ -104,17 +105,6 @@ type Section = {
 };
 type ModuleLink = (typeof modules)[number];
 
-/** Today in the owner's time zone, like "Tue, Oct 6, 2026". */
-function ownerDate() {
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Manila",
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  }).format(new Date());
-}
-
 /** Ctrl or Cmd + K opens shadcn's command dialog over the modules. */
 function ModuleSearch() {
   const router = useRouter();
@@ -138,7 +128,7 @@ function ModuleSearch() {
         type="button"
         onClick={() => setOpen(true)}
         aria-label="Jump to a module"
-        className="w-9 px-0 font-normal text-muted-foreground sm:w-60 sm:justify-start sm:px-3 lg:w-72"
+        className="w-9 px-0 font-normal text-muted-foreground sm:w-56 sm:justify-start sm:px-3"
       >
         <Search size={16} strokeWidth={1.8} aria-hidden="true" />
         <span className="hidden flex-1 text-left text-xs font-normal sm:block">Jump to a module…</span>
@@ -279,16 +269,18 @@ function ShellSidebar({
   );
 }
 
-/** The content beside the sidebar: a 48px header with the sidebar toggle, breadcrumb, date, search and sign out, then
+/** The content beside the sidebar: a 48px header with the sidebar toggle, breadcrumb, search and account menu, then
  *  the page. The sections show as a row of tabs only while the sidebar can't show them (folded, or on a phone); the
  *  row wraps rather than scrolls, so no tab is cut off at the screen's edge. A page with its own section index turns
  *  the row off. */
 function ShellInset({
+  email,
   title,
   sections,
   tabs,
   children,
 }: {
+  email: string;
   title: string;
   sections: Section[];
   tabs: boolean;
@@ -333,16 +325,9 @@ function ShellInset({
             </ol>
           </nav>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="hidden text-sm text-muted-foreground xl:inline" suppressHydrationWarning>
-            {ownerDate()}
-          </span>
+        <div className="flex items-center gap-2">
           <ModuleSearch />
-          <form action="/api/auth/signout" method="post">
-            <Button variant="ghost" size="sm" type="submit" className="text-xs">
-              Sign out
-            </Button>
-          </form>
+          <AccountMenu email={email} />
         </div>
       </header>
       {sectionTabs && (
@@ -431,7 +416,7 @@ export function WorkspaceShell({
         className="min-h-screen bg-sidebar font-sans text-foreground"
       >
         <ShellSidebar email={email} active={active} moduleList={modules} sections={sections} />
-        <ShellInset title={detail.title} sections={sections} tabs={sectionTabs}>
+        <ShellInset email={email} title={detail.title} sections={sections} tabs={sectionTabs}>
           {content}
         </ShellInset>
       </SidebarProvider>

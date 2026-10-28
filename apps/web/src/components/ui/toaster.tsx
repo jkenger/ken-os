@@ -2,6 +2,7 @@
 
 import { toast as sonner } from "sonner";
 import { Toaster as Sonner } from "@/components/ui/sonner";
+import { useThemeChoice } from "@/components/use-theme-choice";
 
 // Loots notifications ("toasts"): short messages after something happens, such as a save or a finished lookup.
 // Any module calls toast(); <Toaster /> in the workspace shell shows them through shadcn's Sonner. Errors stay
@@ -47,7 +48,8 @@ export function dismissToast(id: string | number) {
   sonner.dismiss(id);
 }
 
-/** Bottom right on desktop, full width at the bottom on a phone. At most three at once. Light only, since Loots has no theme switch yet. */
+/** Bottom right on desktop, full width at the bottom on a phone. At most three at once. Follows the account menu's theme. */
 export function Toaster() {
-  return <Sonner theme="light" position="bottom-right" visibleToasts={3} containerAriaLabel="Notifications" />;
+  const [theme] = useThemeChoice();
+  return <Sonner theme={theme} position="bottom-right" visibleToasts={3} containerAriaLabel="Notifications" />;
 }

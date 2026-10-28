@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist_Mono, Instrument_Sans } from "next/font/google";
 import { cn } from "cn";
 import { InlineScript } from "@/components/inline-script";
+import { themeScript } from "@/lib/theme";
 import "./globals.css";
 
 // One face for the whole console (DESIGN.md): Instrument Sans for headings and text, loaded once and named twice so
@@ -13,10 +14,9 @@ const fontMono = Geist_Mono({
   variable: "--font-mono",
 });
 
-// Light or dark follows the system setting; KEOS has no theme switch. The script runs in <head> before the first paint
-// (node_modules/next/dist/docs/01-app/02-guides/preventing-flash-before-hydration.md) and keeps following the setting
-// while the page is open. Sonner's toasts read the same setting, so they match without a ThemeProvider.
-const systemTheme = `(function(){try{var m=window.matchMedia("(prefers-color-scheme: dark)");var a=function(){document.documentElement.classList.toggle("dark",m.matches)};a();m.addEventListener("change",a)}catch(e){}})()`;
+// Light, dark or system, picked in the account menu (src/lib/theme.ts). The script runs in <head> before the first
+// paint (node_modules/next/dist/docs/01-app/02-guides/preventing-flash-before-hydration.md) and keeps following the
+// system setting while the page is open.
 
 export const metadata: Metadata = {
   title: "KEOS",
@@ -36,7 +36,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       )}
     >
       <head>
-        <InlineScript html={systemTheme} />
+        <InlineScript html={themeScript} />
       </head>
       <body>{children}</body>
     </html>
