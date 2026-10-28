@@ -14,4 +14,5 @@ mockups.
 | [Design Studio](design-studio.md)                          | [design-studio.md](../architecture/design-studio.md)                               |
 | [Engineering with Claude](engineering-claude-connector.md) | [engineering-claude-connector.md](../architecture/engineering-claude-connector.md) |
 | [Portfolio](portfolio.md)                                  | [portfolio.md](../architecture/portfolio.md)                                       |
+| [Jobs](job-finder.md)                                      | [job-finder.md](../product/job-finder.md)                                          |
 | [Profile](profile.md)                                      | [profile-resume.md](../product/profile-resume.md)                                  |
