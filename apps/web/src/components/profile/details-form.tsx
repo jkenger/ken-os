@@ -10,6 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { ListEditor } from "./list-editor";
+import { SkillEditor } from "./skill-editor";
 
 // The Profile form. Every field maps to one key of ProfileDetails; the server checks them again on save.
 
@@ -100,40 +102,38 @@ function Lines({
   );
 }
 
-/** A comma-separated list. It keeps the text as typed, so a trailing comma can be deleted, and hands the parent the
- *  split list. The form remounts when an import or Discard replaces it, which resets the text. */
-function CommaList({
+const YEAR_ONLY = /^\d{4}$/;
+
+/**
+ * A month and year, picked with the browser's month picker and stored as YYYY-MM. Imports sometimes give only a year
+ * (YYYY), which a month picker can't show: the field stays empty with a note until a month is picked, and the year is
+ * kept as it is meanwhile. Every date field carries a helper line, so fields side by side line up.
+ */
+function MonthField({
   id,
   label,
   value,
   onChange,
-  placeholder,
+  helper = "Month and year",
 }: {
   id: string;
   label: string;
-  value: string[];
-  onChange: (value: string[]) => void;
-  placeholder?: string;
+  value: string;
+  onChange: (value: string) => void;
+  helper?: string;
 }) {
-  const [text, setText] = useState(value.join(", "));
+  const yearOnly = YEAR_ONLY.test(value);
   return (
-    <Field id={id} label={label} helper="Separate with commas">
+    <Field id={id} label={label} helper={yearOnly ? `Year only: ${value}. Pick a month` : helper}>
       <Input
         id={id}
-        value={text}
-        maxLength={PROFILE_LIMITS.line * 4}
-        placeholder={placeholder}
-        onChange={(event) => {
-          setText(event.target.value);
-          onChange(event.target.value.split(",").map((item) => item.trim()));
-        }}
+        type="month"
+        value={yearOnly ? "" : value}
+        onChange={(event) => onChange(event.target.value || (yearOnly ? value : ""))}
       />
     </Field>
   );
 }
-
-/** Dates are typed as 2024-03, or 2024 alone: a month picker can't show a bare year, which imports often have. */
-const MONTH_HINT = "2024-03";
 
 /** The one section to show, when the form sits inside that section's panel on Profile; null shows every section as a
  *  card. */
@@ -437,10 +437,9 @@ export function DetailsForm({
                     })
                   }
                 />
-                <Text
+                <MonthField
                   id={`role-${index}-start`}
                   label="Start"
-                  placeholder={MONTH_HINT}
                   value={role.start}
                   onChange={(value) =>
                     edit((d) => {
@@ -448,10 +447,9 @@ export function DetailsForm({
                     })
                   }
                 />
-                <Text
+                <MonthField
                   id={`role-${index}-end`}
                   label="End"
-                  placeholder={MONTH_HINT}
                   value={role.end}
                   helper="Empty for Present"
                   onChange={(value) =>
@@ -461,7 +459,7 @@ export function DetailsForm({
                   }
                 />
                 <div className="@md:col-span-2">
-                  <Lines
+                  <ListEditor
                     id={`role-${index}-bullets`}
                     label="Bullet points"
                     value={role.bullets}
@@ -536,10 +534,9 @@ export function DetailsForm({
                     })
                   }
                 />
-                <Text
+                <MonthField
                   id={`school-${index}-start`}
                   label="Start"
-                  placeholder={MONTH_HINT}
                   value={school.start}
                   onChange={(value) =>
                     edit((d) => {
@@ -547,10 +544,10 @@ export function DetailsForm({
                     })
                   }
                 />
-                <Text
+                <MonthField
                   id={`school-${index}-end`}
                   label="End"
-                  placeholder={MONTH_HINT}
+                  helper="Empty for Present"
                   value={school.end}
                   onChange={(value) =>
                     edit((d) => {
@@ -576,57 +573,16 @@ export function DetailsForm({
           </Entries>
         </Section>
 
-        <Section
-          id="skills"
-          title="Skills"
-          action={
-            <AddButton
-              label="Add group"
-              onClick={() =>
-                edit((d) => {
-                  d.skills.push({ name: "", items: [] });
-                })
-              }
-            />
-          }
-        >
-          <Entries
-            items={details.skills}
-            noun="group"
-            empty="No skills yet"
-            onRemove={(index) =>
+        <Section id="skills" title="Skills">
+          <SkillEditor
+            id="skills-items"
+            value={details.skills.flatMap((group) => group.items)}
+            onChange={(items) =>
               edit((d) => {
-                d.skills = without(d.skills, index);
+                d.skills = items.length ? [{ name: "", items }] : [];
               })
             }
-          >
-            {(group, index) => (
-              <>
-                <Text
-                  id={`skills-${index}-name`}
-                  label="Group"
-                  value={group.name}
-                  placeholder="Languages"
-                  onChange={(value) =>
-                    edit((d) => {
-                      d.skills[index].name = value;
-                    })
-                  }
-                />
-                <CommaList
-                  id={`skills-${index}-items`}
-                  label="Skills"
-                  value={group.items}
-                  placeholder="TypeScript, Go, SQL"
-                  onChange={(value) =>
-                    edit((d) => {
-                      d.skills[index].items = value;
-                    })
-                  }
-                />
-              </>
-            )}
-          </Entries>
+          />
         </Section>
 
         <Section
@@ -689,10 +645,9 @@ export function DetailsForm({
                   }
                 />
                 <div className="@md:col-span-2">
-                  <Lines
+                  <ListEditor
                     id={`project-${index}-bullets`}
                     label="Bullet points"
-                    rows={3}
                     value={project.bullets}
                     onChange={(value) =>
                       edit((d) => {
@@ -753,10 +708,9 @@ export function DetailsForm({
                     })
                   }
                 />
-                <Text
+                <MonthField
                   id={`cert-${index}-date`}
                   label="Date"
-                  placeholder={MONTH_HINT}
                   value={cert.date}
                   onChange={(value) =>
                     edit((d) => {

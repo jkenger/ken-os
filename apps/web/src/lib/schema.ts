@@ -21,6 +21,7 @@ import type {
   ProfileDetails,
   ResumeTemplate,
   RewriteSuggestion,
+  AnalysisSection,
   RubricResult,
   TermAnswer,
   TopicEventKind,
@@ -141,6 +142,22 @@ export const profileRewrites = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("profile_rewrites_user_created_idx").on(table.userId, table.createdAt)],
+);
+
+/** One run of the Profile analyzer. Profile shows the newest; older runs stay as a record of what was suggested. */
+export const profileAnalyses = pgTable(
+  "profile_analyses",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    sections: jsonb("sections").$type<AnalysisSection[]>().notNull(),
+    promptVersion: text("prompt_version").notNull(),
+    model: text("model").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("profile_analyses_user_created_idx").on(table.userId, table.createdAt)],
 );
 
 /** Each Portfolio publish: the exact snapshot the public site was given. Append-only; `version` goes up by one per

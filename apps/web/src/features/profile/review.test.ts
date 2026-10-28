@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { emptyProfile, type ProfileDetails } from "@ken-os/domain";
-import { reviewProfile } from "./review";
+import { profileScore, reviewProfile } from "./review";
 
 function complete(): ProfileDetails {
   const details = emptyProfile();
@@ -108,4 +108,45 @@ test("blank bullets don't count as bullets", () => {
 test("every issue has its own id, so a list can key on it", () => {
   const ids = reviewProfile(emptyProfile()).map((issue) => issue.id);
   assert.equal(new Set(ids).size, ids.length);
+});
+
+test("an empty profile scores 0 and a complete one 100", () => {
+  assert.equal(profileScore(emptyProfile()), 0);
+  assert.equal(profileScore(complete()), 100);
+});
+
+test("every issue carries how much fixing it adds, and they add up to what's missing", () => {
+  const issues = reviewProfile(emptyProfile());
+  assert.ok(issues.every((issue) => issue.weight > 0));
+  assert.equal(
+    issues.reduce((sum, issue) => sum + issue.weight, 0),
+    100,
+  );
+});
+
+test("sections are weighted contact 20, summary 15, experience 30, education 15, skills 20", () => {
+  const bySection = (details: ProfileDetails) =>
+    reviewProfile(details).reduce<Record<string, number>>((totals, issue) => {
+      totals[issue.section] = (totals[issue.section] ?? 0) + issue.weight;
+      return totals;
+    }, {});
+  assert.deepEqual(bySection(emptyProfile()), { contact: 20, summary: 15, experience: 30, education: 15, skills: 20 });
+});
+
+test("a short or long summary costs part of the summary's share, not all of it", () => {
+  const details = complete();
+  details.summary = "Builds things.";
+  assert.equal(reviewProfile(details)[0].weight, 5);
+  assert.equal(profileScore(details), 95);
+});
+
+test("each role's checks split experience's share between the roles", () => {
+  const details = complete();
+  details.experience.push({ company: "Xircus", title: "Web Developer", location: "", start: "", end: "", bullets: [] });
+  // Two roles share 30: the second lacks a start date (5) and bullets (10).
+  assert.deepEqual(
+    reviewProfile(details).map((issue) => issue.weight),
+    [5, 10],
+  );
+  assert.equal(profileScore(details), 85);
 });

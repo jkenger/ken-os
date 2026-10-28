@@ -1,11 +1,17 @@
 "use client";
 
 import { useRef, useState, type Dispatch, type SetStateAction } from "react";
-import { AlertCircle, Download, FileText, Trash2, Upload } from "lucide-react";
+import { AlertCircle, FileText, MoreHorizontal, Upload } from "lucide-react";
 import { IconCheck, IconHistory, IconSparkles } from "@tabler/icons-react";
 import { PDF_MIME } from "@ken-os/domain";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/toaster";
 import { panel } from "@/components/surfaces";
@@ -18,10 +24,6 @@ import { shortDate } from "./dates";
 // Resume files the owner uploaded, newest first. Uploading only keeps the file; nothing in the details changes until
 // the owner runs Autofill on one and accepts what it found.
 // Spec: docs/product/profile-resume.md, "Step 5 design"; layout: docs/mockups/profile.md, direction A.
-
-function fileSize(bytes: number) {
-  return bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`;
-}
 
 export function ResumeFiles({
   files,
@@ -85,48 +87,36 @@ export function ResumeFiles({
 
   return (
     <section id="resumes" aria-labelledby="resumes-title" className={cn(panel, "scroll-mt-16 p-5")}>
-      <div className="mb-3 flex items-center justify-between gap-3">
+      <div className="text-center">
         <h2 id="resumes-title" className="font-heading text-base font-semibold">
           Resumes
           {files.length > 0 && <span className="ml-2 font-mono text-xs text-muted-foreground">{files.length}</span>}
         </h2>
-        <Input
-          ref={input}
-          type="file"
-          accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-          // w-px wins over the Input's own w-full, which otherwise stretches this hidden input past the screen's edge.
-          className="sr-only w-px"
-          tabIndex={-1}
-          aria-hidden="true"
-          onChange={(event) => {
-            const file = event.target.files?.[0];
-            if (file) void upload(file);
-          }}
-        />
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => input.current?.click()}
-          disabled={busy !== null}
-        >
-          <Upload data-icon="inline-start" aria-hidden="true" />
-          {busy === "upload" ? "Uploading…" : "Upload resume"}
-        </Button>
+        <p className="mx-auto mt-1 max-w-64 text-muted-foreground">
+          PDF or Word, up to 4 MB each. Uploading doesn&apos;t change your details
+        </p>
       </div>
+      <Input
+        ref={input}
+        type="file"
+        accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        // w-px wins over the Input's own w-full, which otherwise stretches this hidden input past the screen's edge.
+        className="sr-only w-px"
+        tabIndex={-1}
+        aria-hidden="true"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) void upload(file);
+        }}
+      />
       {problem && (
-        <Alert variant="destructive" className="mb-3">
+        <Alert variant="destructive" className="mt-4">
           <AlertCircle />
           <AlertTitle>{problem}</AlertTitle>
         </Alert>
       )}
-      {files.length === 0 ? (
-        <div>
-          <p className="font-medium">No resumes uploaded</p>
-          <p className="text-muted-foreground">PDF or Word, up to 4 MB. Uploading doesn&apos;t change your details.</p>
-        </div>
-      ) : (
-        <ul className="divide-y [&>li]:py-3 [&>li:first-child]:pt-0 [&>li:last-child]:pb-0">
+      {files.length > 0 && (
+        <ul className="mt-4 divide-y border-y text-left [&>li]:py-3">
           {files.map((file) => {
             const href = `/api/profile/resumes/${encodeURIComponent(file.id)}`;
             return (
@@ -143,58 +133,56 @@ export function ResumeFiles({
                   >
                     {file.fileName}
                   </a>
-                  <p className="text-xs text-muted-foreground">
-                    {file.contentType === PDF_MIME ? "PDF" : "DOCX"} · {fileSize(file.size)} · Uploaded{" "}
-                    {shortDate(file.uploadedAt)}
-                  </p>
-                  <FileState file={file} reviewing={reviewing === file.id} />
-                  <div className="mt-2 flex items-center gap-1">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="mr-auto"
-                      onClick={() => onAutofill(file)}
-                      disabled={busy !== null || autofilling !== null || pending !== null}
-                      title={pending ? `Save or discard the changes from ${pending} first` : undefined}
-                      aria-label={`Autofill from ${file.fileName}`}
-                    >
-                      <IconSparkles data-icon="inline-start" aria-hidden="true" />
-                      {autofilling === file.id ? "Reading…" : "Autofill"}
-                    </Button>
-                    <Button
-                      asChild
-                      variant="ghost"
-                      size="icon"
-                      aria-label={`Download ${file.fileName}`}
-                      title="Download"
-                    >
-                      <a href={`${href}?download=1`} download={file.fileName}>
-                        <Download />
-                      </a>
-                    </Button>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      aria-label={`Delete ${file.fileName}`}
-                      title="Delete"
-                      onClick={() => setDeleting(file)}
-                      disabled={busy !== null || autofilling === file.id}
-                    >
-                      <Trash2 />
-                    </Button>
-                  </div>
+                  <p className="text-xs text-muted-foreground">Uploaded at {shortDate(file.uploadedAt)}</p>
+                  <FileState file={file} reviewing={reviewing === file.id} reading={autofilling === file.id} />
                 </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="-mt-1 -mr-2 shrink-0"
+                      aria-label={`Actions for ${file.fileName}`}
+                      title="Actions"
+                      disabled={busy !== null || autofilling !== null}
+                    >
+                      <MoreHorizontal />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      disabled={pending !== null}
+                      title={pending ? `Save or cancel the changes from ${pending} first` : undefined}
+                      onSelect={() => onAutofill(file)}
+                    >
+                      Autofill
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <a href={`${href}?download=1`} download={file.fileName}>
+                        Download
+                      </a>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem variant="destructive" onSelect={() => setDeleting(file)}>
+                      Delete
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </li>
             );
           })}
         </ul>
       )}
+      <div className="mt-4 flex justify-center">
+        <Button type="button" onClick={() => input.current?.click()} disabled={busy !== null}>
+          <Upload data-icon="inline-start" aria-hidden="true" />
+          {busy === "upload" ? "Uploading…" : "Upload resume"}
+        </Button>
+      </div>
       <ConfirmDialog
         open={deleting !== null}
         title={`Delete ${deleting?.fileName ?? "resume"}?`}
-        description="Can't be undone · your details stay"
+        description="Your details stay. Can't be undone"
         action="Delete resume"
         busy={busy !== null}
         onOpenChange={(open) => !open && setDeleting(null)}
@@ -204,9 +192,16 @@ export function ResumeFiles({
   );
 }
 
-/** In review while its Autofill is open or not saved, then when one was last saved, else Not used. */
-function FileState({ file, reviewing }: { file: ResumeFile; reviewing: boolean }) {
+/** Reading while Claude reads it, In review while its Autofill is open, Applied once one was saved, else nothing. */
+function FileState({ file, reviewing, reading }: { file: ResumeFile; reviewing: boolean; reading: boolean }) {
   const place = "mt-0.5 flex items-center gap-1.5 text-xs";
+  if (reading)
+    return (
+      <span className={cn(place, "text-muted-foreground")}>
+        <IconSparkles size={14} aria-hidden="true" />
+        Reading…
+      </span>
+    );
   if (reviewing)
     return (
       <span className={place}>
@@ -221,5 +216,5 @@ function FileState({ file, reviewing }: { file: ResumeFile; reviewing: boolean }
         Applied {shortDate(file.appliedAt)}
       </span>
     );
-  return <span className={cn(place, "text-muted-foreground")}>Not used</span>;
+  return null;
 }

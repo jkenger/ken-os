@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
-import { IconAlertCircle, IconCheck, IconPencil, IconPlus } from "@tabler/icons-react";
+import { IconAlertCircle, IconPencil, IconPlus, IconTrash } from "@tabler/icons-react";
 import { printDateRange, type ProfileDetails } from "@ken-os/domain";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { InlineSeparator } from "@/components/inline-separator";
 import { panel } from "@/components/surfaces";
 import type { LedgerRow, LedgerSectionId } from "@/features/profile/ledger";
 import { cn } from "@/lib/utils";
-import { StateBadge } from "./profile-ledger";
 
 // Profile's centre column: every section readable in place, each with its own Edit that turns the panel into that
 // section's form. Long lists show three entries until "Show all". Optional sections left empty collect in one
@@ -53,23 +53,29 @@ export function IssueBadge({ count }: { count: number }) {
   );
 }
 
-/** A section's panel: title, state and issues, then the read view or, while it's being edited, its form. */
+/** A section's panel: title, count and issues, then the read view or, while it's being edited, its form with Save and
+ *  Cancel. The analyzer's cards sit under either. */
 export function SectionPanel({
   row,
   issues,
   editing,
   onEdit,
-  onDone,
+  onDelete,
   form,
   children,
+  analysis,
 }: {
   row: LedgerRow;
   issues: number;
   editing: boolean;
   onEdit: () => void;
-  onDone: () => void;
+  /** Asks, then clears the section and saves. */
+  onDelete: () => void;
+  /** The section's form with its Save and Cancel, shown while editing. */
   form: ReactNode;
   children: ReactNode;
+  /** The analyzer's cards for this section, under the content in read and edit mode alike. */
+  analysis?: ReactNode;
 }) {
   const titleId = `${row.id}-title`;
   return (
@@ -85,30 +91,73 @@ export function SectionPanel({
         {row.count > 0 && row.id !== "summary" && (
           <span className="font-mono text-xs text-muted-foreground">{row.count}</span>
         )}
-        <StateBadge state={row.state} />
         <IssueBadge count={issues} />
-        <span className="ml-auto">
-          {editing ? (
-            <Button type="button" variant="outline" size="sm" onClick={onDone}>
-              <IconCheck data-icon="inline-start" aria-hidden="true" />
-              Done
-            </Button>
-          ) : (
-            <Button type="button" variant="ghost" size="sm" onClick={onEdit} aria-label={`Edit ${row.title}`}>
-              {row.count ? (
-                <IconPencil data-icon="inline-start" aria-hidden="true" />
-              ) : (
+        {!editing && (
+          <span className="ml-auto flex items-center gap-1">
+            {row.count ? (
+              <>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={onEdit}
+                  aria-label={`Edit ${row.title}`}
+                  title="Edit"
+                >
+                  <IconPencil aria-hidden="true" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={onDelete}
+                  aria-label={`Delete ${row.title}`}
+                  title="Delete"
+                >
+                  <IconTrash aria-hidden="true" />
+                </Button>
+              </>
+            ) : (
+              <Button type="button" variant="ghost" size="sm" onClick={onEdit} aria-label={`Edit ${row.title}`}>
                 <IconPlus data-icon="inline-start" aria-hidden="true" />
-              )}
-              {row.count ? "Edit" : nouns[row.id].add}
-            </Button>
-          )}
-        </span>
+                {nouns[row.id].add}
+              </Button>
+            )}
+          </span>
+        )}
       </div>
       <div className="mt-3">
         {editing ? form : row.count ? children : <p className="text-muted-foreground">{nouns[row.id].empty}</p>}
       </div>
+      {analysis && <div className="mt-4 flex flex-col gap-3">{analysis}</div>}
     </section>
+  );
+}
+
+/** Save and Cancel under a section's form. Save is off until something changed. */
+export function EditActions({
+  title,
+  dirty,
+  saving,
+  onSave,
+  onCancel,
+}: {
+  title: string;
+  dirty: boolean;
+  saving: boolean;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="mt-4 flex items-center justify-end gap-2 border-t pt-4">
+      <span className="mr-auto text-sm text-muted-foreground">{dirty ? "Unsaved changes" : "No changes"}</span>
+      <Button type="button" variant="ghost" onClick={onCancel} disabled={saving}>
+        Cancel
+      </Button>
+      <Button type="button" onClick={onSave} disabled={saving || !dirty} aria-label={`Save ${title}`}>
+        {saving ? "Saving…" : "Save"}
+      </Button>
+    </div>
   );
 }
 
@@ -162,7 +211,7 @@ function Entries({ children }: { children: ReactNode }) {
   return <ul className="divide-y [&>li]:py-3 [&>li:first-child]:pt-0 [&>li:last-child]:pb-0">{children}</ul>;
 }
 
-const join = (...parts: string[]) => parts.filter((part) => part.trim()).join(" · ");
+const join = (...parts: string[]) => parts.filter((part) => part.trim()).join(", ");
 
 export function SummaryView({ summary }: { summary: string }) {
   const [open, setOpen] = useState(false);
@@ -222,20 +271,18 @@ export function EducationView({ education }: { education: ProfileDetails["educat
   );
 }
 
+/** Every skill in one row, split by thin rules; older Profiles with named groups show all their skills together. */
 export function SkillsView({ skills }: { skills: ProfileDetails["skills"] }) {
-  const { shown, capped, open, toggle } = useCap(skills, 4);
+  const items = skills.flatMap((group) => group.items).filter((item) => item.trim());
   return (
-    <>
-      <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-[minmax(0,10rem)_minmax(0,1fr)]">
-        {shown.map((group, index) => (
-          <div key={index} className="contents">
-            <dt className="text-muted-foreground">{group.name || "Skills"}</dt>
-            <dd>{group.items.filter((item) => item.trim()).join(", ")}</dd>
-          </div>
-        ))}
-      </dl>
-      {capped && <ShowAll total={skills.length} noun="groups" open={open} onToggle={toggle} />}
-    </>
+    <ul className="flex flex-wrap items-center gap-x-3 gap-y-1.5" aria-label="Skills">
+      {items.map((item, index) => (
+        <li key={`${item}-${index}`} className="flex items-center gap-3">
+          {index > 0 && <InlineSeparator />}
+          {item}
+        </li>
+      ))}
+    </ul>
   );
 }
 
