@@ -20,6 +20,7 @@ matches on a Jobs page and by email, as soon as they come in.
 | Missing information | A posting that doesn't say (no pay listed, no hours) is kept and marked Not listed, never hidden.                                                        |
 | Preferences         | Every preference is a setting on the Jobs page, with the defaults below.                                                                                 |
 | Where results go    | The Jobs page, an email for each strong match, and a daily digest email.                                                                                 |
+| Background work     | Trigger.dev tasks fetch, score and email; the Jobs page shows their progress live. Decided 28 Oct 2026 (see Background work).                            |
 
 ## Why alert emails
 
@@ -53,8 +54,8 @@ the same Gmail forward as LinkedIn and Indeed, and nothing below is built.
 - On a block or rate limit (403 or 429), stops for 24 hours. When a run finds no postings twice in a row, the page
   layout has probably changed: it stops and emails the owner.
 - The parser is tested against a saved copy of the search page, so a layout change shows up as a failing test.
-- Runs from `/api/jobs/check/onlinejobs`, called with a secret by a scheduler. A Vercel cron every 30 minutes needs
-  the Pro plan; on Hobby, an outside scheduler such as cron-job.org calls it instead.
+- Runs as the `jobs.check-onlinejobs` Trigger.dev task on a 30 minute schedule, or from Check now on the Jobs page
+  (see Background work). No Vercel cron is needed.
 
 **Risk of the fallback.** It goes against section 7.4 of the OnlineJobs terms, even at this low rate. The likely
 consequence is OnlineJobs blocking the server's address, which ends the checker; the owner's jobseeker account isn't
@@ -110,6 +111,8 @@ whenever the site changes its app or its checks.
 
 ## How it works
 
+Step 1 runs in the Next.js route. Steps 2 to 9 run in background tasks (see Background work).
+
 1. **Receive.** Resend receives each forwarded email and calls `/api/jobs/inbound` with it. Loots checks Resend's
    webhook signature and that the original sender is a known alert address, then stores the raw email. The OnlineJobs
    checker, if built, feeds postings in at step 3.
@@ -133,6 +136,71 @@ whenever the site changes its app or its checks.
 Both AI jobs follow the structured-output pattern in `packages/agents`: a zod schema as output, a prompt version saved
 with each result, and posting text treated as untrusted data. Postings are written by strangers, so the AI never gets
 tools and nothing in a posting can change a setting.
+
+## Background work
+
+Fetching, reading and scoring postings runs in [Trigger.dev](https://trigger.dev) tasks, not in Next.js. A Vercel
+function has a time limit, and one OnlineJobs check with 5 second gaps and AI scoring can take minutes. The inbound
+webhook also has to answer Resend quickly. Trigger.dev runs tasks on its own servers with no time limit, and adds
+retries, schedules and live updates to the browser.
+
+### Tasks
+
+| Task                    | Started by                                                      | What it does                                                                           |
+| ----------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `jobs.ingest-email`     | `/api/jobs/inbound`, after the signature check and saving       | Splits the alert, drops repeats, starts one `jobs.process-posting` per new posting     |
+| `jobs.check-onlinejobs` | A 30 minute schedule, or Check now                              | Reads the public search page and stops at the first posting already seen               |
+| `jobs.process-posting`  | The two tasks above                                             | Reads the full posting, extracts, filters, scores, labels the shift, saves to Postgres |
+| `jobs.send-match-email` | `jobs.process-posting`, when the score reaches the instant line | Sends one strong match email                                                           |
+| `jobs.digest`           | Every day at the digest time, Asia/Manila                       | Sends the daily digest                                                                 |
+
+- **One OnlineJobs check at a time.** Its queue allows one run, so a schedule and a Check now never overlap and the 5
+  second gap holds.
+- **No double runs from a double click.** Check now passes an idempotency key per minute, so a second press reuses the
+  run already going.
+- **One email per posting.** The match email uses the posting's ID as its idempotency key, so a retry or a rescore
+  never sends it twice.
+- **Thin tasks.** Parsers, filters, shift math and the scoring prompt live in plain functions that tests call directly.
+  The tasks only load data, call them, save the result and report progress.
+- **Postgres is the source of truth.** Tasks write postings and matches straight to the database. Trigger.dev's own run
+  history is for watching and debugging, never read by the Jobs page.
+
+### Live progress on the Jobs page
+
+The page follows every run for the owner, not only the one it started, so scheduled checks and email ingests show too.
+
+1. **Every run is tagged** `jobs:<ownerId>`.
+2. **Tasks report progress in run metadata**, a small object Trigger.dev sends to subscribers as it changes: the
+   source, the step ("Reading postings", "Scoring"), postings found, new, and scored. Each `jobs.process-posting` adds
+   to its parent's count with `metadata.root.increment`.
+3. **The browser gets a read-only token.** When `/jobs` loads, the server creates one with `auth.createPublicToken`,
+   allowed to read only runs tagged `jobs:<ownerId>`, expiring after 1 hour. A server action makes a new one when it
+   expires. The secret key never reaches the browser.
+4. **A client component subscribes** with `useRealtimeRunsWithTag` from `@trigger.dev/react-hooks`.
+5. **When a run finishes, the page calls `router.refresh()`**, and the new rows come from Postgres. If the live
+   connection drops, the list is still right after the next refresh.
+
+On screen:
+
+- **Check now** in the title bar. It's a server action that checks the session and the request's origin, like other
+  Loots changes, then starts `jobs.check-onlinejobs`. While a check runs it reads Checking and can't be pressed.
+- **An activity line** above the list while anything runs, such as "OnlineJobs · Scoring · 2 of 4". It shows the last
+  finished run's time when idle, such as "Checked 7:30 AM", and a failed run as "OnlineJobs check failed · Retry".
+
+### Setup and cost
+
+- **Packages:** `@trigger.dev/sdk` and `@trigger.dev/react-hooks` in `apps/web`, a `trigger.config.ts`, and the tasks in
+  a `trigger/` folder.
+- **Deploy:** tasks deploy to Trigger.dev with `npx trigger.dev deploy`, separately from Vercel. There are no GitHub
+  Actions, so it's the Vercel integration or a manual step after merging, written into the deploy notes.
+- **Settings:** `TRIGGER_SECRET_KEY` in `apps/web/.env.example`. The tasks' own settings in the Trigger.dev dashboard:
+  `DATABASE_URL`, `RESEND_API_KEY` and the AI key.
+- **Plan:** the free plan covers one owner: $5 of usage a month, 20 runs at once, 10 schedules, 10 live connections.
+  Hobby is $10 a month.
+
+Checked against the Trigger.dev docs on 28 Oct 2026: [Realtime](https://trigger.dev/docs/realtime/overview),
+[Realtime auth](https://trigger.dev/docs/realtime/auth), [Run metadata](https://trigger.dev/docs/runs/metadata),
+[Next.js](https://trigger.dev/docs/guides/frameworks/nextjs), [Pricing](https://trigger.dev/pricing).
 
 ## Roles from the Profile
 
@@ -199,6 +267,7 @@ time zone is applied on the posting's date.
 One page at `/jobs`, in the module column like Profile.
 
 - **List:** New, Saved, Applied, Filtered out. Newest first, or by score or shift.
+- **Check now and the activity line:** start a check by hand and watch any running task (see Background work).
 - **Each row:** title, company, source, how long ago it arrived, pay, job type, work setup, country, shift, score.
 - **Side panel for one posting:** why it fits, what's missing, the posting text, Open posting, Save, Mark applied,
   Dismiss with a reason. A Filtered out posting shows which filter hid it, and Show anyway moves it to New.
@@ -219,8 +288,7 @@ All through Resend. Loots sends and receives no email today, so this adds the fi
   why it fits, and a link to the posting in Loots.
 - **Daily digest:** new postings since the last digest, grouped by score, plus how many were filtered out and why.
 - **Checker problems:** one email when the OnlineJobs checker is blocked or stops finding postings.
-- New in `.env.example`: `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`, `JOBS_INBOUND_ADDRESS`, and `JOBS_CHECK_SECRET` if
-  the checker is built.
+- New in `.env.example`: `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET` and `JOBS_INBOUND_ADDRESS`.
 
 ## Storage
 
@@ -236,8 +304,9 @@ New tables, added in one migration. Nothing existing changes.
 
 ## Release steps
 
-1. **Receive and list.** Resend receiving, LinkedIn and Indeed parsers, repeat dropping, the Jobs page with New and
-   Filtered out, and settings. No AI yet: filters run on the email fields.
+1. **Receive and list.** Trigger.dev set up with `jobs.ingest-email`, Resend receiving, LinkedIn and Indeed parsers,
+   repeat dropping, the Jobs page with New, Filtered out, the activity line, and settings. No AI yet: filters run on
+   the email fields.
 2. **Score.** Full posting read, AI extract and score, shift labels, the side panel.
 3. **Email.** Strong match emails and the daily digest.
 4. **OnlineJobs.** Its alert parser if it sends alerts; otherwise the checker, if the owner accepts the risk.
@@ -261,9 +330,17 @@ draft; a gap check across many postings ("6 of your top 10 ask for AWS").
 - Nothing in a posting's text can change a setting, send an email or reach a tool.
 - If built, the OnlineJobs checker never sends two requests less than 5 seconds apart, never signs in, and stops for 24
   hours after a 403 or 429.
+- A scheduled check and a Check now at the same moment run one after the other, never together.
+- While any task runs for the owner, `/jobs` shows its step and counts without a reload; when it finishes, the new
+  postings appear in the list.
+- The token in the browser can read only the owner's job runs, and can't start or cancel a task.
 
 ## Open questions
 
 - Whether OnlineJobs Job alerts send emails. The owner checks after signing in; this decides whether step 4 builds a
   parser or the checker.
 - If the checker is needed: whether the owner accepts the terms risk.
+- The exact signature of `useRealtimeRunsWithTag` in the current `@trigger.dev/react-hooks`; the Realtime overview only
+  names it in a link. Check before step 1.
+- How Trigger.dev's build handles this pnpm workspace when tasks import from `packages/*`. Check with a test deploy in
+  step 1.
