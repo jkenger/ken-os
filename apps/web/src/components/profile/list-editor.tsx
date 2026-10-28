@@ -1,16 +1,16 @@
 "use client";
 
 import { useEffect, useRef, type ClipboardEvent, type KeyboardEvent } from "react";
-import { Plus, X } from "lucide-react";
+import { Info, Plus, X } from "lucide-react";
 import { PROFILE_LIMITS } from "@ken-os/domain";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
 
 // Bullets edited as a list: one row per bullet, Enter starts the next, Backspace on an empty one removes it, and a
 // paste of several lines becomes several bullets. Each bullet stays one plain line, as the resume prints it.
 
+/** Past this many words a bullet gets a grey note. Advice only: it never marks the field invalid or blocks Save. */
 const LONG_WORDS = 20;
 const words = (line: string) => line.split(/\s+/).filter(Boolean).length;
 
@@ -102,8 +102,7 @@ export function ListEditor({
                   value={line}
                   maxLength={PROFILE_LIMITS.line}
                   aria-label={`${label}, ${noun} ${index + 1}`}
-                  aria-invalid={long || undefined}
-                  className={cn(long && "border-ring")}
+                  aria-describedby={long ? `${id}-${index}-length` : undefined}
                   onChange={(event) => set(index, event.target.value)}
                   onKeyDown={(event) => onKeyDown(event, index)}
                   onPaste={(event) => onPaste(event, index)}
@@ -119,7 +118,12 @@ export function ListEditor({
                   <X />
                 </Button>
               </div>
-              {long && <p className="pl-5 text-xs text-muted-foreground">{words(line)} words, aim for 20 or fewer</p>}
+              {long && (
+                <p id={`${id}-${index}-length`} className="flex items-center gap-1 pl-5 text-xs text-muted-foreground">
+                  <Info className="size-3.5 shrink-0" aria-hidden="true" />
+                  {words(line)} words, aim for 20 or fewer
+                </p>
+              )}
             </li>
           );
         })}
