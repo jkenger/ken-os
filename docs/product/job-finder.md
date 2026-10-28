@@ -154,7 +154,7 @@ The owner's defaults, plus the fields this spec adds. All live in Jobs settings.
 | Job type           | Full time, Contract     | Strict                 | Part time is the third choice                               |
 | Work setup         | Remote                  | Strict                 | Hybrid and On site are the other choices                    |
 | Countries          | US, AU, UK              | Strict                 | Which employers or markets to show                          |
-| Shifts             | Day, Mid                | Shown                  | Night shift postings are marked Outside your shifts         |
+| Shifts             | Day, Mid                | Shown                  | Night shift postings are marked Outside shifts              |
 | Seniority          | Mid, Senior             | Shown in the score     | Junior and Lead are the other choices                       |
 | Skip words         | Empty                   | Strict                 | Titles or words that always hide a posting, such as "Sales" |
 | Skip companies     | Empty                   | Strict                 | Companies to always hide, such as a current employer        |
