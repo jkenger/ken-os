@@ -32,7 +32,7 @@ After editing the curriculum YAML, a lesson or a lab, run `pnpm --filter @ken-os
 ## CI and deploy
 
 - No GitHub Actions. The gates above are local only, so run them yourself before opening a PR.
-- Vercel builds every push. Production runs `db:migrate:deploy` after the build (`apps/web/vercel.json`); previews never migrate.
+- Vercel builds every push and runs `db:migrate:deploy` after the build (`apps/web/vercel.json`): production migrates the production database, previews migrate the shared preview database.
 - PRs are ordinary dependent PRs, not GitHub-native stacks. There is no merge queue.
 
 ## Review

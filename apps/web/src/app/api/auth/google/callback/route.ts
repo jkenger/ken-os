@@ -8,7 +8,8 @@ import { createSession, safeNext } from "@/lib/session";
 export const runtime = "nodejs";
 
 type Exchange =
-  { ok: true; tokens: GoogleTokens; profile: GoogleProfile } | { ok: false; reason: "expired" | "google" };
+  | { ok: true; tokens: GoogleTokens; profile: GoogleProfile }
+  | { ok: false; reason: "expired" | "google"; detail: string };
 
 async function exchange(code: string, verifier: string): Promise<Exchange> {
   const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
@@ -25,16 +26,21 @@ async function exchange(code: string, verifier: string): Promise<Exchange> {
     cache: "no-store",
   }).catch(() => null);
   if (!tokenResponse?.ok) {
-    const tokenError = (await tokenResponse?.json().catch(() => null)) as { error?: string } | null;
-    return { ok: false, reason: tokenError?.error === "invalid_grant" ? "expired" : "google" };
+    const tokenError = (await tokenResponse?.json().catch(() => null)) as {
+      error?: string;
+      error_description?: string;
+    } | null;
+    const detail = `token ${tokenResponse?.status ?? "unreachable"} ${tokenError?.error ?? ""} ${tokenError?.error_description ?? ""}`;
+    return { ok: false, reason: tokenError?.error === "invalid_grant" ? "expired" : "google", detail };
   }
   const tokens = (await tokenResponse.json()) as GoogleTokens;
-  if (!tokens.access_token) return { ok: false, reason: "google" };
+  if (!tokens.access_token) return { ok: false, reason: "google", detail: "token response without access_token" };
   const userResponse = await fetch("https://openidconnect.googleapis.com/v1/userinfo", {
     headers: { Authorization: `Bearer ${tokens.access_token}` },
     cache: "no-store",
   }).catch(() => null);
-  if (!userResponse?.ok) return { ok: false, reason: "google" };
+  if (!userResponse?.ok)
+    return { ok: false, reason: "google", detail: `userinfo ${userResponse?.status ?? "unreachable"}` };
   return { ok: true, tokens, profile: (await userResponse.json()) as GoogleProfile };
 }
 
@@ -52,12 +58,28 @@ export async function GET(request: NextRequest) {
   const code = query.get("code");
   const state = query.get("state");
   const stateMatches = Boolean(state && cookies.state && state === cookies.state && cookies.verifier);
+  // Which check failed, never the values: enough to tell a lost cookie from a refused code in the runtime logs.
+  const report = (reason: string, detail = "") =>
+    console.warn(
+      `Google sign-in failed: ${reason} ${detail}`.trim(),
+      JSON.stringify({
+        code: Boolean(code),
+        state: Boolean(state),
+        stateCookie: Boolean(cookies.state),
+        verifierCookie: Boolean(cookies.verifier),
+        stateMatches,
+        googleError,
+      }),
+    );
 
-  const fail = (reason: string) => finishRedirect(`/sign-in?${new URLSearchParams({ error: reason, next })}`);
+  const fail = (reason: string, detail?: string) => {
+    report(reason, detail);
+    return finishRedirect(`/sign-in?${new URLSearchParams({ error: reason, next })}`);
+  };
   if (googleError) return fail(googleError === "access_denied" ? "cancelled" : "google");
   if (!code || !stateMatches) return fail("expired");
   const result = await exchange(code, cookies.verifier!);
-  if (!result.ok) return fail(result.reason);
+  if (!result.ok) return fail(result.reason, result.detail);
   const signedIn = await finishSignIn(result.profile);
   if (!signedIn.ok) return fail(signedIn.code);
   await createSession(signedIn.session);
