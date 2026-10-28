@@ -5,23 +5,28 @@ Status: first mockups drawn 28 Oct 2026, not yet reviewed by the owner. Spec: [j
 Mockups: Figma file [KEOS Jobs](https://www.figma.com/design/pnBihWjurFSwlxNDu22XvC), owned by the Ken account (team
 ANXS). Light theme only so far.
 
-| Frame                  | What it shows                                                            |
-| ---------------------- | ------------------------------------------------------------------------ |
-| Desktop / Setup        | Empty New with the 5-step setup checklist                                |
-| Desktop / New          | 12 postings: score, role, pay, type, country, shift columns              |
-| Desktop / Posting open | The list with the picked row and the docked panel for one posting        |
-| Desktop / Filtered out | Hidden postings with their reason and Show anyway                        |
-| Desktop / Settings     | Roles, filters, shifts and emails                                        |
-| Email / Strong match   | The instant email for one posting                                        |
-| Email / Daily digest   | New postings grouped by score, plus the filtered-out count               |
-| Phone / New, Posting   | The list as cards, and one posting as a full screen with a sticky footer |
+| Frame                       | What it shows                                                             |
+| --------------------------- | ------------------------------------------------------------------------- |
+| Desktop / Setup             | Empty New with the 5-step setup checklist                                 |
+| Desktop / New               | 12 postings: score, role, pay, type, country, shift columns, Check now    |
+| Desktop / New, checking     | Check now reads Checking; the activity line with step, count and progress |
+| Desktop / New, check failed | The activity line in red with the reason and Retry                        |
+| Desktop / Posting open      | The list with the picked row and the docked panel for one posting         |
+| Desktop / Filtered out      | Hidden postings with their reason and Show anyway                         |
+| Desktop / Settings          | Roles, filters, shifts and emails                                         |
+| Email / Strong match        | The instant email for one posting                                         |
+| Email / Daily digest        | New postings grouped by score, plus the filtered-out count                |
+| Phone / New, Posting        | The list as cards, and one posting as a full screen with a sticky footer  |
 
-The file holds local components (buttons, badges, Job row, Job list head, Filtered row, Job card (phone)) and a
+The file holds local components (buttons, badges, Job row, Job list head, Filtered row, Job card (phone), Activity line
+with Running and Failed) and a
 `Loots` colour collection taken from `apps/web/DESIGN.md`.
 
 ### Differences from this brief
 
-- Phone frames are drawn only for New and Posting; the other screens use the same parts stacked.
+- Phone frames are drawn only for New and Posting; the other screens use the same parts stacked. Check now and the
+  activity line aren't on the phone frames yet.
+- Check now is the one primary button in the title bar; Settings is outline.
 - New, Saved, Applied, Filtered out and Settings live in the section column, not as tabs on the page.
 - The badge reads "Outside shifts" so it fits beside the shift name; the spec uses the same words.
 - Dismiss sits in the panel header beside Close, so the footer keeps Open posting, Save and Mark applied.

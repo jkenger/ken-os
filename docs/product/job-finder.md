@@ -184,8 +184,11 @@ On screen:
 
 - **Check now** in the title bar. It's a server action that checks the session and the request's origin, like other
   Loots changes, then starts `jobs.check-onlinejobs`. While a check runs it reads Checking and can't be pressed.
-- **An activity line** above the list while anything runs, such as "OnlineJobs · Scoring · 2 of 4". It shows the last
-  finished run's time when idle, such as "Checked 7:30 AM", and a failed run as "OnlineJobs check failed · Retry".
+- **An activity line** above the list while anything runs: a spinner, "OnlineJobs · Scoring · 2 of 4", a thin progress
+  bar and the start time. A failed run shows in red with its reason and Retry, until the next good run. A blocked
+  checker (403 or 429) shows "Paused until" a time and no Retry, since retrying early is what the pause prevents.
+- **When nothing runs**, the toolbar note gives the last good check, such as "Checked 7:30 AM", and there is no
+  activity line.
 
 ### Setup and cost
 
