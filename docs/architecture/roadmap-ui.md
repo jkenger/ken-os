@@ -160,4 +160,3 @@ purpose or for want of data:
 - **A Now mark on the graph.** Lanes marks the current topic Now; the graph shows only its In progress icon.
 - **Time spent.** Estimates are Claude's plan; nothing tracks actual time.
 - **Back** leaves the page: opening a topic replaces the address entry rather than adding one.
-- **A theme switch.** Every token has a dark value, but the app has no way to turn dark mode on yet.

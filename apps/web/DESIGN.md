@@ -237,7 +237,7 @@ Chapters have no colours of their own. `chapter-1` to `chapter-6` and their `-so
 
 ## Layout
 
-A flush console shell (`workspace-shell.tsx`): a 48px icon rail of modules, a 208px section column from 1024px, and the page, all on one ground, split by 1px seams (`border-r`, `border-l`). The top bar is 48px with a seam under it: breadcrumb left; date, Jump to a module (Ctrl K) and Sign out right. The section column's header is also 48px with a seam, so the two lines meet. Phones get a sheet menu from the top bar.
+A flush console shell (`workspace-shell.tsx`): a 48px icon rail of modules, a 208px section column from 1024px, and the page, all on one ground, split by 1px seams (`border-r`, `border-l`). The top bar is 48px with a seam under it: breadcrumb left; Jump to a module (Ctrl K) and the account menu right, 8px apart. No date: it was dropped on 28 Oct 2026. The account menu is a 32px initials button opening the email, Profile, Theme (Light, Dark, System) and Sign out. The section column's header is also 48px with a seam, so the two lines meet. Phones get a sheet menu from the top bar.
 
 Every page opens with its title over a seam. Page padding is a module choice: the roadmap uses 16px, then 28px from 768px; Terms and Memory use 20px, 32px from 640px, 40px from 1024px. Page blocks sit 20px apart (`gap-5`).
 
@@ -343,7 +343,7 @@ One panel per chapter. Its head is a neutral 24px chapter tile with the mono num
 - **Don't** use blue for a status or a status colour for the picked item; the Now badge stays neutral.
 - **Don't** put `bg-accent` on hover or picked states outside a menu.
 - **Don't** put a small uppercase label above a heading; the module name already lives in the breadcrumb.
-- **Don't** add a theme switch; the theme follows the system setting.
+- **Don't** put the theme switch in the bar; it lives in the account menu (Light, Dark, System), since it is set once and rarely changed. Added at the owner's request on 28 Oct 2026; before that the theme only followed the system.
 - **Don't** let a seam be the only cue for anything.
 - **Don't** add Google Fonts links; fonts load through `next/font`.
 - **Don't** align layouts across modules as a sweep; layout differences are module choices.
