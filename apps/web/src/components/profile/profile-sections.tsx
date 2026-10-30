@@ -46,9 +46,12 @@ const BULLET_CAP = 2;
 export function IssueBadge({ count }: { count: number }) {
   if (!count) return null;
   return (
-    <Badge variant="outline" className="text-muted-foreground">
+    <Badge
+      variant="outline"
+      className="border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-300"
+    >
       <IconAlertCircle data-icon="inline-start" aria-hidden="true" />
-      {count} {count === 1 ? "issue" : "issues"}
+      Fix {count} {count === 1 ? "issue" : "issues"}
     </Badge>
   );
 }

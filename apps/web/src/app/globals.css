@@ -200,22 +200,31 @@
 }
 [data-term-hover] { cursor: help; }
 
-/* Corners: the tight pair (6px panels, smaller controls through the derived scale above). Was 0.25rem until 26 Oct 2026. */
+/* Corners: the tight pair (panels, smaller controls through the derived scale above). Was 0.375rem until 30 Oct 2026. */
 :root {
-  --radius: 0.375rem;
+  --radius: 0.275rem;
+}
+
+/* Tailwind's own base unit: every p-*, gap-*, m-*, h-*, size-* utility computes off this app-wide, so raising it is
+   a deliberate denser-or-airier call for the whole UI, not a Profile-only one. Was 0.25rem (Tailwind's default)
+   until 30 Oct 2026. The page/block/section tokens below are multiples of it, not their own rem values, so the
+   whole layout scales together instead of drifting apart. */
+:root {
+  --spacing: 0.3rem;
 }
 
 /* Spacing for every module page (docs/architecture/design-system.md): one 4px base, one page margin, one gap between
    blocks, one gap between sections. Pages use `px-page`, `pt-page`, `gap-block` and `gap-section`, never their own
-   numbers. The margin is 20px on a phone and 24px from 768px. */
+   numbers. The margin is 20px on a phone and 24px from 768px, in Tailwind's base 0.25rem unit; `--spacing` scales
+   both together. */
 :root {
-  --page: 1.25rem;
-  --block: 1rem;
-  --section: 2rem;
+  --page: calc(var(--spacing) * 5);
+  --block: calc(var(--spacing) * 4);
+  --section: calc(var(--spacing) * 8);
 }
 @media (min-width: 48rem) {
   :root {
-    --page: 1.5rem;
+    --page: calc(var(--spacing) * 6);
   }
 }
 @theme inline {
@@ -236,7 +245,7 @@
   color-scheme: light;
   --background: oklch(0.968 0.005 255);
   --foreground: oklch(0.2 0.008 265);
-  --card: oklch(1 0 0);
+  --card: oklch(0.968 0.005 255);
   --card-foreground: oklch(0.2 0.008 265);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.2 0.008 265);
@@ -289,7 +298,7 @@
   color-scheme: dark;
   --background: oklch(0.205 0.004 265);
   --foreground: oklch(0.93 0.004 100);
-  --card: oklch(0.235 0.005 265);
+  --card: oklch(0.205 0.004 265);
   --card-foreground: oklch(0.93 0.004 100);
   --popover: oklch(0.255 0.006 265);
   --popover-foreground: oklch(0.93 0.004 100);
