@@ -198,10 +198,12 @@ time zone is applied on the posting's date.
 
 One page at `/jobs`, in the module column like Profile.
 
-- **List:** New, Saved, Applied, Filtered out. Newest first, or by score or shift.
+- **List:** New, Saved, Applied, Dismissed, Filtered out. Newest first, or by score or shift.
 - **Each row:** title, company, source, how long ago it arrived, pay, job type, work setup, country, shift, score.
 - **Side panel for one posting:** why it fits, what's missing, the posting text, Open posting, Save, Mark applied,
-  Dismiss with a reason. A Filtered out posting shows which filter hid it, and Show anyway moves it to New.
+  Dismiss with a reason. Dismiss asks for one of Not interested, Wrong seniority, Already applied elsewhere, Other
+  (with a short text field), before moving the posting to Dismissed. A Filtered out posting shows which filter hid
+  it, and Show anyway moves it to New. A Dismissed posting shows the reason, and Undo moves it back to New.
 - **Settings:** the preferences table above, Roles from the Profile, Alert keywords, the address to forward to, and the
   OnlineJobs checker's state (Running, Paused, Blocked until a date) if it is built.
 - **Setup checklist** before the first posting arrives: copy the forwarding address, add the Gmail filter, set up
