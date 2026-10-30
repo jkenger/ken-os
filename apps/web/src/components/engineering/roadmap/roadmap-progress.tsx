@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import type { TopicStatus } from "@ken-os/domain";
+import { DotSeparator } from "@/components/dot-separator";
 import { formatDate } from "@/components/lab/words";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -43,7 +44,9 @@ function TopicCell({
         <span className="min-w-0">{topic.title}</span>
       </Button>
       <p className="text-xs text-muted-foreground">
-        {statusWords[topic.status]} · {topic.chapter}
+        {statusWords[topic.status]}
+        <DotSeparator />
+        {topic.chapter}
       </p>
     </Cell>
   );
@@ -109,7 +112,9 @@ export function RoadmapProgress({
             {chapters.length} {chapters.length === 1 ? "chapter" : "chapters"}
           </p>
           <p className="text-xs text-muted-foreground">
-            {counts.inProgress} in progress · {counts.skipped} skipped
+            {counts.inProgress} in progress
+            <DotSeparator />
+            {counts.skipped} skipped
           </p>
         </Cell>
       </section>

@@ -6,6 +6,7 @@ import { post } from "@/components/lab/topic/client";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { DotSeparator } from "@/components/dot-separator";
 import type { AuthorizeQuery } from "@/features/connector/rules";
 
 // The consent page for the Claude connector (docs/architecture/engineering-claude-connector.md, section 3, Sign-in).
@@ -46,7 +47,9 @@ export function ConsentCard({
         <CardHeader>
           <CardTitle>Connect Claude</CardTitle>
           <CardDescription>
-            {appName} · {appHost}
+            {appName}
+            <DotSeparator />
+            {appHost}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 text-sm">
@@ -55,7 +58,11 @@ export function ConsentCard({
               <li key={line}>{line}</li>
             ))}
           </ul>
-          <p className="text-xs text-muted-foreground">Returns to {redirectHost} · Disconnect any time on Profile</p>
+          <p className="text-xs text-muted-foreground">
+            Returns to {redirectHost}
+            <DotSeparator />
+            Disconnect any time on Profile
+          </p>
           {problem && (
             <Alert variant="destructive">
               <IconAlertCircle aria-hidden="true" />

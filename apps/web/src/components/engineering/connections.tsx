@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { DotSeparator } from "@/components/dot-separator";
 import { post } from "@/components/lab/topic/client";
 import { formatDate } from "@/components/lab/words";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,9 @@ export function Connections({ connections }: { connections: Connection[] }) {
         >
           <span className="min-w-0">
             <span className="block font-medium">
-              {connection.name} · {connection.host}
+              {connection.name}
+              <DotSeparator />
+              {connection.host}
             </span>
             <span className="block text-muted-foreground">
               Connected {formatDate(connection.connectedAt)}

@@ -1,6 +1,7 @@
 "use client";
 
 import { IconArrowRight, IconCheck, IconCode, IconExternalLink } from "@tabler/icons-react";
+import { DotSeparator } from "@/components/dot-separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -69,11 +70,17 @@ function BuildCode({ build }: { build: BuildView }) {
   return (
     <details className="group mt-1.5">
       <DisclosureSummary className="text-xs font-semibold">
-        Your code · {build.evidence.length === 1 ? "1 file" : `${build.evidence.length} files`}
+        Your code
+        <DotSeparator />
+        {build.evidence.length === 1 ? "1 file" : `${build.evidence.length} files`}
       </DisclosureSummary>
       <div className="mt-2 grid gap-3">
         <p className="text-xs leading-relaxed text-muted-foreground">
-          {places[build.where]} · {formatDate(build.at)} · {build.note}
+          {places[build.where]}
+          <DotSeparator />
+          {formatDate(build.at)}
+          <DotSeparator />
+          {build.note}
         </p>
         {build.evidence.map((file, index) => (
           <figure key={`${file.path}-${index}`} className="grid gap-1">
@@ -122,7 +129,9 @@ export function TopicTasks({ panel }: { panel: TopicPanelView }) {
             <Box state={task.state} />
             <div className="min-w-0 flex-1">
               <span className={cn((task.state === "none" || task.state === "skipped") && "text-muted-foreground")}>
-                <span className="font-semibold">{titles[task.id]}</span> · {taskLine(task.id, panel)}
+                <span className="font-semibold">{titles[task.id]}</span>
+                <DotSeparator />
+                {taskLine(task.id, panel)}
                 <span className="sr-only">, {stateWords[task.state]}</span>
               </span>
               {task.id === "build" && panel.build && <BuildCode build={panel.build} />}
@@ -157,7 +166,11 @@ export function TopicTaskAction({
       <div className="grid gap-2">
         {panel.chapterDone && (
           <p className="text-sm font-medium">
-            Chapter done · {panel.chapterDone.title} · {panel.chapterDone.learned} of {panel.chapterDone.total}
+            Chapter done
+            <DotSeparator />
+            {panel.chapterDone.title}
+            <DotSeparator />
+            {panel.chapterDone.learned} of {panel.chapterDone.total}
           </p>
         )}
         {panel.next ? (

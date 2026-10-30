@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import { IconCheck } from "@tabler/icons-react";
+import { DotSeparator } from "@/components/dot-separator";
 import { cn } from "@/lib/utils";
 import { panel } from "./kit";
 import { Button } from "@/components/ui/button";
@@ -161,8 +162,16 @@ export function Confidence({
         ))}
       </ToggleGroup>
       <small className="mt-2 flex w-3xs max-w-full justify-between text-xs text-muted-foreground">
-        <span>1 · Guessing</span>
-        <span>5 · Very sure</span>
+        <span>
+          1
+          <DotSeparator />
+          Guessing
+        </span>
+        <span>
+          5
+          <DotSeparator />
+          Very sure
+        </span>
       </small>
     </fieldset>
   );

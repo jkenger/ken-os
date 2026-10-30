@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { IconChevronDown } from "@tabler/icons-react";
+import { DotSeparator } from "@/components/dot-separator";
 import { formatDate } from "@/components/lab/words";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -164,7 +165,11 @@ export function ReviewTab({ topicId, notes }: { topicId: string; notes: ReactNod
           )}
           {review.passingCode && (
             <section>
-              <h3 className={sectionTitle}>Your code · passed {formatDate(review.passingCode.at)}</h3>
+              <h3 className={sectionTitle}>
+                Your code
+                <DotSeparator />
+                passed {formatDate(review.passingCode.at)}
+              </h3>
               <pre className={codeBlock}>
                 <code>{review.passingCode.code}</code>
               </pre>
@@ -172,7 +177,11 @@ export function ReviewTab({ topicId, notes }: { topicId: string; notes: ReactNod
           )}
           {review.explanation && (
             <section>
-              <h3 className={sectionTitle}>Your explanation · {formatDate(review.explanation.at)}</h3>
+              <h3 className={sectionTitle}>
+                Your explanation
+                <DotSeparator />
+                {formatDate(review.explanation.at)}
+              </h3>
               <blockquote className="border-l-2 pl-3 text-sm leading-relaxed whitespace-pre-wrap">
                 {review.explanation.text}
               </blockquote>
