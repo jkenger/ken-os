@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { InlineSeparator } from "@/components/inline-separator";
 import { panel } from "@/components/surfaces";
+import { Separator } from "@/components/ui/separator";
 import type { LedgerRow, LedgerSectionId } from "@/features/profile/ledger";
 import type { ReviewIssue } from "@/features/profile/review";
 import { cn } from "@/lib/utils";
@@ -29,17 +30,16 @@ import { IssueBadge } from "./profile-sections";
 
 const bare = (url: string) => url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
 
-/** One contact fact: its icon in a neutral box, the label, then the value. */
+/** One contact fact: a small plain icon before the label, then the value. No box: repeated boxed icons down a
+ *  list of peer fields read as a template, tinted or not. */
 function Fact({ label, icon: Icon, children }: { label: string; icon: Icon; children: ReactNode }) {
   return (
-    <div className="flex min-w-0 items-center gap-3">
-      <span className="grid size-9 shrink-0 place-items-center rounded-md border bg-muted/60 text-muted-foreground">
-        <Icon size={16} aria-hidden="true" />
-      </span>
-      <div className="min-w-0">
-        <dt className="text-xs text-muted-foreground">{label}</dt>
-        <dd className="truncate">{children}</dd>
-      </div>
+    <div className="min-w-0">
+      <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <Icon size={14} aria-hidden="true" />
+        {label}
+      </dt>
+      <dd className="mt-0.5 truncate">{children}</dd>
     </div>
   );
 }
@@ -69,7 +69,7 @@ export function ProfileHeader({
       aria-labelledby="contact-title"
       className={cn(panel, "scroll-mt-16 p-5", editing && "ring-1 ring-selected/40")}
     >
-      <div className="flex flex-wrap items-start gap-x-3 gap-y-2">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <div className="min-w-0 flex-1">
           <h1 id="contact-title" className="font-heading text-2xl leading-tight font-semibold tracking-tight">
             {contact.fullName || "Your name"}
@@ -151,8 +151,15 @@ export function ReviewPanel({
         <h2 id="review-title" className="font-heading text-base font-semibold">
           Review
         </h2>
-        <Badge variant="outline" className="text-muted-foreground">
-          {issues.length ? `${issues.length} ${issues.length === 1 ? "issue" : "issues"}` : "No issues"}
+        <Badge
+          variant="outline"
+          className={
+            issues.length
+              ? "border-amber-200 bg-amber-100 text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/15 dark:text-amber-300"
+              : "text-muted-foreground"
+          }
+        >
+          {issues.length ? `Fix ${issues.length} ${issues.length === 1 ? "issue" : "issues"}` : "No issues"}
         </Badge>
         <p className="ml-auto flex items-baseline gap-1.5">
           <span className="font-heading text-2xl leading-none font-semibold tabular-nums">{score}%</span>
@@ -160,9 +167,10 @@ export function ReviewPanel({
         </p>
       </div>
       {issues.length > 0 && (
-        <ul className="mt-4 divide-y border-t">
-          {issues.map((issue) => (
+        <ul className="mt-4">
+          {issues.map((issue, index) => (
             <li key={issue.id}>
+              {index > 0 && <Separator className="my-2" />}
               <Button
                 type="button"
                 variant="ghost"
@@ -183,15 +191,13 @@ export function ReviewPanel({
   );
 }
 
-/** The page's table of contents: every section with whether it's filled and its issues, then the right column's
- *  blocks. Links to the anchors, so it never opens a form. */
-export function SectionIndex({ rows, issues }: { rows: LedgerRow[]; issues: ReviewIssue[] }) {
-  const count = (id: LedgerSectionId) => issues.filter((issue) => issue.section === id).length;
+/** The page's table of contents: every section with whether it's filled, then the right column's blocks. Links to
+ *  the anchors, so it never opens a form. Its own section carries the issue count; the nav doesn't repeat it. */
+export function SectionIndex({ rows }: { rows: LedgerRow[] }) {
   return (
     <nav aria-label="Profile sections" className="flex flex-col gap-0.5">
       {rows.map((row) => {
         const Filled = row.count ? IconCircleCheck : IconCircleDashed;
-        const open = count(row.id);
         return (
           <Link
             key={row.id}
@@ -204,11 +210,6 @@ export function SectionIndex({ rows, issues }: { rows: LedgerRow[]; issues: Revi
               className={row.count ? "text-topic-learned" : "text-muted-foreground"}
             />
             <span className="min-w-0 flex-1 truncate">{row.title}</span>
-            {open > 0 && (
-              <span className="font-mono text-xs text-muted-foreground" aria-label={`${open} issues`}>
-                {open}
-              </span>
-            )}
           </Link>
         );
       })}

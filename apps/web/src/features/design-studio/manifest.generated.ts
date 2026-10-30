@@ -2405,8 +2405,8 @@ export const studioManifest: StudioManifest = {
   "theme": [
     {
       "name": "card",
-      "light": "oklch(1 0 0)",
-      "dark": "oklch(0.235 0.005 265)"
+      "light": "oklch(0.968 0.005 255)",
+      "dark": "oklch(0.205 0.004 265)"
     },
     {
       "name": "card-foreground",
@@ -2510,7 +2510,7 @@ export const studioManifest: StudioManifest = {
     },
     {
       "name": "radius",
-      "light": "0.375rem"
+      "light": "0.275rem"
     },
     {
       "name": "sidebar",
@@ -2643,16 +2643,20 @@ export const studioManifest: StudioManifest = {
       "dark": "var(--muted)"
     },
     {
+      "name": "spacing",
+      "light": "0.3rem"
+    },
+    {
       "name": "page",
-      "light": "1.25rem"
+      "light": "calc(var(--spacing) * 5)"
     },
     {
       "name": "block",
-      "light": "1rem"
+      "light": "calc(var(--spacing) * 4)"
     },
     {
       "name": "section",
-      "light": "2rem"
+      "light": "calc(var(--spacing) * 8)"
     },
     {
       "name": "selected",
@@ -2682,7 +2686,7 @@ export const studioManifest: StudioManifest = {
   ],
   "globals": {
     "file": "app/globals.css",
-    "lines": 376,
+    "lines": 385,
     "tail": [
       ".font-mono {",
       "  font-variant-numeric: tabular-nums;",

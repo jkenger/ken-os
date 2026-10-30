@@ -1,0 +1,1700 @@
+{
+ "url": "http://localhost:3000/api/dev-qa-sign-in",
+ "at": "2026-10-30T09:32:47.187Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 3,
+   "filled": [
+    0.16,
+    0.28,
+    0.17
+   ],
+   "motion": {
+    "elements": 1,
+    "css": 0,
+    "transitions": 0,
+    "scripted": 1,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 2035,
+     "screens": 2.3,
+     "words": 269,
+     "img": 0,
+     "video": 0,
+     "canvas": 0,
+     "svg": 48,
+     "sections": 10,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Dev QA",
+     "words": 2,
+     "chars": 6,
+     "lines": 1,
+     "size": 24,
+     "vw": 1.7,
+     "font": "Instrument Sans",
+     "weight": 600,
+     "tracking": -0.02,
+     "leading": 1.25,
+     "top": 107,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Dev QA",
+     "words": 2,
+     "lines": 1,
+     "size": 24,
+     "font": "Instrument Sans"
+    },
+    "headings": [],
+    "headingSummary": {
+     "count": 0,
+     "maxLines": 0,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Instrument Sans",
+       "share": 0.98,
+       "mono": false
+      },
+      {
+       "family": "Geist Mono",
+       "share": 0.02,
+       "mono": true
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      12,
+      14,
+      16,
+      24
+     ],
+     "sizeCount": 4,
+     "notLoaded": [],
+     "body": {
+      "font": "Instrument Sans",
+      "size": 14,
+      "leading": 1.63,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 6.2
+     },
+     "measureChars": 84,
+     "max": {
+      "size": 24,
+      "vw": 1.7,
+      "font": "Instrument Sans",
+      "text": "Dev QA"
+     },
+     "monoShare": 0.02,
+     "monoProseShare": 0.02,
+     "monoFamilies": [
+      "Geist Mono"
+     ],
+     "monoSamples": [
+      "+4%",
+      "+4%",
+      "+15%",
+      "+30%",
+      "+15%",
+      "+20%"
+     ],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0,
+     "centerShare": 0.14,
+     "smallText": 3
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#f2f5f8",
+     "bodyBgHsl": {
+      "h": 210,
+      "s": 0.3,
+      "l": 0.96
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f2f5f8",
+       "top": 0,
+       "hsl": {
+        "h": 210,
+        "s": 0.3,
+        "l": 0.96
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#575b62",
+       "share": 0.49
+      },
+      {
+       "color": "#14161a",
+       "share": 0.45
+      },
+      {
+       "color": "#973c00",
+       "share": 0.05
+      },
+      {
+       "color": "#fafafb",
+       "share": 0.01
+      }
+     ],
+     "button": {
+      "bg": "#f2f5f8",
+      "hsl": {
+       "h": 210,
+       "s": 0.3,
+       "l": 0.96
+      },
+      "fg": "#14161a"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 17,
+     "inHero": 8,
+     "radius": 11,
+     "height": 38,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Jump to a module… Ctrl K",
+      "+4% Add a location Contact",
+      "+4% Add a link, such as GitHub or Linked",
+      "+15% Write a summary Summary",
+      "+30% Add a role Experience"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 18,
+     "hairlineSamples": [
+      "main.relative.flex 1387px",
+      "header.sticky.top-0 1386px",
+      "div.mt-4.border-t 720px",
+      "ul.grid.border-t 768px",
+      "li.flex.items-center 384px"
+     ],
+     "outlinedBoxes": 9,
+     "dashed": 0,
+     "blurred": 1,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 8,
+       "iconTopped": false,
+       "rounded": false,
+       "top": 82
+      }
+     ]
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 53,
+     "floatingPill": false,
+     "blur": true
+    },
+    "fontsLoaded": [
+     "instrument sans",
+     "geist mono"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "pageH": 2035,
+    "margins": {
+     "left": 92,
+     "right": 57
+    },
+    "sections": [],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Dev QA",
+      "size": 24,
+      "top": 107,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 327,
+      "n": 8
+     },
+     {
+      "x": 354,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 9,
+    "bodySize": 14,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0.18,
+    "voidBox": {
+     "x": 1080,
+     "y": 240,
+     "w": 360,
+     "h": 660
+    }
+   },
+   "app": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "dark": false,
+    "ground": "#f2f5f8",
+    "sidebar": {
+     "w": 53,
+     "tag": "div",
+     "links": 7,
+     "share": 0.04
+    },
+    "topbar": {
+     "h": 53
+    },
+    "canvas": {
+     "left": 39,
+     "right": 77
+    },
+    "hero": {
+     "text": "Dev QA",
+     "words": 2,
+     "chars": 6,
+     "lines": 1,
+     "size": 24,
+     "vw": 1.7,
+     "font": "Instrument Sans",
+     "weight": 600,
+     "tracking": -0.02,
+     "leading": 1.25,
+     "top": 107,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 9,
+     "firstScreen": 3,
+     "ragged": [
+      {
+       "diff": 131,
+       "top": 82
+      }
+     ],
+     "voids": []
+    },
+    "tiles": 5,
+    "panels": {
+     "count": 11,
+     "radii": [
+      [
+       4,
+       9
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 0,
+     "hues": 0,
+     "samples": []
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 7,
+     "tabularShare": 1,
+     "kpiMax": 24
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.12,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      12,
+      14,
+      16,
+      24
+     ]
+    },
+    "title": {
+     "text": "Dev QA",
+     "size": 24,
+     "top": 107
+    },
+    "colourShare": 0.001
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 3,
+   "filled": [
+    0.29,
+    0.25,
+    0.1
+   ],
+   "motion": {
+    "elements": 1,
+    "css": 0,
+    "transitions": 0,
+    "scripted": 1,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 2258,
+     "screens": 2.2,
+     "words": 256,
+     "img": 0,
+     "video": 0,
+     "canvas": 0,
+     "svg": 48,
+     "sections": 10,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Dev QA",
+     "words": 2,
+     "chars": 6,
+     "lines": 1,
+     "size": 24,
+     "vw": 3.1,
+     "font": "Instrument Sans",
+     "weight": 600,
+     "tracking": -0.02,
+     "leading": 1.25,
+     "top": 107,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Dev QA",
+     "words": 2,
+     "lines": 1,
+     "size": 24,
+     "font": "Instrument Sans"
+    },
+    "headings": [],
+    "headingSummary": {
+     "count": 0,
+     "maxLines": 0,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Instrument Sans",
+       "share": 0.97,
+       "mono": false
+      },
+      {
+       "family": "Geist Mono",
+       "share": 0.03,
+       "mono": true
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      12,
+      14,
+      16,
+      24
+     ],
+     "sizeCount": 4,
+     "notLoaded": [],
+     "body": {
+      "font": "Instrument Sans",
+      "size": 14,
+      "leading": 1.63,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 6.2
+     },
+     "measureChars": 68,
+     "max": {
+      "size": 24,
+      "vw": 3.1,
+      "font": "Instrument Sans",
+      "text": "Dev QA"
+     },
+     "monoShare": 0.03,
+     "monoProseShare": 0.03,
+     "monoFamilies": [
+      "Geist Mono"
+     ],
+     "monoSamples": [
+      "+4%",
+      "+4%",
+      "+15%",
+      "+30%",
+      "+15%",
+      "+20%"
+     ],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0,
+     "centerShare": 0.16,
+     "smallText": 3
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#f2f5f8",
+     "bodyBgHsl": {
+      "h": 210,
+      "s": 0.3,
+      "l": 0.96
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f2f5f8",
+       "top": 0,
+       "hsl": {
+        "h": 210,
+        "s": 0.3,
+        "l": 0.96
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#575b62",
+       "share": 0.51
+      },
+      {
+       "color": "#14161a",
+       "share": 0.42
+      },
+      {
+       "color": "#973c00",
+       "share": 0.06
+      },
+      {
+       "color": "#fafafb",
+       "share": 0.01
+      }
+     ],
+     "button": {
+      "bg": "#f2f5f8",
+      "hsl": {
+       "h": 210,
+       "s": 0.3,
+       "l": 0.96
+      },
+      "fg": "#14161a"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 17,
+     "inHero": 8,
+     "radius": 11,
+     "height": 38,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "Jump to a module… Ctrl K",
+      "+4% Add a location Contact",
+      "+4% Add a link, such as GitHub or Linked",
+      "+15% Write a summary Summary",
+      "+30% Add a role Experience"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 17,
+     "hairlineSamples": [
+      "main.relative.flex 715px",
+      "header.sticky.top-0 714px",
+      "div.mt-4.border-t 607px",
+      "ul.grid.border-t 655px",
+      "li.flex.items-center 327px"
+     ],
+     "outlinedBoxes": 9,
+     "dashed": 0,
+     "blurred": 1,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 8,
+       "iconTopped": false,
+       "rounded": false,
+       "top": 82
+      }
+     ]
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 53,
+     "floatingPill": false,
+     "blur": true
+    },
+    "fontsLoaded": [
+     "instrument sans",
+     "geist mono"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "pageH": 2258,
+    "margins": {
+     "left": 98,
+     "right": 47
+    },
+    "sections": [
+     {
+      "sel": "section#contact.rounded-lg.bg-card",
+      "tag": "section",
+      "top": 82,
+      "height": 312,
+      "words": 14,
+      "media": 0,
+      "middle": 233,
+      "heading": {
+       "text": "Dev QA",
+       "size": 24,
+       "tag": "h1"
+      },
+      "left": 108,
+      "right": 54,
+      "textLeft": 108,
+      "textRight": 117,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.rounded-lg.bg-card",
+      "tag": "section",
+      "top": 413,
+      "height": 495,
+      "words": 38,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "12",
+       "size": 24,
+       "tag": "span"
+      },
+      "left": 98,
+      "right": 47,
+      "textLeft": 108,
+      "textRight": 54,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.rounded-lg.bg-card",
+      "tag": "section",
+      "top": 927,
+      "height": 378,
+      "words": 102,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Writing",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 108,
+      "right": 54,
+      "textLeft": 108,
+      "textRight": 54,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#summary.rounded-lg.bg-card",
+      "tag": "section",
+      "top": 1325,
+      "height": 123,
+      "words": 7,
+      "media": 0,
+      "middle": 285,
+      "heading": {
+       "text": "Summary",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 108,
+      "right": 54,
+      "textLeft": 108,
+      "textRight": 69,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#experience.rounded-lg.bg-card",
+      "tag": "section",
+      "top": 1467,
+      "height": 123,
+      "words": 7,
+      "media": 0,
+      "middle": 320,
+      "heading": {
+       "text": "Experience",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 108,
+      "right": 54,
+      "textLeft": 108,
+      "textRight": 69,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#education.rounded-lg.bg-card",
+      "tag": "section",
+      "top": 1609,
+      "height": 123,
+      "words": 7,
+      "media": 0,
+      "middle": 311,
+      "heading": {
+       "text": "Education",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 108,
+      "right": 54,
+      "textLeft": 108,
+      "textRight": 69,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#skills.rounded-lg.bg-card",
+      "tag": "section",
+      "top": 1751,
+      "height": 123,
+      "words": 7,
+      "media": 0,
+      "middle": 359,
+      "heading": {
+       "text": "Skills",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 108,
+      "right": 54,
+      "textLeft": 108,
+      "textRight": 69,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.rounded-lg.bg-card",
+      "tag": "section",
+      "top": 1893,
+      "height": 127,
+      "words": 8,
+      "media": 0,
+      "middle": 10,
+      "heading": {
+       "text": "Add more sections",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 108,
+      "right": 145,
+      "textLeft": 108,
+      "textRight": 160,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "div.flex.min-w-0",
+      "tag": "div",
+      "top": 2039,
+      "height": 181,
+      "words": 17,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Resumes",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 279,
+      "right": 225,
+      "textLeft": 279,
+      "textRight": 225,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Dev QA",
+      "size": 24,
+      "top": 107,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 108,
+      "n": 8
+     },
+     {
+      "x": 135,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 9,
+    "bodySize": 14,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "dark": false,
+    "ground": "#f2f5f8",
+    "sidebar": {
+     "w": 53,
+     "tag": "div",
+     "links": 7,
+     "share": 0.07
+    },
+    "topbar": {
+     "h": 53
+    },
+    "canvas": {
+     "left": 41,
+     "right": 47
+    },
+    "hero": {
+     "text": "Dev QA",
+     "words": 2,
+     "chars": 6,
+     "lines": 1,
+     "size": 24,
+     "vw": 3.1,
+     "font": "Instrument Sans",
+     "weight": 600,
+     "tracking": -0.02,
+     "leading": 1.25,
+     "top": 107,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 9,
+     "firstScreen": 3,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 5,
+    "panels": {
+     "count": 11,
+     "radii": [
+      [
+       4,
+       9
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 0,
+     "hues": 0,
+     "samples": []
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 7,
+     "tabularShare": 1,
+     "kpiMax": 24
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.12,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      12,
+      14,
+      16,
+      24
+     ]
+    },
+    "title": {
+     "text": "Dev QA",
+     "size": 24,
+     "top": 107
+    },
+    "colourShare": 0.002
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 4,
+   "filled": [
+    0.3,
+    0.51,
+    0.24,
+    0.21
+   ],
+   "motion": {
+    "elements": 1,
+    "css": 0,
+    "transitions": 0,
+    "scripted": 1,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 2931,
+     "screens": 3.5,
+     "words": 241,
+     "img": 0,
+     "video": 0,
+     "canvas": 0,
+     "svg": 41,
+     "sections": 10,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 0,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [],
+     "videosNoPoster": 0
+    },
+    "hero": {
+     "text": "Dev QA",
+     "words": 2,
+     "chars": 6,
+     "lines": 1,
+     "size": 24,
+     "vw": 6.2,
+     "font": "Instrument Sans",
+     "weight": 600,
+     "tracking": -0.02,
+     "leading": 1.25,
+     "top": 102,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "h1": {
+     "text": "Dev QA",
+     "words": 2,
+     "lines": 1,
+     "size": 24,
+     "font": "Instrument Sans"
+    },
+    "headings": [
+     {
+      "text": "Dev QA",
+      "words": 2,
+      "chars": 6,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Instrument Sans",
+      "weight": 600,
+      "tracking": -0.025,
+      "leading": 1.25,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "left",
+      "widthRatio": 0.32,
+      "top": 102,
+      "tag": "h1",
+      "kind": "heading"
+     },
+     {
+      "text": "12%",
+      "words": 1,
+      "chars": 3,
+      "lines": 1,
+      "size": 24,
+      "vw": 6.2,
+      "font": "Instrument Sans",
+      "weight": 600,
+      "tracking": 0,
+      "leading": 1,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "right",
+      "widthRatio": 0.11,
+      "top": 578,
+      "tag": "span",
+      "kind": "statement"
+     }
+    ],
+    "headingSummary": {
+     "count": 2,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 1,
+     "centered": 0,
+     "medianWords": 1,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Instrument Sans",
+       "share": 0.97,
+       "mono": false
+      },
+      {
+       "family": "Geist Mono",
+       "share": 0.03,
+       "mono": true
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      12,
+      14,
+      16,
+      24
+     ],
+     "sizeCount": 4,
+     "notLoaded": [],
+     "body": {
+      "font": "Instrument Sans",
+      "size": 14,
+      "leading": 1.63,
+      "weight": 400,
+      "tracking": 0,
+      "contrast": 6.2
+     },
+     "measureChars": 42,
+     "max": {
+      "size": 24,
+      "vw": 6.2,
+      "font": "Instrument Sans",
+      "text": "Dev QA"
+     },
+     "monoShare": 0.03,
+     "monoProseShare": 0.03,
+     "monoFamilies": [
+      "Geist Mono"
+     ],
+     "monoSamples": [
+      "+4%",
+      "+4%",
+      "+15%",
+      "+30%",
+      "+15%",
+      "+20%"
+     ],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0,
+     "centerShare": 0.15,
+     "smallText": 2
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#f2f5f8",
+     "bodyBgHsl": {
+      "h": 210,
+      "s": 0.3,
+      "l": 0.96
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#f2f5f8",
+       "top": 0,
+       "hsl": {
+        "h": 210,
+        "s": 0.3,
+        "l": 0.96
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#575b62",
+       "share": 0.5
+      },
+      {
+       "color": "#14161a",
+       "share": 0.43
+      },
+      {
+       "color": "#973c00",
+       "share": 0.06
+      },
+      {
+       "color": "#fafafb",
+       "share": 0.01
+      }
+     ],
+     "button": {
+      "bg": "#f2f5f8",
+      "hsl": {
+       "h": 210,
+       "s": 0.3,
+       "l": 0.96
+      },
+      "fg": "#14161a"
+     },
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 16,
+     "inHero": 3,
+     "radius": 11,
+     "height": 38,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "+4% Add a location Contact",
+      "+4% Add a link, such as GitHub or Linked",
+      "+15% Write a summary Summary"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 0,
+     "shadowOverlay": 0,
+     "shadowSamples": [],
+     "gradients": 0,
+     "scrims": 0,
+     "gradientSamples": [],
+     "gradientText": 0,
+     "hairlines": 16,
+     "hairlineSamples": [
+      "header.sticky.top-0 390px",
+      "div.mt-4.border-t 292px",
+      "ul.grid.border-t 340px",
+      "li.flex.items-center 340px",
+      "li.flex.items-center 340px"
+     ],
+     "outlinedBoxes": 9,
+     "dashed": 0,
+     "blurred": 1,
+     "roundedBoxes": 0,
+     "boxRadius": 0,
+     "squareMedia": 0,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": [
+      {
+       "count": 8,
+       "iconTopped": false,
+       "rounded": false,
+       "top": 77
+      }
+     ]
+    },
+    "heroMedia": [],
+    "nav": {
+     "links": 0,
+     "fixed": true,
+     "height": 53,
+     "floatingPill": false,
+     "blur": true
+    },
+    "fontsLoaded": [
+     "instrument sans",
+     "instrument sans fallback",
+     "geist mono"
+    ]
+   },
+   "layout": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "pageH": 2931,
+    "margins": {
+     "left": 39,
+     "right": 43
+    },
+    "sections": [
+     {
+      "sel": "section#contact.rounded-lg.bg-card",
+      "tag": "section",
+      "top": 77,
+      "height": 457,
+      "words": 14,
+      "media": 0,
+      "middle": 23,
+      "heading": {
+       "text": "Dev QA",
+       "size": 24,
+       "tag": "h1"
+      },
+      "left": 49,
+      "right": 49,
+      "textLeft": 49,
+      "textRight": 112,
+      "fullBleed": false,
+      "footer": false,
+      "hero": true,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.rounded-lg.bg-card",
+      "tag": "section",
+      "top": 553,
+      "height": 511,
+      "words": 38,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "12",
+       "size": 24,
+       "tag": "span"
+      },
+      "left": 39,
+      "right": 43,
+      "textLeft": 49,
+      "textRight": 49,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.rounded-lg.bg-card",
+      "tag": "section",
+      "top": 1083,
+      "height": 746,
+      "words": 102,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Writing",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 49,
+      "right": 51,
+      "textLeft": 49,
+      "textRight": 51,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#summary.rounded-lg.bg-card",
+      "tag": "section",
+      "top": 1848,
+      "height": 156,
+      "words": 7,
+      "media": 0,
+      "middle": 33,
+      "heading": {
+       "text": "Summary",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 49,
+      "right": 49,
+      "textLeft": 49,
+      "textRight": 64,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#experience.rounded-lg.bg-card",
+      "tag": "section",
+      "top": 2024,
+      "height": 156,
+      "words": 7,
+      "media": 0,
+      "middle": 42,
+      "heading": {
+       "text": "Experience",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 49,
+      "right": 49,
+      "textLeft": 49,
+      "textRight": 64,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#education.rounded-lg.bg-card",
+      "tag": "section",
+      "top": 2200,
+      "height": 156,
+      "words": 7,
+      "media": 0,
+      "middle": 42,
+      "heading": {
+       "text": "Education",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 49,
+      "right": 49,
+      "textLeft": 49,
+      "textRight": 64,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section#skills.rounded-lg.bg-card",
+      "tag": "section",
+      "top": 2375,
+      "height": 123,
+      "words": 7,
+      "media": 0,
+      "middle": 45,
+      "heading": {
+       "text": "Skills",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 49,
+      "right": 49,
+      "textLeft": 49,
+      "textRight": 64,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "section.rounded-lg.bg-card",
+      "tag": "section",
+      "top": 2517,
+      "height": 175,
+      "words": 8,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Add more sections",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 49,
+      "right": 87,
+      "textLeft": 49,
+      "textRight": 103,
+      "fullBleed": false,
+      "footer": false,
+      "hero": false,
+      "continues": true,
+      "pinned": false
+     },
+     {
+      "sel": "div.flex.min-w-0",
+      "tag": "div",
+      "top": 2711,
+      "height": 181,
+      "words": 17,
+      "media": 0,
+      "middle": 0,
+      "heading": {
+       "text": "Resumes",
+       "size": 16,
+       "tag": "h2"
+      },
+      "left": 63,
+      "right": 63,
+      "textLeft": 63,
+      "textRight": 63,
+      "fullBleed": false,
+      "footer": true,
+      "hero": false,
+      "continues": false,
+      "pinned": false
+     }
+    ],
+    "gaps": [],
+    "h1s": [
+     {
+      "text": "Dev QA",
+      "size": 24,
+      "top": 102,
+      "firstScreen": true
+     }
+    ],
+    "edgeText": [],
+    "edges": [
+     {
+      "x": 49,
+      "n": 8
+     },
+     {
+      "x": 77,
+      "n": 1
+     }
+    ],
+    "leftBlocks": 9,
+    "bodySize": 14,
+    "stage": false,
+    "explains": false,
+    "slivers": [],
+    "voidShare": 0,
+    "voidBox": null
+   },
+   "app": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "dark": false,
+    "ground": "#f2f5f8",
+    "sidebar": null,
+    "topbar": {
+     "h": 53
+    },
+    "canvas": {
+     "left": 36,
+     "right": 24
+    },
+    "hero": {
+     "text": "Dev QA",
+     "words": 2,
+     "chars": 6,
+     "lines": 1,
+     "size": 24,
+     "vw": 6.2,
+     "font": "Instrument Sans",
+     "weight": 600,
+     "tracking": -0.02,
+     "leading": 1.25,
+     "top": 102,
+     "tag": "h1",
+     "kind": "heading",
+     "align": "left",
+     "position": "left"
+    },
+    "charts": 0,
+    "layout": {
+     "panels": 9,
+     "firstScreen": 2,
+     "ragged": [],
+     "voids": []
+    },
+    "tiles": 5,
+    "panels": {
+     "count": 11,
+     "radii": [
+      [
+       4,
+       9
+      ],
+      [
+       0,
+       2
+      ]
+     ],
+     "heavyBorders": 0,
+     "borderSamples": [],
+     "heavyShadows": 0,
+     "softShadows": 0,
+     "shadowSamples": [],
+     "glass": 0
+    },
+    "chips": {
+     "count": 1,
+     "hues": 1,
+     "samples": [
+      {
+       "hue": 210,
+       "size": 43,
+       "radius": "11.44px"
+      }
+     ]
+    },
+    "numbers": {
+     "cells": 0,
+     "leftAligned": 0,
+     "figures": 7,
+     "tabularShare": 1,
+     "kpiMax": 24
+    },
+    "rows": null,
+    "chartHues": 0,
+    "placeholders": [],
+    "type": {
+     "under13": 0.11,
+     "tiny": 0,
+     "tinySamples": [],
+     "sizes": [
+      12,
+      14,
+      16,
+      24
+     ]
+    },
+    "title": {
+     "text": "Dev QA",
+     "size": 24,
+     "top": 102
+    },
+    "colourShare": 0.002
+   },
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "WARN",
+   "id": "ragged-row",
+   "width": 1440,
+   "message": "1 pair(s) of cards in one row end at different heights (by 131px).",
+   "fix": "Cards that share a row share a bottom edge: balance them by their content (the same number of rows, a block of similar height beside it), or stack them. In testing, ragged rows were marked down every time."
+  },
+  {
+   "level": "WARN",
+   "id": "below-fold",
+   "width": 1440,
+   "message": "Only 3 of 9 blocks start on the first 1440px screen.",
+   "fix": "Every block the brief names shows its header and first rows on the first desktop screen: size the headline block to its question, cap long lists with \"View all\", and put time-sensitive blocks before long tables."
+  },
+  {
+   "level": "WARN",
+   "id": "icon-tiles",
+   "width": 1440,
+   "message": "5 icons sit in neutral boxes repeated down the screen.",
+   "fix": "A boxed icon on every row or card is still the template habit, tinted or not. Keep one plain 16px icon where it helps the eye, or none.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "C:\\Users\\johnk\\orca\\workspaces\\ken-os\\trevally\\.taste-skill\\before\\desktop-fold.jpg",
+   "pages": [
+    "C:\\Users\\johnk\\orca\\workspaces\\ken-os\\trevally\\.taste-skill\\before\\desktop-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "C:\\Users\\johnk\\orca\\workspaces\\ken-os\\trevally\\.taste-skill\\before\\tablet-fold.jpg",
+   "pages": [
+    "C:\\Users\\johnk\\orca\\workspaces\\ken-os\\trevally\\.taste-skill\\before\\tablet-page-01.jpg"
+   ],
+   "film": []
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "C:\\Users\\johnk\\orca\\workspaces\\ken-os\\trevally\\.taste-skill\\before\\mobile-fold.jpg",
+   "pages": [
+    "C:\\Users\\johnk\\orca\\workspaces\\ken-os\\trevally\\.taste-skill\\before\\mobile-page-01.jpg"
+   ],
+   "film": []
+  }
+ ]
+}
