@@ -24,6 +24,7 @@ type ExtractResult = {
   requiredHours: { start: string; end: string; timezone: string } | null;
   seniority: "junior" | "mid" | "senior" | "lead" | null;
   yearsRequired: number | null;
+  isAgency: boolean;
   summary: string;
   promptVersion: string;
   model: string;
@@ -42,6 +43,7 @@ type ExtractedFields = {
   requiredHours: { start: string; end: string; timezone: string } | null;
   seniority: "junior" | "mid" | "senior" | "lead" | null;
   yearsRequired: number | null;
+  isAgency: boolean;
   extractPromptVersion: string;
   extractModel: string;
 };
@@ -82,6 +84,7 @@ export async function processPostings(params: {
       requiredHours: extracted.requiredHours,
       seniority: extracted.seniority,
       yearsRequired: extracted.yearsRequired,
+      isAgency: extracted.isAgency,
       extractPromptVersion: extracted.promptVersion,
       extractModel: extracted.model,
     });

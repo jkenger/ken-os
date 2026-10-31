@@ -71,22 +71,51 @@ async function main() {
     console.log("ok - the same posting from a second source merges instead of duplicating, listing both sources");
 
     const preferences = await import("../src/features/jobs/preferences-store");
+    const DEFAULT_SLICE2_PREFS: Omit<
+      import("../src/features/jobs/preferences-store").JobPreferences,
+      "skipWords" | "skipCompanies" | "postedWithinDays"
+    > = {
+      minimumPay: null,
+      payCurrency: "USD",
+      payPeriod: "month",
+      jobTypes: ["full_time", "contract"],
+      workSetups: ["remote"],
+      countries: ["US", "AU", "GB"],
+      agenciesHide: false,
+    };
+
     const defaults = await preferences.getPreferences(userId);
-    assert.deepEqual(defaults, { skipWords: [], skipCompanies: [], postedWithinDays: 14 });
+    assert.deepEqual(defaults, { skipWords: [], skipCompanies: [], postedWithinDays: 14, ...DEFAULT_SLICE2_PREFS });
     console.log("ok - preferences default to no skip words, no skip companies, 14 days");
 
     await preferences.savePreferences(userId, {
       skipWords: ["Sales", "Marketing"],
       skipCompanies: ["Acme"],
       postedWithinDays: 7,
+      ...DEFAULT_SLICE2_PREFS,
     });
     const saved = await preferences.getPreferences(userId);
-    assert.deepEqual(saved, { skipWords: ["Sales", "Marketing"], skipCompanies: ["Acme"], postedWithinDays: 7 });
+    assert.deepEqual(saved, {
+      skipWords: ["Sales", "Marketing"],
+      skipCompanies: ["Acme"],
+      postedWithinDays: 7,
+      ...DEFAULT_SLICE2_PREFS,
+    });
     console.log("ok - saved preferences persist and reload correctly");
 
-    await preferences.savePreferences(userId, { skipWords: ["Only this"], skipCompanies: [], postedWithinDays: 30 });
+    await preferences.savePreferences(userId, {
+      skipWords: ["Only this"],
+      skipCompanies: [],
+      postedWithinDays: 30,
+      ...DEFAULT_SLICE2_PREFS,
+    });
     const resaved = await preferences.getPreferences(userId);
-    assert.deepEqual(resaved, { skipWords: ["Only this"], skipCompanies: [], postedWithinDays: 30 });
+    assert.deepEqual(resaved, {
+      skipWords: ["Only this"],
+      skipCompanies: [],
+      postedWithinDays: 30,
+      ...DEFAULT_SLICE2_PREFS,
+    });
     console.log("ok - saving again replaces the previous preferences, not merges with them");
 
     await store.savePostings(userId, [
@@ -118,7 +147,12 @@ async function main() {
     assert.equal(movedBack.filterReason, null);
     console.log("ok - Show anyway moves a filtered posting back to New and clears its reason");
 
-    await preferences.savePreferences(userId, { skipWords: [], skipCompanies: [], postedWithinDays: 0 });
+    await preferences.savePreferences(userId, {
+      skipWords: [],
+      skipCompanies: [],
+      postedWithinDays: 0,
+      ...DEFAULT_SLICE2_PREFS,
+    });
     await store.refilterExisting(userId);
     const afterRefilter = await store.listPostings(userId, "filtered_out");
     assert.ok(
@@ -242,12 +276,172 @@ async function main() {
       requiredHours: null,
       seniority: "senior",
       yearsRequired: 5,
+      isAgency: false,
       extractPromptVersion: "jobs-extract-v1",
       extractModel: "test-model",
     });
     const afterExtract = await store.getPendingPostings(userId, 10);
     assert.ok(!afterExtract.some((p) => p.id === pendingOne.id), "a processed posting no longer shows as pending");
     console.log("ok - saveExtractedFields marks a posting processed, removing it from the pending list");
+
+    await preferences.savePreferences(userId, {
+      skipWords: [],
+      skipCompanies: [],
+      postedWithinDays: 365,
+      minimumPay: 80000,
+      payCurrency: "USD",
+      payPeriod: "year",
+      jobTypes: ["full_time", "contract"],
+      workSetups: ["remote"],
+      countries: ["US", "AU", "GB"],
+      agenciesHide: true,
+    });
+    await store.savePostings(userId, [
+      {
+        source: "linkedin",
+        sourceId: "li-below-pay",
+        title: "Below Min Pay Role",
+        company: "SliceTwoCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/20",
+      },
+      {
+        source: "linkedin",
+        sourceId: "li-agency",
+        title: "Agency Role",
+        company: "SliceTwoCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/21",
+      },
+      {
+        source: "linkedin",
+        sourceId: "li-good",
+        title: "Good Role",
+        company: "SliceTwoCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/22",
+      },
+      {
+        source: "linkedin",
+        sourceId: "li-part-time",
+        title: "Part Time Role",
+        company: "SliceTwoCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/23",
+      },
+      {
+        source: "linkedin",
+        sourceId: "li-wrong-country",
+        title: "Wrong Country Role",
+        company: "SliceTwoCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/24",
+      },
+    ]);
+    const sliceTwoPending = await store.getPendingPostings(userId, 10);
+    const byTitle = (title: string) => sliceTwoPending.find((p) => p.title === title)!;
+
+    const extractDefaults = {
+      fullDescription: "Full description.",
+      partial: false,
+      summary: "Summary.",
+      requiredHours: null,
+      seniority: "senior" as const,
+      yearsRequired: 5,
+      extractPromptVersion: "jobs-extract-v2",
+      extractModel: "test-model",
+    };
+    await store.saveExtractedFields(byTitle("Below Min Pay Role").id, {
+      ...extractDefaults,
+      payAmount: 50000,
+      payCurrency: "USD",
+      payPeriod: "year",
+      jobType: "full_time",
+      workSetup: "remote",
+      countries: [],
+      isAgency: false,
+    });
+    await store.saveExtractedFields(byTitle("Agency Role").id, {
+      ...extractDefaults,
+      payAmount: 90000,
+      payCurrency: "USD",
+      payPeriod: "year",
+      jobType: "full_time",
+      workSetup: "remote",
+      countries: [],
+      isAgency: true,
+    });
+    await store.saveExtractedFields(byTitle("Good Role").id, {
+      ...extractDefaults,
+      payAmount: 90000,
+      payCurrency: "USD",
+      payPeriod: "year",
+      jobType: "full_time",
+      workSetup: "remote",
+      countries: [],
+      isAgency: false,
+    });
+    await store.saveExtractedFields(byTitle("Part Time Role").id, {
+      ...extractDefaults,
+      payAmount: 90000,
+      payCurrency: "USD",
+      payPeriod: "year",
+      jobType: "part_time",
+      workSetup: "remote",
+      countries: [],
+      isAgency: false,
+    });
+    await store.saveExtractedFields(byTitle("Wrong Country Role").id, {
+      ...extractDefaults,
+      payAmount: 90000,
+      payCurrency: "USD",
+      payPeriod: "year",
+      jobType: "full_time",
+      workSetup: "remote",
+      countries: ["DE"],
+      isAgency: false,
+    });
+
+    const sliceTwoFilteredOut = await store.listPostings(userId, "filtered_out");
+    const sliceTwoNew = await store.listPostings(userId, "new");
+    const reasonFor = (title: string) =>
+      sliceTwoFilteredOut.find((p) => p.title === title)?.filterReason ??
+      (sliceTwoNew.some((p) => p.title === title) ? null : undefined);
+
+    assert.equal(reasonFor("Below Min Pay Role"), "Below minimum pay");
+    assert.equal(reasonFor("Agency Role"), "Recruiting agency");
+    assert.equal(reasonFor("Good Role"), null);
+    assert.equal(reasonFor("Part Time Role"), "Job type: part_time");
+    assert.equal(reasonFor("Wrong Country Role"), "Country: DE");
+    console.log(
+      "ok - saveExtractedFields applies the upgraded filters (minimum pay, job type, countries, agencies) once a posting is processed",
+    );
+
+    await preferences.savePreferences(userId, {
+      skipWords: [],
+      skipCompanies: [],
+      postedWithinDays: 365,
+      minimumPay: 80000,
+      payCurrency: "USD",
+      payPeriod: "year",
+      jobTypes: ["full_time", "contract"],
+      workSetups: ["on_site"],
+      countries: ["US", "AU", "GB"],
+      agenciesHide: true,
+    });
+    await store.refilterExisting(userId);
+    const afterWorkSetupChange = await store.listPostings(userId, "filtered_out");
+    const goodRoleAfter = afterWorkSetupChange.find((p) => p.title === "Good Role");
+    assert.ok(goodRoleAfter);
+    assert.equal(goodRoleAfter.filterReason, "Work setup: remote");
+    console.log(
+      "ok - tightening Work setup and refiltering moves an already-processed posting to Filtered out for the new reason",
+    );
   } finally {
     await db().delete(users).where(eq(users.id, userId));
     await closeDb();

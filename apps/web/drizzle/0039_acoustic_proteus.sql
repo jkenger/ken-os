@@ -1,0 +1,1 @@
+ALTER TABLE "job_postings" ADD COLUMN "is_agency" boolean DEFAULT false NOT NULL;

@@ -749,6 +749,8 @@ export const jobPostings = pgTable(
     seniority: text("seniority").$type<"junior" | "mid" | "senior" | "lead">(),
     /** A real, not an integer: a posting can state a fractional minimum ("1.5+ years"). */
     yearsRequired: real("years_required"),
+    /** True when the posting is from a recruiting/staffing agency, not the direct employer. */
+    isAgency: boolean("is_agency").notNull().default(false),
     extractPromptVersion: text("extract_prompt_version"),
     extractModel: text("extract_model"),
     processedAt: timestamp("processed_at", { withTimezone: true }),
@@ -799,8 +801,8 @@ export const jobMatches = pgTable(
   (table) => [index("job_matches_user_state_idx").on(table.userId, table.state)],
 );
 
-/** The step-1 preferences: skip words, skip companies, and the posted-within window. The rest of the full
- *  preferences table (pay, job type, work setup, countries, shifts, seniority, agencies, timing) is step 2/3 scope. */
+/** The owner's Jobs filter preferences (docs/product/job-finder.md, Preferences table). Shifts, seniority and
+ *  timing (instant-email threshold, digest time) are still step 2/3 scope, not here. */
 export const jobPreferences = pgTable("job_preferences", {
   userId: text("user_id")
     .primaryKey()
@@ -808,6 +810,16 @@ export const jobPreferences = pgTable("job_preferences", {
   skipWords: jsonb("skip_words").$type<string[]>().notNull().default([]),
   skipCompanies: jsonb("skip_companies").$type<string[]>().notNull().default([]),
   postedWithinDays: integer("posted_within_days").notNull().default(14),
+  minimumPay: real("minimum_pay"),
+  payCurrency: text("pay_currency").notNull().default("USD"),
+  payPeriod: text("pay_period").$type<"hour" | "day" | "week" | "month" | "year">().notNull().default("month"),
+  jobTypes: jsonb("job_types")
+    .$type<("full_time" | "part_time" | "contract" | "internship" | "temporary")[]>()
+    .notNull()
+    .default(["full_time", "contract"]),
+  workSetups: jsonb("work_setups").$type<("remote" | "hybrid" | "on_site")[]>().notNull().default(["remote"]),
+  countries: jsonb("countries").$type<string[]>().notNull().default(["US", "AU", "GB"]),
+  agenciesHide: boolean("agencies_hide").notNull().default(false),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

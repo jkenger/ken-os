@@ -123,7 +123,8 @@ export async function listPostings(userId: string, state: JobMatchState): Promis
 
 /** Re-evaluates every stored posting against the current preferences (docs/product/job-finder.md: "Changing a
  *  setting refilters existing postings without a new alert"). Only touches a match's state and reason when the
- *  verdict actually changed. */
+ *  verdict actually changed. A not-yet-processed posting's extracted-field columns are all null, so `filterReason`
+ *  only applies the step-1 checks to it, same as it always has. */
 export async function refilterExisting(userId: string): Promise<void> {
   const preferences = await getPreferences(userId);
   const rows = await db()
@@ -132,6 +133,13 @@ export async function refilterExisting(userId: string): Promise<void> {
       title: jobPostings.title,
       company: jobPostings.company,
       firstSeenAt: jobPostings.firstSeenAt,
+      payAmount: jobPostings.payAmount,
+      payCurrency: jobPostings.payCurrency,
+      payPeriod: jobPostings.payPeriod,
+      jobType: jobPostings.jobType,
+      workSetup: jobPostings.workSetup,
+      countries: jobPostings.countries,
+      isAgency: jobPostings.isAgency,
       state: jobMatches.state,
       filterReason: jobMatches.filterReason,
     })
@@ -217,14 +225,52 @@ export type ExtractedFields = {
   requiredHours: { start: string; end: string; timezone: string } | null;
   seniority: "junior" | "mid" | "senior" | "lead" | null;
   yearsRequired: number | null;
+  isAgency: boolean;
   extractPromptVersion: string;
   extractModel: string;
 };
 
-/** Saves one posting's extracted fields and marks it processed (plans/jobs-score.md, Slice 1). */
+/** Saves one posting's extracted fields, marks it processed, and applies the upgraded strict filters now that
+ *  those fields exist (plans/jobs-score.md, Slice 2: Minimum pay, Job type, Work setup, Countries, Agencies). */
 export async function saveExtractedFields(postingId: string, fields: ExtractedFields): Promise<void> {
+  const now = new Date();
   await db()
     .update(jobPostings)
-    .set({ ...fields, processedAt: new Date() })
+    .set({ ...fields, processedAt: now })
     .where(eq(jobPostings.id, postingId));
+
+  const [row] = await db()
+    .select({
+      userId: jobMatches.userId,
+      title: jobPostings.title,
+      company: jobPostings.company,
+      firstSeenAt: jobPostings.firstSeenAt,
+    })
+    .from(jobMatches)
+    .innerJoin(jobPostings, eq(jobPostings.id, jobMatches.postingId))
+    .where(eq(jobMatches.postingId, postingId))
+    .limit(1);
+  if (!row) return;
+
+  const preferences = await getPreferences(row.userId);
+  const reason = filterReason(
+    {
+      title: row.title,
+      company: row.company,
+      firstSeenAt: row.firstSeenAt,
+      payAmount: fields.payAmount,
+      payCurrency: fields.payCurrency,
+      payPeriod: fields.payPeriod,
+      jobType: fields.jobType,
+      workSetup: fields.workSetup,
+      countries: fields.countries,
+      isAgency: fields.isAgency,
+    },
+    preferences,
+    now,
+  );
+  await db()
+    .update(jobMatches)
+    .set({ state: reason ? "filtered_out" : "new", filterReason: reason, updatedAt: now })
+    .where(eq(jobMatches.postingId, postingId));
 }

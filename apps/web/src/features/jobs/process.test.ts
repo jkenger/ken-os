@@ -12,6 +12,7 @@ const extractResult = {
   requiredHours: null,
   seniority: "senior" as const,
   yearsRequired: 5,
+  isAgency: false,
   summary: "A senior role.",
   promptVersion: "jobs-extract-v1",
   model: "test-model",

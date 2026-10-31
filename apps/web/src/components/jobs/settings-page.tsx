@@ -4,13 +4,42 @@ import { useState } from "react";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toaster";
-import type { JobPreferences } from "@/features/jobs/preferences-store";
+import type { JobPreferences, JobType, PayPeriod, WorkSetup } from "@/features/jobs/preferences-store";
 import type { ScraperState } from "@/features/jobs/scraper-state";
 import { send } from "@/lib/api-client";
+
+const PAY_PERIOD_OPTIONS: { value: PayPeriod; label: string }[] = [
+  { value: "hour", label: "Hour" },
+  { value: "day", label: "Day" },
+  { value: "week", label: "Week" },
+  { value: "month", label: "Month" },
+  { value: "year", label: "Year" },
+];
+
+const JOB_TYPE_OPTIONS: { value: JobType; label: string }[] = [
+  { value: "full_time", label: "Full time" },
+  { value: "part_time", label: "Part time" },
+  { value: "contract", label: "Contract" },
+  { value: "internship", label: "Internship" },
+  { value: "temporary", label: "Temporary" },
+];
+
+const WORK_SETUP_OPTIONS: { value: WorkSetup; label: string }[] = [
+  { value: "remote", label: "Remote" },
+  { value: "hybrid", label: "Hybrid" },
+  { value: "on_site", label: "On-site" },
+];
+
+function toggle<T>(list: T[], value: T): T[] {
+  return list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
+}
 
 function sourceStateBadge(state: ScraperState | null) {
   if (state?.blockedUntil && state.blockedUntil > new Date()) {
@@ -48,6 +77,13 @@ export function JobsSettingsPage({
   const [skipWords, setSkipWords] = useState(preferences.skipWords.join("\n"));
   const [skipCompanies, setSkipCompanies] = useState(preferences.skipCompanies.join("\n"));
   const [postedWithinDays, setPostedWithinDays] = useState(String(preferences.postedWithinDays));
+  const [minimumPay, setMinimumPay] = useState(preferences.minimumPay === null ? "" : String(preferences.minimumPay));
+  const [payCurrency, setPayCurrency] = useState(preferences.payCurrency);
+  const [payPeriod, setPayPeriod] = useState<PayPeriod>(preferences.payPeriod);
+  const [jobTypes, setJobTypes] = useState<JobType[]>(preferences.jobTypes);
+  const [workSetups, setWorkSetups] = useState<WorkSetup[]>(preferences.workSetups);
+  const [countries, setCountries] = useState(preferences.countries.join("\n"));
+  const [agenciesHide, setAgenciesHide] = useState(preferences.agenciesHide);
   const [busy, setBusy] = useState(false);
 
   async function save() {
@@ -57,6 +93,13 @@ export function JobsSettingsPage({
         skipWords: linesToList(skipWords),
         skipCompanies: linesToList(skipCompanies),
         postedWithinDays: Number(postedWithinDays),
+        minimumPay: minimumPay.trim() === "" ? null : Number(minimumPay),
+        payCurrency,
+        payPeriod,
+        jobTypes,
+        workSetups,
+        countries: linesToList(countries),
+        agenciesHide,
       });
       toast({ tone: "success", title: "Settings saved" });
     } catch (error) {
@@ -137,6 +180,105 @@ export function JobsSettingsPage({
               onChange={(event) => setPostedWithinDays(event.target.value)}
               className="w-24"
             />
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="minimum-pay">Minimum pay</Label>
+            <span className="text-xs text-muted-foreground">
+              Empty means no minimum. Only checked when a posting states pay in the same currency
+            </span>
+            <div className="flex items-center gap-2">
+              <Input
+                id="minimum-pay"
+                type="number"
+                min={0}
+                value={minimumPay}
+                onChange={(event) => setMinimumPay(event.target.value)}
+                placeholder="No minimum"
+                className="w-32"
+              />
+              <Input
+                aria-label="Pay currency"
+                value={payCurrency}
+                onChange={(event) => setPayCurrency(event.target.value)}
+                className="w-20"
+                maxLength={3}
+              />
+              <span className="text-sm text-muted-foreground">per</span>
+              <NativeSelect
+                aria-label="Pay period"
+                value={payPeriod}
+                onChange={(event) => setPayPeriod(event.target.value as PayPeriod)}
+                className="w-28"
+              >
+                {PAY_PERIOD_OPTIONS.map((option) => (
+                  <NativeSelectOption key={option.value} value={option.value}>
+                    {option.label}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+            </div>
+          </div>
+          <div className="grid gap-1.5">
+            <span className="text-sm font-medium">Job type</span>
+            <span className="text-xs text-muted-foreground">A posting outside these is filtered out</span>
+            <div className="flex flex-wrap gap-4">
+              {JOB_TYPE_OPTIONS.map((option) => {
+                const id = `job-type-${option.value}`;
+                return (
+                  <div key={option.value} className="flex items-center gap-2">
+                    <Checkbox
+                      id={id}
+                      checked={jobTypes.includes(option.value)}
+                      onCheckedChange={() => setJobTypes((current) => toggle(current, option.value))}
+                    />
+                    <Label htmlFor={id} className="font-normal">
+                      {option.label}
+                    </Label>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className="grid gap-1.5">
+            <span className="text-sm font-medium">Work setup</span>
+            <span className="text-xs text-muted-foreground">A posting outside these is filtered out</span>
+            <div className="flex flex-wrap gap-4">
+              {WORK_SETUP_OPTIONS.map((option) => {
+                const id = `work-setup-${option.value}`;
+                return (
+                  <div key={option.value} className="flex items-center gap-2">
+                    <Checkbox
+                      id={id}
+                      checked={workSetups.includes(option.value)}
+                      onCheckedChange={() => setWorkSetups((current) => toggle(current, option.value))}
+                    />
+                    <Label htmlFor={id} className="font-normal">
+                      {option.label}
+                    </Label>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="countries">Countries</Label>
+            <span className="text-xs text-muted-foreground">
+              One ISO code per line, such as US or PH. A posting that states it's open to none of these is filtered out.
+              Postings that don't say are never filtered for this
+            </span>
+            <Textarea
+              id="countries"
+              value={countries}
+              onChange={(event) => setCountries(event.target.value)}
+              className="min-h-16"
+            />
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="grid gap-0.5">
+              <Label htmlFor="agencies-hide">Hide recruiting agencies</Label>
+              <span className="text-xs text-muted-foreground">Postings from a staffing agency, not the employer</span>
+            </div>
+            <Switch id="agencies-hide" checked={agenciesHide} onCheckedChange={setAgenciesHide} />
           </div>
           <Button type="button" disabled={busy} onClick={() => void save()} className="w-fit">
             Save settings
