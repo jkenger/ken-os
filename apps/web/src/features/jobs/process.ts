@@ -20,6 +20,7 @@ type ExtractResult = {
   payPeriod: "hour" | "day" | "week" | "month" | "year" | null;
   jobType: "full_time" | "part_time" | "contract" | "internship" | "temporary" | null;
   workSetup: "remote" | "hybrid" | "on_site" | null;
+  eligibilityStated: boolean;
   countries: string[];
   requiredHours: { start: string; end: string; timezone: string } | null;
   seniority: "junior" | "mid" | "senior" | "lead" | null;
@@ -39,6 +40,7 @@ type ExtractedFields = {
   payPeriod: "hour" | "day" | "week" | "month" | "year" | null;
   jobType: "full_time" | "part_time" | "contract" | "internship" | "temporary" | null;
   workSetup: "remote" | "hybrid" | "on_site" | null;
+  eligibilityStated: boolean;
   countries: string[];
   requiredHours: { start: string; end: string; timezone: string } | null;
   seniority: "junior" | "mid" | "senior" | "lead" | null;
@@ -80,6 +82,7 @@ export async function processPostings(params: {
       payPeriod: extracted.payPeriod,
       jobType: extracted.jobType,
       workSetup: extracted.workSetup,
+      eligibilityStated: extracted.eligibilityStated,
       countries: extracted.countries,
       requiredHours: extracted.requiredHours,
       seniority: extracted.seniority,

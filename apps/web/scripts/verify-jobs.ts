@@ -272,6 +272,7 @@ async function main() {
       payPeriod: "year",
       jobType: "full_time",
       workSetup: "remote",
+      eligibilityStated: true,
       countries: ["PH"],
       requiredHours: null,
       seniority: "senior",
@@ -350,14 +351,24 @@ async function main() {
         snippet: "",
         link: "https://www.linkedin.com/jobs/view/25",
       },
+      {
+        source: "linkedin",
+        sourceId: "li-worldwide",
+        title: "Worldwide Role",
+        company: "SliceTwoCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/26",
+      },
     ]);
-    const sliceTwoPending = await store.getPendingPostings(userId, 10);
+    const sliceTwoPending = await store.getPendingPostings(userId, 20);
     const byTitle = (title: string) => sliceTwoPending.find((p) => p.title === title)!;
 
     const extractDefaults = {
       fullDescription: "Full description.",
       partial: false,
       summary: "Summary.",
+      eligibilityStated: true,
       requiredHours: null,
       seniority: "senior" as const,
       yearsRequired: 5,
@@ -416,6 +427,18 @@ async function main() {
     });
     await store.saveExtractedFields(byTitle("Unstated Country Role").id, {
       ...extractDefaults,
+      eligibilityStated: false,
+      payAmount: 90000,
+      payCurrency: "USD",
+      payPeriod: "year",
+      jobType: "full_time",
+      workSetup: "remote",
+      countries: [],
+      isAgency: false,
+    });
+    await store.saveExtractedFields(byTitle("Worldwide Role").id, {
+      ...extractDefaults,
+      eligibilityStated: true,
       payAmount: 90000,
       payCurrency: "USD",
       payPeriod: "year",
@@ -441,6 +464,11 @@ async function main() {
       "a processed posting that states no eligibility is filtered by default, not shown",
     );
     assert.equal(reasonFor("Wrong Country Role"), "Country: DE");
+    assert.equal(
+      reasonFor("Worldwide Role"),
+      null,
+      "a posting that explicitly says it's open to everyone (stated, empty countries) is never filtered for country",
+    );
     console.log(
       "ok - saveExtractedFields applies the upgraded filters (minimum pay, job type, countries, agencies) once a posting is processed",
     );

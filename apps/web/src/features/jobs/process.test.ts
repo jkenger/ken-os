@@ -8,6 +8,7 @@ const extractResult = {
   payPeriod: "year" as const,
   jobType: "full_time" as const,
   workSetup: "remote" as const,
+  eligibilityStated: false,
   countries: [],
   requiredHours: null,
   seniority: "senior" as const,

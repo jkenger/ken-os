@@ -302,6 +302,13 @@
       "when": 1793449254331,
       "tag": "0042_conscious_gunslinger",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1793459098542,
+      "tag": "0043_groovy_thundra",
+      "breakpoints": true
     }
   ]
 }

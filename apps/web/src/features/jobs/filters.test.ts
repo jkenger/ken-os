@@ -132,38 +132,43 @@ test("a posting with no work setup stated is not filtered for work setup", () =>
 });
 
 test("a posting whose stated countries don't include the target country is filtered", () => {
-  const posting = { ...base, countries: ["DE"] };
+  const posting = { ...base, eligibilityStated: true, countries: ["DE"] };
   assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), "Country: DE");
 });
 
-test("a processed posting with an empty countries list (none stated) is filtered, not shown by default", () => {
-  const posting = { ...base, countries: [] };
+test("a processed posting that states no eligibility at all is filtered, not shown by default", () => {
+  const posting = { ...base, eligibilityStated: false, countries: [] };
   assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), "Country: not stated");
 });
 
-test("a posting whose countries field is null (not yet processed) is not filtered for country", () => {
-  const posting = { ...base, countries: null };
+test("a processed posting that explicitly says it's open to everyone (stated, empty list) is not filtered", () => {
+  const posting = { ...base, eligibilityStated: true, countries: [] };
   assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), null);
 });
 
-test("a posting whose countries field is undefined (not yet processed) is not filtered for country", () => {
+test("a posting whose eligibilityStated field is undefined (not yet processed) is not filtered for country", () => {
   assert.equal(filterReason(base, noFilters, now, { targetCountry: "PH" }), null);
 });
 
+test("a posting whose eligibilityStated field is null (not yet processed, as a nullable DB column reads it) is not filtered for country", () => {
+  const posting = { ...base, eligibilityStated: null };
+  assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), null);
+});
+
 test("a posting whose stated countries include the target country is not filtered", () => {
-  const posting = { ...base, countries: ["DE", "PH"] };
+  const posting = { ...base, eligibilityStated: true, countries: ["DE", "PH"] };
   assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), null);
 });
 
 test("the target country matching is case-insensitive", () => {
-  const posting = { ...base, countries: ["ph"] };
+  const posting = { ...base, eligibilityStated: true, countries: ["ph"] };
   assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), null);
 });
 
 test("the target country defaults to PH when none is given", () => {
-  const posting = { ...base, countries: ["PH"] };
+  const posting = { ...base, eligibilityStated: true, countries: ["PH"] };
   assert.equal(filterReason(posting, noFilters, now), null);
-  const excluded = { ...base, countries: ["DE"] };
+  const excluded = { ...base, eligibilityStated: true, countries: ["DE"] };
   assert.equal(filterReason(excluded, noFilters, now), "Country: DE");
 });
 

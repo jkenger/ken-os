@@ -26,22 +26,30 @@ export type FilterablePosting = {
   payPeriod?: PayPeriod | null;
   jobType?: JobType | null;
   workSetup?: WorkSetup | null;
+  /** True once extraction has run and the posting's own text said *anything* about who may apply, including
+   *  "open to everyone" -- distinct from `false` (extraction ran, found nothing) and "not yet processed"
+   *  (`undefined` in a plain object literal, `null` from a nullable DB column -- both mean the same thing here
+   *  and must be treated alike). `countries` only carries meaning when this is `true`. */
+  eligibilityStated?: boolean | null;
   countries?: string[] | null;
   isAgency?: boolean;
 };
 
 /** The strict filters (docs/product/job-finder.md): skip words, skip companies, posted within, and — once a
  *  posting has been through `/api/jobs/process` — Minimum pay, Job type, Work setup, Countries and Agencies.
- *  A not-yet-processed posting's extracted fields are all `undefined` (not `[]`), so only the first three
- *  checks apply -- never confused with a processed posting that explicitly found no eligibility language.
+ *  A not-yet-processed posting's extracted fields are all `undefined` (not `false`/`[]`), so only the first
+ *  three checks apply -- never confused with a processed posting that explicitly found no eligibility language.
  *  Checked in this order, the first match wins, so a posting always has exactly one reason when it's filtered.
  *  `context.targetCountry` is the owner's own country (from Profile, defaulting to PH) -- there's no separate
- *  owner-set Countries list. Unlike Minimum pay's "not stated, don't filter" rule, a *processed* posting whose
- *  countries come back empty is filtered, not shown: most scraped postings never say anything about eligibility
- *  at all, and showing them by default let through local, non-PH-reachable roles that happened to say nothing,
- *  same as ones that were genuinely open everywhere. `context.currencyRates` is the last cached snapshot a
- *  posting's own stated pay is converted through before comparing to Minimum pay; missing or unconvertable pay
- *  is still never filtered -- that tradeoff only applies to Countries. */
+ *  owner-set Countries list. Unlike Minimum pay's "not stated, don't filter" rule, a *processed* posting that
+ *  said nothing about eligibility at all is filtered, not shown: most scraped postings never say anything, and
+ *  showing them by default let through local, non-PH-reachable roles indistinguishable from ones genuinely open
+ *  everywhere. `eligibilityStated` is what makes that distinction possible: `false` means extraction ran and
+ *  found no eligibility language at all ("Country: not stated"); `true` with an empty `countries` means the
+ *  posting explicitly said it's open to everyone, which is never filtered; `true` with a list checks membership
+ *  as before. `context.currencyRates` is the last cached snapshot a posting's own stated pay is converted
+ *  through before comparing to Minimum pay; missing or unconvertable pay is still never filtered -- that
+ *  tradeoff only applies to Countries. */
 export function filterReason(
   posting: FilterablePosting,
   preferences: JobPreferences,
@@ -76,10 +84,13 @@ export function filterReason(
   if (posting.workSetup && !preferences.workSetups.includes(posting.workSetup))
     return `Work setup: ${posting.workSetup}`;
 
-  if (posting.countries !== undefined && posting.countries !== null) {
-    if (posting.countries.length === 0) return "Country: not stated";
-    const eligible = posting.countries.some((code) => code.toUpperCase() === targetCountry.toUpperCase());
-    if (!eligible) return `Country: ${posting.countries[0]}`;
+  if (posting.eligibilityStated !== undefined && posting.eligibilityStated !== null) {
+    if (!posting.eligibilityStated) return "Country: not stated";
+    const countries = posting.countries ?? [];
+    if (countries.length > 0) {
+      const eligible = countries.some((code) => code.toUpperCase() === targetCountry.toUpperCase());
+      if (!eligible) return `Country: ${countries[0]}`;
+    }
   }
 
   if (posting.isAgency && preferences.agenciesHide) return "Recruiting agency";

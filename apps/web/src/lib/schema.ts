@@ -720,8 +720,11 @@ export const labTopicMaterial = pgTable(
  *  ("Drop repeats") is enforced by the unique index below, not just application logic. The extraction columns
  *  (full_description through extract_model) are null until `/api/jobs/process` runs; `processed_at` is the signal
  *  a posting is still pending (docs/product/job-finder.md, release step 2 "Score"). `countries` is read from the
- *  posting's own eligibility language only, never from `location`; an empty array means the posting stated no
- *  eligibility, not that none are allowed (plans/jobs-score.md). */
+ *  posting's own eligibility language only, never from `location`. `eligibility_stated` is null until processed
+ *  (never filtered); once set, false means the posting said nothing about eligibility at all ("Country: not
+ *  stated"), and true with an empty `countries` means it explicitly said it's open to everyone, never filtered
+ *  (plans/jobs-filters-and-wwr-source.md, Slice 1 -- the plain empty-array case used to mean both of those,
+ *  wrongly treating "said nothing" and "said everyone" alike). */
 export const jobPostings = pgTable(
   "job_postings",
   {
@@ -744,6 +747,7 @@ export const jobPostings = pgTable(
     payPeriod: text("pay_period").$type<"hour" | "day" | "week" | "month" | "year">(),
     jobType: text("job_type").$type<"full_time" | "part_time" | "contract" | "internship" | "temporary">(),
     workSetup: text("work_setup").$type<"remote" | "hybrid" | "on_site">(),
+    eligibilityStated: boolean("eligibility_stated"),
     countries: jsonb("countries").$type<string[]>(),
     requiredHours: jsonb("required_hours").$type<{ start: string; end: string; timezone: string } | null>(),
     seniority: text("seniority").$type<"junior" | "mid" | "senior" | "lead">(),
