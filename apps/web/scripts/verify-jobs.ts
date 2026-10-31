@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { config } from "dotenv";
 import { eq } from "drizzle-orm";
 import { closeDb, db } from "../src/lib/db";
-import { jobMatches, users } from "../src/lib/schema";
+import { jobCurrencyRates, jobMatches, users } from "../src/lib/schema";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
@@ -272,7 +272,7 @@ async function main() {
       payPeriod: "year",
       jobType: "full_time",
       workSetup: "remote",
-      countries: [],
+      countries: ["PH"],
       requiredHours: null,
       seniority: "senior",
       yearsRequired: 5,
@@ -341,6 +341,15 @@ async function main() {
         snippet: "",
         link: "https://www.linkedin.com/jobs/view/24",
       },
+      {
+        source: "linkedin",
+        sourceId: "li-unstated-country",
+        title: "Unstated Country Role",
+        company: "SliceTwoCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/25",
+      },
     ]);
     const sliceTwoPending = await store.getPendingPostings(userId, 10);
     const byTitle = (title: string) => sliceTwoPending.find((p) => p.title === title)!;
@@ -362,7 +371,7 @@ async function main() {
       payPeriod: "year",
       jobType: "full_time",
       workSetup: "remote",
-      countries: [],
+      countries: ["PH"],
       isAgency: false,
     });
     await store.saveExtractedFields(byTitle("Agency Role").id, {
@@ -372,7 +381,7 @@ async function main() {
       payPeriod: "year",
       jobType: "full_time",
       workSetup: "remote",
-      countries: [],
+      countries: ["PH"],
       isAgency: true,
     });
     await store.saveExtractedFields(byTitle("Good Role").id, {
@@ -382,7 +391,7 @@ async function main() {
       payPeriod: "year",
       jobType: "full_time",
       workSetup: "remote",
-      countries: [],
+      countries: ["PH"],
       isAgency: false,
     });
     await store.saveExtractedFields(byTitle("Part Time Role").id, {
@@ -392,7 +401,7 @@ async function main() {
       payPeriod: "year",
       jobType: "part_time",
       workSetup: "remote",
-      countries: [],
+      countries: ["PH"],
       isAgency: false,
     });
     await store.saveExtractedFields(byTitle("Wrong Country Role").id, {
@@ -403,6 +412,16 @@ async function main() {
       jobType: "full_time",
       workSetup: "remote",
       countries: ["DE"],
+      isAgency: false,
+    });
+    await store.saveExtractedFields(byTitle("Unstated Country Role").id, {
+      ...extractDefaults,
+      payAmount: 90000,
+      payCurrency: "USD",
+      payPeriod: "year",
+      jobType: "full_time",
+      workSetup: "remote",
+      countries: [],
       isAgency: false,
     });
 
@@ -416,6 +435,11 @@ async function main() {
     assert.equal(reasonFor("Agency Role"), "Recruiting agency");
     assert.equal(reasonFor("Good Role"), null);
     assert.equal(reasonFor("Part Time Role"), "Job type: part_time");
+    assert.equal(
+      reasonFor("Unstated Country Role"),
+      "Country: not stated",
+      "a processed posting that states no eligibility is filtered by default, not shown",
+    );
     assert.equal(reasonFor("Wrong Country Role"), "Country: DE");
     console.log(
       "ok - saveExtractedFields applies the upgraded filters (minimum pay, job type, countries, agencies) once a posting is processed",
@@ -441,9 +465,12 @@ async function main() {
       "ok - tightening Work setup and refiltering moves an already-processed posting to Filtered out for the new reason",
     );
 
-    const rateCheckNow = new Date("2026-11-01T00:00:00Z");
-    assert.equal(await currencyRatesStore.ratesAreStale(rateCheckNow), true, "no cached rates yet means stale");
-    assert.deepEqual(await currencyRatesStore.getCachedRates(), {}, "no cached rates yet means an empty map");
+    // This is a global singleton row, not scoped to the throwaway user -- it may already hold a real cached
+    // snapshot from an earlier live run. Captured here and restored afterward, so this script never leaves a
+    // fake placeholder behind that would make a later real fetch look falsely fresh for up to a day.
+    const [originalRatesRow] = await db().select().from(jobCurrencyRates).where(eq(jobCurrencyRates.id, "global"));
+
+    const rateCheckNow = new Date();
     await currencyRatesStore.saveCachedRates({ USD: 1, PHP: 56.5 }, rateCheckNow);
     assert.equal(await currencyRatesStore.ratesAreStale(rateCheckNow), false, "freshly saved rates are not stale");
     assert.deepEqual(await currencyRatesStore.getCachedRates(), { USD: 1, PHP: 56.5 });
@@ -502,7 +529,7 @@ async function main() {
       payPeriod: "year",
       jobType: "full_time",
       workSetup: "remote",
-      countries: [],
+      countries: ["PH"],
       isAgency: false,
     });
     // 6,000,000 PHP/year / 56.5 ~= 106,195 USD/year, above the 80,000 USD/year minimum
@@ -513,7 +540,7 @@ async function main() {
       payPeriod: "year",
       jobType: "full_time",
       workSetup: "remote",
-      countries: [],
+      countries: ["PH"],
       isAgency: false,
     });
     await store.saveExtractedFields(currencyByTitle("PH Eligible Role").id, {
@@ -543,6 +570,11 @@ async function main() {
     console.log(
       "ok - a posting's own stated pay converts through the cached rates regardless of its currency, and the default target country is PH",
     );
+
+    if (originalRatesRow) {
+      await currencyRatesStore.saveCachedRates(originalRatesRow.rates, originalRatesRow.fetchedAt);
+      console.log("ok - the real cached currency rates are restored after the test overwrote them");
+    }
 
     await preferences.savePreferences(userId, {
       skipWords: [],
@@ -586,7 +618,7 @@ async function main() {
       payPeriod: "year",
       jobType: "full_time",
       workSetup: "on_site",
-      countries: [],
+      countries: ["PH"],
       isAgency: false,
     });
     await store.saveExtractedFields(sliceThreeByTitle("Filtered Scorable Role").id, {
@@ -596,7 +628,7 @@ async function main() {
       payPeriod: "year",
       jobType: "full_time",
       workSetup: "remote",
-      countries: [],
+      countries: ["PH"],
       isAgency: false,
     });
 

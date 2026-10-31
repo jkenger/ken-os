@@ -32,12 +32,16 @@ export type FilterablePosting = {
 
 /** The strict filters (docs/product/job-finder.md): skip words, skip companies, posted within, and — once a
  *  posting has been through `/api/jobs/process` — Minimum pay, Job type, Work setup, Countries and Agencies.
- *  A not-yet-processed posting's extracted fields are all undefined, so only the first three checks apply.
+ *  A not-yet-processed posting's extracted fields are all `undefined` (not `[]`), so only the first three
+ *  checks apply -- never confused with a processed posting that explicitly found no eligibility language.
  *  Checked in this order, the first match wins, so a posting always has exactly one reason when it's filtered.
  *  `context.targetCountry` is the owner's own country (from Profile, defaulting to PH) -- there's no separate
- *  owner-set Countries list. `context.currencyRates` is the last cached snapshot a posting's own stated pay is
- *  converted through before comparing to Minimum pay; missing or unconvertable pay is never filtered, same as
- *  pay the posting doesn't state at all. */
+ *  owner-set Countries list. Unlike Minimum pay's "not stated, don't filter" rule, a *processed* posting whose
+ *  countries come back empty is filtered, not shown: most scraped postings never say anything about eligibility
+ *  at all, and showing them by default let through local, non-PH-reachable roles that happened to say nothing,
+ *  same as ones that were genuinely open everywhere. `context.currencyRates` is the last cached snapshot a
+ *  posting's own stated pay is converted through before comparing to Minimum pay; missing or unconvertable pay
+ *  is still never filtered -- that tradeoff only applies to Countries. */
 export function filterReason(
   posting: FilterablePosting,
   preferences: JobPreferences,
@@ -72,7 +76,8 @@ export function filterReason(
   if (posting.workSetup && !preferences.workSetups.includes(posting.workSetup))
     return `Work setup: ${posting.workSetup}`;
 
-  if (posting.countries && posting.countries.length > 0) {
+  if (posting.countries !== undefined && posting.countries !== null) {
+    if (posting.countries.length === 0) return "Country: not stated";
     const eligible = posting.countries.some((code) => code.toUpperCase() === targetCountry.toUpperCase());
     if (!eligible) return `Country: ${posting.countries[0]}`;
   }

@@ -136,9 +136,18 @@ test("a posting whose stated countries don't include the target country is filte
   assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), "Country: DE");
 });
 
-test("a posting with an empty countries list (none stated) is not filtered for country", () => {
+test("a processed posting with an empty countries list (none stated) is filtered, not shown by default", () => {
   const posting = { ...base, countries: [] };
+  assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), "Country: not stated");
+});
+
+test("a posting whose countries field is null (not yet processed) is not filtered for country", () => {
+  const posting = { ...base, countries: null };
   assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), null);
+});
+
+test("a posting whose countries field is undefined (not yet processed) is not filtered for country", () => {
+  assert.equal(filterReason(base, noFilters, now, { targetCountry: "PH" }), null);
 });
 
 test("a posting whose stated countries include the target country is not filtered", () => {

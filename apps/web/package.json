@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "tsx scripts/dev-with-poll.ts",
     "build": "tsx scripts/generate-lab-content.ts --check && tsx scripts/generate-studio-manifest.ts --check && next build",
     "start": "next start",
     "check": "tsx scripts/generate-lab-content.ts --check && tsx scripts/generate-studio-manifest.ts --check && tsc --noEmit",
