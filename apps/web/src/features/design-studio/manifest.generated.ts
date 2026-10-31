@@ -2686,7 +2686,7 @@ export const studioManifest: StudioManifest = {
   ],
   "globals": {
     "file": "app/globals.css",
-    "lines": 385,
+    "lines": 384,
     "tail": [
       ".font-mono {",
       "  font-variant-numeric: tabular-nums;",
