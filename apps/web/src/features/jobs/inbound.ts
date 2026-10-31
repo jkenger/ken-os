@@ -1,4 +1,5 @@
 import { knownAlertSource } from "./known-senders";
+import { parseIndeedAlert } from "./parsers/indeed";
 import { parseLinkedInAlert } from "./parsers/linkedin";
 import type { RawPosting } from "./raw-posting";
 import { verifyWebhookSignature } from "./webhook-signature";
@@ -51,7 +52,7 @@ export async function handleInboundEmail(params: {
 
   if (!email.html) return { stored: true };
 
-  const postings = source === "linkedin" ? parseLinkedInAlert(email.html) : [];
+  const postings = source === "linkedin" ? parseLinkedInAlert(email.html) : parseIndeedAlert(email.html);
   if (postings.length) await params.savePostings(postings);
 
   return { stored: true };

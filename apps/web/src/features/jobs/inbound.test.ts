@@ -93,3 +93,25 @@ test("an email whose original sender isn't known is rejected and stored nowhere"
   assert.equal(result.reason, "unknown sender");
   assert.equal(fetched, false);
 });
+
+const indeedFixtureHtml =
+  '<table><tr class="jobCard"><td><a href="https://www.indeed.com/viewjob?jk=xyz999" class="jobCard_title">Test Role</a><span class="jobCard_company">Test Co</span><span class="jobCard_location">Remote</span><p class="jobCard_snippet">A snippet</p></td></tr></table>';
+
+test("a correctly signed email from a known Indeed sender is parsed and saved", async () => {
+  const body = webhookPayload("alert@indeed.com");
+  const saved: unknown[] = [];
+  const result = await handleInboundEmail({
+    svixId: "msg_123",
+    svixTimestamp: "1700000000",
+    svixSignature: sign("msg_123", "1700000000", body),
+    rawBody: body,
+    webhookSecret: secret,
+    fetchEmail: async () => ({ from: "alert@indeed.com", html: indeedFixtureHtml, text: null }),
+    saveInboundEmail: async () => "inbound-1",
+    savePostings: async (postings) => {
+      saved.push(...postings);
+    },
+  });
+  assert.equal(result.stored, true);
+  assert.equal(saved.length, 1);
+});
