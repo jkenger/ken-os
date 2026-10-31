@@ -1,6 +1,8 @@
 # Jobs
 
-Status: proposed, 28 Oct 2026. Not built. Decisions below were agreed with the owner in chat on 28 Oct 2026.
+Status: release step 1 (Receive and list) built, see `plans/jobs-receive-and-list.md`. Direct scraping (step 2 below)
+proposed 31 Oct 2026, not yet built. Decisions below were agreed with the owner in chat on 28 Oct 2026, except where
+marked otherwise.
 
 ## The idea in one line
 
@@ -9,19 +11,46 @@ matches on a Jobs page and by email, as soon as they come in.
 
 ## Decisions
 
-| Question            | Decision                                                                                                                                                 |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Sources             | LinkedIn and Indeed through their own job alert emails. OnlineJobs through its alerts if it sends them, otherwise a checker (see OnlineJobs below).      |
-| Getting alerts in   | A Gmail filter forwards alert emails to a Loots address on Resend. No Gmail sign-in.                                                                     |
-| Email service       | Resend, for receiving the forwarded alerts and for sending Loots' own emails. Decided 28 Oct 2026.                                                       |
-| What to look for    | Roles come from the Profile automatically. No company watchlist.                                                                                         |
-| Working hours       | Each posting is labelled Day shift, Mid shift, Night shift, Flexible or Not listed, in Philippine time. Shown, never used to hide a posting.             |
-| Strict filters      | Pay, job type, work setup and country hide a posting, but hidden postings stay viewable under Filtered out with the reason. Nothing disappears silently. |
-| Missing information | A posting that doesn't say (no pay listed, no hours) is kept and marked Not listed, never hidden.                                                        |
-| Preferences         | Every preference is a setting on the Jobs page, with the defaults below.                                                                                 |
-| Where results go    | The Jobs page, an email for each strong match, and a daily digest email.                                                                                 |
+| Question            | Decision                                                                                                                                                                                                                                |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sources             | LinkedIn and Indeed through direct scraping, with their own job alert emails as fallback (reversed 31 Oct 2026, see Getting postings in). OnlineJobs through its alerts if it sends them, otherwise a checker (see OnlineJobs below).   |
+| Getting postings in | LinkedIn's and Indeed's own search endpoints, polled every minute, are the primary path. A Gmail filter forwarding alert emails to a Loots address on Resend is the fallback for when a source is blocked. No Gmail sign-in either way. |
+| Email service       | Resend, for receiving the forwarded alerts and for sending Loots' own emails. Decided 28 Oct 2026.                                                                                                                                      |
+| What to look for    | Roles come from the Profile automatically. No company watchlist.                                                                                                                                                                        |
+| Working hours       | Each posting is labelled Day shift, Mid shift, Night shift, Flexible or Not listed, in Philippine time. Shown, never used to hide a posting.                                                                                            |
+| Strict filters      | Pay, job type, work setup and country hide a posting, but hidden postings stay viewable under Filtered out with the reason. Nothing disappears silently.                                                                                |
+| Missing information | A posting that doesn't say (no pay listed, no hours) is kept and marked Not listed, never hidden.                                                                                                                                       |
+| Preferences         | Every preference is a setting on the Jobs page, with the defaults below.                                                                                                                                                                |
+| Where results go    | The Jobs page, an email for each strong match, and a daily digest email.                                                                                                                                                                |
 
-## Why alert emails
+## Getting postings in
+
+**Decided 31 Oct 2026, reverses the decision below.** Direct scraping is the primary path for LinkedIn and Indeed,
+using the technique [JobSpy](https://github.com/speedyapply/JobSpy) uses: LinkedIn's signed-out guest search endpoint
+and Indeed's mobile-app GraphQL API (see How they get listings below). The alert-email path built in release step 1
+keeps running unchanged as the fallback, not replaced: `job_postings`/`job_posting_sources` already dedup a posting
+seen from more than one source, so running both costs nothing and only matters when scraping is blocked or a site's
+markup changes before the adapter is fixed.
+
+- **Speed was the deciding factor.** Neither site offers a public real-time feed: Indeed's Publisher API closed to new
+  users in 2022 and was retired in 2024; LinkedIn has never had one. Polling is the only option, and the limit on
+  "fast" is the scheduler, not the scraper: [cron-job.org](https://cron-job.org) runs a free job every minute. Calling
+  `/api/jobs/check/linkedin` and `/api/jobs/check/indeed` on that cadence gets a posting onto `/jobs` roughly a minute
+  after it appears on the site, against hours for an alert email.
+- **One client, many adapters, unchanged.** A scraper is just another `RawPosting` source, same as the LinkedIn and
+  Indeed email parsers and the OnlineJobs checker. It reuses the same source-ID prefixes (`li-`, `in-`) the email
+  parsers already use, so a posting scraped and later also forwarded by email collapses into the one row the existing
+  dedup already produces, instead of a parallel code path.
+- **Search terms.** Each poll searches with the owner's Alert keywords (`alertKeywords(roles)`, already built for
+  Settings), one request per role.
+- **Block handling.** Same stop rule as the OnlineJobs checker below: a 403 or 429 stops that source for 24 hours.
+  Settings shows each source's state (Running, or Blocked until a time). The alert-email fallback keeps delivering
+  that source's postings during the block, so a block degrades speed, not coverage.
+- **Risk accepted 31 Oct 2026 (owner, in chat).** Scraping LinkedIn's and Indeed's own endpoints without signing in
+  breaks each site's terms of service. The likely consequence of a block is the same as OnlineJobs': that source's
+  checker stops for 24 hours. Neither scraper signs in, so the owner's LinkedIn or Indeed account isn't involved.
+
+### Why alert emails (the original decision, now the fallback)
 
 - LinkedIn and Indeed forbid scraping and block it quickly. Their alert emails are allowed and arrive on their own.
 - Forwarding avoids Gmail's read-mail permission. Without Google's app verification, that permission signs Loots out
@@ -89,15 +118,18 @@ Four patterns, from the cleanest to the one Loots won't use:
    window when it meets a bot check.
 4. **Rotating proxies.** Both send requests through a pool of addresses so a block on one doesn't stop the run.
 
-Loots uses only pattern 1, and only for OnlineJobs, whose search page is already plain public HTML. Patterns 2 to 4
-exist to get past a site's bot protection, which the spec rules out: they break the sites' terms, and they break
-whenever the site changes its app or its checks.
+Loots uses pattern 1 for LinkedIn and OnlineJobs, and pattern 2 for Indeed (decided 31 Oct 2026, see Getting postings
+in). Patterns 3 and 4 stay ruled out: a stealth browser and rotating proxies are real infrastructure to run and
+maintain, and nothing here needs them yet. Both adopted patterns still break the sites' terms, and still break
+whenever a site changes its app or its checks, which is why the alert-email path stays as the fallback rather than
+being removed.
 
 ### What Loots borrows
 
 - **One adapter per source, one posting shape.** JobOps gives each source its own package with a manifest, its own
-  tests, and the same output shape. In Loots, the LinkedIn email parser, the Indeed email parser and the OnlineJobs
-  checker each turn their input into the same `RawPosting`, and everything after step 3 below never knows the source.
+  tests, and the same output shape. In Loots, the LinkedIn email parser, the Indeed email parser, the LinkedIn and
+  Indeed scrapers, and the OnlineJobs checker each turn their input into the same `RawPosting`, and everything after
+  step 3 below never knows the source.
 - **Stop rules for paging.** Stop at the first posting already seen, when a page has no new IDs, or when a page has
   fewer cards than a full page.
 - **Spotting a block.** A page that should have postings but has none is treated as "probably blocked or changed", not
@@ -111,8 +143,9 @@ whenever the site changes its app or its checks.
 ## How it works
 
 1. **Receive.** Resend receives each forwarded email and calls `/api/jobs/inbound` with it. Loots checks Resend's
-   webhook signature and that the original sender is a known alert address, then stores the raw email. The OnlineJobs
-   checker, if built, feeds postings in at step 3.
+   webhook signature and that the original sender is a known alert address, then stores the raw email. The LinkedIn
+   and Indeed scrapers and the OnlineJobs checker, if built, feed postings in at step 3 instead, each on its own
+   `/api/jobs/check/<source>` schedule.
 2. **Split.** Each alert email lists several postings. A parser per source pulls out title, company, location, snippet
    and link.
 3. **Drop repeats.** The same posting can arrive from two sources or two alerts. Postings are matched on the source's
@@ -204,8 +237,9 @@ One page at `/jobs`, in the module column like Profile.
   Dismiss with a reason. Dismiss asks for one of Not interested, Wrong seniority, Already applied elsewhere, Other
   (with a short text field), before moving the posting to Dismissed. A Filtered out posting shows which filter hid
   it, and Show anyway moves it to New. A Dismissed posting shows the reason, and Undo moves it back to New.
-- **Settings:** the preferences table above, Roles from the Profile, Alert keywords, the address to forward to, and the
-  OnlineJobs checker's state (Running, Paused, Blocked until a date) if it is built.
+- **Settings:** the preferences table above, Roles from the Profile, Alert keywords, the address to forward to, and
+  each scraped source's state (Running, Blocked until a date): LinkedIn and Indeed, plus the OnlineJobs checker's
+  state if it is built.
 - **Setup checklist** before the first posting arrives: copy the forwarding address, add the Gmail filter, set up
   alerts on each site.
 
@@ -220,9 +254,11 @@ All through Resend. Loots sends and receives no email today, so this adds the fi
 - **Strong match:** one posting, subject "92 · Senior Frontend Engineer, Acme". Body: score, pay, type, setup, shift,
   why it fits, and a link to the posting in Loots.
 - **Daily digest:** new postings since the last digest, grouped by score, plus how many were filtered out and why.
-- **Checker problems:** one email when the OnlineJobs checker is blocked or stops finding postings.
-- New in `.env.example`: `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`, `JOBS_INBOUND_ADDRESS`, and `JOBS_CHECK_SECRET` if
-  the checker is built.
+- **Checker problems:** one email when a scraped source (LinkedIn, Indeed, or the OnlineJobs checker if built) gets
+  blocked or stops finding postings.
+- New in `.env.example`: `RESEND_API_KEY`, `RESEND_WEBHOOK_SECRET`, `JOBS_INBOUND_ADDRESS`, and `JOBS_CHECK_SECRET`
+  (shared by every `/api/jobs/check/<source>` route; required from release step 2, not just if the OnlineJobs checker
+  is built).
 
 ## Storage
 
@@ -234,16 +270,19 @@ New tables, added in one migration. Nothing existing changes.
   came from.
 - `job_matches`: the score, reasons, shift and the owner's state (New, Saved, Applied, Dismissed, Filtered out) for
   each posting, with the prompt version and the Profile version it was scored against.
-- `job_checker_runs`: if the checker is built, each run's time, postings found, and result (OK, Blocked, Empty).
+- `job_scraper_state`: one row per scraped source (`linkedin`, `indeed`, later `onlinejobs` if the checker is built),
+  the last run's time and result (OK, Blocked, Empty), and `blockedUntil` when a 403 or 429 stopped it.
 
 ## Release steps
 
 1. **Receive and list.** Resend receiving, LinkedIn and Indeed parsers, repeat dropping, the Jobs page with New and
-   Filtered out, and settings. No AI yet: filters run on the email fields.
-2. **Score.** Full posting read, AI extract and score, shift labels, the side panel.
-3. **Email.** Strong match emails and the daily digest.
-4. **OnlineJobs.** Its alert parser if it sends alerts; otherwise the checker, if the owner accepts the risk.
-5. **Act on a match.** Saved and Applied, Dismiss with a reason, and Dismiss reasons turned into suggested filter
+   Filtered out, and settings. No AI yet: filters run on the email fields. Built, see `plans/jobs-receive-and-list.md`.
+2. **Direct scraping.** LinkedIn and Indeed scrapers polled every minute as the primary path; the alert-email path
+   from step 1 stays as the fallback. Decided 31 Oct 2026, see Getting postings in.
+3. **Score.** Full posting read, AI extract and score, shift labels, the side panel.
+4. **Email.** Strong match emails and the daily digest.
+5. **OnlineJobs.** Its alert parser if it sends alerts; otherwise the checker, if the owner accepts the risk.
+6. **Act on a match.** Saved and Applied, Dismiss with a reason, and Dismiss reasons turned into suggested filter
    changes the owner approves.
 
 Later, not in these steps: a resume tailored to one posting, built from the Profile like the other resumes; a cover note
@@ -263,9 +302,18 @@ draft; a gap check across many postings ("6 of your top 10 ask for AWS").
 - Nothing in a posting's text can change a setting, send an email or reach a tool.
 - If built, the OnlineJobs checker never sends two requests less than 5 seconds apart, never signs in, and stops for 24
   hours after a 403 or 429.
+- A posting scraped from LinkedIn or Indeed shows on `/jobs` within about a minute of being scraped, without waiting
+  for an alert email.
+- A posting seen through scraping and also through the alert-email path, in either order, shows once, listing both.
+- A 403 or 429 from a LinkedIn or Indeed scrape stops that source for 24 hours; the alert-email path keeps delivering
+  that source's postings during the block.
+- A `/api/jobs/check/<source>` call without the correct `JOBS_CHECK_SECRET` is rejected and runs nothing.
+- The LinkedIn and Indeed scrapers never sign in and never submit anything; both are read-only requests to each
+  site's own guest or app endpoint.
 
 ## Open questions
 
-- Whether OnlineJobs Job alerts send emails. The owner checks after signing in; this decides whether step 4 builds a
+- Whether OnlineJobs Job alerts send emails. The owner checks after signing in; this decides whether step 5 builds a
   parser or the checker.
-- If the checker is needed: whether the owner accepts the terms risk.
+- If the checker is needed: whether the owner accepts the terms risk (the same risk already accepted for LinkedIn and
+  Indeed scraping, see Getting postings in).
