@@ -89,12 +89,22 @@ async function main() {
     assert.deepEqual(defaults, { skipWords: [], skipCompanies: [], postedWithinDays: 14, ...DEFAULT_SLICE2_PREFS });
     console.log("ok - preferences default to no skip words, no skip companies, 14 days");
 
+    assert.equal(
+      await preferences.hasSavedPreferences(userId),
+      false,
+      "a brand new owner has never saved preferences, even though getPreferences still returns defaults",
+    );
+    console.log("ok - hasSavedPreferences is false before any save, distinct from the default shape it returns");
+
     await preferences.savePreferences(userId, {
       skipWords: ["Sales", "Marketing"],
       skipCompanies: ["Acme"],
       postedWithinDays: 7,
       ...DEFAULT_SLICE2_PREFS,
     });
+    assert.equal(await preferences.hasSavedPreferences(userId), true, "saving once makes it true, for good");
+    console.log("ok - hasSavedPreferences is true once the owner has ever saved, even if they later change it back");
+
     const saved = await preferences.getPreferences(userId);
     assert.deepEqual(saved, {
       skipWords: ["Sales", "Marketing"],

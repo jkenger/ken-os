@@ -106,6 +106,18 @@ export async function getPreferences(userId: string): Promise<JobPreferences> {
   };
 }
 
+/** Whether this owner has ever saved Jobs preferences, distinct from whether `getPreferences` happens to return
+ *  the same shape either way -- used to offer a starting pay band suggestion only before the owner has made
+ *  their own choice (plans/jobs-filters-and-wwr-source.md). */
+export async function hasSavedPreferences(userId: string): Promise<boolean> {
+  const [row] = await db()
+    .select({ userId: jobPreferences.userId })
+    .from(jobPreferences)
+    .where(eq(jobPreferences.userId, userId))
+    .limit(1);
+  return row !== undefined;
+}
+
 export async function savePreferences(userId: string, preferences: JobPreferences): Promise<void> {
   await db()
     .insert(jobPreferences)
