@@ -1,30 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { jobInboundEmails, jobMatches, jobPostingSources, jobPostings } from "@/lib/schema";
+import { jobMatches, jobPostingSources, jobPostings } from "@/lib/schema";
 import { filterReason } from "./filters";
-import type { AlertSource } from "./known-senders";
 import { getPreferences } from "./preferences-store";
-import type { JobMatchState, RawPosting } from "./raw-posting";
-
-export async function saveInboundEmail(params: {
-  userId: string;
-  fromAddress: string;
-  source: AlertSource | null;
-  rawHtml?: string;
-  rawText?: string;
-}): Promise<string> {
-  const id = randomUUID();
-  await db().insert(jobInboundEmails).values({
-    id,
-    userId: params.userId,
-    fromAddress: params.fromAddress,
-    source: params.source,
-    rawHtml: params.rawHtml,
-    rawText: params.rawText,
-  });
-  return id;
-}
+import type { AlertSource, JobMatchState, RawPosting } from "./raw-posting";
 
 /** Saves each posting, matching on the source's own ID when there is one, otherwise on title, company and location
  *  together (docs/product/job-finder.md, "Drop repeats"). A posting already seen from this exact source and ID is

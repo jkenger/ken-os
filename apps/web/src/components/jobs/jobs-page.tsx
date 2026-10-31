@@ -3,18 +3,10 @@
 import { WorkspaceShell } from "@/components/workspace-shell";
 import type { PostingView } from "@/features/jobs/store";
 import { NewList } from "./new-list";
-import { SetupChecklist } from "./setup-checklist";
 
-/** New postings, once any have arrived. Until then, the setup checklist (docs/product/job-finder.md). */
-export function JobsPage({
-  email,
-  forwardingAddress,
-  postings,
-}: {
-  email: string;
-  forwardingAddress: string | undefined;
-  postings: PostingView[];
-}) {
+/** New postings, once any have been scraped (docs/product/job-finder.md). Scraping needs no setup: it runs on its
+ *  own schedule against the Profile's roles. */
+export function JobsPage({ email, roles, postings }: { email: string; roles: string[]; postings: PostingView[] }) {
   return (
     <WorkspaceShell email={email} active="jobs">
       <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-5xl px-page pt-page pb-section">
@@ -24,18 +16,14 @@ export function JobsPage({
             <NewList postings={postings} />
           </div>
         ) : (
-          <>
-            <div className="mt-6 grid gap-2">
-              <h2 className="text-sm font-semibold text-muted-foreground">No postings yet</h2>
-              <p className="max-w-xl text-sm text-muted-foreground">
-                Postings show up here once LinkedIn, Indeed or OnlineJobs send an alert. Finish setup to start receiving
-                them.
-              </p>
-            </div>
-            <div className="mt-6">
-              <SetupChecklist forwardingAddress={forwardingAddress} />
-            </div>
-          </>
+          <div className="mt-6 grid gap-2">
+            <h2 className="text-sm font-semibold text-muted-foreground">No postings yet</h2>
+            <p className="max-w-xl text-sm text-muted-foreground">
+              {roles.length > 0
+                ? "Loots checks LinkedIn and Indeed every minute."
+                : "Add a headline or job title on Profile so Loots knows what to search for."}
+            </p>
+          </div>
         )}
       </div>
     </WorkspaceShell>

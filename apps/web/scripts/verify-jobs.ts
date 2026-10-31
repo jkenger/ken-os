@@ -70,15 +70,6 @@ async function main() {
     );
     console.log("ok - the same posting from a second source merges instead of duplicating, listing both sources");
 
-    const inboundId = await store.saveInboundEmail({
-      userId,
-      fromAddress: "jobs-noreply@linkedin.com",
-      source: "linkedin",
-      rawHtml: "<html></html>",
-    });
-    assert.ok(inboundId);
-    console.log("ok - a raw inbound email is stored");
-
     const preferences = await import("../src/features/jobs/preferences-store");
     const defaults = await preferences.getPreferences(userId);
     assert.deepEqual(defaults, { skipWords: [], skipCompanies: [], postedWithinDays: 14 });

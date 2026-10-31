@@ -8,6 +8,23 @@ import type { RawPosting } from "../raw-posting";
 
 const SEARCH_URL = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search";
 
+/** The exact body LinkedIn's guest search returns when a page genuinely has no more results. A 200 with no job
+ *  cards that doesn't match this is probably a soft block (a captcha or interstitial), not an empty result. */
+export const LINKEDIN_EMPTY_PAGE = "<!DOCTYPE html>\n\n<!---->";
+
+export function isLinkedInEmptyPage(html: string): boolean {
+  return html.trim() === LINKEDIN_EMPTY_PAGE;
+}
+
+/** A realistic browser header set, not a declared bot user agent. */
+export const LINKEDIN_HEADERS = {
+  accept:
+    "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+  "accept-language": "en-US,en;q=0.9",
+  "user-agent":
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+};
+
 export function linkedInSearchUrl(keyword: string): string {
   const params = new URLSearchParams({ keywords: keyword });
   return `${SEARCH_URL}?${params}`;

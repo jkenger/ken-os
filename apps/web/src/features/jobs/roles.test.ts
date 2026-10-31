@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { emptyProfile } from "@ken-os/domain";
-import { alertKeywords, deriveRoles } from "./roles";
+import { deriveRoles } from "./roles";
 
 function withExperience(titles: string[]) {
   const details = emptyProfile();
@@ -40,11 +40,4 @@ test("an empty headline is dropped, not kept as a blank role", () => {
 
 test("no experience yet leaves just the headline", () => {
   assert.deepEqual(deriveRoles(withExperience([])), ["Senior Frontend Engineer"]);
-});
-
-test("alert keywords are the roles, comma-separated and lowercase", () => {
-  assert.equal(
-    alertKeywords(["Senior Frontend Engineer", "React Developer"]),
-    "senior frontend engineer, react developer",
-  );
 });

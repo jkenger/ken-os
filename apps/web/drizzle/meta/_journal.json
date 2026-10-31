@@ -253,6 +253,13 @@
       "when": 1793422662666,
       "tag": "0035_previous_skin",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1793423753215,
+      "tag": "0036_flashy_vengeance",
+      "breakpoints": true
     }
   ]
 }

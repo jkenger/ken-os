@@ -11,8 +11,3 @@ export function deriveRoles(details: ProfileDetails): string[] {
   }
   return roles;
 }
-
-/** What the owner copies into LinkedIn, Indeed and OnlineJobs when setting up alerts. */
-export function alertKeywords(roles: string[]): string {
-  return roles.map((role) => role.toLowerCase()).join(", ");
-}

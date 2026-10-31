@@ -1,9 +1,11 @@
-// What a parser pulls from one source's alert email (docs/product/job-finder.md, "Split"). Everything after dedup
-// never knows which source a posting came from except through `sourceId`'s prefix and `source` itself.
+// A posting pulled from one source (docs/product/job-finder.md). Everything after dedup never knows which source a
+// posting came from except through `sourceId`'s prefix and `source` itself.
+
+export type AlertSource = "linkedin" | "indeed";
 
 export type RawPosting = {
-  source: "linkedin" | "indeed";
-  /** The source's own ID for the posting, prefixed by source ("li-123", "in-456"), when the email exposes one. */
+  source: AlertSource;
+  /** The source's own ID for the posting, prefixed by source ("li-123", "in-456"), when it's known. */
   sourceId: string | null;
   title: string;
   company: string;

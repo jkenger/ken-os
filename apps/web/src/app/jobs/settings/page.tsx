@@ -18,7 +18,6 @@ export default async function JobsSettings() {
     <JobsSettingsPage
       email={session.email}
       roles={deriveRoles(profile.details)}
-      forwardingAddress={process.env.JOBS_INBOUND_ADDRESS}
       preferences={preferences}
       linkedInState={linkedInState}
     />

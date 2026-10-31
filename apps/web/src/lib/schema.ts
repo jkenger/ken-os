@@ -34,8 +34,7 @@ import type { BuildEvidence } from "../features/engineering-lab/build-evidence";
 import type { ReviewSheet } from "../features/engineering-lab/review-sheet";
 import type { Difficulty, TopicMaterial } from "../features/engineering-lab/topic-material";
 import type { LookChange, TokenChange } from "../features/design-studio/drafts";
-import type { AlertSource } from "../features/jobs/known-senders";
-import type { JobMatchState } from "../features/jobs/raw-posting";
+import type { AlertSource, JobMatchState } from "../features/jobs/raw-posting";
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -715,19 +714,6 @@ export const labTopicMaterial = pgTable(
   },
   (table) => [primaryKey({ columns: [table.userId, table.topicId] })],
 );
-
-/** Each forwarded alert email as received, so parsing can be rerun after a parser fix. Spec: docs/product/job-finder.md. */
-export const jobInboundEmails = pgTable("job_inbound_emails", {
-  id: text("id").primaryKey(),
-  userId: text("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  fromAddress: text("from_address").notNull(),
-  source: text("source").$type<AlertSource>(),
-  rawHtml: text("raw_html"),
-  rawText: text("raw_text"),
-  receivedAt: timestamp("received_at", { withTimezone: true }).notNull().defaultNow(),
-});
 
 /** One row per real posting after repeats are dropped. Identity for the title+company+location fallback match
  *  ("Drop repeats") is enforced by the unique index below, not just application logic. */

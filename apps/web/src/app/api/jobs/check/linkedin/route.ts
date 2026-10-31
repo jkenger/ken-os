@@ -5,6 +5,7 @@ import { users } from "@/lib/schema";
 import { checkLinkedIn } from "@/features/jobs/check-linkedin";
 import { deriveRoles } from "@/features/jobs/roles";
 import { isBlocked, recordBlocked, recordRun } from "@/features/jobs/scraper-state";
+import { LINKEDIN_HEADERS } from "@/features/jobs/scrapers/linkedin";
 import { getProfile } from "@/features/profile/store";
 import { savePostings } from "@/features/jobs/store";
 
@@ -35,12 +36,13 @@ export async function GET(request: Request) {
     keywords: deriveRoles(profile.details),
     isBlocked: () => isBlocked(owner.id, "linkedin"),
     fetchSearch: async (url) => {
-      const response = await fetch(url, { headers: { "user-agent": "Mozilla/5.0 (compatible; Loots/1.0)" } });
+      const response = await fetch(url, { headers: LINKEDIN_HEADERS });
       return { status: response.status, html: await response.text() };
     },
     savePostings: (postings) => savePostings(owner.id, postings),
     recordBlocked: () => recordBlocked(owner.id, "linkedin"),
     recordRun: (outcome) => recordRun(owner.id, "linkedin", outcome),
+    wait: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
   });
 
   if (!result.ok) return NextResponse.json({ error: result.reason }, { status: 401 });

@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { jobScraperState } from "@/lib/schema";
-import type { AlertSource } from "./known-senders";
+import type { AlertSource } from "./raw-posting";
 
 const BLOCK_DURATION_MS = 24 * 60 * 60 * 1000;
 

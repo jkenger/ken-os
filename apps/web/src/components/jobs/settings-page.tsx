@@ -1,17 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { IconCopy } from "@tabler/icons-react";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toaster";
 import type { JobPreferences } from "@/features/jobs/preferences-store";
-import { alertKeywords } from "@/features/jobs/roles";
 import type { ScraperState } from "@/features/jobs/scraper-state";
 import { send } from "@/lib/api-client";
 
@@ -28,15 +25,6 @@ function sourceStateBadge(state: ScraperState | null) {
   return <Badge variant="secondary">Running</Badge>;
 }
 
-async function copy(text: string) {
-  try {
-    await navigator.clipboard.writeText(text);
-    toast({ tone: "success", title: "Alert keywords copied" });
-  } catch {
-    toast({ tone: "error", title: "Couldn't copy. Select it and copy" });
-  }
-}
-
 function linesToList(value: string): string[] {
   return value
     .split("\n")
@@ -47,13 +35,11 @@ function linesToList(value: string): string[] {
 export function JobsSettingsPage({
   email,
   roles,
-  forwardingAddress,
   preferences,
   linkedInState,
 }: {
   email: string;
   roles: string[];
-  forwardingAddress: string | undefined;
   preferences: JobPreferences;
   linkedInState: ScraperState | null;
 }) {
@@ -61,7 +47,6 @@ export function JobsSettingsPage({
   const [skipCompanies, setSkipCompanies] = useState(preferences.skipCompanies.join("\n"));
   const [postedWithinDays, setPostedWithinDays] = useState(String(preferences.postedWithinDays));
   const [busy, setBusy] = useState(false);
-  const keywords = alertKeywords(roles);
 
   async function save() {
     setBusy(true);
@@ -98,39 +83,6 @@ export function JobsSettingsPage({
               <p className="text-xs text-muted-foreground">Add a headline on Profile to see roles here</p>
             )}
           </div>
-          {roles.length > 0 && (
-            <InputGroup>
-              <InputGroupInput readOnly value={keywords} aria-label="Alert keywords" className="font-mono text-xs" />
-              <InputGroupAddon align="inline-end">
-                <InputGroupButton onClick={() => void copy(keywords)}>
-                  <IconCopy aria-hidden="true" />
-                  Copy
-                </InputGroupButton>
-              </InputGroupAddon>
-            </InputGroup>
-          )}
-        </section>
-
-        <section className="mt-6 grid gap-3 rounded-lg border p-4">
-          <h2 className="text-sm font-semibold">Forwarding address</h2>
-          {forwardingAddress ? (
-            <InputGroup>
-              <InputGroupInput
-                readOnly
-                value={forwardingAddress}
-                aria-label="Forwarding address"
-                className="font-mono text-xs"
-              />
-              <InputGroupAddon align="inline-end">
-                <InputGroupButton onClick={() => void copy(forwardingAddress)}>
-                  <IconCopy aria-hidden="true" />
-                  Copy
-                </InputGroupButton>
-              </InputGroupAddon>
-            </InputGroup>
-          ) : (
-            <p className="text-xs text-muted-foreground">Set JOBS_INBOUND_ADDRESS to turn this on</p>
-          )}
         </section>
 
         <section className="mt-6 grid gap-3 rounded-lg border p-4">

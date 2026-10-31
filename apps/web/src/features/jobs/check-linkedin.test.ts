@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { checkLinkedIn } from "./check-linkedin";
+import { LINKEDIN_EMPTY_PAGE } from "./scrapers/linkedin";
 
 const linkedInFixtureHtml =
   '<div class="base-search-card" data-entity-urn="urn:li:jobPosting:1"><h3 class="base-search-card__title">Test Role</h3><h4 class="base-search-card__subtitle">Test Co</h4><span class="job-search-card__location">Remote</span></div>';
@@ -11,10 +12,11 @@ function noopDeps() {
     expectedSecret: "s3cret",
     keywords: ["frontend engineer"],
     isBlocked: async () => false,
-    fetchSearch: async () => ({ status: 200, html: "" }),
+    fetchSearch: async () => ({ status: 200, html: LINKEDIN_EMPTY_PAGE }),
     savePostings: async () => {},
     recordBlocked: async () => {},
     recordRun: async () => {},
+    wait: async () => {},
   };
 }
 
@@ -40,6 +42,22 @@ test("a correct secret scrapes each keyword and saves the postings found", async
   assert.equal(fetchedUrls.length, 2);
   assert.equal(saved.length, 2);
   assert.equal(recordedResult, "ok");
+});
+
+test("waits between keyword requests, but not before the first", async () => {
+  const waits: number[] = [];
+  await checkLinkedIn({
+    ...noopDeps(),
+    keywords: ["frontend engineer", "react developer", "software engineer"],
+    wait: async (ms) => {
+      waits.push(ms);
+    },
+  });
+  assert.equal(waits.length, 2, "two waits for three keywords: before the 2nd and 3rd, not the 1st");
+  assert.ok(
+    waits.every((ms) => ms > 0),
+    "every wait is a real delay",
+  );
 });
 
 test("a wrong secret is rejected and nothing is fetched", async () => {
@@ -93,12 +111,12 @@ for (const status of [403, 429]) {
   });
 }
 
-test("no postings found records an empty run, not blocked", async () => {
+test("a known empty-results page with no job cards records an empty run, not blocked", async () => {
   let recordedResult: string | null = null;
   let blocked = false;
   const result = await checkLinkedIn({
     ...noopDeps(),
-    fetchSearch: async () => ({ status: 200, html: "<html></html>" }),
+    fetchSearch: async () => ({ status: 200, html: LINKEDIN_EMPTY_PAGE }),
     recordRun: async (result) => {
       recordedResult = result;
     },
@@ -109,4 +127,18 @@ test("no postings found records an empty run, not blocked", async () => {
   assert.equal(result.ok, true);
   assert.equal(recordedResult, "empty");
   assert.equal(blocked, false);
+});
+
+test("a 200 response with no job cards that isn't the known empty-results page is treated as a soft block", async () => {
+  let blocked = false;
+  const result = await checkLinkedIn({
+    ...noopDeps(),
+    fetchSearch: async () => ({ status: 200, html: "<html><body>Please verify you're human</body></html>" }),
+    recordBlocked: async () => {
+      blocked = true;
+    },
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.reason, "blocked");
+  assert.equal(blocked, true);
 });
