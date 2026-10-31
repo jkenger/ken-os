@@ -1,13 +1,15 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
-import { extractPosting } from "@ken-os/agents";
+import { extractPosting, scoreJobPosting } from "@ken-os/agents";
+import type { ProfileDetails } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { users } from "@/lib/schema";
+import { getProfile } from "@/features/profile/store";
 import { LINKEDIN_HEADERS } from "@/features/jobs/scrapers/linkedin";
 import { INDEED_HEADERS } from "@/features/jobs/scrapers/indeed";
-import { processPostings } from "@/features/jobs/process";
+import { processPostings, scorePostings } from "@/features/jobs/process";
 import { readFullPosting } from "@/features/jobs/read-posting";
-import { getPendingPostings, saveExtractedFields } from "@/features/jobs/store";
+import { getNeedingScore, getPendingPostings, saveExtractedFields, saveScore } from "@/features/jobs/store";
 
 export const runtime = "nodejs";
 
@@ -30,7 +32,7 @@ export async function GET(request: Request) {
 
   const secret = request.headers.get("x-jobs-check-secret") ?? "";
 
-  const result = await processPostings({
+  const extractResult = await processPostings({
     secret,
     expectedSecret,
     getPending: (limit) => getPendingPostings(owner.id, limit),
@@ -43,7 +45,30 @@ export async function GET(request: Request) {
     extract: (input) => extractPosting(input),
     saveExtracted: (postingId, fields) => saveExtractedFields(postingId, fields),
   });
+  if (!extractResult.ok) return NextResponse.json({ error: extractResult.reason }, { status: 401 });
 
-  if (!result.ok) return NextResponse.json({ error: result.reason }, { status: 401 });
-  return NextResponse.json({ ok: true, reason: result.reason, processed: result.processed });
+  const profileState = await getProfile(owner.id);
+  const profileVersion = profileState.savedAt ? new Date(profileState.savedAt) : null;
+
+  const scoreResult = await scorePostings({
+    secret,
+    expectedSecret,
+    getNeedingScore: (limit) => getNeedingScore(owner.id, profileVersion, limit),
+    getProfileForScoring: async () => ({ profile: profileState.details, version: profileVersion }),
+    score: (input) =>
+      scoreJobPosting({
+        profile: input.profile as ProfileDetails,
+        title: input.title,
+        company: input.company,
+        text: input.text,
+      }),
+    saveScore: (postingId, fields) => saveScore(postingId, fields),
+  });
+  if (!scoreResult.ok) return NextResponse.json({ error: scoreResult.reason }, { status: 401 });
+
+  return NextResponse.json({
+    ok: true,
+    reason: "ok",
+    processed: extractResult.processed + scoreResult.processed,
+  });
 }

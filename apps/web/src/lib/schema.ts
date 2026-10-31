@@ -784,7 +784,10 @@ export const jobPostingSources = pgTable(
   ],
 );
 
-/** The owner's state for one posting. One row per posting, created alongside it. */
+/** The owner's state for one posting. One row per posting, created alongside it. `profileVersionScored` is the
+ *  Profile's `updatedAt` at scoring time (or null, scored against the never-saved Profile); a save that changes
+ *  it makes every already-scored match here stale until the next `/api/jobs/process` run rescoring it
+ *  (plans/jobs-score.md, Slice 3). */
 export const jobMatches = pgTable(
   "job_matches",
   {
@@ -796,6 +799,13 @@ export const jobMatches = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     state: text("state").$type<JobMatchState>().notNull().default("new"),
     filterReason: text("filter_reason"),
+    score: integer("score"),
+    scoreReasons: jsonb("score_reasons").$type<{
+      whyFits: { reason: string; citation: string }[];
+      whatsMissing: string[];
+    }>(),
+    scorePromptVersion: text("score_prompt_version"),
+    profileVersionScored: timestamp("profile_version_scored", { withTimezone: true }),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("job_matches_user_state_idx").on(table.userId, table.state)],

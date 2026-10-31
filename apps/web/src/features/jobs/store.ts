@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, desc, eq, inArray, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { jobMatches, jobPostingSources, jobPostings } from "@/lib/schema";
 import { filterReason } from "./filters";
@@ -272,5 +272,68 @@ export async function saveExtractedFields(postingId: string, fields: ExtractedFi
   await db()
     .update(jobMatches)
     .set({ state: reason ? "filtered_out" : "new", filterReason: reason, updatedAt: now })
+    .where(eq(jobMatches.postingId, postingId));
+}
+
+export type ScorablePosting = {
+  id: string;
+  title: string;
+  company: string;
+  fullDescription: string | null;
+  summary: string;
+};
+
+/** Postings needing a score: never scored, or scored against a Profile version that no longer matches the
+ *  current one (plans/jobs-score.md, Slice 3). Only a posting that passed filtering (state "new") and has been
+ *  extracted (`processedAt` set) is eligible; a filtered-out posting is never scored. `score IS NULL` catches
+ *  "never scored" on its own, since `profileVersion` and a never-scored `profileVersionScored` are both null for
+ *  the never-saved Profile — without it, `is distinct from` would treat those two nulls as equal and skip a
+ *  posting that has never actually been scored. */
+export async function getNeedingScore(
+  userId: string,
+  profileVersion: Date | null,
+  limit: number,
+): Promise<ScorablePosting[]> {
+  const rows = await db()
+    .select({
+      id: jobPostings.id,
+      title: jobPostings.title,
+      company: jobPostings.company,
+      fullDescription: jobPostings.fullDescription,
+      summary: jobPostings.summary,
+    })
+    .from(jobPostings)
+    .innerJoin(jobMatches, eq(jobMatches.postingId, jobPostings.id))
+    .where(
+      and(
+        eq(jobPostings.userId, userId),
+        eq(jobMatches.state, "new"),
+        isNotNull(jobPostings.processedAt),
+        sql`(${jobMatches.score} is null or ${jobMatches.profileVersionScored} is distinct from ${profileVersion ? profileVersion.toISOString() : null}::timestamptz)`,
+      ),
+    )
+    .orderBy(asc(jobPostings.firstSeenAt))
+    .limit(limit);
+  return rows.map((row) => ({ ...row, summary: row.summary ?? "" }));
+}
+
+export type ScoreFields = {
+  score: number;
+  whyFits: { reason: string; citation: string }[];
+  whatsMissing: string[];
+  scorePromptVersion: string;
+  profileVersionScored: Date | null;
+};
+
+export async function saveScore(postingId: string, fields: ScoreFields): Promise<void> {
+  await db()
+    .update(jobMatches)
+    .set({
+      score: fields.score,
+      scoreReasons: { whyFits: fields.whyFits, whatsMissing: fields.whatsMissing },
+      scorePromptVersion: fields.scorePromptVersion,
+      profileVersionScored: fields.profileVersionScored,
+      updatedAt: new Date(),
+    })
     .where(eq(jobMatches.postingId, postingId));
 }

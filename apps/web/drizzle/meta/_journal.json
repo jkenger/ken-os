@@ -288,6 +288,13 @@
       "when": 1793431654599,
       "tag": "0040_uneven_black_widow",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1793441061559,
+      "tag": "0041_yellow_phantom_reporter",
+      "breakpoints": true
     }
   ]
 }

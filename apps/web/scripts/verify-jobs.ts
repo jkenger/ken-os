@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { config } from "dotenv";
 import { eq } from "drizzle-orm";
 import { closeDb, db } from "../src/lib/db";
-import { users } from "../src/lib/schema";
+import { jobMatches, users } from "../src/lib/schema";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
@@ -442,6 +442,113 @@ async function main() {
     console.log(
       "ok - tightening Work setup and refiltering moves an already-processed posting to Filtered out for the new reason",
     );
+
+    await store.savePostings(userId, [
+      {
+        source: "linkedin",
+        sourceId: "li-scorable",
+        title: "Scorable Role",
+        company: "SliceThreeCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/30",
+      },
+      {
+        source: "linkedin",
+        sourceId: "li-scorable-filtered",
+        title: "Filtered Scorable Role",
+        company: "SliceThreeCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/31",
+      },
+    ]);
+    const sliceThreePending = await store.getPendingPostings(userId, 10);
+    const sliceThreeByTitle = (title: string) => sliceThreePending.find((p) => p.title === title)!;
+
+    await store.saveExtractedFields(sliceThreeByTitle("Scorable Role").id, {
+      ...extractDefaults,
+      payAmount: 90000,
+      payCurrency: "USD",
+      payPeriod: "year",
+      jobType: "full_time",
+      workSetup: "on_site",
+      countries: [],
+      isAgency: false,
+    });
+    await store.saveExtractedFields(sliceThreeByTitle("Filtered Scorable Role").id, {
+      ...extractDefaults,
+      payAmount: 90000,
+      payCurrency: "USD",
+      payPeriod: "year",
+      jobType: "full_time",
+      workSetup: "remote",
+      countries: [],
+      isAgency: false,
+    });
+
+    const scorableNew = await store.listPostings(userId, "new");
+    const scorableFilteredOut = await store.listPostings(userId, "filtered_out");
+    const scorableId = scorableNew.find((p) => p.title === "Scorable Role")!.id;
+    assert.ok(scorableFilteredOut.some((p) => p.title === "Filtered Scorable Role"));
+    console.log("ok - a posting that fails the upgraded filters is saved as Filtered out, not left for scoring");
+
+    const needingScoreNoProfile = await store.getNeedingScore(userId, null, 10);
+    assert.ok(
+      needingScoreNoProfile.some((p) => p.id === scorableId),
+      "an unscored, passing posting needs a score",
+    );
+    assert.ok(
+      !needingScoreNoProfile.some((p) => p.title === "Filtered Scorable Role"),
+      "a filtered-out posting is never offered for scoring",
+    );
+    console.log("ok - getNeedingScore returns a passing, unscored posting and excludes a filtered-out one");
+
+    await store.saveScore(scorableId, {
+      score: 77,
+      whyFits: [{ reason: "Matches backend experience", citation: "5+ years backend required" }],
+      whatsMissing: ["No mention of Kubernetes"],
+      scorePromptVersion: "jobs-score-v1",
+      profileVersionScored: null,
+    });
+    const [scoredRow] = await db().select().from(jobMatches).where(eq(jobMatches.postingId, scorableId)).limit(1);
+    assert.equal(scoredRow?.score, 77);
+    assert.deepEqual(scoredRow?.scoreReasons, {
+      whyFits: [{ reason: "Matches backend experience", citation: "5+ years backend required" }],
+      whatsMissing: ["No mention of Kubernetes"],
+    });
+    assert.equal(scoredRow?.scorePromptVersion, "jobs-score-v1");
+    assert.equal(scoredRow?.profileVersionScored, null);
+    console.log("ok - saveScore stores the score, reasons, prompt version and Profile-version stamp");
+
+    const needingScoreAfterScoring = await store.getNeedingScore(userId, null, 10);
+    assert.ok(
+      !needingScoreAfterScoring.some((p) => p.id === scorableId),
+      "a posting already scored against the current Profile version doesn't need scoring again",
+    );
+    console.log("ok - a freshly-scored posting is not offered for scoring again against the same Profile version");
+
+    const newProfileVersion = new Date("2026-11-01T00:00:00Z");
+    const needingScoreAfterProfileChange = await store.getNeedingScore(userId, newProfileVersion, 10);
+    assert.ok(
+      needingScoreAfterProfileChange.some((p) => p.id === scorableId),
+      "a Profile version change makes an already-scored posting need scoring again",
+    );
+    console.log("ok - a changed Profile version makes an already-scored posting stale and due for rescoring");
+
+    await store.saveScore(scorableId, {
+      score: 85,
+      whyFits: [{ reason: "Matches backend experience", citation: "5+ years backend required" }],
+      whatsMissing: [],
+      scorePromptVersion: "jobs-score-v1",
+      profileVersionScored: newProfileVersion,
+    });
+    const needingScoreAfterRescore = await store.getNeedingScore(userId, newProfileVersion, 10);
+    assert.ok(
+      !needingScoreAfterRescore.some((p) => p.id === scorableId),
+      "rescoring against the new Profile version updates the stamp, so it's no longer stale",
+    );
+    console.log("ok - rescoring against the new Profile version updates the stamp and clears the staleness");
   } finally {
     await db().delete(users).where(eq(users.id, userId));
     await closeDb();
