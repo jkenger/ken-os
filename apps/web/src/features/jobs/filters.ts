@@ -36,20 +36,20 @@ export type FilterablePosting = {
 };
 
 /** The strict filters (docs/product/job-finder.md): skip words, skip companies, posted within, and — once a
- *  posting has been through `/api/jobs/process` — Minimum pay, Job type, Work setup, Countries and Agencies.
- *  A not-yet-processed posting's extracted fields are all `undefined` (not `false`/`[]`), so only the first
- *  three checks apply -- never confused with a processed posting that explicitly found no eligibility language.
- *  Checked in this order, the first match wins, so a posting always has exactly one reason when it's filtered.
- *  `context.targetCountry` is the owner's own country (from Profile, defaulting to PH) -- there's no separate
- *  owner-set Countries list. Unlike Minimum pay's "not stated, don't filter" rule, a *processed* posting that
- *  said nothing about eligibility at all is filtered, not shown: most scraped postings never say anything, and
- *  showing them by default let through local, non-PH-reachable roles indistinguishable from ones genuinely open
- *  everywhere. `eligibilityStated` is what makes that distinction possible: `false` means extraction ran and
- *  found no eligibility language at all ("Country: not stated"); `true` with an empty `countries` means the
- *  posting explicitly said it's open to everyone, which is never filtered; `true` with a list checks membership
- *  as before. `context.currencyRates` is the last cached snapshot a posting's own stated pay is converted
- *  through before comparing to Minimum pay; missing or unconvertable pay is still never filtered -- that
- *  tradeoff only applies to Countries. */
+ *  posting has been through `/api/jobs/process` — Minimum/Maximum pay, Job type, Work setup, Countries and
+ *  Agencies. A not-yet-processed posting's extracted fields are all `undefined` (not `false`/`[]`), so only the
+ *  first three checks apply -- never confused with a processed posting that explicitly found no eligibility
+ *  language. Checked in this order, the first match wins, so a posting always has exactly one reason when it's
+ *  filtered. `context.targetCountry` is the owner's own country (from Profile, defaulting to PH) -- there's no
+ *  separate owner-set Countries list. Unlike Minimum/Maximum pay's "not stated, don't filter" rule, a
+ *  *processed* posting that said nothing about eligibility at all is filtered, not shown: most scraped postings
+ *  never say anything, and showing them by default let through local, non-PH-reachable roles indistinguishable
+ *  from ones genuinely open everywhere. `eligibilityStated` is what makes that distinction possible: `false`
+ *  means extraction ran and found no eligibility language at all ("Country: not stated"); `true` with an empty
+ *  `countries` means the posting explicitly said it's open to everyone, which is never filtered; `true` with a
+ *  list checks membership as before. `context.currencyRates` is the last cached snapshot a posting's own stated
+ *  pay is converted through before comparing to Minimum/Maximum pay; missing or unconvertable pay is still never
+ *  filtered -- that tradeoff only applies to Countries. */
 export function filterReason(
   posting: FilterablePosting,
   preferences: JobPreferences,
@@ -70,12 +70,23 @@ export function filterReason(
   const ageDays = (now.getTime() - posting.firstSeenAt.getTime()) / DAY_MS;
   if (ageDays > preferences.postedWithinDays) return `Posted over ${preferences.postedWithinDays} days ago`;
 
-  if (preferences.minimumPay !== null && posting.payAmount != null && posting.payCurrency && posting.payPeriod) {
+  if (
+    (preferences.minimumPay !== null || preferences.maximumPay !== null) &&
+    posting.payAmount != null &&
+    posting.payCurrency &&
+    posting.payPeriod
+  ) {
     const converted = convertAmount(posting.payAmount, posting.payCurrency, preferences.payCurrency, currencyRates);
     if (converted != null) {
       const postingMonthly = monthlyAmount(converted, posting.payPeriod);
-      const minimumMonthly = monthlyAmount(preferences.minimumPay, preferences.payPeriod);
-      if (postingMonthly < minimumMonthly) return "Below minimum pay";
+      if (preferences.minimumPay !== null) {
+        const minimumMonthly = monthlyAmount(preferences.minimumPay, preferences.payPeriod);
+        if (postingMonthly < minimumMonthly) return "Below minimum pay";
+      }
+      if (preferences.maximumPay !== null) {
+        const maximumMonthly = monthlyAmount(preferences.maximumPay, preferences.payPeriod);
+        if (postingMonthly > maximumMonthly) return "Above maximum pay";
+      }
     }
   }
 

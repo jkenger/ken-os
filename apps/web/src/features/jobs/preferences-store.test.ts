@@ -9,6 +9,7 @@ function validInput(overrides: Record<string, unknown> = {}) {
     skipCompanies: ["Acme"],
     postedWithinDays: 7,
     minimumPay: 80000,
+    maximumPay: 200000,
     payCurrency: "usd",
     payPeriod: "year",
     jobTypes: ["full_time"],
@@ -24,6 +25,7 @@ test("valid input parses to preferences", () => {
     skipCompanies: ["Acme"],
     postedWithinDays: 7,
     minimumPay: 80000,
+    maximumPay: 200000,
     payCurrency: "USD",
     payPeriod: "year",
     jobTypes: ["full_time"],
@@ -35,6 +37,33 @@ test("valid input parses to preferences", () => {
 test("a null minimumPay means no floor set", () => {
   const result = parsePreferences(validInput({ minimumPay: null }));
   assert.equal(result.minimumPay, null);
+});
+
+test("a null maximumPay means no ceiling set", () => {
+  const result = parsePreferences(validInput({ maximumPay: null }));
+  assert.equal(result.maximumPay, null);
+});
+
+test("a negative maximumPay is rejected", () => {
+  assert.throws(() => parsePreferences(validInput({ maximumPay: -1 })), JobsInputError);
+});
+
+test("a maximumPay below minimumPay is rejected, naming the problem", () => {
+  assert.throws(
+    () => parsePreferences(validInput({ minimumPay: 80000, maximumPay: 50000 })),
+    (error: unknown) => error instanceof JobsInputError && error.message.includes("Maximum pay"),
+  );
+});
+
+test("a maximumPay equal to minimumPay is allowed (a one-value band)", () => {
+  const result = parsePreferences(validInput({ minimumPay: 80000, maximumPay: 80000 }));
+  assert.equal(result.minimumPay, 80000);
+  assert.equal(result.maximumPay, 80000);
+});
+
+test("maximumPay with no minimumPay set is allowed", () => {
+  const result = parsePreferences(validInput({ minimumPay: null, maximumPay: 200000 }));
+  assert.equal(result.maximumPay, 200000);
 });
 
 test("blank skip words and companies are dropped", () => {

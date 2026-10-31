@@ -77,6 +77,7 @@ async function main() {
       "skipWords" | "skipCompanies" | "postedWithinDays"
     > = {
       minimumPay: null,
+      maximumPay: null,
       payCurrency: "USD",
       payPeriod: "month",
       jobTypes: ["full_time", "contract"],
@@ -290,6 +291,7 @@ async function main() {
       skipCompanies: [],
       postedWithinDays: 365,
       minimumPay: 80000,
+      maximumPay: null,
       payCurrency: "USD",
       payPeriod: "year",
       jobTypes: ["full_time", "contract"],
@@ -478,6 +480,7 @@ async function main() {
       skipCompanies: [],
       postedWithinDays: 365,
       minimumPay: 80000,
+      maximumPay: null,
       payCurrency: "USD",
       payPeriod: "year",
       jobTypes: ["full_time", "contract"],
@@ -492,6 +495,69 @@ async function main() {
     console.log(
       "ok - tightening Work setup and refiltering moves an already-processed posting to Filtered out for the new reason",
     );
+
+    await preferences.savePreferences(userId, {
+      skipWords: [],
+      skipCompanies: [],
+      postedWithinDays: 365,
+      minimumPay: 15000,
+      maximumPay: 200000,
+      payCurrency: "PHP",
+      payPeriod: "month",
+      jobTypes: ["full_time", "contract"],
+      workSetups: ["remote"],
+      agenciesHide: false,
+    });
+    await store.savePostings(userId, [
+      {
+        source: "linkedin",
+        sourceId: "li-within-pay-band",
+        title: "Within Pay Band Role",
+        company: "SliceTwoCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/27",
+      },
+      {
+        source: "linkedin",
+        sourceId: "li-above-max-pay",
+        title: "Above Max Pay Role",
+        company: "SliceTwoCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/28",
+      },
+    ]);
+    const maxPayPending = await store.getPendingPostings(userId, 20);
+    const byTitleMaxPay = (title: string) => maxPayPending.find((p) => p.title === title)!;
+    await store.saveExtractedFields(byTitleMaxPay("Within Pay Band Role").id, {
+      ...extractDefaults,
+      payAmount: 50000,
+      payCurrency: "PHP",
+      payPeriod: "month",
+      jobType: "full_time",
+      workSetup: "remote",
+      countries: ["PH"],
+      isAgency: false,
+    });
+    await store.saveExtractedFields(byTitleMaxPay("Above Max Pay Role").id, {
+      ...extractDefaults,
+      payAmount: 250000,
+      payCurrency: "PHP",
+      payPeriod: "month",
+      jobType: "full_time",
+      workSetup: "remote",
+      countries: ["PH"],
+      isAgency: false,
+    });
+    const maxPayFilteredOut = await store.listPostings(userId, "filtered_out");
+    const maxPayNew = await store.listPostings(userId, "new");
+    const reasonForMaxPay = (title: string) =>
+      maxPayFilteredOut.find((p) => p.title === title)?.filterReason ??
+      (maxPayNew.some((p) => p.title === title) ? null : undefined);
+    assert.equal(reasonForMaxPay("Within Pay Band Role"), null, "a posting inside the 15k-200k PHP/month band passes");
+    assert.equal(reasonForMaxPay("Above Max Pay Role"), "Above maximum pay");
+    console.log("ok - a posting above Maximum pay is filtered out, one inside the minimum/maximum band is not");
 
     // This is a global singleton row, not scoped to the throwaway user -- it may already hold a real cached
     // snapshot from an earlier live run. Captured here and restored afterward, so this script never leaves a
@@ -511,6 +577,7 @@ async function main() {
       skipCompanies: [],
       postedWithinDays: 365,
       minimumPay: 80000,
+      maximumPay: null,
       payCurrency: "USD",
       payPeriod: "year",
       jobTypes: ["full_time", "contract"],
@@ -609,6 +676,7 @@ async function main() {
       skipCompanies: [],
       postedWithinDays: 365,
       minimumPay: 80000,
+      maximumPay: null,
       payCurrency: "USD",
       payPeriod: "year",
       jobTypes: ["full_time", "contract"],

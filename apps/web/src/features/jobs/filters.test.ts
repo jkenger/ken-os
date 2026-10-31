@@ -10,6 +10,7 @@ const noFilters: JobPreferences = {
   skipCompanies: [],
   postedWithinDays: 14,
   minimumPay: null,
+  maximumPay: null,
   payCurrency: "USD",
   payPeriod: "month",
   jobTypes: ["full_time", "contract"],
@@ -109,6 +110,44 @@ test("with no currency rates supplied at all, a cross-currency posting is not fi
   const posting = { ...base, payAmount: 1000, payCurrency: "PHP", payPeriod: "month" as const };
   const preferences = { ...noFilters, minimumPay: 80000, payCurrency: "USD" };
   assert.equal(filterReason(posting, preferences, now), null);
+});
+
+test("a posting above Maximum pay, same currency and period, is filtered", () => {
+  const posting = { ...base, payAmount: 250000, payCurrency: "USD", payPeriod: "year" as const };
+  assert.equal(
+    filterReason(posting, { ...noFilters, maximumPay: 200000, payPeriod: "year" }, now),
+    "Above maximum pay",
+  );
+});
+
+test("a posting within the minimum/maximum band is not filtered", () => {
+  const posting = { ...base, payAmount: 150000, payCurrency: "USD", payPeriod: "year" as const };
+  assert.equal(
+    filterReason(posting, { ...noFilters, minimumPay: 80000, maximumPay: 200000, payPeriod: "year" }, now),
+    null,
+  );
+});
+
+test("a posting exactly at Maximum pay is not filtered (inclusive boundary)", () => {
+  const posting = { ...base, payAmount: 200000, payCurrency: "USD", payPeriod: "year" as const };
+  assert.equal(filterReason(posting, { ...noFilters, maximumPay: 200000, payPeriod: "year" }, now), null);
+});
+
+test("with no Maximum pay configured, a posting is never filtered for being too high", () => {
+  const posting = { ...base, payAmount: 10_000_000, payCurrency: "USD", payPeriod: "year" as const };
+  assert.equal(filterReason(posting, { ...noFilters, maximumPay: null }, now), null);
+});
+
+test("a posting with no pay listed is not filtered for Maximum pay", () => {
+  const posting = { ...base, payAmount: null, payCurrency: null, payPeriod: null };
+  assert.equal(filterReason(posting, { ...noFilters, maximumPay: 80000 }, now), null);
+});
+
+test("a posting in a different currency is converted via the cached rates before comparing to Maximum pay", () => {
+  // 10,000,000 PHP/year -> USD via the 56.5 rate ~= 176,991/year, above a 100,000/year maximum
+  const posting = { ...base, payAmount: 10_000_000, payCurrency: "PHP", payPeriod: "year" as const };
+  const preferences = { ...noFilters, maximumPay: 100_000, payCurrency: "USD", payPeriod: "year" as const };
+  assert.equal(filterReason(posting, preferences, now, { currencyRates: rates }), "Above maximum pay");
 });
 
 test("a posting whose job type isn't in the owner's allowed set is filtered", () => {

@@ -16,6 +16,7 @@ export type JobPreferences = {
   skipCompanies: string[];
   postedWithinDays: number;
   minimumPay: number | null;
+  maximumPay: number | null;
   payCurrency: string;
   payPeriod: PayPeriod;
   jobTypes: JobType[];
@@ -28,6 +29,7 @@ const DEFAULTS: JobPreferences = {
   skipCompanies: [],
   postedWithinDays: 14,
   minimumPay: null,
+  maximumPay: null,
   payCurrency: "USD",
   payPeriod: "month",
   jobTypes: ["full_time", "contract"],
@@ -57,6 +59,12 @@ export function parsePreferences(input: Record<string, unknown>): JobPreferences
   if (minimumPay !== null && (typeof minimumPay !== "number" || minimumPay < 0))
     throw new JobsInputError("Minimum pay must be a number, 0 or more, or empty");
 
+  const maximumPay = input.maximumPay;
+  if (maximumPay !== null && (typeof maximumPay !== "number" || maximumPay < 0))
+    throw new JobsInputError("Maximum pay must be a number, 0 or more, or empty");
+  if (minimumPay !== null && maximumPay !== null && maximumPay < minimumPay)
+    throw new JobsInputError("Maximum pay must be greater than or equal to minimum pay");
+
   const payCurrency = input.payCurrency;
   if (typeof payCurrency !== "string" || !payCurrency.trim()) throw new JobsInputError("Pay currency is required");
 
@@ -72,6 +80,7 @@ export function parsePreferences(input: Record<string, unknown>): JobPreferences
     skipCompanies: cleanList(input.skipCompanies, "Skip companies"),
     postedWithinDays,
     minimumPay,
+    maximumPay,
     payCurrency: payCurrency.trim().toUpperCase(),
     payPeriod: payPeriod as PayPeriod,
     jobTypes: cleanEnumList(input.jobTypes, "Job types", JOB_TYPES),
@@ -88,6 +97,7 @@ export async function getPreferences(userId: string): Promise<JobPreferences> {
     skipCompanies: row.skipCompanies,
     postedWithinDays: row.postedWithinDays,
     minimumPay: row.minimumPay,
+    maximumPay: row.maximumPay,
     payCurrency: row.payCurrency,
     payPeriod: row.payPeriod,
     jobTypes: row.jobTypes,

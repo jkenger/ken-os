@@ -828,6 +828,7 @@ export const jobPreferences = pgTable("job_preferences", {
   skipCompanies: jsonb("skip_companies").$type<string[]>().notNull().default([]),
   postedWithinDays: integer("posted_within_days").notNull().default(14),
   minimumPay: real("minimum_pay"),
+  maximumPay: real("maximum_pay"),
   payCurrency: text("pay_currency").notNull().default("USD"),
   payPeriod: text("pay_period").$type<"hour" | "day" | "week" | "month" | "year">().notNull().default("month"),
   jobTypes: jsonb("job_types")

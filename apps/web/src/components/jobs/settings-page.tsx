@@ -78,6 +78,7 @@ export function JobsSettingsPage({
   const [skipCompanies, setSkipCompanies] = useState(preferences.skipCompanies.join("\n"));
   const [postedWithinDays, setPostedWithinDays] = useState(String(preferences.postedWithinDays));
   const [minimumPay, setMinimumPay] = useState(preferences.minimumPay === null ? "" : String(preferences.minimumPay));
+  const [maximumPay, setMaximumPay] = useState(preferences.maximumPay === null ? "" : String(preferences.maximumPay));
   const [payCurrency, setPayCurrency] = useState(preferences.payCurrency);
   const [payPeriod, setPayPeriod] = useState<PayPeriod>(preferences.payPeriod);
   const [jobTypes, setJobTypes] = useState<JobType[]>(preferences.jobTypes);
@@ -93,6 +94,7 @@ export function JobsSettingsPage({
         skipCompanies: linesToList(skipCompanies),
         postedWithinDays: Number(postedWithinDays),
         minimumPay: minimumPay.trim() === "" ? null : Number(minimumPay),
+        maximumPay: maximumPay.trim() === "" ? null : Number(maximumPay),
         payCurrency,
         payPeriod,
         jobTypes,
@@ -215,6 +217,21 @@ export function JobsSettingsPage({
                 ))}
               </NativeSelect>
             </div>
+          </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="maximum-pay">Maximum pay</Label>
+            <span className="text-xs text-muted-foreground">
+              Empty means no maximum. Same currency and period as Minimum pay.
+            </span>
+            <Input
+              id="maximum-pay"
+              type="number"
+              min={0}
+              value={maximumPay}
+              onChange={(event) => setMaximumPay(event.target.value)}
+              placeholder="No maximum"
+              className="w-32"
+            />
           </div>
           <div className="grid gap-1.5">
             <span className="text-sm font-medium">Job type</span>
