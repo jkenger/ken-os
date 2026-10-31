@@ -31,6 +31,36 @@ test("the HTML description decodes to plain text in the snippet", () => {
   assert.ok(!first.snippet.includes("&amp;"), "no unescaped entities remain");
 });
 
+test("maps freehire's own structured countries, work mode and employment type as raw, unmodified source signals", () => {
+  const postings = parseFreehireSearch(fixture);
+  const [first] = postings;
+  assert.deepEqual(first.sourceCountries, ["gb"]);
+  assert.equal(first.sourceWorkMode, null, "no work_mode stated for this result");
+  assert.equal(first.sourceEmploymentType, null, "no employment_type stated for this result");
+
+  const withHybridContract = postings.find((p) => p.company === "Formula Recruitment")!;
+  assert.deepEqual(withHybridContract.sourceCountries, ["gb"]);
+  assert.equal(withHybridContract.sourceWorkMode, "hybrid");
+  assert.equal(withHybridContract.sourceEmploymentType, "contract");
+});
+
+test("a result with no countries array at all maps to an empty list, never guessed", () => {
+  const broken = JSON.stringify({
+    data: [
+      {
+        public_slug: "x",
+        title: "Role",
+        company: "Acme",
+        location: "Remote",
+        description: "<p>Text.</p>",
+        url: "https://example.com/x",
+      },
+    ],
+  });
+  const [posting] = parseFreehireSearch(broken);
+  assert.deepEqual(posting.sourceCountries, []);
+});
+
 test("malformed JSON parses to an empty list, not a thrown error", () => {
   assert.deepEqual(parseFreehireSearch("not json"), []);
   assert.deepEqual(parseFreehireSearch(JSON.stringify({ data: null })), []);

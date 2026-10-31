@@ -227,6 +227,29 @@ async function main() {
     assert.equal(pendingOne.snippet, "First snippet.");
     console.log("ok - getPendingPostings returns unprocessed postings oldest first");
 
+    await store.savePostings(userId, [
+      {
+        source: "freehire",
+        sourceId: "fh-structured-role",
+        title: "Structured Fields Role",
+        company: "FreehireCo",
+        location: "Remote",
+        snippet: "A freehire posting with structured fields.",
+        link: "https://freehire.me/jobs/structured-role",
+        sourceCountries: ["ph", "us"],
+        sourceWorkMode: "remote",
+        sourceEmploymentType: "contract",
+      },
+    ]);
+    const pendingWithStructuredFields = await store.getPendingPostings(userId, 20);
+    const structuredRole = pendingWithStructuredFields.find((p) => p.title === "Structured Fields Role")!;
+    assert.deepEqual(structuredRole.sourceCountries, ["ph", "us"]);
+    assert.equal(structuredRole.sourceWorkMode, "remote");
+    assert.equal(structuredRole.sourceEmploymentType, "contract");
+    console.log(
+      "ok - a freehire posting's structured countries, work mode and employment type round-trip through the DB",
+    );
+
     const limited = await store.getPendingPostings(userId, 1);
     assert.equal(limited.length, 1);
     console.log("ok - getPendingPostings respects its limit");

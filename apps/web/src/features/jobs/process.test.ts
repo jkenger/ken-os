@@ -20,7 +20,16 @@ const extractResult = {
 };
 
 function pendingPosting(
-  overrides: Partial<{ id: string; title: string; company: string; location: string; snippet: string }> = {},
+  overrides: Partial<{
+    id: string;
+    title: string;
+    company: string;
+    location: string;
+    snippet: string;
+    sourceCountries: string[] | null;
+    sourceWorkMode: "remote" | "hybrid" | "onsite" | null;
+    sourceEmploymentType: string | null;
+  }> = {},
 ) {
   return {
     id: "posting-1",
@@ -28,6 +37,9 @@ function pendingPosting(
     company: "Acme",
     location: "Remote",
     snippet: "A snippet.",
+    sourceCountries: [],
+    sourceWorkMode: null,
+    sourceEmploymentType: null,
     ...overrides,
   };
 }
@@ -88,6 +100,92 @@ test("extract receives the posting's title, company, location and text as distin
     },
   });
   assert.deepEqual(calls, [{ title: "Senior Engineer", company: "Acme", location: "Remote", text: "Full text here." }]);
+});
+
+test("a posting with freehire-stated countries saves eligibilityStated true and those codes directly, regardless of what extract returns", async () => {
+  const saved: unknown[] = [];
+  await processPostings({
+    ...noopDeps(),
+    getPending: async () => [pendingPosting({ sourceCountries: ["ph", "us"] })],
+    extract: async () => ({ ...extractResult, eligibilityStated: false, countries: [] }),
+    saveExtracted: async (postingId, fields) => {
+      saved.push(fields);
+    },
+  });
+  const [savedFields] = saved as [{ eligibilityStated: boolean; countries: string[] }];
+  assert.equal(savedFields.eligibilityStated, true);
+  assert.deepEqual(savedFields.countries, ["PH", "US"]);
+});
+
+test("a posting with no freehire-stated countries falls back to whatever extract returns", async () => {
+  const saved: unknown[] = [];
+  await processPostings({
+    ...noopDeps(),
+    getPending: async () => [pendingPosting({ sourceCountries: [] })],
+    extract: async () => ({ ...extractResult, eligibilityStated: true, countries: ["GB"] }),
+    saveExtracted: async (postingId, fields) => {
+      saved.push(fields);
+    },
+  });
+  const [savedFields] = saved as [{ eligibilityStated: boolean; countries: string[] }];
+  assert.equal(savedFields.eligibilityStated, true);
+  assert.deepEqual(savedFields.countries, ["GB"]);
+});
+
+test("a posting with a freehire-stated work mode saves workSetup directly, mapping onsite to on_site", async () => {
+  const saved: unknown[] = [];
+  await processPostings({
+    ...noopDeps(),
+    getPending: async () => [pendingPosting({ sourceWorkMode: "onsite" })],
+    extract: async () => ({ ...extractResult, workSetup: "remote" }),
+    saveExtracted: async (postingId, fields) => {
+      saved.push(fields);
+    },
+  });
+  const [savedFields] = saved as [{ workSetup: string | null }];
+  assert.equal(savedFields.workSetup, "on_site");
+});
+
+test("a posting with no freehire-stated work mode falls back to whatever extract returns", async () => {
+  const saved: unknown[] = [];
+  await processPostings({
+    ...noopDeps(),
+    getPending: async () => [pendingPosting({ sourceWorkMode: null })],
+    extract: async () => ({ ...extractResult, workSetup: "hybrid" }),
+    saveExtracted: async (postingId, fields) => {
+      saved.push(fields);
+    },
+  });
+  const [savedFields] = saved as [{ workSetup: string | null }];
+  assert.equal(savedFields.workSetup, "hybrid");
+});
+
+test("a posting with a freehire-stated employment type saves jobType directly", async () => {
+  const saved: unknown[] = [];
+  await processPostings({
+    ...noopDeps(),
+    getPending: async () => [pendingPosting({ sourceEmploymentType: "contract" })],
+    extract: async () => ({ ...extractResult, jobType: "full_time" }),
+    saveExtracted: async (postingId, fields) => {
+      saved.push(fields);
+    },
+  });
+  const [savedFields] = saved as [{ jobType: string | null }];
+  assert.equal(savedFields.jobType, "contract");
+});
+
+test("a posting with no freehire-stated employment type falls back to whatever extract returns", async () => {
+  const saved: unknown[] = [];
+  await processPostings({
+    ...noopDeps(),
+    getPending: async () => [pendingPosting({ sourceEmploymentType: null })],
+    extract: async () => ({ ...extractResult, jobType: "internship" }),
+    saveExtracted: async (postingId, fields) => {
+      saved.push(fields);
+    },
+  });
+  const [savedFields] = saved as [{ jobType: string | null }];
+  assert.equal(savedFields.jobType, "internship");
 });
 
 test("a wrong secret is rejected and nothing is fetched or saved", async () => {

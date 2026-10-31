@@ -14,6 +14,14 @@ export type RawPosting = {
   location: string;
   snippet: string;
   link: string;
+  /** freehire's own structured eligibility/work-mode/employment-type fields, when it states them (empty/null
+   *  when it doesn't -- never guessed). `process.ts` trusts these over AI extraction for the same posting,
+   *  since they come from the source's own data, not a model re-reading prose
+   *  (plans/jobs-freehire-source.md, Slice 2). `sourceCountries` is freehire's own lowercase ISO codes (e.g.
+   *  "ph"); `sourceWorkMode` is one of freehire's three known values, confirmed live this session. */
+  sourceCountries?: string[];
+  sourceWorkMode?: "remote" | "hybrid" | "onsite" | null;
+  sourceEmploymentType?: string | null;
 };
 
 /** New and Filtered out are this slice's states; Saved, Applied and Dismissed come with the side panel (step 2+). */

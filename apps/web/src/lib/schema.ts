@@ -736,6 +736,13 @@ export const jobPostings = pgTable(
     company: text("company").notNull(),
     location: text("location").notNull(),
     snippet: text("snippet").notNull(),
+    /** freehire's own structured eligibility/work-mode/employment-type fields, set once at save time from
+     *  `RawPosting.sourceCountries`/`sourceWorkMode`/`sourceEmploymentType`, when it states them (empty/null
+     *  otherwise). `process.ts` trusts these over AI extraction for the same posting
+     *  (plans/jobs-freehire-source.md, Slice 2). */
+    sourceCountries: jsonb("source_countries").$type<string[]>(),
+    sourceWorkMode: text("source_work_mode").$type<"remote" | "hybrid" | "onsite">(),
+    sourceEmploymentType: text("source_employment_type"),
     firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).notNull().defaultNow(),
     fullDescription: text("full_description"),
     /** True when every source's page failed to read, so extraction ran on the list fields alone. */

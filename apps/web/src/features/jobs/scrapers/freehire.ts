@@ -30,6 +30,9 @@ type FreehireResult = {
   location?: string;
   description?: string;
   url?: string;
+  countries?: string[];
+  work_mode?: "remote" | "hybrid" | "onsite";
+  enrichment?: { employment_type?: string };
 };
 
 export function parseFreehireSearch(responseText: string): RawPosting[] {
@@ -56,6 +59,9 @@ export function parseFreehireSearch(responseText: string): RawPosting[] {
       location: result.location?.trim() ?? "",
       snippet: plainText(result.description ?? ""),
       link,
+      sourceCountries: result.countries ?? [],
+      sourceWorkMode: result.work_mode ?? null,
+      sourceEmploymentType: result.enrichment?.employment_type ?? null,
     });
   }
   return postings;

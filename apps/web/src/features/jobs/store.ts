@@ -61,6 +61,9 @@ export async function savePostings(userId: string, postings: RawPosting[]): Prom
           company: posting.company,
           location: posting.location,
           snippet: posting.snippet,
+          sourceCountries: posting.sourceCountries ?? [],
+          sourceWorkMode: posting.sourceWorkMode ?? null,
+          sourceEmploymentType: posting.sourceEmploymentType ?? null,
           firstSeenAt: now,
         });
         const reason = filterReason(
@@ -190,6 +193,9 @@ export type PendingPosting = {
   company: string;
   location: string;
   snippet: string;
+  sourceCountries: string[] | null;
+  sourceWorkMode: "remote" | "hybrid" | "onsite" | null;
+  sourceEmploymentType: string | null;
 };
 
 /** Up to `limit` postings not yet processed by `/api/jobs/process`, oldest first (plans/jobs-score.md, Slice 1). */
@@ -201,6 +207,9 @@ export async function getPendingPostings(userId: string, limit: number): Promise
       company: jobPostings.company,
       location: jobPostings.location,
       snippet: jobPostings.snippet,
+      sourceCountries: jobPostings.sourceCountries,
+      sourceWorkMode: jobPostings.sourceWorkMode,
+      sourceEmploymentType: jobPostings.sourceEmploymentType,
     })
     .from(jobPostings)
     .where(and(eq(jobPostings.userId, userId), isNull(jobPostings.processedAt)))

@@ -34,6 +34,13 @@ async function main() {
   }
   console.log("ok - real postings have the expected shape: freehire source, fh- sourceId, decoded plain-text snippet");
 
+  const withCountries = postings.filter((p) => (p.sourceCountries?.length ?? 0) > 0);
+  const withWorkMode = postings.filter((p) => p.sourceWorkMode);
+  assert.ok(withCountries.length > 0, "at least one real posting states structured countries");
+  console.log(
+    `ok - ${withCountries.length}/${postings.length} real postings carry structured countries, ${withWorkMode.length}/${postings.length} carry a work mode -- Slice 2's override has real data to act on`,
+  );
+
   const userId = `freehire-live-check-${randomUUID()}`;
   await db()
     .insert(users)

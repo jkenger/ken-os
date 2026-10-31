@@ -11,7 +11,17 @@ type PendingPosting = {
   company: string;
   location: string;
   snippet: string;
+  sourceCountries: string[] | null;
+  sourceWorkMode: "remote" | "hybrid" | "onsite" | null;
+  sourceEmploymentType: string | null;
 };
+
+const JOB_TYPES = ["full_time", "part_time", "contract", "internship", "temporary"] as const;
+type JobType = (typeof JOB_TYPES)[number];
+
+function isJobType(value: string): value is JobType {
+  return (JOB_TYPES as readonly string[]).includes(value);
+}
 
 type ExtractResult = {
   payAmount: number | null;
@@ -70,6 +80,24 @@ export async function processPostings(params: {
       text: posting.snippet,
     });
 
+    // freehire's own structured fields are trusted over the model's reading of the same prose, since they come
+    // from the source's own data (plans/jobs-freehire-source.md, Slice 2) -- but only when freehire actually
+    // states them; an empty/null source field falls back to extraction exactly as before.
+    const hasSourceCountries = (posting.sourceCountries?.length ?? 0) > 0;
+    const eligibilityStated = hasSourceCountries ? true : extracted.eligibilityStated;
+    const countries = hasSourceCountries
+      ? posting.sourceCountries!.map((code) => code.toUpperCase())
+      : extracted.countries;
+    const workSetup = posting.sourceWorkMode
+      ? posting.sourceWorkMode === "onsite"
+        ? "on_site"
+        : posting.sourceWorkMode
+      : extracted.workSetup;
+    const jobType =
+      posting.sourceEmploymentType && isJobType(posting.sourceEmploymentType)
+        ? posting.sourceEmploymentType
+        : extracted.jobType;
+
     await params.saveExtracted(posting.id, {
       fullDescription,
       partial,
@@ -77,10 +105,10 @@ export async function processPostings(params: {
       payAmount: extracted.payAmount,
       payCurrency: extracted.payCurrency,
       payPeriod: extracted.payPeriod,
-      jobType: extracted.jobType,
-      workSetup: extracted.workSetup,
-      eligibilityStated: extracted.eligibilityStated,
-      countries: extracted.countries,
+      jobType,
+      workSetup,
+      eligibilityStated,
+      countries,
       requiredHours: extracted.requiredHours,
       seniority: extracted.seniority,
       yearsRequired: extracted.yearsRequired,
