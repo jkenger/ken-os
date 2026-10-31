@@ -5,7 +5,6 @@ import type { ReactNode } from "react";
 import {
   IconCircleCheck,
   IconCircleDashed,
-  IconDeviceFloppy,
   IconLink,
   IconMail,
   IconMapPin,
@@ -22,7 +21,6 @@ import { Separator } from "@/components/ui/separator";
 import type { LedgerRow, LedgerSectionId } from "@/features/profile/ledger";
 import type { ReviewIssue } from "@/features/profile/review";
 import { cn } from "@/lib/utils";
-import { shortDate } from "./dates";
 import { IssueBadge } from "./profile-sections";
 
 // Profile's header, Review and section index. The header is the Contact section: the name is the page's h1, and its
@@ -49,14 +47,12 @@ const missing = <span className="text-muted-foreground">-</span>;
 export function ProfileHeader({
   contact,
   issues,
-  savedAt,
   editing,
   onEdit,
   form,
 }: {
   contact: ProfileDetails["contact"];
   issues: number;
-  savedAt: string | null;
   editing: boolean;
   onEdit: () => void;
   /** The Contact form with its Save and Cancel, shown while editing. */
@@ -119,9 +115,6 @@ export function ProfileHeader({
                     </span>
                   ))
                 : missing}
-            </Fact>
-            <Fact label="Saved" icon={IconDeviceFloppy}>
-              {savedAt ? shortDate(savedAt) : "Not saved"}
             </Fact>
           </dl>
         )}

@@ -5,7 +5,6 @@ import { IconAlertCircle, IconPencil, IconPlus, IconTrash } from "@tabler/icons-
 import { printDateRange, type ProfileDetails } from "@ken-os/domain";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { InlineSeparator } from "@/components/inline-separator";
 import { panel } from "@/components/surfaces";
 import type { LedgerRow, LedgerSectionId } from "@/features/profile/ledger";
 import { cn } from "@/lib/utils";
@@ -91,9 +90,6 @@ export function SectionPanel({
         <h2 id={titleId} className="font-heading text-base font-semibold">
           {row.title}
         </h2>
-        {row.count > 0 && row.id !== "summary" && (
-          <span className="font-mono text-xs text-muted-foreground">{row.count}</span>
-        )}
         <IssueBadge count={issues} />
         {!editing && (
           <span className="ml-auto flex items-center gap-1">
@@ -274,15 +270,14 @@ export function EducationView({ education }: { education: ProfileDetails["educat
   );
 }
 
-/** Every skill in one row, split by thin rules; older Profiles with named groups show all their skills together. */
+/** Every skill as a badge in one row; older Profiles with named groups show all their skills together. */
 export function SkillsView({ skills }: { skills: ProfileDetails["skills"] }) {
   const items = skills.flatMap((group) => group.items).filter((item) => item.trim());
   return (
-    <ul className="flex flex-wrap items-center gap-x-3 gap-y-1.5" aria-label="Skills">
+    <ul className="flex flex-wrap gap-2" aria-label="Skills">
       {items.map((item, index) => (
-        <li key={`${item}-${index}`} className="flex items-center gap-3">
-          {index > 0 && <InlineSeparator />}
-          {item}
+        <li key={`${item}-${index}`}>
+          <Badge variant="secondary">{item}</Badge>
         </li>
       ))}
     </ul>

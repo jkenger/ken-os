@@ -463,7 +463,6 @@ export function ProfileWorkspace({
             <ProfileHeader
               contact={details.contact}
               issues={issuesIn("contact")}
-              savedAt={savedAt}
               editing={opened === "contact"}
               onEdit={() => request("contact")}
               form={formFor("contact")}
