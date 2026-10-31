@@ -14,7 +14,7 @@ export const SETUP_STEPS: SetupStep[] = [
   {
     id: "gmail-filter",
     title: "Add the Gmail filter",
-    detail: "Forward LinkedIn and Indeed alert emails to the address above.",
+    detail: "Create a filter where From has linkedin.com or indeed.com, then forward it to the address above.",
     href: "https://mail.google.com/mail/u/0/#settings/filters",
   },
   {

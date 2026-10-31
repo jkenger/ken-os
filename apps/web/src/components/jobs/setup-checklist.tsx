@@ -1,6 +1,6 @@
 "use client";
 
-import { IconCopy, IconExternalLink } from "@tabler/icons-react";
+import { IconArrowUpRight, IconCopy } from "@tabler/icons-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
@@ -67,13 +67,14 @@ export function SetupChecklist({ forwardingAddress }: { forwardingAddress: strin
           >
             {index + 2}
           </span>
-          <div className="grid min-w-0 gap-3">
-            <h3 className="text-sm font-semibold">{step.title}</h3>
-            <p className="text-xs text-muted-foreground">{step.detail}</p>
-            <Button asChild variant="outline" size="sm" className="w-fit">
+          <div className="flex min-w-0 items-center justify-between gap-3">
+            <div className="grid min-w-0 gap-1">
+              <h3 className="text-sm font-semibold">{step.title}</h3>
+              <p className="text-xs text-muted-foreground">{step.detail}</p>
+            </div>
+            <Button asChild variant="outline" size="icon-sm" className="shrink-0" aria-label={`Open ${step.title}`}>
               <a href={step.href} target="_blank" rel="noopener noreferrer">
-                Open
-                <IconExternalLink aria-hidden="true" />
+                <IconArrowUpRight aria-hidden="true" />
               </a>
             </Button>
           </div>
