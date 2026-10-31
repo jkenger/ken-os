@@ -34,6 +34,8 @@ import type { BuildEvidence } from "../features/engineering-lab/build-evidence";
 import type { ReviewSheet } from "../features/engineering-lab/review-sheet";
 import type { Difficulty, TopicMaterial } from "../features/engineering-lab/topic-material";
 import type { LookChange, TokenChange } from "../features/design-studio/drafts";
+import type { AlertSource } from "../features/jobs/known-senders";
+import type { JobMatchState } from "../features/jobs/raw-posting";
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -712,4 +714,77 @@ export const labTopicMaterial = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [primaryKey({ columns: [table.userId, table.topicId] })],
+);
+
+/** Each forwarded alert email as received, so parsing can be rerun after a parser fix. Spec: docs/product/job-finder.md. */
+export const jobInboundEmails = pgTable("job_inbound_emails", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  fromAddress: text("from_address").notNull(),
+  source: text("source").$type<AlertSource>(),
+  rawHtml: text("raw_html"),
+  rawText: text("raw_text"),
+  receivedAt: timestamp("received_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** One row per real posting after repeats are dropped. Identity for the title+company+location fallback match
+ *  ("Drop repeats") is enforced by the unique index below, not just application logic. */
+export const jobPostings = pgTable(
+  "job_postings",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    company: text("company").notNull(),
+    location: text("location").notNull(),
+    snippet: text("snippet").notNull(),
+    firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index("job_postings_user_idx").on(table.userId, table.firstSeenAt),
+    uniqueIndex("job_postings_user_identity_idx").on(table.userId, table.title, table.company, table.location),
+  ],
+);
+
+/** Every source a posting came from (docs/product/job-finder.md, "same posting... listing every source"). The
+ *  unique index is the dedup check for a posting with its own ID at the source: "has this (source, sourceId)
+ *  already been seen?" */
+export const jobPostingSources = pgTable(
+  "job_posting_sources",
+  {
+    id: text("id").primaryKey(),
+    postingId: text("posting_id")
+      .notNull()
+      .references(() => jobPostings.id, { onDelete: "cascade" }),
+    source: text("source").$type<AlertSource>().notNull(),
+    sourceId: text("source_id"),
+    link: text("link").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("job_posting_sources_source_id_idx")
+      .on(table.source, table.sourceId)
+      .where(sql`${table.sourceId} is not null`),
+  ],
+);
+
+/** The owner's state for one posting. One row per posting, created alongside it. */
+export const jobMatches = pgTable(
+  "job_matches",
+  {
+    postingId: text("posting_id")
+      .primaryKey()
+      .references(() => jobPostings.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    state: text("state").$type<JobMatchState>().notNull().default("new"),
+    filterReason: text("filter_reason"),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("job_matches_user_state_idx").on(table.userId, table.state)],
 );

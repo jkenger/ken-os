@@ -1,0 +1,43 @@
+<!--
+  A constructed sample, not a real saved LinkedIn alert email — I have no real one to parse against in this
+  environment. Shaped from LinkedIn's publicly documented job-card markup (job title as a link to
+  linkedin.com/jobs/view/<id>, company and location nearby). Re-save this from a real forwarded alert before
+  this parser handles production traffic, per the spec's "parser tests on saved pages" rule
+  (docs/product/job-finder.md): a layout change should fail this test, not quietly find nothing.
+-->
+<html>
+  <body>
+    <table class="job-alert">
+      <tr class="job-card">
+        <td>
+          <a href="https://www.linkedin.com/jobs/view/3912345671/?trk=email_alert" class="job-card__title"
+            >Senior Frontend Engineer</a
+          >
+          <span class="job-card__company">Acme Inc</span>
+          <span class="job-card__location">Remote, United States</span>
+          <p class="job-card__snippet">Join our team building the next generation of our product.</p>
+        </td>
+      </tr>
+      <tr class="job-card">
+        <td>
+          <a href="https://www.linkedin.com/jobs/view/3912345672/?trk=email_alert" class="job-card__title"
+            >React Developer</a
+          >
+          <span class="job-card__company">Northwind Labs</span>
+          <span class="job-card__location">United Kingdom</span>
+          <p class="job-card__snippet">Contract role, remote-first team.</p>
+        </td>
+      </tr>
+      <tr class="job-card">
+        <td>
+          <a href="https://www.linkedin.com/jobs/view/3912345673/?trk=email_alert" class="job-card__title"
+            >Frontend Engineer</a
+          >
+          <span class="job-card__company">Globex</span>
+          <span class="job-card__location">Australia</span>
+          <p class="job-card__snippet">Build delightful customer-facing experiences.</p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
