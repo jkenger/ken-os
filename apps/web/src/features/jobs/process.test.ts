@@ -11,6 +11,7 @@ const extractResult = {
   eligibilityStated: false,
   countries: [],
   requiredHours: null,
+  hoursFlexible: false,
   seniority: "senior" as const,
   yearsRequired: 5,
   isAgency: false,
@@ -297,6 +298,57 @@ test("seniority always comes from extract, never overridden by freehire", async 
   });
   const [savedFields] = saved as [{ seniority: string | null }];
   assert.equal(savedFields.seniority, "lead");
+});
+
+test("a posting with no stated hours saves shift as Not listed", async () => {
+  const saved: unknown[] = [];
+  await processPostings({
+    ...noopDeps(),
+    getPending: async () => [pendingPosting()],
+    extract: async () => ({ ...extractResult, requiredHours: null, hoursFlexible: false }),
+    saveExtracted: async (postingId, fields) => {
+      saved.push(fields);
+    },
+  });
+  const [savedFields] = saved as [{ shift: string }];
+  assert.equal(savedFields.shift, "Not listed");
+});
+
+test("a posting whose hours are stated flexible saves shift as Flexible", async () => {
+  const saved: unknown[] = [];
+  await processPostings({
+    ...noopDeps(),
+    getPending: async () => [pendingPosting()],
+    extract: async () => ({
+      ...extractResult,
+      requiredHours: { start: "09:00", end: "17:00", timezoneOffsetMinutes: 0 },
+      hoursFlexible: true,
+    }),
+    saveExtracted: async (postingId, fields) => {
+      saved.push(fields);
+    },
+  });
+  const [savedFields] = saved as [{ shift: string }];
+  assert.equal(savedFields.shift, "Flexible");
+});
+
+test("a posting with stated hours saves the computed shift label and Philippine-time range", async () => {
+  const saved: unknown[] = [];
+  await processPostings({
+    ...noopDeps(),
+    getPending: async () => [pendingPosting()],
+    // UK 9 AM-5 PM GMT (+0) -> PH time 5 PM-1 AM -> Mid shift
+    extract: async () => ({
+      ...extractResult,
+      requiredHours: { start: "09:00", end: "17:00", timezoneOffsetMinutes: 0 },
+      hoursFlexible: false,
+    }),
+    saveExtracted: async (postingId, fields) => {
+      saved.push(fields);
+    },
+  });
+  const [savedFields] = saved as [{ shift: string }];
+  assert.equal(savedFields.shift, "Mid shift, 5 PM to 1 AM");
 });
 
 test("a wrong secret is rejected and nothing is fetched or saved", async () => {

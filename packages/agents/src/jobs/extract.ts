@@ -5,7 +5,7 @@ import { z } from "zod";
 // "Extract"). Spec: plans/jobs-score.md. The posting's own words are the only evidence; anything not stated is
 // left empty, never guessed — the same rule `profile/analyze.ts` follows for the Profile's own facts.
 
-export const JOBS_EXTRACT_PROMPT_VERSION = "jobs-extract-v4";
+export const JOBS_EXTRACT_PROMPT_VERSION = "jobs-extract-v5";
 
 const outputSchema = z.object({
   payAmount: z.number().nullable(),
@@ -15,7 +15,8 @@ const outputSchema = z.object({
   workSetup: z.enum(["remote", "hybrid", "on_site"]).nullable(),
   eligibilityStated: z.boolean(),
   countries: z.array(z.string()),
-  requiredHours: z.object({ start: z.string(), end: z.string(), timezone: z.string() }).nullable(),
+  requiredHours: z.object({ start: z.string(), end: z.string(), timezoneOffsetMinutes: z.number() }).nullable(),
+  hoursFlexible: z.boolean(),
   seniority: z.enum(["junior", "mid", "senior", "lead"]).nullable(),
   yearsRequired: z.number().nullable(),
   isAgency: z.boolean(),
@@ -31,7 +32,8 @@ Return:
 - jobType, workSetup: only when the posting states them, directly or in a clearly equivalent way ("WFH" = remote). Not stated: null.
 - eligibilityStated: true whenever the posting's own text says ANYTHING about who may apply, in any form — including an explicit "open to candidates anywhere" or "Remote (Global)" with no list of countries. False only when the posting says nothing at all about eligibility. This has to be right even when countries ends up empty either way, since "said nothing" and "said everyone" mean opposite things downstream. When statedLocation is present, this is always true — the caller treats it as a guarantee, but return it correctly anyway.
 - countries: which countries a candidate may apply from. When statedLocation is present, derive this from it first: a specific place ("USA Only", "Canada Only") becomes that country's code; an explicit country list narrows it to those codes; "Anywhere in the World" with no narrowing list means worldwide — return an empty array, the same as the free-text "open to everyone" case. Otherwise, read ONLY from the posting's own eligibility language — phrases like "must be authorized to work in <country>", "based in <place>", "Remote (<region> only)". NEVER infer this from the location label, the company's city, or where the company is headquartered — a company's location says nothing about who may apply. Return each country as its ISO 3166-1 alpha-2 code (e.g. "US", "GB", "AU", "CA", "PH"), not a free-text name — this has to match exactly against the owner's saved preferences. A posting that states nothing about eligibility, OR that explicitly says it's open to everyone/anywhere with no specific list: return an empty array — the difference between those two cases is eligibilityStated, not this field.
-- requiredHours: the hours and time zone the role needs, if stated (e.g. "9 AM to 5 PM EST", "must overlap with PST business hours"). Not stated: null.
+- requiredHours: the hours the role needs, if stated (e.g. "9 AM to 5 PM EST", "must overlap with PST business hours"), as start and end in 24-hour "HH:MM" and timezoneOffsetMinutes: the stated zone's UTC offset in minutes (e.g. US Eastern Daylight Time is -240, not the -300 of Eastern Standard Time -- use whichever one actually applies on the stated or implied date; a zone given as a city or region, not an abbreviation, still needs a concrete offset, not a guess at the city's usual one without checking daylight saving). Not stated: null.
+- hoursFlexible: true when the posting itself says hours are flexible, async, or the employee's choice. False otherwise, including when requiredHours is also null because nothing about hours was said at all -- those are different facts: one states flexibility, the other states nothing.
 - seniority, yearsRequired: only when the posting states or clearly implies a level or years. Not stated: null.
 - isAgency: true only when the posting is clearly from a recruiting or staffing agency placing a candidate with a client, not the direct employer — signs include "our client is seeking", a company name that is itself a staffing/recruiting firm, or explicit "on behalf of" language. When it's unclear whether the company is the direct employer, default to false.
 - summary: 2 to 3 plain sentences describing the role and what it needs, written from the posting's own text. No marketing language, no buzzwords.
@@ -46,7 +48,8 @@ export type ExtractedPosting = {
   workSetup: "remote" | "hybrid" | "on_site" | null;
   eligibilityStated: boolean;
   countries: string[];
-  requiredHours: { start: string; end: string; timezone: string } | null;
+  requiredHours: { start: string; end: string; timezoneOffsetMinutes: number } | null;
+  hoursFlexible: boolean;
   seniority: "junior" | "mid" | "senior" | "lead" | null;
   yearsRequired: number | null;
   isAgency: boolean;

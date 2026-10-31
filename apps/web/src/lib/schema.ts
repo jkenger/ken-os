@@ -764,7 +764,6 @@ export const jobPostings = pgTable(
     workSetup: text("work_setup").$type<"remote" | "hybrid" | "on_site">(),
     eligibilityStated: boolean("eligibility_stated"),
     countries: jsonb("countries").$type<string[]>(),
-    requiredHours: jsonb("required_hours").$type<{ start: string; end: string; timezone: string } | null>(),
     seniority: text("seniority").$type<"junior" | "mid" | "senior" | "lead">(),
     /** A real, not an integer: a posting can state a fractional minimum ("1.5+ years"). */
     yearsRequired: real("years_required"),
@@ -818,6 +817,9 @@ export const jobMatches = pgTable(
       .references(() => users.id, { onDelete: "cascade" }),
     state: text("state").$type<JobMatchState>().notNull().default("new"),
     filterReason: text("filter_reason"),
+    /** The formatted display string from `shift.ts` ("Mid shift, 5 PM to 1 AM", "Not listed", "Flexible"), set
+     *  alongside the filter verdict once a posting is processed (plans/jobs-score.md, Slice 4). Null until then. */
+    shift: text("shift"),
     score: integer("score"),
     scoreReasons: jsonb("score_reasons").$type<{
       whyFits: { reason: string; citation: string }[];

@@ -1,3 +1,5 @@
+import { formatShift, shiftLabel } from "./shift";
+
 // Reads, extracts and saves structured fields for the owner's pending postings (plans/jobs-score.md, Slice 1).
 // Dependencies are injected so this stays testable without a real HTTP call, AI call or database. freehire gives
 // every posting its full description at save time (plans/jobs-freehire-source.md), so unlike the sources this
@@ -36,7 +38,8 @@ type ExtractResult = {
   workSetup: "remote" | "hybrid" | "on_site" | null;
   eligibilityStated: boolean;
   countries: string[];
-  requiredHours: { start: string; end: string; timezone: string } | null;
+  requiredHours: { start: string; end: string; timezoneOffsetMinutes: number } | null;
+  hoursFlexible: boolean;
   seniority: "junior" | "mid" | "senior" | "lead" | null;
   yearsRequired: number | null;
   isAgency: boolean;
@@ -56,7 +59,7 @@ type ExtractedFields = {
   workSetup: "remote" | "hybrid" | "on_site" | null;
   eligibilityStated: boolean;
   countries: string[];
-  requiredHours: { start: string; end: string; timezone: string } | null;
+  shift: string;
   seniority: "junior" | "mid" | "senior" | "lead" | null;
   yearsRequired: number | null;
   isAgency: boolean;
@@ -121,6 +124,7 @@ export async function processPostings(params: {
     const payCurrency = hasSourceSalary ? posting.sourceSalaryCurrency : extracted.payCurrency;
     const payPeriod = hasSourceSalary ? posting.sourceSalaryPeriod : extracted.payPeriod;
     const yearsRequired = posting.sourceExperienceYearsMin ?? extracted.yearsRequired;
+    const shift = formatShift(shiftLabel(extracted.requiredHours, extracted.hoursFlexible));
 
     await params.saveExtracted(posting.id, {
       fullDescription,
@@ -133,7 +137,7 @@ export async function processPostings(params: {
       workSetup,
       eligibilityStated,
       countries,
-      requiredHours: extracted.requiredHours,
+      shift,
       seniority: extracted.seniority,
       yearsRequired,
       isAgency: extracted.isAgency,

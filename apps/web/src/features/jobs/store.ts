@@ -243,7 +243,10 @@ export type ExtractedFields = {
   workSetup: "remote" | "hybrid" | "on_site" | null;
   eligibilityStated: boolean;
   countries: string[];
-  requiredHours: { start: string; end: string; timezone: string } | null;
+  /** The formatted display string from `shift.ts` ("Mid shift, 5 PM to 1 AM", "Not listed", "Flexible") -- lives
+   *  on `job_matches`, not `job_postings`, since it's shown next to score, not stored as a structured extraction
+   *  field (plans/jobs-score.md, Slice 4). */
+  shift: string;
   seniority: "junior" | "mid" | "senior" | "lead" | null;
   yearsRequired: number | null;
   isAgency: boolean;
@@ -255,9 +258,10 @@ export type ExtractedFields = {
  *  those fields exist (plans/jobs-score.md, Slice 2: Minimum pay, Job type, Work setup, Countries, Agencies). */
 export async function saveExtractedFields(postingId: string, fields: ExtractedFields): Promise<void> {
   const now = new Date();
+  const { shift, ...postingFields } = fields;
   await db()
     .update(jobPostings)
-    .set({ ...fields, processedAt: now })
+    .set({ ...postingFields, processedAt: now })
     .where(eq(jobPostings.id, postingId));
 
   const [row] = await db()
@@ -295,7 +299,7 @@ export async function saveExtractedFields(postingId: string, fields: ExtractedFi
   );
   await db()
     .update(jobMatches)
-    .set({ state: reason ? "filtered_out" : "new", filterReason: reason, updatedAt: now })
+    .set({ state: reason ? "filtered_out" : "new", filterReason: reason, shift, updatedAt: now })
     .where(eq(jobMatches.postingId, postingId));
 }
 
