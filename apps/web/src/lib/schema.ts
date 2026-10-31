@@ -788,3 +788,15 @@ export const jobMatches = pgTable(
   },
   (table) => [index("job_matches_user_state_idx").on(table.userId, table.state)],
 );
+
+/** The step-1 preferences: skip words, skip companies, and the posted-within window. The rest of the full
+ *  preferences table (pay, job type, work setup, countries, shifts, seniority, agencies, timing) is step 2/3 scope. */
+export const jobPreferences = pgTable("job_preferences", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  skipWords: jsonb("skip_words").$type<string[]>().notNull().default([]),
+  skipCompanies: jsonb("skip_companies").$type<string[]>().notNull().default([]),
+  postedWithinDays: integer("posted_within_days").notNull().default(14),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});

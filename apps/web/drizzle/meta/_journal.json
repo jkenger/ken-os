@@ -239,6 +239,13 @@
       "when": 1793411684617,
       "tag": "0033_clear_wendell_rand",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1793413065147,
+      "tag": "0034_quick_pestilence",
+      "breakpoints": true
     }
   ]
 }

@@ -10,10 +10,12 @@ import {
   FileText,
   FlaskConical,
   Globe,
+  List,
   Map as MapIcon,
   Palette,
   Library,
   Search,
+  Settings as SettingsIcon,
   Sparkles,
   UserRound,
   X,
@@ -92,8 +94,13 @@ const moduleDetails: Record<
     title: "Engineering",
     sections: [{ label: "Roadmap", href: engineering.roadmap(), icon: MapIcon }],
   },
-  // No sub-items yet: only /jobs exists so far (docs/product/job-finder.md release step 1).
-  jobs: { title: "Jobs", sections: [] },
+  jobs: {
+    title: "Jobs",
+    sections: [
+      { label: "New", href: "/jobs", icon: List },
+      { label: "Settings", href: "/jobs/settings", icon: SettingsIcon },
+    ],
+  },
   terms: { title: "Terms", sections: [{ label: "Terms", href: "/terms", icon: BookMarked }] },
   // No section column: the studio needs the width for its tree, canvas and inspector (mockup frame A1).
   studio: { title: "Design Studio", sections: [] },

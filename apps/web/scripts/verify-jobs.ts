@@ -78,6 +78,25 @@ async function main() {
     });
     assert.ok(inboundId);
     console.log("ok - a raw inbound email is stored");
+
+    const preferences = await import("../src/features/jobs/preferences-store");
+    const defaults = await preferences.getPreferences(userId);
+    assert.deepEqual(defaults, { skipWords: [], skipCompanies: [], postedWithinDays: 14 });
+    console.log("ok - preferences default to no skip words, no skip companies, 14 days");
+
+    await preferences.savePreferences(userId, {
+      skipWords: ["Sales", "Marketing"],
+      skipCompanies: ["Acme"],
+      postedWithinDays: 7,
+    });
+    const saved = await preferences.getPreferences(userId);
+    assert.deepEqual(saved, { skipWords: ["Sales", "Marketing"], skipCompanies: ["Acme"], postedWithinDays: 7 });
+    console.log("ok - saved preferences persist and reload correctly");
+
+    await preferences.savePreferences(userId, { skipWords: ["Only this"], skipCompanies: [], postedWithinDays: 30 });
+    const resaved = await preferences.getPreferences(userId);
+    assert.deepEqual(resaved, { skipWords: ["Only this"], skipCompanies: [], postedWithinDays: 30 });
+    console.log("ok - saving again replaces the previous preferences, not merges with them");
   } finally {
     await db().delete(users).where(eq(users.id, userId));
     await closeDb();
