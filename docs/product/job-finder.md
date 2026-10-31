@@ -142,12 +142,12 @@ fallback running against it.
 3. **Read the full posting.** For postings that pass the strict filters on the list fields alone, Loots opens the
    public posting page once to read the whole description. If the page can't be read (Indeed often blocks it), the
    posting is scored from what it has and marked Partial.
-4. **Extract.** AI reads the posting and fills structured fields: pay (amount, currency, period), job type, work setup,
-   countries allowed, required hours and time zone, seniority, years required. Anything not stated is left empty, never
-   guessed.
+4. **Extract.** One AI call reads the full description and fills structured fields: pay (amount, currency, period),
+   job type, work setup, countries allowed, required hours and time zone, seniority, years required, and a 2-3
+   sentence summary. Anything not stated is left empty, never guessed.
 5. **Filter.** Plain code checks the strict filters below. A posting that fails one goes to Filtered out with the reason.
-6. **Score.** AI compares the posting with the Profile and returns a score from 0 to 100, why it fits, what's missing,
-   and the lines from the posting that back each point.
+6. **Score.** A second AI call compares the extracted posting with the Profile and returns a score from 0 to 100,
+   why it fits, what's missing, and the lines from the posting that back each point.
 7. **Shift.** Code converts the posting's required hours to Philippine time and labels the shift (see Working hours).
 8. **Notify.** A score at or above the instant line sends one email right away. Everything new goes into the daily
    digest.
