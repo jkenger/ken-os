@@ -153,6 +153,47 @@ async function main() {
     await scraperState.recordRun(userId, "linkedin", "empty");
     assert.equal(await scraperState.isBlocked(userId, "linkedin"), false);
     console.log("ok - a later successful run clears the block");
+
+    assert.equal(await scraperState.getScraperState(userId, "indeed"), null);
+    assert.equal(await scraperState.isBlocked(userId, "indeed"), false);
+    await scraperState.recordRun(userId, "indeed", "ok");
+    assert.equal((await scraperState.getScraperState(userId, "indeed"))?.lastResult, "ok");
+    await scraperState.recordBlocked(userId, "indeed");
+    assert.equal(await scraperState.isBlocked(userId, "indeed"), true);
+    assert.equal(await scraperState.isBlocked(userId, "linkedin"), false, "blocking one source doesn't block another");
+    console.log("ok - Indeed's block state is tracked independently of LinkedIn's");
+
+    await store.savePostings(userId, [
+      {
+        source: "linkedin",
+        sourceId: "li-cross-source",
+        title: "Platform Engineer",
+        company: "CrossCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/3",
+      },
+    ]);
+    await store.savePostings(userId, [
+      {
+        source: "indeed",
+        sourceId: "in-cross-source",
+        title: "Platform Engineer",
+        company: "CrossCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.indeed.com/viewjob?jk=cross",
+      },
+    ]);
+    const crossSourcePostings = await store.listPostings(userId, "new");
+    const crossSource = crossSourcePostings.filter((posting) => posting.title === "Platform Engineer");
+    assert.equal(crossSource.length, 1, "a LinkedIn posting and a matching Indeed posting merge into one row");
+    assert.deepEqual(
+      crossSource[0]!.sources.map((source) => source.source).sort(),
+      ["indeed", "linkedin"],
+      "the merged posting lists both sources",
+    );
+    console.log("ok - a posting found by both the LinkedIn and Indeed scrapers merges into one row listing both");
   } finally {
     await db().delete(users).where(eq(users.id, userId));
     await closeDb();

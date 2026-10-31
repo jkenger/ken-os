@@ -37,11 +37,13 @@ export function JobsSettingsPage({
   roles,
   preferences,
   linkedInState,
+  indeedState,
 }: {
   email: string;
   roles: string[];
   preferences: JobPreferences;
   linkedInState: ScraperState | null;
+  indeedState: ScraperState | null;
 }) {
   const [skipWords, setSkipWords] = useState(preferences.skipWords.join("\n"));
   const [skipCompanies, setSkipCompanies] = useState(preferences.skipCompanies.join("\n"));
@@ -90,6 +92,10 @@ export function JobsSettingsPage({
           <div className="flex items-center justify-between gap-3">
             <span className="text-sm">LinkedIn</span>
             {sourceStateBadge(linkedInState)}
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm">Indeed</span>
+            {sourceStateBadge(indeedState)}
           </div>
         </section>
 

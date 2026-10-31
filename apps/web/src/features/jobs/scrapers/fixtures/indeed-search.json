@@ -1,0 +1,27 @@
+{
+  "_comment": "A constructed sample, not a real saved response from Indeed's mobile GraphQL endpoint (apis.indeed.com/graphql) — I have no real one to parse against in this environment. Shaped from the jobSearch.results[].job fields JobSpy's Indeed scraper reads (github.com/speedyapply/JobSpy): key, title, sourceEmployerName, location.city/admin1Code, employer.name. Re-save this from a real response before this scraper handles production traffic, per the spec's 'parser tests on saved pages' rule (docs/product/job-finder.md): a schema change should fail this test, not quietly find nothing.",
+  "data": {
+    "jobSearch": {
+      "results": [
+        {
+          "job": {
+            "key": "abc123indeed",
+            "title": "Senior Backend Engineer",
+            "sourceEmployerName": "Acme Inc",
+            "location": { "city": "Austin", "admin1Code": "TX" },
+            "employer": { "name": "Acme Inc" }
+          }
+        },
+        {
+          "job": {
+            "key": "def456indeed",
+            "title": "Platform Engineer",
+            "sourceEmployerName": "Northwind Labs",
+            "location": { "city": "Seattle", "admin1Code": "WA" },
+            "employer": null
+          }
+        }
+      ]
+    }
+  }
+}

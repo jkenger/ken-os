@@ -9,10 +9,11 @@ export const dynamic = "force-dynamic";
 
 export default async function JobsSettings() {
   const session = await requireSession("/jobs/settings");
-  const [profile, preferences, linkedInState] = await Promise.all([
+  const [profile, preferences, linkedInState, indeedState] = await Promise.all([
     getProfile(session.userId),
     getPreferences(session.userId),
     getScraperState(session.userId, "linkedin"),
+    getScraperState(session.userId, "indeed"),
   ]);
   return (
     <JobsSettingsPage
@@ -20,6 +21,7 @@ export default async function JobsSettings() {
       roles={deriveRoles(profile.details)}
       preferences={preferences}
       linkedInState={linkedInState}
+      indeedState={indeedState}
     />
   );
 }
