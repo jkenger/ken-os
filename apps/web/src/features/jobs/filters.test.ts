@@ -175,9 +175,9 @@ test("a posting whose stated countries don't include the target country is filte
   assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), "Country: DE");
 });
 
-test("a processed posting that states no eligibility at all is filtered, not shown by default", () => {
+test("a processed posting that states no eligibility at all is shown, not filtered -- most postings never say, and hiding them hid genuinely-reachable roles too", () => {
   const posting = { ...base, eligibilityStated: false, countries: [] };
-  assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), "Country: not stated");
+  assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), null);
 });
 
 test("a processed posting that explicitly says it's open to everyone (stated, empty list) is not filtered", () => {

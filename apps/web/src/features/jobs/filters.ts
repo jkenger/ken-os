@@ -27,9 +27,9 @@ export type FilterablePosting = {
   jobType?: JobType | null;
   workSetup?: WorkSetup | null;
   /** True once extraction has run and the posting's own text said *anything* about who may apply, including
-   *  "open to everyone" -- distinct from `false` (extraction ran, found nothing) and "not yet processed"
-   *  (`undefined` in a plain object literal, `null` from a nullable DB column -- both mean the same thing here
-   *  and must be treated alike). `countries` only carries meaning when this is `true`. */
+   *  "open to everyone". `countries` only carries meaning, and is only checked, when this is `true` -- `false`
+   *  (extraction ran, found nothing) and not-yet-processed (`undefined` in a plain object literal, `null` from a
+   *  nullable DB column) are both never filtered for Country (see the Countries check below for why). */
   eligibilityStated?: boolean | null;
   countries?: string[] | null;
   isAgency?: boolean;
@@ -37,19 +37,23 @@ export type FilterablePosting = {
 
 /** The strict filters (docs/product/job-finder.md): skip words, skip companies, posted within, and — once a
  *  posting has been through `/api/jobs/process` — Minimum/Maximum pay, Job type, Work setup, Countries and
- *  Agencies. A not-yet-processed posting's extracted fields are all `undefined` (not `false`/`[]`), so only the
- *  first three checks apply -- never confused with a processed posting that explicitly found no eligibility
- *  language. Checked in this order, the first match wins, so a posting always has exactly one reason when it's
+ *  Agencies. Checked in this order, the first match wins, so a posting always has exactly one reason when it's
  *  filtered. `context.targetCountry` is the owner's own country (from Profile, defaulting to PH) -- there's no
- *  separate owner-set Countries list. Unlike Minimum/Maximum pay's "not stated, don't filter" rule, a
- *  *processed* posting that said nothing about eligibility at all is filtered, not shown: most scraped postings
- *  never say anything, and showing them by default let through local, non-PH-reachable roles indistinguishable
- *  from ones genuinely open everywhere. `eligibilityStated` is what makes that distinction possible: `false`
- *  means extraction ran and found no eligibility language at all ("Country: not stated"); `true` with an empty
- *  `countries` means the posting explicitly said it's open to everyone, which is never filtered; `true` with a
- *  list checks membership as before. `context.currencyRates` is the last cached snapshot a posting's own stated
- *  pay is converted through before comparing to Minimum/Maximum pay; missing or unconvertable pay is still never
- *  filtered -- that tradeoff only applies to Countries. */
+ *  separate owner-set Countries list.
+ *
+ *  Countries only filters a posting that *explicitly* lists countries excluding the target -- same "not stated,
+ *  don't filter" rule as Minimum/Maximum pay. An earlier version filtered any processed posting that said nothing
+ *  about eligibility at all ("Country: not stated"), on the theory that showing it by default let through local,
+ *  non-PH-reachable roles indistinguishable from ones genuinely open everywhere. In practice LinkedIn and Indeed's
+ *  public pages carry no structured eligibility field at all (confirmed against JobSpy's own source --
+ *  github.com/speedyapply/JobSpy), so that policy ended up hiding nearly every LinkedIn/Indeed posting, including
+ *  ones that would genuinely be fine for the owner -- a worse trade than the one it was meant to fix. Reverted
+ *  (plans/jobs-filters-and-wwr-source.md): `eligibilityStated` now only gates whether `countries` is trusted at
+ *  all, not whether the posting is shown. `false` or not-yet-processed (`undefined`/`null`) never filters for
+ *  Country. `true` with an empty `countries` means the posting explicitly said it's open to everyone, also never
+ *  filtered. `true` with a non-empty list checks membership as before. `context.currencyRates` is the last cached
+ *  snapshot a posting's own stated pay is converted through before comparing to Minimum/Maximum pay; missing or
+ *  unconvertable pay is still never filtered -- that tradeoff only applies to Countries. */
 export function filterReason(
   posting: FilterablePosting,
   preferences: JobPreferences,
@@ -95,8 +99,7 @@ export function filterReason(
   if (posting.workSetup && !preferences.workSetups.includes(posting.workSetup))
     return `Work setup: ${posting.workSetup}`;
 
-  if (posting.eligibilityStated !== undefined && posting.eligibilityStated !== null) {
-    if (!posting.eligibilityStated) return "Country: not stated";
+  if (posting.eligibilityStated) {
     const countries = posting.countries ?? [];
     if (countries.length > 0) {
       const eligible = countries.some((code) => code.toUpperCase() === targetCountry.toUpperCase());
