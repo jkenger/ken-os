@@ -11,6 +11,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toaster";
+import { autofillThresholds, suggestedCurrencies } from "@/features/jobs/pay-threshold-suggestions";
 import type { JobPreferences, JobType, PayPeriod, PayThreshold, WorkSetup } from "@/features/jobs/preferences-store";
 import type { ScraperState } from "@/features/jobs/scraper-state";
 import { send } from "@/lib/api-client";
@@ -78,11 +79,33 @@ export function JobsSettingsPage({
   const [skipCompanies, setSkipCompanies] = useState(preferences.skipCompanies.join("\n"));
   const [postedWithinDays, setPostedWithinDays] = useState(String(preferences.postedWithinDays));
   const [payThresholds, setPayThresholds] = useState<PayThreshold[]>(preferences.payThresholds);
+  const [pendingSuggested, setPendingSuggested] = useState<Record<string, string>>({});
   const [jobTypes, setJobTypes] = useState<JobType[]>(preferences.jobTypes);
   const [workSetups, setWorkSetups] = useState<WorkSetup[]>(preferences.workSetups);
   const [countries, setCountries] = useState(preferences.countries.join("\n"));
   const [agenciesHide, setAgenciesHide] = useState(preferences.agenciesHide);
   const [busy, setBusy] = useState(false);
+
+  const suggested = suggestedCurrencies(
+    linesToList(countries).map((code) => code.toUpperCase()),
+    payThresholds,
+  );
+
+  function commitSuggestedAnchor(currency: string) {
+    const raw = pendingSuggested[currency];
+    const amount = Number(raw);
+    if (!raw || Number.isNaN(amount) || amount < 0) return;
+    const anchor: PayThreshold = { currency, minimumPay: amount, payPeriod: "month" };
+    const others = suggested.filter((code) => code !== currency);
+    const filled = autofillThresholds(anchor, others);
+    setPayThresholds((current) => [...current, anchor, ...filled]);
+    setPendingSuggested((current) => {
+      const next = { ...current };
+      delete next[currency];
+      for (const code of others) delete next[code];
+      return next;
+    });
+  }
 
   async function save() {
     setBusy(true);
@@ -249,6 +272,30 @@ export function JobsSettingsPage({
               >
                 Add currency
               </Button>
+              {suggested.length > 0 && (
+                <div className="grid gap-2 border-t pt-2">
+                  <span className="text-xs text-muted-foreground">
+                    Suggested from your Countries. Type an amount in one to add it, converted into the rest
+                  </span>
+                  {suggested.map((currency) => (
+                    <div key={currency} className="flex items-center gap-2">
+                      <span className="w-20 text-sm font-medium">{currency}</span>
+                      <Input
+                        aria-label={`Minimum pay amount for ${currency}`}
+                        type="number"
+                        min={0}
+                        placeholder="Add a minimum"
+                        value={pendingSuggested[currency] ?? ""}
+                        onChange={(event) =>
+                          setPendingSuggested((current) => ({ ...current, [currency]: event.target.value }))
+                        }
+                        onBlur={() => commitSuggestedAnchor(currency)}
+                        className="w-32"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
           <div className="grid gap-1.5">
