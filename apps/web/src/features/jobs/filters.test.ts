@@ -9,9 +9,7 @@ const noFilters: JobPreferences = {
   skipWords: [],
   skipCompanies: [],
   postedWithinDays: 14,
-  minimumPay: null,
-  payCurrency: "USD",
-  payPeriod: "month",
+  payThresholds: [],
   jobTypes: ["full_time", "contract"],
   workSetups: ["remote"],
   countries: ["US", "AU", "GB"],
@@ -64,30 +62,65 @@ test("skip words are checked before the posted-within window", () => {
   assert.equal(filterReason(old, { ...noFilters, skipWords: ["Sales"] }, now), "Skip word: Sales");
 });
 
-test("a posting below Minimum pay, same currency and period, is filtered", () => {
+test("a posting below the threshold configured for its own currency is filtered", () => {
   const posting = { ...base, payAmount: 60000, payCurrency: "USD", payPeriod: "year" as const };
-  assert.equal(filterReason(posting, { ...noFilters, minimumPay: 80000, payPeriod: "year" }, now), "Below minimum pay");
+  const preferences = {
+    ...noFilters,
+    payThresholds: [{ currency: "USD", minimumPay: 80000, payPeriod: "year" as const }],
+  };
+  assert.equal(filterReason(posting, preferences, now), "Below minimum pay");
 });
 
-test("a posting at or above Minimum pay is not filtered", () => {
+test("a posting at or above the threshold configured for its own currency is not filtered", () => {
   const posting = { ...base, payAmount: 80000, payCurrency: "USD", payPeriod: "year" as const };
-  assert.equal(filterReason(posting, { ...noFilters, minimumPay: 80000, payPeriod: "year" }, now), null);
+  const preferences = {
+    ...noFilters,
+    payThresholds: [{ currency: "USD", minimumPay: 80000, payPeriod: "year" as const }],
+  };
+  assert.equal(filterReason(posting, preferences, now), null);
 });
 
-test("pay periods are normalized before comparing (hourly vs the owner's monthly minimum)", () => {
-  // 50/hr * 173.33 ~= 8667/mo, below a 9000/mo minimum
+test("pay periods are normalized before comparing, within the same currency's threshold", () => {
+  // 50/hr * 173.33 ~= 8667/mo, below a 9000/mo threshold
   const posting = { ...base, payAmount: 50, payCurrency: "USD", payPeriod: "hour" as const };
-  assert.equal(filterReason(posting, { ...noFilters, minimumPay: 9000, payPeriod: "month" }, now), "Below minimum pay");
+  const preferences = {
+    ...noFilters,
+    payThresholds: [{ currency: "USD", minimumPay: 9000, payPeriod: "month" as const }],
+  };
+  assert.equal(filterReason(posting, preferences, now), "Below minimum pay");
 });
 
 test("a posting with no pay listed is not filtered for pay", () => {
   const posting = { ...base, payAmount: null, payCurrency: null, payPeriod: null };
-  assert.equal(filterReason(posting, { ...noFilters, minimumPay: 80000 }, now), null);
+  const preferences = {
+    ...noFilters,
+    payThresholds: [{ currency: "USD", minimumPay: 80000, payPeriod: "year" as const }],
+  };
+  assert.equal(filterReason(posting, preferences, now), null);
 });
 
-test("a posting in a different currency than the preference is not filtered for pay (no live conversion)", () => {
+test("a posting whose currency has no configured threshold at all is not filtered for pay", () => {
   const posting = { ...base, payAmount: 1000, payCurrency: "PHP", payPeriod: "month" as const };
-  assert.equal(filterReason(posting, { ...noFilters, minimumPay: 80000, payCurrency: "USD" }, now), null);
+  const preferences = {
+    ...noFilters,
+    payThresholds: [{ currency: "USD", minimumPay: 80000, payPeriod: "year" as const }],
+  };
+  assert.equal(filterReason(posting, preferences, now), null);
+});
+
+test("a second currency's threshold is checked independently of the first", () => {
+  const preferences = {
+    ...noFilters,
+    payThresholds: [
+      { currency: "USD", minimumPay: 80000, payPeriod: "year" as const },
+      { currency: "PHP", minimumPay: 50000, payPeriod: "month" as const },
+    ],
+  };
+  const belowPhp = { ...base, payAmount: 30000, payCurrency: "PHP", payPeriod: "month" as const };
+  assert.equal(filterReason(belowPhp, preferences, now), "Below minimum pay");
+
+  const aboveUsd = { ...base, payAmount: 90000, payCurrency: "USD", payPeriod: "year" as const };
+  assert.equal(filterReason(aboveUsd, preferences, now), null);
 });
 
 test("a posting whose job type isn't in the owner's allowed set is filtered", () => {
@@ -137,5 +170,10 @@ test("a non-agency posting is never filtered for Agencies, even when set to Hide
 });
 
 test("a not-yet-processed posting (no extracted fields at all) only gets the list-field checks", () => {
-  assert.equal(filterReason(base, { ...noFilters, minimumPay: 80000, countries: ["US"] }, now), null);
+  const preferences = {
+    ...noFilters,
+    payThresholds: [{ currency: "USD", minimumPay: 80000, payPeriod: "year" as const }],
+    countries: ["US"],
+  };
+  assert.equal(filterReason(base, preferences, now), null);
 });

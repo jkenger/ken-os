@@ -812,7 +812,10 @@ export const jobMatches = pgTable(
 );
 
 /** The owner's Jobs filter preferences (docs/product/job-finder.md, Preferences table). Shifts, seniority and
- *  timing (instant-email threshold, digest time) are still step 2/3 scope, not here. */
+ *  timing (instant-email threshold, digest time) are still step 2/3 scope, not here. `payThresholds` holds one
+ *  minimum per currency the owner has configured (plans/jobs-multi-currency-pay.md, Slice 1) — a posting is
+ *  checked against the entry matching its own stated currency, never converted; a currency with no entry is
+ *  never filtered for pay, same as a posting with no pay listed at all. */
 export const jobPreferences = pgTable("job_preferences", {
   userId: text("user_id")
     .primaryKey()
@@ -820,9 +823,10 @@ export const jobPreferences = pgTable("job_preferences", {
   skipWords: jsonb("skip_words").$type<string[]>().notNull().default([]),
   skipCompanies: jsonb("skip_companies").$type<string[]>().notNull().default([]),
   postedWithinDays: integer("posted_within_days").notNull().default(14),
-  minimumPay: real("minimum_pay"),
-  payCurrency: text("pay_currency").notNull().default("USD"),
-  payPeriod: text("pay_period").$type<"hour" | "day" | "week" | "month" | "year">().notNull().default("month"),
+  payThresholds: jsonb("pay_thresholds")
+    .$type<{ currency: string; minimumPay: number; payPeriod: "hour" | "day" | "week" | "month" | "year" }[]>()
+    .notNull()
+    .default([]),
   jobTypes: jsonb("job_types")
     .$type<("full_time" | "part_time" | "contract" | "internship" | "temporary")[]>()
     .notNull()

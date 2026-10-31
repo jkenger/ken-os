@@ -11,7 +11,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toaster";
-import type { JobPreferences, JobType, PayPeriod, WorkSetup } from "@/features/jobs/preferences-store";
+import type { JobPreferences, JobType, PayPeriod, PayThreshold, WorkSetup } from "@/features/jobs/preferences-store";
 import type { ScraperState } from "@/features/jobs/scraper-state";
 import { send } from "@/lib/api-client";
 
@@ -77,9 +77,7 @@ export function JobsSettingsPage({
   const [skipWords, setSkipWords] = useState(preferences.skipWords.join("\n"));
   const [skipCompanies, setSkipCompanies] = useState(preferences.skipCompanies.join("\n"));
   const [postedWithinDays, setPostedWithinDays] = useState(String(preferences.postedWithinDays));
-  const [minimumPay, setMinimumPay] = useState(preferences.minimumPay === null ? "" : String(preferences.minimumPay));
-  const [payCurrency, setPayCurrency] = useState(preferences.payCurrency);
-  const [payPeriod, setPayPeriod] = useState<PayPeriod>(preferences.payPeriod);
+  const [payThresholds, setPayThresholds] = useState<PayThreshold[]>(preferences.payThresholds);
   const [jobTypes, setJobTypes] = useState<JobType[]>(preferences.jobTypes);
   const [workSetups, setWorkSetups] = useState<WorkSetup[]>(preferences.workSetups);
   const [countries, setCountries] = useState(preferences.countries.join("\n"));
@@ -93,9 +91,7 @@ export function JobsSettingsPage({
         skipWords: linesToList(skipWords),
         skipCompanies: linesToList(skipCompanies),
         postedWithinDays: Number(postedWithinDays),
-        minimumPay: minimumPay.trim() === "" ? null : Number(minimumPay),
-        payCurrency,
-        payPeriod,
+        payThresholds,
         jobTypes,
         workSetups,
         countries: linesToList(countries),
@@ -182,40 +178,77 @@ export function JobsSettingsPage({
             />
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="minimum-pay">Minimum pay</Label>
+            <Label>Minimum pay</Label>
             <span className="text-xs text-muted-foreground">
-              Empty means no minimum. Only checked when a posting states pay in the same currency
+              One minimum per currency. A posting is checked against the row matching its own stated currency; a
+              currency with no row here is never filtered for pay
             </span>
-            <div className="flex items-center gap-2">
-              <Input
-                id="minimum-pay"
-                type="number"
-                min={0}
-                value={minimumPay}
-                onChange={(event) => setMinimumPay(event.target.value)}
-                placeholder="No minimum"
-                className="w-32"
-              />
-              <Input
-                aria-label="Pay currency"
-                value={payCurrency}
-                onChange={(event) => setPayCurrency(event.target.value)}
-                className="w-20"
-                maxLength={3}
-              />
-              <span className="text-sm text-muted-foreground">per</span>
-              <NativeSelect
-                aria-label="Pay period"
-                value={payPeriod}
-                onChange={(event) => setPayPeriod(event.target.value as PayPeriod)}
-                className="w-28"
+            <div className="grid gap-2">
+              {payThresholds.map((threshold, index) => (
+                <div key={index} className="flex items-center gap-2">
+                  <Input
+                    aria-label="Currency"
+                    value={threshold.currency}
+                    onChange={(event) =>
+                      setPayThresholds((current) =>
+                        current.map((row, i) => (i === index ? { ...row, currency: event.target.value } : row)),
+                      )
+                    }
+                    className="w-20"
+                    maxLength={3}
+                  />
+                  <Input
+                    aria-label="Minimum pay amount"
+                    type="number"
+                    min={0}
+                    value={threshold.minimumPay}
+                    onChange={(event) =>
+                      setPayThresholds((current) =>
+                        current.map((row, i) =>
+                          i === index ? { ...row, minimumPay: Number(event.target.value) } : row,
+                        ),
+                      )
+                    }
+                    className="w-32"
+                  />
+                  <span className="text-sm text-muted-foreground">per</span>
+                  <NativeSelect
+                    aria-label="Pay period"
+                    value={threshold.payPeriod}
+                    onChange={(event) =>
+                      setPayThresholds((current) =>
+                        current.map((row, i) =>
+                          i === index ? { ...row, payPeriod: event.target.value as PayPeriod } : row,
+                        ),
+                      )
+                    }
+                    className="w-28"
+                  >
+                    {PAY_PERIOD_OPTIONS.map((option) => (
+                      <NativeSelectOption key={option.value} value={option.value}>
+                        {option.label}
+                      </NativeSelectOption>
+                    ))}
+                  </NativeSelect>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setPayThresholds((current) => current.filter((_, i) => i !== index))}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ))}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-fit"
+                onClick={() =>
+                  setPayThresholds((current) => [...current, { currency: "", minimumPay: 0, payPeriod: "month" }])
+                }
               >
-                {PAY_PERIOD_OPTIONS.map((option) => (
-                  <NativeSelectOption key={option.value} value={option.value}>
-                    {option.label}
-                  </NativeSelectOption>
-                ))}
-              </NativeSelect>
+                Add currency
+              </Button>
             </div>
           </div>
           <div className="grid gap-1.5">

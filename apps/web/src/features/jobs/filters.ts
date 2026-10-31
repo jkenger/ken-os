@@ -49,16 +49,15 @@ export function filterReason(
   const ageDays = (now.getTime() - posting.firstSeenAt.getTime()) / DAY_MS;
   if (ageDays > preferences.postedWithinDays) return `Posted over ${preferences.postedWithinDays} days ago`;
 
-  if (
-    preferences.minimumPay !== null &&
-    posting.payAmount != null &&
-    posting.payCurrency &&
-    posting.payPeriod &&
-    posting.payCurrency.toUpperCase() === preferences.payCurrency.toUpperCase()
-  ) {
-    const postingMonthly = monthlyAmount(posting.payAmount, posting.payPeriod);
-    const minimumMonthly = monthlyAmount(preferences.minimumPay, preferences.payPeriod);
-    if (postingMonthly < minimumMonthly) return "Below minimum pay";
+  if (posting.payAmount != null && posting.payCurrency && posting.payPeriod) {
+    const threshold = preferences.payThresholds.find(
+      (entry) => entry.currency.toUpperCase() === posting.payCurrency!.toUpperCase(),
+    );
+    if (threshold) {
+      const postingMonthly = monthlyAmount(posting.payAmount, posting.payPeriod);
+      const minimumMonthly = monthlyAmount(threshold.minimumPay, threshold.payPeriod);
+      if (postingMonthly < minimumMonthly) return "Below minimum pay";
+    }
   }
 
   if (posting.jobType && !preferences.jobTypes.includes(posting.jobType)) return `Job type: ${posting.jobType}`;

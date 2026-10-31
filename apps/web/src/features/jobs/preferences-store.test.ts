@@ -8,9 +8,7 @@ function validInput(overrides: Record<string, unknown> = {}) {
     skipWords: ["Sales", "Marketing"],
     skipCompanies: ["Acme"],
     postedWithinDays: 7,
-    minimumPay: 80000,
-    payCurrency: "usd",
-    payPeriod: "year",
+    payThresholds: [{ currency: "usd", minimumPay: 80000, payPeriod: "year" }],
     jobTypes: ["full_time"],
     workSetups: ["remote"],
     countries: ["us", "au"],
@@ -24,9 +22,7 @@ test("valid input parses to preferences", () => {
     skipWords: ["Sales", "Marketing"],
     skipCompanies: ["Acme"],
     postedWithinDays: 7,
-    minimumPay: 80000,
-    payCurrency: "USD",
-    payPeriod: "year",
+    payThresholds: [{ currency: "USD", minimumPay: 80000, payPeriod: "year" }],
     jobTypes: ["full_time"],
     workSetups: ["remote"],
     countries: ["US", "AU"],
@@ -34,9 +30,72 @@ test("valid input parses to preferences", () => {
   });
 });
 
-test("a null minimumPay means no floor set", () => {
-  const result = parsePreferences(validInput({ minimumPay: null }));
-  assert.equal(result.minimumPay, null);
+test("an empty payThresholds list means no floor is set for any currency", () => {
+  const result = parsePreferences(validInput({ payThresholds: [] }));
+  assert.deepEqual(result.payThresholds, []);
+});
+
+test("a non-array payThresholds is rejected", () => {
+  assert.throws(() => parsePreferences(validInput({ payThresholds: "nope" })), JobsInputError);
+});
+
+test("a payThresholds entry missing a currency is rejected", () => {
+  assert.throws(
+    () => parsePreferences(validInput({ payThresholds: [{ currency: "", minimumPay: 1000, payPeriod: "month" }] })),
+    JobsInputError,
+  );
+});
+
+test("a payThresholds entry with a negative minimumPay is rejected", () => {
+  assert.throws(
+    () => parsePreferences(validInput({ payThresholds: [{ currency: "USD", minimumPay: -1, payPeriod: "month" }] })),
+    JobsInputError,
+  );
+});
+
+test("a payThresholds entry with an invalid payPeriod is rejected", () => {
+  assert.throws(
+    () =>
+      parsePreferences(validInput({ payThresholds: [{ currency: "USD", minimumPay: 1000, payPeriod: "fortnight" }] })),
+    JobsInputError,
+  );
+});
+
+test("payThresholds currencies are upper-cased, same as Countries", () => {
+  const result = parsePreferences(
+    validInput({ payThresholds: [{ currency: "php", minimumPay: 50000, payPeriod: "month" }] }),
+  );
+  assert.deepEqual(result.payThresholds, [{ currency: "PHP", minimumPay: 50000, payPeriod: "month" }]);
+});
+
+test("two payThresholds entries in different currencies both parse", () => {
+  const result = parsePreferences(
+    validInput({
+      payThresholds: [
+        { currency: "USD", minimumPay: 80000, payPeriod: "year" },
+        { currency: "PHP", minimumPay: 50000, payPeriod: "month" },
+      ],
+    }),
+  );
+  assert.deepEqual(result.payThresholds, [
+    { currency: "USD", minimumPay: 80000, payPeriod: "year" },
+    { currency: "PHP", minimumPay: 50000, payPeriod: "month" },
+  ]);
+});
+
+test("the same currency configured twice is rejected, since it's ambiguous which one would apply", () => {
+  assert.throws(
+    () =>
+      parsePreferences(
+        validInput({
+          payThresholds: [
+            { currency: "USD", minimumPay: 80000, payPeriod: "year" },
+            { currency: "usd", minimumPay: 90000, payPeriod: "year" },
+          ],
+        }),
+      ),
+    JobsInputError,
+  );
 });
 
 test("blank skip words and companies are dropped", () => {
@@ -54,18 +113,6 @@ test("a negative postedWithinDays is rejected", () => {
 
 test("a non-integer postedWithinDays is rejected", () => {
   assert.throws(() => parsePreferences(validInput({ postedWithinDays: 3.5 })), JobsInputError);
-});
-
-test("a negative minimumPay is rejected", () => {
-  assert.throws(() => parsePreferences(validInput({ minimumPay: -1 })), JobsInputError);
-});
-
-test("a blank payCurrency is rejected", () => {
-  assert.throws(() => parsePreferences(validInput({ payCurrency: "" })), JobsInputError);
-});
-
-test("an invalid payPeriod is rejected", () => {
-  assert.throws(() => parsePreferences(validInput({ payPeriod: "fortnight" })), JobsInputError);
 });
 
 test("an invalid job type is rejected", () => {
