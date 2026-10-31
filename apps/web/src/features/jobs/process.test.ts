@@ -28,7 +28,6 @@ function pendingPosting(
     company: "Acme",
     location: "Remote",
     snippet: "A snippet.",
-    sources: [{ source: "linkedin" as const, link: "https://www.linkedin.com/jobs/view/1" }],
     ...overrides,
   };
 }
@@ -38,18 +37,16 @@ function noopDeps() {
     secret: "s3cret",
     expectedSecret: "s3cret",
     getPending: async () => [] as ReturnType<typeof pendingPosting>[],
-    readFullPosting: async () => null,
     extract: async () => extractResult,
     saveExtracted: async () => {},
   };
 }
 
-test("a correct secret processes each pending posting and saves what it reads and extracts", async () => {
+test("a correct secret processes each pending posting, using its own snippet as the full description", async () => {
   const saved: unknown[] = [];
   const result = await processPostings({
     ...noopDeps(),
-    getPending: async () => [pendingPosting()],
-    readFullPosting: async () => "The full description text.",
+    getPending: async () => [pendingPosting({ snippet: "The posting's own full text." })],
     saveExtracted: async (postingId, fields) => {
       saved.push({ postingId, fields });
     },
@@ -58,7 +55,7 @@ test("a correct secret processes each pending posting and saves what it reads an
   assert.equal(result.processed, 1);
   const [saved0] = saved as [{ postingId: string; fields: Record<string, unknown> }];
   assert.equal(saved0.postingId, "posting-1");
-  assert.equal(saved0.fields.fullDescription, "The full description text.");
+  assert.equal(saved0.fields.fullDescription, "The posting's own full text.");
   assert.equal(saved0.fields.partial, false);
   assert.equal(saved0.fields.summary, "A senior role.");
   assert.equal(saved0.fields.payAmount, 140000);
@@ -66,17 +63,11 @@ test("a correct secret processes each pending posting and saves what it reads an
   assert.equal(saved0.fields.extractModel, "test-model");
 });
 
-test("a posting whose full read fails everywhere is saved as Partial, still extracted from list fields", async () => {
+test("a posting with no snippet text is saved as Partial", async () => {
   const saved: unknown[] = [];
-  const extractCalls: unknown[] = [];
   await processPostings({
     ...noopDeps(),
-    getPending: async () => [pendingPosting()],
-    readFullPosting: async () => null,
-    extract: async (input) => {
-      extractCalls.push(input);
-      return extractResult;
-    },
+    getPending: async () => [pendingPosting({ snippet: "" })],
     saveExtracted: async (postingId, fields) => {
       saved.push(fields);
     },
@@ -84,29 +75,13 @@ test("a posting whose full read fails everywhere is saved as Partial, still extr
   const [savedFields] = saved as [{ fullDescription: string | null; partial: boolean }];
   assert.equal(savedFields.fullDescription, null);
   assert.equal(savedFields.partial, true);
-  const [call] = extractCalls as [{ text: string }];
-  assert.equal(call.text, "A snippet.", "extract runs on the snippet when there's no full description");
-});
-
-test("readFullPosting is called with the posting's own sources", async () => {
-  const seenSources: unknown[] = [];
-  await processPostings({
-    ...noopDeps(),
-    getPending: async () => [pendingPosting({ id: "p1" })],
-    readFullPosting: async (sources) => {
-      seenSources.push(sources);
-      return null;
-    },
-  });
-  assert.deepEqual(seenSources, [[{ source: "linkedin", link: "https://www.linkedin.com/jobs/view/1" }]]);
 });
 
 test("extract receives the posting's title, company, location and text as distinct data fields", async () => {
   const calls: unknown[] = [];
   await processPostings({
     ...noopDeps(),
-    getPending: async () => [pendingPosting()],
-    readFullPosting: async () => "Full text here.",
+    getPending: async () => [pendingPosting({ snippet: "Full text here." })],
     extract: async (input) => {
       calls.push(input);
       return extractResult;

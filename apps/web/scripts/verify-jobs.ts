@@ -89,22 +89,12 @@ async function main() {
     assert.deepEqual(defaults, { skipWords: [], skipCompanies: [], postedWithinDays: 14, ...DEFAULT_SLICE2_PREFS });
     console.log("ok - preferences default to no skip words, no skip companies, 14 days");
 
-    assert.equal(
-      await preferences.hasSavedPreferences(userId),
-      false,
-      "a brand new owner has never saved preferences, even though getPreferences still returns defaults",
-    );
-    console.log("ok - hasSavedPreferences is false before any save, distinct from the default shape it returns");
-
     await preferences.savePreferences(userId, {
       skipWords: ["Sales", "Marketing"],
       skipCompanies: ["Acme"],
       postedWithinDays: 7,
       ...DEFAULT_SLICE2_PREFS,
     });
-    assert.equal(await preferences.hasSavedPreferences(userId), true, "saving once makes it true, for good");
-    console.log("ok - hasSavedPreferences is true once the owner has ever saved, even if they later change it back");
-
     const saved = await preferences.getPreferences(userId);
     assert.deepEqual(saved, {
       skipWords: ["Sales", "Marketing"],
@@ -175,39 +165,6 @@ async function main() {
       "ok - saving a stricter posted-within-days setting refilters postings already saved, not just new ones",
     );
 
-    const scraperState = await import("../src/features/jobs/scraper-state");
-    const notYetChecked = await scraperState.getScraperState(userId, "linkedin");
-    assert.equal(notYetChecked, null);
-    assert.equal(await scraperState.isBlocked(userId, "linkedin"), false);
-    console.log("ok - a source with no recorded run is not blocked");
-
-    await scraperState.recordRun(userId, "linkedin", "ok");
-    const afterRun = await scraperState.getScraperState(userId, "linkedin");
-    assert.equal(afterRun?.lastResult, "ok");
-    assert.equal(afterRun?.blockedUntil, null);
-    assert.equal(await scraperState.isBlocked(userId, "linkedin"), false);
-    console.log("ok - a successful run records its result and leaves the source unblocked");
-
-    await scraperState.recordBlocked(userId, "linkedin");
-    const afterBlock = await scraperState.getScraperState(userId, "linkedin");
-    assert.equal(afterBlock?.lastResult, "blocked");
-    assert.ok(afterBlock?.blockedUntil && afterBlock.blockedUntil.getTime() > Date.now());
-    assert.equal(await scraperState.isBlocked(userId, "linkedin"), true);
-    console.log("ok - a block sets blockedUntil about 24 hours out and reports the source as blocked");
-
-    await scraperState.recordRun(userId, "linkedin", "empty");
-    assert.equal(await scraperState.isBlocked(userId, "linkedin"), false);
-    console.log("ok - a later successful run clears the block");
-
-    assert.equal(await scraperState.getScraperState(userId, "indeed"), null);
-    assert.equal(await scraperState.isBlocked(userId, "indeed"), false);
-    await scraperState.recordRun(userId, "indeed", "ok");
-    assert.equal((await scraperState.getScraperState(userId, "indeed"))?.lastResult, "ok");
-    await scraperState.recordBlocked(userId, "indeed");
-    assert.equal(await scraperState.isBlocked(userId, "indeed"), true);
-    assert.equal(await scraperState.isBlocked(userId, "linkedin"), false, "blocking one source doesn't block another");
-    console.log("ok - Indeed's block state is tracked independently of LinkedIn's");
-
     await store.savePostings(userId, [
       {
         source: "linkedin",
@@ -267,8 +224,8 @@ async function main() {
     const pendingTitles = pending.map((p) => p.title);
     assert.ok(pendingTitles.indexOf("Pending Role One") < pendingTitles.indexOf("Pending Role Two"), "oldest first");
     const pendingOne = pending.find((p) => p.title === "Pending Role One")!;
-    assert.deepEqual(pendingOne.sources, [{ source: "linkedin", link: "https://www.linkedin.com/jobs/view/10" }]);
-    console.log("ok - getPendingPostings returns unprocessed postings oldest first, with their sources");
+    assert.equal(pendingOne.snippet, "First snippet.");
+    console.log("ok - getPendingPostings returns unprocessed postings oldest first");
 
     const limited = await store.getPendingPostings(userId, 1);
     assert.equal(limited.length, 1);
@@ -472,8 +429,8 @@ async function main() {
     assert.equal(reasonFor("Part Time Role"), "Job type: part_time");
     assert.equal(
       reasonFor("Unstated Country Role"),
-      "Country: not stated",
-      "a processed posting that states no eligibility is filtered by default, not shown",
+      null,
+      "a processed posting that states no eligibility at all is shown, not filtered",
     );
     assert.equal(reasonFor("Wrong Country Role"), "Country: DE");
     assert.equal(

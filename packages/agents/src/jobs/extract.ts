@@ -5,7 +5,7 @@ import { z } from "zod";
 // "Extract"). Spec: plans/jobs-score.md. The posting's own words are the only evidence; anything not stated is
 // left empty, never guessed — the same rule `profile/analyze.ts` follows for the Profile's own facts.
 
-export const JOBS_EXTRACT_PROMPT_VERSION = "jobs-extract-v3";
+export const JOBS_EXTRACT_PROMPT_VERSION = "jobs-extract-v4";
 
 const outputSchema = z.object({
   payAmount: z.number().nullable(),
@@ -24,13 +24,13 @@ const outputSchema = z.object({
 
 const instructions = `You read one job posting and pull out only what it explicitly states. You are a careful reader, not a guesser.
 
-You get the posting's title, company, location label and its full text (its own description, or just the title/company/location/snippet when a fuller read wasn't possible).
+You get the posting's title, company, location label and its full text (its own description, or just the title/company/location/snippet when a fuller read wasn't possible). Some postings also include statedLocation: the source's own structured eligibility/region field, pulled from a form the employer had to fill in, not read from prose. When it's present, treat it as authoritative, ahead of anything the free text says or doesn't say.
 
 Return:
 - payAmount, payCurrency, payPeriod: from a stated salary or rate only. A range: use its midpoint for payAmount. Nothing stated: all three null.
 - jobType, workSetup: only when the posting states them, directly or in a clearly equivalent way ("WFH" = remote). Not stated: null.
-- eligibilityStated: true whenever the posting's own text says ANYTHING about who may apply, in any form — including an explicit "open to candidates anywhere" or "Remote (Global)" with no list of countries. False only when the posting says nothing at all about eligibility. This has to be right even when countries ends up empty either way, since "said nothing" and "said everyone" mean opposite things downstream.
-- countries: which countries a candidate may apply from, read ONLY from the posting's own eligibility language — phrases like "must be authorized to work in <country>", "based in <place>", "Remote (<region> only)". NEVER infer this from the location label, the company's city, or where the company is headquartered — a company's location says nothing about who may apply. Return each country as its ISO 3166-1 alpha-2 code (e.g. "US", "GB", "AU", "CA", "PH"), not a free-text name — this has to match exactly against the owner's saved preferences. A posting that states nothing about eligibility, OR that explicitly says it's open to everyone/anywhere with no specific list: return an empty array — the difference between those two cases is eligibilityStated, not this field.
+- eligibilityStated: true whenever the posting's own text says ANYTHING about who may apply, in any form — including an explicit "open to candidates anywhere" or "Remote (Global)" with no list of countries. False only when the posting says nothing at all about eligibility. This has to be right even when countries ends up empty either way, since "said nothing" and "said everyone" mean opposite things downstream. When statedLocation is present, this is always true — the caller treats it as a guarantee, but return it correctly anyway.
+- countries: which countries a candidate may apply from. When statedLocation is present, derive this from it first: a specific place ("USA Only", "Canada Only") becomes that country's code; an explicit country list narrows it to those codes; "Anywhere in the World" with no narrowing list means worldwide — return an empty array, the same as the free-text "open to everyone" case. Otherwise, read ONLY from the posting's own eligibility language — phrases like "must be authorized to work in <country>", "based in <place>", "Remote (<region> only)". NEVER infer this from the location label, the company's city, or where the company is headquartered — a company's location says nothing about who may apply. Return each country as its ISO 3166-1 alpha-2 code (e.g. "US", "GB", "AU", "CA", "PH"), not a free-text name — this has to match exactly against the owner's saved preferences. A posting that states nothing about eligibility, OR that explicitly says it's open to everyone/anywhere with no specific list: return an empty array — the difference between those two cases is eligibilityStated, not this field.
 - requiredHours: the hours and time zone the role needs, if stated (e.g. "9 AM to 5 PM EST", "must overlap with PST business hours"). Not stated: null.
 - seniority, yearsRequired: only when the posting states or clearly implies a level or years. Not stated: null.
 - isAgency: true only when the posting is clearly from a recruiting or staffing agency placing a candidate with a client, not the direct employer — signs include "our client is seeking", a company name that is itself a staffing/recruiting firm, or explicit "on behalf of" language. When it's unclear whether the company is the direct employer, default to false.
@@ -60,6 +60,7 @@ export async function extractPosting(params: {
   company: string;
   location: string;
   text: string;
+  statedLocation?: string | null;
 }): Promise<ExtractedPosting> {
   const agent = new Agent({ name: "Jobs extractor", instructions, outputType: outputSchema });
   const result = await run(
@@ -69,6 +70,7 @@ export async function extractPosting(params: {
       company: params.company,
       location: params.location,
       text: params.text,
+      statedLocation: params.statedLocation ?? null,
     }),
     { maxTurns: 2 },
   );

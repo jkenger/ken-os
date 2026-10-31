@@ -43,7 +43,9 @@ LinkedIn/Indeed's existing once-a-minute loop, not a number to match for consist
 ## Acceptance Criteria
 
 - [ ] A posting that explicitly states it's open to everyone, or explicitly lists the owner's target country, is
-      never filtered for Country. Only a posting that states nothing about eligibility at all is.
+      never filtered for Country. **Superseded during Slice 3 live-testing**: a posting that states nothing about
+      eligibility at all is also never filtered -- see the note after Slice 1 below. The only posting Countries
+      still filters is one that explicitly lists countries excluding the target.
 - [ ] A posting whose own stated pay, converted into the owner's one currency, is above the configured Maximum
       pay is filtered out with "Above maximum pay". A posting within range, or with no maximum set, is not.
 - [ ] Postings from We Work Remotely appear in the feed alongside LinkedIn and Indeed, polled on their own
@@ -91,6 +93,15 @@ be hidden.
 **Done when**: Mutation run complete, survivors addressed or justified; `pnpm check`, `pnpm test`, `pnpm build`
 pass; `pnpm --filter @ken-os/web test:db:jobs` extended with this slice's scenarios and passing.
 
+**Superseded while live-testing Slice 3** (owner feedback, not a new slice): this slice's `eligibilityStated ===
+false → "Country: not stated"` branch was removed from `filters.ts`. LinkedIn and Indeed's public pages carry no
+structured eligibility field at all (the finding that motivated Slice 3 itself), so that branch ended up filtering
+nearly every LinkedIn/Indeed posting, including ones genuinely fine for the owner -- a worse trade than the one it
+was meant to fix. `eligibilityStated` now only gates whether `countries` is trusted, not whether the posting is
+shown: `false` and not-yet-processed both pass through unfiltered, same as `true` with an empty `countries`
+already did. Only an explicit, non-matching country list still filters. Updated: `filters.ts`'s Countries check
+and its doc comment, `filters.test.ts`, `scripts/verify-jobs.ts`'s "Unstated Country Role" scenario.
+
 ### Slice 2: Maximum pay
 
 **Value**: Behavior change — a posting whose converted pay is above the owner's configured ceiling is filtered
@@ -130,6 +141,20 @@ passing and one above it filtered.
 
 ### Slice 3: We Work Remotely as a third source
 
+**Superseded before completion, not shipped** (owner decision, 2026-11-01): mid-build, the owner found
+[freehire](https://github.com/strelov1/freehire) -- an open-source, MIT-licensed, self-hostable job search engine
+with a public keyless API (`https://freehire.me/api/v1/jobs/search`), 4.78M+ open postings from 421 sources
+including real ATS platforms (Workday, Greenhouse, Lever), and per-posting structured `countries`, `work_mode`,
+and `enrichment` (salary, seniority, employment type) fields -- richer than LinkedIn, Indeed, and this slice's WWR
+scraper combined, and already solving the exact eligibility-signal problem this slice existed to fix. Decided to
+replace LinkedIn/Indeed/WWR sourcing entirely with freehire rather than add a third hand-built scraper, freeing
+effort for CV tailoring and smart matching instead. See `plans/jobs-freehire-source.md` for the migration. This
+slice's own WWR scraper, route and fixture (`scrapers/weworkremotely.ts`, `check/weworkremotely/route.ts`,
+`scrapers/fixtures/weworkremotely.rss`) are removed, not kept as a fallback -- freehire's own aggregator sources
+already include boards like this one, so a bespoke WWR scraper adds no coverage a single freehire source lacks.
+
+**Original plan, kept for the record below, not executed past the in-progress point noted here.**
+
 **Value**: Behavior change — the owner's feed gains postings from a source whose own submission form requires
 eligibility to be declared, landing postings the strict Countries filter can actually pass, rather than relying
 solely on LinkedIn/Indeed where that data is confirmed structurally absent.
@@ -137,15 +162,27 @@ solely on LinkedIn/Indeed where that data is confirmed structurally absent.
 and `PARSERS`, `words.ts`'s `sourceWords`; `scraper-state.ts` is already generic over `AlertSource`). New
 `apps/web/src/features/jobs/scrapers/weworkremotely.ts` fetches the combined feed
 (`https://weworkremotely.com/remote-jobs.rss` — not a single category; the owner's searched roles don't map onto
-WWR's fixed category list) and parses each `<item>` (`title`, `region`, `country`, `category`, `type`,
-`description` — already full HTML — `link`, `guid` as `sourceId`) into a `RawPosting`. **Open implementation
-decision to resolve at slice start, not fully fixed by research**: where the region/country hint travels to reach
-extraction, since `RawPosting` has no spare field and widening it would ripple into LinkedIn/Indeed too — likely
-carried in `snippet` (already free-text extraction input) or threaded as a second value alongside the saved
-posting; record whichever is chosen with its reasoning. No `read-posting.ts` fetch step runs for WWR — the RSS
-item already carries the full description; the posting is never "Partial". `extract.ts`'s prompt and input gain
-an optional labeled hint (e.g. `statedLocation?: string`), instructing the model to treat it as the posting's own
-structured eligibility field when present, ahead of scanning prose. New
+WWR's fixed category list) and parses each `<item>` (`title` as `"<company>: <job title>"`, split on the first
+`": "`; `region` — one of a small closed set: "USA Only", "Canada Only", "North America Only", "Anywhere in the
+World", confirmed by a live fetch of the real feed, 99 items, 4 distinct values; `country` — empty on 80/99 items,
+an emoji-flag-prefixed, comma-joined country list on the rest, narrowing "Anywhere in the World" further;
+`category`, `type`, `description` — HTML-entity-escaped HTML, decoded in two passes (XML entity decoding, then
+stripped to plain text, same shape as LinkedIn/Indeed's already-stripped full description); `link`; `guid` as the
+source for a prefixed `sourceId`) into a `RawPosting`.
+
+**Resolved**: `RawPosting` gains `statedLocation?: string | null` (region alone, or `"<region>; eligible
+countries: <country list>"` when `country` narrows it), threaded as a real field — not folded into `snippet` —
+through `job_postings`' new nullable `stated_location` column, `PendingPosting`, and `extract()`'s input as
+`statedLocation`. Decided over stuffing it into `snippet` because `extract.ts`'s existing prompt already tells the
+model to _never_ infer eligibility from the generic `location` field ("a company's location says nothing about
+who may apply") — a deliberate guardrail from earlier work. Folding WWR's structured region/country into free
+text would either dodge that guardrail inconsistently or require prompt language distinguishing "this part of the
+text is structured, trust it" from "this part is prose, verify it," which a separate labeled field expresses
+directly instead. `eligibilityStated` is forced `true` in `process.ts` (not left to the model) whenever
+`posting.statedLocation` is non-null — not a judgment call, since WWR's own submission form made the owner pick a
+region for all 99 sampled items; the model still derives `countries` from the hint text, the same geographic
+mapping it already does for free-text eligibility language. No `read-posting.ts` fetch step runs for WWR — the
+RSS item already carries the full description; the posting is never "Partial". New
 `apps/web/src/app/api/jobs/check/weworkremotely/route.ts`, modelled on `check/indeed` and `check/linkedin` but
 _without_ `check-source.ts`'s per-keyword loop — the combined feed has no search parameter, so the route fetches
 once and lets skip-words/title filtering sort relevance downstream, the same way Countries already filters

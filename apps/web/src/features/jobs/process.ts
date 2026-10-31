@@ -1,7 +1,7 @@
-import type { AlertSource } from "./raw-posting";
-
 // Reads, extracts and saves structured fields for the owner's pending postings (plans/jobs-score.md, Slice 1).
-// Dependencies are injected so this stays testable without a real HTTP call, AI call or database.
+// Dependencies are injected so this stays testable without a real HTTP call, AI call or database. freehire gives
+// every posting its full description at save time (plans/jobs-freehire-source.md), so unlike the sources this
+// replaced there's no separate full-page fetch step here: a posting's own snippet already is its full text.
 
 const BATCH_SIZE = 5;
 
@@ -11,7 +11,6 @@ type PendingPosting = {
   company: string;
   location: string;
   snippet: string;
-  sources: { source: AlertSource; link: string }[];
 };
 
 type ExtractResult = {
@@ -54,7 +53,6 @@ export async function processPostings(params: {
   secret: string;
   expectedSecret: string;
   getPending: (limit: number) => Promise<PendingPosting[]>;
-  readFullPosting: (sources: { source: AlertSource; link: string }[]) => Promise<string | null>;
   extract: (input: { title: string; company: string; location: string; text: string }) => Promise<ExtractResult>;
   saveExtracted: (postingId: string, fields: ExtractedFields) => Promise<void>;
 }): Promise<{ ok: boolean; reason: string; processed: number }> {
@@ -62,15 +60,14 @@ export async function processPostings(params: {
 
   const pending = await params.getPending(BATCH_SIZE);
   for (const posting of pending) {
-    const fullDescription = await params.readFullPosting(posting.sources);
+    const fullDescription = posting.snippet || null;
     const partial = fullDescription === null;
-    const text = fullDescription ?? posting.snippet;
 
     const extracted = await params.extract({
       title: posting.title,
       company: posting.company,
       location: posting.location,
-      text,
+      text: posting.snippet,
     });
 
     await params.saveExtracted(posting.id, {

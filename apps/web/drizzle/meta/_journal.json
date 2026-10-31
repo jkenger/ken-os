@@ -316,6 +316,20 @@
       "when": 1793460257809,
       "tag": "0044_damp_thunderbolt",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1793463181030,
+      "tag": "0045_brainy_zaladane",
+      "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1793467184215,
+      "tag": "0046_lean_young_avengers",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,9 @@
 # Plan: Jobs — Direct scraping (release step 1)
 
 **Branch**: jkenger/Job-Finder-Feat
-**Status**: Active
+**Status**: Superseded (2026-11-01) — see `plans/jobs-freehire-source.md`. The LinkedIn/Indeed scrapers and
+block/backoff state this plan built are being replaced with the freehire API as the sole source; see that plan's
+Scope note for the owner's reasoning and evidence. Kept here for the historical record, not an active plan.
 
 ## Goal
 

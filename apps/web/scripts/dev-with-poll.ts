@@ -3,8 +3,8 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
 // Runs `next dev` plus the same once-a-minute poll of the Jobs pipeline an outside scheduler runs in production
-// (docs/product/job-finder.md, "Getting postings in"), so `pnpm dev` alone keeps postings fresh locally without
-// a separate scheduled task to remember to set up or tear down.
+// (docs/product/job-finder.md, "Getting postings in"; plans/jobs-freehire-source.md), so `pnpm dev` alone keeps
+// postings fresh locally without a separate scheduled task to remember to set up or tear down.
 
 const POLL_INTERVAL_MS = 60_000;
 const FIRST_POLL_DELAY_MS = 8_000;
@@ -34,12 +34,9 @@ async function hit(secret: string, path: string): Promise<string> {
 }
 
 async function poll(secret: string): Promise<void> {
-  // The scrapes run first, in parallel; process runs after, so freshly-scraped postings don't wait a cycle.
-  const scrapeResults = await Promise.all(
-    ["/api/jobs/check/linkedin", "/api/jobs/check/indeed"].map((path) => hit(secret, path)),
-  );
+  const scrapeResult = await hit(secret, "/api/jobs/check/freehire");
   const processResult = await hit(secret, "/api/jobs/process");
-  console.log(`[jobs-poll ${new Date().toISOString()}]`, [...scrapeResults, processResult].join(" | "));
+  console.log(`[jobs-poll ${new Date().toISOString()}]`, [scrapeResult, processResult].join(" | "));
 }
 
 const secret = readSecret();

@@ -7,10 +7,7 @@ import { users } from "@/lib/schema";
 import { getProfile } from "@/features/profile/store";
 import { ratesAreStale, saveCachedRates } from "@/features/jobs/currency-rates-store";
 import { fetchCurrencyRates } from "@/features/jobs/fetch-currency-rates";
-import { LINKEDIN_HEADERS } from "@/features/jobs/scrapers/linkedin";
-import { INDEED_HEADERS } from "@/features/jobs/scrapers/indeed";
 import { processPostings, scorePostings } from "@/features/jobs/process";
-import { readFullPosting } from "@/features/jobs/read-posting";
 import { refreshRatesIfStale } from "@/features/jobs/refresh-currency-rates";
 import { getNeedingScore, getPendingPostings, saveExtractedFields, saveScore } from "@/features/jobs/store";
 
@@ -47,12 +44,6 @@ export async function GET(request: Request) {
     secret,
     expectedSecret,
     getPending: (limit) => getPendingPostings(owner.id, limit),
-    readFullPosting: (sources) =>
-      readFullPosting(sources, async (source, url) => {
-        const headers = source === "linkedin" ? LINKEDIN_HEADERS : INDEED_HEADERS;
-        const response = await fetch(url, { headers });
-        return { status: response.status, html: await response.text() };
-      }),
     extract: (input) => extractPosting(input),
     saveExtracted: (postingId, fields) => saveExtractedFields(postingId, fields),
   });

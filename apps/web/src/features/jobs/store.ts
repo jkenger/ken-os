@@ -190,12 +190,11 @@ export type PendingPosting = {
   company: string;
   location: string;
   snippet: string;
-  sources: { source: AlertSource; link: string }[];
 };
 
 /** Up to `limit` postings not yet processed by `/api/jobs/process`, oldest first (plans/jobs-score.md, Slice 1). */
 export async function getPendingPostings(userId: string, limit: number): Promise<PendingPosting[]> {
-  const rows = await db()
+  return db()
     .select({
       id: jobPostings.id,
       title: jobPostings.title,
@@ -207,25 +206,6 @@ export async function getPendingPostings(userId: string, limit: number): Promise
     .where(and(eq(jobPostings.userId, userId), isNull(jobPostings.processedAt)))
     .orderBy(asc(jobPostings.firstSeenAt))
     .limit(limit);
-
-  const postingIds = rows.map((row) => row.id);
-  const sources = postingIds.length
-    ? await db()
-        .select({
-          postingId: jobPostingSources.postingId,
-          source: jobPostingSources.source,
-          link: jobPostingSources.link,
-        })
-        .from(jobPostingSources)
-        .where(inArray(jobPostingSources.postingId, postingIds))
-    : [];
-  const sourcesByPosting = new Map<string, { source: AlertSource; link: string }[]>();
-  for (const row of sources) {
-    const list = sourcesByPosting.get(row.postingId) ?? [];
-    list.push({ source: row.source as AlertSource, link: row.link });
-    sourcesByPosting.set(row.postingId, list);
-  }
-  return rows.map((row) => ({ ...row, sources: sourcesByPosting.get(row.id) ?? [] }));
 }
 
 export type ExtractedFields = {

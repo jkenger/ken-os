@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { WorkspaceShell } from "@/components/workspace-shell";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
@@ -12,7 +11,6 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toaster";
 import type { JobPreferences, JobType, PayPeriod, WorkSetup } from "@/features/jobs/preferences-store";
-import type { ScraperState } from "@/features/jobs/scraper-state";
 import { send } from "@/lib/api-client";
 
 const PAY_PERIOD_OPTIONS: { value: PayPeriod; label: string }[] = [
@@ -41,19 +39,6 @@ function toggle<T>(list: T[], value: T): T[] {
   return list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
 }
 
-function sourceStateBadge(state: ScraperState | null) {
-  if (state?.blockedUntil && state.blockedUntil > new Date()) {
-    const until = state.blockedUntil.toLocaleString("en", {
-      month: "short",
-      day: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    });
-    return <Badge variant="destructive">Blocked until {until}</Badge>;
-  }
-  return <Badge variant="secondary">Running</Badge>;
-}
-
 function linesToList(value: string): string[] {
   return value
     .split("\n")
@@ -65,14 +50,10 @@ export function JobsSettingsPage({
   email,
   roles,
   preferences,
-  linkedInState,
-  indeedState,
 }: {
   email: string;
   roles: string[];
   preferences: JobPreferences;
-  linkedInState: ScraperState | null;
-  indeedState: ScraperState | null;
 }) {
   const [skipWords, setSkipWords] = useState(preferences.skipWords.join("\n"));
   const [skipCompanies, setSkipCompanies] = useState(preferences.skipCompanies.join("\n"));
@@ -133,13 +114,9 @@ export function JobsSettingsPage({
         <section className="mt-6 grid gap-3 rounded-lg border p-4">
           <h2 className="text-sm font-semibold">Sources</h2>
           <div className="flex items-center justify-between gap-3">
-            <span className="text-sm">LinkedIn</span>
-            {sourceStateBadge(linkedInState)}
+            <span className="text-sm">freehire</span>
           </div>
-          <div className="flex items-center justify-between gap-3">
-            <span className="text-sm">Indeed</span>
-            {sourceStateBadge(indeedState)}
-          </div>
+          <p className="text-xs text-muted-foreground">Use Run pipeline on Jobs to see what the last check found.</p>
         </section>
 
         <section className="mt-6 grid gap-4 rounded-lg border p-4">
