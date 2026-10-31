@@ -1,0 +1,17 @@
+<!--
+  A constructed sample, not a real saved Indeed job-view page (/viewjob?jk=<id>) — I have no real one to parse
+  against in this environment. Shaped from Indeed's long-standing public description container id
+  (#jobDescriptionText), used across many public scraping references, not verified against JobSpy's own source
+  (JobSpy fetches Indeed's description through its GraphQL API, not this public page). Re-save this from a real
+  page before this parser handles production traffic, per the spec's "parser tests on saved pages" rule
+  (docs/product/job-finder.md): a layout change should fail this test, not quietly find nothing.
+-->
+<html>
+  <body>
+    <div id="jobDescriptionText" class="jobsearch-jobDescriptionText">
+      <p>Acme Inc is hiring a Senior Backend Engineer.</p>
+      <p>Must be authorized to work in the United States. This is a hybrid role based in Austin, TX.</p>
+      <p>Salary: $120,000 to $150,000 a year.</p>
+    </div>
+  </body>
+</html>

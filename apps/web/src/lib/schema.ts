@@ -7,6 +7,7 @@ import {
   jsonb,
   pgTable,
   primaryKey,
+  real,
   text,
   timestamp,
   uniqueIndex,
@@ -716,7 +717,11 @@ export const labTopicMaterial = pgTable(
 );
 
 /** One row per real posting after repeats are dropped. Identity for the title+company+location fallback match
- *  ("Drop repeats") is enforced by the unique index below, not just application logic. */
+ *  ("Drop repeats") is enforced by the unique index below, not just application logic. The extraction columns
+ *  (full_description through extract_model) are null until `/api/jobs/process` runs; `processed_at` is the signal
+ *  a posting is still pending (docs/product/job-finder.md, release step 2 "Score"). `countries` is read from the
+ *  posting's own eligibility language only, never from `location`; an empty array means the posting stated no
+ *  eligibility, not that none are allowed (plans/jobs-score.md). */
 export const jobPostings = pgTable(
   "job_postings",
   {
@@ -729,9 +734,28 @@ export const jobPostings = pgTable(
     location: text("location").notNull(),
     snippet: text("snippet").notNull(),
     firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).notNull().defaultNow(),
+    fullDescription: text("full_description"),
+    /** True when every source's page failed to read, so extraction ran on the list fields alone. */
+    partial: boolean("partial").notNull().default(false),
+    summary: text("summary"),
+    /** A real, not an integer: a posting can state a fractional rate ("$45.50/hr"). */
+    payAmount: real("pay_amount"),
+    payCurrency: text("pay_currency"),
+    payPeriod: text("pay_period").$type<"hour" | "day" | "week" | "month" | "year">(),
+    jobType: text("job_type").$type<"full_time" | "part_time" | "contract" | "internship" | "temporary">(),
+    workSetup: text("work_setup").$type<"remote" | "hybrid" | "on_site">(),
+    countries: jsonb("countries").$type<string[]>(),
+    requiredHours: jsonb("required_hours").$type<{ start: string; end: string; timezone: string } | null>(),
+    seniority: text("seniority").$type<"junior" | "mid" | "senior" | "lead">(),
+    /** A real, not an integer: a posting can state a fractional minimum ("1.5+ years"). */
+    yearsRequired: real("years_required"),
+    extractPromptVersion: text("extract_prompt_version"),
+    extractModel: text("extract_model"),
+    processedAt: timestamp("processed_at", { withTimezone: true }),
   },
   (table) => [
     index("job_postings_user_idx").on(table.userId, table.firstSeenAt),
+    index("job_postings_user_pending_idx").on(table.userId, table.processedAt, table.firstSeenAt),
     uniqueIndex("job_postings_user_identity_idx").on(table.userId, table.title, table.company, table.location),
   ],
 );

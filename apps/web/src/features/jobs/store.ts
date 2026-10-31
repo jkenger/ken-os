@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, desc, eq, inArray } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { jobMatches, jobPostingSources, jobPostings } from "@/lib/schema";
 import { filterReason } from "./filters";
@@ -158,4 +158,73 @@ export async function showAnyway(userId: string, postingId: string): Promise<voi
     .update(jobMatches)
     .set({ state: "new", filterReason: null, updatedAt: new Date() })
     .where(and(eq(jobMatches.postingId, postingId), eq(jobMatches.userId, userId)));
+}
+
+export type PendingPosting = {
+  id: string;
+  title: string;
+  company: string;
+  location: string;
+  snippet: string;
+  sources: { source: AlertSource; link: string }[];
+};
+
+/** Up to `limit` postings not yet processed by `/api/jobs/process`, oldest first (plans/jobs-score.md, Slice 1). */
+export async function getPendingPostings(userId: string, limit: number): Promise<PendingPosting[]> {
+  const rows = await db()
+    .select({
+      id: jobPostings.id,
+      title: jobPostings.title,
+      company: jobPostings.company,
+      location: jobPostings.location,
+      snippet: jobPostings.snippet,
+    })
+    .from(jobPostings)
+    .where(and(eq(jobPostings.userId, userId), isNull(jobPostings.processedAt)))
+    .orderBy(asc(jobPostings.firstSeenAt))
+    .limit(limit);
+
+  const postingIds = rows.map((row) => row.id);
+  const sources = postingIds.length
+    ? await db()
+        .select({
+          postingId: jobPostingSources.postingId,
+          source: jobPostingSources.source,
+          link: jobPostingSources.link,
+        })
+        .from(jobPostingSources)
+        .where(inArray(jobPostingSources.postingId, postingIds))
+    : [];
+  const sourcesByPosting = new Map<string, { source: AlertSource; link: string }[]>();
+  for (const row of sources) {
+    const list = sourcesByPosting.get(row.postingId) ?? [];
+    list.push({ source: row.source as AlertSource, link: row.link });
+    sourcesByPosting.set(row.postingId, list);
+  }
+  return rows.map((row) => ({ ...row, sources: sourcesByPosting.get(row.id) ?? [] }));
+}
+
+export type ExtractedFields = {
+  fullDescription: string | null;
+  partial: boolean;
+  summary: string;
+  payAmount: number | null;
+  payCurrency: string | null;
+  payPeriod: "hour" | "day" | "week" | "month" | "year" | null;
+  jobType: "full_time" | "part_time" | "contract" | "internship" | "temporary" | null;
+  workSetup: "remote" | "hybrid" | "on_site" | null;
+  countries: string[];
+  requiredHours: { start: string; end: string; timezone: string } | null;
+  seniority: "junior" | "mid" | "senior" | "lead" | null;
+  yearsRequired: number | null;
+  extractPromptVersion: string;
+  extractModel: string;
+};
+
+/** Saves one posting's extracted fields and marks it processed (plans/jobs-score.md, Slice 1). */
+export async function saveExtractedFields(postingId: string, fields: ExtractedFields): Promise<void> {
+  await db()
+    .update(jobPostings)
+    .set({ ...fields, processedAt: new Date() })
+    .where(eq(jobPostings.id, postingId));
 }

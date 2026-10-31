@@ -194,6 +194,60 @@ async function main() {
       "the merged posting lists both sources",
     );
     console.log("ok - a posting found by both the LinkedIn and Indeed scrapers merges into one row listing both");
+
+    await store.savePostings(userId, [
+      {
+        source: "linkedin",
+        sourceId: "li-pending-1",
+        title: "Pending Role One",
+        company: "PendCo",
+        location: "Remote",
+        snippet: "First snippet.",
+        link: "https://www.linkedin.com/jobs/view/10",
+      },
+    ]);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    await store.savePostings(userId, [
+      {
+        source: "indeed",
+        sourceId: "in-pending-2",
+        title: "Pending Role Two",
+        company: "PendCo",
+        location: "Remote",
+        snippet: "Second snippet.",
+        link: "https://www.indeed.com/viewjob?jk=pending2",
+      },
+    ]);
+    const pending = await store.getPendingPostings(userId, 10);
+    const pendingTitles = pending.map((p) => p.title);
+    assert.ok(pendingTitles.indexOf("Pending Role One") < pendingTitles.indexOf("Pending Role Two"), "oldest first");
+    const pendingOne = pending.find((p) => p.title === "Pending Role One")!;
+    assert.deepEqual(pendingOne.sources, [{ source: "linkedin", link: "https://www.linkedin.com/jobs/view/10" }]);
+    console.log("ok - getPendingPostings returns unprocessed postings oldest first, with their sources");
+
+    const limited = await store.getPendingPostings(userId, 1);
+    assert.equal(limited.length, 1);
+    console.log("ok - getPendingPostings respects its limit");
+
+    await store.saveExtractedFields(pendingOne.id, {
+      fullDescription: "The full description.",
+      partial: false,
+      summary: "A short summary.",
+      payAmount: 120000,
+      payCurrency: "USD",
+      payPeriod: "year",
+      jobType: "full_time",
+      workSetup: "remote",
+      countries: [],
+      requiredHours: null,
+      seniority: "senior",
+      yearsRequired: 5,
+      extractPromptVersion: "jobs-extract-v1",
+      extractModel: "test-model",
+    });
+    const afterExtract = await store.getPendingPostings(userId, 10);
+    assert.ok(!afterExtract.some((p) => p.id === pendingOne.id), "a processed posting no longer shows as pending");
+    console.log("ok - saveExtractedFields marks a posting processed, removing it from the pending list");
   } finally {
     await db().delete(users).where(eq(users.id, userId));
     await closeDb();
