@@ -138,6 +138,30 @@ async function main() {
     console.log(
       "ok - saving a stricter posted-within-days setting refilters postings already saved, not just new ones",
     );
+
+    const scraperState = await import("../src/features/jobs/scraper-state");
+    const notYetChecked = await scraperState.getScraperState(userId, "linkedin");
+    assert.equal(notYetChecked, null);
+    assert.equal(await scraperState.isBlocked(userId, "linkedin"), false);
+    console.log("ok - a source with no recorded run is not blocked");
+
+    await scraperState.recordRun(userId, "linkedin", "ok");
+    const afterRun = await scraperState.getScraperState(userId, "linkedin");
+    assert.equal(afterRun?.lastResult, "ok");
+    assert.equal(afterRun?.blockedUntil, null);
+    assert.equal(await scraperState.isBlocked(userId, "linkedin"), false);
+    console.log("ok - a successful run records its result and leaves the source unblocked");
+
+    await scraperState.recordBlocked(userId, "linkedin");
+    const afterBlock = await scraperState.getScraperState(userId, "linkedin");
+    assert.equal(afterBlock?.lastResult, "blocked");
+    assert.ok(afterBlock?.blockedUntil && afterBlock.blockedUntil.getTime() > Date.now());
+    assert.equal(await scraperState.isBlocked(userId, "linkedin"), true);
+    console.log("ok - a block sets blockedUntil about 24 hours out and reports the source as blocked");
+
+    await scraperState.recordRun(userId, "linkedin", "empty");
+    assert.equal(await scraperState.isBlocked(userId, "linkedin"), false);
+    console.log("ok - a later successful run clears the block");
   } finally {
     await db().delete(users).where(eq(users.id, userId));
     await closeDb();

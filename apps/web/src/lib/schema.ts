@@ -800,3 +800,21 @@ export const jobPreferences = pgTable("job_preferences", {
   postedWithinDays: integer("posted_within_days").notNull().default(14),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+/** Each scraped source's block/backoff state, one row per owner and source (docs/product/job-finder.md, "Getting
+ *  postings in"). A 403 or 429 sets blockedUntil 24 hours out; a check made while it's still in the future skips
+ *  the fetch and leaves the alert-email path as the only one delivering that source until it clears. */
+export const jobScraperState = pgTable(
+  "job_scraper_state",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    source: text("source").$type<AlertSource>().notNull(),
+    lastRunAt: timestamp("last_run_at", { withTimezone: true }),
+    lastResult: text("last_result").$type<"ok" | "empty" | "blocked">(),
+    blockedUntil: timestamp("blocked_until", { withTimezone: true }),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.source] })],
+);

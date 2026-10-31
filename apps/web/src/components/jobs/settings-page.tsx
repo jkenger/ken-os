@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { IconCopy } from "@tabler/icons-react";
 import { WorkspaceShell } from "@/components/workspace-shell";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
@@ -11,7 +12,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toaster";
 import type { JobPreferences } from "@/features/jobs/preferences-store";
 import { alertKeywords } from "@/features/jobs/roles";
+import type { ScraperState } from "@/features/jobs/scraper-state";
 import { send } from "@/lib/api-client";
+
+function sourceStateBadge(state: ScraperState | null) {
+  if (state?.blockedUntil && state.blockedUntil > new Date()) {
+    const until = state.blockedUntil.toLocaleString("en", {
+      month: "short",
+      day: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    });
+    return <Badge variant="destructive">Blocked until {until}</Badge>;
+  }
+  return <Badge variant="secondary">Running</Badge>;
+}
 
 async function copy(text: string) {
   try {
@@ -34,11 +49,13 @@ export function JobsSettingsPage({
   roles,
   forwardingAddress,
   preferences,
+  linkedInState,
 }: {
   email: string;
   roles: string[];
   forwardingAddress: string | undefined;
   preferences: JobPreferences;
+  linkedInState: ScraperState | null;
 }) {
   const [skipWords, setSkipWords] = useState(preferences.skipWords.join("\n"));
   const [skipCompanies, setSkipCompanies] = useState(preferences.skipCompanies.join("\n"));
@@ -114,6 +131,14 @@ export function JobsSettingsPage({
           ) : (
             <p className="text-xs text-muted-foreground">Set JOBS_INBOUND_ADDRESS to turn this on</p>
           )}
+        </section>
+
+        <section className="mt-6 grid gap-3 rounded-lg border p-4">
+          <h2 className="text-sm font-semibold">Sources</h2>
+          <div className="flex items-center justify-between gap-3">
+            <span className="text-sm">LinkedIn</span>
+            {sourceStateBadge(linkedInState)}
+          </div>
         </section>
 
         <section className="mt-6 grid gap-4 rounded-lg border p-4">
