@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   BookMarked,
+  Briefcase,
   ChevronRight,
   BookOpenText,
   FileText,
@@ -55,13 +56,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { engineering, tabForPath, type EngineeringTab } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
 
-type Module = "profile" | "portfolio" | "memory" | "lab" | "terms" | "studio";
+type Module = "profile" | "portfolio" | "memory" | "lab" | "terms" | "studio" | "jobs";
 
 const modules = [
   { id: "profile" as const, label: "Profile", href: "/profile", icon: UserRound },
   { id: "portfolio" as const, label: "Portfolio", href: "/portfolio", icon: Globe },
   { id: "memory" as const, label: "Project Memory", href: "/memory", icon: BookOpenText },
   { id: "lab" as const, label: "Engineering", href: engineering.roadmap(), icon: FlaskConical },
+  { id: "jobs" as const, label: "Jobs", href: "/jobs", icon: Briefcase },
   { id: "terms" as const, label: "Terms", href: "/terms", icon: BookMarked },
   { id: "studio" as const, label: "Design Studio", href: "/studio", icon: Palette },
 ];
@@ -90,6 +92,8 @@ const moduleDetails: Record<
     title: "Engineering",
     sections: [{ label: "Roadmap", href: engineering.roadmap(), icon: MapIcon }],
   },
+  // No sub-items yet: only /jobs exists so far (docs/product/job-finder.md release step 1).
+  jobs: { title: "Jobs", sections: [] },
   terms: { title: "Terms", sections: [{ label: "Terms", href: "/terms", icon: BookMarked }] },
   // No section column: the studio needs the width for its tree, canvas and inspector (mockup frame A1).
   studio: { title: "Design Studio", sections: [] },
