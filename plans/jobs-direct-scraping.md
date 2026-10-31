@@ -1,4 +1,4 @@
-# Plan: Jobs — Direct scraping (release step 2)
+# Plan: Jobs — Direct scraping (release step 1)
 
 **Branch**: jkenger/Job-Finder-Feat
 **Status**: Active
@@ -6,33 +6,33 @@
 ## Goal
 
 LinkedIn and Indeed postings reach `/jobs` within about a minute of appearing on each site, scraped directly from
-each site's own guest/app endpoint, polled every minute. The alert-email path from release step 1 keeps running
-unchanged as the fallback: when a scrape is blocked, that source's postings keep arriving by email, slower but
-without a gap.
+each site's own guest/app endpoint, polled every minute. This is the only path in: no alert-email fallback. A block
+means a gap in that source's postings for up to 24 hours, not degraded speed — the owner accepted that trade for one
+mechanism instead of two (docs/product/job-finder.md, "Getting postings in").
 
 ## Scope note
 
-This plan covers only release step 2 from `docs/product/job-finder.md`: the LinkedIn and Indeed scrapers, their
-`/api/jobs/check/<source>` routes, block/backoff state, and surfacing that state in Settings. It does not touch the
-alert-email pipeline (release step 1, already shipped) beyond reusing its `RawPosting` shape, its `li-`/`in-`
-source-ID prefixes, and its `savePostings` dedup — those stay exactly as they are. It does not build the OnlineJobs
-checker (release step 5) or AI scoring (release step 3); both are separate, later plans. Registering the actual
-cron-job.org schedule is an operational step the owner does outside this codebase once the routes exist; this plan's
-"done" is the routes working correctly when called, not the schedule being live.
+This plan covers release step 1 from `docs/product/job-finder.md`: the LinkedIn and Indeed scrapers, their
+`/api/jobs/check/<source>` routes, block/backoff state, repeat dropping, the Jobs page with New and Filtered out,
+and settings. An earlier version of this plan built a Gmail-forward alert-email pipeline first and kept it as a
+fallback when scraping was added; both have been removed (see `docs/product/job-finder.md`'s "Getting postings in"
+and "Status" line). This plan does not build the OnlineJobs checker (release step 4) or AI scoring (release step 2);
+both are separate, later plans. Registering the actual cron-job.org schedule is an operational step the owner does
+outside this codebase once the routes exist; this plan's "done" is the routes working correctly when called, not
+the schedule being live.
 
 ## Acceptance Criteria
 
 - [ ] A posting scraped from LinkedIn shows on `/jobs` within about a minute of the scrape that found it.
 - [ ] A posting scraped from Indeed shows on `/jobs` within about a minute of the scrape that found it.
-- [ ] A posting seen through scraping and also through the alert-email path, in either order, shows once, listing
-      both sources.
+- [ ] A posting seen from both LinkedIn and Indeed scrapes, in either order, shows once, listing both sources.
 - [ ] `/api/jobs/check/linkedin` and `/api/jobs/check/indeed` require `JOBS_CHECK_SECRET`; a call without it, or with
       the wrong value, is rejected and runs nothing.
 - [ ] A 403 or 429 from a scrape stops that source for 24 hours; a call made while a source is blocked skips the
       fetch entirely.
 - [ ] Settings shows each source's state: Running, or Blocked until a time.
-- [ ] Each scraper searches with the owner's Alert keywords, read from the same `alertKeywords(roles)` Settings
-      already shows.
+- [ ] Each scraper searches with the owner's roles, read from the same `deriveRoles(profile)` Settings already
+      shows, one request per role.
 - [ ] Neither scraper signs in or submits anything; both are read-only GET/POST requests to each site's own
       guest or app endpoint.
 
@@ -40,14 +40,14 @@ cron-job.org schedule is an operational step the owner does outside this codebas
 
 ### Slice 1: LinkedIn scraper, check route and block state
 
-**Value**: Behavior change — the owner sees LinkedIn postings on `/jobs` roughly a minute after they're posted,
-without waiting for LinkedIn's alert email, and the full scrape-check-block pipeline exists for the first source.
+**Value**: Behavior change — the owner sees LinkedIn postings on `/jobs` roughly a minute after they're posted, with
+no setup beyond a Profile headline, and the full scrape-check-block pipeline exists for the first source.
 **Path**: External scheduler (the owner's own cron-job.org job, set up outside this codebase) calls
 `/api/jobs/check/linkedin` with `JOBS_CHECK_SECRET` every minute → route checks `job_scraper_state` for an active
-`blockedUntil` → if clear, calls LinkedIn's guest search endpoint once per Alert keyword → parses the returned HTML
-job cards into `RawPosting[]` (same `li-<id>` prefix the email parser already uses) → `savePostings` (unchanged) →
-on 403/429, sets `blockedUntil` 24 hours out and records state Blocked; on success, records state Running. Settings
-reads and shows this state.
+`blockedUntil` → if clear, calls LinkedIn's guest search endpoint once per role → parses the returned HTML job cards
+into `RawPosting[]` (source ID prefixed `li-<id>`) → `savePostings` (dedup, store, filter) → on 403/429, sets
+`blockedUntil` 24 hours out and records state Blocked; on success, records state Running. Settings reads and shows
+this state.
 **Class**: Behavior change.
 **Delivery**: Independent PR against trunk.
 **Required implementation skills**: `mattpocock-skills:tdd`, `testing` (scraper tested against a saved sample
@@ -57,8 +57,8 @@ route's auth/error semantics, `typescript-strict`, `functional` for the scraper'
 **Transition/terminal evidence**: N/A.
 **Acceptance criteria**: the first, fourth, fifth, sixth and eighth unchecked boxes above, scoped to LinkedIn only.
 **RED or preservation baseline**: Failing tests, in order: (1) a saved sample LinkedIn guest-search HTML page parses
-into the right `RawPosting[]`, with `sourceId` in the same `li-<id>` format the email parser produces for the same
-job; (2) calling the check route with the correct secret, with the HTTP fetch mocked to return that saved page,
+into the right `RawPosting[]`, with `sourceId` prefixed `li-<id>`; (2) calling the check route with the correct
+secret, with the HTTP fetch mocked to return that saved page,
 results in those postings in `job_postings`/`job_matches` via the existing `savePostings`; (3) a mocked 403 or 429
 response sets `blockedUntil` 24 hours out, records state Blocked, and writes no postings; (4) a call made while
 `blockedUntil` is still in the future skips the fetch entirely and makes no request; (5) a call with a missing or
@@ -79,7 +79,7 @@ pass; `pnpm --filter @ken-os/web test:db:jobs` extended with this slice's scenar
 
 **Value**: Behavior change — proves the scraper pattern generalizes to a second source with a materially different
 technique (GraphQL instead of HTML cards), and that a posting scraped from Indeed collapses with the same posting
-already seen from LinkedIn or from either alert-email path.
+already seen from a LinkedIn scrape.
 **Path**: Same pipeline as Slice 1, with an Indeed scraper (`features/jobs/scrapers/indeed.ts`) posting GraphQL
 queries to Indeed's mobile-app endpoint instead of parsing HTML, and a second saved sample response for its tests.
 **Class**: Behavior change.
@@ -89,11 +89,10 @@ queries to Indeed's mobile-app endpoint instead of parsing HTML, and a second sa
 **Transition/terminal evidence**: N/A.
 **Acceptance criteria**: the second and third unchecked boxes above.
 **RED or preservation baseline**: Failing tests: (1) a saved sample Indeed GraphQL response parses into the right
-`RawPosting[]`, with `sourceId` in the same `in-<key>` format the email parser produces for the same job; (2) a
-posting already stored from a LinkedIn scrape or a LinkedIn/Indeed alert email, then also found by the Indeed
-scrape with a matching title/company/location (no shared source ID), merges into one row listing every source
-instead of creating a second one; (3) the same block/missing-secret/blocked-skip tests as Slice 1, scoped to
-Indeed's check route.
+`RawPosting[]`, with `sourceId` prefixed `in-<key>`; (2) a posting already stored from a LinkedIn scrape, then also
+found by the Indeed scrape with a matching title/company/location (no shared source ID), merges into one row
+listing both sources instead of creating a second one; (3) the same block/missing-secret/blocked-skip tests as
+Slice 1, scoped to Indeed's check route.
 **GREEN or preservation change**: `features/jobs/scrapers/indeed.ts`; `/api/jobs/check/indeed/route.ts` built on
 Slice 1's shared check-route helper; Settings shows Indeed's state alongside LinkedIn's.
 **REFACTOR**: Assess once GREEN.
