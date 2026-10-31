@@ -32,7 +32,14 @@ type FreehireResult = {
   url?: string;
   countries?: string[];
   work_mode?: "remote" | "hybrid" | "onsite";
-  enrichment?: { employment_type?: string };
+  enrichment?: {
+    employment_type?: string;
+    salary_min?: number;
+    salary_max?: number;
+    salary_currency?: string;
+    salary_period?: "hour" | "day" | "week" | "month" | "year";
+    experience_years_min?: number;
+  };
 };
 
 export function parseFreehireSearch(responseText: string): RawPosting[] {
@@ -62,6 +69,11 @@ export function parseFreehireSearch(responseText: string): RawPosting[] {
       sourceCountries: result.countries ?? [],
       sourceWorkMode: result.work_mode ?? null,
       sourceEmploymentType: result.enrichment?.employment_type ?? null,
+      sourceSalaryMin: result.enrichment?.salary_min ?? null,
+      sourceSalaryMax: result.enrichment?.salary_max ?? null,
+      sourceSalaryCurrency: result.enrichment?.salary_currency ?? null,
+      sourceSalaryPeriod: result.enrichment?.salary_period ?? null,
+      sourceExperienceYearsMin: result.enrichment?.experience_years_min ?? null,
     });
   }
   return postings;

@@ -8,7 +8,7 @@ const fixture = readFileSync(join(import.meta.dirname, "fixtures/freehire-search
 
 test("parses every result in a saved sample search response", () => {
   const postings = parseFreehireSearch(fixture);
-  assert.equal(postings.length, 5);
+  assert.equal(postings.length, 6);
 });
 
 test("maps title, company, location, link and a public_slug-based sourceId", () => {
@@ -42,6 +42,23 @@ test("maps freehire's own structured countries, work mode and employment type as
   assert.deepEqual(withHybridContract.sourceCountries, ["gb"]);
   assert.equal(withHybridContract.sourceWorkMode, "hybrid");
   assert.equal(withHybridContract.sourceEmploymentType, "contract");
+});
+
+test("maps freehire's own enrichment salary and minimum experience as raw, unmodified source signals", () => {
+  const postings = parseFreehireSearch(fixture);
+  const withSalary = postings.find((p) => p.company === "zekelman")!;
+  assert.equal(withSalary.sourceSalaryMin, 84000);
+  assert.equal(withSalary.sourceSalaryMax, 95000);
+  assert.equal(withSalary.sourceSalaryCurrency, "USD");
+  assert.equal(withSalary.sourceSalaryPeriod, "year");
+  assert.equal(withSalary.sourceExperienceYearsMin, 3);
+
+  const [withoutSalary] = postings;
+  assert.equal(withoutSalary.sourceSalaryMin, null, "no salary stated for this result");
+  assert.equal(withoutSalary.sourceSalaryMax, null);
+  assert.equal(withoutSalary.sourceSalaryCurrency, null);
+  assert.equal(withoutSalary.sourceSalaryPeriod, null);
+  assert.equal(withoutSalary.sourceExperienceYearsMin, null, "no experience minimum stated for this result");
 });
 
 test("a result with no countries array at all maps to an empty list, never guessed", () => {

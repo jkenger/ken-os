@@ -743,6 +743,14 @@ export const jobPostings = pgTable(
     sourceCountries: jsonb("source_countries").$type<string[]>(),
     sourceWorkMode: text("source_work_mode").$type<"remote" | "hybrid" | "onsite">(),
     sourceEmploymentType: text("source_employment_type"),
+    /** freehire's own enrichment salary/experience fields, set from `RawPosting.sourceSalaryMin`/etc. when it
+     *  states them. Seniority is deliberately not here -- see `RawPosting`'s own comment
+     *  (plans/jobs-freehire-source.md, Slice 3). */
+    sourceSalaryMin: real("source_salary_min"),
+    sourceSalaryMax: real("source_salary_max"),
+    sourceSalaryCurrency: text("source_salary_currency"),
+    sourceSalaryPeriod: text("source_salary_period").$type<"hour" | "day" | "week" | "month" | "year">(),
+    sourceExperienceYearsMin: real("source_experience_years_min"),
     firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).notNull().defaultNow(),
     fullDescription: text("full_description"),
     /** True when every source's page failed to read, so extraction ran on the list fields alone. */

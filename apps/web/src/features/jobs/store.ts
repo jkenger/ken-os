@@ -64,6 +64,11 @@ export async function savePostings(userId: string, postings: RawPosting[]): Prom
           sourceCountries: posting.sourceCountries ?? [],
           sourceWorkMode: posting.sourceWorkMode ?? null,
           sourceEmploymentType: posting.sourceEmploymentType ?? null,
+          sourceSalaryMin: posting.sourceSalaryMin ?? null,
+          sourceSalaryMax: posting.sourceSalaryMax ?? null,
+          sourceSalaryCurrency: posting.sourceSalaryCurrency ?? null,
+          sourceSalaryPeriod: posting.sourceSalaryPeriod ?? null,
+          sourceExperienceYearsMin: posting.sourceExperienceYearsMin ?? null,
           firstSeenAt: now,
         });
         const reason = filterReason(
@@ -196,6 +201,11 @@ export type PendingPosting = {
   sourceCountries: string[] | null;
   sourceWorkMode: "remote" | "hybrid" | "onsite" | null;
   sourceEmploymentType: string | null;
+  sourceSalaryMin: number | null;
+  sourceSalaryMax: number | null;
+  sourceSalaryCurrency: string | null;
+  sourceSalaryPeriod: "hour" | "day" | "week" | "month" | "year" | null;
+  sourceExperienceYearsMin: number | null;
 };
 
 /** Up to `limit` postings not yet processed by `/api/jobs/process`, oldest first (plans/jobs-score.md, Slice 1). */
@@ -207,6 +217,11 @@ export async function getPendingPostings(userId: string, limit: number): Promise
       company: jobPostings.company,
       location: jobPostings.location,
       snippet: jobPostings.snippet,
+      sourceSalaryMin: jobPostings.sourceSalaryMin,
+      sourceSalaryMax: jobPostings.sourceSalaryMax,
+      sourceSalaryCurrency: jobPostings.sourceSalaryCurrency,
+      sourceSalaryPeriod: jobPostings.sourceSalaryPeriod,
+      sourceExperienceYearsMin: jobPostings.sourceExperienceYearsMin,
       sourceCountries: jobPostings.sourceCountries,
       sourceWorkMode: jobPostings.sourceWorkMode,
       sourceEmploymentType: jobPostings.sourceEmploymentType,

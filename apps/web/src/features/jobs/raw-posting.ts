@@ -22,6 +22,14 @@ export type RawPosting = {
   sourceCountries?: string[];
   sourceWorkMode?: "remote" | "hybrid" | "onsite" | null;
   sourceEmploymentType?: string | null;
+  /** freehire's own enrichment salary/experience fields, when it states them (plans/jobs-freehire-source.md,
+   *  Slice 3). Seniority is deliberately left out: freehire's own wording ("intern", "middle", "principal", ...)
+   *  doesn't map cleanly onto this app's four-value enum, so seniority always falls back to AI extraction. */
+  sourceSalaryMin?: number | null;
+  sourceSalaryMax?: number | null;
+  sourceSalaryCurrency?: string | null;
+  sourceSalaryPeriod?: "hour" | "day" | "week" | "month" | "year" | null;
+  sourceExperienceYearsMin?: number | null;
 };
 
 /** New and Filtered out are this slice's states; Saved, Applied and Dismissed come with the side panel (step 2+). */

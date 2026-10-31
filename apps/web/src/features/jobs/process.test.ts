@@ -29,6 +29,11 @@ function pendingPosting(
     sourceCountries: string[] | null;
     sourceWorkMode: "remote" | "hybrid" | "onsite" | null;
     sourceEmploymentType: string | null;
+    sourceSalaryMin: number | null;
+    sourceSalaryMax: number | null;
+    sourceSalaryCurrency: string | null;
+    sourceSalaryPeriod: "hour" | "day" | "week" | "month" | "year" | null;
+    sourceExperienceYearsMin: number | null;
   }> = {},
 ) {
   return {
@@ -40,6 +45,11 @@ function pendingPosting(
     sourceCountries: [],
     sourceWorkMode: null,
     sourceEmploymentType: null,
+    sourceSalaryMin: null,
+    sourceSalaryMax: null,
+    sourceSalaryCurrency: null,
+    sourceSalaryPeriod: null,
+    sourceExperienceYearsMin: null,
     ...overrides,
   };
 }
@@ -186,6 +196,107 @@ test("a posting with no freehire-stated employment type falls back to whatever e
   });
   const [savedFields] = saved as [{ jobType: string | null }];
   assert.equal(savedFields.jobType, "internship");
+});
+
+test("a posting with freehire-stated min and max salary saves the midpoint, currency and period directly", async () => {
+  const saved: unknown[] = [];
+  await processPostings({
+    ...noopDeps(),
+    getPending: async () => [
+      pendingPosting({
+        sourceSalaryMin: 84000,
+        sourceSalaryMax: 95000,
+        sourceSalaryCurrency: "USD",
+        sourceSalaryPeriod: "year",
+      }),
+    ],
+    extract: async () => ({ ...extractResult, payAmount: 1, payCurrency: "EUR", payPeriod: "month" }),
+    saveExtracted: async (postingId, fields) => {
+      saved.push(fields);
+    },
+  });
+  const [savedFields] = saved as [{ payAmount: number | null; payCurrency: string | null; payPeriod: string | null }];
+  assert.equal(savedFields.payAmount, 89500, "midpoint of 84000 and 95000");
+  assert.equal(savedFields.payCurrency, "USD");
+  assert.equal(savedFields.payPeriod, "year");
+});
+
+test("a posting with only a freehire-stated min salary (no max) saves that figure directly", async () => {
+  const saved: unknown[] = [];
+  await processPostings({
+    ...noopDeps(),
+    getPending: async () => [
+      pendingPosting({
+        sourceSalaryMin: 60000,
+        sourceSalaryMax: null,
+        sourceSalaryCurrency: "USD",
+        sourceSalaryPeriod: "year",
+      }),
+    ],
+    saveExtracted: async (postingId, fields) => {
+      saved.push(fields);
+    },
+  });
+  const [savedFields] = saved as [{ payAmount: number | null }];
+  assert.equal(savedFields.payAmount, 60000);
+});
+
+test("a posting with no freehire-stated salary falls back to whatever extract returns", async () => {
+  const saved: unknown[] = [];
+  await processPostings({
+    ...noopDeps(),
+    getPending: async () => [pendingPosting({ sourceSalaryMin: null, sourceSalaryMax: null })],
+    extract: async () => ({ ...extractResult, payAmount: 1, payCurrency: "EUR", payPeriod: "month" }),
+    saveExtracted: async (postingId, fields) => {
+      saved.push(fields);
+    },
+  });
+  const [savedFields] = saved as [{ payAmount: number | null; payCurrency: string | null; payPeriod: string | null }];
+  assert.equal(savedFields.payAmount, 1);
+  assert.equal(savedFields.payCurrency, "EUR");
+  assert.equal(savedFields.payPeriod, "month");
+});
+
+test("a posting with a freehire-stated minimum experience saves yearsRequired directly", async () => {
+  const saved: unknown[] = [];
+  await processPostings({
+    ...noopDeps(),
+    getPending: async () => [pendingPosting({ sourceExperienceYearsMin: 3 })],
+    extract: async () => ({ ...extractResult, yearsRequired: 10 }),
+    saveExtracted: async (postingId, fields) => {
+      saved.push(fields);
+    },
+  });
+  const [savedFields] = saved as [{ yearsRequired: number | null }];
+  assert.equal(savedFields.yearsRequired, 3);
+});
+
+test("a posting with no freehire-stated minimum experience falls back to whatever extract returns", async () => {
+  const saved: unknown[] = [];
+  await processPostings({
+    ...noopDeps(),
+    getPending: async () => [pendingPosting({ sourceExperienceYearsMin: null })],
+    extract: async () => ({ ...extractResult, yearsRequired: 10 }),
+    saveExtracted: async (postingId, fields) => {
+      saved.push(fields);
+    },
+  });
+  const [savedFields] = saved as [{ yearsRequired: number | null }];
+  assert.equal(savedFields.yearsRequired, 10);
+});
+
+test("seniority always comes from extract, never overridden by freehire", async () => {
+  const saved: unknown[] = [];
+  await processPostings({
+    ...noopDeps(),
+    getPending: async () => [pendingPosting()],
+    extract: async () => ({ ...extractResult, seniority: "lead" }),
+    saveExtracted: async (postingId, fields) => {
+      saved.push(fields);
+    },
+  });
+  const [savedFields] = saved as [{ seniority: string | null }];
+  assert.equal(savedFields.seniority, "lead");
 });
 
 test("a wrong secret is rejected and nothing is fetched or saved", async () => {

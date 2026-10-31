@@ -14,6 +14,11 @@ type PendingPosting = {
   sourceCountries: string[] | null;
   sourceWorkMode: "remote" | "hybrid" | "onsite" | null;
   sourceEmploymentType: string | null;
+  sourceSalaryMin: number | null;
+  sourceSalaryMax: number | null;
+  sourceSalaryCurrency: string | null;
+  sourceSalaryPeriod: "hour" | "day" | "week" | "month" | "year" | null;
+  sourceExperienceYearsMin: number | null;
 };
 
 const JOB_TYPES = ["full_time", "part_time", "contract", "internship", "temporary"] as const;
@@ -98,20 +103,39 @@ export async function processPostings(params: {
         ? posting.sourceEmploymentType
         : extracted.jobType;
 
+    // A posting needs a currency and period alongside an amount for the pay filter to act on it at all (see
+    // filters.ts), so the override only applies when freehire states at least one of min/max plus both of those
+    // -- a bare amount with no currency/period isn't usable, and falls back to extraction entirely rather than
+    // mixing a source amount with an extracted currency. Seniority is never overridden: freehire's own wording
+    // ("intern", "middle", "principal", ...) doesn't map cleanly onto this app's four-value enum
+    // (plans/jobs-freehire-source.md, Slice 3).
+    const hasSourceSalary =
+      (posting.sourceSalaryMin != null || posting.sourceSalaryMax != null) &&
+      posting.sourceSalaryCurrency != null &&
+      posting.sourceSalaryPeriod != null;
+    const payAmount = hasSourceSalary
+      ? posting.sourceSalaryMin != null && posting.sourceSalaryMax != null
+        ? (posting.sourceSalaryMin + posting.sourceSalaryMax) / 2
+        : (posting.sourceSalaryMin ?? posting.sourceSalaryMax)
+      : extracted.payAmount;
+    const payCurrency = hasSourceSalary ? posting.sourceSalaryCurrency : extracted.payCurrency;
+    const payPeriod = hasSourceSalary ? posting.sourceSalaryPeriod : extracted.payPeriod;
+    const yearsRequired = posting.sourceExperienceYearsMin ?? extracted.yearsRequired;
+
     await params.saveExtracted(posting.id, {
       fullDescription,
       partial,
       summary: extracted.summary,
-      payAmount: extracted.payAmount,
-      payCurrency: extracted.payCurrency,
-      payPeriod: extracted.payPeriod,
+      payAmount,
+      payCurrency,
+      payPeriod,
       jobType,
       workSetup,
       eligibilityStated,
       countries,
       requiredHours: extracted.requiredHours,
       seniority: extracted.seniority,
-      yearsRequired: extracted.yearsRequired,
+      yearsRequired,
       isAgency: extracted.isAgency,
       extractPromptVersion: extracted.promptVersion,
       extractModel: extracted.model,

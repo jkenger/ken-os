@@ -258,7 +258,60 @@
         "mass_posting_count": 1,
         "fake_freshness": false
       }
+    },
+    {
+      "public_slug": "engineer-zekelman-or34thps",
+      "source": "workday",
+      "manually_added": false,
+      "external_id": "zekelman:JR002104-1",
+      "url": "https://zekelman.wd12.myworkdayjobs.com/Careers/job/Remote_USA/Engineer_JR002104-1?utm_source=freehire.me",
+      "title": "Engineer",
+      "company": "zekelman",
+      "company_slug": "zekelman",
+      "location": "Remote_USA",
+      "description": "<p>We are seeking an Engineer to support automation and industrial control systems across our manufacturing sites.</p>",
+      "countries": ["us"],
+      "regions": ["north_america"],
+      "work_mode": "remote",
+      "skills": ["automation", "scada", "plc"],
+      "cities": [],
+      "metros": [],
+      "collections": [],
+      "is_tech": "tech",
+      "posted_at": "2026-10-31T14:47:09Z",
+      "created_at": "2026-10-31T14:47:09Z",
+      "updated_at": "2026-10-31T14:47:09Z",
+      "last_seen_at": "2026-10-31T14:47:09Z",
+      "closed_at": null,
+      "enrichment": {
+        "employment_type": "full_time",
+        "relocation": "not_supported",
+        "timezone_note": "70% remote with approximately 30% travel",
+        "salary_min": 84000,
+        "salary_max": 95000,
+        "salary_currency": "USD",
+        "salary_period": "year",
+        "experience_years_min": 3,
+        "education_level": "bachelor",
+        "posting_language": "en",
+        "company_type": "product",
+        "company_size": "1000+"
+      },
+      "enriched_at": null,
+      "enrichment_version": 0,
+      "view_count": 0,
+      "applied_count": 0,
+      "upvote_count": 0,
+      "downvote_count": 0,
+      "my_vote": 0,
+      "reality": {
+        "class": "fresh",
+        "age_days": 0,
+        "repost_count": 1,
+        "mass_posting_count": 1,
+        "fake_freshness": false
+      }
     }
   ],
-  "meta": { "limit": 5, "offset": 0, "total": 42637 }
+  "meta": { "limit": 6, "offset": 0, "total": 42637 }
 }

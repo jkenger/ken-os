@@ -41,6 +41,16 @@ async function main() {
     `ok - ${withCountries.length}/${postings.length} real postings carry structured countries, ${withWorkMode.length}/${postings.length} carry a work mode -- Slice 2's override has real data to act on`,
   );
 
+  const remoteUrl = freehireSearchUrl("engineer", 30, 50);
+  const remoteResponse = await fetch(`${remoteUrl}&work_mode=remote`);
+  const remotePostings = parseFreehireSearch(await remoteResponse.text());
+  const withSalary = remotePostings.filter((p) => p.sourceSalaryMin != null);
+  const withExperience = remotePostings.filter((p) => p.sourceExperienceYearsMin != null);
+  assert.ok(withSalary.length > 0, "at least one real remote posting states a salary");
+  console.log(
+    `ok - ${withSalary.length}/${remotePostings.length} real remote postings carry a stated salary, ${withExperience.length}/${remotePostings.length} carry a minimum experience -- Slice 3's override has real data to act on`,
+  );
+
   const userId = `freehire-live-check-${randomUUID()}`;
   await db()
     .insert(users)

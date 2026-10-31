@@ -239,12 +239,22 @@ async function main() {
         sourceCountries: ["ph", "us"],
         sourceWorkMode: "remote",
         sourceEmploymentType: "contract",
+        sourceSalaryMin: 84000,
+        sourceSalaryMax: 95000,
+        sourceSalaryCurrency: "USD",
+        sourceSalaryPeriod: "year",
+        sourceExperienceYearsMin: 3,
       },
     ]);
     const pendingWithStructuredFields = await store.getPendingPostings(userId, 20);
     const structuredRole = pendingWithStructuredFields.find((p) => p.title === "Structured Fields Role")!;
     assert.deepEqual(structuredRole.sourceCountries, ["ph", "us"]);
     assert.equal(structuredRole.sourceWorkMode, "remote");
+    assert.equal(structuredRole.sourceSalaryMin, 84000);
+    assert.equal(structuredRole.sourceSalaryMax, 95000);
+    assert.equal(structuredRole.sourceSalaryCurrency, "USD");
+    assert.equal(structuredRole.sourceSalaryPeriod, "year");
+    assert.equal(structuredRole.sourceExperienceYearsMin, 3);
     assert.equal(structuredRole.sourceEmploymentType, "contract");
     console.log(
       "ok - a freehire posting's structured countries, work mode and employment type round-trip through the DB",
