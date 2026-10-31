@@ -3,6 +3,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowUpRight, Check, Copy, FileText, KeyRound } from "lucide-react";
+import { DotSeparator } from "@/components/dot-separator";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,7 +42,14 @@ function EvidenceList({
 }: {
   evidence: { kind: string; locator: string; relation: string; availability: string }[];
 }) {
-  if (!evidence.length) return <span>No source · check before approving</span>;
+  if (!evidence.length)
+    return (
+      <span>
+        No source
+        <DotSeparator />
+        check before approving
+      </span>
+    );
   return (
     <div className="flex flex-wrap gap-x-4 gap-y-1">
       {evidence.map((item, index) => {

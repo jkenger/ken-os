@@ -3,6 +3,11 @@
     "shadcn": {
       "command": "npx",
       "args": ["shadcn@latest", "mcp"]
+    },
+    "paper": {
+      "type": "stdio",
+      "command": "C:/Users/johnk/.paper/bin/paper",
+      "args": ["mcp"]
     }
   }
 }

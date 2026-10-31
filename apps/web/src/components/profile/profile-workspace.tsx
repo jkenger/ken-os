@@ -449,7 +449,7 @@ export function ProfileWorkspace({
         {/* At 1440 with the shell folded: 200 index + 16 + centre + 16 + 320 right fills the 1344px canvas. */}
         <div className="mx-auto grid max-w-336 items-start gap-block lg:grid-cols-[minmax(0,1fr)_20rem] xl:grid-cols-[12.5rem_minmax(0,1fr)_20rem]">
           <aside className="sticky top-page hidden xl:block">
-            <SectionIndex rows={rows} issues={issues} />
+            <SectionIndex rows={rows} />
           </aside>
 
           <div className="flex min-w-0 flex-col gap-block">
@@ -492,7 +492,7 @@ export function ProfileWorkspace({
             <MoreSections rows={waitingRows} onAdd={(id) => request(id)} />
           </div>
 
-          <div className="flex min-w-0 flex-col gap-block">{right}</div>
+          <div className="sticky top-page flex min-w-0 flex-col gap-block">{right}</div>
         </div>
       </div>
 

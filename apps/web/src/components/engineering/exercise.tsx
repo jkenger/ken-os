@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ThinkingOrb } from "thinking-orbs";
 import { scoreProbe, type LabDefinition, type Topic } from "@ken-os/domain";
+import { DotSeparator } from "@/components/dot-separator";
 import { CodeBlock, Markdown } from "@/components/lab/markdown";
 import { post } from "@/components/lab/topic/client";
 import { Button } from "@/components/ui/button";
@@ -234,7 +235,9 @@ export function Exercise({
             <Notice className="mb-5">
               <p className="font-semibold">New exercise from Claude</p>
               <p className="mt-0.5 text-xs text-muted-foreground">
-                Version {data.newer.version} · starts a fresh attempt
+                Version {data.newer.version}
+                <DotSeparator />
+                starts a fresh attempt
               </p>
               <Button
                 type="button"
@@ -251,7 +254,9 @@ export function Exercise({
             <Notice tone="error" className="mb-5">
               <p className="font-semibold">This exercise doesn&apos;t check out</p>
               <p className="mt-0.5 text-xs">
-                Version {data.invalid.version} · {data.invalid.problem}
+                Version {data.invalid.version}
+                <DotSeparator />
+                {data.invalid.problem}
               </p>
             </Notice>
           )}
@@ -404,7 +409,11 @@ export function Exercise({
             )}
           </div>
           {progress.solutionOpened && (
-            <p className="mt-4 text-xs text-muted-foreground">Solution opened · pass again from the starter</p>
+            <p className="mt-4 text-xs text-muted-foreground">
+              Solution opened
+              <DotSeparator />
+              pass again from the starter
+            </p>
           )}
         </aside>
       </div>

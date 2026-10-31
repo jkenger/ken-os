@@ -209,7 +209,7 @@ function ShellSidebar({
 
   return (
     <Sidebar collapsible="icon" aria-label="Workspace sidebar" className="group-data-[side=left]:border-r-0">
-      <SidebarHeader className="h-12 flex-row items-center justify-between border-b px-4 group-data-[collapsible=icon]:px-3.5">
+      <SidebarHeader className="h-11 flex-row items-center justify-between border-b px-4 group-data-[collapsible=icon]:px-3.5">
         <Link href="/" aria-label="KEOS home" className="flex items-center gap-2 rounded-md" onClick={close}>
           <BrandMark />
           <span className="font-heading text-base font-semibold tracking-tight group-data-[collapsible=icon]:hidden">
@@ -269,8 +269,10 @@ function ShellSidebar({
   );
 }
 
-/** The content beside the sidebar: a 48px header with the sidebar toggle, breadcrumb, search and account menu, then
- *  the page. The sections show as a row of tabs only while the sidebar can't show them (folded, or on a phone); the
+/** The content beside the sidebar: an h-11 header (scales with --spacing) with the sidebar toggle, breadcrumb,
+ *  search and account menu, then the page. The header sits above the page (sticky, flat, bordered) rather than
+ *  scrolling with it. The sections show as a row of tabs only while the sidebar can't show them (folded, or on
+ *  a phone); the
  *  row wraps rather than scrolls, so no tab is cut off at the screen's edge. A page with its own section index turns
  *  the row off. */
 function ShellInset({
@@ -292,7 +294,7 @@ function ShellInset({
   return (
     // Flush against the sidebar on one ground, split by a 1px seam.
     <SidebarInset className="min-w-0 md:min-h-svh md:border-l">
-      <header className="flex h-12 shrink-0 items-center justify-between gap-4 border-b px-page">
+      <header className="sticky top-0 z-20 flex h-11 shrink-0 items-center justify-between gap-4 border-b bg-background px-page">
         <div className="flex min-w-0 items-center gap-2 text-sm">
           <SidebarTrigger
             className="-ml-1.5"
@@ -405,14 +407,20 @@ export function WorkspaceShell({
   });
   const content = termLookup ? <TermLookup module={detail.title}>{children}</TermLookup> : children;
 
-  // The KEOS shell, following shadcn/ui's sidebar anatomy: one labelled sidebar (232px, folding to a 48px icon rail)
+  // The KEOS shell, following shadcn/ui's sidebar anatomy: one labelled sidebar (58 spacing units, folding to an
+  // 11-unit icon rail, both scaling with --spacing)
   // beside one content inset, both on the page ground.
   return (
     <TooltipProvider delayDuration={0}>
       <SidebarProvider
         open={sidebarOpen}
         onOpenChange={setSidebarOpen}
-        style={{ "--sidebar-width": "14.5rem", "--sidebar-width-icon": "3rem" } as CSSProperties}
+        style={
+          {
+            "--sidebar-width": "calc(var(--spacing) * 58)",
+            "--sidebar-width-icon": "calc(var(--spacing) * 11)",
+          } as CSSProperties
+        }
         className="min-h-screen bg-sidebar font-sans text-foreground"
       >
         <ShellSidebar email={email} active={active} moduleList={modules} sections={sections} />
