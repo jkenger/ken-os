@@ -37,6 +37,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     >
       <head>
         <InlineScript html={themeScript} />
+        <link rel="stylesheet" href="/term-highlight.css" />
       </head>
       <body>{children}</body>
     </html>

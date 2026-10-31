@@ -194,10 +194,9 @@
   --color-selected: var(--selected);
 }
 
-/* Saved terms on any page (components/terms/saved-term-marks.tsx): a dotted underline, painted without changing the text. */
-::highlight(ken-term) {
-  text-decoration: underline dotted 1.5px var(--muted-foreground);
-}
+/* Saved terms on any page (components/terms/saved-term-marks.tsx): the dotted underline itself lives in
+   public/term-highlight.css, loaded as a plain stylesheet, because lightningcss (bundled by Tailwind 4) does not
+   yet recognize the ::highlight() pseudo-element and would otherwise warn on every build. */
 [data-term-hover] { cursor: help; }
 
 /* Corners: the tight pair (panels, smaller controls through the derived scale above). Was 0.375rem until 30 Oct 2026. */

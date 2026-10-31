@@ -12,7 +12,7 @@ const READING = "p, li, td, th, dd, dt, blockquote, figcaption, h1, h2, h3, h4, 
 /** Never marked: code, the editor, controls, navigation, hidden text and anything opted out. */
 const SKIP =
   "pre, code, .cm-editor, a, button, input, textarea, select, label, nav, [role=button], [contenteditable], [aria-hidden=true], .sr-only, [data-term-skip], [data-term-lookup]";
-/** The name of the highlight `::highlight(ken-term)` styles in globals.css. */
+/** The name of the highlight styled by `::highlight(ken-term)` in public/term-highlight.css. */
 const HIGHLIGHT = "ken-term";
 
 interface Mark {

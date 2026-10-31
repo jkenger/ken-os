@@ -1,0 +1,6 @@
+/* Saved terms on any page (src/components/terms/saved-term-marks.tsx): a dotted underline, painted without changing
+   the text, using the CSS Custom Highlight API. Kept as a plain stylesheet rather than in globals.css because
+   lightningcss (bundled by Tailwind 4) does not yet recognize ::highlight() and warns on every build. */
+::highlight(ken-term) {
+  text-decoration: underline dotted 1.5px var(--muted-foreground);
+}
