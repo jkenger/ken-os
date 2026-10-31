@@ -33,9 +33,9 @@ test("a card missing its title or entity URN is skipped, not thrown on", () => {
   assert.deepEqual(parseLinkedInSearch(html), []);
 });
 
-test("builds the guest search URL with the keyword as the query", () => {
+test("builds the guest search URL sorted newest first, restricted to the last 24 hours", () => {
   assert.equal(
     linkedInSearchUrl("Senior Frontend Engineer"),
-    "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=Senior+Frontend+Engineer",
+    "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=Senior+Frontend+Engineer&sortBy=DD&f_TPR=r86400",
   );
 });

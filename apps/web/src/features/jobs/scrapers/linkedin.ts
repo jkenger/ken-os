@@ -8,6 +8,10 @@ import type { RawPosting } from "../raw-posting";
 
 const SEARCH_URL = "https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search";
 
+/** Without a time filter, LinkedIn's guest search ranks by relevance and freely mixes in postings weeks or months
+ *  old that are still open. Restricting to this window is what makes "fresh" actually mean fresh. */
+const FRESHNESS_WINDOW_SECONDS = 24 * 60 * 60;
+
 /** The exact body LinkedIn's guest search returns when a page genuinely has no more results. A 200 with no job
  *  cards that doesn't match this is probably a soft block (a captcha or interstitial), not an empty result. */
 export const LINKEDIN_EMPTY_PAGE = "<!DOCTYPE html>\n\n<!---->";
@@ -26,7 +30,11 @@ export const LINKEDIN_HEADERS = {
 };
 
 export function linkedInSearchUrl(keyword: string): string {
-  const params = new URLSearchParams({ keywords: keyword });
+  const params = new URLSearchParams({
+    keywords: keyword,
+    sortBy: "DD",
+    f_TPR: `r${FRESHNESS_WINDOW_SECONDS}`,
+  });
   return `${SEARCH_URL}?${params}`;
 }
 
