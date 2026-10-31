@@ -11,8 +11,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toaster";
-import { autofillThresholds, suggestedCurrencies } from "@/features/jobs/pay-threshold-suggestions";
-import type { JobPreferences, JobType, PayPeriod, PayThreshold, WorkSetup } from "@/features/jobs/preferences-store";
+import type { JobPreferences, JobType, PayPeriod, WorkSetup } from "@/features/jobs/preferences-store";
 import type { ScraperState } from "@/features/jobs/scraper-state";
 import { send } from "@/lib/api-client";
 
@@ -78,34 +77,14 @@ export function JobsSettingsPage({
   const [skipWords, setSkipWords] = useState(preferences.skipWords.join("\n"));
   const [skipCompanies, setSkipCompanies] = useState(preferences.skipCompanies.join("\n"));
   const [postedWithinDays, setPostedWithinDays] = useState(String(preferences.postedWithinDays));
-  const [payThresholds, setPayThresholds] = useState<PayThreshold[]>(preferences.payThresholds);
-  const [pendingSuggested, setPendingSuggested] = useState<Record<string, string>>({});
+  const [minimumPay, setMinimumPay] = useState(preferences.minimumPay === null ? "" : String(preferences.minimumPay));
+  const [payCurrency, setPayCurrency] = useState(preferences.payCurrency);
+  const [payPeriod, setPayPeriod] = useState<PayPeriod>(preferences.payPeriod);
   const [jobTypes, setJobTypes] = useState<JobType[]>(preferences.jobTypes);
   const [workSetups, setWorkSetups] = useState<WorkSetup[]>(preferences.workSetups);
   const [countries, setCountries] = useState(preferences.countries.join("\n"));
   const [agenciesHide, setAgenciesHide] = useState(preferences.agenciesHide);
   const [busy, setBusy] = useState(false);
-
-  const suggested = suggestedCurrencies(
-    linesToList(countries).map((code) => code.toUpperCase()),
-    payThresholds,
-  );
-
-  function commitSuggestedAnchor(currency: string) {
-    const raw = pendingSuggested[currency];
-    const amount = Number(raw);
-    if (!raw || Number.isNaN(amount) || amount < 0) return;
-    const anchor: PayThreshold = { currency, minimumPay: amount, payPeriod: "month" };
-    const others = suggested.filter((code) => code !== currency);
-    const filled = autofillThresholds(anchor, others);
-    setPayThresholds((current) => [...current, anchor, ...filled]);
-    setPendingSuggested((current) => {
-      const next = { ...current };
-      delete next[currency];
-      for (const code of others) delete next[code];
-      return next;
-    });
-  }
 
   async function save() {
     setBusy(true);
@@ -114,7 +93,9 @@ export function JobsSettingsPage({
         skipWords: linesToList(skipWords),
         skipCompanies: linesToList(skipCompanies),
         postedWithinDays: Number(postedWithinDays),
-        payThresholds,
+        minimumPay: minimumPay.trim() === "" ? null : Number(minimumPay),
+        payCurrency,
+        payPeriod,
         jobTypes,
         workSetups,
         countries: linesToList(countries),
@@ -201,101 +182,40 @@ export function JobsSettingsPage({
             />
           </div>
           <div className="grid gap-1.5">
-            <Label>Minimum pay</Label>
+            <Label htmlFor="minimum-pay">Minimum pay</Label>
             <span className="text-xs text-muted-foreground">
-              One minimum per currency. A posting is checked against the row matching its own stated currency; a
-              currency with no row here is never filtered for pay
+              Empty means no minimum. Only checked when a posting states pay in the same currency
             </span>
-            <div className="grid gap-2">
-              {payThresholds.map((threshold, index) => (
-                <div key={index} className="flex items-center gap-2">
-                  <Input
-                    aria-label="Currency"
-                    value={threshold.currency}
-                    onChange={(event) =>
-                      setPayThresholds((current) =>
-                        current.map((row, i) => (i === index ? { ...row, currency: event.target.value } : row)),
-                      )
-                    }
-                    className="w-20"
-                    maxLength={3}
-                  />
-                  <Input
-                    aria-label="Minimum pay amount"
-                    type="number"
-                    min={0}
-                    value={threshold.minimumPay}
-                    onChange={(event) =>
-                      setPayThresholds((current) =>
-                        current.map((row, i) =>
-                          i === index ? { ...row, minimumPay: Number(event.target.value) } : row,
-                        ),
-                      )
-                    }
-                    className="w-32"
-                  />
-                  <span className="text-sm text-muted-foreground">per</span>
-                  <NativeSelect
-                    aria-label="Pay period"
-                    value={threshold.payPeriod}
-                    onChange={(event) =>
-                      setPayThresholds((current) =>
-                        current.map((row, i) =>
-                          i === index ? { ...row, payPeriod: event.target.value as PayPeriod } : row,
-                        ),
-                      )
-                    }
-                    className="w-28"
-                  >
-                    {PAY_PERIOD_OPTIONS.map((option) => (
-                      <NativeSelectOption key={option.value} value={option.value}>
-                        {option.label}
-                      </NativeSelectOption>
-                    ))}
-                  </NativeSelect>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => setPayThresholds((current) => current.filter((_, i) => i !== index))}
-                  >
-                    Remove
-                  </Button>
-                </div>
-              ))}
-              <Button
-                type="button"
-                variant="outline"
-                className="w-fit"
-                onClick={() =>
-                  setPayThresholds((current) => [...current, { currency: "", minimumPay: 0, payPeriod: "month" }])
-                }
+            <div className="flex items-center gap-2">
+              <Input
+                id="minimum-pay"
+                type="number"
+                min={0}
+                value={minimumPay}
+                onChange={(event) => setMinimumPay(event.target.value)}
+                placeholder="No minimum"
+                className="w-32"
+              />
+              <Input
+                aria-label="Pay currency"
+                value={payCurrency}
+                onChange={(event) => setPayCurrency(event.target.value)}
+                className="w-20"
+                maxLength={3}
+              />
+              <span className="text-sm text-muted-foreground">per</span>
+              <NativeSelect
+                aria-label="Pay period"
+                value={payPeriod}
+                onChange={(event) => setPayPeriod(event.target.value as PayPeriod)}
+                className="w-28"
               >
-                Add currency
-              </Button>
-              {suggested.length > 0 && (
-                <div className="grid gap-2 border-t pt-2">
-                  <span className="text-xs text-muted-foreground">
-                    Suggested from your Countries. Type an amount in one to add it, converted into the rest
-                  </span>
-                  {suggested.map((currency) => (
-                    <div key={currency} className="flex items-center gap-2">
-                      <span className="w-20 text-sm font-medium">{currency}</span>
-                      <Input
-                        aria-label={`Minimum pay amount for ${currency}`}
-                        type="number"
-                        min={0}
-                        placeholder="Add a minimum"
-                        value={pendingSuggested[currency] ?? ""}
-                        onChange={(event) =>
-                          setPendingSuggested((current) => ({ ...current, [currency]: event.target.value }))
-                        }
-                        onBlur={() => commitSuggestedAnchor(currency)}
-                        className="w-32"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
+                {PAY_PERIOD_OPTIONS.map((option) => (
+                  <NativeSelectOption key={option.value} value={option.value}>
+                    {option.label}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
             </div>
           </div>
           <div className="grid gap-1.5">

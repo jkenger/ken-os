@@ -75,7 +75,9 @@ async function main() {
       import("../src/features/jobs/preferences-store").JobPreferences,
       "skipWords" | "skipCompanies" | "postedWithinDays"
     > = {
-      payThresholds: [],
+      minimumPay: null,
+      payCurrency: "USD",
+      payPeriod: "month",
       jobTypes: ["full_time", "contract"],
       workSetups: ["remote"],
       countries: ["US", "AU", "GB"],
@@ -286,7 +288,9 @@ async function main() {
       skipWords: [],
       skipCompanies: [],
       postedWithinDays: 365,
-      payThresholds: [{ currency: "USD", minimumPay: 80000, payPeriod: "year" }],
+      minimumPay: 80000,
+      payCurrency: "USD",
+      payPeriod: "year",
       jobTypes: ["full_time", "contract"],
       workSetups: ["remote"],
       countries: ["US", "AU", "GB"],
@@ -422,7 +426,9 @@ async function main() {
       skipWords: [],
       skipCompanies: [],
       postedWithinDays: 365,
-      payThresholds: [{ currency: "USD", minimumPay: 80000, payPeriod: "year" }],
+      minimumPay: 80000,
+      payCurrency: "USD",
+      payPeriod: "year",
       jobTypes: ["full_time", "contract"],
       workSetups: ["on_site"],
       countries: ["US", "AU", "GB"],
@@ -435,76 +441,6 @@ async function main() {
     assert.equal(goodRoleAfter.filterReason, "Work setup: remote");
     console.log(
       "ok - tightening Work setup and refiltering moves an already-processed posting to Filtered out for the new reason",
-    );
-
-    await preferences.savePreferences(userId, {
-      skipWords: [],
-      skipCompanies: [],
-      postedWithinDays: 365,
-      payThresholds: [
-        { currency: "USD", minimumPay: 80000, payPeriod: "year" },
-        { currency: "PHP", minimumPay: 50000, payPeriod: "month" },
-      ],
-      jobTypes: ["full_time", "contract"],
-      workSetups: ["on_site"],
-      countries: ["US", "AU", "GB"],
-      agenciesHide: true,
-    });
-    await store.savePostings(userId, [
-      {
-        source: "linkedin",
-        sourceId: "li-multi-currency-usd",
-        title: "Multi Currency USD Role",
-        company: "MultiCurrencyCo",
-        location: "Remote",
-        snippet: "",
-        link: "https://www.linkedin.com/jobs/view/40",
-      },
-      {
-        source: "linkedin",
-        sourceId: "li-multi-currency-php",
-        title: "Multi Currency PHP Role",
-        company: "MultiCurrencyCo",
-        location: "Remote",
-        snippet: "",
-        link: "https://www.linkedin.com/jobs/view/41",
-      },
-    ]);
-    const multiCurrencyPending = await store.getPendingPostings(userId, 10);
-    const multiCurrencyByTitle = (title: string) => multiCurrencyPending.find((p) => p.title === title)!;
-
-    await store.saveExtractedFields(multiCurrencyByTitle("Multi Currency USD Role").id, {
-      ...extractDefaults,
-      payAmount: 90000,
-      payCurrency: "USD",
-      payPeriod: "year",
-      jobType: "full_time",
-      workSetup: "on_site",
-      countries: [],
-      isAgency: false,
-    });
-    await store.saveExtractedFields(multiCurrencyByTitle("Multi Currency PHP Role").id, {
-      ...extractDefaults,
-      payAmount: 30000,
-      payCurrency: "PHP",
-      payPeriod: "month",
-      jobType: "full_time",
-      workSetup: "on_site",
-      countries: [],
-      isAgency: false,
-    });
-
-    const multiCurrencyNew = await store.listPostings(userId, "new");
-    const multiCurrencyFilteredOut = await store.listPostings(userId, "filtered_out");
-    assert.ok(
-      multiCurrencyNew.some((p) => p.title === "Multi Currency USD Role"),
-      "a posting above its own currency's threshold is not filtered",
-    );
-    const phpRole = multiCurrencyFilteredOut.find((p) => p.title === "Multi Currency PHP Role");
-    assert.ok(phpRole, "a posting below its own currency's threshold is filtered");
-    assert.equal(phpRole?.filterReason, "Below minimum pay");
-    console.log(
-      "ok - two configured currency thresholds are each checked independently against a real posting's own stated currency",
     );
 
     await store.savePostings(userId, [
