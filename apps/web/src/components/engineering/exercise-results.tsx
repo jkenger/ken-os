@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type ReactNode } from "react";
+import { DotSeparator } from "@/components/dot-separator";
 import { Button } from "@/components/ui/button";
 import { Pill } from "@/components/ui/pill";
 import { lineDiff, type DiffLine } from "@/features/engineering-lab/runner/diff";
@@ -146,7 +147,8 @@ function Difference({ mismatch }: { mismatch: Mismatch }) {
       <div className="mt-2.5 flex items-center justify-between text-xs font-semibold text-foreground">
         <span>Difference</span>
         <span className="font-normal" aria-hidden="true">
-          − expected · + got
+          − expected
+          <DotSeparator />+ got
         </span>
       </div>
       <div className={cn(block, mono, "px-0")} aria-label="Expected against got">
