@@ -1,3 +1,4 @@
+import { convertAmount } from "./currency-rates";
 import type { JobPreferences, JobType, PayPeriod, WorkSetup } from "./preferences-store";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -32,12 +33,20 @@ export type FilterablePosting = {
 /** The strict filters (docs/product/job-finder.md): skip words, skip companies, posted within, and — once a
  *  posting has been through `/api/jobs/process` — Minimum pay, Job type, Work setup, Countries and Agencies.
  *  A not-yet-processed posting's extracted fields are all undefined, so only the first three checks apply.
- *  Checked in this order, the first match wins, so a posting always has exactly one reason when it's filtered. */
+ *  Checked in this order, the first match wins, so a posting always has exactly one reason when it's filtered.
+ *  `context.targetCountry` is the owner's own country (from Profile, defaulting to PH) -- there's no separate
+ *  owner-set Countries list. `context.currencyRates` is the last cached snapshot a posting's own stated pay is
+ *  converted through before comparing to Minimum pay; missing or unconvertable pay is never filtered, same as
+ *  pay the posting doesn't state at all. */
 export function filterReason(
   posting: FilterablePosting,
   preferences: JobPreferences,
   now: Date = new Date(),
+  context: { targetCountry?: string; currencyRates?: Record<string, number> } = {},
 ): string | null {
+  const targetCountry = context.targetCountry ?? "PH";
+  const currencyRates = context.currencyRates ?? {};
+
   const title = posting.title.toLowerCase();
   const skipWord = preferences.skipWords.find((word) => title.includes(word.toLowerCase()));
   if (skipWord) return `Skip word: ${skipWord}`;
@@ -49,16 +58,13 @@ export function filterReason(
   const ageDays = (now.getTime() - posting.firstSeenAt.getTime()) / DAY_MS;
   if (ageDays > preferences.postedWithinDays) return `Posted over ${preferences.postedWithinDays} days ago`;
 
-  if (
-    preferences.minimumPay !== null &&
-    posting.payAmount != null &&
-    posting.payCurrency &&
-    posting.payPeriod &&
-    posting.payCurrency.toUpperCase() === preferences.payCurrency.toUpperCase()
-  ) {
-    const postingMonthly = monthlyAmount(posting.payAmount, posting.payPeriod);
-    const minimumMonthly = monthlyAmount(preferences.minimumPay, preferences.payPeriod);
-    if (postingMonthly < minimumMonthly) return "Below minimum pay";
+  if (preferences.minimumPay !== null && posting.payAmount != null && posting.payCurrency && posting.payPeriod) {
+    const converted = convertAmount(posting.payAmount, posting.payCurrency, preferences.payCurrency, currencyRates);
+    if (converted != null) {
+      const postingMonthly = monthlyAmount(converted, posting.payPeriod);
+      const minimumMonthly = monthlyAmount(preferences.minimumPay, preferences.payPeriod);
+      if (postingMonthly < minimumMonthly) return "Below minimum pay";
+    }
   }
 
   if (posting.jobType && !preferences.jobTypes.includes(posting.jobType)) return `Job type: ${posting.jobType}`;
@@ -67,8 +73,7 @@ export function filterReason(
     return `Work setup: ${posting.workSetup}`;
 
   if (posting.countries && posting.countries.length > 0) {
-    const allowed = new Set(preferences.countries.map((code) => code.toUpperCase()));
-    const eligible = posting.countries.some((code) => allowed.has(code.toUpperCase()));
+    const eligible = posting.countries.some((code) => code.toUpperCase() === targetCountry.toUpperCase());
     if (!eligible) return `Country: ${posting.countries[0]}`;
   }
 

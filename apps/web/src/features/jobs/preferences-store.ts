@@ -20,7 +20,6 @@ export type JobPreferences = {
   payPeriod: PayPeriod;
   jobTypes: JobType[];
   workSetups: WorkSetup[];
-  countries: string[];
   agenciesHide: boolean;
 };
 
@@ -33,7 +32,6 @@ const DEFAULTS: JobPreferences = {
   payPeriod: "month",
   jobTypes: ["full_time", "contract"],
   workSetups: ["remote"],
-  countries: ["US", "AU", "GB"],
   agenciesHide: false,
 };
 
@@ -78,7 +76,6 @@ export function parsePreferences(input: Record<string, unknown>): JobPreferences
     payPeriod: payPeriod as PayPeriod,
     jobTypes: cleanEnumList(input.jobTypes, "Job types", JOB_TYPES),
     workSetups: cleanEnumList(input.workSetups, "Work setups", WORK_SETUPS),
-    countries: cleanList(input.countries, "Countries").map((code) => code.toUpperCase()),
     agenciesHide,
   };
 }
@@ -95,7 +92,6 @@ export async function getPreferences(userId: string): Promise<JobPreferences> {
     payPeriod: row.payPeriod,
     jobTypes: row.jobTypes,
     workSetups: row.workSetups,
-    countries: row.countries,
     agenciesHide: row.agenciesHide,
   };
 }

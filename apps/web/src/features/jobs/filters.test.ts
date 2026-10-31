@@ -14,9 +14,9 @@ const noFilters: JobPreferences = {
   payPeriod: "month",
   jobTypes: ["full_time", "contract"],
   workSetups: ["remote"],
-  countries: ["US", "AU", "GB"],
   agenciesHide: false,
 };
+const rates = { USD: 1, PHP: 56.5, GBP: 0.79 };
 
 test("a posting matching no filter passes, with no reason", () => {
   assert.equal(filterReason(base, noFilters, now), null);
@@ -85,9 +85,30 @@ test("a posting with no pay listed is not filtered for pay", () => {
   assert.equal(filterReason(posting, { ...noFilters, minimumPay: 80000 }, now), null);
 });
 
-test("a posting in a different currency than the preference is not filtered for pay (no live conversion)", () => {
+test("a posting in a different currency is converted via the cached rates before comparing", () => {
+  // 1000 PHP/month -> USD via the 56.5 rate ~= 17.70/month, well below an 80000/month minimum
   const posting = { ...base, payAmount: 1000, payCurrency: "PHP", payPeriod: "month" as const };
-  assert.equal(filterReason(posting, { ...noFilters, minimumPay: 80000, payCurrency: "USD" }, now), null);
+  const preferences = { ...noFilters, minimumPay: 80000, payCurrency: "USD", payPeriod: "month" as const };
+  assert.equal(filterReason(posting, preferences, now, { currencyRates: rates }), "Below minimum pay");
+});
+
+test("a posting in a different currency, converted, that clears the minimum is not filtered", () => {
+  // 10,000,000 PHP/year -> USD via the 56.5 rate ~= 176,991/year, above a 100,000/year minimum
+  const posting = { ...base, payAmount: 10_000_000, payCurrency: "PHP", payPeriod: "year" as const };
+  const preferences = { ...noFilters, minimumPay: 100_000, payCurrency: "USD", payPeriod: "year" as const };
+  assert.equal(filterReason(posting, preferences, now, { currencyRates: rates }), null);
+});
+
+test("a posting whose currency has no cached rate is not filtered for pay, not guessed at", () => {
+  const posting = { ...base, payAmount: 1000, payCurrency: "ZZZ", payPeriod: "month" as const };
+  const preferences = { ...noFilters, minimumPay: 80000, payCurrency: "USD" };
+  assert.equal(filterReason(posting, preferences, now, { currencyRates: rates }), null);
+});
+
+test("with no currency rates supplied at all, a cross-currency posting is not filtered for pay", () => {
+  const posting = { ...base, payAmount: 1000, payCurrency: "PHP", payPeriod: "month" as const };
+  const preferences = { ...noFilters, minimumPay: 80000, payCurrency: "USD" };
+  assert.equal(filterReason(posting, preferences, now), null);
 });
 
 test("a posting whose job type isn't in the owner's allowed set is filtered", () => {
@@ -110,19 +131,31 @@ test("a posting with no work setup stated is not filtered for work setup", () =>
   assert.equal(filterReason(posting, { ...noFilters, workSetups: ["remote"] }, now), null);
 });
 
-test("a posting whose stated countries don't overlap the owner's allowed set is filtered", () => {
+test("a posting whose stated countries don't include the target country is filtered", () => {
   const posting = { ...base, countries: ["DE"] };
-  assert.equal(filterReason(posting, { ...noFilters, countries: ["US", "AU", "GB"] }, now), "Country: DE");
+  assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), "Country: DE");
 });
 
 test("a posting with an empty countries list (none stated) is not filtered for country", () => {
   const posting = { ...base, countries: [] };
-  assert.equal(filterReason(posting, { ...noFilters, countries: ["US"] }, now), null);
+  assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), null);
 });
 
-test("a posting whose countries overlap the owner's allowed set at all is not filtered", () => {
-  const posting = { ...base, countries: ["DE", "US"] };
-  assert.equal(filterReason(posting, { ...noFilters, countries: ["US", "AU", "GB"] }, now), null);
+test("a posting whose stated countries include the target country is not filtered", () => {
+  const posting = { ...base, countries: ["DE", "PH"] };
+  assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), null);
+});
+
+test("the target country matching is case-insensitive", () => {
+  const posting = { ...base, countries: ["ph"] };
+  assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), null);
+});
+
+test("the target country defaults to PH when none is given", () => {
+  const posting = { ...base, countries: ["PH"] };
+  assert.equal(filterReason(posting, noFilters, now), null);
+  const excluded = { ...base, countries: ["DE"] };
+  assert.equal(filterReason(excluded, noFilters, now), "Country: DE");
 });
 
 test("an agency posting is filtered only when Agencies is set to Hide", () => {
@@ -137,5 +170,5 @@ test("a non-agency posting is never filtered for Agencies, even when set to Hide
 });
 
 test("a not-yet-processed posting (no extracted fields at all) only gets the list-field checks", () => {
-  assert.equal(filterReason(base, { ...noFilters, minimumPay: 80000, countries: ["US"] }, now), null);
+  assert.equal(filterReason(base, { ...noFilters, minimumPay: 80000 }, now, { targetCountry: "US" }), null);
 });

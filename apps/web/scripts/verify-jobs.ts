@@ -12,6 +12,7 @@ config({ path: ".env" });
 // created and deleted, cascading everything it made.
 async function main() {
   const store = await import("../src/features/jobs/store");
+  const currencyRatesStore = await import("../src/features/jobs/currency-rates-store");
   const userId = `jobs-check-${randomUUID()}`;
   await db()
     .insert(users)
@@ -80,7 +81,6 @@ async function main() {
       payPeriod: "month",
       jobTypes: ["full_time", "contract"],
       workSetups: ["remote"],
-      countries: ["US", "AU", "GB"],
       agenciesHide: false,
     };
 
@@ -293,7 +293,6 @@ async function main() {
       payPeriod: "year",
       jobTypes: ["full_time", "contract"],
       workSetups: ["remote"],
-      countries: ["US", "AU", "GB"],
       agenciesHide: true,
     });
     await store.savePostings(userId, [
@@ -431,7 +430,6 @@ async function main() {
       payPeriod: "year",
       jobTypes: ["full_time", "contract"],
       workSetups: ["on_site"],
-      countries: ["US", "AU", "GB"],
       agenciesHide: true,
     });
     await store.refilterExisting(userId);
@@ -442,6 +440,121 @@ async function main() {
     console.log(
       "ok - tightening Work setup and refiltering moves an already-processed posting to Filtered out for the new reason",
     );
+
+    const rateCheckNow = new Date("2026-11-01T00:00:00Z");
+    assert.equal(await currencyRatesStore.ratesAreStale(rateCheckNow), true, "no cached rates yet means stale");
+    assert.deepEqual(await currencyRatesStore.getCachedRates(), {}, "no cached rates yet means an empty map");
+    await currencyRatesStore.saveCachedRates({ USD: 1, PHP: 56.5 }, rateCheckNow);
+    assert.equal(await currencyRatesStore.ratesAreStale(rateCheckNow), false, "freshly saved rates are not stale");
+    assert.deepEqual(await currencyRatesStore.getCachedRates(), { USD: 1, PHP: 56.5 });
+    const muchLater = new Date(rateCheckNow.getTime() + 25 * 60 * 60 * 1000);
+    assert.equal(await currencyRatesStore.ratesAreStale(muchLater), true, "rates older than a day are stale again");
+    console.log("ok - cached currency rates track freshness and round-trip correctly");
+
+    await preferences.savePreferences(userId, {
+      skipWords: [],
+      skipCompanies: [],
+      postedWithinDays: 365,
+      minimumPay: 80000,
+      payCurrency: "USD",
+      payPeriod: "year",
+      jobTypes: ["full_time", "contract"],
+      workSetups: ["remote"],
+      agenciesHide: false,
+    });
+    await store.savePostings(userId, [
+      {
+        source: "linkedin",
+        sourceId: "li-currency-below",
+        title: "Currency Below Role",
+        company: "CurrencyCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/50",
+      },
+      {
+        source: "linkedin",
+        sourceId: "li-currency-above",
+        title: "Currency Above Role",
+        company: "CurrencyCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/51",
+      },
+      {
+        source: "linkedin",
+        sourceId: "li-target-country",
+        title: "PH Eligible Role",
+        company: "CurrencyCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/52",
+      },
+    ]);
+    const currencyPending = await store.getPendingPostings(userId, 10);
+    const currencyByTitle = (title: string) => currencyPending.find((p) => p.title === title)!;
+
+    // 1,000,000 PHP/year / 56.5 ~= 17,699 USD/year, below the 80,000 USD/year minimum
+    await store.saveExtractedFields(currencyByTitle("Currency Below Role").id, {
+      ...extractDefaults,
+      payAmount: 1_000_000,
+      payCurrency: "PHP",
+      payPeriod: "year",
+      jobType: "full_time",
+      workSetup: "remote",
+      countries: [],
+      isAgency: false,
+    });
+    // 6,000,000 PHP/year / 56.5 ~= 106,195 USD/year, above the 80,000 USD/year minimum
+    await store.saveExtractedFields(currencyByTitle("Currency Above Role").id, {
+      ...extractDefaults,
+      payAmount: 6_000_000,
+      payCurrency: "PHP",
+      payPeriod: "year",
+      jobType: "full_time",
+      workSetup: "remote",
+      countries: [],
+      isAgency: false,
+    });
+    await store.saveExtractedFields(currencyByTitle("PH Eligible Role").id, {
+      ...extractDefaults,
+      payAmount: 90000,
+      payCurrency: "USD",
+      payPeriod: "year",
+      jobType: "full_time",
+      workSetup: "remote",
+      countries: ["PH"],
+      isAgency: false,
+    });
+
+    const currencyFilteredOut = await store.listPostings(userId, "filtered_out");
+    const currencyNew = await store.listPostings(userId, "new");
+    const belowRole = currencyFilteredOut.find((p) => p.title === "Currency Below Role");
+    assert.ok(belowRole, "a PHP posting below the converted USD minimum is filtered");
+    assert.equal(belowRole?.filterReason, "Below minimum pay");
+    assert.ok(
+      currencyNew.some((p) => p.title === "Currency Above Role"),
+      "a PHP posting above the converted USD minimum is not filtered",
+    );
+    assert.ok(
+      currencyNew.some((p) => p.title === "PH Eligible Role"),
+      "a posting explicitly open to PH applicants matches the default target country",
+    );
+    console.log(
+      "ok - a posting's own stated pay converts through the cached rates regardless of its currency, and the default target country is PH",
+    );
+
+    await preferences.savePreferences(userId, {
+      skipWords: [],
+      skipCompanies: [],
+      postedWithinDays: 365,
+      minimumPay: 80000,
+      payCurrency: "USD",
+      payPeriod: "year",
+      jobTypes: ["full_time", "contract"],
+      workSetups: ["on_site"],
+      agenciesHide: true,
+    });
 
     await store.savePostings(userId, [
       {

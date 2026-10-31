@@ -82,7 +82,6 @@ export function JobsSettingsPage({
   const [payPeriod, setPayPeriod] = useState<PayPeriod>(preferences.payPeriod);
   const [jobTypes, setJobTypes] = useState<JobType[]>(preferences.jobTypes);
   const [workSetups, setWorkSetups] = useState<WorkSetup[]>(preferences.workSetups);
-  const [countries, setCountries] = useState(preferences.countries.join("\n"));
   const [agenciesHide, setAgenciesHide] = useState(preferences.agenciesHide);
   const [busy, setBusy] = useState(false);
 
@@ -98,7 +97,6 @@ export function JobsSettingsPage({
         payPeriod,
         jobTypes,
         workSetups,
-        countries: linesToList(countries),
         agenciesHide,
       });
       toast({ tone: "success", title: "Settings saved" });
@@ -184,7 +182,7 @@ export function JobsSettingsPage({
           <div className="grid gap-1.5">
             <Label htmlFor="minimum-pay">Minimum pay</Label>
             <span className="text-xs text-muted-foreground">
-              Empty means no minimum. Only checked when a posting states pay in the same currency
+              Empty means no minimum. A posting's own stated pay is converted into this currency before checking
             </span>
             <div className="flex items-center gap-2">
               <Input
@@ -261,17 +259,11 @@ export function JobsSettingsPage({
             </div>
           </div>
           <div className="grid gap-1.5">
-            <Label htmlFor="countries">Countries</Label>
+            <Label>Country</Label>
             <span className="text-xs text-muted-foreground">
-              One ISO code per line, such as US or PH. A posting that states it's open to none of these is filtered out.
-              Postings that don't say are never filtered for this
+              A posting that states it's closed to your Profile's country is filtered out; one that doesn't say is never
+              filtered for this. Set in Profile, not here
             </span>
-            <Textarea
-              id="countries"
-              value={countries}
-              onChange={(event) => setCountries(event.target.value)}
-              className="min-h-16"
-            />
           </div>
           <div className="flex items-center justify-between gap-3">
             <div className="grid gap-0.5">

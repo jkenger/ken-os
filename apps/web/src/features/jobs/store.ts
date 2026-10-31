@@ -2,15 +2,28 @@ import { randomUUID } from "node:crypto";
 import { and, asc, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { jobMatches, jobPostingSources, jobPostings } from "@/lib/schema";
+import { getProfile } from "@/features/profile/store";
+import { getCachedRates } from "./currency-rates-store";
 import { filterReason } from "./filters";
 import { getPreferences } from "./preferences-store";
 import type { AlertSource, JobMatchState, RawPosting } from "./raw-posting";
+import { targetCountryFrom } from "./target-country";
+
+/** The two pieces of filtering context that don't live in job_preferences: the owner's own country (from
+ *  Profile) and the last cached currency snapshot. Fetched once per batch operation, not per posting. */
+async function filterContext(
+  userId: string,
+): Promise<{ targetCountry: string; currencyRates: Record<string, number> }> {
+  const [profile, currencyRates] = await Promise.all([getProfile(userId), getCachedRates()]);
+  return { targetCountry: targetCountryFrom(profile.details.contact.country), currencyRates };
+}
 
 /** Saves each posting, matching on the source's own ID when there is one, otherwise on title, company and location
  *  together (docs/product/job-finder.md, "Drop repeats"). A posting already seen from this exact source and ID is
  *  skipped; one already seen from a different source gets this source attached instead of a duplicate row. */
 export async function savePostings(userId: string, postings: RawPosting[]): Promise<void> {
   const preferences = await getPreferences(userId);
+  const context = await filterContext(userId);
   const now = new Date();
   for (const posting of postings) {
     await db().transaction(async (tx) => {
@@ -54,6 +67,7 @@ export async function savePostings(userId: string, postings: RawPosting[]): Prom
           { title: posting.title, company: posting.company, firstSeenAt: now },
           preferences,
           now,
+          context,
         );
         await tx
           .insert(jobMatches)
@@ -127,6 +141,7 @@ export async function listPostings(userId: string, state: JobMatchState): Promis
  *  only applies the step-1 checks to it, same as it always has. */
 export async function refilterExisting(userId: string): Promise<void> {
   const preferences = await getPreferences(userId);
+  const context = await filterContext(userId);
   const rows = await db()
     .select({
       postingId: jobPostings.id,
@@ -149,7 +164,7 @@ export async function refilterExisting(userId: string): Promise<void> {
 
   const now = new Date();
   for (const row of rows) {
-    const reason = filterReason(row, preferences, now);
+    const reason = filterReason(row, preferences, now, context);
     const nextState: JobMatchState = reason ? "filtered_out" : "new";
     if (nextState === row.state && reason === row.filterReason) continue;
     await db()
@@ -253,6 +268,7 @@ export async function saveExtractedFields(postingId: string, fields: ExtractedFi
   if (!row) return;
 
   const preferences = await getPreferences(row.userId);
+  const context = await filterContext(row.userId);
   const reason = filterReason(
     {
       title: row.title,
@@ -268,6 +284,7 @@ export async function saveExtractedFields(postingId: string, fields: ExtractedFi
     },
     preferences,
     now,
+    context,
   );
   await db()
     .update(jobMatches)

@@ -13,7 +13,6 @@ function validInput(overrides: Record<string, unknown> = {}) {
     payPeriod: "year",
     jobTypes: ["full_time"],
     workSetups: ["remote"],
-    countries: ["us", "au"],
     agenciesHide: true,
     ...overrides,
   };
@@ -29,7 +28,6 @@ test("valid input parses to preferences", () => {
     payPeriod: "year",
     jobTypes: ["full_time"],
     workSetups: ["remote"],
-    countries: ["US", "AU"],
     agenciesHide: true,
   });
 });
@@ -78,9 +76,4 @@ test("an invalid work setup is rejected", () => {
 
 test("a non-boolean agenciesHide is rejected", () => {
   assert.throws(() => parsePreferences(validInput({ agenciesHide: "yes" })), JobsInputError);
-});
-
-test("countries are upper-cased for exact ISO-code matching later", () => {
-  const result = parsePreferences(validInput({ countries: ["gb", "ph"] }));
-  assert.deepEqual(result.countries, ["GB", "PH"]);
 });

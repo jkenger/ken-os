@@ -5,10 +5,13 @@ import type { ProfileDetails } from "@ken-os/domain";
 import { db } from "@/lib/db";
 import { users } from "@/lib/schema";
 import { getProfile } from "@/features/profile/store";
+import { ratesAreStale, saveCachedRates } from "@/features/jobs/currency-rates-store";
+import { fetchCurrencyRates } from "@/features/jobs/fetch-currency-rates";
 import { LINKEDIN_HEADERS } from "@/features/jobs/scrapers/linkedin";
 import { INDEED_HEADERS } from "@/features/jobs/scrapers/indeed";
 import { processPostings, scorePostings } from "@/features/jobs/process";
 import { readFullPosting } from "@/features/jobs/read-posting";
+import { refreshRatesIfStale } from "@/features/jobs/refresh-currency-rates";
 import { getNeedingScore, getPendingPostings, saveExtractedFields, saveScore } from "@/features/jobs/store";
 
 export const runtime = "nodejs";
@@ -31,6 +34,14 @@ export async function GET(request: Request) {
   }
 
   const secret = request.headers.get("x-jobs-check-secret") ?? "";
+  if (secret !== expectedSecret) return NextResponse.json({ error: "bad secret" }, { status: 401 });
+
+  await refreshRatesIfStale({
+    now: new Date(),
+    isStale: (now) => ratesAreStale(now),
+    fetchRates: () => fetchCurrencyRates(),
+    saveRates: (rates, fetchedAt) => saveCachedRates(rates, fetchedAt),
+  });
 
   const extractResult = await processPostings({
     secret,
