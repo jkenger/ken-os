@@ -97,6 +97,47 @@ async function main() {
     const resaved = await preferences.getPreferences(userId);
     assert.deepEqual(resaved, { skipWords: ["Only this"], skipCompanies: [], postedWithinDays: 30 });
     console.log("ok - saving again replaces the previous preferences, not merges with them");
+
+    await store.savePostings(userId, [
+      {
+        source: "linkedin",
+        sourceId: "li-skip-word",
+        title: "Only this Role",
+        company: "FilterCo",
+        location: "Remote",
+        snippet: "Matches the skip word.",
+        link: "https://www.linkedin.com/jobs/view/2",
+      },
+    ]);
+    const newAfterSkipWord = await store.listPostings(userId, "new");
+    assert.ok(
+      !newAfterSkipWord.some((posting) => posting.title === "Only this Role"),
+      "a posting matching a skip word does not land under New",
+    );
+    const filteredOut = await store.listPostings(userId, "filtered_out");
+    const skipWordPosting = filteredOut.find((posting) => posting.title === "Only this Role");
+    assert.ok(skipWordPosting);
+    assert.equal(skipWordPosting.filterReason, "Skip word: Only this");
+    console.log("ok - a posting whose title matches a skip word is filtered out, with the matched word as the reason");
+
+    await store.showAnyway(userId, skipWordPosting.id);
+    const afterShowAnyway = await store.listPostings(userId, "new");
+    const movedBack = afterShowAnyway.find((posting) => posting.title === "Only this Role");
+    assert.ok(movedBack);
+    assert.equal(movedBack.filterReason, null);
+    console.log("ok - Show anyway moves a filtered posting back to New and clears its reason");
+
+    await preferences.savePreferences(userId, { skipWords: [], skipCompanies: [], postedWithinDays: 0 });
+    await store.refilterExisting(userId);
+    const afterRefilter = await store.listPostings(userId, "filtered_out");
+    assert.ok(
+      afterRefilter.some(
+        (posting) => posting.title === "Only this Role" && posting.filterReason === "Posted over 0 days ago",
+      ),
+    );
+    console.log(
+      "ok - saving a stricter posted-within-days setting refilters postings already saved, not just new ones",
+    );
   } finally {
     await db().delete(users).where(eq(users.id, userId));
     await closeDb();

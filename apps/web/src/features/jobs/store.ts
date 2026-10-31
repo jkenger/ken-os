@@ -2,7 +2,9 @@ import { randomUUID } from "node:crypto";
 import { and, desc, eq, inArray } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { jobInboundEmails, jobMatches, jobPostingSources, jobPostings } from "@/lib/schema";
+import { filterReason } from "./filters";
 import type { AlertSource } from "./known-senders";
+import { getPreferences } from "./preferences-store";
 import type { JobMatchState, RawPosting } from "./raw-posting";
 
 export async function saveInboundEmail(params: {
@@ -28,6 +30,8 @@ export async function saveInboundEmail(params: {
  *  together (docs/product/job-finder.md, "Drop repeats"). A posting already seen from this exact source and ID is
  *  skipped; one already seen from a different source gets this source attached instead of a duplicate row. */
 export async function savePostings(userId: string, postings: RawPosting[]): Promise<void> {
+  const preferences = await getPreferences(userId);
+  const now = new Date();
   for (const posting of postings) {
     await db().transaction(async (tx) => {
       if (posting.sourceId) {
@@ -64,8 +68,16 @@ export async function savePostings(userId: string, postings: RawPosting[]): Prom
           company: posting.company,
           location: posting.location,
           snippet: posting.snippet,
+          firstSeenAt: now,
         });
-        await tx.insert(jobMatches).values({ postingId, userId, state: "new" });
+        const reason = filterReason(
+          { title: posting.title, company: posting.company, firstSeenAt: now },
+          preferences,
+          now,
+        );
+        await tx
+          .insert(jobMatches)
+          .values({ postingId, userId, state: reason ? "filtered_out" : "new", filterReason: reason });
       }
 
       await tx.insert(jobPostingSources).values({
@@ -87,6 +99,7 @@ export type PostingView = {
   snippet: string;
   firstSeenAt: Date;
   state: JobMatchState;
+  filterReason: string | null;
   sources: { source: AlertSource; link: string }[];
 };
 
@@ -100,6 +113,7 @@ export async function listPostings(userId: string, state: JobMatchState): Promis
       snippet: jobPostings.snippet,
       firstSeenAt: jobPostings.firstSeenAt,
       state: jobMatches.state,
+      filterReason: jobMatches.filterReason,
     })
     .from(jobPostings)
     .innerJoin(jobMatches, eq(jobMatches.postingId, jobPostings.id))
@@ -125,4 +139,43 @@ export async function listPostings(userId: string, state: JobMatchState): Promis
   }
 
   return rows.map((row) => ({ ...row, sources: sourcesByPosting.get(row.id) ?? [] }));
+}
+
+/** Re-evaluates every stored posting against the current preferences (docs/product/job-finder.md: "Changing a
+ *  setting refilters existing postings without a new alert"). Only touches a match's state and reason when the
+ *  verdict actually changed. */
+export async function refilterExisting(userId: string): Promise<void> {
+  const preferences = await getPreferences(userId);
+  const rows = await db()
+    .select({
+      postingId: jobPostings.id,
+      title: jobPostings.title,
+      company: jobPostings.company,
+      firstSeenAt: jobPostings.firstSeenAt,
+      state: jobMatches.state,
+      filterReason: jobMatches.filterReason,
+    })
+    .from(jobPostings)
+    .innerJoin(jobMatches, eq(jobMatches.postingId, jobPostings.id))
+    .where(eq(jobPostings.userId, userId));
+
+  const now = new Date();
+  for (const row of rows) {
+    const reason = filterReason(row, preferences, now);
+    const nextState: JobMatchState = reason ? "filtered_out" : "new";
+    if (nextState === row.state && reason === row.filterReason) continue;
+    await db()
+      .update(jobMatches)
+      .set({ state: nextState, filterReason: reason, updatedAt: now })
+      .where(eq(jobMatches.postingId, row.postingId));
+  }
+}
+
+/** Show anyway: moves a Filtered out posting back to New (docs/product/job-finder.md). Scoped to the owner's own
+ *  posting, so one user can't move another's match. */
+export async function showAnyway(userId: string, postingId: string): Promise<void> {
+  await db()
+    .update(jobMatches)
+    .set({ state: "new", filterReason: null, updatedAt: new Date() })
+    .where(and(eq(jobMatches.postingId, postingId), eq(jobMatches.userId, userId)));
 }

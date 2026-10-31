@@ -7,6 +7,7 @@ import {
   Briefcase,
   ChevronRight,
   BookOpenText,
+  EyeOff,
   FileText,
   FlaskConical,
   Globe,
@@ -98,6 +99,7 @@ const moduleDetails: Record<
     title: "Jobs",
     sections: [
       { label: "New", href: "/jobs", icon: List },
+      { label: "Filtered out", href: "/jobs/filtered-out", icon: EyeOff },
       { label: "Settings", href: "/jobs/settings", icon: SettingsIcon },
     ],
   },
