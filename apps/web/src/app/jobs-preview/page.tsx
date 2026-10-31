@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DismissReasonPopover } from "@/components/jobs/dismiss-reason-popover";
 import { DismissedEmptyState } from "@/components/jobs/dismissed-empty-state";
+import { DotSeparator } from "@/components/dot-separator";
 
 /** Scratch preview for two Jobs states not yet in Paper: the Dismissed empty state and the
  *  Dismiss-reason picker. Not part of the shipped app; safe to delete once reviewed. */
@@ -40,7 +41,13 @@ export default function JobsPreviewPage() {
             </div>
           </div>
           <h2 className="text-xl font-semibold tracking-tight text-foreground">Senior Frontend Engineer</h2>
-          <p className="text-sm text-muted-foreground">Acme Inc · Remote · US</p>
+          <p className="text-sm text-muted-foreground">
+            Acme Inc
+            <DotSeparator />
+            Remote
+            <DotSeparator />
+            US
+          </p>
         </div>
         {lastDismissed && (
           <p className="text-sm text-muted-foreground">
