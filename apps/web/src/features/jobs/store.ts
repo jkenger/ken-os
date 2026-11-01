@@ -116,6 +116,7 @@ export type PostingView = {
   jobType: "full_time" | "part_time" | "contract" | "internship" | "temporary" | null;
   workSetup: "remote" | "hybrid" | "on_site" | null;
   countries: string[] | null;
+  seniority: "junior" | "mid" | "senior" | "lead" | null;
   shift: string | null;
   skills: string[];
   sourcePostedAt: Date | null;
@@ -125,39 +126,43 @@ export type PostingView = {
   whatsMissing: string[];
 };
 
-export async function listPostings(userId: string, state: JobMatchState): Promise<PostingView[]> {
-  const rows = await db()
-    .select({
-      id: jobPostings.id,
-      title: jobPostings.title,
-      company: jobPostings.company,
-      location: jobPostings.location,
-      snippet: jobPostings.snippet,
-      firstSeenAt: jobPostings.firstSeenAt,
-      state: jobMatches.state,
-      filterReason: jobMatches.filterReason,
-      processedAt: jobPostings.processedAt,
-      fullDescription: jobPostings.fullDescription,
-      partial: jobPostings.partial,
-      summary: jobPostings.summary,
-      payAmount: jobPostings.payAmount,
-      payCurrency: jobPostings.payCurrency,
-      payPeriod: jobPostings.payPeriod,
-      jobType: jobPostings.jobType,
-      workSetup: jobPostings.workSetup,
-      countries: jobPostings.countries,
-      shift: jobMatches.shift,
-      skills: jobPostings.skills,
-      sourcePostedAt: jobPostings.sourcePostedAt,
-      sourceUpdatedAt: jobPostings.sourceUpdatedAt,
-      score: jobMatches.score,
-      scoreReasons: jobMatches.scoreReasons,
-    })
-    .from(jobPostings)
-    .innerJoin(jobMatches, eq(jobMatches.postingId, jobPostings.id))
-    .where(and(eq(jobPostings.userId, userId), eq(jobMatches.state, state)))
-    .orderBy(desc(jobPostings.firstSeenAt));
+const POSTING_COLUMNS = {
+  id: jobPostings.id,
+  title: jobPostings.title,
+  company: jobPostings.company,
+  location: jobPostings.location,
+  snippet: jobPostings.snippet,
+  firstSeenAt: jobPostings.firstSeenAt,
+  state: jobMatches.state,
+  filterReason: jobMatches.filterReason,
+  processedAt: jobPostings.processedAt,
+  fullDescription: jobPostings.fullDescription,
+  partial: jobPostings.partial,
+  summary: jobPostings.summary,
+  payAmount: jobPostings.payAmount,
+  payCurrency: jobPostings.payCurrency,
+  payPeriod: jobPostings.payPeriod,
+  jobType: jobPostings.jobType,
+  workSetup: jobPostings.workSetup,
+  countries: jobPostings.countries,
+  seniority: jobPostings.seniority,
+  shift: jobMatches.shift,
+  skills: jobPostings.skills,
+  sourcePostedAt: jobPostings.sourcePostedAt,
+  sourceUpdatedAt: jobPostings.sourceUpdatedAt,
+  score: jobMatches.score,
+  scoreReasons: jobMatches.scoreReasons,
+} as const;
 
+type ScoreReasons = { whyFits: { reason: string; citation: string }[]; whatsMissing: string[] } | null;
+type Attachment = Pick<PostingView, "sources" | "whyFits" | "whatsMissing">;
+/** What a `POSTING_COLUMNS` query returns: every `PostingView` field it selects directly, plus the raw
+ *  `scoreReasons` column that `toPostingView` flattens into `whyFits`/`whatsMissing`. */
+type PostingRow = Omit<PostingView, "sources" | "whyFits" | "whatsMissing"> & { scoreReasons: ScoreReasons };
+
+/** Attaches each row's sources and flattens its score reasons, the shared tail of both `listPostings` and
+ *  `getPosting` once they've each run their own filtered query against `POSTING_COLUMNS`. */
+async function attachSourcesAndScore(rows: PostingRow[]): Promise<Map<string, Attachment>> {
   const postingIds = rows.map((row) => row.id);
   const sources = postingIds.length
     ? await db()
@@ -176,15 +181,47 @@ export async function listPostings(userId: string, state: JobMatchState): Promis
     sourcesByPosting.set(row.postingId, list);
   }
 
-  return rows.map((row) => {
-    const { scoreReasons, ...rest } = row;
-    return {
-      ...rest,
+  const result = new Map<string, Attachment>();
+  for (const row of rows) {
+    result.set(row.id, {
       sources: sourcesByPosting.get(row.id) ?? [],
-      whyFits: scoreReasons?.whyFits ?? [],
-      whatsMissing: scoreReasons?.whatsMissing ?? [],
-    };
-  });
+      whyFits: row.scoreReasons?.whyFits ?? [],
+      whatsMissing: row.scoreReasons?.whatsMissing ?? [],
+    });
+  }
+  return result;
+}
+
+function toPostingView(row: PostingRow, attachment: Attachment): PostingView {
+  const { scoreReasons, ...rest } = row;
+  return { ...rest, ...attachment };
+}
+
+export async function listPostings(userId: string, state: JobMatchState): Promise<PostingView[]> {
+  const rows = await db()
+    .select(POSTING_COLUMNS)
+    .from(jobPostings)
+    .innerJoin(jobMatches, eq(jobMatches.postingId, jobPostings.id))
+    .where(and(eq(jobPostings.userId, userId), eq(jobMatches.state, state)))
+    .orderBy(desc(jobPostings.firstSeenAt));
+
+  const attached = await attachSourcesAndScore(rows);
+  return rows.map((row) => toPostingView(row, attached.get(row.id)!));
+}
+
+/** One posting by ID, scoped to its owner so one user can't read another's posting by guessing an ID
+ *  (docs/mockups/job-finder.md, "Redesign" -- the job detail page). Null when it doesn't exist or isn't theirs. */
+export async function getPosting(userId: string, postingId: string): Promise<PostingView | null> {
+  const [row] = await db()
+    .select(POSTING_COLUMNS)
+    .from(jobPostings)
+    .innerJoin(jobMatches, eq(jobMatches.postingId, jobPostings.id))
+    .where(and(eq(jobPostings.userId, userId), eq(jobPostings.id, postingId)))
+    .limit(1);
+  if (!row) return null;
+
+  const attached = await attachSourcesAndScore([row]);
+  return toPostingView(row, attached.get(row.id)!);
 }
 
 /** Re-evaluates every stored posting against the current preferences (docs/product/job-finder.md: "Changing a

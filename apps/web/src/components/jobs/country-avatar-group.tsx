@@ -6,8 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { countryFlag, countryName } from "@/features/jobs/country-flags";
 
-// A posting's countries as stacked flag avatars, click to expand into a flag-and-name badge row
-// (docs/mockups/job-finder.md, "Redesign": a posting open to many countries shows a group, not a long string).
+// A posting's countries on the detail page's Location/Country rows (docs/mockups/Jobs redesign.html, "Desktop /
+// Job detail"): stacked avatars showing the plain two-letter code, click to expand into a flag-and-name badge
+// row. Flags only appear once expanded -- the collapsed avatars read as avatars, not a row of flags.
 
 export function CountryAvatarGroup({ countries, max = 5 }: { countries: string[]; max?: number }) {
   const [expanded, setExpanded] = useState(false);
@@ -31,7 +32,7 @@ export function CountryAvatarGroup({ countries, max = 5 }: { countries: string[]
         <AvatarGroup>
           {shown.map((code) => (
             <Avatar key={code} size="sm" title={countryName(code)}>
-              <AvatarFallback>{countryFlag(code)}</AvatarFallback>
+              <AvatarFallback className="font-mono text-[0.625rem]">{code.toUpperCase()}</AvatarFallback>
             </Avatar>
           ))}
           {overflow > 0 && <AvatarGroupCount className="font-mono text-xs">+{overflow}</AvatarGroupCount>}
