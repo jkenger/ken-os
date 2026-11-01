@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { users } from "@/lib/schema";
 import { checkFreehire } from "@/features/jobs/check-freehire";
+import { getPreferences } from "@/features/jobs/preferences-store";
 import { deriveRoles } from "@/features/jobs/roles";
 import { getProfile } from "@/features/profile/store";
 import { savePostings } from "@/features/jobs/store";
@@ -27,13 +28,13 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
 
-  const profile = await getProfile(owner.id);
+  const [profile, preferences] = await Promise.all([getProfile(owner.id), getPreferences(owner.id)]);
   const secret = request.headers.get("x-jobs-check-secret") ?? "";
 
   const result = await checkFreehire({
     secret,
     expectedSecret,
-    keywords: deriveRoles(profile.details),
+    keywords: preferences.roles.length > 0 ? preferences.roles : deriveRoles(profile.details),
     fetchSearch: async (url) => {
       const response = await fetch(url);
       return { status: response.status, text: await response.text() };

@@ -12,6 +12,11 @@ const JOB_TYPES: JobType[] = ["full_time", "part_time", "contract", "internship"
 const WORK_SETUPS: WorkSetup[] = ["remote", "hybrid", "on_site"];
 
 export type JobPreferences = {
+  /** The owner's own edited role list, searched instead of the Profile's live-derived roles
+   *  (docs/mockups/job-finder.md, "Redesign": Specialization, imported then editable). Empty means "none
+   *  edited yet" -- `check/freehire/route.ts` falls back to `deriveRoles(profile)` in that case, never silently
+   *  searching nothing. */
+  roles: string[];
   skipWords: string[];
   skipCompanies: string[];
   postedWithinDays: number;
@@ -25,6 +30,7 @@ export type JobPreferences = {
 };
 
 const DEFAULTS: JobPreferences = {
+  roles: [],
   skipWords: [],
   skipCompanies: [],
   postedWithinDays: 14,
@@ -76,6 +82,7 @@ export function parsePreferences(input: Record<string, unknown>): JobPreferences
   if (typeof agenciesHide !== "boolean") throw new JobsInputError("Agencies hide must be true or false");
 
   return {
+    roles: cleanList(input.roles, "Roles"),
     skipWords: cleanList(input.skipWords, "Skip words"),
     skipCompanies: cleanList(input.skipCompanies, "Skip companies"),
     postedWithinDays,
@@ -93,6 +100,7 @@ export async function getPreferences(userId: string): Promise<JobPreferences> {
   const [row] = await db().select().from(jobPreferences).where(eq(jobPreferences.userId, userId)).limit(1);
   if (!row) return DEFAULTS;
   return {
+    roles: row.roles,
     skipWords: row.skipWords,
     skipCompanies: row.skipCompanies,
     postedWithinDays: row.postedWithinDays,

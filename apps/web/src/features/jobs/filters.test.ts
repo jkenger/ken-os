@@ -6,6 +6,7 @@ import type { JobPreferences } from "./preferences-store";
 const now = new Date("2026-10-30T12:00:00Z");
 const base = { title: "Senior Frontend Engineer", company: "Acme Inc", firstSeenAt: new Date("2026-10-29T12:00:00Z") };
 const noFilters: JobPreferences = {
+  roles: [],
   skipWords: [],
   skipCompanies: [],
   postedWithinDays: 14,

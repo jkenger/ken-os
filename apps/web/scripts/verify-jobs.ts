@@ -74,7 +74,7 @@ async function main() {
     const preferences = await import("../src/features/jobs/preferences-store");
     const DEFAULT_SLICE2_PREFS: Omit<
       import("../src/features/jobs/preferences-store").JobPreferences,
-      "skipWords" | "skipCompanies" | "postedWithinDays"
+      "roles" | "skipWords" | "skipCompanies" | "postedWithinDays"
     > = {
       minimumPay: null,
       maximumPay: null,
@@ -86,10 +86,17 @@ async function main() {
     };
 
     const defaults = await preferences.getPreferences(userId);
-    assert.deepEqual(defaults, { skipWords: [], skipCompanies: [], postedWithinDays: 14, ...DEFAULT_SLICE2_PREFS });
+    assert.deepEqual(defaults, {
+      roles: [],
+      skipWords: [],
+      skipCompanies: [],
+      postedWithinDays: 14,
+      ...DEFAULT_SLICE2_PREFS,
+    });
     console.log("ok - preferences default to no skip words, no skip companies, 14 days");
 
     await preferences.savePreferences(userId, {
+      roles: ["Senior Frontend Engineer", "Full-Stack Developer"],
       skipWords: ["Sales", "Marketing"],
       skipCompanies: ["Acme"],
       postedWithinDays: 7,
@@ -97,14 +104,16 @@ async function main() {
     });
     const saved = await preferences.getPreferences(userId);
     assert.deepEqual(saved, {
+      roles: ["Senior Frontend Engineer", "Full-Stack Developer"],
       skipWords: ["Sales", "Marketing"],
       skipCompanies: ["Acme"],
       postedWithinDays: 7,
       ...DEFAULT_SLICE2_PREFS,
     });
-    console.log("ok - saved preferences persist and reload correctly");
+    console.log("ok - saved preferences persist and reload correctly, including the owner's edited roles");
 
     await preferences.savePreferences(userId, {
+      roles: [],
       skipWords: ["Only this"],
       skipCompanies: [],
       postedWithinDays: 30,
@@ -112,6 +121,7 @@ async function main() {
     });
     const resaved = await preferences.getPreferences(userId);
     assert.deepEqual(resaved, {
+      roles: [],
       skipWords: ["Only this"],
       skipCompanies: [],
       postedWithinDays: 30,
@@ -149,6 +159,7 @@ async function main() {
     console.log("ok - Show anyway moves a filtered posting back to New and clears its reason");
 
     await preferences.savePreferences(userId, {
+      roles: [],
       skipWords: [],
       skipCompanies: [],
       postedWithinDays: 0,
@@ -298,6 +309,7 @@ async function main() {
     console.log("ok - saveExtractedFields marks a posting processed, removing it from the pending list");
 
     await preferences.savePreferences(userId, {
+      roles: [],
       skipWords: [],
       skipCompanies: [],
       postedWithinDays: 365,
@@ -487,6 +499,7 @@ async function main() {
     );
 
     await preferences.savePreferences(userId, {
+      roles: [],
       skipWords: [],
       skipCompanies: [],
       postedWithinDays: 365,
@@ -508,6 +521,7 @@ async function main() {
     );
 
     await preferences.savePreferences(userId, {
+      roles: [],
       skipWords: [],
       skipCompanies: [],
       postedWithinDays: 365,
@@ -584,6 +598,7 @@ async function main() {
     console.log("ok - cached currency rates track freshness and round-trip correctly");
 
     await preferences.savePreferences(userId, {
+      roles: [],
       skipWords: [],
       skipCompanies: [],
       postedWithinDays: 365,
@@ -683,6 +698,7 @@ async function main() {
     }
 
     await preferences.savePreferences(userId, {
+      roles: [],
       skipWords: [],
       skipCompanies: [],
       postedWithinDays: 365,

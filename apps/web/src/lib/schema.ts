@@ -847,6 +847,8 @@ export const jobPreferences = pgTable("job_preferences", {
   userId: text("user_id")
     .primaryKey()
     .references(() => users.id, { onDelete: "cascade" }),
+  /** Empty means "no edits yet" -- `check/freehire/route.ts` falls back to the Profile's live-derived roles. */
+  roles: jsonb("roles").$type<string[]>().notNull().default([]),
   skipWords: jsonb("skip_words").$type<string[]>().notNull().default([]),
   skipCompanies: jsonb("skip_companies").$type<string[]>().notNull().default([]),
   postedWithinDays: integer("posted_within_days").notNull().default(14),

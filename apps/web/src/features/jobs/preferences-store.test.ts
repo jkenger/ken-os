@@ -5,6 +5,7 @@ import { parsePreferences } from "./preferences-store";
 
 function validInput(overrides: Record<string, unknown> = {}) {
   return {
+    roles: ["Senior Frontend Engineer"],
     skipWords: ["Sales", "Marketing"],
     skipCompanies: ["Acme"],
     postedWithinDays: 7,
@@ -21,6 +22,7 @@ function validInput(overrides: Record<string, unknown> = {}) {
 
 test("valid input parses to preferences", () => {
   assert.deepEqual(parsePreferences(validInput()), {
+    roles: ["Senior Frontend Engineer"],
     skipWords: ["Sales", "Marketing"],
     skipCompanies: ["Acme"],
     postedWithinDays: 7,
@@ -73,6 +75,16 @@ test("blank skip words and companies are dropped", () => {
 
 test("a non-array skipWords is rejected", () => {
   assert.throws(() => parsePreferences(validInput({ skipWords: "Sales" })), JobsInputError);
+});
+
+test("blank roles are dropped, and an empty list means fall back to the Profile", () => {
+  const result = parsePreferences(validInput({ roles: ["Senior Frontend Engineer", "  ", ""] }));
+  assert.deepEqual(result.roles, ["Senior Frontend Engineer"]);
+  assert.deepEqual(parsePreferences(validInput({ roles: [] })).roles, []);
+});
+
+test("a non-array roles is rejected", () => {
+  assert.throws(() => parsePreferences(validInput({ roles: "Engineer" })), JobsInputError);
 });
 
 test("a negative postedWithinDays is rejected", () => {
