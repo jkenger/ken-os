@@ -838,8 +838,8 @@ export const jobMatches = pgTable(
   (table) => [index("job_matches_user_state_idx").on(table.userId, table.state)],
 );
 
-/** The owner's Jobs filter preferences (docs/product/job-finder.md, Preferences table). Shifts, seniority and
- *  timing (instant-email threshold, digest time) are still step 2/3 scope, not here. Minimum pay is one
+/** The owner's Jobs filter preferences (docs/product/job-finder.md, Preferences table). Shifts and timing
+ *  (instant-email threshold, digest time) are still step 2/3 scope, not here. Minimum pay is one
  *  currency; a posting's own stated pay is converted into it via the cached rates in `job_currency_rates`
  *  before comparing, so it's checked regardless of what currency the posting states. There's no owner-set
  *  Countries list: eligibility is checked against the owner's own Profile country instead (defaulting to PH). */
@@ -861,6 +861,10 @@ export const jobPreferences = pgTable("job_preferences", {
     .notNull()
     .default(["full_time", "contract"]),
   workSetups: jsonb("work_setups").$type<("remote" | "hybrid" | "on_site")[]>().notNull().default(["remote"]),
+  seniority: jsonb("seniority")
+    .$type<("junior" | "mid" | "senior" | "lead")[]>()
+    .notNull()
+    .default(["junior", "mid", "senior", "lead"]),
   agenciesHide: boolean("agencies_hide").notNull().default(false),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

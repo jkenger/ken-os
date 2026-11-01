@@ -15,6 +15,7 @@ function validInput(overrides: Record<string, unknown> = {}) {
     payPeriod: "year",
     jobTypes: ["full_time"],
     workSetups: ["remote"],
+    seniority: ["mid", "senior"],
     agenciesHide: true,
     ...overrides,
   };
@@ -32,6 +33,7 @@ test("valid input parses to preferences", () => {
     payPeriod: "year",
     jobTypes: ["full_time"],
     workSetups: ["remote"],
+    seniority: ["mid", "senior"],
     agenciesHide: true,
   });
 });
@@ -113,6 +115,10 @@ test("an invalid job type is rejected", () => {
 
 test("an invalid work setup is rejected", () => {
   assert.throws(() => parsePreferences(validInput({ workSetups: ["anywhere"] })), JobsInputError);
+});
+
+test("an invalid seniority is rejected", () => {
+  assert.throws(() => parsePreferences(validInput({ seniority: ["intern"] })), JobsInputError);
 });
 
 test("a non-boolean agenciesHide is rejected", () => {

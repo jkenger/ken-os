@@ -26,6 +26,7 @@ export type FilterablePosting = {
   payPeriod?: PayPeriod | null;
   jobType?: JobType | null;
   workSetup?: WorkSetup | null;
+  seniority?: "junior" | "mid" | "senior" | "lead" | null;
   /** True once extraction has run and the posting's own text said *anything* about who may apply, including
    *  "open to everyone". `countries` only carries meaning, and is only checked, when this is `true` -- `false`
    *  (extraction ran, found nothing) and not-yet-processed (`undefined` in a plain object literal, `null` from a
@@ -98,6 +99,8 @@ export function filterReason(
 
   if (posting.workSetup && !preferences.workSetups.includes(posting.workSetup))
     return `Work setup: ${posting.workSetup}`;
+
+  if (posting.seniority && !preferences.seniority.includes(posting.seniority)) return `Seniority: ${posting.seniority}`;
 
   if (posting.eligibilityStated) {
     const countries = posting.countries ?? [];

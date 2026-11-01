@@ -1,0 +1,1 @@
+ALTER TABLE "job_preferences" ADD COLUMN "seniority" jsonb DEFAULT '["junior","mid","senior","lead"]'::jsonb NOT NULL;

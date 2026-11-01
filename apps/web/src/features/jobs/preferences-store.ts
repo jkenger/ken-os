@@ -6,10 +6,12 @@ import { JobsInputError } from "./api";
 export type PayPeriod = "hour" | "day" | "week" | "month" | "year";
 export type JobType = "full_time" | "part_time" | "contract" | "internship" | "temporary";
 export type WorkSetup = "remote" | "hybrid" | "on_site";
+export type Seniority = "junior" | "mid" | "senior" | "lead";
 
 const PAY_PERIODS: PayPeriod[] = ["hour", "day", "week", "month", "year"];
 const JOB_TYPES: JobType[] = ["full_time", "part_time", "contract", "internship", "temporary"];
 const WORK_SETUPS: WorkSetup[] = ["remote", "hybrid", "on_site"];
+const SENIORITIES: Seniority[] = ["junior", "mid", "senior", "lead"];
 
 export type JobPreferences = {
   /** The owner's own edited role list, searched instead of the Profile's live-derived roles
@@ -26,6 +28,9 @@ export type JobPreferences = {
   payPeriod: PayPeriod;
   jobTypes: JobType[];
   workSetups: WorkSetup[];
+  /** All four by default: a brand-new owner who's never touched this control gets no seniority filtering, the
+   *  same "don't silently filter beyond what's explicitly asked" rule every other filter here follows. */
+  seniority: Seniority[];
   agenciesHide: boolean;
 };
 
@@ -40,6 +45,7 @@ const DEFAULTS: JobPreferences = {
   payPeriod: "month",
   jobTypes: ["full_time", "contract"],
   workSetups: ["remote"],
+  seniority: SENIORITIES,
   agenciesHide: false,
 };
 
@@ -92,6 +98,7 @@ export function parsePreferences(input: Record<string, unknown>): JobPreferences
     payPeriod: payPeriod as PayPeriod,
     jobTypes: cleanEnumList(input.jobTypes, "Job types", JOB_TYPES),
     workSetups: cleanEnumList(input.workSetups, "Work setups", WORK_SETUPS),
+    seniority: cleanEnumList(input.seniority, "Seniority", SENIORITIES),
     agenciesHide,
   };
 }
@@ -110,6 +117,7 @@ export async function getPreferences(userId: string): Promise<JobPreferences> {
     payPeriod: row.payPeriod,
     jobTypes: row.jobTypes,
     workSetups: row.workSetups,
+    seniority: row.seniority,
     agenciesHide: row.agenciesHide,
   };
 }

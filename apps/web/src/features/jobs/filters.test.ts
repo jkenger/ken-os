@@ -16,6 +16,7 @@ const noFilters: JobPreferences = {
   payPeriod: "month",
   jobTypes: ["full_time", "contract"],
   workSetups: ["remote"],
+  seniority: ["junior", "mid", "senior", "lead"],
   agenciesHide: false,
 };
 const rates = { USD: 1, PHP: 56.5, GBP: 0.79 };
@@ -169,6 +170,16 @@ test("a posting whose work setup isn't in the owner's allowed set is filtered", 
 test("a posting with no work setup stated is not filtered for work setup", () => {
   const posting = { ...base, workSetup: null };
   assert.equal(filterReason(posting, { ...noFilters, workSetups: ["remote"] }, now), null);
+});
+
+test("a posting whose seniority isn't in the owner's allowed set is filtered", () => {
+  const posting = { ...base, seniority: "junior" as const };
+  assert.equal(filterReason(posting, { ...noFilters, seniority: ["mid", "senior"] }, now), "Seniority: junior");
+});
+
+test("a posting with no seniority stated is not filtered for seniority", () => {
+  const posting = { ...base, seniority: null };
+  assert.equal(filterReason(posting, { ...noFilters, seniority: ["mid", "senior"] }, now), null);
 });
 
 test("a posting whose stated countries don't include the target country is filtered", () => {

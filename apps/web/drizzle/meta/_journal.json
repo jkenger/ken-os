@@ -365,6 +365,13 @@
       "when": 1793509686919,
       "tag": "0051_sparkling_gwen_stacy",
       "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1793512671731,
+      "tag": "0052_unusual_bloodstorm",
+      "breakpoints": true
     }
   ]
 }

@@ -74,7 +74,7 @@ async function main() {
     const preferences = await import("../src/features/jobs/preferences-store");
     const DEFAULT_SLICE2_PREFS: Omit<
       import("../src/features/jobs/preferences-store").JobPreferences,
-      "roles" | "skipWords" | "skipCompanies" | "postedWithinDays"
+      "roles" | "skipWords" | "skipCompanies" | "postedWithinDays" | "seniority"
     > = {
       minimumPay: null,
       maximumPay: null,
@@ -88,6 +88,7 @@ async function main() {
     const defaults = await preferences.getPreferences(userId);
     assert.deepEqual(defaults, {
       roles: [],
+      seniority: ["junior", "mid", "senior", "lead"],
       skipWords: [],
       skipCompanies: [],
       postedWithinDays: 14,
@@ -97,6 +98,7 @@ async function main() {
 
     await preferences.savePreferences(userId, {
       roles: ["Senior Frontend Engineer", "Full-Stack Developer"],
+      seniority: ["junior", "mid", "senior", "lead"],
       skipWords: ["Sales", "Marketing"],
       skipCompanies: ["Acme"],
       postedWithinDays: 7,
@@ -105,6 +107,7 @@ async function main() {
     const saved = await preferences.getPreferences(userId);
     assert.deepEqual(saved, {
       roles: ["Senior Frontend Engineer", "Full-Stack Developer"],
+      seniority: ["junior", "mid", "senior", "lead"],
       skipWords: ["Sales", "Marketing"],
       skipCompanies: ["Acme"],
       postedWithinDays: 7,
@@ -114,6 +117,7 @@ async function main() {
 
     await preferences.savePreferences(userId, {
       roles: [],
+      seniority: ["junior", "mid", "senior", "lead"],
       skipWords: ["Only this"],
       skipCompanies: [],
       postedWithinDays: 30,
@@ -122,6 +126,7 @@ async function main() {
     const resaved = await preferences.getPreferences(userId);
     assert.deepEqual(resaved, {
       roles: [],
+      seniority: ["junior", "mid", "senior", "lead"],
       skipWords: ["Only this"],
       skipCompanies: [],
       postedWithinDays: 30,
@@ -160,6 +165,7 @@ async function main() {
 
     await preferences.savePreferences(userId, {
       roles: [],
+      seniority: ["junior", "mid", "senior", "lead"],
       skipWords: [],
       skipCompanies: [],
       postedWithinDays: 0,
@@ -310,6 +316,7 @@ async function main() {
 
     await preferences.savePreferences(userId, {
       roles: [],
+      seniority: ["junior", "mid", "senior", "lead"],
       skipWords: [],
       skipCompanies: [],
       postedWithinDays: 365,
@@ -500,6 +507,7 @@ async function main() {
 
     await preferences.savePreferences(userId, {
       roles: [],
+      seniority: ["junior", "mid", "senior", "lead"],
       skipWords: [],
       skipCompanies: [],
       postedWithinDays: 365,
@@ -522,6 +530,7 @@ async function main() {
 
     await preferences.savePreferences(userId, {
       roles: [],
+      seniority: ["junior", "mid", "senior", "lead"],
       skipWords: [],
       skipCompanies: [],
       postedWithinDays: 365,
@@ -599,6 +608,7 @@ async function main() {
 
     await preferences.savePreferences(userId, {
       roles: [],
+      seniority: ["junior", "mid", "senior", "lead"],
       skipWords: [],
       skipCompanies: [],
       postedWithinDays: 365,
@@ -699,6 +709,7 @@ async function main() {
 
     await preferences.savePreferences(userId, {
       roles: [],
+      seniority: ["junior", "mid", "senior", "lead"],
       skipWords: [],
       skipCompanies: [],
       postedWithinDays: 365,
