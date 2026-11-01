@@ -1,54 +1,58 @@
 # Jobs
 
-Status: direct scraping (step 1 below) in progress, 31 Oct 2026. Supersedes the earlier alert-email receiving plan
-(`plans/jobs-receive-and-list.md`, removed): the owner decided scraping-only is simpler than maintaining both a
-scraper and a Gmail-forward fallback. Decisions below were agreed with the owner in chat on 28 Oct 2026, except where
-marked otherwise.
+Status: step 1 (Receive and list) and step 2 (Score) built, 1 Nov 2026. Supersedes the direct-scraping plan
+(`plans/jobs-direct-scraping.md`, superseded) and the earlier alert-email receiving plan
+(`plans/jobs-receive-and-list.md`, removed): hand-built LinkedIn/Indeed scrapers were replaced with
+[freehire](https://github.com/strelov1/freehire), an open-source job search API already aggregating 4.78M+
+postings from 421 sources including real ATS platforms, freeing the effort for CV tailoring and smart matching
+instead (`plans/jobs-freehire-source.md`). Decisions below were agreed with the owner in chat on 28 Oct 2026,
+except where marked otherwise.
 
 ## The idea in one line
 
-Loots collects new postings from LinkedIn, Indeed and OnlineJobs, scores each one against the Profile, and lists the
+Loots collects new postings from freehire and OnlineJobs, scores each one against the Profile, and lists the
 matches on a Jobs page and by email, as soon as they come in.
 
 ## Decisions
 
-| Question            | Decision                                                                                                                                                                                                      |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Sources             | LinkedIn and Indeed through direct scraping, no alert-email path (reversed 31 Oct 2026, see Getting postings in). OnlineJobs through its alerts if it sends them, otherwise a checker (see OnlineJobs below). |
-| Getting postings in | LinkedIn's and Indeed's own search endpoints, polled every minute. No Gmail filter, no forwarding address, no Gmail sign-in: scraping needs nothing from the owner beyond a Profile headline.                 |
-| Email service       | Resend, for sending Loots' own emails (strong match, daily digest). Decided 28 Oct 2026.                                                                                                                      |
-| What to look for    | Roles come from the Profile automatically. No company watchlist.                                                                                                                                              |
-| Working hours       | Each posting is labelled Day shift, Mid shift, Night shift, Flexible or Not listed, in Philippine time. Shown, never used to hide a posting.                                                                  |
-| Strict filters      | Pay, job type, work setup and country hide a posting, but hidden postings stay viewable under Filtered out with the reason. Nothing disappears silently.                                                      |
-| Missing information | A posting that doesn't say (no pay listed, no hours) is kept and marked Not listed, never hidden.                                                                                                             |
-| Preferences         | Every preference is a setting on the Jobs page, with the defaults below.                                                                                                                                      |
-| Where results go    | The Jobs page, an email for each strong match, and a daily digest email.                                                                                                                                      |
+| Question            | Decision                                                                                                                                                                                                                                           |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Sources             | freehire's public search API, polled every minute, no alert-email path (replaced LinkedIn/Indeed direct scraping 1 Nov 2026, see Getting postings in). OnlineJobs through its alerts if it sends them, otherwise a checker (see OnlineJobs below). |
+| Getting postings in | freehire's public search API, polled every minute. No Gmail filter, no forwarding address, no Gmail sign-in, no per-source block/backoff to manage: scraping needs nothing from the owner beyond a Profile headline.                               |
+| Email service       | Resend, for sending Loots' own emails (strong match, daily digest). Decided 28 Oct 2026.                                                                                                                                                           |
+| What to look for    | Roles come from the Profile automatically. No company watchlist.                                                                                                                                                                                   |
+| Working hours       | Each posting is labelled Day shift, Mid shift, Night shift, Flexible or Not listed, in Philippine time. Shown, never used to hide a posting.                                                                                                       |
+| Strict filters      | Pay, job type, work setup and country hide a posting, but hidden postings stay viewable under Filtered out with the reason. Nothing disappears silently.                                                                                           |
+| Missing information | A posting that doesn't say (no pay listed, no hours) is kept and marked Not listed, never hidden.                                                                                                                                                  |
+| Preferences         | Every preference is a setting on the Jobs page, with the defaults below.                                                                                                                                                                           |
+| Where results go    | The Jobs page, an email for each strong match, and a daily digest email.                                                                                                                                                                           |
 
 ## Getting postings in
 
-**Decided 31 Oct 2026, reverses the original alert-email plan.** Direct scraping is the only path for LinkedIn and
-Indeed, using the technique [JobSpy](https://github.com/speedyapply/JobSpy) uses: LinkedIn's signed-out guest search
-endpoint and Indeed's mobile-app GraphQL API (see How they get listings below). The first version of this spec built
-a Gmail-forward alert-email pipeline for release step 1, then kept it as a fallback when scraping was added; both
-have been removed. The owner judged the forwarding address, Gmail filter, and per-site alert setup not worth
-maintaining for a slower path that was no longer needed, favoring one simple mechanism over two redundant ones.
+**Decided 1 Nov 2026, replaces direct LinkedIn/Indeed scraping.** Hand-built scrapers against LinkedIn's signed-out
+guest search endpoint and Indeed's mobile-app GraphQL API worked, but every hour spent fighting each site's
+anti-bot measures (block detection, 24-hour backoff, terms-of-service risk) was an hour not spent on CV tailoring
+or smart matching, which the owner decided to prioritize instead. [freehire](https://github.com/strelov1/freehire)
+(MIT-licensed, self-hostable, verified live before adopting it) already aggregates 4.78M+ open postings from 421
+sources, 160 of them real ATS platforms (Workday, Greenhouse, Lever, iCIMS), via a public, keyless, cooperative
+search API with no documented rate limit and no anti-scraping posture to work around. Full migration details and
+the reasoning behind each decision: `plans/jobs-freehire-source.md`.
 
-- **Speed was the deciding factor.** Neither site offers a public real-time feed: Indeed's Publisher API closed to new
-  users in 2022 and was retired in 2024; LinkedIn has never had one. Polling is the only option, and the limit on
-  "fast" is the scheduler, not the scraper: [cron-job.org](https://cron-job.org) runs a free job every minute. Calling
-  `/api/jobs/check/linkedin` and `/api/jobs/check/indeed` on that cadence gets a posting onto `/jobs` roughly a minute
-  after it appears on the site.
-- **One client, many adapters.** A scraper is just another `RawPosting` source, same as the OnlineJobs checker.
-  Everything after dedup (filter, score, list) never knows which source a posting came from.
-- **Search terms.** Each poll searches with the owner's roles (`deriveRoles(profile)`, already built for Settings),
-  one request per role. No setup: scraping needs nothing from the owner beyond a Profile headline or job title.
-- **Block handling.** A 403 or 429 stops that source for 24 hours (same stop rule as the OnlineJobs checker below).
-  Settings shows each source's state (Running, or Blocked until a time). Unlike the removed alert-email fallback,
-  there is nothing else delivering that source's postings during the block: the owner accepts that a block means a
-  gap, not degraded speed, in exchange for one mechanism instead of two.
-- **Risk accepted 31 Oct 2026 (owner, in chat).** Scraping LinkedIn's and Indeed's own endpoints without signing in
-  breaks each site's terms of service. The likely consequence of a block is the same as OnlineJobs': that source's
-  checker stops for 24 hours. Neither scraper signs in, so the owner's LinkedIn or Indeed account isn't involved.
+- **One search call per role, once a minute.** `/api/jobs/check/freehire` (polled by an outside scheduler, same
+  cadence as before) searches freehire with the owner's roles (`deriveRoles(profile)`, already built for Settings),
+  getting a posting onto `/jobs` roughly a minute after freehire itself has it.
+- **No full-page fetch needed.** Every freehire result already carries the posting's full description inline, so
+  there's no separate "read the full posting" step the way LinkedIn/Indeed needed (see How it works below) — a
+  posting is never Partial for lacking a full read.
+- **No block/backoff state.** freehire is a cooperative, public API, not a site actively trying to stop scraping.
+  A failed request is skipped and retried next poll; there is no block-tracking table or Settings badge for it
+  anymore (`job_scraper_state` was removed).
+- **Structured fields, not just prose.** freehire's own data includes per-posting `countries`, `work_mode`, and an
+  `enrichment` object (salary, employment type, minimum experience) that the extraction step trusts directly when
+  present, only falling back to its own AI reading of the posting's text when freehire doesn't state a field.
+  LinkedIn and Indeed never carried this data at all (confirmed against
+  [JobSpy](https://github.com/speedyapply/JobSpy)'s own source), which is part of why Countries filtering used to
+  need "show by default when unstated" as its fallback — most LinkedIn/Indeed postings never stated anything.
 
 ## OnlineJobs
 
@@ -134,22 +138,23 @@ fallback running against it.
 
 ## How it works
 
-1. **Scrape.** Each source's scraper polls its own endpoint every minute (`/api/jobs/check/<source>`, called by an
-   outside scheduler) and turns the postings it finds directly into `RawPosting`: title, company, location, link, and
-   a source ID when the endpoint provides one.
-2. **Drop repeats.** The same posting can arrive from two sources or two polls. Postings are matched on the source's
-   job ID when there is one, otherwise on title, company and location together.
-3. **Read the full posting.** For postings that pass the strict filters on the list fields alone, Loots opens the
-   public posting page once to read the whole description. If the page can't be read (Indeed often blocks it), the
-   posting is scored from what it has and marked Partial.
-4. **Extract.** One AI call reads the full description and fills structured fields: pay (amount, currency, period),
-   job type, work setup, countries allowed, required hours and time zone, seniority, years required, and a 2-3
-   sentence summary. Anything not stated is left empty, never guessed.
-5. **Filter.** Plain code checks the strict filters below. A posting that fails one goes to Filtered out with the reason.
-6. **Score.** A second AI call compares the extracted posting with the Profile and returns a score from 0 to 100,
+1. **Search.** `/api/jobs/check/freehire` (called by an outside scheduler, once a minute) searches freehire with
+   each of the owner's roles and turns every result directly into a `RawPosting`: title, company, location, link,
+   full description, a source ID, and freehire's own structured countries/work-mode/salary fields when it states
+   them.
+2. **Drop repeats.** The same posting can arrive from two polls, or (rarely) from more than one of freehire's own
+   underlying sources. Postings are matched on the source's job ID when there is one, otherwise on title, company
+   and location together.
+3. **Extract.** One AI call reads the posting's full text (already present from step 1 — no separate full-page
+   fetch) and fills structured fields: pay (amount, currency, period), job type, work setup, countries allowed,
+   required hours and time zone, seniority, years required, and a 2-3 sentence summary. Anything not stated is left
+   empty, never guessed. When freehire's own data already states a field (countries, work mode, employment type,
+   salary), that's trusted directly instead of the AI's own reading of the same prose.
+4. **Filter.** Plain code checks the strict filters below. A posting that fails one goes to Filtered out with the reason.
+5. **Score.** A second AI call compares the extracted posting with the Profile and returns a score from 0 to 100,
    why it fits, what's missing, and the lines from the posting that back each point.
-7. **Shift.** Code converts the posting's required hours to Philippine time and labels the shift (see Working hours).
-8. **Notify.** A score at or above the instant line sends one email right away. Everything new goes into the daily
+6. **Shift.** Code converts the posting's required hours to Philippine time and labels the shift (see Working hours).
+7. **Notify.** A score at or above the instant line sends one email right away. Everything new goes into the daily
    digest.
 
 Both AI jobs follow the structured-output pattern in `packages/agents`: a zod schema as output, a prompt version saved
@@ -159,8 +164,8 @@ tools and nothing in a posting can change a setting.
 ## Roles from the Profile
 
 - Loots builds the roles to look for from the Profile: the headline, the last two job titles, and the skill groups.
-- The Jobs settings show these as Roles, read from the Profile. The LinkedIn and Indeed scrapers, and the OnlineJobs
-  checker if built, each search with them directly, one request per role: no alert setup on any site.
+- The Jobs settings show these as Roles, read from the Profile. freehire, and the OnlineJobs checker if built, each
+  search with them directly, one request per role: no alert setup on any site.
 - A Profile change rescores open postings.
 - Later: the Profile page gets its own job preferences section, and Jobs reads from there.
 
@@ -168,22 +173,23 @@ tools and nothing in a posting can change a setting.
 
 The owner's defaults, plus the fields this spec adds. All live in Jobs settings.
 
-| Setting            | Default                 | Strict filter or shown | Notes                                                       |
-| ------------------ | ----------------------- | ---------------------- | ----------------------------------------------------------- |
-| Minimum pay        | Empty until set         | Strict                 | Needs currency and period too                               |
-| Pay currency       | USD                     | Part of Minimum pay    | Postings in another currency are converted at a daily rate  |
-| Pay period         | Per month               | Part of Minimum pay    | Hourly and yearly postings are converted to it              |
-| Job type           | Full time, Contract     | Strict                 | Part time is the third choice                               |
-| Work setup         | Remote                  | Strict                 | Hybrid and On site are the other choices                    |
-| Countries          | US, AU, UK              | Strict                 | Which employers or markets to show                          |
-| Shifts             | Day, Mid                | Shown                  | Night shift postings are marked Outside shifts              |
-| Seniority          | Mid, Senior             | Shown in the score     | Junior and Lead are the other choices                       |
-| Skip words         | Empty                   | Strict                 | Titles or words that always hide a posting, such as "Sales" |
-| Skip companies     | Empty                   | Strict                 | Companies to always hide, such as a current employer        |
-| Agencies           | Show                    | Strict when Hide       | Recruiting agencies and staffing firms                      |
-| Posted within      | 14 days                 | Strict                 | Reposts keep the first date seen                            |
-| Instant email from | Score 80                | n/a                    | Below this, postings wait for the digest                    |
-| Digest time        | 7:00 AM Philippine time | n/a                    |                                                             |
+| Setting            | Default                   | Strict filter or shown      | Notes                                                                                                                                                                    |
+| ------------------ | ------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Minimum pay        | Empty until set           | Strict                      | Needs currency and period too                                                                                                                                            |
+| Maximum pay        | Empty until set           | Strict                      | Same currency and period as Minimum pay                                                                                                                                  |
+| Pay currency       | USD                       | Part of Minimum/Maximum pay | Postings in another currency are converted at a cached rate                                                                                                              |
+| Pay period         | Per month                 | Part of Minimum/Maximum pay | Hourly and yearly postings are converted to it                                                                                                                           |
+| Job type           | Full time, Contract       | Strict                      | Part time is the third choice                                                                                                                                            |
+| Work setup         | Remote                    | Strict                      | Hybrid and On site are the other choices                                                                                                                                 |
+| Countries          | n/a — no longer a setting | Strict                      | Not owner-set: derived from the Profile's own country. A posting that explicitly lists countries excluding it is filtered; one that states nothing is shown, not hidden. |
+| Shifts             | Day, Mid                  | Shown                       | Night shift postings are marked Outside shifts                                                                                                                           |
+| Seniority          | Mid, Senior               | Shown in the score          | Junior and Lead are the other choices                                                                                                                                    |
+| Skip words         | Empty                     | Strict                      | Titles or words that always hide a posting, such as "Sales"                                                                                                              |
+| Skip companies     | Empty                     | Strict                      | Companies to always hide, such as a current employer                                                                                                                     |
+| Agencies           | Show                      | Strict when Hide            | Recruiting agencies and staffing firms                                                                                                                                   |
+| Posted within      | 14 days                   | Strict                      | Reposts keep the first date seen                                                                                                                                         |
+| Instant email from | Score 80                  | n/a                         | Below this, postings wait for the digest                                                                                                                                 |
+| Digest time        | 7:00 AM Philippine time   | n/a                         |                                                                                                                                                                          |
 
 Minimum pay with no pay listed on the posting: kept and marked Not listed.
 
@@ -226,10 +232,16 @@ One page at `/jobs`, in the module column like Profile.
   Dismiss with a reason. Dismiss asks for one of Not interested, Wrong seniority, Already applied elsewhere, Other
   (with a short text field), before moving the posting to Dismissed. A Filtered out posting shows which filter hid
   it, and Show anyway moves it to New. A Dismissed posting shows the reason, and Undo moves it back to New.
-- **Settings:** the preferences table above, Roles from the Profile, and each scraped source's state (Running,
-  Blocked until a date): LinkedIn and Indeed, plus the OnlineJobs checker's state if it is built.
-- **Before the first posting arrives:** no setup checklist. The empty state asks for a Profile headline or job
-  title if Roles is empty; otherwise it says scraping is running and waiting for a match.
+- **Settings:** the preferences table above, Roles from the Profile, and freehire listed as the source (no
+  Running/Blocked state to show — freehire has no block/backoff concept). The OnlineJobs checker's own state, if it
+  is built, will still need one, since OnlineJobs-style blocking applies to it.
+- **Before the first posting arrives:** a match-preferences form, not a setup checklist (decided 31 Oct 2026, replaces
+  the removed alert-email checklist). Scraping needs nothing from the owner beyond a Profile headline, but matching
+  needs a few numbers no scraper can guess, so the form asks for exactly those: Roles (prefilled from the Profile,
+  editable), Minimum pay (with currency and period) and Shifts. Saving it stores those Preferences
+  fields and starts scraping; the rest of the Preferences table keeps its defaults until changed in Settings. If Roles
+  is still empty after saving, the empty state asks for a Profile headline or job title instead; otherwise it says
+  scraping is running and waiting for a match.
 
 The mockup brief is [docs/mockups/job-finder.md](../mockups/job-finder.md).
 
@@ -240,8 +252,9 @@ Through Resend, for sending only. Loots sends no email today, so this adds the f
 - **Strong match:** one posting, subject "92 · Senior Frontend Engineer, Acme". Body: score, pay, type, setup, shift,
   why it fits, and a link to the posting in Loots.
 - **Daily digest:** new postings since the last digest, grouped by score, plus how many were filtered out and why.
-- **Checker problems:** one email when a scraped source (LinkedIn, Indeed, or the OnlineJobs checker if built) gets
-  blocked or stops finding postings.
+- **Checker problems:** one email when a source stops finding postings (the OnlineJobs checker, if built, getting
+  blocked; freehire itself has no block state to report, but a sustained empty result would still be worth a
+  heads-up).
 - New in `.env.example`: `RESEND_API_KEY` (sending, release step 4) and `JOBS_CHECK_SECRET` (shared by every
   `/api/jobs/check/<source>` route, required now).
 
@@ -254,40 +267,42 @@ New tables, added in one migration. Nothing existing changes.
   came from.
 - `job_matches`: the score, reasons, shift and the owner's state (New, Saved, Applied, Dismissed, Filtered out) for
   each posting, with the prompt version and the Profile version it was scored against.
-- `job_scraper_state`: one row per scraped source (`linkedin`, `indeed`, later `onlinejobs` if the checker is built),
-  the last run's time and result (OK, Blocked, Empty), and `blockedUntil` when a 403 or 429 stopped it.
+
+freehire needs no block/backoff state (no anti-scraping posture to track against) — the `job_scraper_state` table
+this used to need for LinkedIn/Indeed was removed along with the scrapers themselves; `onlinejobs`, if the checker
+is built, will need its own equivalent since it's a site LinkedIn/Indeed-style blocking still applies to.
 
 ## Release steps
 
-1. **Receive and list.** LinkedIn and Indeed scrapers polled every minute, repeat dropping, the Jobs page with New
-   and Filtered out, and settings. No AI yet: filters run on the list fields. In progress, see
-   `plans/jobs-direct-scraping.md`. Decided 31 Oct 2026, see Getting postings in.
-2. **Score.** Full posting read, AI extract and score, shift labels, the side panel.
+1. **Receive and list.** ✅ Built, via freehire's search API (not the LinkedIn/Indeed direct scraping originally
+   planned here — see Getting postings in). Repeat dropping, the Jobs page with New and Filtered out, and settings.
+   `plans/jobs-freehire-source.md`.
+2. **Score.** ✅ Built — full posting read, AI extract and score, shift labels, the side panel. `plans/jobs-score.md`.
 3. **Email.** Strong match emails and the daily digest.
 4. **OnlineJobs.** Its alert parser if it sends alerts; otherwise the checker, if the owner accepts the risk.
 5. **Act on a match.** Saved and Applied, Dismiss with a reason, and Dismiss reasons turned into suggested filter
    changes the owner approves.
 
-Later, not in these steps: a resume tailored to one posting, built from the Profile like the other resumes; a cover note
-draft; a gap check across many postings ("6 of your top 10 ask for AWS").
+Later, not in these steps: a resume tailored to one posting, built from the Profile like the other resumes
+(specified, see `docs/product/cv-tailoring.md`); a cover note draft; a gap check across many postings ("6 of your
+top 10 ask for AWS").
 
 ## Acceptance criteria
 
-- A posting scraped from LinkedIn shows on `/jobs` within about a minute of the scrape that found it.
-- A posting scraped from Indeed shows on `/jobs` within about a minute of the scrape that found it.
-- The same posting from two sources shows once, listing every source.
+- A first visit to `/jobs` with no saved Preferences shows the match-preferences form (Roles, Minimum pay,
+  Shifts); saving it stores those fields and starts the freehire search, with no alert, Gmail or forwarding-address
+  setup anywhere in the flow. (Countries is no longer an owner-set preference — see Preferences below.)
+- A posting found by freehire shows on `/jobs` within about a minute of the search that found it.
+- The same posting found again on a later poll shows once, not duplicated.
 - A posting below Minimum pay shows under Filtered out with "Below minimum pay"; one with no pay shows under New marked
   Not listed.
 - Every posting shows a shift label. A UK 9 to 5 shows Mid shift, 5 PM to 1 AM. No posting is hidden for its shift.
-- Changing a setting refilters existing postings without a new scrape.
+- Changing a setting refilters existing postings without a new search.
 - A score of 80 or more sends exactly one email; scoring the same posting again sends none.
 - Nothing in a posting's text can change a setting, send an email or reach a tool.
-- A 403 or 429 from a LinkedIn or Indeed scrape stops that source for 24 hours.
 - If built, the OnlineJobs checker never sends two requests less than 5 seconds apart, never signs in, and stops for 24
   hours after a 403 or 429.
 - A `/api/jobs/check/<source>` call without the correct `JOBS_CHECK_SECRET` is rejected and runs nothing.
-- The LinkedIn and Indeed scrapers never sign in and never submit anything; both are read-only requests to each
-  site's own guest or app endpoint.
 
 ## Open questions
 
