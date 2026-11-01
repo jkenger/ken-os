@@ -103,6 +103,20 @@ export type PostingView = {
   state: JobMatchState;
   filterReason: string | null;
   sources: { source: AlertSource; link: string }[];
+  processedAt: Date | null;
+  fullDescription: string | null;
+  partial: boolean;
+  summary: string | null;
+  payAmount: number | null;
+  payCurrency: string | null;
+  payPeriod: "hour" | "day" | "week" | "month" | "year" | null;
+  jobType: "full_time" | "part_time" | "contract" | "internship" | "temporary" | null;
+  workSetup: "remote" | "hybrid" | "on_site" | null;
+  countries: string[] | null;
+  shift: string | null;
+  score: number | null;
+  whyFits: { reason: string; citation: string }[];
+  whatsMissing: string[];
 };
 
 export async function listPostings(userId: string, state: JobMatchState): Promise<PostingView[]> {
@@ -116,6 +130,19 @@ export async function listPostings(userId: string, state: JobMatchState): Promis
       firstSeenAt: jobPostings.firstSeenAt,
       state: jobMatches.state,
       filterReason: jobMatches.filterReason,
+      processedAt: jobPostings.processedAt,
+      fullDescription: jobPostings.fullDescription,
+      partial: jobPostings.partial,
+      summary: jobPostings.summary,
+      payAmount: jobPostings.payAmount,
+      payCurrency: jobPostings.payCurrency,
+      payPeriod: jobPostings.payPeriod,
+      jobType: jobPostings.jobType,
+      workSetup: jobPostings.workSetup,
+      countries: jobPostings.countries,
+      shift: jobMatches.shift,
+      score: jobMatches.score,
+      scoreReasons: jobMatches.scoreReasons,
     })
     .from(jobPostings)
     .innerJoin(jobMatches, eq(jobMatches.postingId, jobPostings.id))
@@ -140,7 +167,15 @@ export async function listPostings(userId: string, state: JobMatchState): Promis
     sourcesByPosting.set(row.postingId, list);
   }
 
-  return rows.map((row) => ({ ...row, sources: sourcesByPosting.get(row.id) ?? [] }));
+  return rows.map((row) => {
+    const { scoreReasons, ...rest } = row;
+    return {
+      ...rest,
+      sources: sourcesByPosting.get(row.id) ?? [],
+      whyFits: scoreReasons?.whyFits ?? [],
+      whatsMissing: scoreReasons?.whatsMissing ?? [],
+    };
+  });
 }
 
 /** Re-evaluates every stored posting against the current preferences (docs/product/job-finder.md: "Changing a
