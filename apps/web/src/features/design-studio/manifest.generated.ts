@@ -39,6 +39,32 @@ export const studioManifest: StudioManifest = {
       "scoped": true
     },
     {
+      "id": "ui/avatar",
+      "name": "Avatar",
+      "kind": "primitive",
+      "file": "components/ui/avatar.tsx",
+      "exports": [
+        "Avatar",
+        "AvatarImage",
+        "AvatarFallback",
+        "AvatarGroup",
+        "AvatarGroupCount",
+        "AvatarBadge"
+      ],
+      "variants": [],
+      "uses": [],
+      "tokens": [
+        "primary",
+        "primary-foreground",
+        "muted",
+        "muted-foreground",
+        "border",
+        "radius",
+        "background"
+      ],
+      "slot": "avatar"
+    },
+    {
       "id": "ui/badge",
       "name": "Badge",
       "kind": "primitive",
@@ -1263,6 +1289,7 @@ export const studioManifest: StudioManifest = {
           "name": "Avatar",
           "description": "An image element with a fallback for representing the user.",
           "uses": [],
+          "installed": "ui/avatar",
           "add": "pnpm dlx shadcn@latest add @shadcn/avatar",
           "docs": "https://ui.shadcn.com/docs/components/radix/avatar"
         },
