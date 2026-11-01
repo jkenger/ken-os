@@ -16,7 +16,6 @@ import {
   Palette,
   Library,
   Search,
-  Settings as SettingsIcon,
   Sparkles,
   UserRound,
   X,
@@ -100,7 +99,6 @@ const moduleDetails: Record<
     sections: [
       { label: "New", href: "/jobs", icon: List },
       { label: "Filtered out", href: "/jobs/filtered-out", icon: EyeOff },
-      { label: "Settings", href: "/jobs/settings", icon: SettingsIcon },
     ],
   },
   terms: { title: "Terms", sections: [{ label: "Terms", href: "/terms", icon: BookMarked }] },

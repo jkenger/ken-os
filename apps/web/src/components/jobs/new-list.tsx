@@ -1,16 +1,22 @@
 "use client";
 
+import { Bookmark } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
-import { DotSeparator } from "@/components/dot-separator";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { countryFlag, countryName } from "@/features/jobs/country-flags";
 import type { PostingView } from "@/features/jobs/store";
-import { timeAgo } from "@/features/jobs/time-ago";
-import { sourceWords } from "@/features/jobs/words";
-import { PostingPanel } from "./posting-panel";
 
-// New postings (docs/product/job-finder.md, release step 1 and 2): title, company, source, how long ago it
-// arrived, and once a posting is processed, pay, job type, work setup, country, shift and score. Clicking a row
-// opens the side panel instead of navigating away -- the external link lives there as "Open posting".
+// New postings as cards (docs/mockups/Jobs redesign.html, "Desktop / New (cards)"): company, title, score, a meta
+// row (work setup, countries, job type, seniority, posted), the posting's own snippet truncated to two lines,
+// skill badges, and Save. Clicking anywhere on the card except Save opens its own page at /jobs/[id].
+
+const WORK_SETUP_LABELS: Record<string, string> = {
+  remote: "Remote",
+  hybrid: "Hybrid",
+  on_site: "On-site",
+};
 
 const JOB_TYPE_LABELS: Record<string, string> = {
   full_time: "Full time",
@@ -20,76 +26,117 @@ const JOB_TYPE_LABELS: Record<string, string> = {
   temporary: "Temporary",
 };
 
-const WORK_SETUP_LABELS: Record<string, string> = {
-  remote: "Remote",
-  hybrid: "Hybrid",
-  on_site: "On-site",
+const SENIORITY_LABELS: Record<string, string> = {
+  junior: "Junior",
+  mid: "Mid",
+  senior: "Senior",
+  lead: "Lead",
 };
 
-function payLabel(posting: PostingView): string | null {
-  if (posting.payAmount == null || !posting.payCurrency || !posting.payPeriod) return null;
-  return `${posting.payCurrency} ${Math.round(posting.payAmount).toLocaleString()}/${posting.payPeriod}`;
+const MAX_SKILLS = 5;
+
+function countryMeta(countries: string[]): string | null {
+  if (countries.length === 0) return null;
+  const [first, ...rest] = countries;
+  return rest.length > 0
+    ? `${countryFlag(first!)} ${countryName(first!)} +${rest.length}`
+    : `${countryFlag(first!)} ${countryName(first!)}`;
 }
 
-function processedFields(posting: PostingView): string[] {
-  const fields: string[] = [];
-  const pay = payLabel(posting);
-  if (pay) fields.push(pay);
-  if (posting.jobType) fields.push(JOB_TYPE_LABELS[posting.jobType]);
-  if (posting.workSetup) fields.push(WORK_SETUP_LABELS[posting.workSetup]);
-  if (posting.countries && posting.countries.length > 0) fields.push(posting.countries.join(", "));
-  if (posting.shift) fields.push(posting.shift);
-  return fields;
+function initials(company: string): string {
+  const words = company.trim().split(/\s+/).filter(Boolean);
+  return (words[0]?.[0] ?? "?").toUpperCase() + (words[1]?.[0] ?? "").toUpperCase();
 }
 
-function DottedLine({ items }: { items: string[] }) {
+function SaveButton({ title }: { title: string }) {
+  const [saved, setSaved] = useState(false);
   return (
-    <span className="flex flex-wrap items-center text-xs text-muted-foreground">
-      {items.map((item, index) => (
-        <span key={item} className="inline-flex items-center">
-          {index > 0 && <DotSeparator />}
-          {item}
-        </span>
-      ))}
-    </span>
+    <Button
+      type="button"
+      variant={saved ? "secondary" : "outline"}
+      size="sm"
+      aria-pressed={saved}
+      aria-label={saved ? `Unsave ${title}` : `Save ${title}`}
+      onClick={(event) => {
+        event.preventDefault();
+        setSaved((value) => !value);
+      }}
+      className="shrink-0 gap-1.5"
+    >
+      <Bookmark className={saved ? "fill-current" : undefined} />
+      {saved ? "Saved" : "Save"}
+    </Button>
   );
 }
 
 export function NewList({ postings }: { postings: PostingView[] }) {
-  const [openPosting, setOpenPosting] = useState<PostingView | null>(null);
-
   return (
-    <div className="rounded-lg border">
+    <div className="flex flex-col gap-3">
       {postings.map((posting) => {
-        const fields = posting.processedAt ? processedFields(posting) : [];
+        const metaItems = [
+          posting.workSetup && WORK_SETUP_LABELS[posting.workSetup],
+          countryMeta(posting.countries ?? []),
+          posting.jobType && JOB_TYPE_LABELS[posting.jobType],
+          posting.seniority && SENIORITY_LABELS[posting.seniority],
+        ].filter((item): item is string => Boolean(item));
+        const skills = posting.skills.slice(0, MAX_SKILLS);
+        const overflow = posting.skills.length - skills.length;
+
         return (
-          <Button
-            key={posting.id}
-            type="button"
-            variant="ghost"
-            onClick={() => setOpenPosting(posting)}
-            className="grid h-auto w-full items-start justify-start gap-1 rounded-none border-b p-4 text-left font-normal whitespace-normal last:border-b-0"
-          >
-            <span className="flex w-full items-center justify-between gap-3">
-              <span className="text-sm font-medium">{posting.title}</span>
-              {posting.score != null && (
-                <span className="shrink-0 rounded-full border px-2 py-0.5 text-xs font-medium">{posting.score}</span>
-              )}
-            </span>
-            <DottedLine
-              items={[
-                posting.company,
-                posting.location,
-                sourceWords[posting.sources[0]?.source ?? "freehire"],
-                timeAgo(posting.firstSeenAt),
-              ]}
-            />
-            {fields.length > 0 && <DottedLine items={fields} />}
-          </Button>
+          <div key={posting.id} className="relative rounded-xl border bg-card p-4 hover:bg-muted/40">
+            <Link href={`/jobs/${posting.id}`} className="absolute inset-0" aria-label={posting.title}>
+              <span className="sr-only">
+                {posting.title} at {posting.company}
+              </span>
+            </Link>
+            <div className="relative flex gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-muted text-sm font-semibold text-muted-foreground">
+                {initials(posting.company)}
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold">{posting.title}</p>
+                    <p className="mt-0.5 text-sm text-muted-foreground">{posting.company}</p>
+                  </div>
+                  <div className="relative z-10 flex shrink-0 items-center gap-2">
+                    {posting.score != null && (
+                      <Badge variant="outline" className="gap-1 font-mono">
+                        {posting.score}
+                        <span className="font-sans font-normal text-muted-foreground">match</span>
+                      </Badge>
+                    )}
+                    <SaveButton title={posting.title} />
+                  </div>
+                </div>
+
+                <div className="mt-2.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                  {metaItems.map((item, index) => (
+                    <span key={item} className="flex items-center gap-2">
+                      {index > 0 && <span className="text-border">·</span>}
+                      {item}
+                    </span>
+                  ))}
+                </div>
+
+                <p className="mt-2.5 line-clamp-2 text-sm text-card-foreground">{posting.snippet}</p>
+
+                {posting.skills.length > 0 && (
+                  <div className="mt-3 flex flex-wrap gap-1.5">
+                    {skills.map((skill) => (
+                      <Badge key={skill} variant="secondary">
+                        {skill}
+                      </Badge>
+                    ))}
+                    {overflow > 0 && <Badge variant="secondary">+{overflow}</Badge>}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         );
       })}
       {postings.length === 0 && <p className="p-4 text-sm text-muted-foreground">No new postings</p>}
-      <PostingPanel posting={openPosting} onClose={() => setOpenPosting(null)} />
     </div>
   );
 }

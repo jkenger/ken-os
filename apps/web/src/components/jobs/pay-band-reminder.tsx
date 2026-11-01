@@ -1,18 +1,25 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toaster";
 import type { PayBandSuggestion } from "@/features/jobs/pay-band-suggestion";
+import type { JobPreferences } from "@/features/jobs/preferences-store";
 import { send } from "@/lib/api-client";
 
 // A reminder, not an automatic filter (docs/product/job-finder.md): pay is only ever filtered once the owner
-// confirms a band, here or in Settings -- never silently, since a hidden posting with no visible reason would be
-// confusing the same way an unstated Countries match was.
+// confirms a band, here or in the filter sidebar -- never silently, since a hidden posting with no visible reason
+// would be confusing the same way an unstated Countries match was. Applying it only changes the pay fields --
+// every other stored preference (roles, skip words, job type, ...) is sent back unchanged.
 
-export function PayBandReminder({ suggestion }: { suggestion: PayBandSuggestion }) {
+export function PayBandReminder({
+  suggestion,
+  preferences,
+}: {
+  suggestion: PayBandSuggestion;
+  preferences: JobPreferences;
+}) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [applied, setApplied] = useState(false);
@@ -23,16 +30,11 @@ export function PayBandReminder({ suggestion }: { suggestion: PayBandSuggestion 
     setBusy(true);
     try {
       await send("/api/jobs/preferences", "PUT", {
-        skipWords: [],
-        skipCompanies: [],
-        postedWithinDays: 14,
+        ...preferences,
         minimumPay: suggestion.minimumPay,
         maximumPay: suggestion.maximumPay,
         payCurrency: suggestion.payCurrency,
         payPeriod: suggestion.payPeriod,
-        jobTypes: ["full_time", "contract"],
-        workSetups: ["remote"],
-        agenciesHide: false,
       });
       toast({ tone: "success", title: "Pay filter set" });
       setApplied(true);
@@ -53,14 +55,9 @@ export function PayBandReminder({ suggestion }: { suggestion: PayBandSuggestion 
           {suggestion.maximumPay.toLocaleString()} per {suggestion.payPeriod}
         </span>
       </div>
-      <div className="flex shrink-0 items-center gap-3">
-        <Link href="/jobs/settings" className="text-xs text-muted-foreground underline underline-offset-2">
-          Open Settings
-        </Link>
-        <Button type="button" size="sm" disabled={busy} onClick={() => void apply()}>
-          Use this range
-        </Button>
-      </div>
+      <Button type="button" size="sm" disabled={busy} onClick={() => void apply()} className="shrink-0">
+        Use this range
+      </Button>
     </div>
   );
 }

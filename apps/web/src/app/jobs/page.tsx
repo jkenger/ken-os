@@ -11,17 +11,21 @@ export const dynamic = "force-dynamic";
 
 export default async function Jobs() {
   const session = await requireSession("/jobs");
-  const [profile, postings, preferences] = await Promise.all([
+  const [profile, postings, filteredOut, preferences] = await Promise.all([
     getProfile(session.userId),
     listPostings(session.userId, "new"),
+    listPostings(session.userId, "filtered_out"),
     getPreferences(session.userId),
   ]);
+  const derivedRoles = deriveRoles(profile.details);
   const payBandSuggestion = suggestPayBand(targetCountryFrom(profile.details.contact.country), preferences);
   return (
     <JobsPage
       email={session.email}
-      roles={deriveRoles(profile.details)}
+      effectiveRoles={preferences.roles.length > 0 ? preferences.roles : derivedRoles}
       postings={postings}
+      preferences={preferences}
+      filteredOutCount={filteredOut.length}
       payBandSuggestion={payBandSuggestion}
     />
   );
