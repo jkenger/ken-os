@@ -751,6 +751,12 @@ export const jobPostings = pgTable(
     sourceSalaryCurrency: text("source_salary_currency"),
     sourceSalaryPeriod: text("source_salary_period").$type<"hour" | "day" | "week" | "month" | "year">(),
     sourceExperienceYearsMin: real("source_experience_years_min"),
+    /** freehire's own skill tags and posted/updated timestamps, set once at save time (docs/mockups/job-finder.md,
+     *  "Redesign" -- the card and detail page's skill badges and date line). No AI extraction equivalent exists
+     *  for these, so unlike the `source*` fields above there's nothing to override: they save straight through. */
+    skills: jsonb("skills").$type<string[]>().notNull().default([]),
+    sourcePostedAt: timestamp("source_posted_at", { withTimezone: true }),
+    sourceUpdatedAt: timestamp("source_updated_at", { withTimezone: true }),
     firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).notNull().defaultNow(),
     fullDescription: text("full_description"),
     /** True when every source's page failed to read, so extraction ran on the list fields alone. */

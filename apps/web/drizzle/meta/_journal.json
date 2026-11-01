@@ -351,6 +351,13 @@
       "when": 1793471468042,
       "tag": "0049_skinny_rogue",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1793508807662,
+      "tag": "0050_luxuriant_mysterio",
+      "breakpoints": true
     }
   ]
 }

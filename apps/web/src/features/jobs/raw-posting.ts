@@ -30,6 +30,12 @@ export type RawPosting = {
   sourceSalaryCurrency?: string | null;
   sourceSalaryPeriod?: "hour" | "day" | "week" | "month" | "year" | null;
   sourceExperienceYearsMin?: number | null;
+  /** freehire's own skill tags and posted/updated timestamps. Unlike the `source*` fields above, nothing in
+   *  `process.ts` ever extracts an AI equivalent for these, so there's no override to reason about -- they save
+   *  straight through. */
+  skills?: string[];
+  postedAt?: string | null;
+  updatedAt?: string | null;
 };
 
 /** New and Filtered out are this slice's states; Saved, Applied and Dismissed come with the side panel (step 2+). */

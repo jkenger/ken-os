@@ -244,6 +244,9 @@ async function main() {
         sourceSalaryCurrency: "USD",
         sourceSalaryPeriod: "year",
         sourceExperienceYearsMin: 3,
+        skills: ["typescript", "react", "postgresql"],
+        postedAt: "2026-10-30T09:00:00Z",
+        updatedAt: "2026-10-31T14:47:09Z",
       },
     ]);
     const pendingWithStructuredFields = await store.getPendingPostings(userId, 20);
@@ -259,6 +262,14 @@ async function main() {
     console.log(
       "ok - a freehire posting's structured countries, work mode and employment type round-trip through the DB",
     );
+
+    const structuredRoleListed = (await store.listPostings(userId, "new")).find(
+      (p) => p.title === "Structured Fields Role",
+    )!;
+    assert.deepEqual(structuredRoleListed.skills, ["typescript", "react", "postgresql"]);
+    assert.equal(structuredRoleListed.sourcePostedAt?.toISOString(), "2026-10-30T09:00:00.000Z");
+    assert.equal(structuredRoleListed.sourceUpdatedAt?.toISOString(), "2026-10-31T14:47:09.000Z");
+    console.log("ok - a freehire posting's skills and posted/updated timestamps round-trip through the DB");
 
     const limited = await store.getPendingPostings(userId, 1);
     assert.equal(limited.length, 1);

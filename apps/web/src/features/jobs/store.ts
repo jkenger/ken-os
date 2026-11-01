@@ -69,6 +69,9 @@ export async function savePostings(userId: string, postings: RawPosting[]): Prom
           sourceSalaryCurrency: posting.sourceSalaryCurrency ?? null,
           sourceSalaryPeriod: posting.sourceSalaryPeriod ?? null,
           sourceExperienceYearsMin: posting.sourceExperienceYearsMin ?? null,
+          skills: posting.skills ?? [],
+          sourcePostedAt: posting.postedAt ? new Date(posting.postedAt) : null,
+          sourceUpdatedAt: posting.updatedAt ? new Date(posting.updatedAt) : null,
           firstSeenAt: now,
         });
         const reason = filterReason(
@@ -114,6 +117,9 @@ export type PostingView = {
   workSetup: "remote" | "hybrid" | "on_site" | null;
   countries: string[] | null;
   shift: string | null;
+  skills: string[];
+  sourcePostedAt: Date | null;
+  sourceUpdatedAt: Date | null;
   score: number | null;
   whyFits: { reason: string; citation: string }[];
   whatsMissing: string[];
@@ -141,6 +147,9 @@ export async function listPostings(userId: string, state: JobMatchState): Promis
       workSetup: jobPostings.workSetup,
       countries: jobPostings.countries,
       shift: jobMatches.shift,
+      skills: jobPostings.skills,
+      sourcePostedAt: jobPostings.sourcePostedAt,
+      sourceUpdatedAt: jobPostings.sourceUpdatedAt,
       score: jobMatches.score,
       scoreReasons: jobMatches.scoreReasons,
     })

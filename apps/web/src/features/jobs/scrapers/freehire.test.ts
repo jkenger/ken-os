@@ -61,6 +61,52 @@ test("maps freehire's own enrichment salary and minimum experience as raw, unmod
   assert.equal(withoutSalary.sourceExperienceYearsMin, null, "no experience minimum stated for this result");
 });
 
+test("maps freehire's own skills and posted/updated timestamps as raw, unmodified source signals", () => {
+  const [first] = parseFreehireSearch(fixture);
+  assert.deepEqual(first.skills, [
+    "api",
+    "automation",
+    "bash",
+    "ci-cd",
+    "cloud",
+    "cloud-run",
+    "developer-experience",
+    "devops",
+    "docker",
+    "gcp",
+    "grafana",
+    "infrastructure-as-code",
+    "javascript",
+    "kubernetes",
+    "observability",
+    "opentelemetry",
+    "prometheus",
+    "secrets-management",
+    "terraform",
+  ]);
+  assert.equal(first.postedAt, "2026-10-31T14:47:09Z");
+  assert.equal(first.updatedAt, "2026-10-31T14:47:09Z");
+});
+
+test("a result with no skills array or timestamps maps to an empty list and null dates, never guessed", () => {
+  const broken = JSON.stringify({
+    data: [
+      {
+        public_slug: "x",
+        title: "Role",
+        company: "Acme",
+        location: "Remote",
+        description: "<p>Text.</p>",
+        url: "https://example.com/x",
+      },
+    ],
+  });
+  const [posting] = parseFreehireSearch(broken);
+  assert.deepEqual(posting.skills, []);
+  assert.equal(posting.postedAt, null);
+  assert.equal(posting.updatedAt, null);
+});
+
 test("a result with no countries array at all maps to an empty list, never guessed", () => {
   const broken = JSON.stringify({
     data: [

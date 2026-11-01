@@ -32,6 +32,9 @@ type FreehireResult = {
   url?: string;
   countries?: string[];
   work_mode?: "remote" | "hybrid" | "onsite";
+  skills?: string[];
+  posted_at?: string;
+  updated_at?: string;
   enrichment?: {
     employment_type?: string;
     salary_min?: number;
@@ -74,6 +77,9 @@ export function parseFreehireSearch(responseText: string): RawPosting[] {
       sourceSalaryCurrency: result.enrichment?.salary_currency ?? null,
       sourceSalaryPeriod: result.enrichment?.salary_period ?? null,
       sourceExperienceYearsMin: result.enrichment?.experience_years_min ?? null,
+      skills: result.skills ?? [],
+      postedAt: result.posted_at ?? null,
+      updatedAt: result.updated_at ?? null,
     });
   }
   return postings;
