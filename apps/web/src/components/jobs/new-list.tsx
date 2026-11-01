@@ -79,6 +79,10 @@ export function NewList({ postings }: { postings: PostingView[] }) {
           posting.jobType && JOB_TYPE_LABELS[posting.jobType],
           posting.seniority && SENIORITY_LABELS[posting.seniority],
         ].filter((item): item is string => Boolean(item));
+        // freehire's own snippet is sometimes empty even after processing (no source teaser for that posting).
+        // fullDescription fills in when the full page was read; summary is what's left for a Partial posting
+        // (every source's page failed to read), which never gets a fullDescription at all.
+        const previewText = posting.snippet || posting.fullDescription || posting.summary || "";
         const skills = posting.skills.slice(0, MAX_SKILLS);
         const overflow = posting.skills.length - skills.length;
 
@@ -89,7 +93,7 @@ export function NewList({ postings }: { postings: PostingView[] }) {
                 {posting.title} at {posting.company}
               </span>
             </Link>
-            <div className="relative flex gap-3">
+            <div className="pointer-events-none relative flex gap-3">
               <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-muted text-sm font-semibold text-muted-foreground">
                 {initials(posting.company)}
               </span>
@@ -99,11 +103,11 @@ export function NewList({ postings }: { postings: PostingView[] }) {
                     <p className="text-sm font-semibold">{posting.title}</p>
                     <p className="mt-0.5 text-sm text-muted-foreground">{posting.company}</p>
                   </div>
-                  <div className="relative z-10 flex shrink-0 items-center gap-2">
+                  <div className="pointer-events-auto relative z-10 flex shrink-0 items-center gap-2">
                     {posting.score != null && (
-                      <Badge variant="outline" className="gap-1 font-mono">
+                      <Badge variant="outline" className="h-8 gap-1 rounded-4xl px-3 text-sm">
                         {posting.score}
-                        <span className="font-sans font-normal text-muted-foreground">match</span>
+                        <span className="font-normal text-muted-foreground">match</span>
                       </Badge>
                     )}
                     <SaveButton title={posting.title} />
@@ -119,7 +123,7 @@ export function NewList({ postings }: { postings: PostingView[] }) {
                   ))}
                 </div>
 
-                <p className="mt-2.5 line-clamp-2 text-sm text-card-foreground">{posting.snippet}</p>
+                {previewText && <p className="mt-2.5 line-clamp-2 text-sm text-card-foreground">{previewText}</p>}
 
                 {posting.skills.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-1.5">

@@ -1,10 +1,8 @@
 import { JobsPage } from "@/components/jobs/jobs-page";
 import { getProfile } from "@/features/profile/store";
-import { suggestPayBand } from "@/features/jobs/pay-band-suggestion";
 import { getPreferences } from "@/features/jobs/preferences-store";
 import { deriveRoles } from "@/features/jobs/roles";
 import { listPostings } from "@/features/jobs/store";
-import { targetCountryFrom } from "@/features/jobs/target-country";
 import { requireSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +16,6 @@ export default async function Jobs() {
     getPreferences(session.userId),
   ]);
   const derivedRoles = deriveRoles(profile.details);
-  const payBandSuggestion = suggestPayBand(targetCountryFrom(profile.details.contact.country), preferences);
   return (
     <JobsPage
       email={session.email}
@@ -26,7 +23,6 @@ export default async function Jobs() {
       postings={postings}
       preferences={preferences}
       filteredOutCount={filteredOut.length}
-      payBandSuggestion={payBandSuggestion}
     />
   );
 }

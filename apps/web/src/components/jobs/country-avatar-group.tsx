@@ -32,10 +32,10 @@ export function CountryAvatarGroup({ countries, max = 5 }: { countries: string[]
         <AvatarGroup>
           {shown.map((code) => (
             <Avatar key={code} size="sm" title={countryName(code)}>
-              <AvatarFallback className="font-mono text-[0.625rem]">{code.toUpperCase()}</AvatarFallback>
+              <AvatarFallback className="text-[0.625rem]">{code.toUpperCase()}</AvatarFallback>
             </Avatar>
           ))}
-          {overflow > 0 && <AvatarGroupCount className="font-mono text-xs">+{overflow}</AvatarGroupCount>}
+          {overflow > 0 && <AvatarGroupCount className="text-xs">+{overflow}</AvatarGroupCount>}
         </AvatarGroup>
       </Button>
       {expanded && (

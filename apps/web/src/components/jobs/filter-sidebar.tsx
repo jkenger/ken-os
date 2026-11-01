@@ -1,5 +1,6 @@
 "use client";
 
+import { Check } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -152,7 +153,7 @@ export function FilterSidebar({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h2 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Filters</h2>
-          <Badge className="font-mono">{activeCount} active</Badge>
+          <Badge>{activeCount} active</Badge>
         </div>
         <Button type="button" variant="link" size="xs" onClick={clearAll} className="h-auto p-0">
           Clear all
@@ -236,12 +237,13 @@ export function FilterSidebar({
         <ToggleGroup
           type="multiple"
           variant="outline"
-          spacing={0}
           value={preferences.workSetups}
           onValueChange={(value) => void save({ workSetups: value as WorkSetup[] })}
+          className="h-auto w-full flex-wrap"
         >
           {WORK_SETUP_OPTIONS.map((option) => (
-            <ToggleGroupItem key={option.value} value={option.value}>
+            <ToggleGroupItem key={option.value} value={option.value} className="group gap-1">
+              <Check className="hidden size-3.5 group-data-[state=on]:inline-block" />
               {option.label}
             </ToggleGroupItem>
           ))}
@@ -253,12 +255,13 @@ export function FilterSidebar({
         <ToggleGroup
           type="multiple"
           variant="outline"
-          spacing={0}
           value={preferences.seniority}
           onValueChange={(value) => void save({ seniority: value as Seniority[] })}
+          className="h-auto w-full flex-wrap"
         >
           {SENIORITY_OPTIONS.map((option) => (
-            <ToggleGroupItem key={option.value} value={option.value}>
+            <ToggleGroupItem key={option.value} value={option.value} className="group gap-1">
+              <Check className="hidden size-3.5 group-data-[state=on]:inline-block" />
               {option.label}
             </ToggleGroupItem>
           ))}
@@ -286,9 +289,16 @@ export function FilterSidebar({
           spacing={0}
           value={preferences.agenciesHide ? "hide" : "show"}
           onValueChange={(value) => value && void save({ agenciesHide: value === "hide" })}
+          className="w-full"
         >
-          <ToggleGroupItem value="show">Show</ToggleGroupItem>
-          <ToggleGroupItem value="hide">Hide</ToggleGroupItem>
+          <ToggleGroupItem value="show" className="group flex-1 gap-1">
+            <Check className="hidden size-3.5 group-data-[state=on]:inline-block" />
+            Show
+          </ToggleGroupItem>
+          <ToggleGroupItem value="hide" className="group flex-1 gap-1">
+            <Check className="hidden size-3.5 group-data-[state=on]:inline-block" />
+            Hide
+          </ToggleGroupItem>
         </ToggleGroup>
       </div>
 
