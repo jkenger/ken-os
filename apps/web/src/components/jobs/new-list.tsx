@@ -68,7 +68,7 @@ export function NewList({ postings }: { postings: PostingView[] }) {
             type="button"
             variant="ghost"
             onClick={() => setOpenPosting(posting)}
-            className="grid h-auto w-full gap-1 rounded-none border-b p-4 text-left font-normal last:border-b-0"
+            className="grid h-auto w-full items-start justify-start gap-1 rounded-none border-b p-4 text-left font-normal whitespace-normal last:border-b-0"
           >
             <span className="flex w-full items-center justify-between gap-3">
               <span className="text-sm font-medium">{posting.title}</span>
