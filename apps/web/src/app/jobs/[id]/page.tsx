@@ -28,7 +28,7 @@ export default async function JobPosting({ params }: { params: Promise<{ id: str
   ]);
   const profileSkills = profile.details.skills.flatMap((group) => group.items);
   return (
-    <WorkspaceShell email={session.email} active="jobs" sectionOverrideHref="/jobs" extraCrumb={posting.title}>
+    <WorkspaceShell email={session.email} active="jobs" extraCrumb={posting.title}>
       <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-7xl px-page pt-page pb-section">
         <Link
           href="/jobs"

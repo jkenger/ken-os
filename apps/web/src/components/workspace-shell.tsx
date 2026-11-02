@@ -7,11 +7,9 @@ import {
   Briefcase,
   ChevronRight,
   BookOpenText,
-  EyeOff,
   FileText,
   FlaskConical,
   Globe,
-  List,
   Map as MapIcon,
   Palette,
   Library,
@@ -96,10 +94,11 @@ const moduleDetails: Record<
   },
   jobs: {
     title: "Jobs",
-    sections: [
-      { label: "New", href: "/jobs", icon: List },
-      { label: "Filtered out", href: "/jobs/filtered-out", icon: EyeOff },
-    ],
+    // No sub-items: Jobs itself is the entry point, straight to /jobs (docs/mockups/Jobs redesign.html) -- New
+    // and Filtered out used to be separate nav entries, but New was just Jobs' own landing page under another
+    // name, and Filtered out is still reachable from the results bar's own "N hidden" count, not a standing
+    // destination worth its own sidebar row.
+    sections: [],
   },
   terms: { title: "Terms", sections: [{ label: "Terms", href: "/terms", icon: BookMarked }] },
   // No section column: the studio needs the width for its tree, canvas and inspector (mockup frame A1).
@@ -401,7 +400,6 @@ export function WorkspaceShell({
   sectionTabs = true,
   tab,
   sectionCounts,
-  sectionOverrideHref,
   extraCrumb,
 }: {
   email: string;
@@ -413,10 +411,8 @@ export function WorkspaceShell({
   tab?: EngineeringTab;
   /** A count beside a section in the sidebar, by the section's href. */
   sectionCounts?: Record<string, number>;
-  /** Forces one section selected by its href, for a page whose own pathname doesn't literally match any section
-   *  (a job posting's detail page, reached from and belonging to New, but living at its own /jobs/[id] route). */
-  sectionOverrideHref?: string;
-  /** One more breadcrumb segment after the section, for that same kind of page. */
+  /** One more breadcrumb segment after the module name, for a page that drills into one item within it (a job
+   *  posting's own title under Jobs). */
   extraCrumb?: string;
 }) {
   const detail = moduleDetails[active];
@@ -443,9 +439,7 @@ export function WorkspaceShell({
   const sections = detail.sections.map(({ label, href, icon }, index) => {
     const selected = engineeringTab
       ? tabForPath(href) === engineeringTab
-      : sectionOverrideHref
-        ? href === sectionOverrideHref
-        : href === pathname + hash || (index === 0 && pathname === href && !hash);
+      : href === pathname + hash || (index === 0 && pathname === href && !hash);
     return { key: href, label, href, icon, selected, count: sectionCounts?.[href] };
   });
   const content = termLookup ? <TermLookup module={detail.title}>{children}</TermLookup> : children;
