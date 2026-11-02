@@ -24,6 +24,9 @@ Database checks need `pnpm db:up` (Docker Postgres on `127.0.0.1:5435`) and `pnp
 - `pnpm --filter @ken-os/web test:db:profile`
 - `pnpm --filter @ken-os/web test:db:auth`
 - `pnpm --filter @ken-os/web test:db:memory`
+- `pnpm --filter @ken-os/web test:db:connector`
+- `pnpm --filter @ken-os/web test:db:portfolio`
+- `pnpm --filter @ken-os/web test:db:jobs`
 
 After editing the curriculum YAML, a lesson or a lab, run `pnpm --filter @ken-os/web lab:generate` before `pnpm check`. After changing a component or a token in `globals.css`, run `pnpm --filter @ken-os/web studio:generate`.
 
@@ -42,3 +45,13 @@ After editing the curriculum YAML, a lesson or a lab, run `pnpm --filter @ken-os
 ## Services
 
 The app is a hosted service with env config (`apps/web/.env.example`), local Postgres in `compose.yaml`, and Vercel hosting. For 12-factor service patterns, load the `twelve-factor` skill. The `twelve-factor-audit` agent is available for compliance audits.
+
+## Docs for the feature lifecycle chain
+
+`docs/` already uses flat per-feature files, not nested `docs/specifications/<feature>/` folders. The chain's skills write there directly, matching what's already on disk:
+
+- `specification` writes `docs/product/<feature>.md`.
+- `planning` / `/plan` writes `docs/architecture/<feature>.md` (plan content lives alongside the design, same file family as `docs/architecture/auth-sign-in.md`).
+- `codebase-design` / `adr` writes decisions to `docs/architecture/decisions/` (new folder; everything else about a feature stays in its flat `docs/architecture/<feature>.md`).
+
+There is no `docs/development/`; coding standards and test strategy live in this file and `AGENTS.md`, not a separate doc.

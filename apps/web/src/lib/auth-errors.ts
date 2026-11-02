@@ -3,7 +3,7 @@
  * text and never show raw text from a URL. See docs/architecture/auth-sign-in.md §2 and §4.
  */
 
-export const signInErrorCodes = ["cancelled", "expired", "wrong_account", "unverified", "google"] as const;
+export const signInErrorCodes = ["cancelled", "expired", "unverified", "google"] as const;
 export type SignInErrorCode = (typeof signInErrorCodes)[number];
 
 export interface SignInNotice {
@@ -16,7 +16,6 @@ export interface SignInNotice {
 const signInErrors: Record<SignInErrorCode, SignInNotice> = {
   cancelled: { text: "Sign-in cancelled", variant: "default", action: "continue" },
   expired: { text: "Sign-in expired. Try again", variant: "default", action: "continue" },
-  wrong_account: { text: "This Google account doesn't have access", variant: "destructive", action: "another" },
   unverified: { text: "This Google account's email isn't verified", variant: "destructive", action: "another" },
   google: { text: "Google sign-in failed. Try again", variant: "destructive", action: "continue" },
 };

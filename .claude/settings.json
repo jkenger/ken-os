@@ -1,5 +1,19 @@
 {
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "command": "if [ ! -f \"$CLAUDE_PROJECT_DIR/apps/web/.env\" ]; then MAIN=\"$(git -C \"$CLAUDE_PROJECT_DIR\" worktree list | head -1 | awk '{print $1}')\"; if ! bash \"$MAIN/scripts/setup-worktree.sh\" \"$CLAUDE_PROJECT_DIR\" > \"$CLAUDE_PROJECT_DIR/.claude/setup-worktree.log\" 2>&1; then tail -n 50 \"$CLAUDE_PROJECT_DIR/.claude/setup-worktree.log\"; exit 2; fi; fi",
+            "asyncRewake": true,
+            "timeout": 600,
+            "statusMessage": "Setting up worktree (pnpm install, Postgres, migrations)..."
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit|MultiEdit",

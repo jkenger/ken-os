@@ -4,6 +4,8 @@ Status: implemented 10 Oct 2026 on `feat/auth-sign-in` (all three slices on one 
 
 **25 Oct 2026: the Drive grant (§4) is removed.** Drive stopped being a source for Profile (resumes are uploaded instead, `docs/product/profile-resume.md`, "Step 5 design"), so `/api/auth/google/drive`, the `drive` intent, `finishDriveGrant`, `drive_error` and `src/lib/google.ts` are gone. Sign-in is the only Google flow and no Google token is stored. The `google_connections` table stays, unused, per the migration rule. The Drive parts below are history.
 
+**31 Oct 2026: sign-in is no longer owner-only.** Any Google account with a verified email can sign in; the `OWNER_EMAIL` check in `finishSignIn` and `readSessionToken` is removed, along with the `wrong_account` error code and the "Owner only" card text. `OWNER_EMAIL` still exists as an env var: it names which signed-in user the owner-scoped features (the public Portfolio snapshot, the job-scraping cron routes, the MCP connector) act on, but it no longer gates who can get a session. The "owner-only" wording below is history.
+
 ### Implementation notes
 
 - `requireSession(path, query)` takes the page's query too, so a deep link like `/engineering/learn?area=web` comes back whole.

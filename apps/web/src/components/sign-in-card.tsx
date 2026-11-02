@@ -5,7 +5,7 @@ import { AlertCircle, Info } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { SignInNotice } from "@/lib/auth-errors";
 
 // From the shadcn login-01 block, trimmed to Google only (docs/architecture/auth-sign-in.md §2).
@@ -59,7 +59,6 @@ export function SignInCard({ href, notice, setupHint = null, disabled = false }:
           <CardTitle>
             <h1>Sign in</h1>
           </CardTitle>
-          <CardDescription>Owner only</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           {notice && (

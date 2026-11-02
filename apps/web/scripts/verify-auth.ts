@@ -16,26 +16,21 @@ async function main() {
     throw new Error("This smoke test only runs against local PostgreSQL.");
   }
   const userId = `auth-test-${randomUUID()}`;
-  // A throwaway owner: users.email is unique, so the real owner's row can't be reused.
-  const owner = `${userId}@example.invalid`;
-  process.env.OWNER_EMAIL = owner;
+  // A throwaway address: users.email is unique, so a real account's row can't be reused.
+  const email = `${userId}@example.invalid`;
   try {
-    // signin: wrong account, unverified email and missing fields are refused without writing anything.
-    assert.deepEqual(await finishSignIn({ sub: userId, email: "someone@else.invalid", email_verified: true }), {
-      ok: false,
-      code: "wrong_account",
-    });
-    assert.deepEqual(await finishSignIn({ sub: userId, email: owner, email_verified: false }), {
+    // signin: unverified email and missing fields are refused without writing anything.
+    assert.deepEqual(await finishSignIn({ sub: userId, email, email_verified: false }), {
       ok: false,
       code: "unverified",
     });
-    assert.deepEqual(await finishSignIn({ email: owner, email_verified: true }), { ok: false, code: "google" });
+    assert.deepEqual(await finishSignIn({ email, email_verified: true }), { ok: false, code: "google" });
     assert.equal((await db().select().from(users).where(eq(users.id, userId))).length, 0);
 
-    // signin: creates the user.
-    const signedIn = await finishSignIn({ sub: userId, email: owner, email_verified: true, name: "Owner" });
-    assert.deepEqual(signedIn, { ok: true, session: { userId, email: owner } });
-    assert.equal((await db().select().from(users).where(eq(users.id, userId)))[0]?.name, "Owner");
+    // signin: creates the user, owner or not.
+    const signedIn = await finishSignIn({ sub: userId, email, email_verified: true, name: "Tester" });
+    assert.deepEqual(signedIn, { ok: true, session: { userId, email } });
+    assert.equal((await db().select().from(users).where(eq(users.id, userId)))[0]?.name, "Tester");
     console.log("Auth callback database smoke test passed");
   } finally {
     await db().delete(users).where(eq(users.id, userId));
