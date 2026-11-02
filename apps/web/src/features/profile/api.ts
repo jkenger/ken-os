@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { hasValidOrigin } from "@/lib/origin";
-import { getSession, type Session } from "@/lib/session";
+import { hasValidOrigin } from "@/lib/auth/origin";
+import { getSession, type Session } from "@/lib/auth/session";
 import { messages } from "@/lib/messages";
 import { ProfileInputError } from "./store";
 

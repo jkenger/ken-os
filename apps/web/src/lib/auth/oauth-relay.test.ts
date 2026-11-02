@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { appUrl, signInSetupGap } from "./config";
+import { appUrl, signInSetupGap } from "../config";
 import { googleCallbackUrl, isRelayOrigin, relayTarget, signState, stateOrigin } from "./oauth-relay";
 
 // docs/architecture/auth-sign-in.md §11.

@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { NextResponse, type NextRequest } from "next/server";
-import { appUrl, requiredEnv } from "./config";
+import { appUrl, requiredEnv } from "../config";
 import { googleCallbackUrl, signState } from "./oauth-relay";
 
 /** Cookies that carry one Google round trip. All short-lived, deleted in the callback. */

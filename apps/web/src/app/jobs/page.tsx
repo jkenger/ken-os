@@ -3,7 +3,7 @@ import { getProfile } from "@/features/profile/store";
 import { getPreferences } from "@/features/jobs/preferences-store";
 import { deriveRoles } from "@/features/jobs/roles";
 import { getDistinctCompanies, listPostings } from "@/features/jobs/store";
-import { requireSession } from "@/lib/session";
+import { requireSession } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 

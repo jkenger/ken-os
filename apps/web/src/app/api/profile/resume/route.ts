@@ -4,7 +4,7 @@ import { profileRoute, resumePdfHeaders } from "@/features/profile/api";
 import { renderResumePdf } from "@/features/profile/resume-pdf";
 import { getProfile, saveResumeSettings } from "@/features/profile/store";
 import { messages } from "@/lib/messages";
-import { getSession } from "@/lib/session";
+import { getSession } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
 

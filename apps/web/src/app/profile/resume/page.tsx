@@ -1,6 +1,6 @@
 import { ResumePreview } from "@/components/profile/resume-preview";
 import { getProfile } from "@/features/profile/store";
-import { requireSession } from "@/lib/session";
+import { requireSession } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 

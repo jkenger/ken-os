@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { clearSession } from "@/lib/session";
-import { hasValidOrigin } from "@/lib/origin";
+import { clearSession } from "@/lib/auth/session";
+import { hasValidOrigin } from "@/lib/auth/origin";
 import { messages } from "@/lib/messages";
 
 /** Ends the Loots session. */

@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SignJWT, jwtVerify, type JWTPayload } from "jose";
-import { requiredEnv } from "./config";
+import { requiredEnv } from "../config";
 
 export const SESSION_COOKIE = "ken_os_session";
 const DAY = 60 * 60 * 24;

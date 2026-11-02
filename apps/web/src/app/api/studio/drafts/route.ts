@@ -3,8 +3,8 @@ import { parseDraft } from "@/features/design-studio/drafts";
 import { discardAllDrafts, discardDraft, saveDraft } from "@/features/design-studio/drafts-store";
 import { studioManifest } from "@/features/design-studio/manifest.generated";
 import { messages } from "@/lib/messages";
-import { hasValidOrigin } from "@/lib/origin";
-import { getSession, type Session } from "@/lib/session";
+import { hasValidOrigin } from "@/lib/auth/origin";
+import { getSession, type Session } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
 
