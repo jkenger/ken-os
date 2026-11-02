@@ -209,7 +209,7 @@
    until 30 Oct 2026. The page/block/section tokens below are multiples of it, not their own rem values, so the
    whole layout scales together instead of drifting apart. */
 :root {
-  --spacing: 0.3rem;
+  --spacing: 0.25rem;
 }
 
 /* Spacing for every module page (docs/architecture/design-system.md): one 4px base, one page margin, one gap between

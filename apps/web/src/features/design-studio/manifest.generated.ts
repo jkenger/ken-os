@@ -2671,7 +2671,7 @@ export const studioManifest: StudioManifest = {
     },
     {
       "name": "spacing",
-      "light": "0.3rem"
+      "light": "0.25rem"
     },
     {
       "name": "page",

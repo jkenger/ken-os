@@ -1,5 +1,4 @@
 import type { SignInErrorCode } from "./auth-errors";
-import { ownerEmail } from "./config";
 import { db } from "./db";
 import { users } from "./schema";
 import type { Session } from "./session";
@@ -18,12 +17,11 @@ export interface GoogleProfile {
   name?: string;
 }
 
-/** Finishes sign-in: owner and verified email only, then the user row. */
+/** Finishes sign-in: a verified email, then the user row. Any Google account can sign in. */
 export async function finishSignIn(
   profile: GoogleProfile,
 ): Promise<{ ok: true; session: Session } | { ok: false; code: SignInErrorCode }> {
   if (!profile.sub || !profile.email) return { ok: false, code: "google" };
-  if (profile.email.trim().toLowerCase() !== ownerEmail()) return { ok: false, code: "wrong_account" };
   if (profile.email_verified !== true) return { ok: false, code: "unverified" };
   await db()
     .insert(users)

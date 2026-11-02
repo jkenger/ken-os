@@ -49,16 +49,11 @@ test("every sign-in error code has alert text, and unknown codes never echo the 
     const notice = signInNotice({ error: code });
     assert.ok(notice?.text, code);
   }
-  assert.equal(signInNotice({ error: "wrong_account" })?.action, "another");
   assert.equal(signInNotice({ error: "unverified" })?.action, "another");
   assert.equal(signInNotice({ error: "<script>" })?.text, "Google sign-in failed. Try again");
   assert.equal(signInNotice({ expired: "1" })?.text, "Session ended. Sign in again");
   assert.equal(signInNotice({ signed_out: "1" })?.text, "Signed out");
   assert.equal(signInNotice({}), null);
-});
-
-test("the wrong-account alert never shows an email address", () => {
-  assert.doesNotMatch(signInNotice({ error: "wrong_account" })!.text, /@/);
 });
 
 test("renewal skips under a day, renews over a day, refuses past 90 days", () => {
@@ -97,7 +92,8 @@ test("a session past its expiry or the 90-day cap is invalid", async () => {
   assert.equal(await renewSession(late.token, authTime + SESSION_MAX), null);
 });
 
-test("a session for another email is invalid", async () => {
+test("a session for any email is valid, sign-in is no longer owner-only", async () => {
   const { token } = await signSession({ sub: "user-2", email: "someone@else.test", authTime: 1_000_000 }, 1_000_000);
-  assert.equal(await readSessionToken(token, 1_000_060), null);
+  const claims = await readSessionToken(token, 1_000_060);
+  assert.equal(claims?.email, "someone@else.test");
 });

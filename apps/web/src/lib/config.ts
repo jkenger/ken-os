@@ -20,7 +20,6 @@ export function ownerEmail(): string {
 
 /** The first variable sign-in needs that isn't set, or null when sign-in can start. */
 export function signInSetupGap(): string | null {
-  if (!ownerEmailIsConfigured()) return "OWNER_EMAIL";
   for (const name of ["GOOGLE_CLIENT_ID", "GOOGLE_CLIENT_SECRET"]) if (!process.env[name]) return name;
   if (!process.env.APP_URL && !previewUrl()) return "APP_URL";
   return null;

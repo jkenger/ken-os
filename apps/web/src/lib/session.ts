@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { SignJWT, jwtVerify, type JWTPayload } from "jose";
-import { ownerEmail, requiredEnv } from "./config";
+import { requiredEnv } from "./config";
 
 export const SESSION_COOKIE = "ken_os_session";
 const DAY = 60 * 60 * 24;
@@ -74,14 +74,13 @@ function claimsFrom(payload: JWTPayload): SessionClaims | null {
   return { sub: payload.sub, email: payload.email, authTime, issuedAt: payload.iat };
 }
 
-/** Verifies a session token: signature, expiry, the 90-day cap and the owner email. */
+/** Verifies a session token: signature, expiry and the 90-day cap. */
 export async function readSessionToken(token: string, now = nowSeconds()): Promise<SessionClaims | null> {
   try {
     const { payload } = await jwtVerify(token, secret(), { currentDate: new Date(now * 1000) });
     const claims = claimsFrom(payload);
     if (!claims) return null;
     if (now - claims.authTime >= SESSION_MAX) return null;
-    if (claims.email.trim().toLowerCase() !== ownerEmail()) return null;
     return claims;
   } catch {
     return null;
