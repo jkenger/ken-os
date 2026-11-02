@@ -1,4 +1,4 @@
-import { StudioWorkspace } from "@/components/design-studio/studio-workspace";
+import { StudioWorkspace } from "@/features/design-studio/studio-workspace";
 import { listDrafts } from "@/features/design-studio/drafts-store";
 import { studioManifest } from "@/features/design-studio/manifest.generated";
 import { requireSession } from "@/lib/session";
