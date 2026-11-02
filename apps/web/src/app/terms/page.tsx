@@ -1,4 +1,4 @@
-import { TermsPage } from "@/components/terms/terms-page";
+import { TermsPage } from "@/features/terms/terms-page";
 import { listTerms } from "@/features/terms/store";
 import { requireSession } from "@/lib/auth/session";
 

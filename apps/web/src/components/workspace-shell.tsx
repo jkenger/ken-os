@@ -21,7 +21,7 @@ import {
 import { useEffect, useState, type CSSProperties, type ReactNode } from "react";
 import { AccountMenu } from "@/components/account-menu";
 import { BrandMark } from "@/components/brand";
-import { TermLookup } from "@/components/terms/term-lookup";
+import { TermLookup } from "@/features/terms/term-lookup";
 import { Toaster } from "@/components/ui/toaster";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
