@@ -3,7 +3,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { IconChevronDown } from "@tabler/icons-react";
 import { DotSeparator } from "@/components/dot-separator";
-import { formatDate } from "@/components/lab/words";
+import { formatDate } from "@/features/engineering-lab/words";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";

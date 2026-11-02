@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { IconChevronDown, IconCopy, IconExternalLink } from "@tabler/icons-react";
 import { DotSeparator } from "@/components/dot-separator";
-import { formatDate } from "@/components/lab/words";
+import { formatDate } from "@/features/engineering-lab/words";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";

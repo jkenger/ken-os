@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { PLAN_MESSAGE } from "@/features/engineering-lab/ask-claude";
 import { setupChecklist, type SetupFacts, type SetupItemId } from "@/features/engineering-lab/claude-setup";
-import { AskClaude } from "../ask-claude";
+import { AskClaude } from "../ask-claude-dialog";
 import { cn } from "@/lib/utils";
 import { panel } from "../kit";
 

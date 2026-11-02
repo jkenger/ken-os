@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import type { TopicStatus } from "@ken-os/domain";
 import { DotSeparator } from "@/components/dot-separator";
-import { formatDate } from "@/components/lab/words";
+import { formatDate } from "@/features/engineering-lab/words";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import type { RoadmapView } from "@/features/engineering-lab/roadmap-store";

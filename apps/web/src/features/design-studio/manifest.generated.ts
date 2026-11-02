@@ -933,7 +933,7 @@ export const studioManifest: StudioManifest = {
       "id": "kit/badge",
       "name": "Badge",
       "kind": "wrapper",
-      "file": "components/engineering/kit.tsx",
+      "file": "features/engineering-lab/kit.tsx",
       "exports": [
         "Badge"
       ],
@@ -970,7 +970,7 @@ export const studioManifest: StudioManifest = {
       "id": "kit/back",
       "name": "Back",
       "kind": "wrapper",
-      "file": "components/engineering/kit.tsx",
+      "file": "features/engineering-lab/kit.tsx",
       "exports": [
         "Back"
       ],
@@ -1001,7 +1001,7 @@ export const studioManifest: StudioManifest = {
       "id": "kit/fact",
       "name": "Fact",
       "kind": "wrapper",
-      "file": "components/engineering/kit.tsx",
+      "file": "features/engineering-lab/kit.tsx",
       "exports": [
         "Fact"
       ],
@@ -1028,7 +1028,7 @@ export const studioManifest: StudioManifest = {
       "id": "kit/rail",
       "name": "Rail",
       "kind": "wrapper",
-      "file": "components/engineering/kit.tsx",
+      "file": "features/engineering-lab/kit.tsx",
       "exports": [
         "Rail"
       ],
@@ -1073,7 +1073,7 @@ export const studioManifest: StudioManifest = {
       "id": "kit/coverage",
       "name": "Coverage",
       "kind": "wrapper",
-      "file": "components/engineering/kit.tsx",
+      "file": "features/engineering-lab/kit.tsx",
       "exports": [
         "Coverage"
       ],
@@ -1110,7 +1110,7 @@ export const studioManifest: StudioManifest = {
       "id": "kit/section-title",
       "name": "SectionTitle",
       "kind": "wrapper",
-      "file": "components/engineering/kit.tsx",
+      "file": "features/engineering-lab/kit.tsx",
       "exports": [
         "SectionTitle"
       ],
@@ -1135,7 +1135,7 @@ export const studioManifest: StudioManifest = {
       "id": "kit/notice",
       "name": "Notice",
       "kind": "wrapper",
-      "file": "components/engineering/kit.tsx",
+      "file": "features/engineering-lab/kit.tsx",
       "exports": [
         "Notice"
       ],
