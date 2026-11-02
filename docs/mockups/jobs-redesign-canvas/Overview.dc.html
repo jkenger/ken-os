@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Jobs, overview</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+.lt{--bg:oklch(0.975 0.002 265);--fg:oklch(0.22 0.005 265);--card:oklch(0.995 0.001 265);--muted:oklch(0.945 0.003 265);--mfg:oklch(0.48 0.008 265);--border:oklch(0.885 0.004 265);--side:oklch(0.955 0.003 265);--sacc:oklch(0.915 0.004 265);--pfg:oklch(0.985 0.001 265);--red:oklch(0.53 0.19 25);font-family:Geist,ui-sans-serif,system-ui,sans-serif;color:var(--fg);background:var(--bg);font-size:14px;line-height:1.43}
+.lt *{box-sizing:border-box}
+a{color:oklch(0.22 0.005 265);text-decoration:none}a:hover{color:oklch(0.22 0.005 265);text-decoration:underline}
+.lt button,.lt input,.lt select{font:inherit;color:inherit}
+.lt input::placeholder{color:var(--mfg)}
+.lt input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:var(--fg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 12px;border-radius:10.4px;border:1px solid transparent;font-weight:500;font-size:14px;white-space:nowrap;cursor:pointer;background:transparent}
+.btn-p{background:var(--fg);color:var(--pfg)}
+.btn-o{background:var(--bg);border-color:var(--border)}
+.btn-sm{height:32px;padding:0 10px}
+.btn-xs{height:24px;padding:0 8px;font-size:12px;border-radius:8px}
+.badge{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border-radius:8.8px;border:1px solid transparent;font-size:12px;font-weight:500;white-space:nowrap;line-height:1}
+.b-s{background:var(--muted)}
+.b-o{border-color:var(--border);background:var(--card)}
+.inp{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:8.8px;background:var(--muted);border:1px solid transparent;width:100%;font-size:14px}
+.inp input,.inp select{border:0;background:transparent;outline:0;width:100%;padding:0;appearance:none;min-width:0}
+.ph-head{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mfg);margin:0}
+.mono{font-family:"Geist Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.lbl{font-size:12px;color:var(--mfg)}
+.fl{font-size:14px;font-weight:500;line-height:1;padding:0}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:4px}
+.tg{display:flex;flex-wrap:wrap;gap:2px;padding:2px;border-radius:10.4px;background:var(--muted)}
+.tg button{flex:1;height:30px;padding:0 8px;border:0;border-radius:8.4px;background:transparent;font-size:13px;font-weight:500;color:var(--mfg);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.tg button[aria-pressed=true]{background:var(--card);color:var(--fg);box-shadow:0 0 0 1px var(--border)}
+.rail-b{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--mfg)}
+.rail-b.on{background:var(--sacc);color:var(--fg)}
+.srow{background:var(--card);display:grid;grid-template-columns:20px 140px 1fr;gap:12px;padding:16px 20px;align-items:start}
+.srow h3{margin:0;font-size:14px;font-weight:600;line-height:20px}
+</style>
+</helmet>
+<div class="lt" style="width: 1440px; height: 1000px; display: flex; overflow: hidden">
+  <nav aria-label="Modules" style="width: 48px; flex: none; background: var(--side); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center">
+    <div style="height: 48px; width: 48px; display: grid; place-items: center; border-bottom: 1px solid var(--border)"><span style="width: 24px; height: 24px; border-radius: 4px; background: var(--fg); color: var(--pfg); display: grid; place-items: center; font-weight: 700; font-size: 13px">L</span></div>
+    <div style="display: flex; flex-direction: column; gap: 4px; padding-top: 8px">
+      <a class="rail-b" href="#" aria-label="Today"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"></path></svg></a>
+      <a class="rail-b" href="#" aria-label="Engineering"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7z"></path><path d="m2 17 10 5 10-5M2 12l10 5 10-5"></path></svg></a>
+      <a class="rail-b" href="#" aria-label="Resume"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M9 13h6M9 17h4"></path></svg></a>
+      <a class="rail-b on" href="#" aria-label="Jobs" aria-current="page"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"></path></svg></a>
+      <a class="rail-b" href="#" aria-label="Terms"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"></path></svg></a>
+      <a class="rail-b" href="#" aria-label="Project Memory"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"></ellipse><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"></path></svg></a>
+    </div>
+  </nav>
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+    <header style="height: 48px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--border)">
+      <span style="font-weight: 500">Jobs</span>
+      <div style="display: flex; align-items: center; gap: 8px">
+        <button class="btn btn-o btn-sm" style="color: var(--mfg); font-weight: 400; width: 200px; justify-content: space-between">Jump to<span class="mono" style="font-size: 11px">Ctrl K</span></button>
+        <button class="btn btn-o btn-sm" style="width: 32px; padding: 0; font-size: 12px; font-weight: 600" aria-label="Account">JK</button>
+      </div>
+    </header>
+    <main style="width: 100%; max-width: 1280px; margin: 0 auto; padding: 32px 40px; display: grid; grid-template-columns: 272px 1fr; gap: 24px; align-items: start">
+      <aside id="filters" aria-label="Filters" class="panel" style="display: flex; flex-direction: column">
+        <div style="padding: 12px; border-bottom: 1px solid var(--border)"><label class="inp"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="color: var(--mfg); flex: none"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg><input placeholder="Search" aria-label="Search postings"></label></div>
+        <div style="display: flex; align-items: center; justify-content: space-between; height: 44px; padding: 0 12px 0 16px; border-bottom: 1px solid var(--border)">
+          <div style="display: flex; align-items: center; gap: 8px"><h2 class="ph-head">Filters</h2><span class="badge b-s" style="height: 20px"><span class="mono">4</span> active</span></div>
+          <button class="btn btn-xs">Clear all</button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 18px; padding: 16px">
+          <fieldset style="border: 0; margin: 0; padding: 0; min-width: 0">
+            <legend class="fl" style="margin-bottom: 10px">Pay</legend>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+              <label style="display: flex; flex-direction: column; gap: 4px"><span class="lbl">Minimum</span><span class="inp" style="box-shadow: 0 0 0 3px oklch(0.52 0.16 262 / 0.3); border-color: oklch(0.52 0.16 262)"><input placeholder="Any" inputmode="numeric"></span></label>
+              <label style="display: flex; flex-direction: column; gap: 4px"><span class="lbl">Maximum</span><span class="inp"><input placeholder="Any" inputmode="numeric"></span></label>
+            </div>
+          </fieldset>
+          <fieldset style="border: 0; margin: 0; padding: 0">
+            <legend class="fl" style="margin-bottom: 10px">Job type</legend>
+            <div style="display: flex; flex-direction: column; gap: 10px">
+              <label style="display: flex; align-items: center; gap: 8px"><input type="checkbox" checked="">Full time</label>
+              <label style="display: flex; align-items: center; gap: 8px"><input type="checkbox" checked="">Contract</label>
+              <label style="display: flex; align-items: center; gap: 8px"><input type="checkbox">Part time</label>
+            </div>
+          </fieldset>
+          <div role="group" aria-labelledby="ows" style="display: flex; flex-direction: column; gap: 10px">
+            <span id="ows" class="fl">Work setup</span>
+            <div class="tg"><button aria-pressed="true">Remote</button><button aria-pressed="false">Hybrid</button><button aria-pressed="false">On site</button></div>
+          </div>
+          <div role="group" aria-labelledby="osn" style="display: flex; flex-direction: column; gap: 10px">
+            <span id="osn" class="fl">Seniority</span>
+            <div class="tg"><button aria-pressed="false">Junior</button><button aria-pressed="true">Mid</button><button aria-pressed="true">Senior</button><button aria-pressed="false">Lead</button></div>
+          </div>
+          <label style="display: flex; flex-direction: column; gap: 10px"><span class="fl">Skip words</span><span class="inp"><input placeholder="Add a word"></span></label>
+          <label style="display: flex; flex-direction: column; gap: 10px"><span class="fl">Posted within</span><span class="inp"><select><option>14 days</option></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="flex: none"><path d="m6 9 6 6 6-6"></path></svg></span></label>
+          <div class="lbl">Skip companies and Agencies below</div>
+        </div>
+      </aside>
+      <section aria-labelledby="ov-title" style="display: flex; flex-direction: column; gap: 20px; min-width: 0">
+        <div style="padding: 0 4px; display: flex; flex-direction: column; gap: 4px">
+          <h1 id="ov-title" style="margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.02em">No postings yet</h1>
+          <p style="margin: 0; color: var(--mfg)">Jobs searches freehire for your roles and scores each posting against your Profile</p>
+        </div>
+        <div class="panel" style="overflow: hidden">
+          <div style="display: flex; align-items: center; justify-content: space-between; height: 44px; padding: 0 20px; border-bottom: 1px solid var(--border)">
+            <h2 class="ph-head">Setup status</h2>
+            <span class="lbl"><span class="mono">2</span> of <span class="mono">3</span> ready</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 1px; background: var(--border)">
+            <div class="srow">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Ready" style="margin-top: 1px"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg>
+              <div><h3>Roles</h3><div class="lbl">Ready</div></div>
+              <div style="display: flex; flex-direction: column; gap: 8px">
+                <div style="display: flex; flex-wrap: wrap; gap: 6px"><span class="badge b-o">Full-stack Engineer</span><span class="badge b-o">Frontend Engineer</span><span class="badge b-o">Software Engineer</span></div>
+                <div class="lbl">From your Profile headline and last two titles</div>
+              </div>
+            </div>
+            <div class="srow">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="Ready" style="margin-top: 1px"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg>
+              <div><h3>Preferences</h3><div class="lbl">Defaults</div></div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <div>Remote · Full time, Contract · Mid, Senior · Posted within 14 days</div>
+                <div class="lbl">Minimum pay not set, so every pay passes</div>
+              </div>
+            </div>
+            <div class="srow">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3.5 3" role="img" aria-label="Not running" style="margin-top: 1px; color: var(--mfg)"><circle cx="12" cy="12" r="9"></circle></svg>
+              <div><h3>Last checked</h3><div class="lbl">Never</div></div>
+              <div style="display: flex; flex-direction: column; gap: 6px">
+                <div style="font-weight: 500">No check has run yet</div>
+                <div class="lbl" style="font-size: 13px">The scheduler should call the freehire check every minute. If this stays at Never, the scheduler isn't set up or can't reach Loots</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 0 4px">
+          <a class="btn btn-p" href="#filters" style="color: var(--pfg); text-decoration: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M2 14h4M10 8h4M18 16h4"></path></svg>Edit filters</a>        </div>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

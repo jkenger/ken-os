@@ -31,3 +31,6 @@ apps/web/src/app/globals.css
 # Impeccable skill, vendored as upstream ships it (pbakaus/impeccable); refresh by copying, never reformat
 .claude/skills/impeccable
 .claude/agents/impeccable-*.md
+
+# Design canvas source, as the canvas editor saves it; reformatting breaks the round trip
+docs/mockups/jobs-redesign-canvas

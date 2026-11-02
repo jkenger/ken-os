@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Filters, none set</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+.lt{--bg:oklch(0.975 0.002 265);--fg:oklch(0.22 0.005 265);--card:oklch(0.995 0.001 265);--muted:oklch(0.945 0.003 265);--mfg:oklch(0.48 0.008 265);--border:oklch(0.885 0.004 265);--pfg:oklch(0.985 0.001 265);font-family:Geist,ui-sans-serif,system-ui,sans-serif;color:var(--fg);background:var(--bg);font-size:14px;line-height:1.43}
+.lt *{box-sizing:border-box}
+a{color:oklch(0.22 0.005 265)}a:hover{color:oklch(0.22 0.005 265)}
+.lt button,.lt input,.lt select{font:inherit;color:inherit}
+.lt input::placeholder{color:var(--mfg)}
+.lt input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:var(--fg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid transparent;font-weight:500;white-space:nowrap;cursor:pointer;background:transparent}
+.btn-xs{height:24px;padding:0 8px;font-size:12px;border-radius:8px}
+.btn[disabled]{opacity:.5;cursor:default}
+.badge{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 8px;border-radius:8.8px;font-size:12px;font-weight:500;white-space:nowrap;line-height:1}
+.b-s{background:var(--muted)}
+.inp{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:8.8px;background:var(--muted);border:1px solid transparent;width:100%;font-size:14px}
+.inp input,.inp select{border:0;background:transparent;outline:0;width:100%;padding:0;appearance:none;min-width:0}
+.ph-head{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mfg);margin:0}
+.mono{font-family:"Geist Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.lbl{font-size:12px;color:var(--mfg)}
+.fl{font-size:14px;font-weight:500;line-height:1;padding:0}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:4px}
+.tg{display:flex;flex-wrap:wrap;gap:2px;padding:2px;border-radius:10.4px;background:var(--muted)}
+.tg button{flex:1;height:30px;padding:0 8px;border:0;border-radius:8.4px;background:transparent;font-size:13px;font-weight:500;color:var(--mfg);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.tg button[aria-pressed=true]{background:var(--card);color:var(--fg);box-shadow:0 0 0 1px var(--border)}
+</style>
+</helmet>
+<div class="lt" style="width: 320px; height: 1180px; padding: 20px">
+  <aside aria-label="Filters" class="panel" style="display: flex; flex-direction: column">
+    <div style="display: flex; align-items: center; justify-content: space-between; height: 48px; padding: 0 12px 0 16px; border-bottom: 1px solid var(--border)">
+      <div style="display: flex; align-items: center; gap: 8px"><h2 class="ph-head">Filters</h2><span class="badge b-s"><span class="mono">0</span> active</span></div>
+      <button class="btn btn-xs" disabled="">Clear all</button>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 20px; padding: 16px">
+      <fieldset style="border: 0; margin: 0; padding: 0; min-width: 0">
+        <legend class="fl" style="margin-bottom: 10px">Pay</legend>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+          <label style="display: flex; flex-direction: column; gap: 4px"><span class="lbl">Minimum</span><span class="inp"><input placeholder="Any" inputmode="numeric"></span></label>
+          <label style="display: flex; flex-direction: column; gap: 4px"><span class="lbl">Maximum</span><span class="inp"><input placeholder="Any" inputmode="numeric"></span></label>
+          <label style="display: flex; flex-direction: column; gap: 4px"><span class="lbl">Currency</span><span class="inp"><select><option>USD</option></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="m6 9 6 6 6-6"></path></svg></span></label>
+          <label style="display: flex; flex-direction: column; gap: 4px"><span class="lbl">Period</span><span class="inp"><select><option>Per month</option></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="m6 9 6 6 6-6"></path></svg></span></label>
+        </div>
+      </fieldset>
+      <fieldset style="border: 0; margin: 0; padding: 0">
+        <legend class="fl" style="margin-bottom: 10px">Job type</legend>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <label style="display: flex; align-items: center; gap: 8px"><input type="checkbox">Full time</label>
+          <label style="display: flex; align-items: center; gap: 8px"><input type="checkbox">Contract</label>
+          <label style="display: flex; align-items: center; gap: 8px"><input type="checkbox">Part time</label>
+        </div>
+      </fieldset>
+      <div role="group" aria-labelledby="ws" style="display: flex; flex-direction: column; gap: 10px">
+        <span id="ws" class="fl">Work setup</span>
+        <div class="tg"><button aria-pressed="false">Remote</button><button aria-pressed="false">Hybrid</button><button aria-pressed="false">On site</button></div>
+      </div>
+      <div role="group" aria-labelledby="sn" style="display: flex; flex-direction: column; gap: 10px">
+        <span id="sn" class="fl">Seniority</span>
+        <div class="tg"><button aria-pressed="false">Junior</button><button aria-pressed="false">Mid</button><button aria-pressed="false">Senior</button><button aria-pressed="false">Lead</button></div>
+      </div>
+      <label style="display: flex; flex-direction: column; gap: 10px">
+        <span class="fl">Skip words</span>
+        <span class="inp"><input placeholder="Add a word"></span>
+      </label>
+      <label style="display: flex; flex-direction: column; gap: 10px">
+        <span class="fl">Skip companies</span>
+        <span class="inp"><input placeholder="Add a company"></span>
+      </label>
+      <div role="group" aria-labelledby="ag" style="display: flex; flex-direction: column; gap: 10px">
+        <span id="ag" class="fl">Agencies</span>
+        <div class="tg"><button aria-pressed="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Show</button><button aria-pressed="false">Hide</button></div>
+      </div>
+      <label style="display: flex; flex-direction: column; gap: 10px">
+        <span class="fl">Posted within</span>
+        <span class="inp"><select><option>Any time</option><option>14 days</option></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="m6 9 6 6 6-6"></path></svg></span>
+      </label>
+    </div>
+  </aside>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":320,"height":1180}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

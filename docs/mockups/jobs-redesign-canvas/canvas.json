@@ -1,0 +1,180 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Company-empty.dc.html": {
+      "h": 420,
+      "title": "Job detail / Company tab, empty",
+      "w": 880,
+      "x": 800,
+      "y": 2460
+    },
+    "Detail.dc.html": {
+      "h": 1560,
+      "is_interactive": true,
+      "title": "Desktop / Job detail",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "Filters-applied.dc.html": {
+      "h": 1180,
+      "title": "Filter sidebar / Applied",
+      "w": 320,
+      "x": 400,
+      "y": 2000
+    },
+    "Filters-empty.dc.html": {
+      "h": 1180,
+      "title": "Filter sidebar / Empty",
+      "w": 320,
+      "x": 0,
+      "y": 2000
+    },
+    "Logo-states.dc.html": {
+      "h": 340,
+      "title": "Company logo / Loaded, pending, miss",
+      "w": 880,
+      "x": 800,
+      "y": 2000
+    },
+    "Main.dc.html": {
+      "h": 1560,
+      "title": "Desktop / New (cards)",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "Onboarding.dc.html": {
+      "h": 1560,
+      "title": "Desktop / Onboarding",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "Phone-detail.dc.html": {
+      "h": 2240,
+      "title": "Phone / Job detail",
+      "w": 390,
+      "x": 470,
+      "y": 3260
+    },
+    "Phone-filters.dc.html": {
+      "h": 1500,
+      "title": "Phone / Filters sheet",
+      "w": 390,
+      "x": 1410,
+      "y": 3260
+    },
+    "Phone-new.dc.html": {
+      "h": 1900,
+      "title": "Phone / New",
+      "w": 390,
+      "x": 0,
+      "y": 3260
+    },
+    "Phone-onboarding.dc.html": {
+      "h": 1960,
+      "title": "Phone / Onboarding",
+      "w": 390,
+      "x": 940,
+      "y": 3260
+    },
+    "Heading-options.dc.html": {
+      "x": 1760,
+      "y": 2000,
+      "w": 1184,
+      "h": 940,
+      "title": "New heading / Three directions"
+    },
+    "Overview.dc.html": {
+      "x": 0,
+      "y": 6000,
+      "w": 1440,
+      "h": 1000,
+      "title": "Desktop / Overview, no postings yet"
+    },
+    "Status-strip.dc.html": {
+      "x": 1520,
+      "y": 6000,
+      "w": 1440,
+      "h": 1000,
+      "title": "Desktop / New with the status strip"
+    },
+    "Phone-overview.dc.html": {
+      "x": 3040,
+      "y": 6000,
+      "w": 390,
+      "h": 1400,
+      "title": "Phone / Overview, no postings yet"
+    },
+    "Last-checked.dc.html": {
+      "x": 3510,
+      "y": 6000,
+      "w": 880,
+      "h": 560,
+      "title": "Last checked / Never, working, failing"
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-11-01T09:00:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "t_desktop": {
+      "kind": "title1",
+      "maxW": 4480,
+      "text": "Desktop, 1440",
+      "w": 240,
+      "x": 0,
+      "y": -280
+    },
+    "t_parts": {
+      "kind": "title1",
+      "maxW": 1680,
+      "text": "Filter sidebar, logo and empty states",
+      "w": 240,
+      "x": 0,
+      "y": 1740
+    },
+    "t_phone": {
+      "kind": "title1",
+      "maxW": 1800,
+      "text": "Phone, 390",
+      "w": 240,
+      "x": 0,
+      "y": 3000
+    },
+    "t_overview": {
+      "x": 0,
+      "y": 5740,
+      "text": "Overview (2 Nov)",
+      "kind": "title1",
+      "maxW": 4390
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Heading-options.dc.html",
+    "Detail.dc.html",
+    "Onboarding.dc.html",
+    "Filters-empty.dc.html",
+    "Filters-applied.dc.html",
+    "Logo-states.dc.html",
+    "Company-empty.dc.html",
+    "Phone-new.dc.html",
+    "Phone-detail.dc.html",
+    "Phone-onboarding.dc.html",
+    "Phone-filters.dc.html",
+    "Overview.dc.html",
+    "Status-strip.dc.html",
+    "Phone-overview.dc.html",
+    "Last-checked.dc.html"
+  ],
+  "pages": [],
+  "title": "Jobs redesign"
+}

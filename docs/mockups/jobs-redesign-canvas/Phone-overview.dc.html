@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Jobs, overview, phone</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+.lt{--bg:oklch(0.975 0.002 265);--fg:oklch(0.22 0.005 265);--card:oklch(0.995 0.001 265);--muted:oklch(0.945 0.003 265);--mfg:oklch(0.48 0.008 265);--border:oklch(0.885 0.004 265);--pfg:oklch(0.985 0.001 265);font-family:Geist,ui-sans-serif,system-ui,sans-serif;color:var(--fg);background:var(--bg);font-size:14px;line-height:1.43}
+.lt *{box-sizing:border-box}
+a{color:oklch(0.22 0.005 265);text-decoration:none}a:hover{color:oklch(0.22 0.005 265)}
+.lt button{font:inherit;color:inherit}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:44px;padding:0 14px;border-radius:10.4px;border:1px solid transparent;font-weight:500;font-size:15px;white-space:nowrap;cursor:pointer;background:transparent}
+.btn-p{background:var(--fg);color:var(--pfg)}
+.badge{display:inline-flex;align-items:center;height:24px;padding:0 8px;border-radius:8.8px;border:1px solid var(--border);background:var(--card);font-size:12px;font-weight:500;white-space:nowrap}
+.ph-head{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mfg);margin:0}
+.mono{font-family:"Geist Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.lbl{font-size:12px;color:var(--mfg)}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:4px}
+.srow{background:var(--card);padding:16px;display:flex;flex-direction:column;gap:8px}
+.srow .hd{display:flex;align-items:center;gap:10px}
+.srow h3{margin:0;font-size:15px;font-weight:600;flex:1}
+</style>
+</helmet>
+<div class="lt" style="width: 390px; height: 1400px; display: flex; flex-direction: column">
+  <header style="height: 48px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 4px 0 2px; border-bottom: 1px solid var(--border)">
+    <div style="display: flex; align-items: center; gap: 2px">
+      <button class="btn" style="width: 44px; padding: 0" aria-label="Menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg></button>
+      <span style="font-weight: 500">Jobs</span>
+    </div>
+    <button class="btn" style="width: 44px; padding: 0" aria-label="Account"><span style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid var(--border); display: grid; place-items: center; font-size: 12px; font-weight: 600">JK</span></button>
+  </header>
+  <main style="padding: 24px 16px 32px; display: flex; flex-direction: column; gap: 20px">
+    <div style="display: flex; flex-direction: column; gap: 4px">
+      <h1 style="margin: 0; font-size: 20px; font-weight: 600; letter-spacing: -0.02em">No postings yet</h1>
+      <p style="margin: 0; color: var(--mfg)">Jobs searches freehire for your roles and scores each posting against your Profile</p>
+    </div>
+    <section class="panel" style="overflow: hidden" aria-labelledby="pss">
+      <div style="display: flex; align-items: center; justify-content: space-between; height: 44px; padding: 0 16px; border-bottom: 1px solid var(--border)">
+        <h2 id="pss" class="ph-head">Setup status</h2>
+        <span class="lbl"><span class="mono">2</span> of <span class="mono">3</span> ready</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 1px; background: var(--border)">
+        <div class="srow">
+          <div class="hd"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg><h3>Roles</h3><span class="lbl">Ready</span></div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px"><span class="badge">Full-stack Engineer</span><span class="badge">Frontend Engineer</span><span class="badge">Software Engineer</span></div>
+          <div class="lbl">From your Profile headline and last two titles</div>
+        </div>
+        <div class="srow">
+          <div class="hd"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg><h3>Preferences</h3><span class="lbl">Defaults</span></div>
+          <div>Remote · Full time, Contract · Mid, Senior · Posted within 14 days</div>
+          <div class="lbl">Minimum pay not set, so every pay passes</div>
+        </div>
+        <div class="srow">
+          <div class="hd"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3.5 3" aria-hidden="true" style="color: var(--mfg)"><circle cx="12" cy="12" r="9"></circle></svg><h3>Last checked</h3><span class="lbl">Never</span></div>
+          <div style="font-weight: 500">No check has run yet</div>
+          <div class="lbl" style="font-size: 13px">The scheduler should call the freehire check every minute. If this stays at Never, the scheduler isn't set up or can't reach Loots</div>
+        </div>
+      </div>
+    </section>
+    <a class="btn btn-p" href="Phone-filters.dc.html" style="width: 100%; color: var(--pfg)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M2 14h4M10 8h4M18 16h4"></path></svg>Edit filters</a>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":1400}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

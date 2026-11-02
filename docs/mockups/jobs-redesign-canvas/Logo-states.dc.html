@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Company logo states</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+.lt{--bg:oklch(0.975 0.002 265);--fg:oklch(0.22 0.005 265);--card:oklch(0.995 0.001 265);--muted:oklch(0.945 0.003 265);--mfg:oklch(0.48 0.008 265);--border:oklch(0.885 0.004 265);font-family:Geist,ui-sans-serif,system-ui,sans-serif;color:var(--fg);background:var(--bg);font-size:14px;line-height:1.43}
+.lt *{box-sizing:border-box}
+a{color:oklch(0.22 0.005 265)}a:hover{color:oklch(0.22 0.005 265)}
+.ph-head{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mfg);margin:0}
+.lbl{font-size:12px;color:var(--mfg)}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:4px}
+.logo{width:40px;height:40px;border-radius:4px;display:grid;place-items:center;flex:none;border:1px solid var(--border);background:var(--card)}
+.ini{background:var(--muted);color:var(--mfg);font-weight:600;font-size:13px;border-color:transparent}
+.skel{background:var(--muted);border-color:transparent;animation:pulse 1.6s ease-in-out infinite}
+.skl{background:var(--muted);border-radius:4px;animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.45}}
+</style>
+</helmet>
+<div class="lt" style="width: 880px; height: 340px; padding: 24px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-content: start">
+  <section style="display: flex; flex-direction: column; gap: 10px">
+    <h2 class="ph-head">Loaded</h2>
+    <div class="panel" style="padding: 16px; display: flex; gap: 12px; align-items: flex-start">
+      <div class="logo" role="img" aria-label="Tidepool logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M2 9c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M2 15c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2"></path></svg></div>
+      <div><div style="font-size: 13px; color: var(--mfg)">Tidepool</div><div style="font-weight: 600">Senior Full-stack Engineer</div></div>
+    </div>
+    <p class="lbl" style="margin: 0; font-size: 13px">Image from the domain lookup, on a card fill with a seam, so a white logo still has an edge</p>
+  </section>
+  <section style="display: flex; flex-direction: column; gap: 10px">
+    <h2 class="ph-head">Pending</h2>
+    <div class="panel" style="padding: 16px; display: flex; gap: 12px; align-items: flex-start">
+      <div class="logo skel" role="img" aria-label="Loading logo"></div>
+      <div><div style="font-size: 13px; color: var(--mfg)">Brightline Payments</div><div style="font-weight: 600">Software Engineer, Platform</div></div>
+    </div>
+    <p class="lbl" style="margin: 0; font-size: 13px">Skeleton tile at the same size. Name and title render at once, never wait on the logo</p>
+  </section>
+  <section style="display: flex; flex-direction: column; gap: 10px">
+    <h2 class="ph-head">Miss</h2>
+    <div class="panel" style="padding: 16px; display: flex; gap: 12px; align-items: flex-start">
+      <div class="logo ini" aria-hidden="true">HH</div>
+      <div><div style="font-size: 13px; color: var(--mfg)">Halcyon Health</div><div style="font-weight: 600">Frontend Engineer (React)</div></div>
+    </div>
+    <p class="lbl" style="margin: 0; font-size: 13px">No domain, or the lookup failed: two initials on Wash. Also the fallback for a broken image</p>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":880,"height":340}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>
