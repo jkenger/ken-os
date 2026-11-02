@@ -1,10 +1,14 @@
+import { cn } from "@/lib/utils";
+
 /**
- * A dot between two short pieces of inline text ("Acme Inc · Remote"). A rendered circle
- * instead of a literal "·" character, so its size and position don't depend on a font's own
- * glyph metrics. Unlike InlineSeparator (a vertical rule for a row of items), this sits inside
- * one line of text. Uses `inline-flex`, not `inline-block`: this project's `--spacing-block`
- * token collides with Tailwind's built-in `inline-block` utility and silently adds a width.
+ * A middle dot between items on one line ("Remote · PH +10 · Full time"), the inline counterpart to
+ * `InlineSeparator`'s vertical rule. There's no shadcn primitive for a bare glyph, so this is the one place that
+ * sets its character and color -- every inline dot goes through here instead of a literal "·" at the call site.
  */
-export function DotSeparator() {
-  return <span className="mx-2 inline-flex size-[3px] shrink-0 rounded-full bg-muted-foreground/60 align-middle" />;
+export function DotSeparator({ className }: { className?: string }) {
+  return (
+    <span aria-hidden="true" className={cn("text-[1.4em] leading-none text-border", className)}>
+      &middot;
+    </span>
+  );
 }

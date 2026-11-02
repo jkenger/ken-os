@@ -37,31 +37,33 @@ export type FilterablePosting = {
 };
 
 /** The strict filters (docs/product/job-finder.md): skip words, skip companies, posted within, and — once a
- *  posting has been through `/api/jobs/process` — Minimum/Maximum pay, Job type, Work setup, Countries and
- *  Agencies. Checked in this order, the first match wins, so a posting always has exactly one reason when it's
- *  filtered. `context.targetCountry` is the owner's own country (from Profile, defaulting to PH) -- there's no
- *  separate owner-set Countries list.
+ *  posting has been through `/api/jobs/process` — Minimum/Maximum pay, Job type, Work setup, Seniority, Countries
+ *  and Agencies. Checked in this order, the first match wins, so a posting always has exactly one reason when
+ *  it's filtered. `preferences.countries` is the owner's own chosen list, same shape as skip words -- empty means
+ *  no restriction at all, not "filter against my Profile country" (there's no such link anymore).
  *
- *  Countries only filters a posting that *explicitly* lists countries excluding the target -- same "not stated,
- *  don't filter" rule as Minimum/Maximum pay. An earlier version filtered any processed posting that said nothing
- *  about eligibility at all ("Country: not stated"), on the theory that showing it by default let through local,
- *  non-PH-reachable roles indistinguishable from ones genuinely open everywhere. In practice LinkedIn and Indeed's
- *  public pages carry no structured eligibility field at all (confirmed against JobSpy's own source --
- *  github.com/speedyapply/JobSpy), so that policy ended up hiding nearly every LinkedIn/Indeed posting, including
- *  ones that would genuinely be fine for the owner -- a worse trade than the one it was meant to fix. Reverted
- *  (plans/jobs-filters-and-wwr-source.md): `eligibilityStated` now only gates whether `countries` is trusted at
- *  all, not whether the posting is shown. `false` or not-yet-processed (`undefined`/`null`) never filters for
- *  Country. `true` with an empty `countries` means the posting explicitly said it's open to everyone, also never
- *  filtered. `true` with a non-empty list checks membership as before. `context.currencyRates` is the last cached
- *  snapshot a posting's own stated pay is converted through before comparing to Minimum/Maximum pay; missing or
- *  unconvertable pay is still never filtered -- that tradeoff only applies to Countries. */
+ *  Countries only filters a posting that *explicitly* lists countries excluding every one of the owner's chosen
+ *  countries -- same "not stated, don't filter" rule as Minimum/Maximum pay. An earlier version filtered any
+ *  processed posting that said nothing about eligibility at all ("Country: not stated"), on the theory that
+ *  showing it by default let through local, non-reachable roles indistinguishable from ones genuinely open
+ *  everywhere. In practice LinkedIn and Indeed's public pages carry no structured eligibility field at all
+ *  (confirmed against JobSpy's own source -- github.com/speedyapply/JobSpy), so that policy ended up hiding
+ *  nearly every LinkedIn/Indeed posting, including ones that would genuinely be fine for the owner -- a worse
+ *  trade than the one it was meant to fix. Reverted (plans/jobs-filters-and-wwr-source.md): `eligibilityStated`
+ *  now only gates whether `countries` is trusted at all, not whether the posting is shown. `false` or
+ *  not-yet-processed (`undefined`/`null`) never filters for Country. `true` with an empty `countries` means the
+ *  posting explicitly said it's open to everyone, also never filtered. `true` with a non-empty list checks
+ *  membership against the owner's chosen list, but only once that list is non-empty itself -- an owner who's
+ *  never touched Countries sees every country, the same rule every other list in this file follows.
+ *  `context.currencyRates` is the last cached snapshot a posting's own stated pay is converted through before
+ *  comparing to Minimum/Maximum pay; missing or unconvertable pay is still never filtered -- that tradeoff only
+ *  applies to Countries. */
 export function filterReason(
   posting: FilterablePosting,
   preferences: JobPreferences,
   now: Date = new Date(),
-  context: { targetCountry?: string; currencyRates?: Record<string, number> } = {},
+  context: { currencyRates?: Record<string, number> } = {},
 ): string | null {
-  const targetCountry = context.targetCountry ?? "PH";
   const currencyRates = context.currencyRates ?? {};
 
   const title = posting.title.toLowerCase();
@@ -102,10 +104,12 @@ export function filterReason(
 
   if (posting.seniority && !preferences.seniority.includes(posting.seniority)) return `Seniority: ${posting.seniority}`;
 
-  if (posting.eligibilityStated) {
+  if (posting.eligibilityStated && preferences.countries.length > 0) {
     const countries = posting.countries ?? [];
     if (countries.length > 0) {
-      const eligible = countries.some((code) => code.toUpperCase() === targetCountry.toUpperCase());
+      const eligible = countries.some((code) =>
+        preferences.countries.some((chosen) => chosen.toUpperCase() === code.toUpperCase()),
+      );
       if (!eligible) return `Country: ${countries[0]}`;
     }
   }

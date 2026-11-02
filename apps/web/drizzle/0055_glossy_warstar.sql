@@ -1,0 +1,1 @@
+ALTER TABLE "job_preferences" ADD COLUMN "shifts" jsonb DEFAULT '["day","mid"]'::jsonb NOT NULL;

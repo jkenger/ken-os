@@ -6,6 +6,7 @@ import { checkFreehire } from "@/features/jobs/check-freehire";
 import { getPreferences } from "@/features/jobs/preferences-store";
 import { deriveRoles } from "@/features/jobs/roles";
 import { getProfile } from "@/features/profile/store";
+import { freehireDetailUrl, parseFreehireDetail } from "@/features/jobs/scrapers/freehire";
 import { savePostings } from "@/features/jobs/store";
 
 export const runtime = "nodejs";
@@ -39,7 +40,13 @@ export async function GET(request: Request) {
       const response = await fetch(url);
       return { status: response.status, text: await response.text() };
     },
-    savePostings: (postings) => savePostings(owner.id, postings),
+    savePostings: (postings) =>
+      savePostings(owner.id, postings, async (sourceId) => {
+        const slug = sourceId.replace(/^fh-/, "");
+        const response = await fetch(freehireDetailUrl(slug));
+        if (response.status !== 200) return null;
+        return parseFreehireDetail(await response.text());
+      }),
   });
 
   if (!result.ok) return NextResponse.json({ error: result.reason }, { status: 401 });

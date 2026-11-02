@@ -1,7 +1,11 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { WorkspaceShell } from "@/components/workspace-shell";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { formatBoardName } from "@/features/jobs/job-boards";
 import type { JobPreferences } from "@/features/jobs/preferences-store";
 import { sortPostings, type SortKey } from "@/features/jobs/sort-postings";
 import type { PostingView } from "@/features/jobs/store";
@@ -22,14 +26,22 @@ export function JobsPage({
   email,
   effectiveRoles,
   postings,
+  profileSkills,
   preferences,
   filteredOutCount,
+  boardFilter,
 }: {
   email: string;
   effectiveRoles: string[];
   postings: PostingView[];
+  profileSkills: string[];
   preferences: JobPreferences;
   filteredOutCount: number;
+  /** Set from the `?board=` URL param (a job detail page's "Sourced from" link); scopes the list to postings
+   *  freehire itself pulled from that one board, as opposed to a `job_preferences` field -- this filter lives in
+   *  the URL, not saved preferences, since it's a one-off "show me where this came from", not a standing
+   *  setting. */
+  boardFilter?: string;
 }) {
   const [sort, setSort] = useState<SortKey>("score");
   const [search, setSearch] = useState("");
@@ -44,7 +56,17 @@ export function JobsPage({
 
   return (
     <WorkspaceShell email={email} active="jobs">
-      <div className="min-h-[calc(100vh-88px)] w-full px-page py-page">
+      <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-7xl px-page py-page">
+        {boardFilter && (
+          <Badge variant="secondary" className="mb-3 gap-1 py-0 pr-0.5">
+            Source: {formatBoardName(boardFilter)}
+            <Button type="button" variant="ghost" size="icon-xs" aria-label="Clear source filter" asChild>
+              <Link href="/jobs" className="size-4 rounded-full">
+                ×
+              </Link>
+            </Button>
+          </Badge>
+        )}
         {postings.length > 0 ? (
           <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[17rem_1fr]">
             <FilterSidebar preferences={preferences} search={search} onSearchChange={setSearch} />
@@ -56,7 +78,7 @@ export function JobsPage({
                 sort={sort}
                 onSortChange={setSort}
               />
-              <NewList postings={visible} />
+              <NewList postings={visible} profileSkills={profileSkills} />
             </div>
           </div>
         ) : (

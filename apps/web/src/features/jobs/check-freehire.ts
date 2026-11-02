@@ -1,8 +1,8 @@
 import type { RawPosting } from "./raw-posting";
 import { freehireSearchUrl, parseFreehireSearch } from "./scrapers/freehire";
 
-const FRESHNESS_DAYS = 1;
-const RESULTS_PER_KEYWORD = 25;
+const FRESHNESS_DAYS = 14;
+const RESULTS_PER_KEYWORD = 100;
 
 /**
  * Searches freehire for each of the owner's roles (plans/jobs-freehire-source.md). Unlike the LinkedIn/Indeed

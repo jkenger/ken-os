@@ -1,0 +1,1 @@
+ALTER TABLE "job_preferences" ADD COLUMN "countries" jsonb DEFAULT '[]'::jsonb NOT NULL;

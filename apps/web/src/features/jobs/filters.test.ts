@@ -9,6 +9,8 @@ const noFilters: JobPreferences = {
   roles: [],
   skipWords: [],
   skipCompanies: [],
+  countries: [],
+  shifts: ["day", "mid"],
   postedWithinDays: 14,
   minimumPay: null,
   maximumPay: null,
@@ -182,45 +184,43 @@ test("a posting with no seniority stated is not filtered for seniority", () => {
   assert.equal(filterReason(posting, { ...noFilters, seniority: ["mid", "senior"] }, now), null);
 });
 
-test("a posting whose stated countries don't include the target country is filtered", () => {
+test("a posting is never filtered for country when the owner hasn't chosen any -- the default, nothing edited yet", () => {
   const posting = { ...base, eligibilityStated: true, countries: ["DE"] };
-  assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), "Country: DE");
+  assert.equal(filterReason(posting, noFilters, now), null);
+});
+
+test("a posting whose stated countries don't include any of the owner's chosen countries is filtered", () => {
+  const posting = { ...base, eligibilityStated: true, countries: ["DE"] };
+  assert.equal(filterReason(posting, { ...noFilters, countries: ["PH"] }, now), "Country: DE");
 });
 
 test("a processed posting that states no eligibility at all is shown, not filtered -- most postings never say, and hiding them hid genuinely-reachable roles too", () => {
   const posting = { ...base, eligibilityStated: false, countries: [] };
-  assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), null);
+  assert.equal(filterReason(posting, { ...noFilters, countries: ["PH"] }, now), null);
 });
 
 test("a processed posting that explicitly says it's open to everyone (stated, empty list) is not filtered", () => {
   const posting = { ...base, eligibilityStated: true, countries: [] };
-  assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), null);
+  assert.equal(filterReason(posting, { ...noFilters, countries: ["PH"] }, now), null);
 });
 
 test("a posting whose eligibilityStated field is undefined (not yet processed) is not filtered for country", () => {
-  assert.equal(filterReason(base, noFilters, now, { targetCountry: "PH" }), null);
+  assert.equal(filterReason(base, { ...noFilters, countries: ["PH"] }, now), null);
 });
 
 test("a posting whose eligibilityStated field is null (not yet processed, as a nullable DB column reads it) is not filtered for country", () => {
   const posting = { ...base, eligibilityStated: null };
-  assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), null);
+  assert.equal(filterReason(posting, { ...noFilters, countries: ["PH"] }, now), null);
 });
 
-test("a posting whose stated countries include the target country is not filtered", () => {
+test("a posting whose stated countries include one of the owner's chosen countries is not filtered", () => {
   const posting = { ...base, eligibilityStated: true, countries: ["DE", "PH"] };
-  assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), null);
+  assert.equal(filterReason(posting, { ...noFilters, countries: ["PH"] }, now), null);
 });
 
-test("the target country matching is case-insensitive", () => {
+test("country matching is case-insensitive", () => {
   const posting = { ...base, eligibilityStated: true, countries: ["ph"] };
-  assert.equal(filterReason(posting, noFilters, now, { targetCountry: "PH" }), null);
-});
-
-test("the target country defaults to PH when none is given", () => {
-  const posting = { ...base, eligibilityStated: true, countries: ["PH"] };
-  assert.equal(filterReason(posting, noFilters, now), null);
-  const excluded = { ...base, eligibilityStated: true, countries: ["DE"] };
-  assert.equal(filterReason(excluded, noFilters, now), "Country: DE");
+  assert.equal(filterReason(posting, { ...noFilters, countries: ["PH"] }, now), null);
 });
 
 test("an agency posting is filtered only when Agencies is set to Hide", () => {
@@ -235,5 +235,5 @@ test("a non-agency posting is never filtered for Agencies, even when set to Hide
 });
 
 test("a not-yet-processed posting (no extracted fields at all) only gets the list-field checks", () => {
-  assert.equal(filterReason(base, { ...noFilters, minimumPay: 80000 }, now, { targetCountry: "US" }), null);
+  assert.equal(filterReason(base, { ...noFilters, minimumPay: 80000 }, now), null);
 });

@@ -1,0 +1,1 @@
+ALTER TABLE "job_postings" ADD COLUMN "description_html" text;

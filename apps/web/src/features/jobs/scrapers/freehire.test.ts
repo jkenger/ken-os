@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "node:test";
-import { freehireSearchUrl, parseFreehireSearch } from "./freehire";
+import { freehireDetailUrl, freehireSearchUrl, parseFreehireDetail, parseFreehireSearch } from "./freehire";
 
 const fixture = readFileSync(join(import.meta.dirname, "fixtures/freehire-search.json"), "utf8");
 
@@ -29,6 +29,28 @@ test("the HTML description decodes to plain text in the snippet", () => {
   assert.ok(first.snippet.includes("Help our engineers spend more time building great experiences"));
   assert.ok(!first.snippet.includes("<p>"), "no HTML tags remain");
   assert.ok(!first.snippet.includes("&amp;"), "no unescaped entities remain");
+});
+
+test("the raw HTML description is kept separately, unstripped, for formatted display", () => {
+  const [first] = parseFreehireSearch(fixture);
+  assert.ok(first.descriptionHtml!.includes("<p>"), "HTML tags are preserved");
+  assert.ok(first.descriptionHtml!.includes("Help our engineers spend more time building great experiences"));
+});
+
+test("a result with no description at all maps descriptionHtml to null, never guessed", () => {
+  const broken = JSON.stringify({
+    data: [
+      {
+        public_slug: "x",
+        title: "Role",
+        company: "Acme",
+        location: "Remote",
+        url: "https://example.com/x",
+      },
+    ],
+  });
+  const [posting] = parseFreehireSearch(broken);
+  assert.equal(posting.descriptionHtml, null);
 });
 
 test("maps freehire's own structured countries, work mode and employment type as raw, unmodified source signals", () => {
@@ -88,6 +110,33 @@ test("maps freehire's own skills and posted/updated timestamps as raw, unmodifie
   assert.equal(first.updatedAt, "2026-10-31T14:47:09Z");
 });
 
+test("maps freehire's own source field to originBoard, distinct from this app's own source attribution", () => {
+  const postings = parseFreehireSearch(fixture);
+  const [first] = postings;
+  assert.equal(first.source, "freehire", "this app's own attribution is always freehire");
+  assert.equal(first.originBoard, "whatjobs-uk", "but the real underlying board is freehire's own source field");
+
+  const workday = postings.find((p) => p.company === "zekelman")!;
+  assert.equal(workday.originBoard, "workday");
+});
+
+test("a result with no source field at all maps originBoard to null, never guessed", () => {
+  const broken = JSON.stringify({
+    data: [
+      {
+        public_slug: "x",
+        title: "Role",
+        company: "Acme",
+        location: "Remote",
+        description: "<p>Text.</p>",
+        url: "https://example.com/x",
+      },
+    ],
+  });
+  const [posting] = parseFreehireSearch(broken);
+  assert.equal(posting.originBoard, null);
+});
+
 test("a result with no skills array or timestamps maps to an empty list and null dates, never guessed", () => {
   const broken = JSON.stringify({
     data: [
@@ -143,4 +192,26 @@ test("builds the search URL with the keyword, freshness window and limit", () =>
   assert.equal(parsed.searchParams.get("q"), "Senior Backend Engineer");
   assert.equal(parsed.searchParams.get("posted_within_days"), "3");
   assert.equal(parsed.searchParams.get("limit"), "20");
+});
+
+test("builds the one-job detail URL from a public_slug, url-encoded", () => {
+  assert.equal(
+    freehireDetailUrl("full-stack-engineer-careers-lendinvest-com-pprkkfml"),
+    "https://freehire.me/api/v1/jobs/full-stack-engineer-careers-lendinvest-com-pprkkfml",
+  );
+});
+
+test("parses the complete description off the one-job detail response", () => {
+  const response = JSON.stringify({ data: { public_slug: "x", description: "<p>The complete text.</p>" } });
+  assert.equal(parseFreehireDetail(response), "<p>The complete text.</p>");
+});
+
+test("a detail response with a blank or missing description parses to null, never guessed", () => {
+  assert.equal(parseFreehireDetail(JSON.stringify({ data: { public_slug: "x", description: "" } })), null);
+  assert.equal(parseFreehireDetail(JSON.stringify({ data: { public_slug: "x" } })), null);
+  assert.equal(parseFreehireDetail(JSON.stringify({ data: null })), null);
+});
+
+test("malformed JSON from the detail endpoint parses to null, not a thrown error", () => {
+  assert.equal(parseFreehireDetail("not json"), null);
 });

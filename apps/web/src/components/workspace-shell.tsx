@@ -291,12 +291,16 @@ function ShellInset({
   title,
   sections,
   tabs,
+  extraCrumb,
   children,
 }: {
   email: string;
   title: string;
   sections: Section[];
   tabs: boolean;
+  /** One more breadcrumb segment after the section, for a page that drills into one item within it (a job
+   *  posting's own title under Jobs / New). */
+  extraCrumb?: string;
   children: ReactNode;
 }) {
   const { open, isMobile } = useSidebar();
@@ -314,7 +318,7 @@ function ShellInset({
             title="Ctrl B"
           />
           <InlineSeparator className="mr-1 hidden h-4 md:block" />
-          <nav aria-label="Breadcrumb" className="min-w-0">
+          <nav aria-label="Breadcrumb" className="my-4 min-w-0">
             <ol className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
               <li className={cn("truncate", currentSection && "hidden sm:inline-flex")}>
                 {sections[0] && currentSection ? (
@@ -330,8 +334,27 @@ function ShellInset({
                   <li className="hidden sm:inline-flex" aria-hidden="true">
                     <ChevronRight className="size-3.5" />
                   </li>
+                  <li
+                    className={cn("truncate font-normal", extraCrumb ? "hidden sm:inline-flex" : "text-foreground")}
+                    aria-current={extraCrumb ? undefined : "page"}
+                  >
+                    {extraCrumb ? (
+                      <Link className="transition-colors hover:text-foreground" href={currentSection.href}>
+                        {currentSection.label}
+                      </Link>
+                    ) : (
+                      currentSection.label
+                    )}
+                  </li>
+                </>
+              )}
+              {extraCrumb && (
+                <>
+                  <li className="hidden sm:inline-flex" aria-hidden="true">
+                    <ChevronRight className="size-3.5" />
+                  </li>
                   <li className="truncate font-normal text-foreground" aria-current="page">
-                    {currentSection.label}
+                    {extraCrumb}
                   </li>
                 </>
               )}
@@ -378,6 +401,8 @@ export function WorkspaceShell({
   sectionTabs = true,
   tab,
   sectionCounts,
+  sectionOverrideHref,
+  extraCrumb,
 }: {
   email: string;
   active: Module;
@@ -388,6 +413,11 @@ export function WorkspaceShell({
   tab?: EngineeringTab;
   /** A count beside a section in the sidebar, by the section's href. */
   sectionCounts?: Record<string, number>;
+  /** Forces one section selected by its href, for a page whose own pathname doesn't literally match any section
+   *  (a job posting's detail page, reached from and belonging to New, but living at its own /jobs/[id] route). */
+  sectionOverrideHref?: string;
+  /** One more breadcrumb segment after the section, for that same kind of page. */
+  extraCrumb?: string;
 }) {
   const detail = moduleDetails[active];
   const pathname = usePathname();
@@ -413,7 +443,9 @@ export function WorkspaceShell({
   const sections = detail.sections.map(({ label, href, icon }, index) => {
     const selected = engineeringTab
       ? tabForPath(href) === engineeringTab
-      : href === pathname + hash || (index === 0 && pathname === href && !hash);
+      : sectionOverrideHref
+        ? href === sectionOverrideHref
+        : href === pathname + hash || (index === 0 && pathname === href && !hash);
     return { key: href, label, href, icon, selected, count: sectionCounts?.[href] };
   });
   const content = termLookup ? <TermLookup module={detail.title}>{children}</TermLookup> : children;
@@ -435,7 +467,7 @@ export function WorkspaceShell({
         className="min-h-screen bg-sidebar font-sans text-foreground"
       >
         <ShellSidebar email={email} active={active} moduleList={modules} sections={sections} />
-        <ShellInset email={email} title={detail.title} sections={sections} tabs={sectionTabs}>
+        <ShellInset email={email} title={detail.title} sections={sections} tabs={sectionTabs} extraCrumb={extraCrumb}>
           {content}
         </ShellInset>
       </SidebarProvider>

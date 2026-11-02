@@ -4,9 +4,6 @@ Status: redesign brief added 1 Nov 2026, not yet drawn. The 28 Oct 2026 frames b
 panel, checklist-style Settings) are superseded by "Redesign" below, kept only for history. Spec:
 [job-finder.md](../product/job-finder.md).
 
-Mockups: Figma file [KEOS Jobs](https://www.figma.com/design/pnBihWjurFSwlxNDu22XvC), owned by the Ken account (team
-ANXS). Light theme only so far.
-
 ## Redesign (1 Nov 2026): cards, a filter sidebar, a full detail page
 
 From the owner, verbatim: a more informational, detailed `/jobs`. Two columns (filter sidebar, job list) instead of

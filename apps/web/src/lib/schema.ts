@@ -757,6 +757,15 @@ export const jobPostings = pgTable(
     skills: jsonb("skills").$type<string[]>().notNull().default([]),
     sourcePostedAt: timestamp("source_posted_at", { withTimezone: true }),
     sourceUpdatedAt: timestamp("source_updated_at", { withTimezone: true }),
+    /** freehire's own HTML description, unstripped (docs/mockups/Jobs redesign.html: the detail page's
+     *  formatted Description tab). Untrusted third-party markup -- sanitized at render time, never saved
+     *  pre-sanitized so the sanitizer's own rules can change later without re-scraping. */
+    descriptionHtml: text("description_html"),
+    /** The ATS or job board freehire itself pulled this posting from ("greenhouse", "workday", "whatjobs-uk",
+     *  ...; freehire's own `source` field) -- set once at save time from `RawPosting.originBoard`. Shown to the
+     *  owner as "Sourced from"; distinct from `job_posting_sources.source`, which is always "freehire" and just
+     *  names which of this app's own scrapers found the posting. */
+    originBoard: text("origin_board"),
     firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).notNull().defaultNow(),
     fullDescription: text("full_description"),
     /** True when every source's page failed to read, so extraction ran on the list fields alone. */
@@ -838,11 +847,10 @@ export const jobMatches = pgTable(
   (table) => [index("job_matches_user_state_idx").on(table.userId, table.state)],
 );
 
-/** The owner's Jobs filter preferences (docs/product/job-finder.md, Preferences table). Shifts and timing
- *  (instant-email threshold, digest time) are still step 2/3 scope, not here. Minimum pay is one
- *  currency; a posting's own stated pay is converted into it via the cached rates in `job_currency_rates`
- *  before comparing, so it's checked regardless of what currency the posting states. There's no owner-set
- *  Countries list: eligibility is checked against the owner's own Profile country instead (defaulting to PH). */
+/** The owner's Jobs filter preferences (docs/product/job-finder.md, Preferences table). Timing (instant-email
+ *  threshold, digest time) is still step 3 scope, not here. Minimum pay is one currency; a posting's own stated
+ *  pay is converted into it via the cached rates in `job_currency_rates` before comparing, so it's checked
+ *  regardless of what currency the posting states. */
 export const jobPreferences = pgTable("job_preferences", {
   userId: text("user_id")
     .primaryKey()
@@ -851,6 +859,10 @@ export const jobPreferences = pgTable("job_preferences", {
   roles: jsonb("roles").$type<string[]>().notNull().default([]),
   skipWords: jsonb("skip_words").$type<string[]>().notNull().default([]),
   skipCompanies: jsonb("skip_companies").$type<string[]>().notNull().default([]),
+  /** Empty means no Country restriction at all -- same "don't silently filter beyond what's explicitly asked"
+   *  rule as every other list here. A posting that states eligibility for countries outside this list is
+   *  filtered only once the owner has actually added at least one country. */
+  countries: jsonb("countries").$type<string[]>().notNull().default([]),
   postedWithinDays: integer("posted_within_days").notNull().default(14),
   minimumPay: real("minimum_pay"),
   maximumPay: real("maximum_pay"),
@@ -865,6 +877,9 @@ export const jobPreferences = pgTable("job_preferences", {
     .$type<("junior" | "mid" | "senior" | "lead")[]>()
     .notNull()
     .default(["junior", "mid", "senior", "lead"]),
+  /** Shown, not a strict filter: a posting outside the chosen shifts is marked Outside shifts, never hidden
+   *  (docs/product/job-finder.md, Preferences table). Day and Mid by default. */
+  shifts: jsonb("shifts").$type<("day" | "mid" | "night")[]>().notNull().default(["day", "mid"]),
   agenciesHide: boolean("agencies_hide").notNull().default(false),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });

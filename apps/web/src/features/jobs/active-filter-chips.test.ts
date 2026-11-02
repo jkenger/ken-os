@@ -7,6 +7,8 @@ const base: JobPreferences = {
   roles: [],
   skipWords: [],
   skipCompanies: [],
+  countries: [],
+  shifts: ["day", "mid"],
   postedWithinDays: 14,
   minimumPay: null,
   maximumPay: null,
@@ -40,13 +42,15 @@ test("every restricted dimension produces its own chip, matching the reference's
     jobTypes: ["full_time", "contract"],
     workSetups: ["remote"],
     seniority: ["mid", "senior"],
+    countries: ["PH"],
+    shifts: ["day", "mid"],
     skipWords: ["Sales"],
     agenciesHide: true,
   };
   const chips = activeFilterChips(applied);
   assert.deepEqual(
     chips.map((c) => c.key),
-    ["pay", "workSetups", "seniority", "jobTypes", "skipWord:Sales", "agencies", "postedWithin"],
+    ["pay", "workSetups", "seniority", "countries", "jobTypes", "skipWord:Sales", "agencies", "postedWithin"],
   );
   assert.equal(chips.find((c) => c.key === "pay")!.label, "$2,500+ a month");
   assert.equal(
@@ -54,6 +58,7 @@ test("every restricted dimension produces its own chip, matching the reference's
     "₱2,000+ a month",
   );
   assert.equal(chips.find((c) => c.key === "seniority")!.label, "Mid, Senior");
+  assert.equal(chips.find((c) => c.key === "countries")!.label, "PH");
   assert.equal(chips.find((c) => c.key === "agencies")!.label, "No agencies");
 });
 
@@ -79,6 +84,11 @@ test("dropping the work setup chip opens it back up to every option", () => {
 test("dropping the seniority chip opens it back up to every level", () => {
   const result = clearFilterChip({ ...base, seniority: ["mid"] }, "seniority");
   assert.deepEqual(result.seniority.sort(), ["junior", "lead", "mid", "senior"]);
+});
+
+test("dropping the countries chip opens it back up to every country, since there's no fixed list to restore", () => {
+  const result = clearFilterChip({ ...base, countries: ["PH", "US"] }, "countries");
+  assert.deepEqual(result.countries, []);
 });
 
 test("dropping one skip word removes only that word, not the others", () => {

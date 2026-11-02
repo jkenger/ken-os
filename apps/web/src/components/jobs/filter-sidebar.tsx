@@ -14,6 +14,7 @@ import { toast } from "@/components/ui/toaster";
 import { activeFilterChips } from "@/features/jobs/active-filter-chips";
 import type { JobPreferences, JobType, Seniority, WorkSetup } from "@/features/jobs/preferences-store";
 import { send } from "@/lib/api-client";
+import { ChipField } from "./chip-field";
 
 // The filter sidebar replaces the old Settings page (docs/mockups/Jobs redesign.html, "Filter sidebar / Applied"):
 // the same job_preferences fields, always visible on /jobs instead of a page away. Every field saves itself as
@@ -45,62 +46,6 @@ function toggle<T>(list: T[], value: T): T[] {
   return list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
 }
 
-function ChipField({
-  label,
-  values,
-  placeholder,
-  onChange,
-}: {
-  label: string;
-  values: string[];
-  placeholder: string;
-  onChange: (next: string[]) => void;
-}) {
-  const [draft, setDraft] = useState("");
-
-  function commit() {
-    const trimmed = draft.trim();
-    if (trimmed && !values.includes(trimmed)) onChange([...values, trimmed]);
-    setDraft("");
-  }
-
-  return (
-    <div className="grid gap-1.5">
-      <Label className="mb-0">{label}</Label>
-      <div className="flex min-h-9 flex-wrap items-center gap-1.5 rounded-md border border-input bg-background px-2 py-1.5">
-        {values.map((value) => (
-          <Badge key={value} variant="secondary" className="gap-1 py-0 pr-0.5">
-            {value}
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-xs"
-              aria-label={`Remove ${value}`}
-              onClick={() => onChange(values.filter((item) => item !== value))}
-              className="size-4 rounded-full"
-            >
-              ×
-            </Button>
-          </Badge>
-        ))}
-        <Input
-          value={draft}
-          onChange={(event) => setDraft(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              event.preventDefault();
-              commit();
-            }
-          }}
-          onBlur={commit}
-          placeholder={values.length === 0 ? placeholder : ""}
-          className="h-6 min-w-20 flex-1 border-none bg-transparent p-0 focus-visible:ring-0"
-        />
-      </div>
-    </div>
-  );
-}
-
 export function FilterSidebar({
   preferences,
   search,
@@ -130,6 +75,7 @@ export function FilterSidebar({
       jobTypes: JOB_TYPE_OPTIONS.map((o) => o.value),
       workSetups: WORK_SETUP_OPTIONS.map((o) => o.value),
       seniority: SENIORITY_OPTIONS.map((o) => o.value),
+      countries: [],
       skipWords: [],
       skipCompanies: [],
       agenciesHide: false,
@@ -267,6 +213,13 @@ export function FilterSidebar({
           ))}
         </ToggleGroup>
       </div>
+
+      <ChipField
+        label="Countries"
+        values={preferences.countries}
+        placeholder="Any country"
+        onChange={(countries) => void save({ countries })}
+      />
 
       <ChipField
         label="Skip words"

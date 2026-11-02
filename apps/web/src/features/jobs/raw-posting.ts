@@ -36,6 +36,16 @@ export type RawPosting = {
   skills?: string[];
   postedAt?: string | null;
   updatedAt?: string | null;
+  /** freehire's own HTML description, unstripped, for formatted display on the job detail page -- `snippet`
+   *  above is the plain-text version of the same text, used for extraction and the card preview. Untrusted
+   *  third-party markup: sanitized at render time, never trusted as-is (see `posting-detail.tsx`). */
+  descriptionHtml?: string | null;
+  /** The job board or ATS freehire itself pulled this posting from ("greenhouse", "workday", "adzuna", ...;
+   *  freehire's own `source` field, confirmed live) -- NOT the same thing as `source` above, which is always
+   *  "freehire" and just names which of this app's own scrapers found it. This is the one worth showing the
+   *  owner: "freehire" tells them nothing, since every posting says it; the underlying board is the actual
+   *  answer to "where did this come from". Null when freehire doesn't state one (a manually-added listing). */
+  originBoard?: string | null;
 };
 
 /** New and Filtered out are this slice's states; Saved, Applied and Dismissed come with the side panel (step 2+). */

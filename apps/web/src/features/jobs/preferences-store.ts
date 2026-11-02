@@ -7,11 +7,18 @@ export type PayPeriod = "hour" | "day" | "week" | "month" | "year";
 export type JobType = "full_time" | "part_time" | "contract" | "internship" | "temporary";
 export type WorkSetup = "remote" | "hybrid" | "on_site";
 export type Seniority = "junior" | "mid" | "senior" | "lead";
+/** The three owner-choosable shift windows from `shift.ts`'s label set -- "Flexible" and "Not listed" aren't here
+ *  because they're never a choice, only what a posting falls back to when it doesn't state hours; a posting with
+ *  no stated shift is shown regardless, the same "don't silently filter beyond what's explicitly asked" rule as
+ *  every other preference in this file (docs/product/job-finder.md, Preferences table: "Shifts ... Shown ...
+ *  Night shift postings are marked Outside shifts"). */
+export type Shift = "day" | "mid" | "night";
 
 const PAY_PERIODS: PayPeriod[] = ["hour", "day", "week", "month", "year"];
 const JOB_TYPES: JobType[] = ["full_time", "part_time", "contract", "internship", "temporary"];
 const WORK_SETUPS: WorkSetup[] = ["remote", "hybrid", "on_site"];
 const SENIORITIES: Seniority[] = ["junior", "mid", "senior", "lead"];
+const SHIFTS: Shift[] = ["day", "mid", "night"];
 
 export type JobPreferences = {
   /** The owner's own edited role list, searched instead of the Profile's live-derived roles
@@ -21,6 +28,10 @@ export type JobPreferences = {
   roles: string[];
   skipWords: string[];
   skipCompanies: string[];
+  /** Empty means no Country restriction -- the same "don't silently filter beyond what's explicitly asked" rule
+   *  as every other list here. Checked against a posting's own stated countries, not against the owner's Profile
+   *  country (there's no such link anymore). */
+  countries: string[];
   postedWithinDays: number;
   minimumPay: number | null;
   maximumPay: number | null;
@@ -31,6 +42,10 @@ export type JobPreferences = {
   /** All four by default: a brand-new owner who's never touched this control gets no seniority filtering, the
    *  same "don't silently filter beyond what's explicitly asked" rule every other filter here follows. */
   seniority: Seniority[];
+  /** Day and Mid by default (docs/product/job-finder.md, Preferences table) -- a brand-new owner is a Philippines
+   *  day/mid worker by default, so Night shift postings start out marked Outside shifts rather than hidden; this
+   *  is shown, not a strict filter, so an empty list is also valid and just means no shift is marked that way. */
+  shifts: Shift[];
   agenciesHide: boolean;
 };
 
@@ -38,6 +53,7 @@ const DEFAULTS: JobPreferences = {
   roles: [],
   skipWords: [],
   skipCompanies: [],
+  countries: [],
   postedWithinDays: 14,
   minimumPay: null,
   maximumPay: null,
@@ -46,6 +62,7 @@ const DEFAULTS: JobPreferences = {
   jobTypes: ["full_time", "contract"],
   workSetups: ["remote"],
   seniority: SENIORITIES,
+  shifts: ["day", "mid"],
   agenciesHide: false,
 };
 
@@ -91,6 +108,7 @@ export function parsePreferences(input: Record<string, unknown>): JobPreferences
     roles: cleanList(input.roles, "Roles"),
     skipWords: cleanList(input.skipWords, "Skip words"),
     skipCompanies: cleanList(input.skipCompanies, "Skip companies"),
+    countries: cleanList(input.countries, "Countries"),
     postedWithinDays,
     minimumPay,
     maximumPay,
@@ -99,6 +117,7 @@ export function parsePreferences(input: Record<string, unknown>): JobPreferences
     jobTypes: cleanEnumList(input.jobTypes, "Job types", JOB_TYPES),
     workSetups: cleanEnumList(input.workSetups, "Work setups", WORK_SETUPS),
     seniority: cleanEnumList(input.seniority, "Seniority", SENIORITIES),
+    shifts: cleanEnumList(input.shifts, "Shifts", SHIFTS),
     agenciesHide,
   };
 }
@@ -110,6 +129,7 @@ export async function getPreferences(userId: string): Promise<JobPreferences> {
     roles: row.roles,
     skipWords: row.skipWords,
     skipCompanies: row.skipCompanies,
+    countries: row.countries,
     postedWithinDays: row.postedWithinDays,
     minimumPay: row.minimumPay,
     maximumPay: row.maximumPay,
@@ -118,6 +138,7 @@ export async function getPreferences(userId: string): Promise<JobPreferences> {
     jobTypes: row.jobTypes,
     workSetups: row.workSetups,
     seniority: row.seniority,
+    shifts: row.shifts,
     agenciesHide: row.agenciesHide,
   };
 }

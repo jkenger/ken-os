@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { config } from "dotenv";
 import { eq } from "drizzle-orm";
 import { closeDb, db } from "../src/lib/db";
-import { jobCurrencyRates, jobMatches, users } from "../src/lib/schema";
+import { jobCurrencyRates, jobMatches, jobPostings, users } from "../src/lib/schema";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
@@ -74,7 +74,7 @@ async function main() {
     const preferences = await import("../src/features/jobs/preferences-store");
     const DEFAULT_SLICE2_PREFS: Omit<
       import("../src/features/jobs/preferences-store").JobPreferences,
-      "roles" | "skipWords" | "skipCompanies" | "postedWithinDays" | "seniority"
+      "roles" | "skipWords" | "skipCompanies" | "countries" | "shifts" | "postedWithinDays" | "seniority"
     > = {
       minimumPay: null,
       maximumPay: null,
@@ -91,6 +91,8 @@ async function main() {
       seniority: ["junior", "mid", "senior", "lead"],
       skipWords: [],
       skipCompanies: [],
+      countries: [],
+      shifts: ["day", "mid"],
       postedWithinDays: 14,
       ...DEFAULT_SLICE2_PREFS,
     });
@@ -101,6 +103,8 @@ async function main() {
       seniority: ["junior", "mid", "senior", "lead"],
       skipWords: ["Sales", "Marketing"],
       skipCompanies: ["Acme"],
+      countries: [],
+      shifts: ["day", "mid"],
       postedWithinDays: 7,
       ...DEFAULT_SLICE2_PREFS,
     });
@@ -110,6 +114,8 @@ async function main() {
       seniority: ["junior", "mid", "senior", "lead"],
       skipWords: ["Sales", "Marketing"],
       skipCompanies: ["Acme"],
+      countries: [],
+      shifts: ["day", "mid"],
       postedWithinDays: 7,
       ...DEFAULT_SLICE2_PREFS,
     });
@@ -120,6 +126,8 @@ async function main() {
       seniority: ["junior", "mid", "senior", "lead"],
       skipWords: ["Only this"],
       skipCompanies: [],
+      countries: [],
+      shifts: ["day", "mid"],
       postedWithinDays: 30,
       ...DEFAULT_SLICE2_PREFS,
     });
@@ -129,6 +137,8 @@ async function main() {
       seniority: ["junior", "mid", "senior", "lead"],
       skipWords: ["Only this"],
       skipCompanies: [],
+      countries: [],
+      shifts: ["day", "mid"],
       postedWithinDays: 30,
       ...DEFAULT_SLICE2_PREFS,
     });
@@ -168,6 +178,8 @@ async function main() {
       seniority: ["junior", "mid", "senior", "lead"],
       skipWords: [],
       skipCompanies: [],
+      countries: [],
+      shifts: ["day", "mid"],
       postedWithinDays: 0,
       ...DEFAULT_SLICE2_PREFS,
     });
@@ -280,6 +292,57 @@ async function main() {
       "ok - a freehire posting's structured countries, work mode and employment type round-trip through the DB",
     );
 
+    let fetchFullDescriptionCalls = 0;
+    const fetchFullDescription = async (sourceId: string) => {
+      fetchFullDescriptionCalls++;
+      return `<p>Full untruncated description for ${sourceId}.</p>`;
+    };
+    await store.savePostings(
+      userId,
+      [
+        {
+          source: "freehire",
+          sourceId: "fh-truncated-role",
+          title: "Truncated Description Role",
+          company: "FreehireCo",
+          location: "Remote",
+          snippet: "A posting whose search-result description is only a preview.",
+          descriptionHtml: "<p>This is cut off mid-sent",
+          link: "https://freehire.me/jobs/truncated-role",
+        },
+      ],
+      fetchFullDescription,
+    );
+    const afterFirstSave = await store.getPendingPostings(userId, 20);
+    const truncatedRole = afterFirstSave.find((p) => p.title === "Truncated Description Role")!;
+    const [truncatedRow] = await db()
+      .select({ descriptionHtml: jobPostings.descriptionHtml })
+      .from(jobPostings)
+      .where(eq(jobPostings.id, truncatedRole.id));
+    assert.equal(truncatedRow!.descriptionHtml, "<p>Full untruncated description for fh-truncated-role.</p>");
+    assert.equal(fetchFullDescriptionCalls, 1, "called once, for the genuinely new posting");
+
+    await store.savePostings(
+      userId,
+      [
+        {
+          source: "freehire",
+          sourceId: "fh-truncated-role",
+          title: "Truncated Description Role",
+          company: "FreehireCo",
+          location: "Remote",
+          snippet: "A posting whose search-result description is only a preview.",
+          descriptionHtml: "<p>This is cut off mid-sent",
+          link: "https://freehire.me/jobs/truncated-role",
+        },
+      ],
+      fetchFullDescription,
+    );
+    assert.equal(fetchFullDescriptionCalls, 1, "not called again for a posting already saved from an earlier poll");
+    console.log(
+      "ok - savePostings fetches the complete description once for a genuinely new posting, never again for one already saved",
+    );
+
     const structuredRoleListed = (await store.listPostings(userId, "new")).find(
       (p) => p.title === "Structured Fields Role",
     )!;
@@ -319,6 +382,8 @@ async function main() {
       seniority: ["junior", "mid", "senior", "lead"],
       skipWords: [],
       skipCompanies: [],
+      countries: ["PH"],
+      shifts: ["day", "mid"],
       postedWithinDays: 365,
       minimumPay: 80000,
       maximumPay: null,
@@ -510,6 +575,32 @@ async function main() {
       seniority: ["junior", "mid", "senior", "lead"],
       skipWords: [],
       skipCompanies: [],
+      countries: [],
+      shifts: ["day", "mid"],
+      postedWithinDays: 365,
+      minimumPay: 80000,
+      maximumPay: null,
+      payCurrency: "USD",
+      payPeriod: "year",
+      jobTypes: ["full_time", "contract"],
+      workSetups: ["remote"],
+      agenciesHide: true,
+    });
+    await store.refilterExisting(userId);
+    const afterCountriesCleared = await store.listPostings(userId, "new");
+    assert.ok(
+      afterCountriesCleared.some((p) => p.title === "Wrong Country Role"),
+      "clearing Countries back to empty re-admits a posting that was only hidden for its country, without a new save",
+    );
+    console.log("ok - clearing the Countries list refilters already-saved postings back into New");
+
+    await preferences.savePreferences(userId, {
+      roles: [],
+      seniority: ["junior", "mid", "senior", "lead"],
+      skipWords: [],
+      skipCompanies: [],
+      countries: [],
+      shifts: ["day", "mid"],
       postedWithinDays: 365,
       minimumPay: 80000,
       maximumPay: null,
@@ -533,6 +624,8 @@ async function main() {
       seniority: ["junior", "mid", "senior", "lead"],
       skipWords: [],
       skipCompanies: [],
+      countries: [],
+      shifts: ["day", "mid"],
       postedWithinDays: 365,
       minimumPay: 15000,
       maximumPay: 200000,
@@ -611,6 +704,8 @@ async function main() {
       seniority: ["junior", "mid", "senior", "lead"],
       skipWords: [],
       skipCompanies: [],
+      countries: [],
+      shifts: ["day", "mid"],
       postedWithinDays: 365,
       minimumPay: 80000,
       maximumPay: null,
@@ -696,11 +791,9 @@ async function main() {
     );
     assert.ok(
       currencyNew.some((p) => p.title === "PH Eligible Role"),
-      "a posting explicitly open to PH applicants matches the default target country",
+      "a posting that states PH eligibility is still shown when the owner hasn't chosen any Countries",
     );
-    console.log(
-      "ok - a posting's own stated pay converts through the cached rates regardless of its currency, and the default target country is PH",
-    );
+    console.log("ok - a posting's own stated pay converts through the cached rates regardless of its currency");
 
     if (originalRatesRow) {
       await currencyRatesStore.saveCachedRates(originalRatesRow.rates, originalRatesRow.fetchedAt);
@@ -712,6 +805,8 @@ async function main() {
       seniority: ["junior", "mid", "senior", "lead"],
       skipWords: [],
       skipCompanies: [],
+      countries: [],
+      shifts: ["day", "mid"],
       postedWithinDays: 365,
       minimumPay: 80000,
       maximumPay: null,

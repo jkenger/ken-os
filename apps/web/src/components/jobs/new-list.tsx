@@ -3,10 +3,13 @@
 import { Bookmark } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { DotSeparator } from "@/components/dot-separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { countryFlag, countryName } from "@/features/jobs/country-flags";
+import { matchSkills } from "@/features/jobs/skills-match";
 import type { PostingView } from "@/features/jobs/store";
+import { SkillBadge } from "./skill-badge";
 
 // New postings as cards (docs/mockups/Jobs redesign.html, "Desktop / New (cards)"): company, title, score, a meta
 // row (work setup, countries, job type, seniority, posted), the posting's own snippet truncated to two lines,
@@ -69,7 +72,7 @@ function SaveButton({ title }: { title: string }) {
   );
 }
 
-export function NewList({ postings }: { postings: PostingView[] }) {
+export function NewList({ postings, profileSkills }: { postings: PostingView[]; profileSkills: string[] }) {
   return (
     <div className="flex flex-col gap-3">
       {postings.map((posting) => {
@@ -83,8 +86,8 @@ export function NewList({ postings }: { postings: PostingView[] }) {
         // fullDescription fills in when the full page was read; summary is what's left for a Partial posting
         // (every source's page failed to read), which never gets a fullDescription at all.
         const previewText = posting.snippet || posting.fullDescription || posting.summary || "";
-        const skills = posting.skills.slice(0, MAX_SKILLS);
-        const overflow = posting.skills.length - skills.length;
+        const skillMatches = matchSkills(posting.skills, profileSkills).slice(0, MAX_SKILLS);
+        const overflow = posting.skills.length - skillMatches.length;
 
         return (
           <div key={posting.id} className="relative rounded-xl border bg-card p-4 hover:bg-muted/40">
@@ -117,7 +120,7 @@ export function NewList({ postings }: { postings: PostingView[] }) {
                 <div className="mt-2.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                   {metaItems.map((item, index) => (
                     <span key={item} className="flex items-center gap-2">
-                      {index > 0 && <span className="text-border">·</span>}
+                      {index > 0 && <DotSeparator />}
                       {item}
                     </span>
                   ))}
@@ -127,10 +130,8 @@ export function NewList({ postings }: { postings: PostingView[] }) {
 
                 {posting.skills.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-1.5">
-                    {skills.map((skill) => (
-                      <Badge key={skill} variant="secondary">
-                        {skill}
-                      </Badge>
+                    {skillMatches.map((match) => (
+                      <SkillBadge key={match.skill} match={match} />
                     ))}
                     {overflow > 0 && <Badge variant="secondary">+{overflow}</Badge>}
                   </div>

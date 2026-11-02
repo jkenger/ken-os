@@ -1,0 +1,1 @@
+ALTER TABLE "job_postings" ADD COLUMN "origin_board" text;

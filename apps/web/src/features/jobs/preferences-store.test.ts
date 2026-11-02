@@ -8,6 +8,7 @@ function validInput(overrides: Record<string, unknown> = {}) {
     roles: ["Senior Frontend Engineer"],
     skipWords: ["Sales", "Marketing"],
     skipCompanies: ["Acme"],
+    countries: ["PH"],
     postedWithinDays: 7,
     minimumPay: 80000,
     maximumPay: 200000,
@@ -16,6 +17,7 @@ function validInput(overrides: Record<string, unknown> = {}) {
     jobTypes: ["full_time"],
     workSetups: ["remote"],
     seniority: ["mid", "senior"],
+    shifts: ["day", "night"],
     agenciesHide: true,
     ...overrides,
   };
@@ -26,6 +28,7 @@ test("valid input parses to preferences", () => {
     roles: ["Senior Frontend Engineer"],
     skipWords: ["Sales", "Marketing"],
     skipCompanies: ["Acme"],
+    countries: ["PH"],
     postedWithinDays: 7,
     minimumPay: 80000,
     maximumPay: 200000,
@@ -34,6 +37,7 @@ test("valid input parses to preferences", () => {
     jobTypes: ["full_time"],
     workSetups: ["remote"],
     seniority: ["mid", "senior"],
+    shifts: ["day", "night"],
     agenciesHide: true,
   });
 });
@@ -79,6 +83,16 @@ test("a non-array skipWords is rejected", () => {
   assert.throws(() => parsePreferences(validInput({ skipWords: "Sales" })), JobsInputError);
 });
 
+test("blank countries are dropped, and an empty list means no country restriction", () => {
+  const result = parsePreferences(validInput({ countries: ["PH", "  ", ""] }));
+  assert.deepEqual(result.countries, ["PH"]);
+  assert.deepEqual(parsePreferences(validInput({ countries: [] })).countries, []);
+});
+
+test("a non-array countries is rejected", () => {
+  assert.throws(() => parsePreferences(validInput({ countries: "PH" })), JobsInputError);
+});
+
 test("blank roles are dropped, and an empty list means fall back to the Profile", () => {
   const result = parsePreferences(validInput({ roles: ["Senior Frontend Engineer", "  ", ""] }));
   assert.deepEqual(result.roles, ["Senior Frontend Engineer"]);
@@ -119,6 +133,15 @@ test("an invalid work setup is rejected", () => {
 
 test("an invalid seniority is rejected", () => {
   assert.throws(() => parsePreferences(validInput({ seniority: ["intern"] })), JobsInputError);
+});
+
+test("an invalid shift is rejected", () => {
+  assert.throws(() => parsePreferences(validInput({ shifts: ["afternoon"] })), JobsInputError);
+});
+
+test("an empty shifts list is allowed (no shift shown differently)", () => {
+  const result = parsePreferences(validInput({ shifts: [] }));
+  assert.deepEqual(result.shifts, []);
 });
 
 test("a non-boolean agenciesHide is rejected", () => {

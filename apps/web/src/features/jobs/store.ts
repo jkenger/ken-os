@@ -1,31 +1,50 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, desc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { jobMatches, jobPostingSources, jobPostings } from "@/lib/schema";
-import { getProfile } from "@/features/profile/store";
 import { getCachedRates } from "./currency-rates-store";
 import { filterReason } from "./filters";
 import { getPreferences } from "./preferences-store";
 import type { AlertSource, JobMatchState, RawPosting } from "./raw-posting";
-import { targetCountryFrom } from "./target-country";
 
-/** The two pieces of filtering context that don't live in job_preferences: the owner's own country (from
- *  Profile) and the last cached currency snapshot. Fetched once per batch operation, not per posting. */
-async function filterContext(
-  userId: string,
-): Promise<{ targetCountry: string; currencyRates: Record<string, number> }> {
-  const [profile, currencyRates] = await Promise.all([getProfile(userId), getCachedRates()]);
-  return { targetCountry: targetCountryFrom(profile.details.contact.country), currencyRates };
+/** The one piece of filtering context that doesn't live in job_preferences: the last cached currency snapshot.
+ *  Fetched once per batch operation, not per posting. */
+async function filterContext(): Promise<{ currencyRates: Record<string, number> }> {
+  return { currencyRates: await getCachedRates() };
 }
 
 /** Saves each posting, matching on the source's own ID when there is one, otherwise on title, company and location
  *  together (docs/product/job-finder.md, "Drop repeats"). A posting already seen from this exact source and ID is
- *  skipped; one already seen from a different source gets this source attached instead of a duplicate row. */
-export async function savePostings(userId: string, postings: RawPosting[]): Promise<void> {
+ *  skipped; one already seen from a different source gets this source attached instead of a duplicate row.
+ *
+ *  `fetchFullDescription` is optional, injected dependency for the freehire search endpoint's own truncated
+ *  `description` (confirmed live: capped around 1000 characters, cut off mid-sentence, on every result) -- when
+ *  given, it's called once per posting, only the first time that posting is genuinely new (a cheap pre-check
+ *  outside the transaction decides that, re-verified by the transaction's own check before inserting), to fetch
+ *  the complete text from freehire's one-job detail endpoint instead. Never called for a posting already saved,
+ *  so this doesn't turn every poll's dozens of results into as many extra requests. */
+export async function savePostings(
+  userId: string,
+  postings: RawPosting[],
+  fetchFullDescription?: (sourceId: string) => Promise<string | null>,
+): Promise<void> {
   const preferences = await getPreferences(userId);
-  const context = await filterContext(userId);
+  const context = await filterContext();
   const now = new Date();
   for (const posting of postings) {
+    let descriptionHtml = posting.descriptionHtml ?? null;
+    if (fetchFullDescription && posting.sourceId) {
+      const [alreadySaved] = await db()
+        .select({ postingId: jobPostingSources.postingId })
+        .from(jobPostingSources)
+        .where(and(eq(jobPostingSources.source, posting.source), eq(jobPostingSources.sourceId, posting.sourceId)))
+        .limit(1);
+      if (!alreadySaved) {
+        const full = await fetchFullDescription(posting.sourceId);
+        if (full) descriptionHtml = full;
+      }
+    }
+
     await db().transaction(async (tx) => {
       if (posting.sourceId) {
         const [existingSource] = await tx
@@ -72,6 +91,8 @@ export async function savePostings(userId: string, postings: RawPosting[]): Prom
           skills: posting.skills ?? [],
           sourcePostedAt: posting.postedAt ? new Date(posting.postedAt) : null,
           sourceUpdatedAt: posting.updatedAt ? new Date(posting.updatedAt) : null,
+          descriptionHtml,
+          originBoard: posting.originBoard ?? null,
           firstSeenAt: now,
         });
         const reason = filterReason(
@@ -108,6 +129,8 @@ export type PostingView = {
   sources: { source: AlertSource; link: string }[];
   processedAt: Date | null;
   fullDescription: string | null;
+  descriptionHtml: string | null;
+  originBoard: string | null;
   partial: boolean;
   summary: string | null;
   payAmount: number | null;
@@ -117,6 +140,7 @@ export type PostingView = {
   workSetup: "remote" | "hybrid" | "on_site" | null;
   countries: string[] | null;
   seniority: "junior" | "mid" | "senior" | "lead" | null;
+  yearsRequired: number | null;
   shift: string | null;
   skills: string[];
   sourcePostedAt: Date | null;
@@ -137,6 +161,8 @@ const POSTING_COLUMNS = {
   filterReason: jobMatches.filterReason,
   processedAt: jobPostings.processedAt,
   fullDescription: jobPostings.fullDescription,
+  descriptionHtml: jobPostings.descriptionHtml,
+  originBoard: jobPostings.originBoard,
   partial: jobPostings.partial,
   summary: jobPostings.summary,
   payAmount: jobPostings.payAmount,
@@ -146,6 +172,7 @@ const POSTING_COLUMNS = {
   workSetup: jobPostings.workSetup,
   countries: jobPostings.countries,
   seniority: jobPostings.seniority,
+  yearsRequired: jobPostings.yearsRequired,
   shift: jobMatches.shift,
   skills: jobPostings.skills,
   sourcePostedAt: jobPostings.sourcePostedAt,
@@ -224,13 +251,64 @@ export async function getPosting(userId: string, postingId: string): Promise<Pos
   return toPostingView(row, attached.get(row.id)!);
 }
 
+/** Other open postings from the same company, for the job detail page's "Related postings" section. Scoped to
+ *  `new` only -- a related posting the owner already filtered out or dismissed isn't worth resurfacing here. */
+export async function getRelatedPostings(userId: string, company: string, excludeId: string): Promise<PostingView[]> {
+  const rows = await db()
+    .select(POSTING_COLUMNS)
+    .from(jobPostings)
+    .innerJoin(jobMatches, eq(jobMatches.postingId, jobPostings.id))
+    .where(
+      and(
+        eq(jobPostings.userId, userId),
+        eq(jobMatches.state, "new"),
+        ilike(jobPostings.company, company),
+        ne(jobPostings.id, excludeId),
+      ),
+    )
+    .orderBy(desc(jobMatches.score), desc(jobPostings.firstSeenAt))
+    .limit(4);
+
+  const attached = await attachSourcesAndScore(rows);
+  return rows.map((row) => toPostingView(row, attached.get(row.id)!));
+}
+
+/** Other open postings with the same job title, anywhere -- not scoped to one company, unlike
+ *  `getRelatedPostings` above. Excludes the current posting's own company so the two "related" sections on the
+ *  job detail page never show the same posting twice. */
+export async function getRelatedByRole(
+  userId: string,
+  title: string,
+  company: string,
+  excludeId: string,
+): Promise<PostingView[]> {
+  const rows = await db()
+    .select(POSTING_COLUMNS)
+    .from(jobPostings)
+    .innerJoin(jobMatches, eq(jobMatches.postingId, jobPostings.id))
+    .where(
+      and(
+        eq(jobPostings.userId, userId),
+        eq(jobMatches.state, "new"),
+        ilike(jobPostings.title, title),
+        sql`lower(${jobPostings.company}) != lower(${company})`,
+        ne(jobPostings.id, excludeId),
+      ),
+    )
+    .orderBy(desc(jobMatches.score), desc(jobPostings.firstSeenAt))
+    .limit(4);
+
+  const attached = await attachSourcesAndScore(rows);
+  return rows.map((row) => toPostingView(row, attached.get(row.id)!));
+}
+
 /** Re-evaluates every stored posting against the current preferences (docs/product/job-finder.md: "Changing a
  *  setting refilters existing postings without a new alert"). Only touches a match's state and reason when the
  *  verdict actually changed. A not-yet-processed posting's extracted-field columns are all null, so `filterReason`
  *  only applies the step-1 checks to it, same as it always has. */
 export async function refilterExisting(userId: string): Promise<void> {
   const preferences = await getPreferences(userId);
-  const context = await filterContext(userId);
+  const context = await filterContext();
   const rows = await db()
     .select({
       postingId: jobPostings.id,
@@ -359,7 +437,7 @@ export async function saveExtractedFields(postingId: string, fields: ExtractedFi
   if (!row) return;
 
   const preferences = await getPreferences(row.userId);
-  const context = await filterContext(row.userId);
+  const context = await filterContext();
   const reason = filterReason(
     {
       title: row.title,
