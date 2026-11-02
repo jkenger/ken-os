@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { labProfile } from "@/lib/schema";
+import { db } from "@/lib/db/db";
+import { labProfile } from "@/lib/db/schema";
 
 // The owner's Engineering profile row. Spec: docs/architecture/engineering-claude-first.md, section 3. Only its target
 // role is still read: it shapes the default roadmap until Claude plans one.

@@ -11,9 +11,9 @@ import {
   type CodeRun,
   type TopicStatusView,
 } from "@ken-os/domain";
-import { db } from "@/lib/db";
+import { db } from "@/lib/db/db";
 import { ownerDayStart } from "@/lib/day";
-import { labTopicEvents } from "@/lib/schema";
+import { labTopicEvents } from "@/lib/db/schema";
 import { requireAnyTopic, type AnyTopic } from "./any-topic";
 import { buildInput } from "./build-evidence";
 import { recordInstructionsVersion } from "./claude-links";

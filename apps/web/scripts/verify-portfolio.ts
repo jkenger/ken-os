@@ -4,8 +4,8 @@ import { config } from "dotenv";
 import { eq, sql } from "drizzle-orm";
 import { emptyProfile } from "@ken-os/domain";
 import { parsePortfolioSnapshot } from "@ken-os/portfolio";
-import { closeDb, db } from "../src/lib/db";
-import { labRoadmaps, portfolioPublications, users } from "../src/lib/schema";
+import { closeDb, db } from "../src/lib/db/db";
+import { labRoadmaps, portfolioPublications, users } from "../src/lib/db/schema";
 
 config({ path: ".env.local" });
 config({ path: ".env" });

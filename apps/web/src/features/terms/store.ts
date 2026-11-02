@@ -10,8 +10,8 @@ import {
   termKey,
   type TermAnswer,
 } from "@ken-os/domain";
-import { db } from "@/lib/db";
-import { kenTermLookups, kenTerms } from "@/lib/schema";
+import { db } from "@/lib/db/db";
+import { kenTermLookups, kenTerms } from "@/lib/db/schema";
 import { ownerDayStart } from "@/lib/day";
 
 export class TermInputError extends Error {

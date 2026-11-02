@@ -1,6 +1,6 @@
 import { MemoryWorkspace } from "@/components/memory-workspace";
 import { getMemoryOverview } from "@/features/project-memory/store";
-import { requireSession } from "@/lib/session";
+import { requireSession } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 

@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { RoadmapPage } from "@/components/engineering/roadmap/roadmap-page";
+import { RoadmapPage } from "@/features/engineering-lab/roadmap/roadmap-page";
 import { listConnections } from "@/features/connector/oauth-store";
 import { mcpUrl } from "@/features/connector/rules";
 import { getInstructionsSeen, getProjectUrl } from "@/features/engineering-lab/claude-links";
@@ -8,7 +8,7 @@ import { LabInputError } from "@/features/engineering-lab/errors";
 import { archivedRoadmaps, getRoadmap, getRoadmaps, getRoadmapSummary } from "@/features/engineering-lab/roadmap-store";
 import { engineering } from "@/features/engineering-lab/routes";
 import { appUrl } from "@/lib/config";
-import { requireSession } from "@/lib/session";
+import { requireSession } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 

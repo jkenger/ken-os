@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, count, desc, eq, sql } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { profileImports, profileResumes, users } from "@/lib/schema";
+import { db } from "@/lib/db/db";
+import { profileImports, profileResumes, users } from "@/lib/db/schema";
 import { checkResumeFile, RESUME_FILE_MAX_COUNT, ResumeFileError } from "./resume-files";
 
 // Stored resume files, kept in Postgres. Spec: docs/product/profile-resume.md, "Step 5 design".

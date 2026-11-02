@@ -1,5 +1,5 @@
 import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
-import { appUrl, requiredEnv } from "./config";
+import { appUrl, requiredEnv } from "../config";
 
 /**
  * Google takes one redirect URI: production's callback. A preview starts sign-in with its own origin signed into the

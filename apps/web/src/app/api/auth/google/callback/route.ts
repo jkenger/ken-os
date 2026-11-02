@@ -1,9 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { finishSignIn, type GoogleProfile, type GoogleTokens } from "@/lib/auth-flow";
+import { finishSignIn, type GoogleProfile, type GoogleTokens } from "@/lib/auth/auth-flow";
 import { appUrl, requiredEnv } from "@/lib/config";
-import { finishRedirect, readOAuthCookies } from "@/lib/oauth";
-import { googleCallbackUrl, relayTarget } from "@/lib/oauth-relay";
-import { createSession, safeNext } from "@/lib/session";
+import { finishRedirect, readOAuthCookies } from "@/lib/auth/oauth";
+import { googleCallbackUrl, relayTarget } from "@/lib/auth/oauth-relay";
+import { createSession, safeNext } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
 

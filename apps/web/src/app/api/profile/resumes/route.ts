@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { ResumeFileError } from "@/features/profile/resume-files";
 import { addResumeFile, listResumeFiles } from "@/features/profile/resume-files-store";
 import { messages } from "@/lib/messages";
-import { hasValidOrigin } from "@/lib/origin";
-import { getSession } from "@/lib/session";
+import { hasValidOrigin } from "@/lib/auth/origin";
+import { getSession } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
 

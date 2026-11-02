@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { and, desc, eq, gte, isNotNull, sql } from "drizzle-orm";
-import { db } from "@/lib/db";
+import { db } from "@/lib/db/db";
 import { ownerDayStart } from "@/lib/day";
-import { labNotes, labReviews, labTopicEvents } from "@/lib/schema";
+import { labNotes, labReviews, labTopicEvents } from "@/lib/db/schema";
 import { customTopics, requireAnyTopic } from "./any-topic";
 import { findTopic } from "./curriculum";
 import { LabInputError } from "./errors";

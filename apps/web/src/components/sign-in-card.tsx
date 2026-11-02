@@ -6,7 +6,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { SignInNotice } from "@/lib/auth-errors";
+import type { SignInNotice } from "@/lib/auth/auth-errors";
 
 // From the shadcn login-01 block, trimmed to Google only (docs/architecture/auth-sign-in.md §2).
 

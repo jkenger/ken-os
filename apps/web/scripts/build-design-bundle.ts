@@ -112,7 +112,7 @@ async function main() {
     )
     .replace(
       `@import "tailwindcss";`,
-      `@import "tailwindcss" source(none);\n@source "../components/ui";\n@source "../components/engineering/kit.tsx";\n@source "../components/workspace-shell.tsx";`,
+      `@import "tailwindcss" source(none);\n@source "../components/ui";\n@source "../features/engineering-lab/kit.tsx";\n@source "../components/workspace-shell.tsx";`,
     );
   const plugin = tailwind({ optimize: { minify: true } }) as AcceptedPlugin;
   const css = await postcss([plugin]).process(source, { from: globalsPath });

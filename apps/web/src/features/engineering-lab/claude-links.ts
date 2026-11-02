@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { labProfile, labTopicChats } from "@/lib/schema";
+import { db } from "@/lib/db/db";
+import { labProfile, labTopicChats } from "@/lib/db/schema";
 import { requireAnyTopic } from "./any-topic";
 import { claudeLink, claudeProjectUrl } from "./ask-claude";
 import { instructionsVersion } from "./claude-setup";

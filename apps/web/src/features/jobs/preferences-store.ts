@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { jobPreferences } from "@/lib/schema";
+import { db } from "@/lib/db/db";
+import { jobPreferences } from "@/lib/db/schema";
 import { JobsInputError } from "./api";
 
 export type PayPeriod = "hour" | "day" | "week" | "month" | "year";

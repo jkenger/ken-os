@@ -15,9 +15,9 @@ import {
 } from "@tabler/icons-react";
 import { AlertCircle } from "lucide-react";
 import { WorkspaceShell } from "@/components/workspace-shell";
-import { ConfirmDialog } from "@/components/profile/confirm-dialog";
-import { shortDate } from "@/components/profile/dates";
-import { StatusIcon } from "@/components/engineering/roadmap/status";
+import { ConfirmDialog } from "@/features/profile/confirm-dialog";
+import { shortDate } from "@/features/profile/dates";
+import { StatusIcon } from "@/features/engineering-lab/roadmap/status";
 import { panel } from "@/components/surfaces";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";

@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { IconArrowRight, IconLayoutColumns, IconSitemap } from "@tabler/icons-react";
-import { post, send } from "@/components/lab/topic/client";
-import { formatDate } from "@/components/lab/words";
+import { post, send } from "@/features/engineering-lab/topic/client";
+import { formatDate } from "@/features/engineering-lab/words";
 import { toast } from "@/components/ui/toaster";
 import { useDocked } from "@/components/docked-panel";
 import { WorkspaceShell } from "@/components/workspace-shell";

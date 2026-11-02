@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import type { TopicPanelView } from "@/features/engineering-lab/roadmap-store";
 import { planTopicMessage } from "@/features/engineering-lab/ask-claude";
 import { difficultyWords, formatMinutes, type ResourceKind } from "@/features/engineering-lab/topic-material";
-import { AskClaude } from "../ask-claude";
+import { AskClaude } from "../ask-claude-dialog";
 import { StatusIcon, statusWords } from "./status";
 
 // Claude's material in the topic panel (docs/architecture/roadmap-ui.md): the estimate and difficulty, prerequisites

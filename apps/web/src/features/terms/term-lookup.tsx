@@ -7,7 +7,7 @@ import { TERM_MAX_LENGTH, type TermAnswer } from "@ken-os/domain";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
 import { toast } from "@/components/ui/toaster";
-import { SavedTermMarks } from "@/components/terms/saved-term-marks";
+import { SavedTermMarks } from "@/features/terms/saved-term-marks";
 import { markSaved, saveLookup, startLookup, watchLookup, type LookupJob } from "@/features/terms/lookup-jobs";
 
 interface Pending {

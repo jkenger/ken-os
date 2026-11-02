@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { signInSetupGap } from "@/lib/config";
-import { SIGN_IN_SCOPES, startGoogleAuth } from "@/lib/oauth";
-import { safeNext } from "@/lib/session";
+import { SIGN_IN_SCOPES, startGoogleAuth } from "@/lib/auth/oauth";
+import { safeNext } from "@/lib/auth/session";
 
 export const runtime = "nodejs";
 

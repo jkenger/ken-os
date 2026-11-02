@@ -1,6 +1,6 @@
 import { PortfolioWorkspace } from "@/features/portfolio/portfolio-workspace";
 import { getPortfolio } from "@/features/portfolio/store";
-import { requireSession } from "@/lib/session";
+import { requireSession } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 

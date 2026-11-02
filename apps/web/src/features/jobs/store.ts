@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { jobMatches, jobPostingSources, jobPostings } from "@/lib/schema";
+import { db } from "@/lib/db/db";
+import { jobMatches, jobPostingSources, jobPostings } from "@/lib/db/schema";
 import { getCachedRates } from "./currency-rates-store";
 import { filterReason } from "./filters";
 import { getPreferences } from "./preferences-store";

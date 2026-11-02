@@ -3,7 +3,7 @@
 import type { ComponentProps, JSXElementConstructor, ReactNode } from "react";
 import { ChevronsUpDown, FlaskConical, Search, UserRound } from "lucide-react";
 import { DotSeparator } from "@/components/dot-separator";
-import { Back, Badge as KitBadge, Coverage, Fact, Notice, Rail, SectionTitle } from "@/components/engineering/kit";
+import { Back, Badge as KitBadge, Coverage, Fact, Notice, Rail, SectionTitle } from "@/features/engineering-lab/kit";
 import { panel, selectedInset, selectedRow, selectedSurface } from "@/components/surfaces";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
