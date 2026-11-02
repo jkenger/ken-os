@@ -1,4 +1,4 @@
-import { JobsFilteredOutPage } from "@/components/jobs/filtered-out-page";
+import { JobsFilteredOutPage } from "@/features/jobs/filtered-out-page";
 import { listPostings } from "@/features/jobs/store";
 import { requireSession } from "@/lib/auth/session";
 

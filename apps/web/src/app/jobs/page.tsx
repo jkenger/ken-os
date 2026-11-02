@@ -1,4 +1,4 @@
-import { JobsPage } from "@/components/jobs/jobs-page";
+import { JobsPage } from "@/features/jobs/jobs-page";
 import { getProfile } from "@/features/profile/store";
 import { getPreferences } from "@/features/jobs/preferences-store";
 import { deriveRoles } from "@/features/jobs/roles";
