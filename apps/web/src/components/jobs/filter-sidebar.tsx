@@ -12,9 +12,13 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { toast } from "@/components/ui/toaster";
 import { activeFilterChips } from "@/features/jobs/active-filter-chips";
+import { countryOptions } from "@/features/jobs/country-codes";
 import type { JobPreferences, JobType, Seniority, WorkSetup } from "@/features/jobs/preferences-store";
 import { send } from "@/lib/api-client";
 import { ChipField } from "./chip-field";
+import { MultiSelectCommand } from "./multi-select-command";
+
+const COUNTRY_OPTIONS = countryOptions();
 
 // The filter sidebar replaces the old Settings page (docs/mockups/Jobs redesign.html, "Filter sidebar / Applied"):
 // the same job_preferences fields, always visible on /jobs instead of a page away. Every field saves itself as
@@ -48,10 +52,13 @@ function toggle<T>(list: T[], value: T): T[] {
 
 export function FilterSidebar({
   preferences,
+  companies,
   search,
   onSearchChange,
 }: {
   preferences: JobPreferences;
+  /** Every distinct company name from the owner's own postings, for the Skip companies search list. */
+  companies: string[];
   search: string;
   onSearchChange: (value: string) => void;
 }) {
@@ -214,10 +221,13 @@ export function FilterSidebar({
         </ToggleGroup>
       </div>
 
-      <ChipField
+      <MultiSelectCommand
         label="Countries"
         values={preferences.countries}
+        options={COUNTRY_OPTIONS}
         placeholder="Any country"
+        searchPlaceholder="Search countries"
+        emptyText="No country matches"
         onChange={(countries) => void save({ countries })}
       />
 
@@ -227,10 +237,13 @@ export function FilterSidebar({
         placeholder="Add a word"
         onChange={(skipWords) => void save({ skipWords })}
       />
-      <ChipField
+      <MultiSelectCommand
         label="Skip companies"
         values={preferences.skipCompanies}
-        placeholder="Add a company"
+        options={companies.map((company) => ({ value: company, label: company }))}
+        placeholder="None skipped"
+        searchPlaceholder="Search companies"
+        emptyText="No company matches"
         onChange={(skipCompanies) => void save({ skipCompanies })}
       />
 

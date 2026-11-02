@@ -923,6 +923,15 @@ async function main() {
       "rescoring against the new Profile version updates the stamp, so it's no longer stale",
     );
     console.log("ok - rescoring against the new Profile version updates the stamp and clears the staleness");
+
+    const distinctCompanies = await store.getDistinctCompanies(userId);
+    assert.deepEqual(
+      distinctCompanies,
+      [...new Set(distinctCompanies)].sort(),
+      "every company this user's postings have is returned once, alphabetically",
+    );
+    assert.ok(distinctCompanies.includes("SliceThreeCo"), "includes a company saved earlier in this run");
+    console.log("ok - getDistinctCompanies returns every distinct company name for the Skip companies filter");
   } finally {
     await db().delete(users).where(eq(users.id, userId));
     await closeDb();

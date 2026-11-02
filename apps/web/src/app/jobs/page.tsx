@@ -2,7 +2,7 @@ import { JobsPage } from "@/components/jobs/jobs-page";
 import { getProfile } from "@/features/profile/store";
 import { getPreferences } from "@/features/jobs/preferences-store";
 import { deriveRoles } from "@/features/jobs/roles";
-import { listPostings } from "@/features/jobs/store";
+import { getDistinctCompanies, listPostings } from "@/features/jobs/store";
 import { requireSession } from "@/lib/session";
 
 export const dynamic = "force-dynamic";
@@ -11,11 +11,12 @@ export default async function Jobs({ searchParams }: { searchParams: Promise<{ b
   const session = await requireSession("/jobs");
   const { board } = await searchParams;
   const boardFilter = board?.trim() || undefined;
-  const [profile, allPostings, filteredOut, preferences] = await Promise.all([
+  const [profile, allPostings, filteredOut, preferences, companies] = await Promise.all([
     getProfile(session.userId),
     listPostings(session.userId, "new"),
     listPostings(session.userId, "filtered_out"),
     getPreferences(session.userId),
+    getDistinctCompanies(session.userId),
   ]);
   const postings = boardFilter ? allPostings.filter((posting) => posting.originBoard === boardFilter) : allPostings;
   const derivedRoles = deriveRoles(profile.details);
@@ -27,6 +28,7 @@ export default async function Jobs({ searchParams }: { searchParams: Promise<{ b
       postings={postings}
       profileSkills={profileSkills}
       preferences={preferences}
+      companies={companies}
       filteredOutCount={filteredOut.length}
       boardFilter={boardFilter}
     />
