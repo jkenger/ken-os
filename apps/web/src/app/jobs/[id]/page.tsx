@@ -8,7 +8,7 @@ import { getPreferences } from "@/features/jobs/preferences-store";
 import { getProfile } from "@/features/profile/store";
 import { getPosting, getRelatedByRole, getRelatedPostings } from "@/features/jobs/store";
 import { yearsOfExperience } from "@/features/jobs/years-of-experience";
-import { requireSession } from "@/lib/session";
+import { requireSession } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 

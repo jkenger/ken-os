@@ -1,7 +1,7 @@
 import { and, eq, gte, inArray, sql } from "drizzle-orm";
-import { db } from "@/lib/db";
+import { db } from "@/lib/db/db";
 import { ownerDayStart } from "@/lib/day";
-import { labRoadmaps, labTopicMaterial, labTopicPlans } from "@/lib/schema";
+import { labRoadmaps, labTopicMaterial, labTopicPlans } from "@/lib/db/schema";
 import { requireAnyTopic, topicMaterial } from "./any-topic";
 import { LabInputError } from "./errors";
 import {

@@ -10,9 +10,9 @@ import {
   type TopicStatus,
   type TopicStatusView,
 } from "@ken-os/domain";
-import { db } from "@/lib/db";
+import { db } from "@/lib/db/db";
 import { ownerDayStart } from "@/lib/day";
-import { labNotes, labTopicEvents } from "@/lib/schema";
+import { labNotes, labTopicEvents } from "@/lib/db/schema";
 import type { BuildEvidence } from "./build-evidence";
 import { topicMap } from "./curriculum";
 import { LabInputError } from "./errors";

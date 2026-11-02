@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import { createHash, randomUUID } from "node:crypto";
 import { config } from "dotenv";
 import { eq } from "drizzle-orm";
-import { closeDb, db } from "../src/lib/db";
-import { labTopicEvents, oauthClients, users } from "../src/lib/schema";
+import { closeDb, db } from "../src/lib/db/db";
+import { labTopicEvents, oauthClients, users } from "../src/lib/db/schema";
 
 config({ path: ".env.local" });
 config({ path: ".env" });

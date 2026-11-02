@@ -11,7 +11,7 @@
     "memory:context": "tsx scripts/memory.ts context",
     "memory:submit": "tsx scripts/memory.ts submit",
     "test:db:memory": "tsx scripts/verify-memory.ts",
-    "test": "tsx --test src/lib/*.test.ts src/features/project-memory/*.test.ts src/features/engineering-lab/*.test.ts src/features/terms/*.test.ts src/features/connector/*.test.ts src/features/profile/*.test.ts src/features/portfolio/*.test.ts src/features/design-studio/*.test.ts src/features/jobs/*.test.ts src/features/jobs/scrapers/*.test.ts",
+    "test": "tsx --test src/lib/*.test.ts src/lib/auth/*.test.ts src/features/project-memory/*.test.ts src/features/engineering-lab/*.test.ts src/features/terms/*.test.ts src/features/connector/*.test.ts src/features/profile/*.test.ts src/features/portfolio/*.test.ts src/features/design-studio/*.test.ts src/features/jobs/*.test.ts src/features/jobs/scrapers/*.test.ts",
     "test:db:auth": "tsx scripts/verify-auth.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx scripts/migrate.ts",

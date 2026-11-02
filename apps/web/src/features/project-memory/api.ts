@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { hasValidOrigin } from "@/lib/origin";
-import { getSession } from "@/lib/session";
+import { hasValidOrigin } from "@/lib/auth/origin";
+import { getSession } from "@/lib/auth/session";
 import { MemoryInputError } from "./contract";
 import { messages } from "@/lib/messages";
 

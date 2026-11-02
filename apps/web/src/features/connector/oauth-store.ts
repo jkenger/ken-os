@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, desc, eq, gt, gte, isNotNull, isNull, sql } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { oauthClients, oauthGrants, oauthTokens, users } from "@/lib/schema";
+import { db } from "@/lib/db/db";
+import { oauthClients, oauthGrants, oauthTokens, users } from "@/lib/db/schema";
 import { ownerEmail } from "@/lib/config";
 import {
   ACCESS_TOKEN_SECONDS,

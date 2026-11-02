@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { hasValidOrigin } from "@/lib/origin";
+import { hasValidOrigin } from "@/lib/auth/origin";
 import { messages } from "@/lib/messages";
-import { getSession, type Session } from "@/lib/session";
+import { getSession, type Session } from "@/lib/auth/session";
 
 export class JobsInputError extends Error {
   constructor(

@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { jobCurrencyRates } from "@/lib/schema";
+import { db } from "@/lib/db/db";
+import { jobCurrencyRates } from "@/lib/db/schema";
 
 const SINGLETON_ID = "global";
 const STALE_AFTER_MS = 24 * 60 * 60 * 1000;

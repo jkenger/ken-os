@@ -24,8 +24,8 @@ import {
   type ResumeTemplate,
 } from "@ken-os/domain";
 import mammoth from "mammoth";
-import { db } from "@/lib/db";
-import { profileAnalyses, profileImports, profileRewrites, profiles, users } from "@/lib/schema";
+import { db } from "@/lib/db/db";
+import { profileAnalyses, profileImports, profileRewrites, profiles, users } from "@/lib/db/schema";
 import { getResumeFile } from "./resume-files-store";
 
 // The Profile: the owner's career details, typed in or autofilled from an uploaded resume. Spec: docs/product/profile-resume.md.

@@ -34,7 +34,7 @@ import { shortDate } from "./dates";
 import { DetailsForm } from "./details-form";
 import { ProfileHeader, ReviewPanel, SectionIndex } from "./profile-overview";
 import { EditActions, MoreSections, OPTIONAL_SECTIONS, SectionPanel, SectionView } from "./profile-sections";
-import { ResumeFiles } from "./resume-files";
+import { ResumeFiles } from "./resume-files-panel";
 
 // Profile in three columns: the section index on the left, the details readable in place in the centre, and the
 // resumes on the right. One section is edited at a time, in its own panel, and every edit ends in its Save or Cancel.

@@ -1,5 +1,5 @@
 import type { CodeRun, TestOutcome, TopicProgress } from "@ken-os/domain";
-import { db } from "@/lib/db";
+import { db } from "@/lib/db/db";
 import { LabInputError } from "./errors";
 import { lockVersion, usableVersion } from "./exercise-store";
 import { recordEvent } from "./store";
