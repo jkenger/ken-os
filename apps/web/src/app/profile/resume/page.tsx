@@ -1,4 +1,4 @@
-import { ResumePreview } from "@/components/profile/resume-preview";
+import { ResumePreview } from "@/features/profile/resume-preview";
 import { getProfile } from "@/features/profile/store";
 import { requireSession } from "@/lib/session";
 
