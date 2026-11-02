@@ -37,25 +37,41 @@ Desktop at 1440 wide, phone at 390.
      empty state when we know nothing). **Save to board** sits opposite the header, not in the tab area.
 4. **Filter sidebar, empty vs. applied.** The same fields as onboarding's second half, always visible on `/jobs`
    (no separate Settings tab to navigate to), with a visible count of how many filters are active.
+5. **Overview, not just an empty list.** Owner feedback (2 Nov 2026): a first visit to `/jobs` with no postings yet
+   is nearly blank, two lines of text and nothing else, even though Loots already knows whether the pipeline is
+   actually configured and running, which is exactly what the owner had to go check for themselves outside the app.
+   The Overview replaces that blank state; a condensed version of it keeps answering "is this working?" once
+   postings exist, instead of mattering once and then disappearing.
+   - **Zero postings (full Overview):** one line on what Jobs does; a **Setup status** block with Roles (from the
+     Profile, or owner-edited, the current list shown), Preferences (defaults or owner-edited), and **Last
+     checked** (whether the outside scheduler has ever actually called `/api/jobs/check/freehire`, and when); one
+     action, open the filter sidebar, already on the page rather than a separate step.
+   - **Once postings exist (condensed strip):** the same three facts (roles searched, last checked, New/Filtered
+     out counts) as one line above the results bar, not a separate screen.
+   - **Why one page, not two:** Jobs was just simplified to a single sidebar entry point (no New/Filtered out
+     sub-items, 2 Nov 2026) specifically so there's one place to land. A separate Overview page would need a new
+     sub-item (reversing that) or be unreachable from the nav. Scaling what `/jobs` itself shows by whether there's
+     data yet keeps the one-entry-point decision intact.
 
 ### What's real and what needs building
 
 Checked against the live schema and a live freehire sample before drafting this, so the frames above don't draw
 something the pipeline can't produce:
 
-| Card/detail element       | Status                                                                                                                                                                                                                      |
-| ------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Country + flag            | Real for the Country row: `job_postings.countries` already holds ISO codes. The Location row is freeform text (`location`), not a list -- see "Decided" for how it gets the same treatment.                                 |
-| Work setup                | Real. `job_postings.workSetup`.                                                                                                                                                                                             |
-| Score                     | Real. `job_matches.score`.                                                                                                                                                                                                  |
-| Snippet (card summary)    | Real, but it's `snippet` (freehire's own short text), not `summary` -- `summary` is only ever filled in for a Partial posting today, so most cards would show nothing if the card used that field instead.                  |
-| Skill badges              | freehire returns a `skills` array per posting (confirmed live), but nothing saves it yet -- `raw-posting.ts` and `job_postings` both need a new column before any card can show a real skill badge.                         |
-| Skills matching (detail)  | Not real yet. Scoring today only produces free-text why-it-fits/what's-missing, not a structured skill-by-skill match. Needs its own scoring change, not just a UI change.                                                  |
-| Company logo              | Not real yet. Neither freehire nor our schema has a logo URL -- decided below to look one up by domain, which needs a domain (derived from the posting's own link or company name) and a loading/miss design.               |
-| Posted/updated dates      | Not real. freehire returns `posted_at`/`updated_at`; we only keep `firstSeenAt` (when we saw it, not when the source posted it). Needs a new column to show the detail page's date line honestly.                           |
-| Description formatting    | freehire's `description` is HTML, not markdown. "Allows markdown formatting" either means converting that HTML to markdown at save time, or rendering the HTML directly (sanitized) and dropping "markdown" from the ask.   |
-| Company tab content       | Not real. Neither source gives company details (about, size, website) -- the empty state the owner asked for will be what every card shows at first, not an edge case.                                                      |
-| Roles as an owner setting | Not real yet. Roles are derived fresh from the Profile on every poll (`roles.ts`), never stored or edited. The onboarding frame's "add multiple role" needs a new `job_preferences.roles` column to hold the owner's edits. |
+| Card/detail element       | Status                                                                                                                                                                                                                               |
+| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Country + flag            | Real for the Country row: `job_postings.countries` already holds ISO codes. The Location row is freeform text (`location`), not a list -- see "Decided" for how it gets the same treatment.                                          |
+| Work setup                | Real. `job_postings.workSetup`.                                                                                                                                                                                                      |
+| Score                     | Real. `job_matches.score`.                                                                                                                                                                                                           |
+| Snippet (card summary)    | Real, but it's `snippet` (freehire's own short text), not `summary` -- `summary` is only ever filled in for a Partial posting today, so most cards would show nothing if the card used that field instead.                           |
+| Skill badges              | freehire returns a `skills` array per posting (confirmed live), but nothing saves it yet -- `raw-posting.ts` and `job_postings` both need a new column before any card can show a real skill badge.                                  |
+| Skills matching (detail)  | Not real yet. Scoring today only produces free-text why-it-fits/what's-missing, not a structured skill-by-skill match. Needs its own scoring change, not just a UI change.                                                           |
+| Company logo              | Not real yet. Neither freehire nor our schema has a logo URL -- decided below to look one up by domain, which needs a domain (derived from the posting's own link or company name) and a loading/miss design.                        |
+| Posted/updated dates      | Not real. freehire returns `posted_at`/`updated_at`; we only keep `firstSeenAt` (when we saw it, not when the source posted it). Needs a new column to show the detail page's date line honestly.                                    |
+| Description formatting    | freehire's `description` is HTML, not markdown. "Allows markdown formatting" either means converting that HTML to markdown at save time, or rendering the HTML directly (sanitized) and dropping "markdown" from the ask.            |
+| Company tab content       | Not real. Neither source gives company details (about, size, website) -- the empty state the owner asked for will be what every card shows at first, not an edge case.                                                               |
+| Roles as an owner setting | Not real yet. Roles are derived fresh from the Profile on every poll (`roles.ts`), never stored or edited. The onboarding frame's "add multiple role" needs a new `job_preferences.roles` column to hold the owner's edits.          |
+| Last checked timestamp    | Not real yet. Nothing records when the outside scheduler last called `/api/jobs/check/freehire`, successful or not -- the Overview frame (5) needs a single-row table the route updates on every call before the owner can see this. |
 
 None of this blocks drawing the frames -- the card and detail mockups can show the intended fields with realistic
 example values. It does mean "Frame 1 and 3 ship as drawn" is not true until the rows above marked "Not real" get
@@ -96,6 +112,10 @@ their own small slices in `planning`.
   `location` is freeform text and splitting it on its own punctuation to make avatars would be guesswork. Location
   keeps one difference: it leads with the work-setup word ("Remote, " then the avatar group); Country is the
   avatar group alone.
+- **Overview lives on `/jobs` itself, not a second page** (2 Nov 2026, owner's choice, content up to Claude): the
+  empty-list state becomes a real Overview (what Jobs does, Setup status, Last checked), condensed to a status
+  strip once postings exist, rather than a separate route -- keeps the single-entry-point sidebar decided 2 Nov
+  2026 intact.
 
 | Frame                       | What it shows                                                                    |
 | --------------------------- | -------------------------------------------------------------------------------- |
