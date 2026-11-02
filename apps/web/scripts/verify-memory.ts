@@ -11,8 +11,8 @@ import {
   submitReceipt,
 } from "../src/features/project-memory/store";
 import { ownerEmail } from "../src/lib/config";
-import { closeDb, db } from "../src/lib/db";
-import { users } from "../src/lib/schema";
+import { closeDb, db } from "../src/lib/db/db";
+import { users } from "../src/lib/db/schema";
 
 config({ path: ".env.local" });
 config({ path: ".env" });

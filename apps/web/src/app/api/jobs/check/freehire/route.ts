@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { users } from "@/lib/schema";
+import { db } from "@/lib/db/db";
+import { users } from "@/lib/db/schema";
 import { checkFreehire } from "@/features/jobs/check-freehire";
 import { getPreferences } from "@/features/jobs/preferences-store";
 import { deriveRoles } from "@/features/jobs/roles";

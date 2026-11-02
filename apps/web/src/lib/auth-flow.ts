@@ -1,6 +1,6 @@
 import type { SignInErrorCode } from "./auth-errors";
-import { db } from "./db";
-import { users } from "./schema";
+import { db } from "./db/db";
+import { users } from "./db/schema";
 import type { Session } from "./session";
 
 /** What Google returned, before any of it is trusted. */

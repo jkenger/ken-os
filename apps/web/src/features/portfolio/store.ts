@@ -4,8 +4,8 @@ import type { PortfolioEngineering, PortfolioSnapshot } from "@ken-os/portfolio"
 import { normalizeProfile } from "@ken-os/domain";
 import { getRoadmaps, type RoadmapView } from "@/features/engineering-lab/roadmap-store";
 import type { ReviewSheet } from "@/features/engineering-lab/review-sheet";
-import { db } from "@/lib/db";
-import { labReviews, labTopicEvents, portfolioPublications, portfolios, profiles, users } from "@/lib/schema";
+import { db } from "@/lib/db/db";
+import { labReviews, labTopicEvents, portfolioPublications, portfolios, profiles, users } from "@/lib/db/schema";
 import { buildSnapshot, portfolioEngineering } from "./snapshot";
 
 // Portfolio: one Publish turns the saved Profile into a public snapshot. Spec: docs/architecture/portfolio.md.

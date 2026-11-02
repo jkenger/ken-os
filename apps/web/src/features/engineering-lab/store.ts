@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { computeProgress, emptyProgress, type TopicEvent, type TopicProgress } from "@ken-os/domain";
-import { db } from "@/lib/db";
-import { labProgress, labTopicEvents } from "@/lib/schema";
+import { db } from "@/lib/db/db";
+import { labProgress, labTopicEvents } from "@/lib/db/schema";
 import { findTopic } from "./curriculum";
 import { LabInputError } from "./errors";
 
