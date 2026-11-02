@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { IconArrowRight, IconLink, IconPencil, IconTrash } from "@tabler/icons-react";
 import { TOPIC_STATUSES, type TopicStatus } from "@ken-os/domain";
+import { DotSeparator } from "@/components/dot-separator";
 import { post, send } from "@/components/lab/topic/client";
 import { formatDate } from "@/components/lab/words";
 import { DockedPanel } from "@/components/docked-panel";
@@ -126,7 +127,13 @@ function StatusMenu({ panel, onSaved }: { panel: TopicPanelView; onSaved: () => 
 /** Claude's reports and the owner's status changes as a timeline, newest first: when, what was covered, where stuck. */
 function Sessions({ reports }: { reports: ReportView[] }) {
   if (!reports.length) {
-    return <p className="text-xs text-muted-foreground">No sessions · Claude adds one as you learn</p>;
+    return (
+      <p className="text-xs text-muted-foreground">
+        No sessions
+        <DotSeparator />
+        Claude adds one as you learn
+      </p>
+    );
   }
   return (
     <ol className="ml-1 border-l">
@@ -134,7 +141,9 @@ function Sessions({ reports }: { reports: ReportView[] }) {
         <li key={report.id} className="relative pb-4 pl-4 text-sm last:pb-0">
           <span aria-hidden="true" className="absolute top-1.5 -left-[4.5px] size-2 rounded-full bg-border" />
           <p className="text-xs text-muted-foreground">
-            {formatDate(report.at)} · {report.by === "claude" ? "Claude" : "You"}
+            {formatDate(report.at)}
+            <DotSeparator />
+            {report.by === "claude" ? "Claude" : "You"}
           </p>
           {report.summary && <p className="mt-0.5">{report.summary}</p>}
           {report.stuck && (
@@ -142,7 +151,13 @@ function Sessions({ reports }: { reports: ReportView[] }) {
               <span className="font-semibold">Stuck:</span> {report.stuck}
             </p>
           )}
-          {report.built && <p className="mt-1 text-xs font-semibold">Build done · your code is under Build</p>}
+          {report.built && (
+            <p className="mt-1 text-xs font-semibold">
+              Build done
+              <DotSeparator />
+              your code is under Build
+            </p>
+          )}
           {report.status && (
             <p className="mt-1">
               <StatusLabel status={report.status} />
@@ -211,7 +226,9 @@ function Note({ topicId, note, onSaved }: { topicId: string; note: NoteView; onS
           <p className="whitespace-pre-wrap">{note.body}</p>
           <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
             <span className="mr-auto">
-              {note.author === "claude" ? "Claude" : "You"} · {formatDate(note.createdAt)}
+              {note.author === "claude" ? "Claude" : "You"}
+              <DotSeparator />
+              {formatDate(note.createdAt)}
             </span>
             <Button
               type="button"

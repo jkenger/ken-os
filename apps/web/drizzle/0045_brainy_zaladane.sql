@@ -1,0 +1,1 @@
+ALTER TABLE "job_postings" ADD COLUMN "stated_location" text;

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   BookMarked,
+  Briefcase,
   ChevronRight,
   BookOpenText,
   FileText,
@@ -55,13 +56,14 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { engineering, tabForPath, type EngineeringTab } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
 
-type Module = "profile" | "portfolio" | "memory" | "lab" | "terms" | "studio";
+type Module = "profile" | "portfolio" | "memory" | "lab" | "terms" | "studio" | "jobs";
 
 const modules = [
   { id: "profile" as const, label: "Profile", href: "/profile", icon: UserRound },
   { id: "portfolio" as const, label: "Portfolio", href: "/portfolio", icon: Globe },
   { id: "memory" as const, label: "Project Memory", href: "/memory", icon: BookOpenText },
   { id: "lab" as const, label: "Engineering", href: engineering.roadmap(), icon: FlaskConical },
+  { id: "jobs" as const, label: "Jobs", href: "/jobs", icon: Briefcase },
   { id: "terms" as const, label: "Terms", href: "/terms", icon: BookMarked },
   { id: "studio" as const, label: "Design Studio", href: "/studio", icon: Palette },
 ];
@@ -89,6 +91,14 @@ const moduleDetails: Record<
   lab: {
     title: "Engineering",
     sections: [{ label: "Roadmap", href: engineering.roadmap(), icon: MapIcon }],
+  },
+  jobs: {
+    title: "Jobs",
+    // No sub-items: Jobs itself is the entry point, straight to /jobs (docs/mockups/Jobs redesign.html) -- New
+    // and Filtered out used to be separate nav entries, but New was just Jobs' own landing page under another
+    // name, and Filtered out is still reachable from the results bar's own "N hidden" count, not a standing
+    // destination worth its own sidebar row.
+    sections: [],
   },
   terms: { title: "Terms", sections: [{ label: "Terms", href: "/terms", icon: BookMarked }] },
   // No section column: the studio needs the width for its tree, canvas and inspector (mockup frame A1).
@@ -280,12 +290,16 @@ function ShellInset({
   title,
   sections,
   tabs,
+  extraCrumb,
   children,
 }: {
   email: string;
   title: string;
   sections: Section[];
   tabs: boolean;
+  /** One more breadcrumb segment after the section, for a page that drills into one item within it (a job
+   *  posting's own title under Jobs / New). */
+  extraCrumb?: string;
   children: ReactNode;
 }) {
   const { open, isMobile } = useSidebar();
@@ -303,7 +317,7 @@ function ShellInset({
             title="Ctrl B"
           />
           <InlineSeparator className="mr-1 hidden h-4 md:block" />
-          <nav aria-label="Breadcrumb" className="min-w-0">
+          <nav aria-label="Breadcrumb" className="my-4 min-w-0">
             <ol className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground">
               <li className={cn("truncate", currentSection && "hidden sm:inline-flex")}>
                 {sections[0] && currentSection ? (
@@ -319,8 +333,27 @@ function ShellInset({
                   <li className="hidden sm:inline-flex" aria-hidden="true">
                     <ChevronRight className="size-3.5" />
                   </li>
+                  <li
+                    className={cn("truncate font-normal", extraCrumb ? "hidden sm:inline-flex" : "text-foreground")}
+                    aria-current={extraCrumb ? undefined : "page"}
+                  >
+                    {extraCrumb ? (
+                      <Link className="transition-colors hover:text-foreground" href={currentSection.href}>
+                        {currentSection.label}
+                      </Link>
+                    ) : (
+                      currentSection.label
+                    )}
+                  </li>
+                </>
+              )}
+              {extraCrumb && (
+                <>
+                  <li className="hidden sm:inline-flex" aria-hidden="true">
+                    <ChevronRight className="size-3.5" />
+                  </li>
                   <li className="truncate font-normal text-foreground" aria-current="page">
-                    {currentSection.label}
+                    {extraCrumb}
                   </li>
                 </>
               )}
@@ -367,6 +400,7 @@ export function WorkspaceShell({
   sectionTabs = true,
   tab,
   sectionCounts,
+  extraCrumb,
 }: {
   email: string;
   active: Module;
@@ -377,6 +411,9 @@ export function WorkspaceShell({
   tab?: EngineeringTab;
   /** A count beside a section in the sidebar, by the section's href. */
   sectionCounts?: Record<string, number>;
+  /** One more breadcrumb segment after the module name, for a page that drills into one item within it (a job
+   *  posting's own title under Jobs). */
+  extraCrumb?: string;
 }) {
   const detail = moduleDetails[active];
   const pathname = usePathname();
@@ -424,7 +461,7 @@ export function WorkspaceShell({
         className="min-h-screen bg-sidebar font-sans text-foreground"
       >
         <ShellSidebar email={email} active={active} moduleList={modules} sections={sections} />
-        <ShellInset email={email} title={detail.title} sections={sections} tabs={sectionTabs}>
+        <ShellInset email={email} title={detail.title} sections={sections} tabs={sectionTabs} extraCrumb={extraCrumb}>
           {content}
         </ShellInset>
       </SidebarProvider>

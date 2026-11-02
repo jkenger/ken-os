@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { IconChevronDown, IconCopy, IconExternalLink } from "@tabler/icons-react";
+import { DotSeparator } from "@/components/dot-separator";
 import { formatDate } from "@/components/lab/words";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -129,7 +130,9 @@ export function ClaudeSetup({
           done={instructions === "pasted"}
         >
           <p className="text-xs text-muted-foreground">
-            Version {updated} · paste into the Project&apos;s instructions
+            Version {updated}
+            <DotSeparator />
+            paste into the Project&apos;s instructions
           </p>
           <Collapsible className="grid gap-2">
             <div className="flex flex-wrap gap-2">

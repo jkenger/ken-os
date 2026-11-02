@@ -35,7 +35,6 @@ Never:
 - **Narrate.** No "Hi", "Ready when you are", reassurance, or how the system works inline.
 - **Leak internals.** No env names, component names, policy versions, model or prompt details, or raw server errors such as "Invalid origin."
 - **Use em dashes.**
-- **Use middle dots (·) as separators.** Put the items on their own lines, split them with a thin vertical rule (`components/inline-separator.tsx`), or join them with a comma or a period. Added 28 Oct 2026.
 
 Allowed to speak in sentences:
 
@@ -264,7 +263,6 @@ A test in `pnpm test` reads every `.tsx` file under `apps/web/src` (excluding te
 It fails on:
 
 - An em dash in any string.
-- A middle dot (·) in any string, once the screens that still use one are rewritten.
 - A phrase on a banned list kept next to the test, starting with: "Ready when you are", "Pick up where you left off", "Hi.", "resume agent", "Could not", "Request failed", "OWNER_EMAIL", "Invalid origin".
 - A heading (`h1`–`h3`) whose text ends in a period.
 

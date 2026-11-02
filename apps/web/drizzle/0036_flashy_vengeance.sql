@@ -1,0 +1,1 @@
+DROP TABLE "job_inbound_emails" CASCADE;

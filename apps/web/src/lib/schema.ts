@@ -7,6 +7,7 @@ import {
   jsonb,
   pgTable,
   primaryKey,
+  real,
   text,
   timestamp,
   uniqueIndex,
@@ -34,6 +35,7 @@ import type { BuildEvidence } from "../features/engineering-lab/build-evidence";
 import type { ReviewSheet } from "../features/engineering-lab/review-sheet";
 import type { Difficulty, TopicMaterial } from "../features/engineering-lab/topic-material";
 import type { LookChange, TokenChange } from "../features/design-studio/drafts";
+import type { AlertSource, JobMatchState } from "../features/jobs/raw-posting";
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),
@@ -713,3 +715,180 @@ export const labTopicMaterial = pgTable(
   },
   (table) => [primaryKey({ columns: [table.userId, table.topicId] })],
 );
+
+/** One row per real posting after repeats are dropped. Identity for the title+company+location fallback match
+ *  ("Drop repeats") is enforced by the unique index below, not just application logic. The extraction columns
+ *  (full_description through extract_model) are null until `/api/jobs/process` runs; `processed_at` is the signal
+ *  a posting is still pending (docs/product/job-finder.md, release step 2 "Score"). `countries` is read from the
+ *  posting's own eligibility language only, never from `location`. `eligibility_stated` is null until processed
+ *  (never filtered); once set, false means the posting said nothing about eligibility at all ("Country: not
+ *  stated"), and true with an empty `countries` means it explicitly said it's open to everyone, never filtered
+ *  (plans/jobs-filters-and-wwr-source.md, Slice 1 -- the plain empty-array case used to mean both of those,
+ *  wrongly treating "said nothing" and "said everyone" alike). */
+export const jobPostings = pgTable(
+  "job_postings",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    title: text("title").notNull(),
+    company: text("company").notNull(),
+    location: text("location").notNull(),
+    snippet: text("snippet").notNull(),
+    /** freehire's own structured eligibility/work-mode/employment-type fields, set once at save time from
+     *  `RawPosting.sourceCountries`/`sourceWorkMode`/`sourceEmploymentType`, when it states them (empty/null
+     *  otherwise). `process.ts` trusts these over AI extraction for the same posting
+     *  (plans/jobs-freehire-source.md, Slice 2). */
+    sourceCountries: jsonb("source_countries").$type<string[]>(),
+    sourceWorkMode: text("source_work_mode").$type<"remote" | "hybrid" | "onsite">(),
+    sourceEmploymentType: text("source_employment_type"),
+    /** freehire's own enrichment salary/experience fields, set from `RawPosting.sourceSalaryMin`/etc. when it
+     *  states them. Seniority is deliberately not here -- see `RawPosting`'s own comment
+     *  (plans/jobs-freehire-source.md, Slice 3). */
+    sourceSalaryMin: real("source_salary_min"),
+    sourceSalaryMax: real("source_salary_max"),
+    sourceSalaryCurrency: text("source_salary_currency"),
+    sourceSalaryPeriod: text("source_salary_period").$type<"hour" | "day" | "week" | "month" | "year">(),
+    sourceExperienceYearsMin: real("source_experience_years_min"),
+    /** freehire's own skill tags and posted/updated timestamps, set once at save time (docs/mockups/job-finder.md,
+     *  "Redesign" -- the card and detail page's skill badges and date line). No AI extraction equivalent exists
+     *  for these, so unlike the `source*` fields above there's nothing to override: they save straight through. */
+    skills: jsonb("skills").$type<string[]>().notNull().default([]),
+    sourcePostedAt: timestamp("source_posted_at", { withTimezone: true }),
+    sourceUpdatedAt: timestamp("source_updated_at", { withTimezone: true }),
+    /** freehire's own HTML description, unstripped (docs/mockups/Jobs redesign.html: the detail page's
+     *  formatted Description tab). Untrusted third-party markup -- sanitized at render time, never saved
+     *  pre-sanitized so the sanitizer's own rules can change later without re-scraping. */
+    descriptionHtml: text("description_html"),
+    /** The ATS or job board freehire itself pulled this posting from ("greenhouse", "workday", "whatjobs-uk",
+     *  ...; freehire's own `source` field) -- set once at save time from `RawPosting.originBoard`. Shown to the
+     *  owner as "Sourced from"; distinct from `job_posting_sources.source`, which is always "freehire" and just
+     *  names which of this app's own scrapers found the posting. */
+    originBoard: text("origin_board"),
+    firstSeenAt: timestamp("first_seen_at", { withTimezone: true }).notNull().defaultNow(),
+    fullDescription: text("full_description"),
+    /** True when every source's page failed to read, so extraction ran on the list fields alone. */
+    partial: boolean("partial").notNull().default(false),
+    summary: text("summary"),
+    /** A real, not an integer: a posting can state a fractional rate ("$45.50/hr"). */
+    payAmount: real("pay_amount"),
+    payCurrency: text("pay_currency"),
+    payPeriod: text("pay_period").$type<"hour" | "day" | "week" | "month" | "year">(),
+    jobType: text("job_type").$type<"full_time" | "part_time" | "contract" | "internship" | "temporary">(),
+    workSetup: text("work_setup").$type<"remote" | "hybrid" | "on_site">(),
+    eligibilityStated: boolean("eligibility_stated"),
+    countries: jsonb("countries").$type<string[]>(),
+    seniority: text("seniority").$type<"junior" | "mid" | "senior" | "lead">(),
+    /** A real, not an integer: a posting can state a fractional minimum ("1.5+ years"). */
+    yearsRequired: real("years_required"),
+    /** True when the posting is from a recruiting/staffing agency, not the direct employer. */
+    isAgency: boolean("is_agency").notNull().default(false),
+    extractPromptVersion: text("extract_prompt_version"),
+    extractModel: text("extract_model"),
+    processedAt: timestamp("processed_at", { withTimezone: true }),
+  },
+  (table) => [
+    index("job_postings_user_idx").on(table.userId, table.firstSeenAt),
+    index("job_postings_user_pending_idx").on(table.userId, table.processedAt, table.firstSeenAt),
+    uniqueIndex("job_postings_user_identity_idx").on(table.userId, table.title, table.company, table.location),
+  ],
+);
+
+/** Every source a posting came from (docs/product/job-finder.md, "same posting... listing every source"). The
+ *  unique index is the dedup check for a posting with its own ID at the source: "has this (source, sourceId)
+ *  already been seen?" */
+export const jobPostingSources = pgTable(
+  "job_posting_sources",
+  {
+    id: text("id").primaryKey(),
+    postingId: text("posting_id")
+      .notNull()
+      .references(() => jobPostings.id, { onDelete: "cascade" }),
+    source: text("source").$type<AlertSource>().notNull(),
+    sourceId: text("source_id"),
+    link: text("link").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("job_posting_sources_source_id_idx")
+      .on(table.source, table.sourceId)
+      .where(sql`${table.sourceId} is not null`),
+  ],
+);
+
+/** The owner's state for one posting. One row per posting, created alongside it. `profileVersionScored` is the
+ *  Profile's `updatedAt` at scoring time (or null, scored against the never-saved Profile); a save that changes
+ *  it makes every already-scored match here stale until the next `/api/jobs/process` run rescoring it
+ *  (plans/jobs-score.md, Slice 3). */
+export const jobMatches = pgTable(
+  "job_matches",
+  {
+    postingId: text("posting_id")
+      .primaryKey()
+      .references(() => jobPostings.id, { onDelete: "cascade" }),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    state: text("state").$type<JobMatchState>().notNull().default("new"),
+    filterReason: text("filter_reason"),
+    /** The formatted display string from `shift.ts` ("Mid shift, 5 PM to 1 AM", "Not listed", "Flexible"), set
+     *  alongside the filter verdict once a posting is processed (plans/jobs-score.md, Slice 4). Null until then. */
+    shift: text("shift"),
+    score: integer("score"),
+    scoreReasons: jsonb("score_reasons").$type<{
+      whyFits: { reason: string; citation: string }[];
+      whatsMissing: string[];
+    }>(),
+    scorePromptVersion: text("score_prompt_version"),
+    profileVersionScored: timestamp("profile_version_scored", { withTimezone: true }),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [index("job_matches_user_state_idx").on(table.userId, table.state)],
+);
+
+/** The owner's Jobs filter preferences (docs/product/job-finder.md, Preferences table). Timing (instant-email
+ *  threshold, digest time) is still step 3 scope, not here. Minimum pay is one currency; a posting's own stated
+ *  pay is converted into it via the cached rates in `job_currency_rates` before comparing, so it's checked
+ *  regardless of what currency the posting states. */
+export const jobPreferences = pgTable("job_preferences", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  /** Empty means "no edits yet" -- `check/freehire/route.ts` falls back to the Profile's live-derived roles. */
+  roles: jsonb("roles").$type<string[]>().notNull().default([]),
+  skipWords: jsonb("skip_words").$type<string[]>().notNull().default([]),
+  skipCompanies: jsonb("skip_companies").$type<string[]>().notNull().default([]),
+  /** Empty means no Country restriction at all -- same "don't silently filter beyond what's explicitly asked"
+   *  rule as every other list here. A posting that states eligibility for countries outside this list is
+   *  filtered only once the owner has actually added at least one country. */
+  countries: jsonb("countries").$type<string[]>().notNull().default([]),
+  postedWithinDays: integer("posted_within_days").notNull().default(14),
+  minimumPay: real("minimum_pay"),
+  maximumPay: real("maximum_pay"),
+  payCurrency: text("pay_currency").notNull().default("USD"),
+  payPeriod: text("pay_period").$type<"hour" | "day" | "week" | "month" | "year">().notNull().default("month"),
+  jobTypes: jsonb("job_types")
+    .$type<("full_time" | "part_time" | "contract" | "internship" | "temporary")[]>()
+    .notNull()
+    .default(["full_time", "contract"]),
+  workSetups: jsonb("work_setups").$type<("remote" | "hybrid" | "on_site")[]>().notNull().default(["remote"]),
+  seniority: jsonb("seniority")
+    .$type<("junior" | "mid" | "senior" | "lead")[]>()
+    .notNull()
+    .default(["junior", "mid", "senior", "lead"]),
+  /** Shown, not a strict filter: a posting outside the chosen shifts is marked Outside shifts, never hidden
+   *  (docs/product/job-finder.md, Preferences table). Day and Mid by default. */
+  shifts: jsonb("shifts").$type<("day" | "mid" | "night")[]>().notNull().default(["day", "mid"]),
+  agenciesHide: boolean("agencies_hide").notNull().default(false),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+/** One cached snapshot of currency rates (1 USD = N of that currency), refreshed periodically by
+ *  `/api/jobs/process` (plans: Jobs multi-currency pay, single-currency revision) rather than fetched live
+ *  during filtering. A single, fixed-id row -- there is only ever one current snapshot. */
+export const jobCurrencyRates = pgTable("job_currency_rates", {
+  id: text("id").primaryKey(),
+  rates: jsonb("rates").$type<Record<string, number>>().notNull(),
+  fetchedAt: timestamp("fetched_at", { withTimezone: true }).notNull(),
+});

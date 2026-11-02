@@ -2,6 +2,7 @@
 
 import type { ComponentProps, JSXElementConstructor, ReactNode } from "react";
 import { ChevronsUpDown, FlaskConical, Search, UserRound } from "lucide-react";
+import { DotSeparator } from "@/components/dot-separator";
 import { Back, Badge as KitBadge, Coverage, Fact, Notice, Rail, SectionTitle } from "@/components/engineering/kit";
 import { panel, selectedInset, selectedRow, selectedSurface } from "@/components/surfaces";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -227,7 +228,11 @@ export const previews: Record<string, (props: PreviewProps) => ReactNode> = {
       <SheetContent>
         <SheetHeader>
           <SheetTitle>Retry & backoff</SheetTitle>
-          <SheetDescription>Chapter 2 · In progress</SheetDescription>
+          <SheetDescription>
+            Chapter 2
+            <DotSeparator />
+            In progress
+          </SheetDescription>
         </SheetHeader>
       </SheetContent>
     </Sheet>

@@ -1,0 +1,1 @@
+ALTER TABLE "job_preferences" ADD COLUMN "roles" jsonb DEFAULT '[]'::jsonb NOT NULL;
