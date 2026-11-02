@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { SESSION_COOKIE, renewSession, sessionCookieOptions } from "@/lib/session";
+import { SESSION_COOKIE, renewSession, sessionCookieOptions } from "@/lib/auth/session";
 
 /**
  * Renews the session cookie on page visits, at most once a day (docs/architecture/auth-sign-in.md §5). It never

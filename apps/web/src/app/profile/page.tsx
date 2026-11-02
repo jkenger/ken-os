@@ -3,7 +3,7 @@ import { ProfileWorkspace } from "@/features/profile/profile-workspace";
 import { listResumeFiles } from "@/features/profile/resume-files-store";
 import { isLedgerSection } from "@/features/profile/ledger";
 import { getProfile, latestAnalysis } from "@/features/profile/store";
-import { requireSession } from "@/lib/session";
+import { requireSession } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 

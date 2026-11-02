@@ -4,7 +4,7 @@ import { ConsentCard, ConsentProblem } from "@/features/connector/consent";
 import { checkAuthorization } from "@/features/connector/oauth-store";
 import { hostOf, redirectWith, type AuthorizeQuery } from "@/features/connector/rules";
 import { appUrl } from "@/lib/config";
-import { requireSession } from "@/lib/session";
+import { requireSession } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 

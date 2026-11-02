@@ -8,7 +8,7 @@ import { LabInputError } from "@/features/engineering-lab/errors";
 import { archivedRoadmaps, getRoadmap, getRoadmaps, getRoadmapSummary } from "@/features/engineering-lab/roadmap-store";
 import { engineering } from "@/features/engineering-lab/routes";
 import { appUrl } from "@/lib/config";
-import { requireSession } from "@/lib/session";
+import { requireSession } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 

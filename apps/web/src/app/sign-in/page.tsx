@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { SignInCard } from "@/components/sign-in-card";
-import { signInNotice, signInNotices } from "@/lib/auth-errors";
+import { signInNotice, signInNotices } from "@/lib/auth/auth-errors";
 import { signInSetupGap } from "@/lib/config";
-import { getSession, safeNext } from "@/lib/session";
+import { getSession, safeNext } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 

@@ -1,4 +1,4 @@
-import { appUrl } from "./config";
+import { appUrl } from "../config";
 
 export function hasValidOrigin(request: Request): boolean {
   const origin = request.headers.get("origin");

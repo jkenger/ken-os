@@ -1,4 +1,4 @@
-import { hasValidOrigin } from "@/lib/origin";
+import { hasValidOrigin } from "@/lib/auth/origin";
 import { memoryResponse, readMemoryJson } from "@/features/project-memory/api";
 import { MemoryInputError, parseDecisionDraft, parseReceiptDraft } from "@/features/project-memory/contract";
 import {

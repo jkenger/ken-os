@@ -1,7 +1,7 @@
 import { StudioWorkspace } from "@/features/design-studio/studio-workspace";
 import { listDrafts } from "@/features/design-studio/drafts-store";
 import { studioManifest } from "@/features/design-studio/manifest.generated";
-import { requireSession } from "@/lib/session";
+import { requireSession } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 

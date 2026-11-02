@@ -1,6 +1,6 @@
 import { JobsFilteredOutPage } from "@/components/jobs/filtered-out-page";
 import { listPostings } from "@/features/jobs/store";
-import { requireSession } from "@/lib/session";
+import { requireSession } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 

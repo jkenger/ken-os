@@ -1,6 +1,6 @@
 import { TermsPage } from "@/components/terms/terms-page";
 import { listTerms } from "@/features/terms/store";
-import { requireSession } from "@/lib/session";
+import { requireSession } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
