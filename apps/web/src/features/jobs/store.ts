@@ -224,6 +224,18 @@ function toPostingView(row: PostingRow, attachment: Attachment): PostingView {
   return { ...rest, ...attachment };
 }
 
+/** Every distinct company name from the owner's own postings, for the Skip companies filter's search list --
+ *  real companies that have actually shown up, not a speculative list (`MultiSelectCommand` in
+ *  `filter-sidebar.tsx`). */
+export async function getDistinctCompanies(userId: string): Promise<string[]> {
+  const rows = await db()
+    .selectDistinct({ company: jobPostings.company })
+    .from(jobPostings)
+    .where(eq(jobPostings.userId, userId))
+    .orderBy(asc(jobPostings.company));
+  return rows.map((row) => row.company);
+}
+
 export async function listPostings(userId: string, state: JobMatchState): Promise<PostingView[]> {
   const rows = await db()
     .select(POSTING_COLUMNS)

@@ -28,6 +28,7 @@ export function JobsPage({
   postings,
   profileSkills,
   preferences,
+  companies,
   filteredOutCount,
   boardFilter,
 }: {
@@ -36,6 +37,8 @@ export function JobsPage({
   postings: PostingView[];
   profileSkills: string[];
   preferences: JobPreferences;
+  /** Every distinct company name from the owner's own postings, for the Skip companies filter's search list. */
+  companies: string[];
   filteredOutCount: number;
   /** Set from the `?board=` URL param (a job detail page's "Sourced from" link); scopes the list to postings
    *  freehire itself pulled from that one board, as opposed to a `job_preferences` field -- this filter lives in
@@ -69,7 +72,7 @@ export function JobsPage({
         )}
         {postings.length > 0 ? (
           <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[17rem_1fr]">
-            <FilterSidebar preferences={preferences} search={search} onSearchChange={setSearch} />
+            <FilterSidebar preferences={preferences} companies={companies} search={search} onSearchChange={setSearch} />
             <div>
               <ResultsBar
                 count={visible.length}
