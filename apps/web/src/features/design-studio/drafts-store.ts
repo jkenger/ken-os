@@ -1,6 +1,6 @@
 import { and, asc, eq } from "drizzle-orm";
-import { db } from "@/lib/db";
-import { designStudioDrafts } from "@/lib/schema";
+import { db } from "@/lib/db/db";
+import { designStudioDrafts } from "@/lib/db/schema";
 import { isEmptyDraft, type Draft } from "./drafts";
 
 // The owner's Design Studio drafts in Postgres (docs/architecture/design-studio.md), so they survive a refresh and a

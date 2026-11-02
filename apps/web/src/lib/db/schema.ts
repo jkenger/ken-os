@@ -31,11 +31,11 @@ import type {
   StoredTopicStatus,
 } from "@ken-os/domain";
 import type { PortfolioSnapshot } from "@ken-os/portfolio";
-import type { BuildEvidence } from "../features/engineering-lab/build-evidence";
-import type { ReviewSheet } from "../features/engineering-lab/review-sheet";
-import type { Difficulty, TopicMaterial } from "../features/engineering-lab/topic-material";
-import type { LookChange, TokenChange } from "../features/design-studio/drafts";
-import type { AlertSource, JobMatchState } from "../features/jobs/raw-posting";
+import type { BuildEvidence } from "../../features/engineering-lab/build-evidence";
+import type { ReviewSheet } from "../../features/engineering-lab/review-sheet";
+import type { Difficulty, TopicMaterial } from "../../features/engineering-lab/topic-material";
+import type { LookChange, TokenChange } from "../../features/design-studio/drafts";
+import type { AlertSource, JobMatchState } from "../../features/jobs/raw-posting";
 
 export const users = pgTable("users", {
   id: text("id").primaryKey(),

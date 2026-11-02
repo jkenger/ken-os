@@ -10,8 +10,8 @@ import {
   type LabDefinition,
   type Topic,
 } from "@ken-os/domain";
-import { db } from "@/lib/db";
-import { labExerciseDrafts, labExercises, labTopicEvents } from "@/lib/schema";
+import { db } from "@/lib/db/db";
+import { labExerciseDrafts, labExercises, labTopicEvents } from "@/lib/db/schema";
 import { fromMap, requireAnyTopic, type AnyTopic } from "./any-topic";
 import { exerciseFor } from "./curriculum";
 import { LabInputError } from "./errors";

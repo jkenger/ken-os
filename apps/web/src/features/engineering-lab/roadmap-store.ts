@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, desc, eq, inArray, or } from "drizzle-orm";
 import { pathChapters, readStatus, staleLearned, type TopicStatus, type TopicStatusView } from "@ken-os/domain";
-import { db } from "@/lib/db";
-import { labCustomTopics, labRoadmaps, labTopicEvents } from "@/lib/schema";
+import { db } from "@/lib/db/db";
+import { labCustomTopics, labRoadmaps, labTopicEvents } from "@/lib/db/schema";
 import { customTopics, requireAnyTopic } from "./any-topic";
 import { getTopicChat } from "./claude-links";
 import { practiceState } from "./exercise-store";

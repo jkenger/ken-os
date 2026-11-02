@@ -3,8 +3,8 @@ import { randomUUID } from "node:crypto";
 import { config } from "dotenv";
 import { eq } from "drizzle-orm";
 import { finishSignIn } from "../src/lib/auth/auth-flow";
-import { closeDb, db } from "../src/lib/db";
-import { users } from "../src/lib/schema";
+import { closeDb, db } from "../src/lib/db/db";
+import { users } from "../src/lib/db/schema";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
