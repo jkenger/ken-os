@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { ProfileWorkspace } from "@/components/profile/profile-workspace";
+import { ProfileWorkspace } from "@/features/profile/profile-workspace";
 import { listResumeFiles } from "@/features/profile/resume-files-store";
 import { isLedgerSection } from "@/features/profile/ledger";
 import { getProfile, latestAnalysis } from "@/features/profile/store";
