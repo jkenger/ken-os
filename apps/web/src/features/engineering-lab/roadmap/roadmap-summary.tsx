@@ -1,6 +1,6 @@
 "use client";
 
-import { formatDate } from "@/components/lab/words";
+import { formatDate } from "@/features/engineering-lab/words";
 import { Button } from "@/components/ui/button";
 import type { RoadmapSummary as Summary } from "@/features/engineering-lab/roadmap-summary";
 import { panel } from "../kit";

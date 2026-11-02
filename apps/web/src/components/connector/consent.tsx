@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { IconAlertCircle } from "@tabler/icons-react";
-import { post } from "@/components/lab/topic/client";
+import { post } from "@/features/engineering-lab/topic/client";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";

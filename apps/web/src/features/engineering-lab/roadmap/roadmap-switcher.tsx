@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { IconArchive, IconChevronDown, IconPlus, IconTrash } from "@tabler/icons-react";
-import { formatDate } from "@/components/lab/words";
+import { formatDate } from "@/features/engineering-lab/words";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

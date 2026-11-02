@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DotSeparator } from "@/components/dot-separator";
-import { post } from "@/components/lab/topic/client";
-import { formatDate } from "@/components/lab/words";
+import { post } from "@/features/engineering-lab/topic/client";
+import { formatDate } from "@/features/engineering-lab/words";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toaster";
 import type { Connection } from "@/features/connector/oauth-store";

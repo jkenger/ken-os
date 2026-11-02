@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import { post } from "@/components/lab/topic/client";
+import { post } from "@/features/engineering-lab/topic/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
