@@ -1,0 +1,80 @@
+# Jobs
+
+A job board that finds postings matching the owner's own Profile and preferences, scores each one against that
+Profile, and shows why. Full product spec: `docs/product/job-finder.md`. Source-migration history: the two
+`plans/jobs-*.md` files.
+
+## What it does
+
+- Polls freehire's public, keyless search API once a minute for the owner's roles, turns results into postings, and
+  drops repeats.
+- Reads each posting's full text, extracts structured fields (pay, job type, work setup, seniority, years required,
+  countries, shift hours) and scores it against the owner's Profile.
+- Applies strict filters the owner sets (pay, job type, work setup, countries) to hide postings that don't fit, but
+  keeps them visible under "Filtered out" with the reason. Nothing disappears silently.
+- Shows a Have/Related/Missing skills breakdown and any requirement mismatches (years, work setup) on each posting's
+  detail page, next to the raw listing.
+
+## Decisions worth knowing before changing this code
+
+- **freehire replaced hand-built LinkedIn/Indeed scrapers (1 Nov 2026).** Those worked, but every hour spent beating
+  each site's anti-bot measures was an hour not spent on the matching/scoring work that's actually the point.
+  freehire is a public, keyless, cooperative API aggregating 200+ sources with no documented rate limit and no
+  anti-scraping posture to work around. Full reasoning: `plans/jobs-freehire-source.md`.
+- **Countries and Skip companies are owner-set `job_preferences` fields, not silently derived from the Profile.**
+  An earlier version filtered by the Profile's country without any visible control or filter chip for it — 103
+  postings were hidden with no way to see why. The fix: Countries and Skip companies are real, editable preferences
+  (`preferences-store.ts`), and the filter sidebar is the only source of filtering, full stop.
+- **A strict filter only fires when it's genuinely narrowed, never on mere inclusion.** The work-setup mismatch on a
+  posting's detail page used to fire whenever Remote was merely one of the owner's accepted setups, even if Hybrid
+  and On-site were accepted too — that's "no restriction expressed," not a preference for Remote. It only fires now
+  when the owner has narrowed to Remote alone (`requirement-mismatches.ts`).
+- **A missing Profile fact is `null`, never a verified `0`.** Years-of-experience mismatches only show when the
+  Profile actually has Experience entries to compare against; an empty Experience section means "no data," not "0
+  years confirmed" (`years-of-experience.ts`, `requirement-mismatches.ts`).
+- **freehire's search API truncates `description` at ~1000 characters with no signal it's a preview.** Confirmed
+  directly against the live API: the same posting's detail endpoint (`/api/v1/jobs/{slug}`) returns the complete
+  text. `check-freehire.ts`'s `savePostings` takes an injected `fetchFullDescription`, called once per genuinely-new
+  posting (not on every poll, which is mostly repeats) to fetch the complete description before it's stored.
+- **"Sourced from freehire" told the owner nothing — every posting goes through freehire.** freehire's own `source`
+  field names the real ATS/board a posting came from (Greenhouse, Workday, Lever, a regional board, etc). That field
+  is now stored as `originBoard` and surfaced on the detail page and as a one-off `?board=` filter on `/jobs`
+  (`job-boards.ts`).
+- **Skills matching is three-way, not binary.** `skills-match.ts` classifies each posting skill as have / related (to
+  something the owner's Profile does list) / missing, backed by a hand-maintained dictionary (`skills-dictionary.ts`)
+  of names, aliases, and logo slugs, since there's no API for "is React related to Next.js."
+- **Jobs is the sidebar's entry point, not a parent with sub-items.** "New" was the Jobs landing page under another
+  name; "Filtered out" is already one click away from the results bar's own hidden-count link. Both sub-items were
+  removed from `workspace-shell.tsx`'s `jobs` module entry.
+
+## Architecture notes
+
+- **Pipeline is two injected-dependency stages**, both testable without a real HTTP call, AI call, or database:
+  `check-freehire.ts` (search freehire, save new postings) and `process.ts` (read, extract, score pending postings
+  in batches of 5). Both are called by the same outside poll, once a minute.
+- **`savePostings` re-verifies "genuinely new" inside its own transaction**, not just in the cheap pre-check that
+  decides whether to spend a `fetchFullDescription` call — a normal poll is mostly duplicates, so the expensive path
+  only runs for postings that turn out to actually be new.
+- **Every strict filter and mismatch check is a plain comparison against already-extracted fields, no AI call at
+  filter time.** The AI call happens once, in `process.ts`, when a posting is first read.
+- **`PostingView`/`POSTING_COLUMNS` in `store.ts`** is the one place a new column needs to be added for it to reach
+  the UI; `getRelatedPostings` and `getRelatedByRole` back the detail page's two "more like this" sections.
+
+## Production setup (different from local dev)
+
+Locally, `pnpm dev` runs `scripts/dev-with-poll.ts`, which starts `next dev` and polls
+`/api/jobs/check/freehire` + `/api/jobs/process` once a minute on its own — no separate scheduled task to set up or
+tear down, no cron to remember to disable when you're done for the day.
+
+Production has no built-in scheduler doing this:
+
+- An **outside scheduler** (not a Vercel cron — the once-a-minute cadence needs the Pro plan) must call
+  `GET /api/jobs/check/freehire` and `GET /api/jobs/process` once a minute, each with header
+  `x-jobs-check-secret: <JOBS_CHECK_SECRET>`. A free service like cron-job.org works; so does any always-on process
+  that can fire an HTTP request on a timer.
+- **`JOBS_CHECK_SECRET`** must be set in the production environment and must match what the scheduler sends. A
+  request without it is rejected and runs nothing (`apps/web/.env.example`).
+- **`OWNER_EMAIL`** must also be set. It's unrelated to sign-in (any verified Google account can sign in); it names
+  which user's Profile and preferences the poll runs against, since the poll isn't tied to a signed-in session.
+- Both routes return `503` if either env var is missing, so a misconfigured deploy fails loudly instead of silently
+  finding no postings.
