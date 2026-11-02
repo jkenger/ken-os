@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { ConsentCard, ConsentProblem } from "@/components/connector/consent";
+import { ConsentCard, ConsentProblem } from "@/features/connector/consent";
 import { checkAuthorization } from "@/features/connector/oauth-store";
 import { hostOf, redirectWith, type AuthorizeQuery } from "@/features/connector/rules";
 import { appUrl } from "@/lib/config";
