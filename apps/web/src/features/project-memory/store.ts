@@ -1,6 +1,6 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
-import { db } from "@/lib/db";
+import { db } from "@/lib/db/db";
 import {
   memoryCredentials,
   memoryDecisionRevisions,
@@ -10,7 +10,7 @@ import {
   memoryProjects,
   memoryReceiptRevisions,
   memoryReceipts,
-} from "@/lib/schema";
+} from "@/lib/db/schema";
 import {
   type DecisionDraft,
   type DecisionRevision,

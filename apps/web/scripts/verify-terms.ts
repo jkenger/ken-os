@@ -3,8 +3,8 @@ import { randomUUID } from "node:crypto";
 import { config } from "dotenv";
 import { eq } from "drizzle-orm";
 import { TERM_LOOKUP_LIMIT } from "@ken-os/domain";
-import { closeDb, db } from "../src/lib/db";
-import { kenTermLookups, users } from "../src/lib/schema";
+import { closeDb, db } from "../src/lib/db/db";
+import { kenTermLookups, users } from "../src/lib/db/schema";
 
 config({ path: ".env.local" });
 config({ path: ".env" });

@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import type { Topic } from "@ken-os/domain";
-import { db } from "@/lib/db";
-import { labCustomTopics, labTopicMaterial } from "@/lib/schema";
+import { db } from "@/lib/db/db";
+import { labCustomTopics, labTopicMaterial } from "@/lib/db/schema";
 import { findTopic, placeOf } from "./curriculum";
 import { LabInputError } from "./errors";
 import { withMaterial, type TopicMaterial } from "./topic-material";

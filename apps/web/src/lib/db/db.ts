@@ -1,6 +1,6 @@
 import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
-import { requiredEnv } from "./config";
+import { requiredEnv } from "../config";
 import * as schema from "./schema";
 
 function connect() {
