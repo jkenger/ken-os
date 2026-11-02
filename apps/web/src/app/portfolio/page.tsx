@@ -1,4 +1,4 @@
-import { PortfolioWorkspace } from "@/components/portfolio/portfolio-workspace";
+import { PortfolioWorkspace } from "@/features/portfolio/portfolio-workspace";
 import { getPortfolio } from "@/features/portfolio/store";
 import { requireSession } from "@/lib/session";
 
