@@ -13,7 +13,7 @@ const srcRoot = join(__dirname, "..");
 /** Hand-built widgets that no shadcn primitive covers, each with the reason. */
 const allowed: { file: string; pattern: RegExp; reason: string }[] = [
   {
-    file: "components/terms/term-lookup.tsx",
+    file: "features/terms/term-lookup.tsx",
     pattern: /role="dialog"/,
     reason: "Non-modal card anchored to a text selection; Popover would take focus and close on the selecting mouseup",
   },
