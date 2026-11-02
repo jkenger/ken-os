@@ -33,7 +33,7 @@ const src = resolve(webRoot, "src");
 const read = (path: string) => readFileSync(resolve(src, path), "utf8").replace(/\r\n/g, "\n");
 
 /** Loots wrappers: files of components built on the primitives. `library` is the first part of their ids. */
-const wrapperFiles = [{ file: "components/engineering/kit.tsx", library: "kit" }];
+const wrapperFiles = [{ file: "features/engineering-lab/kit.tsx", library: "kit" }];
 /** Class-string surfaces, which render no primitive themselves, and the primitive each is a surface for. */
 const surfaceFile = { file: "components/surfaces.ts", library: "surfaces", wraps: "ui/card" };
 
