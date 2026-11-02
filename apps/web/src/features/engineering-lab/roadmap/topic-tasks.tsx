@@ -11,7 +11,7 @@ import type { BuildView } from "@/features/engineering-lab/status-store";
 import { topicTasks, type TaskId, type TaskState } from "@/features/engineering-lab/topic-steps";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/features/engineering-lab/words";
-import { AskClaude } from "../ask-claude";
+import { AskClaude } from "../ask-claude-dialog";
 
 // A topic's tasks (docs/architecture/roadmap-ui.md): Read, Build, Explain, the same three for every topic, ticked only
 // by what happened (Claude started, an exercise run passed or Claude reported the build, the topic is Learned). The owner can't tick them by hand.

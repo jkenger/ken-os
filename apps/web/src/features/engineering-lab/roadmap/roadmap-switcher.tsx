@@ -25,7 +25,7 @@ import {
 import { PLAN_MESSAGE } from "@/features/engineering-lab/ask-claude";
 import { engineering } from "@/features/engineering-lab/routes";
 import { canAddRoadmap, ROADMAP_LIMIT } from "@/features/engineering-lab/roadmaps";
-import { AskClaude } from "../ask-claude";
+import { AskClaude } from "../ask-claude-dialog";
 
 // Moving between roadmaps (docs/architecture/engineering-roadmaps.md, section 1): the page title, with a button beside it
 // that opens a menu of the active roadmaps with their progress, New roadmap, Archive and Delete for the one shown, and the
