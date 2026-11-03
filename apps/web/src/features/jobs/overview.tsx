@@ -104,7 +104,7 @@ export function SetupStatusPanel({
               check.kind === "never"
                 ? "The scheduler should call the freehire check every minute. If this stays at Never, the scheduler isn't set up or can't reach Loots"
                 : check.kind === "working"
-                  ? `Found ${check.found} new posting${check.found === 1 ? "" : "s"}. Checked ${check.checkCount} time${check.checkCount === 1 ? "" : "s"} since ${check.sinceLabel}`
+                  ? `Checked ${check.checkCount} time${check.checkCount === 1 ? "" : "s"} since ${check.sinceLabel}`
                   : check.kind === "late"
                     ? "Expected every minute. The scheduler may have stopped"
                     : `${check.reason}${check.lastGoodAgoLabel ? `. Last good check ${check.lastGoodAgoLabel}` : ". No check has ever succeeded"}`

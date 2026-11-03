@@ -20,13 +20,15 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 ];
 
 export function ResultsBar({
-  count,
+  totalCount,
   hiddenCount,
   preferences,
   sort,
   onSortChange,
 }: {
-  count: number;
+  /** Every posting the owner has, New and Filtered out together -- not just what search and sort currently
+   *  show, so the header stays a stable total instead of changing as the owner types in Search. */
+  totalCount: number;
   hiddenCount: number;
   preferences: JobPreferences;
   sort: SortKey;
@@ -48,7 +50,7 @@ export function ResultsBar({
     <div className="mb-3 flex flex-col gap-2 px-1">
       <div className="flex items-center justify-between gap-3">
         <span className="text-lg font-semibold">
-          {count} new posting{count === 1 ? "" : "s"}
+          {totalCount} posting{totalCount === 1 ? "" : "s"}
         </span>
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground">Sort</span>

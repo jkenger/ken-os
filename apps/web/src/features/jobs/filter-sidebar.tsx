@@ -15,6 +15,7 @@ import { activeFilterChips } from "@/features/jobs/active-filter-chips";
 import { countryOptions } from "@/features/jobs/country-codes";
 import type { JobPreferences, JobType, Seniority, WorkSetup } from "@/features/jobs/preferences-store";
 import { send } from "@/lib/api-client";
+import { cn } from "@/lib/utils";
 import { ChipField } from "./chip-field";
 import { MultiSelectCommand } from "./multi-select-command";
 
@@ -51,6 +52,14 @@ const SENIORITY_OPTIONS: { value: Seniority; label: string }[] = [
 function toggle<T>(list: T[], value: T): T[] {
   return list.includes(value) ? list.filter((item) => item !== value) : [...list, value];
 }
+
+/** The segmented-pill look for Work setup, Seniority and Agencies (docs/mockups/jobs-redesign-canvas/
+ *  Filters-applied.dc.html, `.tg`): a filled muted track with a 2px inset, each segment transparent until
+ *  selected, when it pops forward as a card-coloured pill with a hairline ring -- not the plain outlined-button
+ *  look `variant="outline"` gives on its own. */
+const SEGMENTED_GROUP_CLASS = "h-auto w-full flex-wrap rounded-full bg-muted p-0.5";
+const SEGMENTED_ITEM_CLASS =
+  "group flex-1 gap-1 rounded-full border-transparent bg-transparent data-[state=on]:bg-card data-[state=on]:ring-1 data-[state=on]:ring-border aria-pressed:bg-card aria-pressed:ring-1 aria-pressed:ring-border";
 
 export function FilterSidebar({
   preferences,
@@ -102,8 +111,8 @@ export function FilterSidebar({
   const newFromProfile = derivedRoles.filter((role) => !preferences.roles.includes(role));
 
   return (
-    <aside id="filters" className="flex flex-col gap-5 rounded-xl border bg-card p-5">
-      <div className="grid gap-2">
+    <aside id="filters" className="flex min-w-0 flex-col gap-5 rounded-xl border bg-card p-5">
+      <div className="grid min-w-0 gap-2">
         <div className="flex items-center justify-between gap-2">
           <span className="text-sm font-medium">Roles</span>
           <Button
@@ -220,13 +229,13 @@ export function FilterSidebar({
         <span className="text-sm font-medium">Work setup</span>
         <ToggleGroup
           type="multiple"
-          variant="outline"
+          spacing={0.5}
           value={preferences.workSetups}
           onValueChange={(value) => void save({ workSetups: value as WorkSetup[] })}
-          className="h-auto w-full flex-wrap"
+          className={SEGMENTED_GROUP_CLASS}
         >
           {WORK_SETUP_OPTIONS.map((option) => (
-            <ToggleGroupItem key={option.value} value={option.value} className="group gap-1">
+            <ToggleGroupItem key={option.value} value={option.value} className={cn("group", SEGMENTED_ITEM_CLASS)}>
               <Check className="hidden size-3.5 group-data-[state=on]:inline-block" />
               {option.label}
             </ToggleGroupItem>
@@ -238,13 +247,13 @@ export function FilterSidebar({
         <span className="text-sm font-medium">Seniority</span>
         <ToggleGroup
           type="multiple"
-          variant="outline"
+          spacing={0.5}
           value={preferences.seniority}
           onValueChange={(value) => void save({ seniority: value as Seniority[] })}
-          className="h-auto w-full flex-wrap"
+          className={SEGMENTED_GROUP_CLASS}
         >
           {SENIORITY_OPTIONS.map((option) => (
-            <ToggleGroupItem key={option.value} value={option.value} className="group gap-1">
+            <ToggleGroupItem key={option.value} value={option.value} className={cn("group", SEGMENTED_ITEM_CLASS)}>
               <Check className="hidden size-3.5 group-data-[state=on]:inline-block" />
               {option.label}
             </ToggleGroupItem>
@@ -282,17 +291,16 @@ export function FilterSidebar({
         <span className="text-sm font-medium">Agencies</span>
         <ToggleGroup
           type="single"
-          variant="outline"
-          spacing={0}
+          spacing={0.5}
           value={preferences.agenciesHide ? "hide" : "show"}
           onValueChange={(value) => value && void save({ agenciesHide: value === "hide" })}
-          className="w-full"
+          className={SEGMENTED_GROUP_CLASS}
         >
-          <ToggleGroupItem value="show" className="group flex-1 gap-1">
+          <ToggleGroupItem value="show" className={cn("group", SEGMENTED_ITEM_CLASS)}>
             <Check className="hidden size-3.5 group-data-[state=on]:inline-block" />
             Show
           </ToggleGroupItem>
-          <ToggleGroupItem value="hide" className="group flex-1 gap-1">
+          <ToggleGroupItem value="hide" className={cn("group", SEGMENTED_ITEM_CLASS)}>
             <Check className="hidden size-3.5 group-data-[state=on]:inline-block" />
             Hide
           </ToggleGroupItem>

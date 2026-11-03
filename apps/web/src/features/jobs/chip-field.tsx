@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-/** A free-text list edited as removable chips, typing then Enter (or blur) to add one -- Countries, Skip words,
- *  Skip companies on the filter sidebar, and Roles on the onboarding form all use this same shape
- *  (docs/mockups/Jobs redesign.html). */
+/** A free-text list edited as removable chips, typing then Enter (or blur) to add one -- Roles and Skip words on
+ *  the filter sidebar use this same shape. The filled well and bordered, card-coloured chip match the `.inp`/
+ *  `.chip` tokens in `docs/mockups/jobs-redesign-canvas/Filters-applied.dc.html` and `Onboarding.dc.html`. */
 export function ChipField({
   label,
   values,
@@ -31,19 +31,21 @@ export function ChipField({
   }
 
   return (
-    <div className="grid gap-1.5">
+    <div className="grid min-w-0 gap-1.5">
       {label && <Label className="mb-0">{label}</Label>}
-      <div className="flex min-h-9 flex-wrap items-center gap-1.5 rounded-md border border-input bg-background px-2 py-1.5">
+      <div className="flex min-h-9 min-w-0 flex-wrap items-center gap-1.5 rounded-md bg-muted px-2 py-1.5">
         {values.map((value) => (
-          <Badge key={value} variant="secondary" className="gap-1 py-0 pr-0.5">
-            {value}
+          <Badge key={value} variant="outline" className="max-w-40 gap-1 bg-card py-0 pr-0.5">
+            <span className="truncate" title={value}>
+              {value}
+            </span>
             <Button
               type="button"
               variant="ghost"
               size="icon-xs"
               aria-label={`Remove ${value}`}
               onClick={() => onChange(values.filter((item) => item !== value))}
-              className="size-4 rounded-full"
+              className="size-4 shrink-0 rounded-full"
             >
               ×
             </Button>
