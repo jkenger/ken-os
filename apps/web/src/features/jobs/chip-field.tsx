@@ -15,7 +15,9 @@ export function ChipField({
   placeholder,
   onChange,
 }: {
-  label: string;
+  /** Omit when a field already has its own heading above (Roles, which pairs this with an "Import from Profile"
+   *  button) -- Skip words and Skip companies still pass one, since they have no other label of their own. */
+  label?: string;
   values: string[];
   placeholder: string;
   onChange: (next: string[]) => void;
@@ -30,7 +32,7 @@ export function ChipField({
 
   return (
     <div className="grid gap-1.5">
-      <Label className="mb-0">{label}</Label>
+      {label && <Label className="mb-0">{label}</Label>}
       <div className="flex min-h-9 flex-wrap items-center gap-1.5 rounded-md border border-input bg-background px-2 py-1.5">
         {values.map((value) => (
           <Badge key={value} variant="secondary" className="gap-1 py-0 pr-0.5">

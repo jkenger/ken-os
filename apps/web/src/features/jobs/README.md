@@ -46,6 +46,27 @@ Profile, and shows why. Full product spec: `docs/product/job-finder.md`. Source-
 - **Jobs is the sidebar's entry point, not a parent with sub-items.** "New" was the Jobs landing page under another
   name; "Filtered out" is already one click away from the results bar's own hidden-count link. Both sub-items were
   removed from `workspace-shell.tsx`'s `jobs` module entry.
+- **The empty state is a real Overview, not two lines of text**, drawn in
+  `docs/mockups/jobs-redesign-canvas/Overview.dc.html`. A first visit with no postings yet already knew whether
+  the pipeline was configured and running; the owner had to go check that outside the app. `overview.tsx` (zero
+  postings) and `status-strip.tsx` (once postings exist, with a toggle back to the full `SetupStatusPanel`) show
+  the same three facts -- Roles, Preferences, Last checked -- so "is this working?" has an answer on the page.
+- **"Last checked" is four states, not ok/fail** (`format-check-status.ts`'s `describeCheckStatus`, matching
+  `Last-checked.dc.html`): Never (no row yet), Working (a recent success), Failing (the latest call failed --
+  this wins over staleness, since a known failure is more actionable than "it's been a while"), and Late (the
+  latest call succeeded but nothing newer has arrived in 5+ minutes, so the scheduler may have quietly stopped).
+  The `job_check_status` table (`check-status-store.ts`) is written by `check/freehire/route.ts` on every call
+  it gets, including a bad secret. `lastOkAt` only moves forward on success, so a run of failures never erases
+  when the pipeline last actually worked; `checkCount`/`firstCheckedAt` back "Checked 1,412 times since Oct 31".
+- **The Preferences row reads real values, not a count** (`preferences-summary.ts`): the same "only show a
+  dimension when it's actually excluding something" rule as `activeFilterChips`, so "Defaults" vs "Custom" is a
+  deep-equal check against `preferences-defaults.ts`'s `DEFAULTS` -- kept in its own module with no database
+  import, since a value import of `DEFAULTS` from `preferences-store.ts` would pull the Postgres driver into
+  `jobs-page.tsx`'s client bundle (`next build` catches this; a `type`-only import doesn't).
+- **Roles are editable from the filter sidebar** (`filter-sidebar.tsx`, 3 Nov 2026): "Import from Profile" merges
+  in whatever `roles.ts` derives from the headline and last two titles, and `ChipField` (already shared with Skip
+  words/Skip companies) lets the owner add or remove one by hand. This replaced a dead end where the Overview's
+  "Roles: None yet" row only told the owner to go edit Profile, with no action on the page itself.
 
 ## Architecture notes
 

@@ -13,6 +13,7 @@ config({ path: ".env" });
 async function main() {
   const store = await import("../src/features/jobs/store");
   const currencyRatesStore = await import("../src/features/jobs/currency-rates-store");
+  const checkStatusStore = await import("../src/features/jobs/check-status-store");
   const userId = `jobs-check-${randomUUID()}`;
   await db()
     .insert(users)
@@ -923,6 +924,41 @@ async function main() {
       "rescoring against the new Profile version updates the stamp, so it's no longer stale",
     );
     console.log("ok - rescoring against the new Profile version updates the stamp and clears the staleness");
+
+    assert.equal(await checkStatusStore.getCheckStatus(userId), null, "a user who's never been checked has no status");
+    await checkStatusStore.recordCheck(userId, { ok: true, reason: "ok", found: 3 });
+    const afterFirstCheck = await checkStatusStore.getCheckStatus(userId);
+    assert.equal(afterFirstCheck?.ok, true);
+    assert.equal(afterFirstCheck?.reason, "ok");
+    assert.equal(afterFirstCheck?.found, 3);
+    assert.equal(afterFirstCheck?.checkCount, 1);
+    assert.ok(afterFirstCheck?.checkedAt instanceof Date);
+    assert.deepEqual(afterFirstCheck?.firstCheckedAt, afterFirstCheck?.checkedAt);
+    assert.deepEqual(afterFirstCheck?.lastOkAt, afterFirstCheck?.checkedAt);
+    console.log("ok - the first recorded check creates a status row, counted once, with lastOkAt set");
+
+    await checkStatusStore.recordCheck(userId, { ok: false, reason: "bad secret", found: 0 });
+    const afterSecondCheck = await checkStatusStore.getCheckStatus(userId);
+    assert.equal(afterSecondCheck?.ok, false);
+    assert.equal(afterSecondCheck?.reason, "bad secret");
+    assert.equal(afterSecondCheck?.checkCount, 2, "the count increments, it isn't reset by a failure");
+    assert.deepEqual(
+      afterSecondCheck?.firstCheckedAt,
+      afterFirstCheck?.firstCheckedAt,
+      "firstCheckedAt never moves once set",
+    );
+    assert.deepEqual(
+      afterSecondCheck?.lastOkAt,
+      afterFirstCheck?.lastOkAt,
+      "a failure never erases when the pipeline last actually worked",
+    );
+    assert.ok(
+      afterSecondCheck!.checkedAt.getTime() >= afterFirstCheck!.checkedAt.getTime(),
+      "recording again updates the same row's time forward, not back",
+    );
+    console.log(
+      "ok - recording a second, failing check updates the status in place, counting up and preserving lastOkAt",
+    );
 
     const distinctCompanies = await store.getDistinctCompanies(userId);
     assert.deepEqual(

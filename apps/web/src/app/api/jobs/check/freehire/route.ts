@@ -3,6 +3,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/db";
 import { users } from "@/lib/db/schema";
 import { checkFreehire } from "@/features/jobs/check-freehire";
+import { recordCheck } from "@/features/jobs/check-status-store";
 import { getPreferences } from "@/features/jobs/preferences-store";
 import { deriveRoles } from "@/features/jobs/roles";
 import { getProfile } from "@/features/profile/store";
@@ -48,6 +49,8 @@ export async function GET(request: Request) {
         return parseFreehireDetail(await response.text());
       }),
   });
+
+  await recordCheck(owner.id, { ok: result.ok, reason: result.reason, found: result.found });
 
   if (!result.ok) return NextResponse.json({ error: result.reason }, { status: 401 });
   return NextResponse.json({ ok: true, reason: result.reason, found: result.found });

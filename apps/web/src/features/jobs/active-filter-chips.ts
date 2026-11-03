@@ -1,18 +1,25 @@
 import type { JobPreferences, JobType, Seniority, WorkSetup } from "./preferences-store";
 
-const ALL_JOB_TYPES: JobType[] = ["full_time", "part_time", "contract", "internship", "temporary"];
-const ALL_WORK_SETUPS: WorkSetup[] = ["remote", "hybrid", "on_site"];
-const ALL_SENIORITIES: Seniority[] = ["junior", "mid", "senior", "lead"];
+/** Exported for `preferences-summary.ts` -- the Overview's Preferences row reads the same "is this dimension
+ *  actually restricting anything" rule and the same labels, not a second copy that could drift. */
+export const ALL_JOB_TYPES: JobType[] = ["full_time", "part_time", "contract", "internship", "temporary"];
+export const ALL_WORK_SETUPS: WorkSetup[] = ["remote", "hybrid", "on_site"];
+export const ALL_SENIORITIES: Seniority[] = ["junior", "mid", "senior", "lead"];
 
-const JOB_TYPE_LABELS: Record<JobType, string> = {
+export const JOB_TYPE_LABELS: Record<JobType, string> = {
   full_time: "Full time",
   part_time: "Part time",
   contract: "Contract",
   internship: "Internship",
   temporary: "Temporary",
 };
-const WORK_SETUP_LABELS: Record<WorkSetup, string> = { remote: "Remote", hybrid: "Hybrid", on_site: "On site" };
-const SENIORITY_LABELS: Record<Seniority, string> = { junior: "Junior", mid: "Mid", senior: "Senior", lead: "Lead" };
+export const WORK_SETUP_LABELS: Record<WorkSetup, string> = { remote: "Remote", hybrid: "Hybrid", on_site: "On site" };
+export const SENIORITY_LABELS: Record<Seniority, string> = {
+  junior: "Junior",
+  mid: "Mid",
+  senior: "Senior",
+  lead: "Lead",
+};
 
 export type FilterChip = { key: string; label: string };
 
