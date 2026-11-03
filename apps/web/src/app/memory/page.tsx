@@ -1,4 +1,4 @@
-import { MemoryWorkspace } from "@/components/memory-workspace";
+import { MemoryWorkspace } from "@/features/project-memory/memory-workspace";
 import { getMemoryOverview } from "@/features/project-memory/store";
 import { requireSession } from "@/lib/auth/session";
 
