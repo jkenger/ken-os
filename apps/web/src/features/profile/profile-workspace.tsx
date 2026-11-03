@@ -22,6 +22,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/toaster";
 import { panel } from "@/components/surfaces";
 import { isLedgerSection, ledgerRows, type LedgerSectionId } from "@/features/profile/ledger";
+import { portfolioProfile } from "@/features/portfolio/snapshot";
 import type { ResumeFile } from "@/features/profile/resume-files-store";
 import { profileScore, reviewProfile } from "@/features/profile/review";
 import type { ProfileState } from "@/features/profile/store";
@@ -108,7 +109,10 @@ export function ProfileWorkspace({
   const [analysis, setAnalysis] = useState(initialAnalysis);
   const [analyzing, setAnalyzing] = useState(false);
   const beside = useBeside();
-  const rows = useMemo(() => ledgerRows(details, saved, null, { showEmail: false }), [details, saved]);
+  const rows = useMemo(
+    () => ledgerRows(details, saved, null, portfolioProfile(saved, { showEmail: false })),
+    [details, saved],
+  );
   const issues = useMemo(() => reviewProfile(details), [details]);
   const score = useMemo(() => profileScore(details), [details]);
   const issuesIn = (id: LedgerSectionId) => issues.filter((issue) => issue.section === id).length;
