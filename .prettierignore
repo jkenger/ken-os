@@ -35,3 +35,10 @@ apps/web/src/app/globals.css
 # Design canvas source, as the canvas editor saves it; reformatting breaks the round trip
 docs/mockups/jobs-redesign-canvas
 docs/mockups/design-canvas
+
+# Other Claude Code sessions' full-repo worktree checkouts, left on disk under this tree
+.claude/worktrees
+
+# Impeccable design-detector skill cache files, rewritten on every run
+.impeccable
+apps/web/.impeccable
