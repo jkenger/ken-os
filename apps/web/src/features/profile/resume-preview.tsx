@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Download } from "lucide-react";
 import { isPaperSize, isResumeTemplate, PAPER_SIZES, RESUME_TEMPLATES } from "@ken-os/domain";
-import { PageHeading } from "@/components/page-heading";
+import { PageHeading } from "@/features/profile/page-heading";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
