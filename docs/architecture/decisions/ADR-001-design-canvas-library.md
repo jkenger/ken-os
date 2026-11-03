@@ -1,14 +1,19 @@
-# Solution decision: a mockup canvas library, replacing Figma and Paper
+# ADR-001: Design canvas library — adapt React Flow, don't adopt a new framework
+
+**Status**: Proposed
+
+**Date**: 2026-10-31
+
+**Decision Makers**: the owner
+
+**Tags**: design-canvas, react-flow, mockups, design-tooling
 
 Superseded in scope on 31 Oct 2026: this started as a feature proposal inside Design Studio. The owner has since
 decided it is its own product, **Design** (see [design.md](design.md)), built from the ground up rather than layered
 onto Design Studio's existing code. The library research and conclusion below are unchanged and now apply to Design
 instead.
 
-- **Status:** proposed
-- **Decision owner:** the owner
 - **Accepted or rejected by/date:** _blank until the owner acts_
-- **Evidence date:** 31 Oct 2026
 - **Scope and expected lifetime:** the canvas library behind Design (`apps/web/src/features/design`,
   `apps/web/src/components/design`), expected to carry mockup work for as long as Loots keeps drawing its own screens
 - **Confidence:** high, on eliminating every external framework candidate; medium, on the exact shape of the "Frame" mechanism until it's built

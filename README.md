@@ -152,7 +152,7 @@ Production deploys apply pending migrations after the build (`db:migrate:deploy`
 ## Documentation
 
 - [AGENTS.md](AGENTS.md): repository guide for contributors and coding agents (layout, boundaries, design and copy rules)
-- [Product brief](docs/product/brief.md) and [architecture overview](docs/architecture/overview.md)
+- [Product brief](docs/product/brief.md) and [architecture overview](docs/architecture/system-overview.md)
 - [Profile and resume builder](docs/product/profile-resume.md)
 - [Engineering, Claude first](docs/architecture/engineering-claude-first.md) and [roadmap UI](docs/architecture/roadmap-ui.md)
 - [Project Memory product](docs/product/project-memory.md) and [architecture](docs/architecture/project-memory.md)
