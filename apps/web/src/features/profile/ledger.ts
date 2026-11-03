@@ -1,6 +1,5 @@
 import type { ProfileDetails } from "@ken-os/domain";
 import type { PortfolioProfile } from "@ken-os/portfolio";
-import { portfolioProfile, type PublishChoices } from "@/features/portfolio/snapshot";
 
 // The Profile ledger: one row per section with what it holds and where it stands against the saved Profile and the live
 // Portfolio snapshot. Pure, so the client works it out on every edit. Spec: docs/mockups/profile.md, direction A.
@@ -154,16 +153,16 @@ function same(a: unknown, b: unknown): boolean {
 
 /**
  * `details` is the form as typed, `saved` what Save last stored, `published` the live snapshot's profile (null when
- * nothing is live), and `choices` what the next Publish would include. "Changed" means a Publish now would change that
- * section on the public resume.
+ * nothing is live), and `next` what Publish would produce from `saved` right now (the caller computes this with
+ * `portfolioProfile`, since shaping the public profile is Portfolio's own policy, not the ledger's). "Changed" means
+ * a Publish now would change that section on the public resume.
  */
 export function ledgerRows(
   details: ProfileDetails,
   saved: ProfileDetails,
   published: PortfolioProfile | null,
-  choices: PublishChoices,
+  next: PortfolioProfile,
 ): LedgerRow[] {
-  const next = portfolioProfile(saved, choices);
   return SECTIONS.map(({ id, title, count, glimpse, publicPart }) => {
     const filled = count(details);
     const key = id === "local-fields" ? "local" : id;
