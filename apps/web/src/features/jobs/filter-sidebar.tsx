@@ -1,6 +1,6 @@
 "use client";
 
-import { Check } from "lucide-react";
+import { Check, UserRound } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -22,8 +22,10 @@ const COUNTRY_OPTIONS = countryOptions();
 
 // The filter sidebar replaces the old Settings page (docs/mockups/Jobs redesign.html, "Filter sidebar / Applied"):
 // the same job_preferences fields, always visible on /jobs instead of a page away. Every field saves itself as
-// soon as it changes -- there's no separate Save step, matching the reference. Specialization (roles) isn't here;
-// it only ever appears on the onboarding empty state.
+// soon as it changes -- there's no separate Save step, matching the reference. Roles (the Onboarding frame's
+// "Specialization" block, docs/mockups/jobs-redesign-canvas/Onboarding.dc.html) moved here on 3 Nov 2026 -- that
+// frame's own chrome is a stale pre-single-entry-point shell, but there's no other screen left to edit roles from
+// since onboarding isn't a separate step anymore, and the Overview's "Roles: None yet" row had no action at all.
 
 const JOB_TYPE_OPTIONS: { value: JobType; label: string }[] = [
   { value: "full_time", label: "Full time" },
@@ -52,11 +54,15 @@ function toggle<T>(list: T[], value: T): T[] {
 
 export function FilterSidebar({
   preferences,
+  derivedRoles,
   companies,
   search,
   onSearchChange,
 }: {
   preferences: JobPreferences;
+  /** Roles read fresh from the Profile headline and last two titles (`roles.ts`) -- what "Import from Profile"
+   *  adds, and what's actually searched when `preferences.roles` is empty. */
+  derivedRoles: string[];
   /** Every distinct company name from the owner's own postings, for the Skip companies search list. */
   companies: string[];
   search: string;
@@ -93,9 +99,34 @@ export function FilterSidebar({
   }
 
   const activeCount = activeFilterChips(preferences).length;
+  const newFromProfile = derivedRoles.filter((role) => !preferences.roles.includes(role));
 
   return (
-    <aside className="flex flex-col gap-5 rounded-xl border bg-card p-5">
+    <aside id="filters" className="flex flex-col gap-5 rounded-xl border bg-card p-5">
+      <div className="grid gap-2">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm font-medium">Roles</span>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            disabled={newFromProfile.length === 0}
+            onClick={() => void save({ roles: [...preferences.roles, ...newFromProfile] })}
+          >
+            <UserRound aria-hidden="true" />
+            Import from Profile
+          </Button>
+        </div>
+        <ChipField values={preferences.roles} placeholder="Add a role" onChange={(roles) => void save({ roles })} />
+        {preferences.roles.length === 0 && (
+          <span className="text-xs text-muted-foreground">
+            {derivedRoles.length > 0
+              ? "Searching your Profile headline and last two titles until you add one"
+              : "Add a role, or add a headline on Profile so Jobs can suggest one"}
+          </span>
+        )}
+      </div>
+
       <Input
         aria-label="Search titles or companies"
         value={search}

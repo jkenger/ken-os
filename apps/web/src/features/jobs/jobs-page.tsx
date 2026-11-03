@@ -5,13 +5,16 @@ import { useMemo, useState } from "react";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import type { CheckStatus } from "@/features/jobs/format-check-status";
 import { formatBoardName } from "@/features/jobs/job-boards";
 import type { JobPreferences } from "@/features/jobs/preferences-store";
 import { sortPostings, type SortKey } from "@/features/jobs/sort-postings";
 import type { PostingView } from "@/features/jobs/store";
 import { FilterSidebar } from "./filter-sidebar";
 import { NewList } from "./new-list";
+import { Overview, SetupStatusPanel } from "./overview";
 import { ResultsBar } from "./results-bar";
+import { StatusStrip } from "./status-strip";
 
 function matchesSearch(posting: PostingView, search: string): boolean {
   const query = search.trim().toLowerCase();
@@ -25,15 +28,21 @@ function matchesSearch(posting: PostingView, search: string): boolean {
 export function JobsPage({
   email,
   effectiveRoles,
+  derivedRoles,
   postings,
   profileSkills,
   preferences,
   companies,
   filteredOutCount,
   boardFilter,
+  checkStatus,
 }: {
   email: string;
   effectiveRoles: string[];
+  /** Roles read fresh from the Profile headline and last two titles -- what the filter sidebar's "Import from
+   *  Profile" offers, separate from `effectiveRoles` (which already falls back to these when the owner hasn't
+   *  edited any, so searching itself is never blocked on an import). */
+  derivedRoles: string[];
   postings: PostingView[];
   profileSkills: string[];
   preferences: JobPreferences;
@@ -45,9 +54,13 @@ export function JobsPage({
    *  the URL, not saved preferences, since it's a one-off "show me where this came from", not a standing
    *  setting. */
   boardFilter?: string;
+  /** `null` means the outside scheduler has never called `/api/jobs/check/freehire` for this owner -- the
+   *  Overview's "Last checked" fact. */
+  checkStatus: CheckStatus | null;
 }) {
   const [sort, setSort] = useState<SortKey>("score");
   const [search, setSearch] = useState("");
+  const [showSetupStatus, setShowSetupStatus] = useState(false);
   const visible = useMemo(
     () =>
       sortPostings(
@@ -70,10 +83,33 @@ export function JobsPage({
             </Button>
           </Badge>
         )}
-        {postings.length > 0 ? (
-          <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[17rem_1fr]">
-            <FilterSidebar preferences={preferences} companies={companies} search={search} onSearchChange={setSearch} />
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[17rem_1fr]">
+          <FilterSidebar
+            preferences={preferences}
+            derivedRoles={derivedRoles}
+            companies={companies}
+            search={search}
+            onSearchChange={setSearch}
+          />
+          {postings.length > 0 ? (
             <div>
+              <StatusStrip
+                effectiveRoles={effectiveRoles}
+                checkStatus={checkStatus}
+                newCount={postings.length}
+                filteredOutCount={filteredOutCount}
+                expanded={showSetupStatus}
+                onToggle={() => setShowSetupStatus((shown) => !shown)}
+              />
+              {showSetupStatus && (
+                <div className="mb-3">
+                  <SetupStatusPanel
+                    effectiveRoles={effectiveRoles}
+                    preferences={preferences}
+                    checkStatus={checkStatus}
+                  />
+                </div>
+              )}
               <ResultsBar
                 count={visible.length}
                 hiddenCount={filteredOutCount}
@@ -83,19 +119,10 @@ export function JobsPage({
               />
               <NewList postings={visible} profileSkills={profileSkills} />
             </div>
-          </div>
-        ) : (
-          <div className="grid gap-2">
-            <h2 className="text-sm font-semibold text-muted-foreground">No postings yet</h2>
-            <p className="max-w-xl text-sm text-muted-foreground">
-              {effectiveRoles.length > 0 ? (
-                <>freehire is checked every minute for {effectiveRoles.join(", ")}.</>
-              ) : (
-                "Add a headline or job title on Profile so Jobs knows what to search for."
-              )}
-            </p>
-          </div>
-        )}
+          ) : (
+            <Overview effectiveRoles={effectiveRoles} preferences={preferences} checkStatus={checkStatus} />
+          )}
+        </div>
       </div>
     </WorkspaceShell>
   );

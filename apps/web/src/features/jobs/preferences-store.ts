@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm";
 import { db } from "@/lib/db/db";
 import { jobPreferences } from "@/lib/db/schema";
 import { JobsInputError } from "./api";
+import { DEFAULTS } from "./preferences-defaults";
 
 export type PayPeriod = "hour" | "day" | "week" | "month" | "year";
 export type JobType = "full_time" | "part_time" | "contract" | "internship" | "temporary";
@@ -47,23 +48,6 @@ export type JobPreferences = {
    *  is shown, not a strict filter, so an empty list is also valid and just means no shift is marked that way. */
   shifts: Shift[];
   agenciesHide: boolean;
-};
-
-const DEFAULTS: JobPreferences = {
-  roles: [],
-  skipWords: [],
-  skipCompanies: [],
-  countries: [],
-  postedWithinDays: 14,
-  minimumPay: null,
-  maximumPay: null,
-  payCurrency: "USD",
-  payPeriod: "month",
-  jobTypes: ["full_time", "contract"],
-  workSetups: ["remote"],
-  seniority: SENIORITIES,
-  shifts: ["day", "mid"],
-  agenciesHide: false,
 };
 
 function cleanList(value: unknown, field: string): string[] {

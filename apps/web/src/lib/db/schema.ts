@@ -884,6 +884,28 @@ export const jobPreferences = pgTable("job_preferences", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** Whether the outside scheduler has ever actually called `/api/jobs/check/freehire`, and how it went -- the
+ *  Overview's "Last checked" fact (docs/mockups/jobs-redesign-canvas/Overview.dc.html, Status-strip.dc.html,
+ *  Last-checked.dc.html). One row per user, written by that route on every call it receives, success or
+ *  failure, so a misconfigured secret or a scheduler that stopped firing shows up here instead of just an empty
+ *  list the owner has to go investigate elsewhere.
+ *
+ *  `ok`/`reason`/`found` describe the *latest* call; `lastOkAt` is kept separately so a run of failures doesn't
+ *  erase when the pipeline last actually worked (the drawn "Failing" state shows both: "failed 40 min ago ...
+ *  last good check 3h ago"). `checkCount`/`firstCheckedAt` back "Checked 1,412 times since Oct 31". */
+export const jobCheckStatus = pgTable("job_check_status", {
+  userId: text("user_id")
+    .primaryKey()
+    .references(() => users.id, { onDelete: "cascade" }),
+  firstCheckedAt: timestamp("first_checked_at", { withTimezone: true }).notNull(),
+  checkedAt: timestamp("checked_at", { withTimezone: true }).notNull(),
+  checkCount: integer("check_count").notNull().default(1),
+  ok: boolean("ok").notNull(),
+  reason: text("reason").notNull(),
+  found: integer("found").notNull().default(0),
+  lastOkAt: timestamp("last_ok_at", { withTimezone: true }),
+});
+
 /** One cached snapshot of currency rates (1 USD = N of that currency), refreshed periodically by
  *  `/api/jobs/process` (plans: Jobs multi-currency pay, single-currency revision) rather than fetched live
  *  during filtering. A single, fixed-id row -- there is only ever one current snapshot. */
