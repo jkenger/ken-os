@@ -9,7 +9,14 @@ import { ratesAreStale, saveCachedRates } from "@/features/jobs/currency-rates-s
 import { fetchCurrencyRates } from "@/features/jobs/fetch-currency-rates";
 import { processPostings, scorePostings } from "@/features/jobs/process";
 import { refreshRatesIfStale } from "@/features/jobs/refresh-currency-rates";
-import { getNeedingScore, getPendingPostings, saveExtractedFields, saveScore } from "@/features/jobs/store";
+import { secretsMatch } from "@/features/jobs/secret";
+import {
+  claimPendingPostings,
+  getNeedingScore,
+  saveExtractedFields,
+  saveScore,
+  unclaimPosting,
+} from "@/features/jobs/store";
 
 export const runtime = "nodejs";
 
@@ -31,7 +38,7 @@ export async function GET(request: Request) {
   }
 
   const secret = request.headers.get("x-jobs-check-secret") ?? "";
-  if (secret !== expectedSecret) return NextResponse.json({ error: "bad secret" }, { status: 401 });
+  if (!secretsMatch(secret, expectedSecret)) return NextResponse.json({ error: "bad secret" }, { status: 401 });
 
   await refreshRatesIfStale({
     now: new Date(),
@@ -43,9 +50,10 @@ export async function GET(request: Request) {
   const extractResult = await processPostings({
     secret,
     expectedSecret,
-    getPending: (limit) => getPendingPostings(owner.id, limit),
+    getPending: (limit) => claimPendingPostings(owner.id, limit),
     extract: (input) => extractPosting(input),
     saveExtracted: (postingId, fields) => saveExtractedFields(postingId, fields),
+    unclaim: (postingId) => unclaimPosting(postingId),
   });
   if (!extractResult.ok) return NextResponse.json({ error: extractResult.reason }, { status: 401 });
 
