@@ -1,12 +1,26 @@
 import { randomUUID } from "node:crypto";
-import { and, desc, eq, inArray, isNotNull, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, ne, sql } from "drizzle-orm";
 import type { PortfolioEngineering, PortfolioSnapshot } from "@ken-os/portfolio";
 import { normalizeProfile } from "@ken-os/domain";
 import { getRoadmaps, type RoadmapView } from "@/features/engineering-lab/roadmap-store";
 import type { ReviewSheet } from "@/features/engineering-lab/review-sheet";
 import { db } from "@/lib/db/db";
-import { labReviews, labTopicEvents, portfolioPublications, portfolios, profiles, users } from "@/lib/db/schema";
+import { labReviews, labTopicEvents, portfolioPublications, portfolios, profiles } from "@/lib/db/schema";
 import { buildSnapshot, portfolioEngineering } from "./snapshot";
+
+/** 3-32 characters: lowercase letters, digits and hyphens, starting with a letter -- the handle
+ *  `/api/public/portfolio/[slug]` is keyed on. */
+const SLUG_RE = /^[a-z][a-z0-9-]{2,31}$/;
+
+function parseSlug(value: string): string {
+  const slug = value.trim().toLowerCase();
+  if (!SLUG_RE.test(slug)) {
+    throw new PortfolioInputError(
+      "Handle must be 3-32 characters: lowercase letters, numbers and hyphens, starting with a letter",
+    );
+  }
+  return slug;
+}
 
 // Portfolio: one Publish turns the saved Profile into a public snapshot. Spec: docs/architecture/portfolio.md.
 
@@ -26,6 +40,9 @@ export interface PortfolioState {
   latest: { version: number; publishedAt: string } | null;
   /** When the Profile was last saved; Publish needs saved details. */
   profileSavedAt: string | null;
+  /** The handle the public site is at (`/api/public/portfolio/[slug]`), or null until one is set. Publish is
+   *  blocked until it is. */
+  slug: string | null;
   /** Whether the next Publish includes the Profile email. */
   showEmail: boolean;
   /** Whether the next Publish would change what visitors see: Profile edits, a switch, the resume template, or progress
@@ -46,6 +63,7 @@ export interface PortfolioState {
 }
 
 interface Settings {
+  slug: string | null;
   showEmail: boolean;
   shownRoadmaps: string[] | null;
   shownExplanations: string[];
@@ -111,6 +129,7 @@ function publishedEngineering(
 async function readSettings(userId: string): Promise<Settings & { updatedAt: Date | null }> {
   const [row] = await db()
     .select({
+      slug: portfolios.slug,
       showEmail: portfolios.showEmail,
       shownRoadmaps: portfolios.shownRoadmaps,
       shownExplanations: portfolios.shownExplanations,
@@ -119,7 +138,7 @@ async function readSettings(userId: string): Promise<Settings & { updatedAt: Dat
     .from(portfolios)
     .where(eq(portfolios.userId, userId))
     .limit(1);
-  return row ?? { showEmail: false, shownRoadmaps: null, shownExplanations: [], updatedAt: null };
+  return row ?? { slug: null, showEmail: false, shownRoadmaps: null, shownExplanations: [], updatedAt: null };
 }
 
 export async function getPortfolio(userId: string): Promise<PortfolioState> {
@@ -177,6 +196,7 @@ export async function getPortfolio(userId: string): Promise<PortfolioState> {
     live: shape(state),
     latest: shape(latest),
     profileSavedAt: profile?.updatedAt.toISOString() ?? null,
+    slug: settings.slug,
     showEmail: settings.showEmail,
     unpublishedChanges,
     profileChanged,
@@ -207,6 +227,7 @@ export async function publishPortfolio(userId: string): Promise<PortfolioState> 
   if (!profile) throw new PortfolioInputError("No details saved. Save Profile first", 409);
   const details = normalizeProfile(profile.details, "import");
   const settings = await readSettings(userId);
+  if (!settings.slug) throw new PortfolioInputError("Set a handle before publishing", 409);
   const engineering = publishedEngineering(await engineeringSource(userId, settings), settings);
   await db().transaction(async (tx) => {
     // Locks the owner's row so two Publish clicks can't pick the same version.
@@ -237,9 +258,36 @@ export async function publishPortfolio(userId: string): Promise<PortfolioState> 
   return getPortfolio(userId);
 }
 
+/** Saves the public handle, checked for a collision before and (as a backstop against two people claiming the same
+ *  one at once) by the database's own unique index. */
+export async function updateSlug(userId: string, rawSlug: string): Promise<PortfolioState> {
+  const slug = parseSlug(rawSlug);
+  await db().transaction(async (tx) => {
+    await tx.insert(portfolios).values({ userId }).onConflictDoNothing();
+    const [taken] = await tx
+      .select({ userId: portfolios.userId })
+      .from(portfolios)
+      .where(and(sql`lower(${portfolios.slug}) = ${slug}`, ne(portfolios.userId, userId)))
+      .limit(1);
+    if (taken) throw new PortfolioInputError("That handle is taken", 409);
+    try {
+      await tx.update(portfolios).set({ slug, updatedAt: new Date() }).where(eq(portfolios.userId, userId));
+    } catch (error) {
+      if (isUniqueViolation(error)) throw new PortfolioInputError("That handle is taken", 409);
+      throw error;
+    }
+  });
+  return getPortfolio(userId);
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return Boolean(error && typeof error === "object" && "code" in error && error.code === "23505");
+}
+
 /** Saves one switch: Show email, Show on site for a roadmap, or Show explanation for a Learned topic. Like every other
  *  choice, it goes live on the next Publish. */
 export async function updateSettings(userId: string, input: Record<string, unknown>): Promise<PortfolioState> {
+  if (typeof input.slug === "string") return updateSlug(userId, input.slug);
   if (typeof input.shown !== "boolean" && typeof input.showEmail !== "boolean")
     throw new PortfolioInputError("Choose on or off");
   const on = input.shown === true;
@@ -298,14 +346,13 @@ export async function unpublishPortfolio(userId: string): Promise<PortfolioState
   return getPortfolio(userId);
 }
 
-/** The live snapshot of the given owner, for the public endpoint. Reads nothing else. */
-export async function liveSnapshot(ownerEmail: string): Promise<PortfolioSnapshot | null> {
+/** The live snapshot at the given handle, for the public endpoint. Reads nothing else. */
+export async function liveSnapshot(slug: string): Promise<PortfolioSnapshot | null> {
   const [row] = await db()
     .select({ snapshot: portfolioPublications.snapshot })
-    .from(users)
-    .innerJoin(portfolios, eq(portfolios.userId, users.id))
+    .from(portfolios)
     .innerJoin(portfolioPublications, eq(portfolioPublications.id, portfolios.currentPublicationId))
-    .where(sql`lower(${users.email}) = ${ownerEmail}`)
+    .where(sql`lower(${portfolios.slug}) = ${slug.trim().toLowerCase()}`)
     .limit(1);
   return row?.snapshot ?? null;
 }

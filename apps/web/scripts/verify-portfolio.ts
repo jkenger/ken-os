@@ -16,6 +16,7 @@ async function main() {
   const profile = await import("../src/features/profile/store");
   const userId = `portfolio-check-${randomUUID()}`;
   const email = `${userId}@Example.invalid`;
+  const slug = `pf-check-${randomUUID().slice(0, 8)}`;
   await db().insert(users).values({ id: userId, email, name: "Portfolio Check" });
   try {
     const empty = await store.getPortfolio(userId);
@@ -23,6 +24,7 @@ async function main() {
       live: null,
       latest: null,
       profileSavedAt: null,
+      slug: null,
       showEmail: false,
       unpublishedChanges: false,
       profileChanged: false,
@@ -34,7 +36,7 @@ async function main() {
       store.publishPortfolio(userId),
       (error: Error) => error instanceof store.PortfolioInputError && error.status === 409,
     );
-    assert.equal(await store.liveSnapshot(email.toLowerCase()), null);
+    assert.equal(await store.liveSnapshot(slug), null);
     console.log("ok - nothing to publish before the Profile is saved");
 
     const details = emptyProfile();
@@ -48,10 +50,38 @@ async function main() {
     details.summary = "Builds things";
     await profile.saveProfile(userId, details, null);
 
+    await assert.rejects(
+      store.publishPortfolio(userId),
+      (error: Error) => error instanceof store.PortfolioInputError && error.status === 409,
+      "Publish is still blocked without a handle, even with details saved",
+    );
+    await assert.rejects(store.updateSettings(userId, { slug: "a" }), store.PortfolioInputError, "too short");
+    await assert.rejects(store.updateSettings(userId, { slug: "-leading-hyphen" }), store.PortfolioInputError);
+    await assert.rejects(store.updateSettings(userId, { slug: "Has Spaces" }), store.PortfolioInputError);
+    console.log("ok - Publish is blocked until a handle is set, and a badly formed handle is rejected");
+
+    const otherUserId = `portfolio-check-other-${randomUUID()}`;
+    await db()
+      .insert(users)
+      .values({ id: otherUserId, email: `${otherUserId}@example.invalid`, name: "Other" });
+    try {
+      await store.updateSlug(otherUserId, slug);
+      await assert.rejects(
+        store.updateSettings(userId, { slug }),
+        (error: Error) => error instanceof store.PortfolioInputError && error.message === "That handle is taken",
+        "a handle already claimed by another account is refused",
+      );
+    } finally {
+      await db().delete(users).where(eq(users.id, otherUserId));
+    }
+    const withHandle = await store.updateSettings(userId, { slug: slug.toUpperCase() });
+    assert.equal(withHandle.slug, slug, "a handle is saved lowercased regardless of how it was typed");
+    console.log("ok - a handle taken by another account is refused; this account's own saves lowercased");
+
     const first = await store.publishPortfolio(userId);
     assert.equal(first.live?.version, 1);
-    const live = await store.liveSnapshot(email.toLowerCase());
-    assert.ok(live, "the owner's email matches whatever its case");
+    const live = await store.liveSnapshot(slug.toUpperCase());
+    assert.ok(live, "the handle matches whatever its case");
     const parsed = parsePortfolioSnapshot(live);
     assert.equal(parsed.profile.summary, "Builds things");
     assert.ok(!JSON.stringify(live).includes("0917"), "the phone is never published");
@@ -62,37 +92,34 @@ async function main() {
     await profile.saveResumeSettings(userId, { template: "technical", paper: "a4" });
     assert.equal((await store.getPortfolio(userId)).unpublishedChanges, true, "a new template waits for Publish");
     assert.equal((await store.publishPortfolio(userId)).unpublishedChanges, false);
-    assert.deepEqual((await store.liveSnapshot(email.toLowerCase()))?.resume, { template: "technical", paper: "a4" });
+    assert.deepEqual((await store.liveSnapshot(slug))?.resume, { template: "technical", paper: "a4" });
     console.log("ok - Publish copies the Resume page's template and paper");
 
     const shown = await store.updateSettings(userId, { showEmail: true });
     assert.equal(shown.showEmail, true);
     assert.equal(shown.unpublishedChanges, true, "Show email waits for Publish");
-    assert.ok(
-      !JSON.stringify(await store.liveSnapshot(email.toLowerCase())).includes(email),
-      "not live before Publish",
-    );
+    assert.ok(!JSON.stringify(await store.liveSnapshot(slug)).includes(email), "not live before Publish");
     await store.publishPortfolio(userId);
-    assert.equal((await store.liveSnapshot(email.toLowerCase()))?.profile.email, email);
+    assert.equal((await store.liveSnapshot(slug))?.profile.email, email);
     await store.updateSettings(userId, { showEmail: false });
     await store.publishPortfolio(userId);
-    assert.equal((await store.liveSnapshot(email.toLowerCase()))?.profile.email, undefined);
+    assert.equal((await store.liveSnapshot(slug))?.profile.email, undefined);
     await assert.rejects(store.updateSettings(userId, { showEmail: "yes" }), store.PortfolioInputError);
     console.log("ok - Show email publishes the email only while it is on");
 
     await profile.saveProfile(userId, { ...details, summary: "Builds more" }, null);
-    assert.equal((await store.liveSnapshot(email.toLowerCase()))?.profile.summary, "Builds things");
+    assert.equal((await store.liveSnapshot(slug))?.profile.summary, "Builds things");
     const [second] = await Promise.all([store.publishPortfolio(userId), store.publishPortfolio(userId)]);
     const after = await store.getPortfolio(userId);
     assert.equal(after.latest?.version, 6, "two Publish clicks at once get their own versions");
     assert.ok(second.live);
-    assert.equal((await store.liveSnapshot(email.toLowerCase()))?.profile.summary, "Builds more");
+    assert.equal((await store.liveSnapshot(slug))?.profile.summary, "Builds more");
     console.log("ok - edits go live only on the next Publish");
 
     const off = await store.unpublishPortfolio(userId);
     assert.equal(off.live, null);
     assert.equal(off.latest?.version, 6, "past publications stay");
-    assert.equal(await store.liveSnapshot(email.toLowerCase()), null);
+    assert.equal(await store.liveSnapshot(slug), null);
     assert.equal((await store.publishPortfolio(userId)).live?.version, 7);
     console.log("ok - Unpublish takes it offline, and the count continues");
 
@@ -123,7 +150,7 @@ async function main() {
     assert.equal(withRoadmap.engineering.learned[0].shown, false, "explanations are off by default");
     assert.equal(withRoadmap.unpublishedChanges, true, "progress on a shown roadmap waits for Publish");
     assert.equal((await store.publishPortfolio(userId)).unpublishedChanges, false, "Publish clears the warning");
-    let engineering = (await store.liveSnapshot(email.toLowerCase()))?.engineering;
+    let engineering = (await store.liveSnapshot(slug))?.engineering;
     assert.equal(engineering?.roadmaps[0].chapters[0].topics[0].status, "learned");
     assert.ok(!JSON.stringify(engineering).includes(words), "the explanation stays private until switched on");
 
@@ -150,14 +177,14 @@ async function main() {
     );
     assert.equal(explained.unpublishedChanges, true);
     assert.equal((await store.publishPortfolio(userId)).unpublishedChanges, false);
-    engineering = (await store.liveSnapshot(email.toLowerCase()))?.engineering;
+    engineering = (await store.liveSnapshot(slug))?.engineering;
     assert.equal(engineering?.roadmaps[0].chapters[0].topics[0].explanation, words);
     assert.equal(engineering?.roadmaps[0].chapters[0].topics[1].explanation, effectsWords);
 
     await status.setStatus(userId, "react.effects", "in_progress");
     assert.equal((await store.getPortfolio(userId)).unpublishedChanges, true);
     await store.publishPortfolio(userId);
-    engineering = (await store.liveSnapshot(email.toLowerCase()))?.engineering;
+    engineering = (await store.liveSnapshot(slug))?.engineering;
     assert.equal(
       engineering?.roadmaps[0].chapters[0].topics[1].explanation,
       undefined,
@@ -169,7 +196,7 @@ async function main() {
     assert.equal(hidden.engineering.roadmaps[0].shown, false);
     assert.deepEqual(hidden.engineering.learned, [], "no explanations to show without a shown roadmap");
     await store.publishPortfolio(userId);
-    assert.deepEqual((await store.liveSnapshot(email.toLowerCase()))?.engineering, { roadmaps: [] });
+    assert.deepEqual((await store.liveSnapshot(slug))?.engineering, { roadmaps: [] });
     await assert.rejects(store.updateSettings(userId, { roadmapId: "nope", shown: true }), store.PortfolioInputError);
     await assert.rejects(store.updateSettings(userId, { roadmapId, shown: "yes" }), store.PortfolioInputError);
     console.log("ok - Engineering publishes the shown roadmaps, and an explanation only once switched on");
@@ -178,40 +205,37 @@ async function main() {
     // The real renderer is covered by resume.test.ts; here only what is printed and how it is served matter.
     const printed: string[] = [];
     const GET = (request: Request) =>
-      publicResumeResponse(request, async (details, template, paper) => {
+      publicResumeResponse(request, slug, async (details, template, paper) => {
         printed.push(`${details.contact.fullName} ${template} ${paper}`);
         return Buffer.from("%PDF-1.4");
       });
-    const ownerBefore = process.env.OWNER_EMAIL;
-    process.env.OWNER_EMAIL = email;
-    try {
-      const url = "http://loots.test/api/public/portfolio/resume";
-      const shown = await GET(new Request(url));
-      assert.equal(shown.status, 200);
-      assert.equal(printed.at(-1), "Portfolio Check technical a4");
-      assert.equal(shown.headers.get("content-type"), "application/pdf");
-      assert.equal(shown.headers.get("cache-control"), "no-store");
-      assert.equal(shown.headers.get("x-robots-tag"), "noindex");
-      assert.match(shown.headers.get("content-disposition") ?? "", /^inline; filename="Portfolio Check Resume\.pdf"/);
-      const download = await GET(new Request(`${url}?download=1`));
-      assert.match(download.headers.get("content-disposition") ?? "", /^attachment;/);
+    const url = `http://loots.test/api/public/portfolio/${slug}/resume`;
+    const shownResume = await GET(new Request(url));
+    assert.equal(shownResume.status, 200);
+    assert.equal(printed.at(-1), "Portfolio Check technical a4");
+    assert.equal(shownResume.headers.get("content-type"), "application/pdf");
+    assert.equal(shownResume.headers.get("cache-control"), "no-store");
+    assert.equal(shownResume.headers.get("x-robots-tag"), "noindex");
+    assert.match(
+      shownResume.headers.get("content-disposition") ?? "",
+      /^inline; filename="Portfolio Check Resume\.pdf"/,
+    );
+    const download = await GET(new Request(`${url}?download=1`));
+    assert.match(download.headers.get("content-disposition") ?? "", /^attachment;/);
 
-      await db()
-        .update(portfolioPublications)
-        .set({ snapshot: sql`${portfolioPublications.snapshot} - 'resume'` })
-        .where(eq(portfolioPublications.userId, userId));
-      assert.equal((await GET(new Request(url))).status, 200, "a snapshot from before resume settings still prints");
-      assert.equal(printed.at(-1), "Portfolio Check classic letter");
+    await db()
+      .update(portfolioPublications)
+      .set({ snapshot: sql`${portfolioPublications.snapshot} - 'resume'` })
+      .where(eq(portfolioPublications.userId, userId));
+    assert.equal((await GET(new Request(url))).status, 200, "a snapshot from before resume settings still prints");
+    assert.equal(printed.at(-1), "Portfolio Check classic letter");
 
-      await store.unpublishPortfolio(userId);
-      const gone = await GET(new Request(url));
-      assert.equal(gone.status, 404);
-      assert.equal(gone.headers.get("x-robots-tag"), "noindex");
-      assert.equal(gone.headers.get("cache-control"), "no-store");
-      console.log("ok - the public resume serves the live snapshot as a PDF and 404s once unpublished");
-    } finally {
-      process.env.OWNER_EMAIL = ownerBefore;
-    }
+    await store.unpublishPortfolio(userId);
+    const gone = await GET(new Request(url));
+    assert.equal(gone.status, 404);
+    assert.equal(gone.headers.get("x-robots-tag"), "noindex");
+    assert.equal(gone.headers.get("cache-control"), "no-store");
+    console.log("ok - the public resume serves the live snapshot as a PDF and 404s once unpublished");
   } finally {
     await db().delete(users).where(eq(users.id, userId));
     await closeDb();

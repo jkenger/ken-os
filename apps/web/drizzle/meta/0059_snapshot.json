@@ -1,6 +1,6 @@
 {
-  "id": "f76e43de-15e5-4634-9d04-0d79964f7b10",
-  "prevId": "5ce9a724-77ea-4830-b8a7-8b03c7c33a50",
+  "id": "4e93625b-b7bf-4d80-96dc-dad77f70cb4a",
+  "prevId": "1edebc24-a6ac-4a3b-91df-022547588f8f",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -205,11 +205,24 @@
           "primaryKey": true,
           "notNull": true
         },
+        "first_checked_at": {
+          "name": "first_checked_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
         "checked_at": {
           "name": "checked_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": true
+        },
+        "check_count": {
+          "name": "check_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
         },
         "ok": {
           "name": "ok",
@@ -222,6 +235,19 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "found": {
+          "name": "found",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "last_ok_at": {
+          "name": "last_ok_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
@@ -3421,6 +3447,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "slug": {
+          "name": "slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "show_email": {
           "name": "show_email",
           "type": "boolean",
@@ -3449,7 +3481,23 @@
           "default": "now()"
         }
       },
-      "indexes": {},
+      "indexes": {
+        "portfolios_slug_unique": {
+          "name": "portfolios_slug_unique",
+          "columns": [
+            {
+              "expression": "lower(\"slug\")",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
       "foreignKeys": {
         "portfolios_user_id_users_id_fk": {
           "name": "portfolios_user_id_users_id_fk",

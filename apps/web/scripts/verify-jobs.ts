@@ -145,6 +145,19 @@ async function main() {
     });
     console.log("ok - saving again replaces the previous preferences, not merges with them");
 
+    const noPrefsUserId = `jobs-no-prefs-${randomUUID()}`;
+    await db()
+      .insert(users)
+      .values({ id: noPrefsUserId, email: `${noPrefsUserId}@example.invalid`, name: "No Prefs" });
+    try {
+      const polled = await preferences.listUsersWithPreferences();
+      assert.ok(polled.includes(userId), "a user who saved Jobs settings is polled");
+      assert.ok(!polled.includes(noPrefsUserId), "a user who never saved Jobs settings is never polled");
+    } finally {
+      await db().delete(users).where(eq(users.id, noPrefsUserId));
+    }
+    console.log("ok - the scheduler poll only runs for accounts that have saved Jobs settings at least once");
+
     await store.savePostings(userId, [
       {
         source: "linkedin",

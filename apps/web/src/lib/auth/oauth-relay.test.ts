@@ -123,7 +123,6 @@ test("production and local development send their own callback", () => {
 test("sign-in still reports a missing APP_URL outside a preview", () => {
   withEnv(
     {
-      OWNER_EMAIL: "owner@example.test",
       GOOGLE_CLIENT_ID: "id",
       GOOGLE_CLIENT_SECRET: "secret",
       APP_URL: undefined,

@@ -1,57 +1,41 @@
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
-import { db } from "@/lib/db/db";
-import { users } from "@/lib/db/schema";
-import { checkFreehire } from "@/features/jobs/check-freehire";
 import { recordCheck } from "@/features/jobs/check-status-store";
-import { getPreferences } from "@/features/jobs/preferences-store";
-import { deriveRoles } from "@/features/jobs/roles";
-import { getProfile } from "@/features/profile/store";
-import { freehireDetailUrl, parseFreehireDetail } from "@/features/jobs/scrapers/freehire";
-import { savePostings } from "@/features/jobs/store";
+import { listUsersWithPreferences } from "@/features/jobs/preferences-store";
+import { scrapeFreehireForUser } from "@/features/jobs/pipeline";
+import { secretsMatch } from "@/features/jobs/secret";
 
 export const runtime = "nodejs";
 
 // Polled every minute by an outside scheduler (docs/product/job-finder.md, "Getting postings in";
 // plans/jobs-freehire-source.md). The secret goes in a header, not a query string, so it never lands in logs or
-// analytics. Unlike the LinkedIn/Indeed routes this replaces, there's no block state to check or record -- see
-// `check-freehire.ts`.
+// analytics. Runs once per account that has saved Jobs settings (`listUsersWithPreferences`), each searching
+// freehire for that account's own roles and saving into that account's own postings. A visited-but-never-saved
+// Jobs page has no row there, so it's never polled. `recordCheck` stamps each account's own "Last checked" fact
+// (`check-status-store.ts`) with its own result, success or failure, so one account's problem never shows up on
+// another account's Overview; a bad shared secret is caught before any account is looked up at all, so there is
+// nothing account-specific to record for it.
 export async function GET(request: Request) {
   const expectedSecret = process.env.JOBS_CHECK_SECRET;
-  const ownerEmail = process.env.OWNER_EMAIL;
-  if (!expectedSecret || !ownerEmail) {
-    console.error("jobs check freehire: missing check-secret or owner-account environment variables");
+  if (!expectedSecret) {
+    console.error("jobs check freehire: missing check-secret environment variable");
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
 
-  const [owner] = await db().select({ id: users.id }).from(users).where(eq(users.email, ownerEmail)).limit(1);
-  if (!owner) {
-    console.error("jobs check freehire: no user row for the configured owner account");
-    return NextResponse.json({ error: "Not configured" }, { status: 503 });
-  }
-
-  const [profile, preferences] = await Promise.all([getProfile(owner.id), getPreferences(owner.id)]);
   const secret = request.headers.get("x-jobs-check-secret") ?? "";
+  if (!secretsMatch(secret, expectedSecret)) return NextResponse.json({ error: "bad secret" }, { status: 401 });
 
-  const result = await checkFreehire({
-    secret,
-    expectedSecret,
-    keywords: preferences.roles.length > 0 ? preferences.roles : deriveRoles(profile.details),
-    fetchSearch: async (url) => {
-      const response = await fetch(url);
-      return { status: response.status, text: await response.text() };
-    },
-    savePostings: (postings) =>
-      savePostings(owner.id, postings, async (sourceId) => {
-        const slug = sourceId.replace(/^fh-/, "");
-        const response = await fetch(freehireDetailUrl(slug));
-        if (response.status !== 200) return null;
-        return parseFreehireDetail(await response.text());
-      }),
-  });
+  const userIds = await listUsersWithPreferences();
+  let found = 0;
+  for (const userId of userIds) {
+    try {
+      const result = await scrapeFreehireForUser(userId, secret, expectedSecret);
+      await recordCheck(userId, result);
+      found += result.found;
+    } catch (error) {
+      console.error(`jobs check freehire: user ${userId} failed`, error instanceof Error ? error.message : error);
+      await recordCheck(userId, { ok: false, reason: "A network or server error interrupted the check", found: 0 });
+    }
+  }
 
-  await recordCheck(owner.id, { ok: result.ok, reason: result.reason, found: result.found });
-
-  if (!result.ok) return NextResponse.json({ error: result.reason }, { status: 401 });
-  return NextResponse.json({ ok: true, reason: result.reason, found: result.found });
+  return NextResponse.json({ ok: true, reason: "ok", found, users: userIds.length });
 }

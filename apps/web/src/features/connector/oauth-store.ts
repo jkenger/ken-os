@@ -1,8 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, desc, eq, gt, gte, isNotNull, isNull, sql } from "drizzle-orm";
 import { db } from "@/lib/db/db";
-import { oauthClients, oauthGrants, oauthTokens, users } from "@/lib/db/schema";
-import { ownerEmail } from "@/lib/config";
+import { oauthClients, oauthGrants, oauthTokens } from "@/lib/db/schema";
 import {
   ACCESS_TOKEN_SECONDS,
   CODE_SECONDS,
@@ -309,22 +308,17 @@ export async function refreshTokens(input: { refreshToken: unknown; clientId: un
 }
 
 /**
- * Checks a bearer token on /api/mcp: an unexpired access token, a connection not disconnected, and a user who is
- * still the owner. Null means answer 401.
+ * Checks a bearer token on /api/mcp: an unexpired access token, a connection not disconnected. Any signed-in
+ * account may connect; every tool call is scoped to `userId` from here on, so each account only ever reaches its
+ * own roadmap. Null means answer 401.
  */
 export async function verifyAccessToken(header: string | null): Promise<{ userId: string; grantId: string } | null> {
   const match = header?.match(/^Bearer ([A-Za-z0-9_\-.~]+)$/);
   if (!match) return null;
   const [row] = await db()
-    .select({
-      grantId: oauthGrants.id,
-      userId: oauthGrants.userId,
-      email: users.email,
-      lastUsedAt: oauthGrants.lastUsedAt,
-    })
+    .select({ grantId: oauthGrants.id, userId: oauthGrants.userId, lastUsedAt: oauthGrants.lastUsedAt })
     .from(oauthTokens)
     .innerJoin(oauthGrants, eq(oauthGrants.id, oauthTokens.grantId))
-    .innerJoin(users, eq(users.id, oauthGrants.userId))
     .where(
       and(
         eq(oauthTokens.hash, hashToken(match[1])),
@@ -334,7 +328,7 @@ export async function verifyAccessToken(header: string | null): Promise<{ userId
       ),
     )
     .limit(1);
-  if (!row || row.email.trim().toLowerCase() !== ownerEmail()) return null;
+  if (!row) return null;
   // Last used, to the minute: enough for the Connections list without a write on every call.
   if (!row.lastUsedAt || Date.now() - row.lastUsedAt.getTime() > 60_000) {
     await db().update(oauthGrants).set({ lastUsedAt: new Date() }).where(eq(oauthGrants.id, row.grantId));

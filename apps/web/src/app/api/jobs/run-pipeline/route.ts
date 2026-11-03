@@ -1,32 +1,39 @@
 import { JobsInputError, jobsRoute } from "@/features/jobs/api";
+import { processUserPostings, scrapeFreehireForUser } from "@/features/jobs/pipeline";
 
 export const runtime = "nodejs";
 
 type StepResult = { step: string; ok: boolean; detail: string };
 
-async function hit(origin: string, secret: string, path: string, step: string): Promise<StepResult> {
-  const response = await fetch(`${origin}${path}`, { headers: { "x-jobs-check-secret": secret } });
-  const body = (await response.json().catch(() => ({}))) as {
-    reason?: string;
-    error?: string;
-    processed?: number;
-  };
-  const detail = body.error ?? (body.processed !== undefined ? `processed ${body.processed}` : (body.reason ?? "ok"));
-  return { step, ok: response.ok, detail };
-}
-
-// Lets the signed-in owner run the same scrape-then-process pipeline an outside scheduler polls every minute
+// Lets the signed-in account run the same scrape-then-process pipeline an outside scheduler polls every minute
 // (docs/product/job-finder.md, "Getting postings in"; plans/jobs-freehire-source.md), for checking right now
-// instead of waiting for the next poll, with a step-by-step result the button can show. The secret stays
-// server-side -- the button only needs a valid session, never the secret itself.
+// instead of waiting for the next poll, scoped to just that account -- not the whole scheduler's account list,
+// which would spend every other account's AI calls on one person's click. The secret stays server-side and is
+// only ever compared to itself, since this call never leaves the server.
 export async function POST(request: Request) {
-  return jobsRoute(request, async () => {
+  return jobsRoute(request, async (session) => {
     const secret = process.env.JOBS_CHECK_SECRET;
     if (!secret) throw new JobsInputError("Pipeline isn't configured", 503);
 
-    const origin = new URL(request.url).origin;
-    const scrapeResult = await hit(origin, secret, "/api/jobs/check/freehire", "freehire");
-    const processResult = await hit(origin, secret, "/api/jobs/process", "Process");
-    return { ranAt: new Date().toISOString(), steps: [scrapeResult, processResult] };
+    const steps: StepResult[] = [];
+    try {
+      const freehire = await scrapeFreehireForUser(session.userId, secret, secret);
+      steps.push({
+        step: "freehire",
+        ok: freehire.ok,
+        detail: freehire.ok ? `found ${freehire.found}` : freehire.reason,
+      });
+    } catch (error) {
+      steps.push({ step: "freehire", ok: false, detail: error instanceof Error ? error.message : "failed" });
+    }
+
+    try {
+      const result = await processUserPostings(session.userId, secret, secret);
+      steps.push({ step: "Process", ok: true, detail: `processed ${result.extracted + result.scored}` });
+    } catch (error) {
+      steps.push({ step: "Process", ok: false, detail: error instanceof Error ? error.message : "failed" });
+    }
+
+    return { ranAt: new Date().toISOString(), steps };
   });
 }

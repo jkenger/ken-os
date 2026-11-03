@@ -72,7 +72,13 @@ Profile, and shows why. Full product spec: `docs/product/job-finder.md`. Source-
 
 - **Pipeline is two injected-dependency stages**, both testable without a real HTTP call, AI call, or database:
   `check-freehire.ts` (search freehire, save new postings) and `process.ts` (read, extract, score pending postings
-  in batches of 5). Both are called by the same outside poll, once a minute.
+  in batches of 5). `pipeline.ts` wraps each stage for one account (`scrapeFreehireForUser`,
+  `processUserPostings`); the scheduler routes loop that over every account with saved Jobs settings, and the
+  "Run pipeline" button calls it for just the signed-in account, so the two never disagree about what one
+  account's run does.
+- **`listUsersWithPreferences` (`preferences-store.ts`) decides who gets polled**: any account that has saved
+  Jobs settings at least once, i.e. has a `job_preferences` row. Visiting the Jobs page without saving never
+  opts an account in, so the scheduler never runs AI calls against someone who's just curious.
 - **`savePostings` re-verifies "genuinely new" inside its own transaction**, not just in the cheap pre-check that
   decides whether to spend a `fetchFullDescription` call — a normal poll is mostly duplicates, so the expensive path
   only runs for postings that turn out to actually be new.
@@ -95,7 +101,7 @@ Production has no built-in scheduler doing this:
   that can fire an HTTP request on a timer.
 - **`JOBS_CHECK_SECRET`** must be set in the production environment and must match what the scheduler sends. A
   request without it is rejected and runs nothing (`apps/web/.env.example`).
-- **`OWNER_EMAIL`** must also be set. It's unrelated to sign-in (any verified Google account can sign in); it names
-  which user's Profile and preferences the poll runs against, since the poll isn't tied to a signed-in session.
-- Both routes return `503` if either env var is missing, so a misconfigured deploy fails loudly instead of silently
-  finding no postings.
+- Each run covers every account that has saved Jobs settings, not one hardcoded account — `OWNER_EMAIL` plays no
+  part in this pipeline any more.
+- Both routes return `503` if the secret env var is missing, so a misconfigured deploy fails loudly instead of
+  silently finding no postings.

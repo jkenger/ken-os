@@ -10,7 +10,7 @@ config({ path: ".env" });
 
 // Database check for the Claude connector's sign-in and /api/mcp, with no network calls and no AI.
 // Spec: docs/architecture/engineering-claude-connector.md, section 3. Run with: pnpm --filter @ken-os/web test:db:connector
-// A throwaway user stands in for the owner: OWNER_EMAIL is pointed at it for this run only.
+// Two throwaway accounts stand in for two unrelated signed-in users; any account can connect its own Claude.
 
 const APP = "https://ken-os.example";
 const CALLBACK = "https://claude.ai/api/mcp/auth_callback";
@@ -20,7 +20,6 @@ async function main() {
   process.env.MCP_ALLOWED_REDIRECT_HOSTS = "claude.ai,claude.com";
   const owner = `connector-check-${randomUUID()}`;
   const ownerEmail = `${owner}@example.invalid`;
-  process.env.OWNER_EMAIL = ownerEmail;
 
   const store = await import("../src/features/connector/oauth-store");
   const tools = await import("../src/features/engineering-lab/agent-tools");
@@ -224,22 +223,40 @@ async function main() {
     assert.deepEqual(await store.listConnections(owner), []);
     console.log("ok - Connections lists live connections, and Disconnect stops them at once");
 
-    // Owner only: a token whose user is no longer the owner stops working.
-    const third = await store.checkAuthorization(query, APP);
-    assert.ok("ok" in third);
-    const owned = await (
-      await form({
-        grant_type: "authorization_code",
-        code: await store.issueCode(owner, third.ok),
-        redirect_uri: CALLBACK,
-        client_id: clientId,
-        code_verifier: verifier,
-      })
-    ).json();
-    process.env.OWNER_EMAIL = "someone-else@example.invalid";
-    assert.equal((await rpc(init, owned.access_token)).status, 401);
-    process.env.OWNER_EMAIL = ownerEmail;
-    console.log("ok - every call re-checks that the token's user is the owner");
+    // Any account: a second, unrelated account gets its own connection scoped to its own roadmap -- the connector
+    // isn't gated to one hardcoded account.
+    const guest = `connector-check-guest-${randomUUID()}`;
+    await db()
+      .insert(users)
+      .values({ id: guest, email: `${guest}@example.invalid`, name: "Guest" });
+    try {
+      const guestAuth = await store.checkAuthorization(query, APP);
+      assert.ok("ok" in guestAuth);
+      const guestTokens = await (
+        await form({
+          grant_type: "authorization_code",
+          code: await store.issueCode(guest, guestAuth.ok),
+          redirect_uri: CALLBACK,
+          client_id: clientId,
+          code_verifier: verifier,
+        })
+      ).json();
+      const guestRpc = await (
+        await rpc(
+          { jsonrpc: "2.0", id: 5, method: "tools/call", params: { name: "get_current_state", arguments: {} } },
+          guestTokens.access_token,
+        )
+      ).json();
+      assert.equal(guestRpc.result.isError, undefined, "a non-owner account can connect and call tools");
+      assert.equal(
+        guestRpc.result.structuredContent.planned,
+        false,
+        "the guest sees their own, separate, empty roadmap",
+      );
+    } finally {
+      await db().delete(users).where(eq(users.id, guest));
+    }
+    console.log("ok - a non-owner account connects on its own and only ever sees its own roadmap");
   } finally {
     await db().delete(users).where(eq(users.id, owner));
     if (clientId) await db().delete(oauthClients).where(eq(oauthClients.id, clientId));

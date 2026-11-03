@@ -178,22 +178,31 @@ export const portfolioPublications = pgTable(
   (table) => [uniqueIndex("portfolio_publications_user_version_idx").on(table.userId, table.version)],
 );
 
-/** Which publication is live. A null `current_publication_id` means unpublished: the public endpoint returns 404. */
-export const portfolios = pgTable("portfolios", {
-  userId: text("user_id")
-    .primaryKey()
-    .references(() => users.id, { onDelete: "cascade" }),
-  currentPublicationId: text("current_publication_id").references(() => portfolioPublications.id, {
-    onDelete: "set null",
-  }),
-  /** Publish copies the Profile email into the snapshot only when this is on. */
-  showEmail: boolean("show_email").notNull().default(false),
-  /** Roadmap ids shown on the site. Null until the owner flips a switch: then the roadmap opened last is shown. */
-  shownRoadmaps: jsonb("shown_roadmaps").$type<string[]>(),
-  /** Topic ids whose Learned explanation the owner switched on. Off by default. */
-  shownExplanations: jsonb("shown_explanations").$type<string[]>().notNull().default([]),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+/** Which publication is live. A null `current_publication_id` means unpublished: the public endpoint returns 404.
+ *  A null `slug` means Publish is blocked: without a handle there's no public address for `GET
+ *  /api/public/portfolio/[slug]` to serve (docs/architecture/portfolio.md). */
+export const portfolios = pgTable(
+  "portfolios",
+  {
+    userId: text("user_id")
+      .primaryKey()
+      .references(() => users.id, { onDelete: "cascade" }),
+    currentPublicationId: text("current_publication_id").references(() => portfolioPublications.id, {
+      onDelete: "set null",
+    }),
+    /** The handle the public site's address is keyed on, e.g. `/api/public/portfolio/jkenger`. Lowercase
+     *  letters, digits and hyphens only; unique case-insensitively. */
+    slug: text("slug"),
+    /** Publish copies the Profile email into the snapshot only when this is on. */
+    showEmail: boolean("show_email").notNull().default(false),
+    /** Roadmap ids shown on the site. Null until the owner flips a switch: then the roadmap opened last is shown. */
+    shownRoadmaps: jsonb("shown_roadmaps").$type<string[]>(),
+    /** Topic ids whose Learned explanation the owner switched on. Off by default. */
+    shownExplanations: jsonb("shown_explanations").$type<string[]>().notNull().default([]),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex("portfolios_slug_unique").on(sql`lower(${table.slug})`)],
+);
 
 /** The Design Studio's unexported edits, one per token or component: a token edit (`target` is the token name) or a
  *  Look edit (`target` is the component id). Export turns them into code. Spec: docs/architecture/design-studio.md. */

@@ -16,8 +16,7 @@ import {
 // docs/architecture/auth-sign-in.md §8.
 
 process.env.SESSION_SECRET ??= "test-session-secret-at-least-32-bytes-long";
-process.env.OWNER_EMAIL ??= "owner@example.test";
-const owner = process.env.OWNER_EMAIL;
+const owner = "owner@example.test";
 
 test("safeNext keeps same-origin page paths", () => {
   assert.equal(safeNext("/engineering/learn?x=1"), "/engineering/learn?x=1");
