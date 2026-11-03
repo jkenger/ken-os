@@ -2,7 +2,7 @@
 
 Status: proposed, 31 Oct 2026. A new product, built from the ground up, not a feature inside Design Studio. The
 library choice behind it was decided separately in
-[design-studio-mockup-canvas-decision.md](design-studio-mockup-canvas-decision.md): adapt the already-adopted React
+[ADR-001](decisions/ADR-001-design-canvas-library.md): adapt the already-adopted React
 Flow (`@xyflow/react`), no new dependency. The screens are drawn from
 [the mockup brief](../mockups/design.md).
 

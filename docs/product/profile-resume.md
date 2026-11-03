@@ -75,7 +75,7 @@ The first page in Loots anyone can open without signing in.
 - PDF download from the same page.
 - No `WorkspaceShell`, no term lookup, no session reads, no email or user id in the page.
 
-`docs/architecture/auth-sign-in.md` and `docs/architecture/overview.md` get a section on public pages when this ships.
+`docs/architecture/auth-sign-in.md` and `docs/architecture/system-overview.md` get a section on public pages when this ships.
 
 ## Drive sync
 

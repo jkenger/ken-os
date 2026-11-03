@@ -11,13 +11,11 @@
 
 ## Quality gates
 
-Run from the repo root before a PR:
+`AGENTS.md`'s "Local verification" covers `pnpm check`, `pnpm build`, Prettier, and starting local Postgres (`pnpm db:up`/`pnpm db:migrate`) — run those first. On top of that, before a PR:
 
-1. `pnpm check`: every file is Prettier-formatted, generated lab content and the studio manifest are current, then `tsc --noEmit`.
-2. `pnpm test`: unit tests, including the shadcn primitive and default-theme guards, and every lab starter fails while every solution passes.
-3. `pnpm build`: production build.
+- `pnpm test`: unit tests, including the shadcn primitive and default-theme guards, and every lab starter fails while every solution passes.
 
-Database checks need `pnpm db:up` (Docker Postgres on `127.0.0.1:5435`) and `pnpm db:migrate` first. Run the one for the area you changed:
+Database checks, one for the area you changed:
 
 - `pnpm --filter @ken-os/web test:db:engineering`
 - `pnpm --filter @ken-os/web test:db:terms`
@@ -51,7 +49,10 @@ The app is a hosted service with env config (`apps/web/.env.example`), local Pos
 `docs/` already uses flat per-feature files, not nested `docs/specifications/<feature>/` folders. The chain's skills write there directly, matching what's already on disk:
 
 - `specification` writes `docs/product/<feature>.md`.
-- `planning` / `/plan` writes `docs/architecture/<feature>.md` (plan content lives alongside the design, same file family as `docs/architecture/auth-sign-in.md`).
-- `codebase-design` / `adr` writes decisions to `docs/architecture/decisions/` (new folder; everything else about a feature stays in its flat `docs/architecture/<feature>.md`).
+- `planning` / `/plan` and `codebase-design` (technical design) both write `docs/architecture/<feature>.md` — plan and design content live alongside each other, same file family as `docs/architecture/auth-sign-in.md`.
+- `adr` writes real architectural decisions (alternatives weighed, not a routine scoping call) to `docs/architecture/decisions/`, named `ADR-NNN-kebab-title.md` (see its `README.md`).
+- Mockups follow `docs/mockups/README.md`'s own convention: one brief per screen or feature, named after it.
+- Verify/Review: `tdd-guardian` for process, `panel-review` for the PR itself, per the global chain.
+- Learn: route durable facts through `expectations`/`learn`. Check whether a feature should update `docs/architecture/system-overview.md` or `docs/product/product-overview.md` — most features touch neither.
 
 There is no `docs/development/`; coding standards and test strategy live in this file and `AGENTS.md`, not a separate doc.
