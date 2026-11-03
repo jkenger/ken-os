@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Design mockups, README</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:oklch(0.22 0.005 265)}a:hover{color:oklch(0.48 0.008 265)}
+.rd h2{font-size:18px;font-weight:600;letter-spacing:-0.02em;margin:0 0 10px;padding-bottom:8px;border-bottom:1px solid oklch(0.885 0.004 265)}
+.rd table{border-collapse:collapse;width:100%;font-size:13px}
+.rd th{text-align:left;font-weight:600;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:oklch(0.48 0.008 265);padding:6px 8px;border-bottom:1px solid oklch(0.885 0.004 265)}
+.rd td{padding:5px 8px;border-bottom:1px solid oklch(0.93 0.003 265);vertical-align:top}
+.rd ol,.rd ul{margin:0;padding-left:20px;font-size:14px;line-height:1.55}
+.rd li{margin:0 0 6px}
+.mono{font-family:"Geist Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+</style>
+</helmet>
+<div class="rd" style="width: 1080px; height: 1760px; box-sizing: border-box; padding: 48px 56px; background: oklch(0.995 0.001 265); color: oklch(0.22 0.005 265); font-family: Geist, ui-sans-serif, system-ui, sans-serif; font-size: 14px; line-height: 1.45; display: flex; flex-direction: column; gap: 28px">
+  <div>
+    <h1 style="margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.025em">Design mockups, README</h1>
+    <p style="margin: 6px 0 0; color: oklch(0.48 0.008 265)">From docs/mockups/design.md (drafted 31 Oct 2026). Loots console tokens from apps/web/DESIGN.md, light, with A4 in dark.</p>
+  </div>
+  <section style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px">
+    <div>
+      <h2>Frames</h2>
+      <table>
+        <thead><tr><th>Frame</th><th>Artboard</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">A1</td><td>First open, no frames</td><td>Done</td></tr>
+          <tr><td class="mono">A2</td><td>One frame open, nothing placed</td><td>Done</td></tr>
+          <tr><td class="mono">A3</td><td>Components placed, one selected</td><td>Done</td></tr>
+          <tr><td class="mono">A4</td><td>Dark</td><td>Done</td></tr>
+          <tr><td class="mono">B1</td><td>Frames list</td><td>Done</td></tr>
+          <tr><td class="mono">B2</td><td>Add frame</td><td>Done</td></tr>
+          <tr><td class="mono">B3</td><td>Rename in place</td><td>Done</td></tr>
+          <tr><td class="mono">C1</td><td>Palette</td><td>Changed (2)</td></tr>
+          <tr><td class="mono">C2</td><td>No match</td><td>Done</td></tr>
+          <tr><td class="mono">C3</td><td>Added from the palette</td><td>Done</td></tr>
+          <tr><td class="mono">D1</td><td>Frame on the canvas, Fit</td><td>Done</td></tr>
+          <tr><td class="mono">D2</td><td>Placements, dragging one</td><td>Changed (3)</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h2 style="visibility: hidden" aria-hidden="true">Frames</h2>
+      <table>
+        <thead><tr><th>Frame</th><th>Artboard</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">D3</td><td>Selected placement</td><td>Done</td></tr>
+          <tr><td class="mono">D4</td><td>Two placements of Button</td><td>Done</td></tr>
+          <tr><td class="mono">D5</td><td>Toolbar, Add component</td><td>Done</td></tr>
+          <tr><td class="mono">D6</td><td>Resizing the frame</td><td>Changed (4)</td></tr>
+          <tr><td class="mono">D7</td><td>Dropped outside, snapped back</td><td>Changed (4)</td></tr>
+          <tr><td class="mono">E1</td><td>Nothing selected</td><td>Done</td></tr>
+          <tr><td class="mono">E2</td><td>Placement selected</td><td>Done</td></tr>
+          <tr><td class="mono">E3</td><td>Delete frame?</td><td>Done</td></tr>
+          <tr><td class="mono">F1</td><td>1280</td><td>Done</td></tr>
+          <tr><td class="mono">F2</td><td>1024, inspector as a Sheet</td><td>Changed (5)</td></tr>
+          <tr><td class="mono">F3</td><td>390, wider screen needed</td><td>Done</td></tr>
+          <tr><td class="mono">Real data</td><td>Desktop / New, Phone / Posting (frames inside Design)</td><td>Done</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section>
+    <h2>Changes from this brief</h2>
+    <ol>
+      <li>A frame opens at 100%, scrolled to its top left, so placed components read at their real size. D1 shows Fit (38%), the whole frame with its edge and header tab.</li>
+      <li>C1: every palette row shares one component icon. Loots has no per-component icon set, and inventing fifteen would be a new asset family.</li>
+      <li>D2: the dragged Input shows a live X / Y readout under it and a dashed box where it started. The brief only asks for drag; the readout makes the move legible.</li>
+      <li>D6 and D7 use the Phone / Posting frame (390 × 844) so both of its side edges fit the view (D6 at 70%, D7 at 100%).</li>
+      <li>F2: Frames and Palette open together from a "Frames and components" button at the left of the canvas toolbar. Drawn closed, with the inspector Sheet open on a selection.</li>
+      <li>Both composed frames hold four placements (Input, Button "Save", Button "Dismiss", Badge), so E3's "Removes its 4 components too" is true of the frame being deleted.</li>
+      <li>Add frame appears twice, in the page header (as the brief says) and at the foot of the Frames panel. Both open B2.</li>
+    </ol>
+  </section>
+  <section>
+    <h2>Proposals</h2>
+    <ul>
+      <li><strong>Frame edge handles</strong> (D6): ink bars on the frame's own edges and corner, so they never read as a placement's blue corner squares. No new token.</li>
+      <li><strong>Placement name tag</strong> (D4) and drag readout (D2): small ink tags with inverse text, reusing primary and primary-foreground. No new token.</li>
+      <li><strong>Canvas dot grid</strong>: dots in the border colour on the sidebar ground, the frame on the page ground with a seam. No new token.</li>
+      <li><strong>App sidebar folds to icons on /design</strong>: the same proposal Design Studio made for /studio.</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Decided (2 Nov 2026, owner took every recommendation)</h2>
+    <ol>
+      <li><strong>Claude-authored frames:</strong> a small outline "Claude" badge on the Frames panel row only, never on the canvas, so the composed frame stays exactly what ships. Drawn on Desktop / Posting in every frames list.</li>
+      <li><strong>Palette grouping:</strong> flat A to Z with search until the catalogue passes about 30 components, then grouped under shadcn's own categories.</li>
+      <li><strong>Zoom on open:</strong> Fit the first time a frame opens (D1), then the last zoom per frame is remembered. The other frames show a remembered 100%.</li>
+      <li><strong>Custom size limits</strong> in Add frame: 320 to 3840 wide and 320 to 4320 tall, shown on the Custom option in B2; the field names the limit when exceeded.</li>
+      <li><strong>Undo:</strong> Ctrl Z backs out the last move or resize, since moves save on release with no save step.</li>
+    </ol>
+    <p style="margin: 10px 0 0; color: oklch(0.48 0.008 265)">No open questions left. The owner folds these into docs/mockups/design.md under Decided.</p>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1080,"height":1760}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

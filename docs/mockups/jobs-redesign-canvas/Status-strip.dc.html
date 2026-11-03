@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Jobs, status strip</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+.lt{--bg:oklch(0.975 0.002 265);--fg:oklch(0.22 0.005 265);--card:oklch(0.995 0.001 265);--muted:oklch(0.945 0.003 265);--mfg:oklch(0.48 0.008 265);--border:oklch(0.885 0.004 265);--side:oklch(0.955 0.003 265);--sacc:oklch(0.915 0.004 265);--pfg:oklch(0.985 0.001 265);font-family:Geist,ui-sans-serif,system-ui,sans-serif;color:var(--fg);background:var(--bg);font-size:14px;line-height:1.43}
+.lt *{box-sizing:border-box}
+a{color:oklch(0.22 0.005 265);text-decoration:none}a:hover{color:oklch(0.22 0.005 265);text-decoration:underline}
+.lt button,.lt input,.lt select{font:inherit;color:inherit}
+.lt input::placeholder{color:var(--mfg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 12px;border-radius:10.4px;border:1px solid transparent;font-weight:500;font-size:14px;white-space:nowrap;cursor:pointer;background:transparent}
+.btn-o{background:var(--bg);border-color:var(--border)}
+.btn-sm{height:32px;padding:0 10px}
+.badge{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border-radius:8.8px;border:1px solid transparent;font-size:12px;font-weight:500;white-space:nowrap;line-height:1}
+.b-s{background:var(--muted)}
+.b-x{background:var(--muted);padding:0 2px 0 8px}
+.b-x button{border:0;background:transparent;padding:0;width:16px;height:16px;display:grid;place-items:center;cursor:pointer;color:var(--mfg)}
+.inp{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:8.8px;background:var(--muted);border:1px solid transparent;width:100%;font-size:14px}
+.inp input,.inp select{border:0;background:transparent;outline:0;width:100%;padding:0;appearance:none;min-width:0}
+.ph-head{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mfg);margin:0}
+.mono{font-family:"Geist Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.lbl{font-size:12px;color:var(--mfg)}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:4px}
+.rail-b{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--mfg)}
+.rail-b.on{background:var(--sacc);color:var(--fg)}
+.logo{width:40px;height:40px;border-radius:4px;display:grid;place-items:center;flex:none;border:1px solid var(--border);background:var(--card)}
+.ini{background:var(--muted);color:var(--mfg);font-weight:600;font-size:13px;border-color:transparent}
+.strip{display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;padding:8px 12px;border:1px solid var(--border);border-radius:4px;background:var(--card);font-size:13px}
+.strip .sep{width:1px;height:14px;background:var(--border)}
+</style>
+</helmet>
+<div class="lt" style="width: 1440px; height: 1000px; display: flex; overflow: hidden">
+  <nav aria-label="Modules" style="width: 48px; flex: none; background: var(--side); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center">
+    <div style="height: 48px; width: 48px; display: grid; place-items: center; border-bottom: 1px solid var(--border)"><span style="width: 24px; height: 24px; border-radius: 4px; background: var(--fg); color: var(--pfg); display: grid; place-items: center; font-weight: 700; font-size: 13px">L</span></div>
+    <div style="display: flex; flex-direction: column; gap: 4px; padding-top: 8px">
+      <a class="rail-b" href="#" aria-label="Today"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"></path></svg></a>
+      <a class="rail-b" href="#" aria-label="Engineering"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7z"></path><path d="m2 17 10 5 10-5M2 12l10 5 10-5"></path></svg></a>
+      <a class="rail-b on" href="#" aria-label="Jobs" aria-current="page"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"></path></svg></a>
+      <a class="rail-b" href="#" aria-label="Terms"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"></path></svg></a>
+    </div>
+  </nav>
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+    <header style="height: 48px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--border)">
+      <span style="font-weight: 500">Jobs</span>
+      <button class="btn btn-o btn-sm" style="width: 32px; padding: 0; font-size: 12px; font-weight: 600" aria-label="Account">JK</button>
+    </header>
+    <main style="width: 100%; max-width: 1280px; margin: 0 auto; padding: 32px 40px; display: grid; grid-template-columns: 272px 1fr; gap: 24px; align-items: start">
+      <aside aria-label="Filters" class="panel" style="height: 760px; display: flex; flex-direction: column">
+        <div style="padding: 12px; border-bottom: 1px solid var(--border)"><label class="inp"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="color: var(--mfg); flex: none"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg><input placeholder="Search" aria-label="Search postings"></label></div>
+        <div style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border-bottom: 1px solid var(--border)"><h2 class="ph-head">Filters</h2><span class="badge b-s" style="height: 20px"><span class="mono">7</span> active</span></div>
+        <div style="flex: 1; display: grid; place-items: center" class="lbl">Same sidebar as Filters, applied</div>
+      </aside>
+      <section style="display: flex; flex-direction: column; gap: 12px; min-width: 0">
+        <div class="strip" role="status" aria-label="Jobs status">
+          <span style="display: inline-flex; align-items: center; gap: 6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg><span>Checked <span class="mono">2</span> min ago</span></span>
+          <span class="sep" aria-hidden="true"></span>
+          <span><span style="color: var(--mfg)">Searching</span> Full-stack Engineer, Frontend Engineer <span class="mono" style="color: var(--mfg)">+1</span></span>
+          <span class="sep" aria-hidden="true"></span>
+          <span><span class="mono">12</span> new · <a href="#" style="text-decoration: underline"><span class="mono">18</span> filtered out</a></span>
+          <span style="flex: 1"></span>
+          <a href="Overview.dc.html" style="color: var(--mfg); text-decoration: underline">Setup status</a>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 4px 4px 0">
+          <div style="display: flex; align-items: center; justify-content: space-between">
+            <span style="font-size: 18px; font-weight: 600"><span class="mono">12</span> new postings</span>
+            <label class="inp" style="width: 210px; height: 32px"><span class="lbl" style="flex: none">Sort</span><select aria-label="Sort"><option>Best match</option></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="flex: none"><path d="m6 9 6 6 6-6"></path></svg></label>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px; align-items: center">
+            <span class="badge b-x">$2,500+ a month<button aria-label="Drop filter: $2,500+ a month"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></span>
+            <span class="badge b-x">Remote<button aria-label="Drop filter: Remote"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></span>
+            <span class="badge b-x">Mid, Senior<button aria-label="Drop filter: Mid, Senior"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></span>
+            <span class="badge b-x">Skip: Sales<button aria-label="Drop filter: Skip: Sales"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></span>
+            <span class="lbl"><span class="mono">18</span> hidden by these</span>
+          </div>
+        </div>
+        <article class="panel" style="padding: 20px; display: flex; gap: 14px">
+          <div class="logo ini" aria-hidden="true">TP</div>
+          <div style="flex: 1"><div style="font-size: 13px; color: var(--mfg)">Tidepool</div><div style="font-size: 16px; font-weight: 600">Senior Full-stack Engineer</div><div class="lbl" style="margin-top: 6px; font-size: 13px">Remote · 🇵🇭 Philippines <span class="mono">+10</span> · Full time</div></div>
+          <span class="badge" style="height: 32px; border-color: var(--border); padding: 0 10px"><span class="mono" style="font-size: 15px; font-weight: 600">92</span><span style="color: var(--mfg); font-weight: 400">match</span></span>
+        </article>
+        <article class="panel" style="padding: 20px; display: flex; gap: 14px">
+          <div class="logo ini" aria-hidden="true">HH</div>
+          <div style="flex: 1"><div style="font-size: 13px; color: var(--mfg)">Halcyon Health</div><div style="font-size: 16px; font-weight: 600">Frontend Engineer (React)</div><div class="lbl" style="margin-top: 6px; font-size: 13px">Remote · 🇺🇸 United States · Contract</div></div>
+          <span class="badge" style="height: 32px; border-color: var(--border); padding: 0 10px"><span class="mono" style="font-size: 15px; font-weight: 600">88</span><span style="color: var(--mfg); font-weight: 400">match</span></span>
+        </article>
+        <div class="lbl" style="padding: 4px">Cards as in Desktop / New</div>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

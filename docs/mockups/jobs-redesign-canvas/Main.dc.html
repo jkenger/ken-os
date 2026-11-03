@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Jobs, New</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+.lt{--bg:oklch(0.975 0.002 265);--fg:oklch(0.22 0.005 265);--card:oklch(0.995 0.001 265);--muted:oklch(0.945 0.003 265);--mfg:oklch(0.48 0.008 265);--border:oklch(0.885 0.004 265);--ring:oklch(0.52 0.16 262);--side:oklch(0.955 0.003 265);--sacc:oklch(0.915 0.004 265);--pfg:oklch(0.985 0.001 265);font-family:Geist,ui-sans-serif,system-ui,sans-serif;color:var(--fg);background:var(--bg);font-size:14px;line-height:1.43}
+.lt *{box-sizing:border-box}
+a{color:oklch(0.22 0.005 265);text-decoration:none}a:hover{color:oklch(0.22 0.005 265);text-decoration:underline}
+.lt button,.lt input,.lt select{font:inherit;color:inherit}
+.lt input::placeholder{color:var(--mfg)}
+.lt input[type=checkbox]{width:16px;height:16px;margin:0;accent-color:var(--fg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 12px;border-radius:10.4px;border:1px solid transparent;font-weight:500;font-size:14px;white-space:nowrap;cursor:pointer;background:transparent}
+.btn-p{background:var(--fg);color:var(--pfg)}
+.btn-o{background:var(--bg);border-color:var(--border)}
+.btn-sm{height:32px;padding:0 10px}
+.btn-xs{height:24px;padding:0 8px;font-size:12px;border-radius:8px}
+.badge{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 8px;border-radius:8.8px;border:1px solid transparent;font-size:12px;font-weight:500;white-space:nowrap;line-height:1}
+.b-s{background:var(--muted)}
+.b-o{border-color:var(--border)}
+.b-c{background:var(--card);border-color:var(--border)}
+.inp{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:8.8px;background:var(--muted);border:1px solid transparent;width:100%;font-size:14px}
+.inp input,.inp select{border:0;background:transparent;outline:0;width:100%;padding:0;appearance:none;min-width:0}
+.ph-head{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mfg)}
+.mono{font-family:"Geist Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.lbl{font-size:12px;color:var(--mfg)}
+.fl{font-size:14px;font-weight:500;line-height:1;padding:0}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:4px}
+.tg{display:flex;flex-wrap:wrap;gap:2px;padding:2px;border-radius:10.4px;background:var(--muted)}
+.tg button{flex:1;height:30px;padding:0 8px;border:0;border-radius:8.4px;background:transparent;font-size:13px;font-weight:500;color:var(--mfg);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px}
+.tg button[aria-pressed=true]{background:var(--card);color:var(--fg);box-shadow:0 0 0 1px var(--border)}
+.logo{width:40px;height:40px;border-radius:4px;display:grid;place-items:center;flex:none;border:1px solid var(--border);background:var(--card)}
+.ini{background:var(--muted);color:var(--mfg);font-weight:600;font-size:13px;border-color:transparent}
+.skel{background:var(--muted);border-color:transparent;animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{50%{opacity:.45}}
+.rail-b{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--mfg)}
+.rail-b.on{background:var(--sacc);color:var(--fg)}
+.nav-i{display:flex;align-items:center;justify-content:space-between;height:32px;padding:0 10px;border-radius:8px;font-size:14px}
+.nav-i.on{background:var(--sacc);font-weight:500}
+.jc{position:relative}
+.jc:hover{border-color:oklch(0.8 0.005 265)}
+.stretch::after{content:"";position:absolute;inset:0}
+.lift{position:relative;z-index:1}
+</style>
+</helmet>
+<div class="lt" style="width: 1440px; height: 1560px; display: flex; overflow: hidden">
+  <nav aria-label="Modules" style="width: 48px; flex: none; background: var(--side); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center">
+    <div style="height: 48px; width: 48px; display: grid; place-items: center; border-bottom: 1px solid var(--border)"><span style="width: 24px; height: 24px; border-radius: 4px; background: var(--fg); color: var(--pfg); display: grid; place-items: center; font-weight: 700; font-size: 13px">L</span></div>
+    <div style="display: flex; flex-direction: column; gap: 4px; padding-top: 8px">
+      <a class="rail-b" href="#" aria-label="Today"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"></path></svg></a>
+      <a class="rail-b" href="#" aria-label="Engineering"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7z"></path><path d="m2 17 10 5 10-5M2 12l10 5 10-5"></path></svg></a>
+      <a class="rail-b" href="#" aria-label="Resume"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M9 13h6M9 17h4"></path></svg></a>
+      <a class="rail-b on" href="#" aria-label="Jobs" aria-current="page"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"></path></svg></a>
+      <a class="rail-b" href="#" aria-label="Terms"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"></path></svg></a>
+      <a class="rail-b" href="#" aria-label="Project Memory"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"></ellipse><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"></path></svg></a>
+    </div>
+  </nav>
+  <nav aria-label="Jobs sections" style="width: 208px; flex: none; background: var(--side); border-right: 1px solid var(--border); display: flex; flex-direction: column">
+    <div style="height: 48px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 600">Jobs</div>
+    <div style="display: flex; flex-direction: column; gap: 2px; padding: 8px">
+      <a class="nav-i on" href="Main.dc.html" aria-current="page"><span>New</span><span class="mono lbl">12</span></a>
+      <a class="nav-i" href="#"><span>Saved</span><span class="mono lbl">3</span></a>
+      <a class="nav-i" href="#"><span>Applied</span><span class="mono lbl">2</span></a>
+      <a class="nav-i" href="#"><span>Dismissed</span><span class="mono lbl">4</span></a>
+      <a class="nav-i" href="#"><span>Filtered out</span><span class="mono lbl">18</span></a>
+    </div>
+  </nav>
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+    <header style="height: 48px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--border)">
+      <div style="display: flex; align-items: center; gap: 6px; font-size: 14px"><span style="color: var(--mfg)">Jobs</span><span style="color: var(--mfg)" aria-hidden="true">/</span><span style="font-weight: 500">New</span></div>
+      <div style="display: flex; align-items: center; gap: 8px">
+        <button class="btn btn-o btn-sm" style="color: var(--mfg); font-weight: 400; width: 200px; justify-content: space-between">Jump to<span class="mono" style="font-size: 11px">Ctrl K</span></button>
+        <button class="btn btn-o btn-sm" style="width: 32px; padding: 0; font-size: 12px; font-weight: 600" aria-label="Account">JK</button>
+      </div>
+    </header>
+    <main style="flex: 1; padding: 0 40px 40px; display: flex; flex-direction: column; gap: 20px">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 24px 0 16px; border-bottom: 1px solid var(--border)">
+        <div style="display: flex; align-items: baseline; gap: 10px">
+          <h1 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.25">New</h1>
+          <span class="lbl"><span class="mono">12</span> postings</span>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center">
+          <label class="inp" style="width: 280px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--mfg); flex: none"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg><input type="search" placeholder="Search titles or companies" aria-label="Search postings"></label>
+          <label class="inp" style="width: 160px"><span class="lbl" style="flex: none">Sort</span><select aria-label="Sort"><option>Best match</option><option>Newest</option></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="m6 9 6 6 6-6"></path></svg></label>
+        </div>
+      </div>
+      <div style="display: flex; gap: 24px; align-items: flex-start">
+        <aside aria-label="Filters" class="panel" style="width: 280px; flex: none; display: flex; flex-direction: column">
+          <div style="display: flex; align-items: center; justify-content: space-between; height: 48px; padding: 0 12px 0 16px; border-bottom: 1px solid var(--border)">
+            <div style="display: flex; align-items: center; gap: 8px"><h2 class="ph-head" style="margin: 0">Filters</h2><span class="badge b-s" style="background: var(--fg); color: var(--pfg)"><span class="mono">7</span> active</span></div>
+            <button class="btn btn-xs">Clear all</button>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 20px; padding: 16px">
+            <fieldset style="border: 0; margin: 0; padding: 0; min-width: 0">
+              <legend class="fl" style="margin-bottom: 10px">Pay</legend>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+                <label style="display: flex; flex-direction: column; gap: 4px"><span class="lbl">Minimum</span><span class="inp"><input value="2,500" inputmode="numeric"></span></label>
+                <label style="display: flex; flex-direction: column; gap: 4px"><span class="lbl">Maximum</span><span class="inp"><input placeholder="Any" inputmode="numeric"></span></label>
+                <label style="display: flex; flex-direction: column; gap: 4px"><span class="lbl">Currency</span><span class="inp"><select><option>USD</option><option>PHP</option></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="m6 9 6 6 6-6"></path></svg></span></label>
+                <label style="display: flex; flex-direction: column; gap: 4px"><span class="lbl">Period</span><span class="inp"><select><option>Per month</option><option>Per hour</option><option>Per year</option></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="m6 9 6 6 6-6"></path></svg></span></label>
+              </div>
+            </fieldset>
+            <fieldset style="border: 0; margin: 0; padding: 0">
+              <legend class="fl" style="margin-bottom: 10px">Job type</legend>
+              <div style="display: flex; flex-direction: column; gap: 10px">
+                <label style="display: flex; align-items: center; gap: 8px"><input type="checkbox" checked="">Full time</label>
+                <label style="display: flex; align-items: center; gap: 8px"><input type="checkbox" checked="">Contract</label>
+                <label style="display: flex; align-items: center; gap: 8px"><input type="checkbox">Part time</label>
+              </div>
+            </fieldset>
+            <div role="group" aria-labelledby="ws" style="display: flex; flex-direction: column; gap: 10px">
+              <span id="ws" class="fl">Work setup</span>
+              <div class="tg"><button aria-pressed="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Remote</button><button aria-pressed="false">Hybrid</button><button aria-pressed="false">On site</button></div>
+            </div>
+            <div role="group" aria-labelledby="sn" style="display: flex; flex-direction: column; gap: 10px">
+              <span id="sn" class="fl">Seniority</span>
+              <div class="tg"><button aria-pressed="false">Junior</button><button aria-pressed="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Mid</button><button aria-pressed="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Senior</button><button aria-pressed="false">Lead</button></div>
+            </div>
+            <label style="display: flex; flex-direction: column; gap: 10px">
+              <span class="fl">Skip words</span>
+              <span class="inp" style="height: auto; min-height: 36px; flex-wrap: wrap; padding: 6px 8px; gap: 6px"><span class="badge b-c">Sales<button aria-label="Remove Sales" style="border: 0; background: transparent; padding: 0; display: grid; cursor: pointer"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></span><input placeholder="Add a word" style="width: 110px; flex: 1"></span>
+            </label>
+            <label style="display: flex; flex-direction: column; gap: 10px">
+              <span class="fl">Skip companies</span>
+              <span class="inp"><input placeholder="Add a company"></span>
+            </label>
+            <div role="group" aria-labelledby="ag" style="display: flex; flex-direction: column; gap: 10px">
+              <span id="ag" class="fl">Agencies</span>
+              <div class="tg"><button aria-pressed="false">Show</button><button aria-pressed="true"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Hide</button></div>
+            </div>
+            <label style="display: flex; flex-direction: column; gap: 10px">
+              <span class="fl">Posted within</span>
+              <span class="inp"><select><option>14 days</option><option>7 days</option><option>30 days</option><option>Any time</option></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="m6 9 6 6 6-6"></path></svg></span>
+            </label>
+          </div>
+        </aside>
+        <section aria-label="Postings" style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px">
+          <sc-for list="{{jobs}}" as="j" hint-placeholder-count="6">
+            <article class="panel jc" style="padding: 20px; display: flex; flex-direction: column; gap: 12px">
+              <div style="display: flex; gap: 14px; align-items: flex-start">
+                <sc-if value="{{j.isImg}}" hint-placeholder-val="{{false}}"><div class="logo" role="img" aria-label="{{j.company}} logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M2 9c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M2 15c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2"></path></svg></div></sc-if>
+                <sc-if value="{{j.isImg2}}" hint-placeholder-val="{{false}}"><div class="logo" role="img" aria-label="{{j.company}} logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="13" r="4"></circle><path d="M12 3v3M4.9 6.9 7 9M19.1 6.9 17 9M2 21h20"></path></svg></div></sc-if>
+                <sc-if value="{{j.isIni}}" hint-placeholder-val="{{true}}"><div class="logo ini" aria-hidden="true">{{j.ini}}</div></sc-if>
+                <sc-if value="{{j.isPend}}" hint-placeholder-val="{{false}}"><div class="logo skel" role="img" aria-label="Loading logo"></div></sc-if>
+                <div style="flex: 1; min-width: 0">
+                  <div style="font-size: 13px; color: var(--mfg)">{{j.company}}</div>
+                  <h2 style="margin: 2px 0 0; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.35"><a class="stretch" href="Detail.dc.html">{{j.title}}</a></h2>
+                  <div class="lbl" style="margin-top: 6px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; font-size: 13px">
+                    <span>{{j.setup}}</span><span aria-hidden="true">·</span>
+                    <span><span aria-hidden="true">{{j.flag}}</span> {{j.country}}</span>
+                    <sc-if value="{{j.hasExtra}}" hint-placeholder-val="{{false}}"><span class="mono" aria-label="and {{j.extra}} more countries">+{{j.extra}}</span></sc-if>
+                    <span aria-hidden="true">·</span><span>{{j.type}}</span>
+                    <span aria-hidden="true">·</span><span>{{j.level}}</span>
+                  </div>
+                </div>
+                <div class="lift" style="display: flex; align-items: center; gap: 8px; flex: none">
+                  <span class="badge b-o" style="height: 32px; padding: 0 10px; gap: 6px; border-radius: 10.4px" aria-label="Match score {{j.score}}"><span class="mono" style="font-size: 15px; font-weight: 600">{{j.score}}</span><span style="color: var(--mfg); font-weight: 400">match</span></span>
+                  <sc-if value="{{j.saved}}" hint-placeholder-val="{{false}}"><button class="btn btn-o btn-sm" aria-pressed="true"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>Saved</button></sc-if>
+                  <sc-if value="{{j.unsaved}}" hint-placeholder-val="{{true}}"><button class="btn btn-o btn-sm" aria-pressed="false"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>Save</button></sc-if>
+                </div>
+              </div>
+              <p style="margin: 0; max-width: 72ch">{{j.snippet}}</p>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap">
+                <sc-for list="{{j.skills}}" as="s" hint-placeholder-count="4"><span class="badge b-s">{{s}}</span></sc-for>
+                <sc-if value="{{j.hasMore}}" hint-placeholder-val="{{false}}"><span class="badge b-o"><span class="mono">+{{j.more}}</span></span></sc-if>
+              </div>
+            </article>
+          </sc-for>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1560}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const mk = (o) => Object.assign({ isImg: false, isImg2: false, isIni: false, isPend: false, saved: false, hasExtra: o.extra > 0, hasMore: o.more > 0 }, o, { unsaved: !o.saved });
+    return {
+      jobs: [
+        mk({ company: 'Tidepool', isImg: true, title: 'Senior Full-stack Engineer', setup: 'Remote', flag: '🇵🇭', country: 'Philippines', extra: 10, type: 'Full time', level: 'Senior', score: 92, snippet: 'Tidepool builds scheduling software for community clinics. We are hiring a senior engineer to own features end to end across our Next.js app and Node services, working closely with design and a small product team spread across four time zones in Latin America and Asia…', skills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'Next.js', 'AWS'], more: 2 }),
+        mk({ company: 'Halcyon Health', isIni: true, ini: 'HH', title: 'Frontend Engineer (React)', setup: 'Remote', flag: '🇺🇸', country: 'United States', extra: 0, type: 'Contract', level: 'Mid', score: 88, saved: true, snippet: 'Join the patient app team rebuilding our intake flow. You will ship accessible React components, own the design system in Storybook, and pair with QA on Testing Library coverage. Contract runs six months with a path to full time…', skills: ['React', 'TypeScript', 'Tailwind CSS', 'Storybook', 'Testing Library'], more: 0 }),
+        mk({ company: 'Brightline Payments', isPend: true, title: 'Software Engineer, Platform', setup: 'Hybrid', flag: '🇸🇬', country: 'Singapore', extra: 0, type: 'Full time', level: 'Senior', score: 81, snippet: 'Our platform team runs the services that move money for 4,000 merchants. You will work on the ledger, deployment tooling and observability, with on-call shared across a team of eight…', skills: ['Go', 'Kubernetes', 'PostgreSQL', 'Terraform'], more: 1 }),
+        mk({ company: 'Corvid Analytics', isIni: true, ini: 'CA', title: 'Full-stack Developer', setup: 'Remote', flag: '🇦🇺', country: 'Australia', extra: 1, type: 'Full time', level: 'Mid', score: 77, snippet: 'Corvid turns retail point-of-sale data into weekly forecasts. You will build dashboards in Vue and the Django APIs behind them, and help us move batch jobs to a queue…', skills: ['Vue', 'Python', 'Django', 'Docker'], more: 0 }),
+        mk({ company: 'Marisol Travel', isImg2: true, title: 'Senior React Native Engineer', setup: 'Remote', flag: '🇬🇧', country: 'United Kingdom', extra: 0, type: 'Contract', level: 'Senior', score: 69, snippet: 'We are rebuilding our booking app in React Native with Expo. Looking for someone who has shipped to both stores and can lead offline support and push notifications…', skills: ['React Native', 'TypeScript', 'Expo', 'Redux'], more: 0 }),
+        mk({ company: 'Northwind Labs', isIni: true, ini: 'NL', title: 'Backend Engineer', setup: 'Remote', flag: '🇨🇦', country: 'Canada', extra: 2, type: 'Full time', level: 'Mid', score: 61, snippet: 'Northwind Labs makes inventory tools for independent pharmacies. The backend team owns our Spring services and the Kafka pipeline that syncs stock levels every minute…', skills: ['Java', 'Spring', 'Kafka', 'MySQL'], more: 3 })
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

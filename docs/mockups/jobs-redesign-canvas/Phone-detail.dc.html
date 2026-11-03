@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Jobs, posting detail, phone</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+.lt{--bg:oklch(0.975 0.002 265);--fg:oklch(0.22 0.005 265);--card:oklch(0.995 0.001 265);--muted:oklch(0.945 0.003 265);--mfg:oklch(0.48 0.008 265);--border:oklch(0.885 0.004 265);--pfg:oklch(0.985 0.001 265);font-family:Geist,ui-sans-serif,system-ui,sans-serif;color:var(--fg);background:var(--bg);font-size:14px;line-height:1.43}
+.lt *{box-sizing:border-box}
+a{color:oklch(0.22 0.005 265);text-decoration:none}a:hover{color:oklch(0.22 0.005 265);text-decoration:underline}
+.lt button{font:inherit;color:inherit}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:44px;padding:0 14px;border-radius:10.4px;border:1px solid transparent;font-weight:500;font-size:15px;white-space:nowrap;cursor:pointer;background:transparent}
+.btn-p{background:var(--fg);color:var(--pfg)}
+.btn-o{background:var(--bg);border-color:var(--border)}
+.badge{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px;border-radius:8.8px;border:1px solid var(--border);background:var(--card);font-size:13px;font-weight:500;white-space:nowrap;line-height:1}
+.ph-head{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mfg);margin:0}
+.mono{font-family:"Geist Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.lbl{font-size:12px;color:var(--mfg)}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:4px}
+.logo{width:40px;height:40px;border-radius:4px;display:grid;place-items:center;flex:none;border:1px solid var(--border);background:var(--card)}
+.flag{width:28px;height:28px;border-radius:50%;background:var(--muted);display:inline-grid;place-items:center;font-size:15px;line-height:1;box-shadow:0 0 0 2px var(--card)}
+.stack{display:flex}.stack>*+*{margin-left:-8px}
+.more{font-size:11px;font-weight:600;color:var(--fg)}
+.flagbtn{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;min-height:44px;padding:0 6px 0 2px;border-radius:999px;cursor:pointer}
+.row{display:grid;grid-template-columns:104px 1fr;gap:12px;align-items:center;min-height:36px}
+.row dt{color:var(--mfg);font-size:13px}
+.row dd{margin:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.sk{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 10px 0 8px;border-radius:8.8px;font-size:13px;font-weight:500}
+.sk-ok{background:var(--muted)}
+.sk-miss{border:1px dashed var(--border);color:var(--mfg)}
+.tabs{display:flex;gap:2px;padding:3px;border-radius:10.4px;background:var(--muted)}
+.tabs button{flex:1;height:38px;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:var(--mfg);cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--card);color:var(--fg);box-shadow:0 0 0 1px var(--border)}
+.prose h3{font-size:16px;font-weight:600;margin:20px 0 6px}
+.prose p{margin:0 0 10px;font-size:15px;line-height:1.6}
+.prose ul{margin:0 0 10px;padding-left:20px;font-size:15px;line-height:1.6}
+</style>
+</helmet>
+<div class="lt" style="width: 390px; height: 2240px; position: relative; display: flex; flex-direction: column">
+  <header style="height: 48px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 4px 0 2px; border-bottom: 1px solid var(--border)">
+    <a class="btn" href="Phone-new.dc.html" style="padding: 0 10px 0 6px; color: var(--mfg); font-size: 14px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>New</a>
+    <button class="btn" style="font-size: 14px; padding: 0 10px" aria-pressed="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>Save to board</button>
+  </header>
+  <main style="padding: 16px 16px 120px; display: flex; flex-direction: column; gap: 16px">
+    <div style="display: flex; align-items: center; gap: 12px">
+      <div class="logo" role="img" aria-label="Tidepool logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M2 9c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M2 15c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2"></path></svg></div>
+      <div style="flex: 1"><div style="font-weight: 600">Tidepool</div><div class="lbl">Posted <span class="mono">Oct 28</span> · Updated <span class="mono">Oct 31</span></div></div>
+    </div>
+    <h1 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.25">Senior Full-stack Engineer</h1>
+    <section aria-label="Profile match" class="panel">
+      <div style="padding: 14px 16px; display: flex; align-items: center; gap: 16px; border-bottom: 1px solid var(--border)">
+        <div style="display: flex; align-items: baseline; gap: 2px" aria-label="Match score 92 percent"><span class="mono" style="font-size: 32px; font-weight: 600; letter-spacing: -0.03em; line-height: 1">92</span><span class="mono" style="font-size: 16px; color: var(--mfg)">%</span></div>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 6px">
+          <h2 class="ph-head">Profile match</h2>
+          <div style="height: 6px; border-radius: 999px; background: var(--muted); overflow: hidden" aria-hidden="true"><div style="width: 92%; height: 100%; background: var(--fg)"></div></div>
+        </div>
+      </div>
+      <div style="padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid var(--border)">
+        <div style="display: flex; align-items: baseline; justify-content: space-between"><h2 class="ph-head">Skills</h2><span class="lbl"><span class="mono">6</span> of <span class="mono">8</span> in your Profile</span></div>
+        <ul class="chips" style="list-style: none; margin: 0; padding: 0">
+          <sc-for list="{{skills}}" as="s" hint-placeholder-count="8">
+            <sc-if value="{{s.ok}}" hint-placeholder-val="{{true}}"><li class="sk sk-ok"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>{{s.name}}<span class="sr" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">, in Profile</span></li></sc-if>
+            <sc-if value="{{s.miss}}" hint-placeholder-val="{{false}}"><li class="sk sk-miss"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 3" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle></svg>{{s.name}}<span style="font-weight: 400">Missing</span></li></sc-if>
+          </sc-for>
+        </ul>
+      </div>
+      <dl style="margin: 0; padding: 10px 16px 14px; display: flex; flex-direction: column">
+        <div class="row"><dt>Work format</dt><dd>Remote</dd></div>
+        <div class="row"><dt>Seniority</dt><dd>Senior</dd></div>
+        <div class="row"><dt>Pay</dt><dd>$4,000 to $6,000 a month</dd></div>
+        <div class="row"><dt>Location</dt><dd style="display: flex; align-items: center; gap: 4px"><span>Remote,</span>
+          <button class="flagbtn" aria-expanded="false" aria-label="11 countries. Show all"><span class="stack"><sc-for list="{{shown}}" as="c" hint-placeholder-count="4"><span class="flag" aria-hidden="true">{{c.f}}</span></sc-for><span class="flag more mono" aria-hidden="true">+7</span></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--mfg)"><path d="m6 9 6 6 6-6"></path></svg></button></dd></div>
+        <div class="row"><dt>Country</dt><dd>
+          <button class="flagbtn" aria-expanded="true" aria-label="11 countries. Hide list"><span class="stack"><sc-for list="{{shown}}" as="c" hint-placeholder-count="4"><span class="flag" aria-hidden="true">{{c.f}}</span></sc-for><span class="flag more mono" aria-hidden="true">+7</span></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--mfg); transform: rotate(180deg)"><path d="m6 9 6 6 6-6"></path></svg></button></dd></div>
+        <div class="chips" style="padding-top: 6px"><sc-for list="{{all}}" as="c" hint-placeholder-count="11"><span class="badge"><span aria-hidden="true">{{c.f}}</span>{{c.name}}</span></sc-for></div>
+      </dl>
+    </section>
+    <div class="tabs" role="tablist" aria-label="Posting">
+      <button role="tab" aria-selected="true">Description</button>
+      <button role="tab" aria-selected="false">Company</button>
+    </div>
+    <div role="tabpanel" class="prose">
+      <h3 style="margin-top: 4px">About the role</h3>
+      <p>Tidepool builds scheduling and intake software used by more than 300 community clinics. We are a team of 22, fully remote, with engineers in Mexico, Colombia, Argentina and the Philippines.</p>
+      <p>You will own features end to end, from the database migration to the last pixel, and work with one designer and a product manager on a two-week cycle.</p>
+      <h3>What you will do</h3>
+      <ul>
+        <li>Build patient and staff features in our Next.js app and the Node services behind it</li>
+        <li>Design PostgreSQL schemas and write the migrations that ship them</li>
+        <li>Review code and pair with two mid-level engineers</li>
+        <li>Take part in a light on-call rotation, about one week in eight</li>
+      </ul>
+      <h3>What we are looking for</h3>
+      <ul>
+        <li>5 or more years building web products with React and TypeScript</li>
+        <li>Comfortable with Node.js, REST and GraphQL APIs</li>
+        <li>Experience with PostgreSQL in production</li>
+        <li>At least 4 hours of overlap with 9 AM to 5 PM Mexico City time</li>
+      </ul>
+      <h3>Nice to have</h3>
+      <ul>
+        <li>AWS (ECS, RDS, SQS)</li>
+        <li>Healthcare or HIPAA experience</li>
+      </ul>
+    </div>
+  </main>
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 12px 16px 20px; background: var(--card); border-top: 1px solid var(--border); display: flex; gap: 8px">
+    <button class="btn btn-o" style="flex: 1"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M9 15h6M9 18h4"></path></svg>Tailor my CV</button>
+    <a class="btn btn-p" href="#" style="flex: 1; color: var(--pfg); text-decoration: none">Apply<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"></path></svg></a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":2240}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const all = [
+      { f: '🇵🇭', name: 'Philippines' }, { f: '🇲🇽', name: 'Mexico' }, { f: '🇨🇴', name: 'Colombia' }, { f: '🇦🇷', name: 'Argentina' },
+      { f: '🇧🇷', name: 'Brazil' }, { f: '🇨🇱', name: 'Chile' }, { f: '🇵🇪', name: 'Peru' }, { f: '🇺🇾', name: 'Uruguay' },
+      { f: '🇨🇷', name: 'Costa Rica' }, { f: '🇪🇨', name: 'Ecuador' }, { f: '🇬🇹', name: 'Guatemala' }
+    ];
+    const skills = [['React', 1], ['TypeScript', 1], ['Node.js', 1], ['PostgreSQL', 1], ['Next.js', 1], ['GraphQL', 1], ['AWS', 0], ['HIPAA', 0]]
+      .map(([name, ok]) => ({ name, ok: !!ok, miss: !ok }));
+    return { all, shown: all.slice(0, 4), skills };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Jobs, posting detail</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+.lt{--bg:oklch(0.975 0.002 265);--fg:oklch(0.22 0.005 265);--card:oklch(0.995 0.001 265);--muted:oklch(0.945 0.003 265);--mfg:oklch(0.48 0.008 265);--border:oklch(0.885 0.004 265);--ring:oklch(0.52 0.16 262);--side:oklch(0.955 0.003 265);--sacc:oklch(0.915 0.004 265);--pfg:oklch(0.985 0.001 265);font-family:Geist,ui-sans-serif,system-ui,sans-serif;color:var(--fg);background:var(--bg);font-size:14px;line-height:1.43}
+.lt *{box-sizing:border-box}
+a{color:oklch(0.22 0.005 265);text-decoration:none}a:hover{color:oklch(0.22 0.005 265);text-decoration:underline}
+.lt button{font:inherit;color:inherit}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 12px;border-radius:10.4px;border:1px solid transparent;font-weight:500;font-size:14px;white-space:nowrap;cursor:pointer;background:transparent}
+.btn-p{background:var(--fg);color:var(--pfg)}
+.btn-o{background:var(--bg);border-color:var(--border)}
+.btn-sm{height:32px;padding:0 10px}
+.badge{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:8.8px;border:1px solid transparent;font-size:12px;font-weight:500;white-space:nowrap;line-height:1}
+.b-o{border-color:var(--border);background:var(--card)}
+.ph-head{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mfg);margin:0}
+.mono{font-family:"Geist Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.lbl{font-size:12px;color:var(--mfg)}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:4px}
+.logo{width:40px;height:40px;border-radius:4px;display:grid;place-items:center;flex:none;border:1px solid var(--border);background:var(--card)}
+.rail-b{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--mfg)}
+.rail-b.on{background:var(--sacc);color:var(--fg)}
+.nav-i{display:flex;align-items:center;justify-content:space-between;height:32px;padding:0 10px;border-radius:8px;font-size:14px}
+.nav-i.on{background:var(--sacc);font-weight:500}
+.flag{width:28px;height:28px;border-radius:50%;background:var(--muted);display:inline-grid;place-items:center;font-size:15px;line-height:1;box-shadow:0 0 0 2px var(--card)}
+.stack{display:flex}.stack>*+*{margin-left:-8px}
+.more{font-size:11px;font-weight:600;color:var(--fg)}
+.flagbtn{display:inline-flex;align-items:center;gap:6px;border:0;background:transparent;padding:2px 4px 2px 2px;border-radius:999px;cursor:pointer}
+.flagbtn:hover{background:var(--muted)}
+.row{display:grid;grid-template-columns:96px 1fr;gap:12px;align-items:center;min-height:32px}
+.row dt{color:var(--mfg);font-size:13px}
+.row dd{margin:0}
+.tabs{display:inline-flex;gap:2px;padding:3px;border-radius:10.4px;background:var(--muted)}
+.tabs button{height:30px;padding:0 14px;border:0;border-radius:8px;background:transparent;font-size:14px;font-weight:500;color:var(--mfg);cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--card);color:var(--fg);box-shadow:0 0 0 1px var(--border)}
+.prose h3{font-size:16px;font-weight:600;letter-spacing:-0.01em;margin:24px 0 8px}
+.prose p{margin:0 0 12px;font-size:15px;line-height:1.65}
+.prose ul{margin:0 0 12px;padding-left:20px;font-size:15px;line-height:1.65}
+.prose li{margin:2px 0}
+</style>
+</helmet>
+<div class="lt" style="width: 1440px; height: 1560px; display: flex; overflow: hidden">
+  <nav aria-label="Modules" style="width: 48px; flex: none; background: var(--side); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center">
+    <div style="height: 48px; width: 48px; display: grid; place-items: center; border-bottom: 1px solid var(--border)"><span style="width: 24px; height: 24px; border-radius: 4px; background: var(--fg); color: var(--pfg); display: grid; place-items: center; font-weight: 700; font-size: 13px">L</span></div>
+    <div style="display: flex; flex-direction: column; gap: 4px; padding-top: 8px">
+      <a class="rail-b" href="#" aria-label="Today"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"></path></svg></a>
+      <a class="rail-b" href="#" aria-label="Engineering"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7z"></path><path d="m2 17 10 5 10-5M2 12l10 5 10-5"></path></svg></a>
+      <a class="rail-b" href="#" aria-label="Resume"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M9 13h6M9 17h4"></path></svg></a>
+      <a class="rail-b on" href="#" aria-label="Jobs" aria-current="page"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"></path></svg></a>
+      <a class="rail-b" href="#" aria-label="Terms"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"></path></svg></a>
+      <a class="rail-b" href="#" aria-label="Project Memory"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="8" ry="3"></ellipse><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"></path></svg></a>
+    </div>
+  </nav>
+  <nav aria-label="Jobs sections" style="width: 208px; flex: none; background: var(--side); border-right: 1px solid var(--border); display: flex; flex-direction: column">
+    <div style="height: 48px; display: flex; align-items: center; padding: 0 16px; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 600">Jobs</div>
+    <div style="display: flex; flex-direction: column; gap: 2px; padding: 8px">
+      <a class="nav-i on" href="Main.dc.html"><span>New</span><span class="mono lbl">12</span></a>
+      <a class="nav-i" href="#"><span>Saved</span><span class="mono lbl">3</span></a>
+      <a class="nav-i" href="#"><span>Applied</span><span class="mono lbl">2</span></a>
+      <a class="nav-i" href="#"><span>Dismissed</span><span class="mono lbl">4</span></a>
+      <a class="nav-i" href="#"><span>Filtered out</span><span class="mono lbl">18</span></a>
+    </div>
+  </nav>
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+    <header style="height: 48px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--border)">
+      <div style="display: flex; align-items: center; gap: 6px; font-size: 14px"><span style="color: var(--mfg)">Jobs</span><span style="color: var(--mfg)" aria-hidden="true">/</span><a href="Main.dc.html" style="color: var(--mfg)">New</a><span style="color: var(--mfg)" aria-hidden="true">/</span><span style="font-weight: 500">Senior Full-stack Engineer</span></div>
+      <div style="display: flex; align-items: center; gap: 8px">
+        <button class="btn btn-o btn-sm" style="color: var(--mfg); font-weight: 400; width: 200px; justify-content: space-between">Jump to<span class="mono" style="font-size: 11px">Ctrl K</span></button>
+        <button class="btn btn-o btn-sm" style="width: 32px; padding: 0; font-size: 12px; font-weight: 600" aria-label="Account">JK</button>
+      </div>
+    </header>
+    <main style="flex: 1; padding: 20px 40px 40px; display: flex; flex-direction: column; gap: 16px">
+      <a href="Main.dc.html" class="btn btn-sm" style="align-self: flex-start; padding-left: 6px; color: var(--mfg)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>New</a>
+      <div style="display: flex; gap: 32px; align-items: flex-start">
+        <aside aria-label="Profile match" class="panel" style="width: 340px; flex: none; display: flex; flex-direction: column">
+          <section style="padding: 16px; display: flex; flex-direction: column; gap: 12px; border-bottom: 1px solid var(--border)">
+            <h2 class="ph-head">Profile match</h2>
+            <div style="display: flex; align-items: baseline; gap: 2px" aria-label="Match score 92 percent"><span class="mono" style="font-size: 40px; font-weight: 600; letter-spacing: -0.03em; line-height: 1">92</span><span class="mono" style="font-size: 20px; font-weight: 500; color: var(--mfg)">%</span></div>
+            <div style="height: 6px; border-radius: 999px; background: var(--muted); overflow: hidden" aria-hidden="true"><div style="width: 92%; height: 100%; background: var(--fg); border-radius: 999px"></div></div>
+          </section>
+          <section style="padding: 16px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid var(--border)">
+            <div style="display: flex; align-items: baseline; justify-content: space-between"><h2 class="ph-head">Skills</h2><span class="lbl"><span class="mono">6</span> of <span class="mono">8</span> in your Profile</span></div>
+            <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+              <sc-for list="{{skills}}" as="s" hint-placeholder-count="8">
+                <li style="display: flex; align-items: center; gap: 10px; height: 32px">
+                  <sc-if value="{{s.ok}}" hint-placeholder-val="{{true}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg><span style="flex: 1">{{s.name}}</span><span class="lbl">In Profile</span></sc-if>
+                  <sc-if value="{{s.miss}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 3" aria-hidden="true" style="flex: none; color: var(--mfg)"><circle cx="12" cy="12" r="9"></circle></svg><span style="flex: 1; color: var(--mfg)">{{s.name}}</span><span class="lbl">Missing</span></sc-if>
+                </li>
+              </sc-for>
+            </ul>
+          </section>
+          <section style="padding: 16px; display: flex; flex-direction: column; gap: 6px">
+            <h2 class="ph-head" style="margin-bottom: 4px">This job</h2>
+            <dl style="margin: 0; display: flex; flex-direction: column; gap: 4px">
+              <div class="row"><dt>Work format</dt><dd>Remote</dd></div>
+              <div class="row"><dt>Seniority</dt><dd>Senior</dd></div>
+              <div class="row"><dt>Job type</dt><dd>Full time</dd></div>
+              <div class="row"><dt>Pay</dt><dd>$4,000 to $6,000 a month</dd></div>
+              <div class="row"><dt>Location</dt><dd style="display: flex; align-items: center; gap: 6px"><span>Remote,</span>
+                <button class="flagbtn" aria-expanded="{{locExp}}" aria-label="11 countries. Show all" onClick="{{toggleLoc}}"><span class="stack"><sc-for list="{{shown}}" as="c" hint-placeholder-count="4"><span class="flag" aria-hidden="true">{{c.f}}</span></sc-for><span class="flag more mono" aria-hidden="true">+7</span></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--mfg); transform: {{locRot}}"><path d="m6 9 6 6 6-6"></path></svg></button></dd></div>
+              <sc-if value="{{locOpen}}" hint-placeholder-val="{{false}}"><div style="display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0 8px"><sc-for list="{{all}}" as="c" hint-placeholder-count="11"><span class="badge b-o"><span aria-hidden="true">{{c.f}}</span>{{c.name}}</span></sc-for></div></sc-if>
+              <div class="row"><dt>Country</dt><dd>
+                <button class="flagbtn" aria-expanded="{{ctyExp}}" aria-label="11 countries. Show all" onClick="{{toggleCty}}"><span class="stack"><sc-for list="{{shown}}" as="c" hint-placeholder-count="4"><span class="flag" aria-hidden="true">{{c.f}}</span></sc-for><span class="flag more mono" aria-hidden="true">+7</span></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color: var(--mfg); transform: {{ctyRot}}"><path d="m6 9 6 6 6-6"></path></svg></button></dd></div>
+              <sc-if value="{{ctyOpen}}" hint-placeholder-val="{{true}}"><div style="display: flex; flex-wrap: wrap; gap: 6px; padding: 4px 0 8px"><sc-for list="{{all}}" as="c" hint-placeholder-count="11"><span class="badge b-o"><span aria-hidden="true">{{c.f}}</span>{{c.name}}</span></sc-for></div></sc-if>
+            </dl>
+          </section>
+        </aside>
+        <article style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px">
+            <div style="display: flex; align-items: center; gap: 12px">
+              <div class="logo" role="img" aria-label="Tidepool logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M2 9c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2M2 15c2.5 0 2.5-2 5-2s2.5 2 5 2 2.5-2 5-2 2.5 2 5 2"></path></svg></div>
+              <div><div style="font-weight: 600">Tidepool</div><div class="lbl">tidepool.health</div></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 16px">
+              <span class="lbl">Posted <span class="mono">Oct 28</span> · Updated <span class="mono">Oct 31</span></span>
+              <button class="btn btn-o btn-sm" aria-pressed="false"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>Save to board</button>
+            </div>
+          </div>
+          <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 20px 0 20px; border-bottom: 1px solid var(--border)">
+            <h1 style="margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.2">Senior Full-stack Engineer</h1>
+            <div style="display: flex; gap: 8px; flex: none">
+              <button class="btn btn-o"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><path d="M14 2v6h6M9 15h6M9 18h4"></path></svg>Tailor my CV</button>
+              <a class="btn btn-p" href="#" style="color: var(--pfg); text-decoration: none">Apply<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"></path></svg></a>
+            </div>
+          </div>
+          <div class="tabs" role="tablist" aria-label="Posting" style="align-self: flex-start; margin-top: 20px">
+            <button role="tab" aria-selected="{{descSel}}" onClick="{{showDesc}}">Description</button>
+            <button role="tab" aria-selected="{{coSel}}" onClick="{{showCo}}">Company</button>
+          </div>
+          <sc-if value="{{isDesc}}" hint-placeholder-val="{{true}}">
+            <div role="tabpanel" class="prose" style="max-width: 72ch; padding-top: 12px">
+              <h3>About the role</h3>
+              <p>Tidepool builds scheduling and intake software used by more than 300 community clinics. We are a team of 22, fully remote, with engineers in Mexico, Colombia, Argentina and the Philippines.</p>
+              <p>You will own features end to end, from the database migration to the last pixel, and work with one designer and a product manager on a two-week cycle.</p>
+              <h3>What you will do</h3>
+              <ul>
+                <li>Build patient and staff features in our Next.js app and the Node services behind it</li>
+                <li>Design PostgreSQL schemas and write the migrations that ship them</li>
+                <li>Review code and pair with two mid-level engineers</li>
+                <li>Take part in a light on-call rotation, about one week in eight</li>
+              </ul>
+              <h3>What we are looking for</h3>
+              <ul>
+                <li>5 or more years building web products with React and TypeScript</li>
+                <li>Comfortable with Node.js, REST and GraphQL APIs</li>
+                <li>Experience with PostgreSQL in production</li>
+                <li>At least 4 hours of overlap with 9 AM to 5 PM Mexico City time</li>
+              </ul>
+              <h3>Nice to have</h3>
+              <ul>
+                <li>AWS (ECS, RDS, SQS)</li>
+                <li>Healthcare or HIPAA experience</li>
+              </ul>
+              <h3>Benefits</h3>
+              <ul>
+                <li>Paid in USD, monthly</li>
+                <li>20 days of paid leave plus local holidays</li>
+                <li>Home office budget of $1,000 a year</li>
+              </ul>
+            </div>
+          </sc-if>
+          <sc-if value="{{isCo}}" hint-placeholder-val="{{false}}">
+            <div role="tabpanel" style="margin-top: 16px; padding: 48px 24px; border: 1px dashed var(--border); border-radius: 4px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center">
+              <div style="font-weight: 600">No company details yet</div>
+              <div class="lbl" style="font-size: 14px">This posting doesn't include them</div>
+              <a class="btn btn-o btn-sm" href="#" style="margin-top: 10px; text-decoration: none">Open posting<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h6v6M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"></path></svg></a>
+            </div>
+          </sc-if>
+        </article>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1560}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tab: 'desc', locOpen: false, ctyOpen: true };
+  }
+  renderVals() {
+    const s = this.state;
+    const all = [
+      { f: '🇵🇭', name: 'Philippines' }, { f: '🇲🇽', name: 'Mexico' }, { f: '🇨🇴', name: 'Colombia' }, { f: '🇦🇷', name: 'Argentina' },
+      { f: '🇧🇷', name: 'Brazil' }, { f: '🇨🇱', name: 'Chile' }, { f: '🇵🇪', name: 'Peru' }, { f: '🇺🇾', name: 'Uruguay' },
+      { f: '🇨🇷', name: 'Costa Rica' }, { f: '🇪🇨', name: 'Ecuador' }, { f: '🇬🇹', name: 'Guatemala' }
+    ];
+    const skills = [
+      ['React', 1], ['TypeScript', 1], ['Node.js', 1], ['PostgreSQL', 1], ['Next.js', 1], ['GraphQL', 1], ['AWS', 0], ['HIPAA', 0]
+    ].map(([name, ok]) => ({ name, ok: !!ok, miss: !ok }));
+    return {
+      all, shown: all.slice(0, 4), skills,
+      isDesc: s.tab === 'desc', isCo: s.tab === 'company',
+      descSel: s.tab === 'desc' ? 'true' : 'false', coSel: s.tab === 'company' ? 'true' : 'false',
+      showDesc: () => this.setState({ tab: 'desc' }), showCo: () => this.setState({ tab: 'company' }),
+      locOpen: s.locOpen, ctyOpen: s.ctyOpen,
+      locExp: s.locOpen ? 'true' : 'false', ctyExp: s.ctyOpen ? 'true' : 'false',
+      locRot: s.locOpen ? 'rotate(180deg)' : 'none', ctyRot: s.ctyOpen ? 'rotate(180deg)' : 'none',
+      toggleLoc: () => this.setState({ locOpen: !s.locOpen }), toggleCty: () => this.setState({ ctyOpen: !s.ctyOpen })
+    };
+  }
+}
+</script>
+</body>
+</html>

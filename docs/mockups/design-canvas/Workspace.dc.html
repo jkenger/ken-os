@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Design workspace</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+.lt{--bg:oklch(0.975 0.002 265);--fg:oklch(0.22 0.005 265);--card:oklch(0.995 0.001 265);--pop:oklch(0.995 0.001 265);--muted:oklch(0.945 0.003 265);--mfg:oklch(0.48 0.008 265);--border:oklch(0.885 0.004 265);--ring:oklch(0.52 0.16 262);--ring-soft:oklch(0.52 0.16 262 / 0.45);--side:oklch(0.955 0.003 265);--sacc:oklch(0.915 0.004 265);--pfg:oklch(0.985 0.001 265);--red:oklch(0.53 0.19 25);--vp:oklch(0.955 0.003 265);--dot:oklch(0.84 0.004 265);--fedge:oklch(0.8 0.005 265);--scrim:oklch(0.22 0.005 265 / 0.4);font-family:Geist,ui-sans-serif,system-ui,sans-serif;color:var(--fg);background:var(--bg);font-size:14px;line-height:1.43}
+.lt.dk{--bg:oklch(0.205 0.004 265);--fg:oklch(0.93 0.004 100);--card:oklch(0.235 0.005 265);--pop:oklch(0.255 0.006 265);--muted:oklch(0.275 0.006 265);--mfg:oklch(0.74 0.006 100);--border:oklch(0.33 0.008 265);--ring:oklch(0.76 0.11 262);--ring-soft:oklch(0.76 0.11 262 / 0.45);--side:oklch(0.18 0.004 265);--sacc:oklch(0.275 0.006 265);--pfg:oklch(0.205 0.004 265);--red:oklch(0.72 0.15 20);--vp:oklch(0.18 0.004 265);--dot:oklch(0.33 0.008 265);--fedge:oklch(0.42 0.008 265);--scrim:oklch(0 0 0 / 0.55)}
+.lt *{box-sizing:border-box}
+a{color:inherit}a:hover{color:inherit}
+.lt button,.lt input{font:inherit;color:inherit}
+.lt input::placeholder{color:var(--mfg)}
+.lt input[type=radio]{width:16px;height:16px;margin:0;accent-color:var(--fg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 12px;border-radius:10.4px;border:1px solid transparent;font-weight:500;font-size:14px;white-space:nowrap;cursor:pointer;background:transparent;color:var(--fg)}
+.btn-p{background:var(--fg);color:var(--pfg)}
+.btn-o{background:var(--bg);border-color:var(--border)}
+.dk .btn-o{background:transparent}
+.btn-sm{height:32px;padding:0 10px}
+.btn-i{width:32px;padding:0}
+.btn-d{border-color:oklch(0.53 0.19 25 / 0.4);color:var(--red)}
+.btn-ds{background:var(--red);color:oklch(0.985 0.001 265)}
+.focus{border-color:var(--ring) !important;box-shadow:0 0 0 3px var(--ring-soft)}
+.badge{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border-radius:8.8px;border:1px solid transparent;font-size:12px;font-weight:500;white-space:nowrap;line-height:1}
+.b-d{background:var(--fg);color:var(--pfg)}
+.b-s{background:var(--muted)}
+.b-o{border-color:var(--border)}
+.inp{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:8.8px;background:var(--muted);border:1px solid transparent;width:100%;font-size:14px}
+.inp input{border:0;background:transparent;outline:0;width:100%;padding:0;min-width:0}
+.cinp{height:36px;width:100%;padding:0 12px;border-radius:8.8px;background:var(--muted);border:1px solid transparent;font-size:14px;outline:0}
+.ph-head{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mfg);margin:0}
+.mono{font-family:"Geist Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.lbl{font-size:12px;color:var(--mfg)}
+.fl{font-size:13px;font-weight:500}
+.rail-b{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--mfg)}
+.rail-b.on{background:var(--sacc);color:var(--fg)}
+.phd{height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 12px 0 16px;border-bottom:1px solid var(--border)}
+.fr{width:100%;display:flex;align-items:center;gap:8px;min-height:44px;padding:6px 10px 6px 12px;border:0;border-left:2px solid transparent;background:transparent;text-align:left;cursor:pointer;border-radius:0}
+.fr:hover{background:var(--muted)}
+.fr.on{background:var(--muted);border-left-color:var(--ring)}
+.pr{width:100%;display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border:0;border-radius:8px;background:transparent;text-align:left;cursor:grab;font-size:14px}
+.pr:hover{background:var(--muted)}
+.pr.on{background:var(--muted);box-shadow:inset 0 0 0 1px var(--ring)}
+.tg{display:flex;flex-wrap:wrap;gap:2px;padding:2px;border-radius:10.4px;background:var(--muted)}
+.tg button{flex:1 0 30%;height:30px;padding:0 6px;border:0;border-radius:8.4px;background:transparent;font-size:12px;font-weight:500;color:var(--mfg);cursor:pointer}
+.tg button[aria-pressed=true]{background:var(--card);color:var(--fg);box-shadow:0 0 0 1px var(--border)}
+.ov{background:transparent;border:0;padding:0;margin:0;cursor:move;border-radius:3px}
+.hd{position:absolute;width:8px;height:8px;background:var(--card);border:1.5px solid var(--ring);border-radius:2px}
+.otag{position:absolute;white-space:nowrap;font-size:11px;font-weight:500;line-height:1;padding:4px 6px;border-radius:4px;background:var(--fg);color:var(--pfg)}
+.num{display:flex;align-items:center;gap:6px;height:32px;padding:0 10px;border-radius:8.8px;background:var(--muted);font-size:13px}
+.num span:first-child{color:var(--mfg);font-size:12px;width:12px}
+.dlg{background:var(--pop);border-radius:10.4px;box-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1),0 8px 10px -6px rgb(0 0 0 / 0.1);border:1px solid var(--border);padding:24px;display:flex;flex-direction:column;gap:18px}
+.opt{display:flex;align-items:center;gap:10px;min-height:44px;padding:0 12px;border:1px solid var(--border);border-radius:8.8px;cursor:pointer}
+.opt.on{border-color:var(--ring);box-shadow:0 0 0 1px var(--ring)}
+</style>
+</helmet>
+<div class="{{rootClass}}" style="width: {{W}}px; height: {{H}}px; display: flex; overflow: hidden; position: relative">
+  <nav aria-label="Modules" style="width: 48px; flex: none; background: var(--side); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center">
+    <div style="height: 48px; width: 48px; display: grid; place-items: center; border-bottom: 1px solid var(--border)"><span style="width: 24px; height: 24px; border-radius: 4px; background: var(--fg); color: var(--pfg); display: grid; place-items: center; font-weight: 700; font-size: 13px">L</span></div>
+    <div style="display: flex; flex-direction: column; gap: 4px; padding-top: 8px">
+      <a class="rail-b" href="#" aria-label="Today"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"></path></svg></a>
+      <a class="rail-b" href="#" aria-label="Engineering"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7z"></path><path d="m2 17 10 5 10-5M2 12l10 5 10-5"></path></svg></a>
+      <a class="rail-b" href="#" aria-label="Jobs"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"></path></svg></a>
+      <a class="rail-b on" href="#" aria-label="Design" aria-current="page"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 19 7-7 3 3-7 7-3-3z"></path><path d="m18 13-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"></path><path d="m2 2 7.6 7.6"></path><circle cx="11" cy="11" r="2"></circle></svg></a>
+      <a class="rail-b" href="#" aria-label="Terms"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"></path></svg></a>
+    </div>
+  </nav>
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+    <header style="height: 48px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 16px; border-bottom: 1px solid var(--border)">
+      <span style="font-weight: 500">Design</span>
+      <button class="btn btn-o btn-sm" style="width: 32px; padding: 0; font-size: 12px; font-weight: 600" aria-label="Account">JK</button>
+    </header>
+    <div style="height: 56px; flex: none; display: flex; align-items: center; gap: 12px; padding: 0 16px 0 20px; border-bottom: 1px solid var(--border)">
+      <h1 style="margin: 0; font-size: 24px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.25">Design</h1>
+      <sc-if value="{{hasFrames}}" hint-placeholder-val="{{true}}"><span class="lbl" style="font-size: 13px"><span class="mono">{{frameCount}}</span> frames</span></sc-if>
+      <span style="flex: 1"></span>
+      <button class="btn btn-o btn-sm"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add frame</button>
+    </div>
+    <div style="flex: 1; min-height: 0; display: flex; position: relative">
+      <sc-if value="{{full}}" hint-placeholder-val="{{true}}">
+        <aside aria-label="Frames" style="width: 200px; flex: none; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column">
+          <div class="phd"><h2 class="ph-head">Frames</h2></div>
+          <ul style="list-style: none; margin: 0; padding: 6px 0; display: flex; flex-direction: column">
+            <sc-for list="{{frames}}" as="f" hint-placeholder-count="3">
+              <li>
+                <sc-if value="{{f.editing}}" hint-placeholder-val="{{false}}">
+                  <div style="padding: 6px 10px 6px 12px; border-left: 2px solid transparent; display: flex; flex-direction: column; gap: 4px">
+                    <input value="{{f.edit}}" aria-label="Frame name" class="focus" style="height: 32px; width: 100%; padding: 0 8px; border-radius: 8px; border: 1px solid var(--ring); background: var(--bg); font-size: 13px; outline: 0">
+                    <span class="lbl"><span class="mono">Enter</span> saves · <span class="mono">Esc</span> cancels</span>
+                  </div>
+                </sc-if>
+                <sc-if value="{{f.normal}}" hint-placeholder-val="{{true}}">
+                  <button class="{{f.cls}}" aria-current="{{f.cur}}">
+                    <span style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+                      <span style="font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{f.name}}</span>
+                      <span class="mono lbl" style="font-size: 11px">{{f.size}}</span>
+                    </span>
+                    <sc-if value="{{f.claude}}" hint-placeholder-val="{{false}}"><span class="badge b-o" style="height: 20px; padding: 0 6px; font-size: 11px">Claude</span></sc-if>
+                    <sc-if value="{{f.dot}}" hint-placeholder-val="{{false}}"><span style="width: 6px; height: 6px; border-radius: 50%; background: var(--fg)" aria-hidden="true"></span></sc-if>
+                  </button>
+                </sc-if>
+              </li>
+            </sc-for>
+          </ul>
+          <sc-if value="{{noFrames}}" hint-placeholder-val="{{false}}"><div class="lbl" style="padding: 8px 16px">None yet</div></sc-if>
+          <div style="margin-top: auto; padding: 8px; border-top: 1px solid var(--border)">
+            <button class="btn btn-sm" style="width: 100%; justify-content: flex-start; color: var(--mfg)"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add frame</button>
+          </div>
+        </aside>
+        <aside aria-label="Components" style="width: 240px; flex: none; background: var(--card); border-right: 1px solid var(--border); display: flex; flex-direction: column">
+          <div style="padding: 12px; border-bottom: 1px solid var(--border)">
+            <label class="{{searchCls}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="color: var(--mfg); flex: none"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg>
+              <sc-if value="{{noQuery}}" hint-placeholder-val="{{true}}"><input placeholder="Find a component" aria-label="Find a component"></sc-if>
+              <sc-if value="{{hasQuery}}" hint-placeholder-val="{{false}}"><span style="flex: 1">{{query}}</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="color: var(--mfg)"><path d="M18 6 6 18M6 6l12 12"></path></svg></sc-if>
+            </label>
+          </div>
+          <sc-if value="{{hasComps}}" hint-placeholder-val="{{true}}">
+            <ul style="list-style: none; margin: 0; padding: 6px; display: flex; flex-direction: column; gap: 1px">
+              <sc-for list="{{comps}}" as="c" hint-placeholder-count="12">
+                <li><button class="{{c.cls}}" aria-pressed="{{c.pressed}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true" style="color: var(--mfg); flex: none"><path d="m12 2.5 3 3-3 3-3-3zM12 15.5l3 3-3 3-3-3zM5.5 9l3 3-3 3-3-3zM18.5 9l3 3-3 3-3-3z"></path></svg>{{c.name}}</button></li>
+              </sc-for>
+            </ul>
+          </sc-if>
+          <sc-if value="{{noComps}}" hint-placeholder-val="{{false}}"><div style="padding: 32px 16px; text-align: center" class="lbl"><span style="font-size: 14px">No components match</span></div></sc-if>
+        </aside>
+      </sc-if>
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+        <div role="toolbar" aria-label="Canvas" style="height: 44px; flex: none; display: flex; align-items: center; gap: 4px; padding: 0 10px; border-bottom: 1px solid var(--border); background: var(--card)">
+          <sc-if value="{{f2}}" hint-placeholder-val="{{false}}"><button class="btn btn-o btn-sm" aria-expanded="false"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M9 4v16"></path></svg>Frames and components</button></sc-if>
+          <button class="{{addCls}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add component</button>
+          <span style="flex: 1"></span>
+          <button class="btn btn-sm">Fit</button>
+          <button class="btn btn-sm btn-i" aria-label="Zoom out"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg></button>
+          <span class="mono" style="min-width: 48px; text-align: center; font-size: 13px">{{zoom}}%</span>
+          <button class="btn btn-sm btn-i" aria-label="Zoom in"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg></button>
+        </div>
+        <div style="flex: 1; min-height: 0; position: relative; overflow: hidden; background-color: var(--vp); background-image: radial-gradient(var(--dot) 1px, transparent 1px); background-size: 20px 20px">
+          <sc-if value="{{noFrames}}" hint-placeholder-val="{{false}}">
+            <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px">
+              <div style="font-weight: 600; font-size: 15px">No frames yet</div>
+              <button class="btn btn-p"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Add frame</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{hasFrame}}" hint-placeholder-val="{{true}}">
+            <div style="{{tabStyle}}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" style="color: var(--mfg)"><path d="M4 8h16M4 16h16M8 4v16M16 4v16"></path></svg><span style="font-weight: 600">{{openName}}</span><span class="mono lbl" style="font-size: 11px">{{openSize}}</span></div>
+            <div style="{{frameStyle}}">
+              <div style="{{innerStyle}}">
+                <sc-for list="{{pl}}" as="p" hint-placeholder-count="4">
+                  <div style="{{p.style}}">
+                    <sc-if value="{{p.isBtn}}" hint-placeholder-val="{{false}}"><button class="btn btn-p" style="width: 100%">{{p.text}}</button></sc-if>
+                    <sc-if value="{{p.isBtnO}}" hint-placeholder-val="{{false}}"><button class="btn btn-o" style="width: 100%">{{p.text}}</button></sc-if>
+                    <sc-if value="{{p.isInput}}" hint-placeholder-val="{{false}}"><input class="cinp" placeholder="{{p.text}}" aria-label="{{p.text}}"></sc-if>
+                    <sc-if value="{{p.isBadge}}" hint-placeholder-val="{{false}}"><span class="badge b-d">{{p.text}}</span></sc-if>
+                    <sc-if value="{{p.isBadgeS}}" hint-placeholder-val="{{false}}"><span class="badge b-s">{{p.text}}</span></sc-if>
+                    <sc-if value="{{p.isBadgeO}}" hint-placeholder-val="{{false}}"><span class="badge b-o">{{p.text}}</span></sc-if>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <sc-for list="{{ghosts}}" as="g" hint-placeholder-count="0">
+              <div style="{{g.style}}" aria-hidden="true">{{g.text}}</div>
+            </sc-for>
+            <sc-for list="{{ov}}" as="o" hint-placeholder-count="4">
+              <button class="ov" style="{{o.style}}" aria-pressed="{{o.pressed}}" aria-label="{{o.aria}}">
+                <sc-if value="{{o.showLabel}}" hint-placeholder-val="{{false}}"><span class="otag" style="left: -4px; top: -26px">{{o.label}}</span></sc-if>
+                <sc-if value="{{o.sel}}" hint-placeholder-val="{{false}}"><span class="hd" style="left: -8px; top: -8px"></span><span class="hd" style="right: -8px; top: -8px"></span><span class="hd" style="left: -8px; bottom: -8px"></span><span class="hd" style="right: -8px; bottom: -8px"></span></sc-if>
+                <sc-if value="{{o.hasTag}}" hint-placeholder-val="{{false}}"><span class="otag mono" style="left: -4px; top: calc(100% + 10px)">{{o.tag}}</span></sc-if>
+              </button>
+            </sc-for>
+            <sc-if value="{{hasFres}}" hint-placeholder-val="{{false}}">
+              <div style="{{fres.rect}}" aria-hidden="true"></div>
+              <span style="{{fres.right}}" aria-hidden="true"></span>
+              <span style="{{fres.bottom}}" aria-hidden="true"></span>
+              <span style="{{fres.corner}}" aria-hidden="true"></span>
+              <span class="otag mono" style="{{fres.tag}}">{{fres.label}}</span>
+            </sc-if>
+          </sc-if>
+        </div>
+      </div>
+      <sc-if value="{{showInsp}}" hint-placeholder-val="{{true}}">
+        <aside aria-label="Inspector" style="{{inspStyle}}">
+          <div class="phd">
+            <h2 class="ph-head">Inspector</h2>
+            <sc-if value="{{f2}}" hint-placeholder-val="{{false}}"><button class="btn btn-sm btn-i" aria-label="Close inspector"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12"></path></svg></button></sc-if>
+          </div>
+          <sc-if value="{{inspNone}}" hint-placeholder-val="{{false}}"><div class="lbl" style="padding: 16px; font-size: 13px">No frame open</div></sc-if>
+          <sc-if value="{{inspFrame}}" hint-placeholder-val="{{false}}">
+            <div style="flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 18px">
+              <div><div class="lbl">Frame</div><div style="font-size: 16px; font-weight: 600">{{openName}}</div><div class="mono lbl">{{openSize}}</div></div>
+              <label style="display: flex; flex-direction: column; gap: 6px"><span class="fl">Name</span><span class="inp" style="height: 32px"><input value="{{openName}}"></span></label>
+              <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px"><legend class="fl" style="padding: 0; margin-bottom: 6px">Size</legend>
+                <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px"><label class="num"><span>W</span><span class="mono">{{fwT}}</span></label><label class="num"><span>H</span><span class="mono">{{fhT}}</span></label></div>
+              </fieldset>
+              <div style="margin-top: auto; padding-top: 16px; border-top: 1px solid var(--border)"><button class="btn btn-o btn-sm btn-d">Delete frame</button></div>
+            </div>
+          </sc-if>
+          <sc-if value="{{inspSel}}" hint-placeholder-val="{{false}}">
+            <div style="flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 18px">
+              <div><div class="lbl">In {{openName}}</div><div style="font-size: 16px; font-weight: 600">{{sel.name}}</div></div>
+              <fieldset style="border: 0; margin: 0; padding: 0"><legend class="fl" style="padding: 0; margin-bottom: 6px">Position</legend>
+                <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px"><label class="num"><span>X</span><span class="mono">{{sel.x}}</span></label><label class="num"><span>Y</span><span class="mono">{{sel.y}}</span></label></div>
+              </fieldset>
+              <fieldset style="border: 0; margin: 0; padding: 0"><legend class="fl" style="padding: 0; margin-bottom: 6px">Size</legend>
+                <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px"><label class="num"><span>W</span><span class="mono">{{sel.w}}</span></label><label class="num"><span>H</span><span class="mono">{{sel.h}}</span></label></div>
+              </fieldset>
+              <sc-if value="{{sel.hasVariant}}" hint-placeholder-val="{{true}}">
+                <div role="group" aria-label="Variant" style="display: flex; flex-direction: column; gap: 6px"><span class="fl">Variant</span>
+                  <div class="tg"><sc-for list="{{sel.variants}}" as="vv" hint-placeholder-count="4"><button aria-pressed="{{vv.pressed}}">{{vv.label}}</button></sc-for></div>
+                </div>
+              </sc-if>
+              <sc-if value="{{sel.hasText}}" hint-placeholder-val="{{true}}">
+                <label style="display: flex; flex-direction: column; gap: 6px"><span class="fl">Text</span><span class="inp" style="height: 32px"><input value="{{sel.text}}"></span></label>
+              </sc-if>
+            </div>
+          </sc-if>
+        </aside>
+      </sc-if>
+    </div>
+  </div>
+  <sc-if value="{{dlgAdd}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; background: var(--scrim); display: grid; place-items: center; z-index: 10">
+      <div role="dialog" aria-modal="true" aria-labelledby="dlg-add" class="dlg" style="width: 440px">
+        <h2 id="dlg-add" style="margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.02em">Add frame</h2>
+        <label style="display: flex; flex-direction: column; gap: 6px"><span class="fl">Name</span><span class="inp focus" style="border-color: var(--ring)"><input value="Desktop / Saved"></span></label>
+        <fieldset style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px"><legend class="fl" style="padding: 0; margin-bottom: 8px">Size</legend>
+          <label class="opt on"><input type="radio" name="sz" checked=""><span style="flex: 1; font-weight: 500">Desktop</span><span class="mono lbl">1440 × 900</span></label>
+          <label class="opt"><input type="radio" name="sz"><span style="flex: 1; font-weight: 500">Phone</span><span class="mono lbl">390 wide</span></label>
+          <label class="opt"><input type="radio" name="sz"><span style="flex: 1; font-weight: 500">Custom</span><span class="lbl">Up to <span class="mono">3840 × 4320</span></span></label>
+        </fieldset>
+        <div style="display: flex; justify-content: flex-end; gap: 8px"><button class="btn btn-o">Cancel</button><button class="btn btn-p">Add</button></div>
+      </div>
+    </div>
+  </sc-if>
+  <sc-if value="{{dlgDel}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; background: var(--scrim); display: grid; place-items: center; z-index: 10">
+      <div role="alertdialog" aria-modal="true" aria-labelledby="dlg-del" aria-describedby="dlg-del-d" class="dlg" style="width: 400px">
+        <div style="display: flex; flex-direction: column; gap: 6px"><h2 id="dlg-del" style="margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.02em">Delete frame?</h2><p id="dlg-del-d" style="margin: 0; color: var(--mfg)">Removes its <span class="mono">4</span> components too</p></div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px"><button class="btn btn-o">Cancel</button><button class="btn btn-ds">Delete</button></div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"variant":{"editor":"enum","options":["A1","A2","A3","A4","B1","B2","B3","C1","C2","C3","D1","D2","D3","D4","D5","D6","D7","E1","E2","E3","F1","F2"],"default":"A3"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const v = this.props.variant || 'A3';
+    const desk = () => [
+      { id: 'p1', kind: 'input', name: 'Input', x: 40, y: 48, w: 320, h: 36, text: 'Search postings' },
+      { id: 'p2', kind: 'btn', name: 'Button', x: 40, y: 104, w: 72, h: 36, text: 'Save', variant: 'Default' },
+      { id: 'p3', kind: 'btnO', name: 'Button', x: 124, y: 104, w: 96, h: 36, text: 'Dismiss', variant: 'Outline' },
+      { id: 'p4', kind: 'badgeO', name: 'Badge', x: 40, y: 164, w: 76, h: 22, text: '92 match', variant: 'Outline' }
+    ];
+    const phone = () => [
+      { id: 'q1', kind: 'badgeS', name: 'Badge', x: 24, y: 24, w: 64, h: 22, text: 'Remote', variant: 'Secondary' },
+      { id: 'q2', kind: 'btn', name: 'Button', x: 24, y: 62, w: 342, h: 36, text: 'Apply', variant: 'Default' },
+      { id: 'q3', kind: 'btnO', name: 'Button', x: 24, y: 106, w: 342, h: 36, text: 'Save', variant: 'Outline' },
+      { id: 'q4', kind: 'input', name: 'Input', x: 24, y: 158, w: 342, h: 36, text: 'Add a note' }
+    ];
+    const baseFrames = [['Desktop / New', '1440 × 900'], ['Desktop / Posting', '1440 × 900', true], ['Phone / Posting', '390 × 844']];
+    const c = { W: 1440, H: 900, dark: false, f2: false, noFrames: false, frames: baseFrames, open: 0, rename: -1, renameText: '', query: '', searchFocus: false, pressed: '', addFocus: false, zoom: 100, fx: 32, fy: 44, frame: 'desk', pl: desk(), sel: '', outlineAll: false, labels: [], drag: null, fres: null, snap: null, dialog: '' };
+    const set = (o) => Object.assign(c, o);
+    if (v === 'A1') set({ noFrames: true, frames: [] });
+    else if (v === 'A2') set({ pl: [] });
+    else if (v === 'A3' || v === 'D3') set({ sel: 'p2' });
+    else if (v === 'A4') set({ sel: 'p2', dark: true });
+    else if (v === 'B1') set({ frames: baseFrames.concat([['Phone / New', '390 × 844']]) });
+    else if (v === 'B2') set({ dialog: 'add' });
+    else if (v === 'B3') set({ rename: 2, renameText: 'Phone / Posting detail' });
+    else if (v === 'C2') set({ query: 'Calendar', searchFocus: true });
+    else if (v === 'C3') { const pl = desk(); pl.push({ id: 'p5', kind: 'badge', name: 'Badge', x: 268, y: 316, w: 52, h: 22, text: 'Badge', variant: 'Default' }); set({ pl, sel: 'p5', pressed: 'Badge' }); }
+    else if (v === 'D1') set({ zoom: 38, fx: 42, fy: 64 });
+    else if (v === 'D2') { const pl = desk(); pl[0].x = 64; pl[0].y = 72; set({ pl, outlineAll: true, drag: { id: 'p1', x: 40, y: 48, w: 320, h: 36 } }); }
+    else if (v === 'D4') set({ labels: ['p2', 'p3'], sel: 'p3' });
+    else if (v === 'D5') set({ addFocus: true, searchFocus: true });
+    else if (v === 'D6') set({ frame: 'phone', open: 2, pl: phone(), zoom: 70, fx: 48, fy: 56, fres: { w: 430 } });
+    else if (v === 'D7') { const pl = phone(); pl[0].x = 326; set({ frame: 'phone', open: 2, pl, sel: 'q1', snap: { id: 'q1', x: 430, y: 24, w: 64, h: 22, text: 'Remote' } }); }
+    else if (v === 'E2') set({ sel: 'p4' });
+    else if (v === 'E3') set({ dialog: 'del' });
+    else if (v === 'F1') set({ W: 1280, sel: 'p2' });
+    else if (v === 'F2') set({ W: 1024, H: 768, f2: true, sel: 'p2' });
+
+    const s = c.zoom / 100;
+    const fw = c.frame === 'desk' ? 1440 : 390;
+    const fh = c.frame === 'desk' ? 900 : 844;
+    const openName = c.frames[c.open] ? c.frames[c.open][0] : '';
+    const openSize = fw + ' × ' + fh;
+    const ox = c.fx + 1, oy = c.fy + 1;
+    const box = (x, y, w, h) => 'position: absolute; left: ' + (ox + x * s) + 'px; top: ' + (oy + y * s) + 'px; width: ' + (w * s) + 'px; height: ' + (h * s) + 'px';
+    const variantsFor = { Button: ['Default', 'Outline', 'Secondary', 'Ghost', 'Destructive', 'Link'], Badge: ['Default', 'Secondary', 'Outline', 'Destructive'] };
+
+    const pl = c.pl.map((p) => Object.assign({}, p, {
+      isBtn: p.kind === 'btn', isBtnO: p.kind === 'btnO', isInput: p.kind === 'input',
+      isBadge: p.kind === 'badge', isBadgeS: p.kind === 'badgeS', isBadgeO: p.kind === 'badgeO',
+      style: 'position: absolute; left: ' + p.x + 'px; top: ' + p.y + 'px; width: ' + p.w + 'px; height: ' + p.h + 'px; display: flex; align-items: center'
+    }));
+    const ov = c.pl.map((p) => {
+      const selected = p.id === c.sel;
+      const labeled = c.labels.indexOf(p.id) >= 0;
+      const dragging = !!(c.drag && c.drag.id === p.id);
+      const snapped = !!(c.snap && c.snap.id === p.id);
+      let ring = 'outline: 0';
+      if (selected) ring = 'outline: 2px solid var(--ring); outline-offset: 2px';
+      else if (c.outlineAll || labeled) ring = 'outline: 1px solid var(--ring-soft); outline-offset: 2px';
+      return {
+        style: box(p.x, p.y, p.w, p.h) + '; ' + ring,
+        pressed: selected ? 'true' : 'false',
+        aria: p.name + ', ' + p.text + (selected ? ', selected' : ''),
+        sel: selected, showLabel: labeled, label: p.name,
+        hasTag: dragging || snapped,
+        tag: dragging ? 'X ' + p.x + '  Y ' + p.y : 'Snapped inside'
+      };
+    });
+    const ghosts = [];
+    if (c.drag) ghosts.push({ style: box(c.drag.x, c.drag.y, c.drag.w, c.drag.h) + '; outline: 1px dashed var(--mfg); outline-offset: 2px; border-radius: 8px', text: '' });
+    if (c.snap) ghosts.push({ style: box(c.snap.x, c.snap.y, c.snap.w, c.snap.h) + '; outline: 1px dashed var(--mfg); outline-offset: 2px; border-radius: 8.8px; background: var(--muted); opacity: 0.55; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 500', text: c.snap.text });
+
+    let fres = null;
+    if (c.fres) {
+      const nw = c.fres.w * s, nh = fh * s;
+      fres = {
+        rect: 'position: absolute; left: ' + ox + 'px; top: ' + oy + 'px; width: ' + nw + 'px; height: ' + nh + 'px; outline: 1px dashed var(--fg); outline-offset: 0',
+        right: 'position: absolute; left: ' + (ox + nw - 3) + 'px; top: ' + (oy + nh / 2 - 16) + 'px; width: 6px; height: 32px; border-radius: 3px; background: var(--fg)',
+        bottom: 'position: absolute; left: ' + (ox + nw / 2 - 16) + 'px; top: ' + (oy + nh - 3) + 'px; width: 32px; height: 6px; border-radius: 3px; background: var(--fg)',
+        corner: 'position: absolute; left: ' + (ox + nw - 6) + 'px; top: ' + (oy + nh - 6) + 'px; width: 12px; height: 12px; border-radius: 3px; background: var(--fg); box-shadow: 0 0 0 2px var(--card)',
+        tag: 'left: ' + (ox + nw + 14) + 'px; top: ' + (oy + nh / 2 - 10) + 'px',
+        label: c.fres.w + ' × ' + fh
+      };
+    }
+
+    const selP = c.pl.find((p) => p.id === c.sel);
+    let sel = { name: '', x: 0, y: 0, w: 0, h: 0, hasVariant: false, variants: [], hasText: false, text: '' };
+    if (selP) {
+      const list = variantsFor[selP.name] || [];
+      sel = {
+        name: selP.name, x: selP.x, y: selP.y, w: selP.w, h: selP.h,
+        hasVariant: list.length > 0,
+        variants: list.map((l) => ({ label: l, pressed: l === selP.variant ? 'true' : 'false' })),
+        hasText: selP.kind !== 'input', text: selP.text
+      };
+    }
+    const inspFull = 'width: 320px; flex: none; background: var(--card); border-left: 1px solid var(--border); display: flex; flex-direction: column';
+    const inspSheet = 'position: absolute; top: 0; right: 0; bottom: 0; width: 320px; background: var(--pop); border-left: 1px solid var(--border); box-shadow: -16px 0 32px rgb(0 0 0 / 0.12); display: flex; flex-direction: column; z-index: 5';
+
+    const all = ['Badge', 'Button', 'Card', 'Checkbox', 'Dialog', 'Input', 'Label', 'NativeSelect', 'Separator', 'Switch', 'Tabs', 'Textarea', 'Toggle', 'ToggleGroup', 'Tooltip'];
+    const q = c.query.toLowerCase();
+    const comps = all.filter((n) => n.toLowerCase().indexOf(q) >= 0).map((n) => ({ name: n, cls: n === c.pressed ? 'pr on' : 'pr', pressed: n === c.pressed ? 'true' : 'false' }));
+
+    return {
+      rootClass: c.dark ? 'lt dk' : 'lt', W: c.W, H: c.H,
+      full: !c.f2, f2: c.f2,
+      hasFrames: c.frames.length > 0, frameCount: c.frames.length, noFrames: c.noFrames, hasFrame: !c.noFrames,
+      frames: c.frames.map((f, i) => ({ name: f[0], size: f[1], cls: i === c.open && !c.noFrames ? 'fr on' : 'fr', cur: i === c.open ? 'page' : 'false', dot: i === c.open, claude: !!f[2], editing: i === c.rename, normal: i !== c.rename, edit: c.renameText })),
+      searchCls: c.searchFocus ? 'inp focus' : 'inp', noQuery: !c.query, hasQuery: !!c.query, query: c.query,
+      comps, hasComps: comps.length > 0, noComps: comps.length === 0,
+      addCls: c.addFocus ? 'btn btn-o btn-sm focus' : 'btn btn-o btn-sm',
+      zoom: c.zoom, openName, openSize, fwT: fw, fhT: fh,
+      tabStyle: 'position: absolute; left: ' + c.fx + 'px; top: ' + (c.fy - 26) + 'px; display: flex; align-items: center; gap: 8px; font-size: 12px; white-space: nowrap',
+      frameStyle: 'position: absolute; left: ' + c.fx + 'px; top: ' + c.fy + 'px; width: ' + (fw * s + 2) + 'px; height: ' + (fh * s + 2) + 'px; border: 1px solid var(--fedge); background: var(--bg); overflow: hidden',
+      innerStyle: 'position: relative; width: ' + fw + 'px; height: ' + fh + 'px; transform: scale(' + s + '); transform-origin: 0 0',
+      pl, ov, ghosts, hasFres: !!fres, fres: fres || { rect: '', right: '', bottom: '', corner: '', tag: '', label: '' },
+      showInsp: c.f2 ? !!selP : true, inspStyle: c.f2 ? inspSheet : inspFull,
+      inspNone: c.noFrames, inspFrame: !c.noFrames && !selP, inspSel: !!selP, sel,
+      dlgAdd: c.dialog === 'add', dlgDel: c.dialog === 'del'
+    };
+  }
+}
+</script>
+</body>
+</html>
