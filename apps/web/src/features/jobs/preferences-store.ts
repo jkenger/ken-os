@@ -136,3 +136,11 @@ export async function savePreferences(userId: string, preferences: JobPreference
       set: { ...preferences, updatedAt: new Date() },
     });
 }
+
+/** Every user who has ever saved Jobs settings, i.e. opted into the scheduler poll running their own search
+ *  against their own Profile. A visited-but-never-saved Jobs page has no row here, so it's never polled -- the
+ *  same "don't do something a user never explicitly asked for" rule as everything else in this file. */
+export async function listUsersWithPreferences(): Promise<string[]> {
+  const rows = await db().select({ userId: jobPreferences.userId }).from(jobPreferences);
+  return rows.map((row) => row.userId);
+}

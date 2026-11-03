@@ -1,39 +1,24 @@
 import { NextResponse } from "next/server";
-import { eq } from "drizzle-orm";
-import { extractPosting, scoreJobPosting } from "@ken-os/agents";
-import type { ProfileDetails } from "@ken-os/domain";
-import { db } from "@/lib/db/db";
-import { users } from "@/lib/db/schema";
-import { getProfile } from "@/features/profile/store";
 import { ratesAreStale, saveCachedRates } from "@/features/jobs/currency-rates-store";
 import { fetchCurrencyRates } from "@/features/jobs/fetch-currency-rates";
-import { processPostings, scorePostings } from "@/features/jobs/process";
+import { listUsersWithPreferences } from "@/features/jobs/preferences-store";
+import { processUserPostings } from "@/features/jobs/pipeline";
 import { refreshRatesIfStale } from "@/features/jobs/refresh-currency-rates";
 import { secretsMatch } from "@/features/jobs/secret";
-import {
-  claimPendingPostings,
-  getNeedingScore,
-  saveExtractedFields,
-  saveScore,
-  unclaimPosting,
-} from "@/features/jobs/store";
 
 export const runtime = "nodejs";
 
 // Polled on its own cadence by an outside scheduler, separate from the scrape routes (plans/jobs-score.md,
 // "Architecture decision"): a full-page fetch plus two AI calls per posting is too slow to run inline inside a
 // scrape request. The secret goes in a header, not a query string, so it never lands in logs or analytics.
+// Currency rates are a single shared snapshot (`job_currency_rates`), refreshed once per run, not per account.
+// Extraction and scoring then run once per account that has saved Jobs settings (`listUsersWithPreferences`),
+// each against that account's own pending postings and Profile; one account's failure is logged and skipped
+// rather than blocking every other account's run.
 export async function GET(request: Request) {
   const expectedSecret = process.env.JOBS_CHECK_SECRET;
-  const ownerEmail = process.env.OWNER_EMAIL;
-  if (!expectedSecret || !ownerEmail) {
-    console.error("jobs process: missing check-secret or owner-account environment variables");
-    return NextResponse.json({ error: "Not configured" }, { status: 503 });
-  }
-
-  const [owner] = await db().select({ id: users.id }).from(users).where(eq(users.email, ownerEmail)).limit(1);
-  if (!owner) {
-    console.error("jobs process: no user row for the configured owner account");
+  if (!expectedSecret) {
+    console.error("jobs process: missing check-secret environment variable");
     return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
 
@@ -47,38 +32,16 @@ export async function GET(request: Request) {
     saveRates: (rates, fetchedAt) => saveCachedRates(rates, fetchedAt),
   });
 
-  const extractResult = await processPostings({
-    secret,
-    expectedSecret,
-    getPending: (limit) => claimPendingPostings(owner.id, limit),
-    extract: (input) => extractPosting(input),
-    saveExtracted: (postingId, fields) => saveExtractedFields(postingId, fields),
-    unclaim: (postingId) => unclaimPosting(postingId),
-  });
-  if (!extractResult.ok) return NextResponse.json({ error: extractResult.reason }, { status: 401 });
+  const userIds = await listUsersWithPreferences();
+  let processed = 0;
+  for (const userId of userIds) {
+    try {
+      const result = await processUserPostings(userId, secret, expectedSecret);
+      processed += result.extracted + result.scored;
+    } catch (error) {
+      console.error(`jobs process: user ${userId} failed`, error instanceof Error ? error.message : error);
+    }
+  }
 
-  const profileState = await getProfile(owner.id);
-  const profileVersion = profileState.savedAt ? new Date(profileState.savedAt) : null;
-
-  const scoreResult = await scorePostings({
-    secret,
-    expectedSecret,
-    getNeedingScore: (limit) => getNeedingScore(owner.id, profileVersion, limit),
-    getProfileForScoring: async () => ({ profile: profileState.details, version: profileVersion }),
-    score: (input) =>
-      scoreJobPosting({
-        profile: input.profile as ProfileDetails,
-        title: input.title,
-        company: input.company,
-        text: input.text,
-      }),
-    saveScore: (postingId, fields) => saveScore(postingId, fields),
-  });
-  if (!scoreResult.ok) return NextResponse.json({ error: scoreResult.reason }, { status: 401 });
-
-  return NextResponse.json({
-    ok: true,
-    reason: "ok",
-    processed: extractResult.processed + scoreResult.processed,
-  });
+  return NextResponse.json({ ok: true, reason: "ok", processed, users: userIds.length });
 }

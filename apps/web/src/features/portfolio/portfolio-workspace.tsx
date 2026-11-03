@@ -23,6 +23,7 @@ import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/toaster";
@@ -111,6 +112,36 @@ function SectionTitle({ id, title, note }: { id: string; title: string; note: st
   );
 }
 
+/** The handle `/api/public/portfolio/[slug]` is keyed on. Remounts on a successful save (keyed by `slug` in the
+ *  caller) so its draft resets to the newly saved, canonicalized value instead of staying stuck on what was typed. */
+function HandleField({ slug, busy, onSave }: { slug: string | null; busy: boolean; onSave: (value: string) => void }) {
+  const [value, setValue] = useState(slug ?? "");
+  return (
+    <form
+      className="flex items-center gap-2"
+      onSubmit={(event) => {
+        event.preventDefault();
+        if (value.trim()) onSave(value);
+      }}
+    >
+      <Label htmlFor="portfolio-slug" className="sr-only">
+        Handle
+      </Label>
+      <Input
+        id="portfolio-slug"
+        value={value}
+        onChange={(event) => setValue(event.target.value)}
+        placeholder="your-handle"
+        className="h-8 max-w-[14rem] font-mono text-xs"
+        disabled={busy}
+      />
+      <Button type="submit" variant="outline" size="sm" className="text-[13px]" disabled={busy || !value.trim()}>
+        Save
+      </Button>
+    </form>
+  );
+}
+
 export function PortfolioWorkspace({ email, portfolio }: { email: string; portfolio: PortfolioState }) {
   const [state, setState] = useState(portfolio);
   const [busy, setBusy] = useState<string | null>(null);
@@ -170,8 +201,8 @@ export function PortfolioWorkspace({ email, portfolio }: { email: string; portfo
                 <dd>{latest ? shortDate(latest.publishedAt) : "Never"}</dd>
                 <dt className="text-muted-foreground">Profile saved</dt>
                 <dd>{profileSavedAt ? shortDate(profileSavedAt) : "Not saved"}</dd>
-                <dt className="text-muted-foreground">Site</dt>
-                <dd>Not set up</dd>
+                <dt className="text-muted-foreground">Handle</dt>
+                <dd className="font-mono">{state.slug ? `@${state.slug}` : "Not set"}</dd>
               </dl>
             </div>
 
@@ -214,16 +245,22 @@ export function PortfolioWorkspace({ email, portfolio }: { email: string; portfo
                       : "Not published"}
                 </p>
               </div>
-              {live && (
+              <HandleField
+                key={state.slug}
+                slug={state.slug}
+                busy={busy !== null}
+                onSave={(value) => void toggle("slug", { slug: value })}
+              />
+              {live && state.slug && (
                 <>
                   <Button asChild variant="outline" size="sm" className="text-[13px] max-md:flex-1">
-                    <a href="/api/public/portfolio/resume" target="_blank" rel="noopener noreferrer">
+                    <a href={`/api/public/portfolio/${state.slug}/resume`} target="_blank" rel="noopener noreferrer">
                       Open resume
                       <IconExternalLink data-icon="inline-end" aria-hidden="true" />
                     </a>
                   </Button>
                   <Button asChild variant="outline" size="sm" className="text-[13px] max-md:flex-1">
-                    <a href="/api/public/portfolio" target="_blank" rel="noopener noreferrer">
+                    <a href={`/api/public/portfolio/${state.slug}`} target="_blank" rel="noopener noreferrer">
                       Open snapshot
                       <IconExternalLink data-icon="inline-end" aria-hidden="true" />
                     </a>
@@ -421,18 +458,24 @@ export function PortfolioWorkspace({ email, portfolio }: { email: string; portfo
         <div className="sticky bottom-0 z-10 mt-auto border-t bg-card">
           <div className="flex items-center justify-end gap-2 px-3 py-3 md:px-5">
             <span className="mr-auto text-sm text-muted-foreground">
-              {live
-                ? unpublishedChanges
-                  ? "Changes not published"
-                  : `Published ${shortDate(live.publishedAt)}`
-                : "Not published"}
+              {!state.slug
+                ? "Set a handle to publish"
+                : live
+                  ? unpublishedChanges
+                    ? "Changes not published"
+                    : `Published ${shortDate(live.publishedAt)}`
+                  : "Not published"}
             </span>
             {live && (
               <Button type="button" variant="ghost" onClick={() => setConfirmUnpublish(true)} disabled={busy !== null}>
                 Unpublish
               </Button>
             )}
-            <Button type="button" onClick={() => void run("publish")} disabled={busy !== null || !profileSavedAt}>
+            <Button
+              type="button"
+              onClick={() => void run("publish")}
+              disabled={busy !== null || !profileSavedAt || !state.slug}
+            >
               {busy === "publish" ? "Publishing…" : "Publish"}
             </Button>
           </div>

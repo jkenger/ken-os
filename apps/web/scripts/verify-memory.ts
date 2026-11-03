@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { config } from "dotenv";
-import { eq } from "drizzle-orm";
+import { desc } from "drizzle-orm";
 import { parseDecisionDraft, parseReceiptDraft } from "../src/features/project-memory/contract";
 import {
   getMemoryOverview,
@@ -10,7 +10,6 @@ import {
   submitDecision,
   submitReceipt,
 } from "../src/features/project-memory/store";
-import { ownerEmail } from "../src/lib/config";
 import { closeDb, db } from "../src/lib/db/db";
 import { users } from "../src/lib/db/schema";
 
@@ -18,7 +17,10 @@ config({ path: ".env.local" });
 config({ path: ".env" });
 
 async function main() {
-  const [owner] = await db().select({ id: users.id }).from(users).where(eq(users.email, ownerEmail())).limit(1);
+  // Any signed-in account works: the pilot project is claimed by whichever account calls `ensurePilotProject`
+  // first, not by a hardcoded owner -- this picks the most recently signed-in one so the check runs against
+  // whoever last used the app locally.
+  const [owner] = await db().select({ id: users.id }).from(users).orderBy(desc(users.createdAt)).limit(1);
   if (!owner) throw new Error("Sign in locally once before running the memory integration check.");
   const taskKey = `memory-local-check-${randomUUID()}`;
   const decision = parseDecisionDraft({
