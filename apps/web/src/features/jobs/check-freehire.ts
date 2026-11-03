@@ -1,4 +1,5 @@
 import type { RawPosting } from "./raw-posting";
+import { secretsMatch } from "./secret";
 import { freehireSearchUrl, parseFreehireSearch } from "./scrapers/freehire";
 
 const FRESHNESS_DAYS = 14;
@@ -18,7 +19,7 @@ export async function checkFreehire(params: {
   fetchSearch: (url: string) => Promise<{ status: number; text: string }>;
   savePostings: (postings: RawPosting[]) => Promise<void>;
 }): Promise<{ ok: boolean; reason: string; found: number }> {
-  if (params.secret !== params.expectedSecret) return { ok: false, reason: "bad secret", found: 0 };
+  if (!secretsMatch(params.secret, params.expectedSecret)) return { ok: false, reason: "bad secret", found: 0 };
 
   const responses = await Promise.all(
     params.keywords.map((keyword) =>

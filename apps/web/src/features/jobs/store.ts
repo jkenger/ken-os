@@ -379,28 +379,66 @@ export type PendingPosting = {
   sourceExperienceYearsMin: number | null;
 };
 
-/** Up to `limit` postings not yet processed by `/api/jobs/process`, oldest first (plans/jobs-score.md, Slice 1). */
+const PENDING_POSTING_FIELDS = {
+  id: jobPostings.id,
+  title: jobPostings.title,
+  company: jobPostings.company,
+  location: jobPostings.location,
+  snippet: jobPostings.snippet,
+  sourceSalaryMin: jobPostings.sourceSalaryMin,
+  sourceSalaryMax: jobPostings.sourceSalaryMax,
+  sourceSalaryCurrency: jobPostings.sourceSalaryCurrency,
+  sourceSalaryPeriod: jobPostings.sourceSalaryPeriod,
+  sourceExperienceYearsMin: jobPostings.sourceExperienceYearsMin,
+  sourceCountries: jobPostings.sourceCountries,
+  sourceWorkMode: jobPostings.sourceWorkMode,
+  sourceEmploymentType: jobPostings.sourceEmploymentType,
+} as const;
+
+/** Up to `limit` postings not yet processed by `/api/jobs/process`, oldest first (plans/jobs-score.md, Slice 1).
+ *  A plain read for inspecting pending state; `claimPendingPostings` is what the pipeline itself uses, so looking
+ *  never changes what's pending. */
 export async function getPendingPostings(userId: string, limit: number): Promise<PendingPosting[]> {
   return db()
-    .select({
-      id: jobPostings.id,
-      title: jobPostings.title,
-      company: jobPostings.company,
-      location: jobPostings.location,
-      snippet: jobPostings.snippet,
-      sourceSalaryMin: jobPostings.sourceSalaryMin,
-      sourceSalaryMax: jobPostings.sourceSalaryMax,
-      sourceSalaryCurrency: jobPostings.sourceSalaryCurrency,
-      sourceSalaryPeriod: jobPostings.sourceSalaryPeriod,
-      sourceExperienceYearsMin: jobPostings.sourceExperienceYearsMin,
-      sourceCountries: jobPostings.sourceCountries,
-      sourceWorkMode: jobPostings.sourceWorkMode,
-      sourceEmploymentType: jobPostings.sourceEmploymentType,
-    })
+    .select(PENDING_POSTING_FIELDS)
     .from(jobPostings)
     .where(and(eq(jobPostings.userId, userId), isNull(jobPostings.processedAt)))
     .orderBy(asc(jobPostings.firstSeenAt))
     .limit(limit);
+}
+
+/** Claims up to `limit` not-yet-processed postings for this run, stamping `processedAt` immediately under
+ *  `FOR UPDATE SKIP LOCKED`: when the outside scheduler's own poll and a manual "run pipeline" click overlap,
+ *  whichever gets here first locks the rows and the other skips straight past them to the next unclaimed batch,
+ *  instead of both sending the same postings to the AI extractor. If extraction then fails, `unclaimPosting`
+ *  undoes the stamp so the posting is retried on the next poll rather than lost. */
+export async function claimPendingPostings(userId: string, limit: number): Promise<PendingPosting[]> {
+  return db().transaction(async (tx) => {
+    const locked = await tx
+      .select({ id: jobPostings.id })
+      .from(jobPostings)
+      .where(and(eq(jobPostings.userId, userId), isNull(jobPostings.processedAt)))
+      .orderBy(asc(jobPostings.firstSeenAt))
+      .limit(limit)
+      .for("update", { skipLocked: true });
+    if (!locked.length) return [];
+    return tx
+      .update(jobPostings)
+      .set({ processedAt: new Date() })
+      .where(
+        inArray(
+          jobPostings.id,
+          locked.map((row) => row.id),
+        ),
+      )
+      .returning(PENDING_POSTING_FIELDS);
+  });
+}
+
+/** Undoes `claimPendingPostings`' stamp on a posting whose extraction didn't finish, so the next poll retries it
+ *  instead of treating it as done. */
+export async function unclaimPosting(postingId: string): Promise<void> {
+  await db().update(jobPostings).set({ processedAt: null }).where(eq(jobPostings.id, postingId));
 }
 
 export type ExtractedFields = {

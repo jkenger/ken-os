@@ -62,6 +62,7 @@ function noopDeps() {
     getPending: async () => [] as ReturnType<typeof pendingPosting>[],
     extract: async () => extractResult,
     saveExtracted: async () => {},
+    unclaim: async () => {},
   };
 }
 
@@ -394,6 +395,34 @@ test("processes every posting getPending returns, in order", async () => {
     },
   });
   assert.deepEqual(processedIds, ["p1", "p2"]);
+});
+
+test("a posting whose extraction fails, and every posting after it in the batch, are unclaimed", async () => {
+  const unclaimed: string[] = [];
+  const saved: string[] = [];
+  await assert.rejects(
+    processPostings({
+      ...noopDeps(),
+      getPending: async () => [
+        pendingPosting({ id: "p1" }),
+        pendingPosting({ id: "p2" }),
+        pendingPosting({ id: "p3" }),
+      ],
+      extract: async () => {
+        if (saved.length === 1) throw new Error("extraction failed");
+        return extractResult;
+      },
+      saveExtracted: async (postingId) => {
+        saved.push(postingId);
+      },
+      unclaim: async (postingId) => {
+        unclaimed.push(postingId);
+      },
+    }),
+    /extraction failed/,
+  );
+  assert.deepEqual(saved, ["p1"]);
+  assert.deepEqual(unclaimed, ["p2", "p3"]);
 });
 
 const scoreResult = {
