@@ -83,7 +83,7 @@ export function JobsPage({
             </Button>
           </Badge>
         )}
-        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[17rem_1fr]">
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[20rem_1fr]">
           <FilterSidebar
             preferences={preferences}
             derivedRoles={derivedRoles}
@@ -96,7 +96,6 @@ export function JobsPage({
               <StatusStrip
                 effectiveRoles={effectiveRoles}
                 checkStatus={checkStatus}
-                newCount={postings.length}
                 filteredOutCount={filteredOutCount}
                 expanded={showSetupStatus}
                 onToggle={() => setShowSetupStatus((shown) => !shown)}
@@ -111,7 +110,7 @@ export function JobsPage({
                 </div>
               )}
               <ResultsBar
-                count={visible.length}
+                totalCount={postings.length + filteredOutCount}
                 hiddenCount={filteredOutCount}
                 preferences={preferences}
                 sort={sort}

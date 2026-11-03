@@ -442,6 +442,59 @@ export const studioManifest: StudioManifest = {
       "slot": "input"
     },
     {
+      "id": "ui/item",
+      "name": "Item",
+      "kind": "primitive",
+      "file": "components/ui/item.tsx",
+      "exports": [
+        "Item",
+        "ItemMedia",
+        "ItemContent",
+        "ItemActions",
+        "ItemGroup",
+        "ItemSeparator",
+        "ItemTitle",
+        "ItemDescription",
+        "ItemHeader",
+        "ItemFooter"
+      ],
+      "variants": [
+        {
+          "name": "variant",
+          "options": [
+            "default",
+            "outline",
+            "muted",
+            "icon",
+            "image"
+          ],
+          "defaultOption": "default"
+        },
+        {
+          "name": "size",
+          "options": [
+            "default",
+            "sm",
+            "xs"
+          ],
+          "defaultOption": "default"
+        }
+      ],
+      "uses": [
+        "ui/separator"
+      ],
+      "tokens": [
+        "primary",
+        "muted",
+        "muted-foreground",
+        "border",
+        "ring",
+        "radius"
+      ],
+      "slot": "item",
+      "scoped": true
+    },
+    {
       "id": "ui/kbd",
       "name": "Kbd",
       "kind": "primitive",
@@ -1527,6 +1580,7 @@ export const studioManifest: StudioManifest = {
           "uses": [
             "ui/separator"
           ],
+          "installed": "ui/item",
           "add": "pnpm dlx shadcn@latest add @shadcn/item",
           "docs": "https://ui.shadcn.com/docs/components/radix/item"
         },

@@ -1,10 +1,14 @@
+import { plainText } from "./scrapers/freehire";
 import { secretsMatch } from "./secret";
 import { formatShift, shiftLabel } from "./shift";
 
 // Reads, extracts and saves structured fields for the owner's pending postings (plans/jobs-score.md, Slice 1).
-// Dependencies are injected so this stays testable without a real HTTP call, AI call or database. freehire gives
-// every posting its full description at save time (plans/jobs-freehire-source.md), so unlike the sources this
-// replaced there's no separate full-page fetch step here: a posting's own snippet already is its full text.
+// Dependencies are injected so this stays testable without a real HTTP call, AI call or database. `snippet` is
+// the search result's own description, truncated to roughly 1000 characters by freehire itself; `descriptionHtml`
+// is the untruncated text `store.ts` fetched from the one-job detail endpoint the first time the posting was
+// genuinely new (freehire.ts, `plainText`'s own doc comment). Extraction decodes that HTML to plain text and
+// reads from it whenever it's there, so a posting's stored "full description" is the actual full text, not the
+// truncated preview -- falling back to `snippet` only for a posting that has no `descriptionHtml` at all.
 
 const BATCH_SIZE = 5;
 
@@ -14,6 +18,7 @@ type PendingPosting = {
   company: string;
   location: string;
   snippet: string;
+  descriptionHtml: string | null;
   sourceCountries: string[] | null;
   sourceWorkMode: "remote" | "hybrid" | "onsite" | null;
   sourceEmploymentType: string | null;
@@ -102,14 +107,14 @@ async function processOnePosting(
   extract: (input: { title: string; company: string; location: string; text: string }) => Promise<ExtractResult>,
   saveExtracted: (postingId: string, fields: ExtractedFields) => Promise<void>,
 ): Promise<void> {
-  const fullDescription = posting.snippet || null;
+  const fullDescription = posting.descriptionHtml ? plainText(posting.descriptionHtml) : posting.snippet || null;
   const partial = fullDescription === null;
 
   const extracted = await extract({
     title: posting.title,
     company: posting.company,
     location: posting.location,
-    text: posting.snippet,
+    text: fullDescription ?? "",
   });
 
   // freehire's own structured fields are trusted over the model's reading of the same prose, since they come

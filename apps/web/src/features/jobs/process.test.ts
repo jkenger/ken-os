@@ -27,6 +27,7 @@ function pendingPosting(
     company: string;
     location: string;
     snippet: string;
+    descriptionHtml: string | null;
     sourceCountries: string[] | null;
     sourceWorkMode: "remote" | "hybrid" | "onsite" | null;
     sourceEmploymentType: string | null;
@@ -43,6 +44,7 @@ function pendingPosting(
     company: "Acme",
     location: "Remote",
     snippet: "A snippet.",
+    descriptionHtml: null,
     sourceCountries: [],
     sourceWorkMode: null,
     sourceEmploymentType: null,
@@ -99,6 +101,32 @@ test("a posting with no snippet text is saved as Partial", async () => {
   const [savedFields] = saved as [{ fullDescription: string | null; partial: boolean }];
   assert.equal(savedFields.fullDescription, null);
   assert.equal(savedFields.partial, true);
+});
+
+test("a posting with a fetched descriptionHtml is extracted from its full text, not the truncated search snippet", async () => {
+  const saved: unknown[] = [];
+  const calls: unknown[] = [];
+  await processPostings({
+    ...noopDeps(),
+    getPending: async () => [
+      pendingPosting({
+        snippet: "A posting about...",
+        descriptionHtml: "<p>The full, untruncated job description, in full.</p>",
+      }),
+    ],
+    extract: async (input) => {
+      calls.push(input);
+      return extractResult;
+    },
+    saveExtracted: async (postingId, fields) => {
+      saved.push(fields);
+    },
+  });
+  const [call] = calls as [{ text: string }];
+  assert.equal(call.text, "The full, untruncated job description, in full.");
+  const [savedFields] = saved as [{ fullDescription: string | null; partial: boolean }];
+  assert.equal(savedFields.fullDescription, "The full, untruncated job description, in full.");
+  assert.equal(savedFields.partial, false);
 });
 
 test("extract receives the posting's title, company, location and text as distinct data fields", async () => {

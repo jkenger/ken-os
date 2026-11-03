@@ -369,6 +369,7 @@ export type PendingPosting = {
   company: string;
   location: string;
   snippet: string;
+  descriptionHtml: string | null;
   sourceCountries: string[] | null;
   sourceWorkMode: "remote" | "hybrid" | "onsite" | null;
   sourceEmploymentType: string | null;
@@ -385,6 +386,7 @@ const PENDING_POSTING_FIELDS = {
   company: jobPostings.company,
   location: jobPostings.location,
   snippet: jobPostings.snippet,
+  descriptionHtml: jobPostings.descriptionHtml,
   sourceSalaryMin: jobPostings.sourceSalaryMin,
   sourceSalaryMax: jobPostings.sourceSalaryMax,
   sourceSalaryCurrency: jobPostings.sourceSalaryCurrency,

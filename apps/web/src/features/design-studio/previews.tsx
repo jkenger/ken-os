@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/ui/input-group";
+import { Item, ItemActions, ItemContent, ItemDescription, ItemMedia, ItemTitle } from "@/components/ui/item";
 import { Kbd } from "@/components/ui/kbd";
 import { Label } from "@/components/ui/label";
 import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select";
@@ -184,6 +185,20 @@ export const previews: Record<string, (props: PreviewProps) => ReactNode> = {
       </InputGroupAddon>
       <InputGroupInput placeholder="Find a topic" aria-label="Find a topic" />
     </InputGroup>
+  ),
+  "ui/item": () => (
+    <Item variant="outline" size="sm" className="w-full">
+      <ItemMedia variant="icon">
+        <FlaskConical />
+      </ItemMedia>
+      <ItemContent>
+        <ItemTitle>Roles</ItemTitle>
+        <ItemDescription>Ready, from your Profile</ItemDescription>
+      </ItemContent>
+      <ItemActions>
+        <Badge variant="outline">Ready</Badge>
+      </ItemActions>
+    </Item>
   ),
   "ui/kbd": (props) => <Kbd {...as<typeof Kbd>(props)} />,
   "ui/label": () => (

@@ -44,8 +44,9 @@ export function parseFreehireDetail(responseText: string): string | null {
 }
 
 /** Decodes a result's HTML description down to plain text, the same shape every other source's full description
- *  is in by the time it reaches `extract.ts`. */
-function plainText(html: string): string {
+ *  is in by the time it reaches `extract.ts`. Exported so `process.ts` can decode the full `descriptionHtml` the
+ *  same way, instead of extracting from the search result's own truncated `snippet`. */
+export function plainText(html: string): string {
   return cheerio.load(html)("body").text().replace(/\s+/g, " ").trim();
 }
 
