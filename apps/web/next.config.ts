@@ -7,6 +7,14 @@ const nextConfig: NextConfig = {
   async redirects() {
     return engineeringRedirects;
   },
+  images: {
+    // Google's favicon service (company-avatar.tsx) and Simple Icons' CDN (skill-logo.tsx) -- every next/image
+    // src outside the app itself.
+    remotePatterns: [
+      { protocol: "https", hostname: "www.google.com", pathname: "/s2/favicons" },
+      { protocol: "https", hostname: "cdn.simpleicons.org" },
+    ],
+  },
 };
 
 export default nextConfig;

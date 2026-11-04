@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { CompanyAvatar } from "@/features/jobs/company-avatar";
 import { countryName } from "@/features/jobs/country-flags";
 import { formatBoardName } from "@/features/jobs/job-boards";
 import type { WorkSetup } from "@/features/jobs/preferences-store";
@@ -46,11 +47,6 @@ const SENIORITY_LABELS: Record<string, string> = {
   senior: "Senior",
   lead: "Lead",
 };
-
-function initials(company: string): string {
-  const words = company.trim().split(/\s+/).filter(Boolean);
-  return (words[0]?.[0] ?? "?").toUpperCase() + (words[1]?.[0] ?? "").toUpperCase();
-}
 
 function payLabel(posting: PostingView): string | null {
   if (posting.payAmount == null || !posting.payCurrency || !posting.payPeriod) return null;
@@ -177,9 +173,7 @@ export function PostingDetail({
       <div className="flex flex-col gap-6">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="flex size-12 shrink-0 items-center justify-center rounded-md bg-muted text-base font-semibold text-muted-foreground">
-              {initials(posting.company)}
-            </span>
+            <CompanyAvatar company={posting.company} size="md" />
             <span className="font-medium">{posting.company}</span>
           </div>
           <div className="text-right">
