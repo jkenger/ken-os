@@ -112,8 +112,13 @@ export function JobsPage({
   const requestId = useRef(0);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Search and sort both replace the whole list from the server. Skips its own first run: the initial render
-  // already matches the default sort and an empty search, from the server component's own first page.
+  // Search, sort and a saved preferences change (Filter sidebar, or dropping a chip in ResultsBar) all replace
+  // the whole list from the server. `preferences` is a dependency here, not just a display prop: `items` was
+  // seeded from `initialPostings` once at mount, so without this, `router.refresh()` after a preferences PUT
+  // recomputes the server data (see store.ts's `refilterExisting`) but the already-mounted list never re-fetches
+  // to pick it up -- the owner had to reload the page to see a changed filter actually apply. Skips its own
+  // first run: the initial render already matches the default sort, an empty search and the server component's
+  // own first page.
   useEffect(() => {
     if (skipNextReload.current) {
       skipNextReload.current = false;
@@ -123,7 +128,7 @@ export function JobsPage({
     const timer = setTimeout(
       () => {
         void fetchPostingsPage({ search, sort, board: boardFilter, cursorValue: null, cursorId: null }).then((page) => {
-          if (requestId.current !== id) return; // a newer search/sort change already landed
+          if (requestId.current !== id) return; // a newer search/sort/preferences change already landed
           setItems(page.postings);
           setHasMore(page.hasMore);
         });
@@ -131,7 +136,7 @@ export function JobsPage({
       search ? SEARCH_DEBOUNCE_MS : 0,
     );
     return () => clearTimeout(timer);
-  }, [search, sort, boardFilter]);
+  }, [search, sort, boardFilter, preferences]);
 
   const loadMore = useCallback(() => {
     if (loadingMore || !hasMore || items.length === 0) return;
