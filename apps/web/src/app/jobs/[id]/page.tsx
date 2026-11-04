@@ -1,7 +1,6 @@
-import { ArrowLeft } from "lucide-react";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { WorkspaceShell } from "@/components/workspace-shell";
+import { BackToJobsLink } from "@/features/jobs/back-to-jobs-link";
 import { NewList } from "@/features/jobs/new-list";
 import { PostingDetail } from "@/features/jobs/posting-detail";
 import { getPreferences } from "@/features/jobs/preferences-store";
@@ -30,13 +29,7 @@ export default async function JobPosting({ params }: { params: Promise<{ id: str
   return (
     <WorkspaceShell email={session.email} active="jobs" extraCrumb={posting.title}>
       <div className="mx-auto min-h-[calc(100vh-88px)] w-full max-w-7xl px-page pt-page pb-section">
-        <Link
-          href="/jobs"
-          className="mb-4 inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="size-3.5" />
-          New
-        </Link>
+        <BackToJobsLink />
         <PostingDetail
           posting={posting}
           profileSkills={profileSkills}
