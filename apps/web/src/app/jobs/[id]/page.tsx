@@ -5,7 +5,7 @@ import { NewList } from "@/features/jobs/new-list";
 import { PostingDetail } from "@/features/jobs/posting-detail";
 import { getPreferences } from "@/features/jobs/preferences-store";
 import { getProfile } from "@/features/profile/store";
-import { getPosting, getRelatedByRole, getRelatedPostings } from "@/features/jobs/store";
+import { getPosting, getRelatedByRole, getRelatedPostings, markViewed } from "@/features/jobs/store";
 import { yearsOfExperience } from "@/features/jobs/years-of-experience";
 import { requireSession } from "@/lib/auth/session";
 
@@ -24,6 +24,7 @@ export default async function JobPosting({ params }: { params: Promise<{ id: str
   const [related, relatedByRole] = await Promise.all([
     getRelatedPostings(session.userId, posting.company, posting.id),
     getRelatedByRole(session.userId, posting.title, posting.company, posting.id),
+    markViewed(session.userId, posting.id),
   ]);
   const profileSkills = profile.details.skills.flatMap((group) => group.items);
   return (

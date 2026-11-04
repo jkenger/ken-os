@@ -126,6 +126,8 @@ export type PostingView = {
   firstSeenAt: Date;
   state: JobMatchState;
   filterReason: string | null;
+  /** Null until the owner opens this posting's detail page once -- the card's New badge shows while it's null. */
+  viewedAt: Date | null;
   sources: { source: AlertSource; link: string }[];
   processedAt: Date | null;
   fullDescription: string | null;
@@ -159,6 +161,7 @@ const POSTING_COLUMNS = {
   firstSeenAt: jobPostings.firstSeenAt,
   state: jobMatches.state,
   filterReason: jobMatches.filterReason,
+  viewedAt: jobMatches.viewedAt,
   processedAt: jobPostings.processedAt,
   fullDescription: jobPostings.fullDescription,
   descriptionHtml: jobPostings.descriptionHtml,
@@ -345,6 +348,17 @@ export async function getPosting(userId: string, postingId: string): Promise<Pos
 
   const attached = await attachSourcesAndScore([row]);
   return toPostingView(row, attached.get(row.id)!);
+}
+
+/** Clears the New badge the first time the owner opens this posting's detail page -- a no-op on every later
+ *  visit, since `viewedAt` only ever moves from null to a timestamp. Scoped to the owner's own posting. */
+export async function markViewed(userId: string, postingId: string): Promise<void> {
+  await db()
+    .update(jobMatches)
+    .set({ viewedAt: new Date() })
+    .where(
+      and(eq(jobMatches.postingId, postingId), eq(jobMatches.userId, userId), sql`${jobMatches.viewedAt} is null`),
+    );
 }
 
 /** Other open postings from the same company, for the job detail page's "Related postings" section. Scoped to
