@@ -35,8 +35,9 @@ function formatCurrency(amount: number, currency: string): string {
 /** Every currently-applied filter as one removable chip for the results bar (docs/mockups/job-finder.md,
  *  "Redesign": option C, "each active filter is one click to drop"). A dimension counts as active when it's
  *  actually excluding something -- a multi-select with every option checked excludes nothing, so it's silent.
- *  Posted within has no "unlimited" value in this schema, so it always shows; skip words and skip companies
- *  each get their own chip, one per entry, so dropping one never touches the others. */
+ *  365 days (Anytime) is Posted within's own "unlimited" value, so it stays silent like every other dimension;
+ *  skip words and skip companies each get their own chip, one per entry, so dropping one never touches the
+ *  others. */
 export function activeFilterChips(preferences: JobPreferences): FilterChip[] {
   const chips: FilterChip[] = [];
 
@@ -69,8 +70,9 @@ export function activeFilterChips(preferences: JobPreferences): FilterChip[] {
 
   if (preferences.agenciesHide) chips.push({ key: "agencies", label: "No agencies" });
 
-  const postedWithinLabel = preferences.postedWithinDays >= 365 ? "Anytime" : `${preferences.postedWithinDays} days`;
-  chips.push({ key: "postedWithin", label: postedWithinLabel });
+  if (preferences.postedWithinDays < 365) {
+    chips.push({ key: "postedWithin", label: `${preferences.postedWithinDays} days` });
+  }
 
   return chips;
 }
