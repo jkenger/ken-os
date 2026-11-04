@@ -3,24 +3,33 @@ import { JobsPage } from "@/features/jobs/jobs-page";
 import { getProfile } from "@/features/profile/store";
 import { getPreferences } from "@/features/jobs/preferences-store";
 import { deriveRoles } from "@/features/jobs/roles";
-import { getDistinctCompanies, listPostings } from "@/features/jobs/store";
+import { countPostings, getDistinctCompanies, listPostingsPage } from "@/features/jobs/store";
 import { requireSession } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
+const PAGE_SIZE = 10;
 
 export default async function Jobs({ searchParams }: { searchParams: Promise<{ board?: string }> }) {
   const session = await requireSession("/jobs");
   const { board } = await searchParams;
   const boardFilter = board?.trim() || undefined;
-  const [profile, allPostings, filteredOut, preferences, companies, checkStatus] = await Promise.all([
+  const [profile, firstPage, newCount, filteredOutCount, preferences, companies, checkStatus] = await Promise.all([
     getProfile(session.userId),
-    listPostings(session.userId, "new"),
-    listPostings(session.userId, "filtered_out"),
+    listPostingsPage(session.userId, {
+      state: "new",
+      search: "",
+      sort: "score",
+      board: boardFilter,
+      cursorValue: null,
+      cursorId: null,
+      limit: PAGE_SIZE,
+    }),
+    countPostings(session.userId, "new", boardFilter),
+    countPostings(session.userId, "filtered_out"),
     getPreferences(session.userId),
     getDistinctCompanies(session.userId),
     getCheckStatus(session.userId),
   ]);
-  const postings = boardFilter ? allPostings.filter((posting) => posting.originBoard === boardFilter) : allPostings;
   const derivedRoles = deriveRoles(profile.details);
   const profileSkills = profile.details.skills.flatMap((group) => group.items);
   return (
@@ -28,11 +37,13 @@ export default async function Jobs({ searchParams }: { searchParams: Promise<{ b
       email={session.email}
       effectiveRoles={preferences.roles.length > 0 ? preferences.roles : derivedRoles}
       derivedRoles={derivedRoles}
-      postings={postings}
+      initialPostings={firstPage.postings}
+      initialHasMore={firstPage.hasMore}
+      newCount={newCount}
       profileSkills={profileSkills}
       preferences={preferences}
       companies={companies}
-      filteredOutCount={filteredOut.length}
+      filteredOutCount={filteredOutCount}
       boardFilter={boardFilter}
       checkStatus={checkStatus}
     />

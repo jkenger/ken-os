@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, ne, sql, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db/db";
 import { jobMatches, jobPostingSources, jobPostings } from "@/lib/db/schema";
 import { getCachedRates } from "./currency-rates-store";
@@ -236,6 +236,19 @@ export async function getDistinctCompanies(userId: string): Promise<string[]> {
   return rows.map((row) => row.company);
 }
 
+/** How many postings the owner has in a given state -- the list header's stable total and the Overview's
+ *  zero-state check, without fetching the postings themselves. */
+export async function countPostings(userId: string, state: JobMatchState, board?: string): Promise<number> {
+  const conditions = [eq(jobPostings.userId, userId), eq(jobMatches.state, state)];
+  if (board) conditions.push(eq(jobPostings.originBoard, board));
+  const [row] = await db()
+    .select({ n: sql<number>`count(*)::int` })
+    .from(jobPostings)
+    .innerJoin(jobMatches, eq(jobMatches.postingId, jobPostings.id))
+    .where(and(...conditions));
+  return row?.n ?? 0;
+}
+
 export async function listPostings(userId: string, state: JobMatchState): Promise<PostingView[]> {
   const rows = await db()
     .select(POSTING_COLUMNS)
@@ -246,6 +259,77 @@ export async function listPostings(userId: string, state: JobMatchState): Promis
 
   const attached = await attachSourcesAndScore(rows);
   return rows.map((row) => toPostingView(row, attached.get(row.id)!));
+}
+
+export type PostingSortKey = "score" | "newest" | "pay";
+
+/** The sort column for each `PostingSortKey`, as a SQL expression -- `newest` coalesces to `firstSeenAt` since
+ *  `sourcePostedAt` isn't always stated, the same fallback `sort-postings.ts`'s client-side sort used. */
+const SORT_COLUMN: Record<PostingSortKey, SQL> = {
+  score: sql`${jobMatches.score}`,
+  pay: sql`${jobPostings.payAmount}`,
+  newest: sql`coalesce(${jobPostings.sourcePostedAt}, ${jobPostings.firstSeenAt})`,
+};
+
+/** A WHERE condition for "the next page after this cursor" in `column DESC NULLS LAST` order, tiebroken by
+ *  `id DESC` -- correct even while new postings are inserted mid-scroll (the freehire poll runs every minute),
+ *  unlike an OFFSET that silently skips or repeats a row when a new one is inserted ahead of the current page.
+ *  `cursorValue` null means the cursor itself was already in the trailing "nulls" region. */
+function keysetAfter(
+  column: SQL,
+  idColumn: typeof jobPostings.id,
+  cursorValue: number | Date | null,
+  cursorId: string,
+): SQL {
+  if (cursorValue === null) return sql`(${column} is null and ${idColumn} < ${cursorId})`;
+  return sql`((${column} is not null and (${column} < ${cursorValue} or (${column} = ${cursorValue} and ${idColumn} < ${cursorId}))) or ${column} is null)`;
+}
+
+/** One cursor-paginated page of postings for the infinite-scrolled New list: search and sort run in SQL, not in
+ *  the browser, so the page response only ever carries `limit` postings regardless of how many the owner has.
+ *  `cursorId` null means the first page. Fetches one extra row to know `hasMore` without a separate count query. */
+export async function listPostingsPage(
+  userId: string,
+  params: {
+    state: JobMatchState;
+    search: string;
+    sort: PostingSortKey;
+    board?: string;
+    cursorValue: string | null;
+    cursorId: string | null;
+    limit: number;
+  },
+): Promise<{ postings: PostingView[]; hasMore: boolean }> {
+  const column = SORT_COLUMN[params.sort];
+  const search = params.search.trim();
+  const conditions = [eq(jobPostings.userId, userId), eq(jobMatches.state, params.state)];
+  if (params.board) conditions.push(eq(jobPostings.originBoard, params.board));
+  if (search) {
+    const term = `%${search}%`;
+    conditions.push(sql`(${ilike(jobPostings.title, term)} or ${ilike(jobPostings.company, term)})`);
+  }
+  if (params.cursorId !== null) {
+    const cursorValue =
+      params.cursorValue === null
+        ? null
+        : params.sort === "newest"
+          ? new Date(params.cursorValue)
+          : Number(params.cursorValue);
+    conditions.push(keysetAfter(column, jobPostings.id, cursorValue, params.cursorId));
+  }
+
+  const rows = await db()
+    .select(POSTING_COLUMNS)
+    .from(jobPostings)
+    .innerJoin(jobMatches, eq(jobMatches.postingId, jobPostings.id))
+    .where(and(...conditions))
+    .orderBy(sql`${column} desc nulls last`, desc(jobPostings.id))
+    .limit(params.limit + 1);
+
+  const hasMore = rows.length > params.limit;
+  const page = rows.slice(0, params.limit);
+  const attached = await attachSourcesAndScore(page);
+  return { postings: page.map((row) => toPostingView(row, attached.get(row.id)!)), hasMore };
 }
 
 /** One posting by ID, scoped to its owner so one user can't read another's posting by guessing an ID

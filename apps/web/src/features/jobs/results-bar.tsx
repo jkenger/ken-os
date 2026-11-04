@@ -7,7 +7,7 @@ import { NativeSelect, NativeSelectOption } from "@/components/ui/native-select"
 import { toast } from "@/components/ui/toaster";
 import { activeFilterChips, clearFilterChip } from "@/features/jobs/active-filter-chips";
 import type { JobPreferences } from "@/features/jobs/preferences-store";
-import type { SortKey } from "@/features/jobs/sort-postings";
+import type { PostingSortKey as SortKey } from "@/features/jobs/store";
 import { send } from "@/lib/api-client";
 
 // Option C from docs/mockups/Jobs redesign.html, "New heading / Three directions": no page-wide heading, a bar
