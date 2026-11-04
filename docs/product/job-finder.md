@@ -228,12 +228,17 @@ One page at `/jobs`, in the module column like Profile.
 
 - **List:** New, Saved, Applied, Dismissed, Filtered out. Newest first, or by score or shift.
 - **Each row:** title, company, source, how long ago it arrived, pay, job type, work setup, country, shift, score.
-- **New vs Viewed:** a New-list card shows a "New" badge until the owner opens its detail page once; after that
-  it's Viewed, which has no badge of its own — its absence is the signal, the same read/unread convention as an
-  inbox. Tracked as `job_matches.viewed_at`, separate from the `state` column below: viewing never changes a
-  posting's New/Filtered out/Saved/etc. state, and a Filtered out card never shows either badge, regardless of
-  `viewed_at`. A posting "Show anyway"'d back into New keeps whatever `viewed_at` it already had — already-opened
-  ones stay Viewed, never-opened ones show New again. Counts, sort order and the list header total are unaffected.
+- **New vs Viewed:** a New-list card shows a "New" badge until the owner opens its detail page once, or until 3
+  days pass since `job_postings.first_seen_at`, whichever comes first — most postings never get clicked (there's
+  always more on the board than anyone opens one by one), so a click-only badge would keep showing New for
+  months. Past 3 days unopened, the badge just quietly stops showing; `viewed_at` itself stays null (it only ever
+  records an actual open, never the time-based expiry). Once opened, it's Viewed, which has no badge of its own
+  — its absence is the signal, the same read/unread convention as an inbox. Tracked as `job_matches.viewed_at`,
+  separate from the `state` column below: viewing never changes a posting's New/Filtered out/Saved/etc. state,
+  and a Filtered out card never shows either badge, regardless of `viewed_at`. A posting "Show anyway"'d back
+  into New keeps whatever `viewed_at` it already had — already-opened ones stay Viewed, never-opened ones run
+  the same 3-day check again from their original `first_seen_at`. Counts, sort order and the list header total
+  are unaffected.
 - **Side panel for one posting:** why it fits, what's missing, the posting text, Open posting, Save, Mark applied,
   Dismiss with a reason. Dismiss asks for one of Not interested, Wrong seniority, Already applied elsewhere, Other
   (with a short text field), before moving the posting to Dismissed. A Filtered out posting shows which filter hid
@@ -311,9 +316,11 @@ top 10 ask for AWS").
   hours after a 403 or 429.
 - A `/api/jobs/check/<source>` call without the correct `JOBS_CHECK_SECRET` is rejected and runs nothing.
 - A New posting's card shows "New" until its detail page has been opened once (first open only — opening it again
-  doesn't move the timestamp); after that, no badge. A Filtered out card never shows either badge, whether or not
-  it's been opened. Opening a posting never changes the list header's count, sort order, or any other posting's
-  state.
+  doesn't move the timestamp) or until 3 days pass since `first_seen_at`, whichever comes first; after either,
+  no badge. A posting opened on day 2 never shows New again, even past day 3. A posting never opened stops
+  showing New once it's 3 days old, with `viewed_at` still null. A Filtered out card never shows either badge,
+  whether or not it's been opened. Opening a posting never changes the list header's count, sort order, or any
+  other posting's state.
 
 ## Open questions
 

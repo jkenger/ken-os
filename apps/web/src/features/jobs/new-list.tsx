@@ -77,6 +77,17 @@ function SaveButton({ title }: { title: string }) {
  *  delay left off. */
 const PAGE_SIZE = 10;
 
+/** Most postings never get opened -- there's always more on the board than anyone clicks one by one -- so a
+ *  click-only New badge would keep showing for months. Past this many days since `firstSeenAt`, it quietly stops
+ *  showing even if `viewedAt` is still null (docs/product/job-finder.md, "New vs Viewed"). */
+const NEW_BADGE_MAX_AGE_DAYS = 3;
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+export function isNew(posting: Pick<PostingView, "viewedAt" | "firstSeenAt">): boolean {
+  if (posting.viewedAt) return false;
+  return Date.now() - posting.firstSeenAt.getTime() <= NEW_BADGE_MAX_AGE_DAYS * DAY_MS;
+}
+
 export function NewList({ postings, profileSkills }: { postings: PostingView[]; profileSkills: string[] }) {
   return (
     <div className="flex flex-col gap-3">
@@ -114,7 +125,7 @@ export function NewList({ postings, profileSkills }: { postings: PostingView[]; 
                   <div>
                     <div className="flex items-center gap-1.5">
                       <p className="text-sm font-semibold">{posting.title}</p>
-                      {!posting.viewedAt && <Badge className="h-5 px-1.5 text-[10px]">New</Badge>}
+                      {isNew(posting) && <Badge className="h-5 px-1.5 text-[10px]">New</Badge>}
                     </div>
                     <p className="mt-0.5 text-sm text-muted-foreground">{posting.company}</p>
                   </div>
