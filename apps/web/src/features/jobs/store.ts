@@ -138,6 +138,10 @@ export type PostingView = {
   payAmount: number | null;
   payCurrency: string | null;
   payPeriod: "hour" | "day" | "week" | "month" | "year" | null;
+  /** The source's own stated range, before `payAmount` averages it into one number -- the card shows this range
+   *  directly when both are present, since "$2,000-$3,000" says more than the midpoint alone. */
+  sourceSalaryMin: number | null;
+  sourceSalaryMax: number | null;
   jobType: "full_time" | "part_time" | "contract" | "internship" | "temporary" | null;
   workSetup: "remote" | "hybrid" | "on_site" | null;
   countries: string[] | null;
@@ -171,6 +175,8 @@ const POSTING_COLUMNS = {
   payAmount: jobPostings.payAmount,
   payCurrency: jobPostings.payCurrency,
   payPeriod: jobPostings.payPeriod,
+  sourceSalaryMin: jobPostings.sourceSalaryMin,
+  sourceSalaryMax: jobPostings.sourceSalaryMax,
   jobType: jobPostings.jobType,
   workSetup: jobPostings.workSetup,
   countries: jobPostings.countries,

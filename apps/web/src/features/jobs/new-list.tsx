@@ -48,6 +48,25 @@ function countryMeta(countries: string[]): string | null {
     : `${countryFlag(first!)} ${countryName(first!)}`;
 }
 
+function initials(company: string): string {
+  const words = company.trim().split(/\s+/).filter(Boolean);
+  return (words[0]?.[0] ?? "?").toUpperCase() + (words[1]?.[0] ?? "").toUpperCase();
+}
+
+/** The source's own stated range when it gave two different numbers ("$2,000-$3,000" says more than the
+ *  midpoint `payAmount` averages it into); a single amount otherwise. */
+export function payRangeLabel(
+  posting: Pick<PostingView, "payAmount" | "payCurrency" | "payPeriod" | "sourceSalaryMin" | "sourceSalaryMax">,
+): string | null {
+  if (!posting.payCurrency || !posting.payPeriod) return null;
+  const { sourceSalaryMin: min, sourceSalaryMax: max } = posting;
+  if (min != null && max != null && min !== max) {
+    return `${posting.payCurrency} ${Math.round(min).toLocaleString()}–${Math.round(max).toLocaleString()} a ${posting.payPeriod}`;
+  }
+  if (posting.payAmount == null) return null;
+  return `${posting.payCurrency} ${Math.round(posting.payAmount).toLocaleString()} a ${posting.payPeriod}`;
+}
+
 function SaveButton({ title }: { title: string }) {
   const [saved, setSaved] = useState(false);
   return (
@@ -153,6 +172,12 @@ export function NewList({ postings, profileSkills }: { postings: PostingView[]; 
                       <SkillBadge key={match.skill} match={match} />
                     ))}
                     {overflow > 0 && <Badge variant="secondary">+{overflow}</Badge>}
+                  </div>
+                )}
+
+                {payRangeLabel(posting) && (
+                  <div className="mt-2 flex justify-end">
+                    <span className="text-xs font-medium text-muted-foreground">{payRangeLabel(posting)}</span>
                   </div>
                 )}
               </div>
