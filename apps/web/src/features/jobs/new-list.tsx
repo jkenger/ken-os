@@ -6,6 +6,7 @@ import { useState } from "react";
 import { DotSeparator } from "@/components/dot-separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { CompanyAvatar } from "@/features/jobs/company-avatar";
 import { countryFlag, countryName } from "@/features/jobs/country-flags";
 import { matchSkills } from "@/features/jobs/skills-match";
 import type { PostingView } from "@/features/jobs/store";
@@ -44,11 +45,6 @@ function countryMeta(countries: string[]): string | null {
   return rest.length > 0
     ? `${countryFlag(first!)} ${countryName(first!)} +${rest.length}`
     : `${countryFlag(first!)} ${countryName(first!)}`;
-}
-
-function initials(company: string): string {
-  const words = company.trim().split(/\s+/).filter(Boolean);
-  return (words[0]?.[0] ?? "?").toUpperCase() + (words[1]?.[0] ?? "").toUpperCase();
 }
 
 function SaveButton({ title }: { title: string }) {
@@ -106,9 +102,7 @@ export function NewList({ postings, profileSkills }: { postings: PostingView[]; 
               </span>
             </Link>
             <div className="pointer-events-none relative flex gap-3">
-              <span className="flex size-10 shrink-0 items-center justify-center rounded-md bg-muted text-sm font-semibold text-muted-foreground">
-                {initials(posting.company)}
-              </span>
+              <CompanyAvatar company={posting.company} />
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-3">
                   <div>
