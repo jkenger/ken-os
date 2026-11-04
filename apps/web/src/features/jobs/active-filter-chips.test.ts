@@ -20,7 +20,7 @@ const base: JobPreferences = {
   agenciesHide: false,
 };
 
-test("a fully open set of preferences still shows Posted within, since there's no unlimited option", () => {
+test("Posted within under a year shows its own chip, like any other restricted dimension", () => {
   const chips = activeFilterChips(base);
   assert.deepEqual(
     chips.map((c) => c.key),
@@ -29,9 +29,12 @@ test("a fully open set of preferences still shows Posted within, since there's n
   assert.equal(chips[0]!.label, "14 days");
 });
 
-test("365 days or more reads as Anytime, not a literal day count", () => {
+test("365 days or more is Posted within's unlimited value, so no chip appears", () => {
   const chips = activeFilterChips({ ...base, postedWithinDays: 365 });
-  assert.equal(chips.find((c) => c.key === "postedWithin")!.label, "Anytime");
+  assert.equal(
+    chips.find((c) => c.key === "postedWithin"),
+    undefined,
+  );
 });
 
 test("every restricted dimension produces its own chip, matching the reference's worked example", () => {
