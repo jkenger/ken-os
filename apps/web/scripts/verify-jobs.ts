@@ -973,6 +973,88 @@ async function main() {
       "ok - recording a second, failing check updates the status in place, counting up and preserving lastOkAt",
     );
 
+    const pageUserId = `jobs-page-check-${randomUUID()}`;
+    await db()
+      .insert(users)
+      .values({ id: pageUserId, email: `${pageUserId}@example.invalid`, name: "Page Check" });
+    try {
+      const specs = [
+        { title: "Posting A", score: 90 },
+        { title: "Posting B", score: 70 },
+        { title: "Posting C", score: 70 },
+        { title: "Posting D", score: null },
+        { title: "Posting E", score: 50 },
+      ];
+      for (const spec of specs) {
+        const id = randomUUID();
+        await db()
+          .insert(jobPostings)
+          .values({ id, userId: pageUserId, title: spec.title, company: "PageCo", location: "Remote", snippet: "x" });
+        await db().insert(jobMatches).values({ postingId: id, userId: pageUserId, state: "new", score: spec.score });
+      }
+
+      const page1 = await store.listPostingsPage(pageUserId, {
+        state: "new",
+        search: "",
+        sort: "score",
+        cursorValue: null,
+        cursorId: null,
+        limit: 2,
+      });
+      assert.equal(page1.postings.length, 2);
+      assert.equal(page1.postings[0].title, "Posting A", "the unique highest score leads");
+      assert.equal(page1.hasMore, true);
+
+      const last1 = page1.postings[1];
+      const page2 = await store.listPostingsPage(pageUserId, {
+        state: "new",
+        search: "",
+        sort: "score",
+        cursorValue: String(last1.score),
+        cursorId: last1.id,
+        limit: 2,
+      });
+      assert.equal(page2.postings.length, 2);
+      assert.equal(page2.hasMore, true);
+
+      const last2 = page2.postings[1];
+      const page3 = await store.listPostingsPage(pageUserId, {
+        state: "new",
+        search: "",
+        sort: "score",
+        cursorValue: last2.score === null ? null : String(last2.score),
+        cursorId: last2.id,
+        limit: 2,
+      });
+      assert.equal(page3.postings.length, 1);
+      assert.equal(page3.hasMore, false);
+      assert.equal(page3.postings[0].title, "Posting D", "the null score sorts last, after every real score");
+
+      const allTitles = [...page1.postings, ...page2.postings, ...page3.postings].map((p) => p.title).sort();
+      assert.deepEqual(
+        allTitles,
+        ["Posting A", "Posting B", "Posting C", "Posting D", "Posting E"],
+        "no gap or repeat across pages",
+      );
+      console.log("ok - listPostingsPage cursor-paginates score DESC NULLS LAST with no gap or repeat");
+
+      const searched = await store.listPostingsPage(pageUserId, {
+        state: "new",
+        search: "posting a",
+        sort: "score",
+        cursorValue: null,
+        cursorId: null,
+        limit: 10,
+      });
+      assert.deepEqual(
+        searched.postings.map((p) => p.title),
+        ["Posting A"],
+      );
+      console.log("ok - listPostingsPage's search matches the title case-insensitively");
+    } finally {
+      await db().delete(users).where(eq(users.id, pageUserId));
+    }
+
     const distinctCompanies = await store.getDistinctCompanies(userId);
     assert.deepEqual(
       distinctCompanies,

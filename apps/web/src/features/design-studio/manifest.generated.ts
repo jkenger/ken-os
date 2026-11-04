@@ -2767,10 +2767,10 @@ export const studioManifest: StudioManifest = {
   ],
   "globals": {
     "file": "app/globals.css",
-    "lines": 384,
+    "lines": 405,
     "tail": [
-      ".font-mono {",
-      "  font-variant-numeric: tabular-nums;",
+      "    animation: none;",
+      "  }",
       "}"
     ],
     "newline": true

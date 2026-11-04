@@ -72,10 +72,15 @@ function SaveButton({ title }: { title: string }) {
   );
 }
 
+/** Batch size the infinite scroll fetches at a time (`/api/jobs/postings`) -- stagger delay resets every this
+ *  many cards, so a newly loaded batch animates in from its own top rather than picking up where the last one's
+ *  delay left off. */
+const PAGE_SIZE = 10;
+
 export function NewList({ postings, profileSkills }: { postings: PostingView[]; profileSkills: string[] }) {
   return (
     <div className="flex flex-col gap-3">
-      {postings.map((posting) => {
+      {postings.map((posting, index) => {
         const metaItems = [
           posting.workSetup && WORK_SETUP_LABELS[posting.workSetup],
           countryMeta(posting.countries ?? []),
@@ -90,7 +95,11 @@ export function NewList({ postings, profileSkills }: { postings: PostingView[]; 
         const overflow = posting.skills.length - skillMatches.length;
 
         return (
-          <div key={posting.id} className="relative rounded-xl border bg-card p-4 hover:bg-muted/40">
+          <div
+            key={posting.id}
+            className="fade-up-in relative rounded-xl border bg-card p-4 hover:bg-muted/40"
+            style={{ animationDelay: `${Math.min(50 + (index % PAGE_SIZE) * 70, 330)}ms` }}
+          >
             <Link href={`/jobs/${posting.id}`} className="absolute inset-0" aria-label={posting.title}>
               <span className="sr-only">
                 {posting.title} at {posting.company}
