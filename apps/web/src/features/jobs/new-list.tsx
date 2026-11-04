@@ -112,7 +112,10 @@ export function NewList({ postings, profileSkills }: { postings: PostingView[]; 
               <div className="min-w-0 flex-1">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm font-semibold">{posting.title}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-semibold">{posting.title}</p>
+                      {!posting.viewedAt && <Badge className="h-5 px-1.5 text-[10px]">New</Badge>}
+                    </div>
                     <p className="mt-0.5 text-sm text-muted-foreground">{posting.company}</p>
                   </div>
                   <div className="pointer-events-auto relative z-10 flex shrink-0 items-center gap-2">

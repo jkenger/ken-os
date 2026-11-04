@@ -26,6 +26,7 @@ function hydratePosting(raw: PostingView): PostingView {
     firstSeenAt: new Date(raw.firstSeenAt),
     sourcePostedAt: raw.sourcePostedAt ? new Date(raw.sourcePostedAt) : null,
     sourceUpdatedAt: raw.sourceUpdatedAt ? new Date(raw.sourceUpdatedAt) : null,
+    viewedAt: raw.viewedAt ? new Date(raw.viewedAt) : null,
   };
 }
 

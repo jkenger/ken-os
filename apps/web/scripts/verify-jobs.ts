@@ -1055,6 +1055,32 @@ async function main() {
       await db().delete(users).where(eq(users.id, pageUserId));
     }
 
+    await store.savePostings(userId, [
+      {
+        source: "linkedin",
+        sourceId: "li-viewed-check",
+        title: "ViewedCheck Role",
+        company: "ViewedCheck Co",
+        location: "Remote",
+        snippet: "Join our team.",
+        link: "https://www.linkedin.com/jobs/view/viewed-check",
+      },
+    ]);
+    const [viewedCheckPosting] = (await store.listPostings(userId, "new")).filter(
+      (posting) => posting.title === "ViewedCheck Role",
+    );
+    assert.equal(viewedCheckPosting!.viewedAt, null, "a never-opened posting starts with no viewedAt");
+
+    await store.markViewed(userId, viewedCheckPosting!.id);
+    const viewedOnce = await store.getPosting(userId, viewedCheckPosting!.id);
+    assert.ok(viewedOnce!.viewedAt instanceof Date, "opening the detail page sets viewedAt");
+    const firstViewedAt = viewedOnce!.viewedAt!.getTime();
+
+    await store.markViewed(userId, viewedCheckPosting!.id);
+    const viewedTwice = await store.getPosting(userId, viewedCheckPosting!.id);
+    assert.equal(viewedTwice!.viewedAt!.getTime(), firstViewedAt, "a second open does not move the timestamp");
+    console.log("ok - markViewed sets viewedAt once and leaves it alone on every later open");
+
     const distinctCompanies = await store.getDistinctCompanies(userId);
     assert.deepEqual(
       distinctCompanies,

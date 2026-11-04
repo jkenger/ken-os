@@ -228,6 +228,12 @@ One page at `/jobs`, in the module column like Profile.
 
 - **List:** New, Saved, Applied, Dismissed, Filtered out. Newest first, or by score or shift.
 - **Each row:** title, company, source, how long ago it arrived, pay, job type, work setup, country, shift, score.
+- **New vs Viewed:** a New-list card shows a "New" badge until the owner opens its detail page once; after that
+  it's Viewed, which has no badge of its own — its absence is the signal, the same read/unread convention as an
+  inbox. Tracked as `job_matches.viewed_at`, separate from the `state` column below: viewing never changes a
+  posting's New/Filtered out/Saved/etc. state, and a Filtered out card never shows either badge, regardless of
+  `viewed_at`. A posting "Show anyway"'d back into New keeps whatever `viewed_at` it already had — already-opened
+  ones stay Viewed, never-opened ones show New again. Counts, sort order and the list header total are unaffected.
 - **Side panel for one posting:** why it fits, what's missing, the posting text, Open posting, Save, Mark applied,
   Dismiss with a reason. Dismiss asks for one of Not interested, Wrong seniority, Already applied elsewhere, Other
   (with a short text field), before moving the posting to Dismissed. A Filtered out posting shows which filter hid
@@ -265,8 +271,9 @@ New tables, added in one migration. Nothing existing changes.
 - `job_preferences`: one row per owner, the settings as `jsonb`.
 - `job_postings`: one row per real posting after repeats are dropped, with the extracted fields and every source it
   came from.
-- `job_matches`: the score, reasons, shift and the owner's state (New, Saved, Applied, Dismissed, Filtered out) for
-  each posting, with the prompt version and the Profile version it was scored against.
+- `job_matches`: the score, reasons, shift, the owner's state (New, Saved, Applied, Dismissed, Filtered out) and
+  `viewed_at` (null until the owner opens the posting's detail page once) for each posting, with the prompt
+  version and the Profile version it was scored against.
 
 freehire needs no block/backoff state (no anti-scraping posture to track against) — the `job_scraper_state` table
 this used to need for LinkedIn/Indeed was removed along with the scrapers themselves; `onlinejobs`, if the checker
@@ -303,6 +310,10 @@ top 10 ask for AWS").
 - If built, the OnlineJobs checker never sends two requests less than 5 seconds apart, never signs in, and stops for 24
   hours after a 403 or 429.
 - A `/api/jobs/check/<source>` call without the correct `JOBS_CHECK_SECRET` is rejected and runs nothing.
+- A New posting's card shows "New" until its detail page has been opened once (first open only — opening it again
+  doesn't move the timestamp); after that, no badge. A Filtered out card never shows either badge, whether or not
+  it's been opened. Opening a posting never changes the list header's count, sort order, or any other posting's
+  state.
 
 ## Open questions
 
