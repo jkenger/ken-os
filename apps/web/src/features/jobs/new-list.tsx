@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { countryFlag, countryName } from "@/features/jobs/country-flags";
 import { matchSkills } from "@/features/jobs/skills-match";
 import type { PostingView } from "@/features/jobs/store";
+import { timeAgo } from "@/features/jobs/time-ago";
 import { SkillBadge } from "./skill-badge";
 
 // New postings as cards (docs/mockups/Jobs redesign.html, "Desktop / New (cards)"): company, title, score, a meta
@@ -86,6 +87,7 @@ export function NewList({ postings, profileSkills }: { postings: PostingView[]; 
           countryMeta(posting.countries ?? []),
           posting.jobType && JOB_TYPE_LABELS[posting.jobType],
           posting.seniority && SENIORITY_LABELS[posting.seniority],
+          timeAgo(posting.sourcePostedAt ?? posting.firstSeenAt),
         ].filter((item): item is string => Boolean(item));
         // freehire's own snippet is sometimes empty even after processing (no source teaser for that posting).
         // fullDescription fills in when the full page was read; summary is what's left for a Partial posting
