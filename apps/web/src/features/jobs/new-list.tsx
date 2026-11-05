@@ -1,11 +1,12 @@
 "use client";
 
-import { Bookmark } from "lucide-react";
+import { ArrowUpRight, Bookmark } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { DotSeparator } from "@/components/dot-separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { CompanyAvatar } from "@/features/jobs/company-avatar";
 import { countryFlag, countryName } from "@/features/jobs/country-flags";
 import { matchSkills } from "@/features/jobs/skills-match";
@@ -73,17 +74,16 @@ function SaveButton({ title }: { title: string }) {
     <Button
       type="button"
       variant={saved ? "secondary" : "outline"}
-      size="sm"
+      size="icon-sm"
       aria-pressed={saved}
       aria-label={saved ? `Unsave ${title}` : `Save ${title}`}
       onClick={(event) => {
         event.preventDefault();
         setSaved((value) => !value);
       }}
-      className="shrink-0 gap-1.5"
+      className="shrink-0"
     >
       <Bookmark className={saved ? "fill-current" : undefined} />
-      {saved ? "Saved" : "Save"}
     </Button>
   );
 }
@@ -121,11 +121,12 @@ export function NewList({ postings, profileSkills }: { postings: PostingView[]; 
         const previewText = posting.snippet || posting.fullDescription || posting.summary || "";
         const skillMatches = matchSkills(posting.skills, profileSkills).slice(0, MAX_SKILLS);
         const overflow = posting.skills.length - skillMatches.length;
+        const link = posting.sources[0]?.link;
 
         return (
           <div
             key={posting.id}
-            className="fade-up-in relative rounded-xl border bg-card p-4 hover:bg-muted/40"
+            className="group fade-up-in relative rounded-xl border bg-card p-4 hover:bg-muted/40"
             style={{ animationDelay: `${Math.min(50 + (index % PAGE_SIZE) * 70, 330)}ms` }}
           >
             <Link href={`/jobs/${posting.id}`} className="absolute inset-0" aria-label={posting.title}>
@@ -139,7 +140,7 @@ export function NewList({ postings, profileSkills }: { postings: PostingView[]; 
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="flex items-center gap-1.5">
-                      <p className="text-sm font-semibold">{posting.title}</p>
+                      <p className="text-sm font-semibold underline-offset-2 group-hover:underline">{posting.title}</p>
                       {isNew(posting) && <Badge className="h-5 px-1.5 text-[10px]">New</Badge>}
                     </div>
                     <p className="mt-0.5 text-sm text-muted-foreground">{posting.company}</p>
@@ -181,6 +182,23 @@ export function NewList({ postings, profileSkills }: { postings: PostingView[]; 
                   </div>
                 )}
               </div>
+            </div>
+
+            <Separator className="mt-3" />
+            <div className="pointer-events-auto relative z-10 mt-3 flex justify-end">
+              <Button type="button" size="sm" disabled={!link} asChild={Boolean(link)}>
+                {link ? (
+                  <a href={link} target="_blank" rel="noopener noreferrer" className="group/apply">
+                    Apply
+                    <ArrowUpRight className="transition-transform duration-200 ease-out group-hover/apply:translate-x-0.5 group-hover/apply:-translate-y-0.5" />
+                  </a>
+                ) : (
+                  <>
+                    Apply
+                    <ArrowUpRight />
+                  </>
+                )}
+              </Button>
             </div>
           </div>
         );
