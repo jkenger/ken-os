@@ -854,6 +854,9 @@ export const jobMatches = pgTable(
     /** Set once, the first time the owner opens this posting's detail page. Null means the card still shows the
      *  New badge; this is separate from `state`, which tracks the filter verdict, not read status. */
     viewedAt: timestamp("viewed_at", { withTimezone: true }),
+    /** Set only when the owner confirms "yes" on the post-Apply dialog (docs/architecture/job-board.md) -- never
+     *  by clicking Apply itself, which proves nothing. */
+    appliedAt: timestamp("applied_at", { withTimezone: true }),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("job_matches_user_state_idx").on(table.userId, table.state)],

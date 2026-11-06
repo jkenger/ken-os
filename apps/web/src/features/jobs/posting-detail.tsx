@@ -1,3 +1,5 @@
+"use client";
+
 import { AlertTriangle, Bookmark, CircleHelp, ExternalLink, FileText } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -21,6 +23,7 @@ import { CountryAvatarGroup } from "./country-avatar-group";
 import { EmptyState } from "./empty-state";
 import { SkillBadge, SkillGroup } from "./skill-badge";
 import { SkillLogo } from "./skill-logo";
+import { useApplyFlow } from "./use-apply-flow";
 
 // The job detail page (docs/mockups/Jobs redesign.html, "Desktop / Job detail"): a full page, not a side panel.
 // Left is the profile match rail (score, skills matching, metadata); right is the posting itself. Mark
@@ -77,6 +80,7 @@ export function PostingDetail({
   preferredWorkSetups: WorkSetup[];
 }) {
   const link = posting.sources[0]?.link;
+  const { onApplyClick, dialog } = useApplyFlow({ postingId: posting.id, link });
   const skillMatches = matchSkills(posting.skills, profileSkills);
   const mismatches = requirementMismatches(
     { yearsRequired: posting.yearsRequired, workSetup: posting.workSetup },
@@ -200,19 +204,10 @@ export function PostingDetail({
               <FileText />
               Tailor my CV
             </Button>
-            {link ? (
-              <Button type="button" asChild>
-                <a href={link} target="_blank" rel="noopener noreferrer">
-                  Apply
-                  <ExternalLink />
-                </a>
-              </Button>
-            ) : (
-              <Button type="button" disabled>
-                Apply
-                <ExternalLink />
-              </Button>
-            )}
+            <Button type="button" disabled={!link} onClick={onApplyClick}>
+              Apply
+              <ExternalLink />
+            </Button>
           </div>
         </div>
 
@@ -281,6 +276,7 @@ export function PostingDetail({
           </TabsContent>
         </Tabs>
       </div>
+      {dialog}
     </div>
   );
 }

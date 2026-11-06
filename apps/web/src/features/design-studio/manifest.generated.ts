@@ -5,6 +5,47 @@ export const studioManifest: StudioManifest = {
   "style": "radix-luma",
   "components": [
     {
+      "id": "ui/alert-dialog",
+      "name": "AlertDialog",
+      "kind": "primitive",
+      "file": "components/ui/alert-dialog.tsx",
+      "exports": [
+        "AlertDialog",
+        "AlertDialogAction",
+        "AlertDialogCancel",
+        "AlertDialogContent",
+        "AlertDialogDescription",
+        "AlertDialogFooter",
+        "AlertDialogHeader",
+        "AlertDialogMedia",
+        "AlertDialogOverlay",
+        "AlertDialogPortal",
+        "AlertDialogTitle",
+        "AlertDialogTrigger"
+      ],
+      "variants": [],
+      "uses": [
+        "ui/button"
+      ],
+      "tokens": [
+        "popover",
+        "popover-foreground",
+        "primary",
+        "primary-foreground",
+        "secondary",
+        "secondary-foreground",
+        "muted",
+        "muted-foreground",
+        "destructive",
+        "border",
+        "input",
+        "ring",
+        "radius",
+        "background",
+        "foreground"
+      ]
+    },
+    {
       "id": "ui/alert",
       "name": "Alert",
       "kind": "primitive",
@@ -1326,6 +1367,7 @@ export const studioManifest: StudioManifest = {
           "uses": [
             "ui/button"
           ],
+          "installed": "ui/alert-dialog",
           "add": "pnpm dlx shadcn@latest add @shadcn/alert-dialog",
           "docs": "https://ui.shadcn.com/docs/components/radix/alert-dialog"
         },
