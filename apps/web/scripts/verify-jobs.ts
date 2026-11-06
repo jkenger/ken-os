@@ -1081,6 +1081,45 @@ async function main() {
     assert.equal(viewedTwice!.viewedAt!.getTime(), firstViewedAt, "a second open does not move the timestamp");
     console.log("ok - markViewed sets viewedAt once and leaves it alone on every later open");
 
+    await store.savePostings(userId, [
+      {
+        source: "linkedin",
+        sourceId: "li-applied-check",
+        title: "AppliedCheck Role",
+        company: "AppliedCheck Co",
+        location: "Remote",
+        snippet: "Join our team.",
+        link: "https://www.linkedin.com/jobs/view/applied-check",
+      },
+    ]);
+    const [appliedCheckPosting] = (await store.listPostings(userId, "new")).filter(
+      (posting) => posting.title === "AppliedCheck Role",
+    );
+    assert.equal(appliedCheckPosting!.appliedAt, null, "a never-applied posting starts with no appliedAt");
+    assert.equal(appliedCheckPosting!.viewedAt, null, "and no viewedAt, since the detail page was never opened");
+
+    await store.markApplied(userId, appliedCheckPosting!.id);
+    const appliedFromCard = await store.getPosting(userId, appliedCheckPosting!.id);
+    assert.ok(appliedFromCard!.appliedAt instanceof Date, "confirming applied sets appliedAt");
+    assert.ok(
+      appliedFromCard!.viewedAt instanceof Date,
+      "Apply can be clicked straight from the card, so confirming also sets viewedAt",
+    );
+    console.log("ok - markApplied sets appliedAt and, since it was unset, viewedAt too");
+
+    await store.markViewed(userId, viewedCheckPosting!.id);
+    const alreadyViewed = await store.getPosting(userId, viewedCheckPosting!.id);
+    const viewedAtBeforeApply = alreadyViewed!.viewedAt!.getTime();
+    await store.markApplied(userId, viewedCheckPosting!.id);
+    const appliedFromDetail = await store.getPosting(userId, viewedCheckPosting!.id);
+    assert.ok(appliedFromDetail!.appliedAt instanceof Date, "confirming applied sets appliedAt here too");
+    assert.equal(
+      appliedFromDetail!.viewedAt!.getTime(),
+      viewedAtBeforeApply,
+      "an already-viewed posting's viewedAt does not move",
+    );
+    console.log("ok - markApplied leaves an already-set viewedAt untouched");
+
     const distinctCompanies = await store.getDistinctCompanies(userId);
     assert.deepEqual(
       distinctCompanies,

@@ -1,0 +1,1 @@
+ALTER TABLE "job_matches" ADD COLUMN "applied_at" timestamp with time zone;

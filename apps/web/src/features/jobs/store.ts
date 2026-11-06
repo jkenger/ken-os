@@ -128,6 +128,8 @@ export type PostingView = {
   filterReason: string | null;
   /** Null until the owner opens this posting's detail page once -- the card's New badge shows while it's null. */
   viewedAt: Date | null;
+  /** Null until the owner confirms the post-Apply dialog. */
+  appliedAt: Date | null;
   sources: { source: AlertSource; link: string }[];
   processedAt: Date | null;
   fullDescription: string | null;
@@ -166,6 +168,7 @@ const POSTING_COLUMNS = {
   state: jobMatches.state,
   filterReason: jobMatches.filterReason,
   viewedAt: jobMatches.viewedAt,
+  appliedAt: jobMatches.appliedAt,
   processedAt: jobPostings.processedAt,
   fullDescription: jobPostings.fullDescription,
   descriptionHtml: jobPostings.descriptionHtml,
@@ -365,6 +368,16 @@ export async function markViewed(userId: string, postingId: string): Promise<voi
     .where(
       and(eq(jobMatches.postingId, postingId), eq(jobMatches.userId, userId), sql`${jobMatches.viewedAt} is null`),
     );
+}
+
+/** Confirming "yes" on the post-Apply dialog -- sets `appliedAt` and, since Apply can be clicked straight from
+ *  the card without ever opening the detail page, also sets `viewedAt` if it wasn't already (docs/product/
+ *  job-finder.md, "Applied implies Viewed"). Scoped to the owner's own posting. */
+export async function markApplied(userId: string, postingId: string): Promise<void> {
+  await db()
+    .update(jobMatches)
+    .set({ appliedAt: new Date(), viewedAt: sql`coalesce(${jobMatches.viewedAt}, now())` })
+    .where(and(eq(jobMatches.postingId, postingId), eq(jobMatches.userId, userId)));
 }
 
 /** Other open postings from the same company, for the job detail page's "Related postings" section. Scoped to
