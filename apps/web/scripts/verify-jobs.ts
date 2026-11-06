@@ -1089,6 +1089,31 @@ async function main() {
     );
     assert.ok(distinctCompanies.includes("SliceThreeCo"), "includes a company saved earlier in this run");
     console.log("ok - getDistinctCompanies returns every distinct company name for the Skip companies filter");
+
+    await store.savePostings(userId, [
+      {
+        source: "linkedin",
+        sourceId: "li-saved-check",
+        title: "SavedCheck Role",
+        company: "SavedCheck Co",
+        location: "Remote",
+        snippet: "Join our team.",
+        link: "https://www.linkedin.com/jobs/view/saved-check",
+      },
+    ]);
+    const [savedCheckPosting] = (await store.listPostings(userId, "new")).filter(
+      (posting) => posting.title === "SavedCheck Role",
+    );
+    assert.equal(savedCheckPosting!.savedAt, null, "a never-saved posting starts with no savedAt");
+
+    await store.setSaved(userId, savedCheckPosting!.id, true);
+    const savedOnce = await store.getPosting(userId, savedCheckPosting!.id);
+    assert.ok(savedOnce!.savedAt instanceof Date, "saving sets savedAt");
+
+    await store.setSaved(userId, savedCheckPosting!.id, false);
+    const unsaved = await store.getPosting(userId, savedCheckPosting!.id);
+    assert.equal(unsaved!.savedAt, null, "un-saving clears savedAt back to null");
+    console.log("ok - setSaved toggles savedAt on and back off");
   } finally {
     await db().delete(users).where(eq(users.id, userId));
     await closeDb();

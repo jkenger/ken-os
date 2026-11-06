@@ -128,6 +128,8 @@ export type PostingView = {
   filterReason: string | null;
   /** Null until the owner opens this posting's detail page once -- the card's New badge shows while it's null. */
   viewedAt: Date | null;
+  /** Null until the owner clicks Save; cleared back to null by clicking Save again (ADR-003). */
+  savedAt: Date | null;
   sources: { source: AlertSource; link: string }[];
   processedAt: Date | null;
   fullDescription: string | null;
@@ -166,6 +168,7 @@ const POSTING_COLUMNS = {
   state: jobMatches.state,
   filterReason: jobMatches.filterReason,
   viewedAt: jobMatches.viewedAt,
+  savedAt: jobMatches.savedAt,
   processedAt: jobPostings.processedAt,
   fullDescription: jobPostings.fullDescription,
   descriptionHtml: jobPostings.descriptionHtml,
@@ -365,6 +368,15 @@ export async function markViewed(userId: string, postingId: string): Promise<voi
     .where(
       and(eq(jobMatches.postingId, postingId), eq(jobMatches.userId, userId), sql`${jobMatches.viewedAt} is null`),
     );
+}
+
+/** Save toggle: sets `savedAt` to now or clears it back to null (ADR-003 -- a direct toggle, no confirmation,
+ *  unlike Applied). Scoped to the owner's own posting. */
+export async function setSaved(userId: string, postingId: string, saved: boolean): Promise<void> {
+  await db()
+    .update(jobMatches)
+    .set({ savedAt: saved ? new Date() : null })
+    .where(and(eq(jobMatches.postingId, postingId), eq(jobMatches.userId, userId)));
 }
 
 /** Other open postings from the same company, for the job detail page's "Related postings" section. Scoped to
