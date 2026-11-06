@@ -7,11 +7,13 @@ import { DotSeparator } from "@/components/dot-separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "@/components/ui/toaster";
 import { CompanyAvatar } from "@/features/jobs/company-avatar";
 import { countryFlag, countryName } from "@/features/jobs/country-flags";
 import { matchSkills } from "@/features/jobs/skills-match";
 import type { PostingView } from "@/features/jobs/store";
 import { timeAgo } from "@/features/jobs/time-ago";
+import { send } from "@/lib/api-client";
 import { SkillBadge } from "./skill-badge";
 
 // New postings as cards (docs/mockups/Jobs redesign.html, "Desktop / New (cards)"): company, title, score, a meta
@@ -68,8 +70,30 @@ export function payRangeLabel(
   return `${posting.payCurrency} ${Math.round(posting.payAmount).toLocaleString()} a ${posting.payPeriod}`;
 }
 
-function SaveButton({ title }: { title: string }) {
-  const [saved, setSaved] = useState(false);
+function SaveButton({
+  postingId,
+  title,
+  saved,
+  onSavedChange,
+}: {
+  postingId: string;
+  title: string;
+  saved: boolean;
+  onSavedChange: (saved: boolean) => void;
+}) {
+  const [pending, setPending] = useState(false);
+  async function toggle(next: boolean) {
+    onSavedChange(next);
+    setPending(true);
+    try {
+      await send(`/api/jobs/postings/${postingId}/save`, "POST", { saved: next });
+    } catch (error) {
+      onSavedChange(!next);
+      toast({ tone: "error", title: error instanceof Error ? error.message : "Couldn't save. Try again" });
+    } finally {
+      setPending(false);
+    }
+  }
   return (
     <Button
       type="button"
@@ -77,9 +101,10 @@ function SaveButton({ title }: { title: string }) {
       size="icon-sm"
       aria-pressed={saved}
       aria-label={saved ? `Unsave ${title}` : `Save ${title}`}
+      disabled={pending}
       onClick={(event) => {
         event.preventDefault();
-        setSaved((value) => !value);
+        void toggle(!saved);
       }}
       className="shrink-0"
     >
@@ -104,7 +129,17 @@ export function isNew(posting: Pick<PostingView, "viewedAt" | "firstSeenAt">): b
   return Date.now() - posting.firstSeenAt.getTime() <= NEW_BADGE_MAX_AGE_DAYS * DAY_MS;
 }
 
+/** The card's badge slot: Saved wins over New (a posting the owner saved stays marked Saved regardless of age),
+ *  New otherwise, or no badge at all (docs/architecture/job-board.md). */
+export function postingBadge(
+  posting: Pick<PostingView, "viewedAt" | "firstSeenAt" | "savedAt">,
+): "Saved" | "New" | null {
+  if (posting.savedAt) return "Saved";
+  return isNew(posting) ? "New" : null;
+}
+
 export function NewList({ postings, profileSkills }: { postings: PostingView[]; profileSkills: string[] }) {
+  const [savedOverrides, setSavedOverrides] = useState<Record<string, boolean>>({});
   return (
     <div className="flex flex-col gap-3">
       {postings.map((posting, index) => {
@@ -122,6 +157,12 @@ export function NewList({ postings, profileSkills }: { postings: PostingView[]; 
         const skillMatches = matchSkills(posting.skills, profileSkills).slice(0, MAX_SKILLS);
         const overflow = posting.skills.length - skillMatches.length;
         const link = posting.sources[0]?.link;
+        const saved = savedOverrides[posting.id] ?? posting.savedAt != null;
+        const badge = postingBadge({
+          viewedAt: posting.viewedAt,
+          firstSeenAt: posting.firstSeenAt,
+          savedAt: saved ? new Date() : null,
+        });
 
         return (
           <div
@@ -141,7 +182,7 @@ export function NewList({ postings, profileSkills }: { postings: PostingView[]; 
                   <div>
                     <div className="flex items-center gap-1.5">
                       <p className="text-sm font-semibold underline-offset-2 group-hover:underline">{posting.title}</p>
-                      {isNew(posting) && <Badge className="h-5 px-1.5 text-[10px]">New</Badge>}
+                      {badge && <Badge className="h-5 px-1.5 text-[10px]">{badge}</Badge>}
                     </div>
                     <p className="mt-0.5 text-sm text-muted-foreground">{posting.company}</p>
                   </div>
@@ -152,7 +193,12 @@ export function NewList({ postings, profileSkills }: { postings: PostingView[]; 
                         <span className="font-normal text-muted-foreground">match</span>
                       </Badge>
                     )}
-                    <SaveButton title={posting.title} />
+                    <SaveButton
+                      postingId={posting.id}
+                      title={posting.title}
+                      saved={saved}
+                      onSavedChange={(next) => setSavedOverrides((prev) => ({ ...prev, [posting.id]: next }))}
+                    />
                   </div>
                 </div>
 

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { isNew, payRangeLabel } from "./new-list";
+import { isNew, payRangeLabel, postingBadge } from "./new-list";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -45,4 +45,23 @@ test("no source range falls back to the single payAmount", () => {
 test("no pay information at all has nothing to show", () => {
   assert.equal(payRangeLabel(basePay), null);
   assert.equal(payRangeLabel({ ...basePay, payCurrency: null }), null);
+});
+
+test("a saved posting shows Saved, overriding New", () => {
+  assert.equal(postingBadge({ savedAt: new Date(), viewedAt: null, firstSeenAt: new Date() }), "Saved");
+});
+
+test("a saved posting shows Saved even once it's no longer New", () => {
+  assert.equal(
+    postingBadge({ savedAt: new Date(), viewedAt: new Date(), firstSeenAt: new Date(Date.now() - 4 * DAY_MS) }),
+    "Saved",
+  );
+});
+
+test("an unsaved, new posting falls back to New", () => {
+  assert.equal(postingBadge({ savedAt: null, viewedAt: null, firstSeenAt: new Date() }), "New");
+});
+
+test("an unsaved posting that's neither Saved nor New shows no badge", () => {
+  assert.equal(postingBadge({ savedAt: null, viewedAt: new Date(), firstSeenAt: new Date() }), null);
 });
