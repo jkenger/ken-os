@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Jobs, Job Board</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+.jb{--bg:oklch(0.975 0.002 265);--fg:oklch(0.22 0.005 265);--card:oklch(0.995 0.001 265);--pop:oklch(0.995 0.001 265);--muted:oklch(0.945 0.003 265);--mfg:oklch(0.48 0.008 265);--border:oklch(0.885 0.004 265);--ring:oklch(0.52 0.16 262);--side:oklch(0.955 0.003 265);--sacc:oklch(0.915 0.004 265);--pfg:oklch(0.985 0.001 265);--scrim:oklch(0.22 0.005 265 / 0.4);font-family:Geist,ui-sans-serif,system-ui,sans-serif;color:var(--fg);background:var(--bg);font-size:14px;line-height:1.43}
+.jb *{box-sizing:border-box}
+a{color:oklch(0.22 0.005 265);text-decoration:none}a:hover{color:oklch(0.22 0.005 265);text-decoration:underline}
+.jb button,.jb input,.jb select{font:inherit;color:inherit}
+.jb input::placeholder{color:var(--mfg)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:36px;padding:0 12px;border-radius:10.4px;border:1px solid transparent;font-weight:500;font-size:14px;white-space:nowrap;cursor:pointer;background:transparent;color:var(--fg);text-decoration:none}
+.btn:hover{text-decoration:none}
+.btn-p{background:var(--fg);color:var(--pfg)}
+.btn-p:hover{color:var(--pfg)}
+.btn-o{background:var(--bg);border-color:var(--border)}
+.btn-s{background:var(--muted)}
+.btn-sm{height:32px;padding:0 10px}
+.btn-xs{height:28px;padding:0 8px;font-size:12px;border-radius:8px}
+.btn-icon{width:32px;padding:0}
+.badge{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border-radius:8.8px;border:1px solid transparent;font-size:12px;font-weight:500;white-space:nowrap;line-height:1}
+.b-slot{height:20px;padding:0 6px;font-size:10px;background:var(--fg);color:var(--pfg)}
+.b-s{background:var(--muted)}
+.b-o{border-color:var(--border)}
+.sk-have{background:oklch(0.962 0.044 156.743);border-color:oklch(0.925 0.084 155.995);color:oklch(0.448 0.119 151.328)}
+.sk-rel{background:oklch(0.962 0.059 95.617);border-color:oklch(0.924 0.12 95.746);color:oklch(0.473 0.137 46.201)}
+.sk-miss{background:var(--muted)}
+.inp{display:flex;align-items:center;gap:8px;height:36px;padding:0 12px;border-radius:8.8px;background:var(--muted);border:1px solid transparent;width:100%;font-size:14px}
+.inp input,.inp select{border:0;background:transparent;outline:0;width:100%;padding:0;appearance:none;min-width:0}
+.ph-head{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mfg);margin:0}
+.mono{font-family:"Geist Mono",ui-monospace,monospace;font-variant-numeric:tabular-nums}
+.lbl{font-size:12px;color:var(--mfg)}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:4px}
+.rail-b{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--mfg)}
+.rail-b.on{background:var(--sacc);color:var(--fg)}
+.jc{position:relative;background:var(--card);border:1px solid var(--border);border-radius:5.6px;padding:16px}
+.jc:hover{background:oklch(0.945 0.003 265 / 0.4)}
+.logo{width:40px;height:40px;border-radius:3.2px;display:grid;place-items:center;flex:none;background:var(--muted)}
+.ini{color:var(--mfg);font-weight:600;font-size:14px}
+.dot{width:3px;height:3px;border-radius:50%;background:var(--mfg);flex:none}
+.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tabs{display:inline-flex;gap:2px;padding:3px;border-radius:10.4px;background:var(--muted)}
+.tabs a{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 14px;border-radius:8px;font-size:14px;font-weight:500;color:var(--mfg);text-decoration:none}
+.tabs a[aria-selected=true]{background:var(--card);color:var(--fg);box-shadow:0 0 0 1px var(--border)}
+.strip{display:flex;align-items:center;flex-wrap:wrap;gap:6px 14px;padding:8px 12px;border:1px solid var(--border);border-radius:4px;background:var(--card);font-size:13px}
+.strip .sep{width:1px;height:14px;background:var(--border)}
+.dlg{background:var(--pop);border-radius:10.4px;box-shadow:0 20px 25px -5px rgb(0 0 0 / 0.1),0 8px 10px -6px rgb(0 0 0 / 0.1);border:1px solid var(--border);padding:24px;display:flex;flex-direction:column;gap:20px}
+.plabel{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mfg);margin:0 0 8px}
+</style>
+</helmet>
+<div class="jb" style="width: {{W}}px; height: {{H}}px; display: flex; overflow: hidden; position: relative">
+  <sc-if value="{{isParts}}" hint-placeholder-val="{{false}}">
+    <div style="flex: 1; padding: 32px; display: flex; flex-direction: column; gap: 28px">
+      <sc-for list="{{cards}}" as="c" hint-placeholder-count="3">
+        <section>
+          <h2 class="plabel">{{c.partLabel}}</h2>
+          <dc-import name="JBCard" card="{{c}}" hint-size="100%,250px"></dc-import>
+        </section>
+      </sc-for>
+    </div>
+  </sc-if>
+  <sc-if value="{{isDesk}}" hint-placeholder-val="{{true}}">
+    <nav aria-label="Modules" style="width: 48px; flex: none; background: var(--side); border-right: 1px solid var(--border); display: flex; flex-direction: column; align-items: center">
+      <div style="height: 48px; width: 48px; display: grid; place-items: center; border-bottom: 1px solid var(--border)"><span style="width: 24px; height: 24px; border-radius: 4px; background: var(--fg); color: var(--pfg); display: grid; place-items: center; font-weight: 700; font-size: 13px">L</span></div>
+      <div style="display: flex; flex-direction: column; gap: 4px; padding-top: 8px">
+        <a class="rail-b" href="#" aria-label="Today"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V21h-6v-6H9v6H3z"></path></svg></a>
+        <a class="rail-b" href="#" aria-label="Engineering"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m12 2 10 5-10 5L2 7z"></path><path d="m2 17 10 5 10-5M2 12l10 5 10-5"></path></svg></a>
+        <a class="rail-b on" href="#" aria-label="Jobs" aria-current="page"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="20" height="14" rx="2"></rect><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"></path></svg></a>
+        <a class="rail-b" href="#" aria-label="Terms"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z"></path></svg></a>
+      </div>
+    </nav>
+  </sc-if>
+  <sc-if value="{{showShell}}" hint-placeholder-val="{{true}}">
+    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+      <header style="height: 48px; flex: none; display: flex; align-items: center; justify-content: space-between; padding: 0 4px 0 6px; border-bottom: 1px solid var(--border)">
+        <div style="display: flex; align-items: center; gap: 2px">
+          <sc-if value="{{isPhone}}" hint-placeholder-val="{{false}}"><button class="btn" style="width: 44px; height: 44px; padding: 0" aria-label="Menu"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"></path></svg></button></sc-if>
+          <span style="font-weight: 500; padding-left: 8px">Jobs</span>
+        </div>
+        <button class="btn" style="width: 44px; height: 44px; padding: 0" aria-label="Account"><span style="width: 32px; height: 32px; border-radius: 10px; border: 1px solid var(--border); display: grid; place-items: center; font-size: 12px; font-weight: 600">JK</span></button>
+      </header>
+      <main style="{{mainStyle}}">
+        <div class="tabs" role="tablist" aria-label="Jobs" style="{{tabsStyle}}">
+          <a href="#" role="tab" aria-selected="{{newSel}}" style="{{tabStyle}}">New<span class="mono lbl">482</span></a>
+          <a href="#" role="tab" aria-selected="{{boardSel}}" style="{{tabStyle}}">Job board<span class="mono lbl">{{boardCount}}</span></a>
+        </div>
+        <sc-if value="{{showNew}}" hint-placeholder-val="{{false}}">
+          <div style="{{newGrid}}">
+            <sc-if value="{{isDesk}}" hint-placeholder-val="{{true}}">
+              <aside aria-label="Filters" class="panel" style="height: 720px; display: flex; flex-direction: column">
+                <div style="padding: 12px; border-bottom: 1px solid var(--border)"><label class="inp"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="color: var(--mfg); flex: none"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path></svg><input placeholder="Search" aria-label="Search postings"></label></div>
+                <div style="display: flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border-bottom: 1px solid var(--border)"><h2 class="ph-head">Filters</h2><span class="badge b-s" style="height: 20px"><span class="mono">7</span> active</span></div>
+                <div style="flex: 1; display: grid; place-items: center" class="lbl">Same sidebar as Filter sidebar / Applied</div>
+              </aside>
+            </sc-if>
+            <section style="display: flex; flex-direction: column; gap: 12px; min-width: 0">
+              <sc-if value="{{isDesk}}" hint-placeholder-val="{{true}}">
+                <div class="strip" role="status" aria-label="Jobs status">
+                  <span style="display: inline-flex; align-items: center; gap: 6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="m8 12 3 3 5-6"></path></svg>Checked <span class="mono">2</span> min ago</span>
+                  <span class="sep" aria-hidden="true"></span>
+                  <span><span style="color: var(--mfg)">Searching</span> Full-stack Engineer, Frontend Engineer <span class="mono" style="color: var(--mfg)">+1</span></span>
+                  <span class="sep" aria-hidden="true"></span>
+                  <span><span class="mono">482</span> new · <span class="mono">18</span> filtered out</span>
+                </div>
+              </sc-if>
+              <div style="display: flex; align-items: center; justify-content: space-between; padding: 4px 4px 0">
+                <span style="font-size: 18px; font-weight: 600"><span class="mono">482</span> new postings</span>
+                <sc-if value="{{isDesk}}" hint-placeholder-val="{{true}}"><label class="inp" style="width: 210px; height: 32px"><span class="lbl" style="flex: none">Sort</span><select aria-label="Sort"><option>Best match</option></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="flex: none"><path d="m6 9 6 6 6-6"></path></svg></label></sc-if>
+              </div>
+              <sc-for list="{{cards}}" as="c" hint-placeholder-count="3">
+                <dc-import name="JBCard" card="{{c}}" hint-size="100%,250px"></dc-import>
+              </sc-for>
+            </section>
+          </div>
+        </sc-if>
+        <sc-if value="{{showBoard}}" hint-placeholder-val="{{true}}">
+          <section aria-labelledby="board-h" style="{{boardCol}}">
+            <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding: 4px 4px 0; flex-wrap: wrap">
+              <div>
+                <h1 id="board-h" style="margin: 0; font-size: 18px; font-weight: 600"><span class="mono">4</span> on your board</h1>
+                <div class="lbl" style="font-size: 13px"><span class="mono">2</span> applied · <span class="mono">2</span> saved</div>
+              </div>
+              <sc-if value="{{isDesk}}" hint-placeholder-val="{{true}}"><label class="inp" style="width: 230px; height: 32px"><span class="lbl" style="flex: none">Sort</span><select aria-label="Sort"><option>Recently updated</option><option>Best match</option></select><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="flex: none"><path d="m6 9 6 6 6-6"></path></svg></label></sc-if>
+            </div>
+            <sc-for list="{{cards}}" as="c" hint-placeholder-count="4">
+              <dc-import name="JBCard" card="{{c}}" hint-size="100%,270px"></dc-import>
+            </sc-for>
+          </section>
+        </sc-if>
+        <sc-if value="{{showEmpty}}" hint-placeholder-val="{{false}}">
+          <div style="{{emptyStyle}}">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true" style="color: var(--mfg)"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
+            <p style="margin: 0; color: var(--mfg)">Nothing saved or applied yet</p>
+          </div>
+        </sc-if>
+      </main>
+    </div>
+  </sc-if>
+  <sc-if value="{{showDialog}}" hint-placeholder-val="{{false}}">
+    <div style="{{scrimStyle}}">
+      <div role="alertdialog" aria-modal="true" aria-labelledby="apply-q" aria-describedby="apply-d" class="dlg" style="{{dlgStyle}}">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <h2 id="apply-q" style="margin: 0; font-size: 18px; font-weight: 600; letter-spacing: -0.02em">Did you apply to this job?</h2>
+          <p id="apply-d" style="margin: 0; color: var(--mfg)">Senior Full-stack Engineer at Tidepool</p>
+        </div>
+        <div style="{{dlgFooter}}">
+          <button class="btn btn-o" style="{{dlgBtn}}">Not yet</button>
+          <button class="btn btn-p" style="{{dlgBtn}}">Yes, I applied</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"variant":{"editor":"enum","options":["board","dialog","empty","cards","phone-board","phone-dialog"],"default":"board"},"$preview":{"width":1440,"height":1360}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const v = this.props.variant || 'board';
+    const phone = v.indexOf('phone') === 0;
+    const sk = (s) => s.split(',').map((x) => { const p = x.split(':'); return { name: p[0], have: p[1] === 'h', rel: p[1] === 'r', miss: p[1] === 'm' }; });
+    const base = {
+      tp: { company: 'Tidepool', ini: 'TP', title: 'Senior Full-stack Engineer', score: 92, meta: ['Remote', '🇵🇭 Philippines +10', 'Full time', 'Senior', '2d ago'], snippet: 'Tidepool builds scheduling software for community clinics. We are hiring a senior engineer to own features end to end across our Next.js app and Node services, working closely with design and a small product team across four time zones.', skills: sk('React:h,TypeScript:h,Node.js:h,PostgreSQL:h,AWS:m'), more: 3, pay: 'USD 4,000–6,000 a month' },
+      hh: { company: 'Halcyon Health', ini: 'HH', title: 'Frontend Engineer (React)', score: 88, meta: ['Remote', '🇺🇸 United States', 'Contract', 'Mid', '4d ago'], snippet: 'Join the patient app team rebuilding our intake flow. You will ship accessible React components, own the design system in Storybook and pair with QA on test coverage.', skills: sk('React:h,TypeScript:h,Tailwind CSS:r,Storybook:m'), more: 1, pay: 'USD 45–60 an hour' },
+      bp: { company: 'Brightline Payments', ini: 'BP', title: 'Software Engineer, Platform', score: 81, meta: ['Hybrid', '🇸🇬 Singapore', 'Full time', 'Senior', '5d ago'], snippet: 'Our platform team runs the services that move money for 4,000 merchants. You will work on the ledger, deployment tooling and observability, with on-call shared across eight engineers.', skills: sk('PostgreSQL:h,Go:m,Kubernetes:m,Terraform:r'), more: 0, pay: '' },
+      ca: { company: 'Corvid Analytics', ini: 'CA', title: 'Full-stack Developer', score: 77, meta: ['Remote', '🇦🇺 Australia +1', 'Full time', 'Mid', '1w ago'], snippet: 'Corvid turns retail point-of-sale data into weekly forecasts. You will build dashboards in Vue and the Django APIs behind them, and help move batch jobs onto a queue.', skills: sk('Docker:h,Vue:r,Python:m,Django:m'), more: 0, pay: 'AUD 9,000–11,000 a month' }
+    };
+    const card = (key, status, opts) => {
+      const o = opts || {};
+      const c = Object.assign({}, base[key], { status: status, onBoard: !!o.onBoard, savedOn: o.savedOn || '', appliedOn: o.appliedOn || '', saved: !!o.saved, partLabel: o.partLabel || '' });
+      return c;
+    };
+    const boardCards = [
+      card('tp', 'Applied', { onBoard: true, saved: true, appliedOn: 'Nov 8' }),
+      card('hh', 'Saved', { onBoard: true, saved: true, savedOn: 'Nov 6' }),
+      card('bp', 'Applied', { onBoard: true, appliedOn: 'Nov 4' }),
+      card('ca', 'Saved', { onBoard: true, saved: true, savedOn: 'Nov 3' })
+    ];
+    const newCards = [card('tp', 'New'), card('hh', 'Saved', { saved: true }), card('bp', '')];
+    const partCards = [
+      card('tp', 'New', { partLabel: 'New list, not opened yet' }),
+      card('tp', 'Saved', { saved: true, partLabel: 'Saved (New list and Job Board)' }),
+      card('tp', 'Applied', { onBoard: true, saved: true, appliedOn: 'Nov 8', partLabel: 'Applied, on the Job Board' })
+    ];
+    let W = 1440, H = 1360, cards = boardCards, mode = 'board';
+    if (v === 'dialog') { H = 1000; cards = newCards; mode = 'new'; }
+    else if (v === 'empty') { H = 640; cards = []; mode = 'empty'; }
+    else if (v === 'cards') { W = 920; H = 1060; cards = partCards; mode = 'parts'; }
+    else if (v === 'phone-board') { W = 390; H = 1780; }
+    else if (v === 'phone-dialog') { W = 390; H = 844; cards = newCards.slice(0, 2); mode = 'new'; }
+    const showDialog = v === 'dialog' || v === 'phone-dialog';
+    return {
+      W, H, cards,
+      isParts: mode === 'parts', showShell: mode !== 'parts', isDesk: !phone && mode !== 'parts', isPhone: phone,
+      showNew: mode === 'new', showBoard: mode === 'board', showEmpty: mode === 'empty', showDialog,
+      newSel: mode === 'new' ? 'true' : 'false', boardSel: mode === 'new' ? 'false' : 'true',
+      boardCount: mode === 'empty' ? 0 : 4,
+      mainStyle: phone ? 'padding: 16px 16px 32px; display: flex; flex-direction: column; gap: 16px' : 'width: 100%; max-width: 1280px; margin: 0 auto; padding: 24px 40px 40px; display: flex; flex-direction: column; gap: 20px',
+      tabsStyle: phone ? 'display: flex; width: 100%' : 'align-self: flex-start',
+      tabStyle: phone ? 'flex: 1; justify-content: center; height: 38px' : '',
+      newGrid: phone ? 'display: flex; flex-direction: column; gap: 12px' : 'display: grid; grid-template-columns: 272px 1fr; gap: 24px; align-items: start',
+      boardCol: phone ? 'display: flex; flex-direction: column; gap: 12px' : 'width: 100%; max-width: 880px; display: flex; flex-direction: column; gap: 12px',
+      emptyStyle: 'max-width: 880px; padding: 72px 24px; border: 1px dashed var(--border); border-radius: 4px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center',
+      scrimStyle: 'position: absolute; inset: 0; z-index: 10; background: var(--scrim); display: grid; place-items: center' + (phone ? '; padding: 16px' : ''),
+      dlgStyle: phone ? 'width: 100%' : 'width: 440px',
+      dlgFooter: phone ? 'display: flex; flex-direction: column-reverse; gap: 8px' : 'display: flex; justify-content: flex-end; gap: 8px',
+      dlgBtn: phone ? 'width: 100%; height: 44px' : ''
+    };
+  }
+}
+</script>
+</body>
+</html>
