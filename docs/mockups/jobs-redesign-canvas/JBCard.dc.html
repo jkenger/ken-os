@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Job card</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+.jk{--bg:oklch(0.975 0.002 265);--fg:oklch(0.22 0.005 265);--card:oklch(0.995 0.001 265);--muted:oklch(0.945 0.003 265);--mfg:oklch(0.48 0.008 265);--border:oklch(0.885 0.004 265);--pfg:oklch(0.985 0.001 265);font-family:Geist,ui-sans-serif,system-ui,sans-serif;color:var(--fg);font-size:14px;line-height:1.43}
+.jk *{box-sizing:border-box}
+.jk button{font:inherit}
+.jk a{color:var(--fg);text-decoration:none}
+.jk a.t:hover{text-decoration:underline}
+.kbtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 10px;border-radius:10.4px;border:1px solid transparent;font-weight:500;font-size:14px;white-space:nowrap;cursor:pointer;background:transparent;color:var(--fg)}
+.kbtn-p{background:var(--fg);color:var(--pfg) !important}
+.kbtn-o{background:var(--bg);border-color:var(--border)}
+.kbtn-s{background:var(--muted)}
+.kbtn-g{height:28px;padding:0 8px;font-size:12px;border-radius:8px;color:var(--mfg)}
+.kbtn-g:hover{background:var(--muted);color:var(--fg)}
+.kb{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border-radius:8.8px;border:1px solid transparent;font-size:12px;font-weight:500;white-space:nowrap;line-height:1}
+.slot{height:20px;padding:0 6px;font-size:10px;background:var(--fg);color:var(--pfg)}
+.sk-have{background:oklch(0.962 0.044 156.743);border-color:oklch(0.925 0.084 155.995);color:oklch(0.448 0.119 151.328)}
+.sk-rel{background:oklch(0.962 0.059 95.617);border-color:oklch(0.924 0.12 95.746);color:oklch(0.473 0.137 46.201)}
+.sk-miss{background:var(--muted)}
+.dot{width:3px;height:3px;border-radius:50%;background:var(--mfg);flex:none}
+.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+</style>
+</helmet>
+<article class="jk" style="position: relative; background: var(--card); border: 1px solid var(--border); border-radius: 5.6px; padding: 16px">
+  <div style="display: flex; gap: 12px">
+    <span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 3.2px; display: grid; place-items: center; flex: none; background: var(--muted); color: var(--mfg); font-weight: 600">{{c.ini}}</span>
+    <div style="flex: 1; min-width: 0">
+      <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px">
+        <div style="min-width: 0">
+          <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap">
+            <a class="t" href="#" style="font-weight: 600">{{c.title}}</a>
+            <sc-if value="{{isNew}}" hint-placeholder-val="{{false}}"><span class="kb slot">New</span></sc-if>
+            <sc-if value="{{isSaved}}" hint-placeholder-val="{{false}}"><span class="kb slot"><svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>Saved</span></sc-if>
+            <sc-if value="{{isApplied}}" hint-placeholder-val="{{false}}"><span class="kb slot"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>Applied</span></sc-if>
+          </div>
+          <p style="margin: 2px 0 0; color: var(--mfg)">{{c.company}}</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px; flex: none; position: relative; z-index: 1">
+          <span class="kb" style="height: 32px; padding: 0 12px; border-radius: 10.4px; border-color: var(--border); font-size: 14px" aria-label="Match score {{c.score}}">{{c.score}}<span style="font-weight: 400; color: var(--mfg)">match</span></span>
+          <sc-if value="{{c.saved}}" hint-placeholder-val="{{false}}"><button class="kbtn kbtn-s" style="width: 32px; padding: 0" aria-pressed="true" aria-label="Unsave {{c.title}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></button></sc-if>
+          <sc-if value="{{unsaved}}" hint-placeholder-val="{{true}}"><button class="kbtn kbtn-o" style="width: 32px; padding: 0" aria-pressed="false" aria-label="Save {{c.title}}"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg></button></sc-if>
+        </div>
+      </div>
+      <div style="margin-top: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 12px; color: var(--mfg)">
+        <sc-for list="{{meta}}" as="m" hint-placeholder-count="5"><span style="display: inline-flex; align-items: center; gap: 8px"><sc-if value="{{m.sep}}" hint-placeholder-val="{{true}}"><span class="dot" aria-hidden="true"></span></sc-if>{{m.text}}</span></sc-for>
+      </div>
+      <p class="clamp" style="margin: 10px 0 0">{{c.snippet}}</p>
+      <div style="margin-top: 12px; display: flex; flex-wrap: wrap; gap: 6px">
+        <sc-for list="{{c.skills}}" as="s" hint-placeholder-count="4">
+          <sc-if value="{{s.have}}" hint-placeholder-val="{{true}}"><span class="kb sk-have"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><path d="m9 12 2 2 4-4"></path></svg>{{s.name}}</span></sc-if>
+          <sc-if value="{{s.rel}}" hint-placeholder-val="{{false}}"><span class="kb sk-rel"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="1.5" fill="currentColor"></circle></svg>{{s.name}}</span></sc-if>
+          <sc-if value="{{s.miss}}" hint-placeholder-val="{{false}}"><span class="kb sk-miss">{{s.name}}</span></sc-if>
+        </sc-for>
+        <sc-if value="{{hasMore}}" hint-placeholder-val="{{false}}"><span class="kb sk-miss">+{{c.more}}</span></sc-if>
+      </div>
+      <sc-if value="{{hasPay}}" hint-placeholder-val="{{true}}"><div style="margin-top: 8px; display: flex; justify-content: flex-end"><span style="font-size: 12px; font-weight: 500; color: var(--mfg)">{{c.pay}}</span></div></sc-if>
+    </div>
+  </div>
+  <div style="margin-top: 12px; height: 1px; background: var(--border)" role="separator"></div>
+  <div style="margin-top: 12px; display: flex; align-items: center; gap: 8px">
+    <sc-if value="{{showApplied}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: var(--mfg)">Applied <span style="font-family: 'Geist Mono', monospace">{{c.appliedOn}}</span></span><button class="kbtn kbtn-g">Mark not applied</button></sc-if>
+    <sc-if value="{{showSavedOn}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: var(--mfg)">Saved <span style="font-family: 'Geist Mono', monospace">{{c.savedOn}}</span></span></sc-if>
+    <span style="flex: 1"></span>
+    <a class="kbtn kbtn-p" href="#">Apply<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"></path></svg></a>
+  </div>
+</article>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"card":{"editor":null},"$preview":{"width":880,"height":280}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const sk = (s) => s.split(',').map((x) => { const p = x.split(':'); return { name: p[0], have: p[1] === 'h', rel: p[1] === 'r', miss: p[1] === 'm' }; });
+    const c = this.props.card || { company: 'Tidepool', ini: 'TP', title: 'Senior Full-stack Engineer', score: 92, meta: ['Remote', '🇵🇭 Philippines +10', 'Full time', 'Senior', '2d ago'], snippet: 'Tidepool builds scheduling software for community clinics. We are hiring a senior engineer to own features end to end across our Next.js app and Node services.', skills: sk('React:h,TypeScript:h,Node.js:h,PostgreSQL:h,AWS:m'), more: 3, pay: 'USD 4,000–6,000 a month', status: 'Saved', saved: true, onBoard: false, savedOn: '', appliedOn: '' };
+    return {
+      c,
+      meta: (c.meta || []).map((t, i) => ({ text: t, sep: i > 0 })),
+      isNew: c.status === 'New', isSaved: c.status === 'Saved', isApplied: c.status === 'Applied',
+      unsaved: !c.saved, hasMore: c.more > 0, hasPay: !!c.pay,
+      showApplied: c.onBoard && !!c.appliedOn, showSavedOn: c.onBoard && !c.appliedOn && !!c.savedOn
+    };
+  }
+}
+</script>
+</body>
+</html>
