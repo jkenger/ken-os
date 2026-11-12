@@ -130,6 +130,8 @@ export type PostingView = {
   viewedAt: Date | null;
   /** Null until the owner clicks Save; cleared back to null by clicking Save again (ADR-003). */
   savedAt: Date | null;
+  /** Null until the owner confirms the post-Apply dialog. */
+  appliedAt: Date | null;
   sources: { source: AlertSource; link: string }[];
   processedAt: Date | null;
   fullDescription: string | null;
@@ -169,6 +171,7 @@ const POSTING_COLUMNS = {
   filterReason: jobMatches.filterReason,
   viewedAt: jobMatches.viewedAt,
   savedAt: jobMatches.savedAt,
+  appliedAt: jobMatches.appliedAt,
   processedAt: jobPostings.processedAt,
   fullDescription: jobPostings.fullDescription,
   descriptionHtml: jobPostings.descriptionHtml,
@@ -376,6 +379,16 @@ export async function setSaved(userId: string, postingId: string, saved: boolean
   await db()
     .update(jobMatches)
     .set({ savedAt: saved ? new Date() : null })
+    .where(and(eq(jobMatches.postingId, postingId), eq(jobMatches.userId, userId)));
+}
+
+/** Confirming "yes" on the post-Apply dialog -- sets `appliedAt` and, since Apply can be clicked straight from
+ *  the card without ever opening the detail page, also sets `viewedAt` if it wasn't already (docs/product/
+ *  job-finder.md, "Applied implies Viewed"). Scoped to the owner's own posting. */
+export async function markApplied(userId: string, postingId: string): Promise<void> {
+  await db()
+    .update(jobMatches)
+    .set({ appliedAt: new Date(), viewedAt: sql`coalesce(${jobMatches.viewedAt}, now())` })
     .where(and(eq(jobMatches.postingId, postingId), eq(jobMatches.userId, userId)));
 }
 

@@ -857,6 +857,9 @@ export const jobMatches = pgTable(
     /** Set/cleared by the Save toggle (docs/architecture/decisions/ADR-003): a direct on/off, not touched by
      *  `filterReason()`/`refilterExisting()`, same separate-column reasoning as `viewedAt`. */
     savedAt: timestamp("saved_at", { withTimezone: true }),
+    /** Set only when the owner confirms "yes" on the post-Apply dialog (docs/architecture/job-board.md) -- never
+     *  by clicking Apply itself, which proves nothing. */
+    appliedAt: timestamp("applied_at", { withTimezone: true }),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("job_matches_user_state_idx").on(table.userId, table.state)],
