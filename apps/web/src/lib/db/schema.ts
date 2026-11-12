@@ -854,6 +854,9 @@ export const jobMatches = pgTable(
     /** Set once, the first time the owner opens this posting's detail page. Null means the card still shows the
      *  New badge; this is separate from `state`, which tracks the filter verdict, not read status. */
     viewedAt: timestamp("viewed_at", { withTimezone: true }),
+    /** Set/cleared by the Save toggle (docs/architecture/decisions/ADR-003): a direct on/off, not touched by
+     *  `filterReason()`/`refilterExisting()`, same separate-column reasoning as `viewedAt`. */
+    savedAt: timestamp("saved_at", { withTimezone: true }),
     /** Set only when the owner confirms "yes" on the post-Apply dialog (docs/architecture/job-board.md) -- never
      *  by clicking Apply itself, which proves nothing. */
     appliedAt: timestamp("applied_at", { withTimezone: true }),

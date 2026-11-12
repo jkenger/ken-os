@@ -24,5 +24,15 @@ https://claude.ai/artifact/XZmpkM7gPHduY1rp4HCEQ7
 | Phone / Overview                | `Phone-overview.dc.html`                |
 | Last checked states             | `Last-checked.dc.html`                  |
 
+Job Board (5 Nov 2026), the "Job Board" section of `job-finder.md`: every frame in that row imports
+`JB.dc.html` with a `variant` prop, and every card in it is `JBCard.dc.html`.
+
+| Frame                               | File                                                  |
+| ----------------------------------- | ----------------------------------------------------- |
+| Card / New, Saved, Applied          | `JB-cards.dc.html`                                    |
+| Desktop / Apply confirmation        | `JB-dialog.dc.html`                                   |
+| Desktop / Job Board, and empty      | `JB-board.dc.html`, `JB-empty.dc.html`                |
+| Phone / Job Board, Apply confirmation | `JB-phone-board.dc.html`, `JB-phone-dialog.dc.html` |
+
 The desktop frames drawn on 1 Nov (New, Job detail, Onboarding) still show the old Jobs section column, which was
 removed on 2 Nov 2026. The Overview frames show the current shell.

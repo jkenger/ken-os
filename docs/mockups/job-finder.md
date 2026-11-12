@@ -203,3 +203,39 @@ None.
   needs nothing from the owner beyond a Profile headline, so there is no setup left to check off. What the owner still
   has to give is a few numbers no scraper can guess: how much the job should pay, which countries, and which shift. The
   new first-run frame asks for exactly those (Roles, Minimum pay, Countries, Shifts) in one form, then starts matching.
+
+## Job Board (5 Nov 2026): Saved/Applied status, a confirmation dialog, a new section inside `/jobs`
+
+Spec: [job-finder.md](../product/job-finder.md), "Job Board". Technical design:
+[job-board.md](../architecture/job-board.md), [ADR-003](../architecture/decisions/ADR-003-job-board-status-separate-columns.md).
+
+### Frames to draw
+
+1. **New-list card, Saved/Applied badge.** The card already ships with a badge slot (New today), a company
+   logo, meta row, skills, pay range, a separator, and an Apply button (PRs #197-#202, #206). This frame shows
+   the same slot reading "Saved" or "Applied" once set, replacing New rather than stacking beside it.
+2. **Apply confirmation dialog.** "Did you apply to this job?", Yes / Not yet. Appears on return from the tab
+   Apply opened (close or focus-back), not on an unrelated tab switch.
+3. **Job Board screen.** New section inside `/jobs`. Same card list as New, each card showing its Saved/Applied
+   badge. Needs an empty state too ("Nothing saved or applied yet", one line, no action).
+
+### Rules
+
+- Reuses the existing card component and badge slot — no new card markup.
+- `AlertDialog` (shadcn) for the confirmation, matching this app's existing modal conventions.
+
+### Decided
+
+- Job Board owns both a real Save and Applied, not Applied alone.
+- Card's Apply button keeps its current behavior (opens the source link directly); the dialog is a separate
+  step, not blocking the click.
+- Confirming Applied also marks the posting Viewed.
+- Saved and Applied are both additive — neither removes a posting from the New list.
+- Both are reversible from the Job Board screen.
+- Job Board lives inside `/jobs`, not a top-level nav item, not nested under `/profile`.
+- One combined list, not separate Saved/Applied tabs.
+
+### Open questions
+
+- The dialog's exact copy beyond "did you apply".
+- The undo/reversal control's exact design on the Job Board screen.

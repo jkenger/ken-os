@@ -1,5 +1,5 @@
 {
-  "id": "bb3cee60-5c15-4850-afc4-18df3f9cda2f",
+  "id": "64130628-82c2-4c55-8554-fd3da7e2c63a",
   "prevId": "e2d97b48-7248-4e92-9ebd-df06cd9ea999",
   "version": "7",
   "dialect": "postgresql",
@@ -368,8 +368,8 @@
           "primaryKey": false,
           "notNull": false
         },
-        "applied_at": {
-          "name": "applied_at",
+        "saved_at": {
+          "name": "saved_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
           "notNull": false

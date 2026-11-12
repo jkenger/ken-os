@@ -114,6 +114,62 @@
       "w": 880,
       "h": 560,
       "title": "Last checked / Never, working, failing"
+    },
+    "JB-dialog.dc.html": {
+      "x": 0,
+      "y": 7780,
+      "w": 1440,
+      "h": 1000,
+      "title": "Desktop / Apply confirmation"
+    },
+    "JB-board.dc.html": {
+      "x": 1520,
+      "y": 7780,
+      "w": 1440,
+      "h": 1360,
+      "title": "Desktop / Job Board"
+    },
+    "JB-empty.dc.html": {
+      "x": 3040,
+      "y": 7780,
+      "w": 1440,
+      "h": 640,
+      "title": "Desktop / Job Board, empty"
+    },
+    "JB-cards.dc.html": {
+      "x": 4560,
+      "y": 7780,
+      "w": 920,
+      "h": 1060,
+      "title": "Card / New, Saved, Applied"
+    },
+    "JB-phone-board.dc.html": {
+      "x": 5560,
+      "y": 7780,
+      "w": 390,
+      "h": 1780,
+      "title": "Phone / Job Board"
+    },
+    "JB-phone-dialog.dc.html": {
+      "x": 6030,
+      "y": 7780,
+      "w": 390,
+      "h": 844,
+      "title": "Phone / Apply confirmation"
+    },
+    "JB.dc.html": {
+      "x": 6500,
+      "y": 7780,
+      "w": 1440,
+      "h": 1360,
+      "title": "Job Board (shared, imported by the frames in this row)"
+    },
+    "JBCard.dc.html": {
+      "x": 8020,
+      "y": 7780,
+      "w": 880,
+      "h": 280,
+      "title": "Job card (shared, every card in this row)"
     }
   },
   "createdOnFiles": {
@@ -155,6 +211,27 @@
       "text": "Overview (2 Nov)",
       "kind": "title1",
       "maxW": 4390
+    },
+    "t_jb": {
+      "x": 0,
+      "y": 7520,
+      "text": "Job Board (5 Nov)",
+      "kind": "title1",
+      "maxW": 7940
+    },
+    "n_jb1": {
+      "x": 0,
+      "y": 8840,
+      "w": 420,
+      "text": "Apply confirmation opens only when the owner comes back from the tab this card's Apply opened (that tab closes, or this window regains focus). An unrelated tab switch never opens it. Apply itself still opens the posting right away.",
+      "fill": "blue"
+    },
+    "n_jb2": {
+      "x": 480,
+      "y": 8840,
+      "w": 420,
+      "text": "Yes marks the posting Applied (and Viewed). Not yet closes without saving anything; the next Apply click starts over.",
+      "fill": "blue"
     }
   },
   "order": [
@@ -173,7 +250,15 @@
     "Overview.dc.html",
     "Status-strip.dc.html",
     "Phone-overview.dc.html",
-    "Last-checked.dc.html"
+    "Last-checked.dc.html",
+    "JBCard.dc.html",
+    "JB.dc.html",
+    "JB-dialog.dc.html",
+    "JB-board.dc.html",
+    "JB-empty.dc.html",
+    "JB-cards.dc.html",
+    "JB-phone-board.dc.html",
+    "JB-phone-dialog.dc.html"
   ],
   "pages": [],
   "title": "Jobs redesign"

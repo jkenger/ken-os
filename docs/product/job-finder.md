@@ -256,6 +256,34 @@ One page at `/jobs`, in the module column like Profile.
 
 The mockup brief is [docs/mockups/job-finder.md](../mockups/job-finder.md).
 
+## Job Board
+
+A second thing a posting can be, on top of New/Viewed/Filtered out: Saved or Applied, tracked on its own screen.
+Specified 5 Nov 2026; not yet built.
+
+- **Scope:** one feature, not an Applied flag bolted onto the existing fake Save. Save stops being a client-only
+  toggle (`new-list.tsx`'s `SaveButton`, never persisted) and becomes real, alongside Applied.
+- **Trigger for Applied:** clicking Apply (card or detail page) still just opens the posting's source link in a
+  new tab, same as today — clicking it is not proof of applying. A "Did you apply to this job?" dialog (Yes, mark
+  applied / Not yet) fires specifically when the tab Apply opened closes, or this tab regains focus after that
+  tab opened — not on any unrelated tab switch. "Not yet" is a no-op: no state change, asks again next time Apply
+  is clicked and returned from.
+- **Applied implies Viewed:** confirming "yes" also sets `viewed_at` if it wasn't already — Apply can be clicked
+  straight from the card without ever opening the detail page, so leaving it tagged New after applying would be
+  misleading.
+- **Neither removes a posting from New:** Saved and Applied are both additive. A posting stays in the New list
+  after either, with its badge slot showing Saved/Applied in place of New (or nothing, same rule as Viewed)
+  rather than disappearing the way Filtered out does.
+- **Reversible:** both Saved and Applied can be undone, from the Job Board screen.
+- **Where it lives:** a new section inside `/jobs`, not a top-level nav item, not nested under Profile — Jobs and
+  Profile are peers today, and this is job-hunting activity, Jobs' own territory.
+- **What it shows:** one list, not separate Saved/Applied tabs, reusing the same card component as the New list
+  (title, company, score, skills, pay) with the status badge in its usual slot.
+
+Not yet decided: the dialog's exact copy beyond "did you apply", and the technical design for making Save real
+(schema/migration) — that's the next step, not this one. Dismiss with a reason (below, in Side panel for one
+posting) is explicitly deferred, not folded into this.
+
 ## Emails
 
 Through Resend, for sending only. Loots sends no email today, so this adds the first.
@@ -276,9 +304,10 @@ New tables, added in one migration. Nothing existing changes.
 - `job_preferences`: one row per owner, the settings as `jsonb`.
 - `job_postings`: one row per real posting after repeats are dropped, with the extracted fields and every source it
   came from.
-- `job_matches`: the score, reasons, shift, the owner's state (New, Saved, Applied, Dismissed, Filtered out) and
-  `viewed_at` (null until the owner opens the posting's detail page once) for each posting, with the prompt
-  version and the Profile version it was scored against.
+- `job_matches`: the score, reasons, shift, the owner's state and `viewed_at` (null until the owner opens the
+  posting's detail page once) for each posting, with the prompt version and the Profile version it was scored
+  against. State today is only `new`/`filtered_out`; Saved and Applied (Job Board, above) are spec'd but not yet
+  in the schema — that's technical design, not decided here.
 
 freehire needs no block/backoff state (no anti-scraping posture to track against) — the `job_scraper_state` table
 this used to need for LinkedIn/Indeed was removed along with the scrapers themselves; `onlinejobs`, if the checker
@@ -292,8 +321,9 @@ is built, will need its own equivalent since it's a site LinkedIn/Indeed-style b
 2. **Score.** ✅ Built — full posting read, AI extract and score, shift labels, the side panel. `plans/jobs-score.md`.
 3. **Email.** Strong match emails and the daily digest.
 4. **OnlineJobs.** Its alert parser if it sends alerts; otherwise the checker, if the owner accepts the risk.
-5. **Act on a match.** Saved and Applied, Dismiss with a reason, and Dismiss reasons turned into suggested filter
-   changes the owner approves.
+5. **Job Board.** Save becomes real and Applied gets built — confirmation dialog, Viewed-on-confirm, the Job
+   Board screen itself (spec'd above, under Job Board). Dismiss with a reason and turning its reasons into
+   suggested filter changes stay sketched, not built, until their own pass.
 
 Later, not in these steps: a resume tailored to one posting, built from the Profile like the other resumes
 (specified, see `docs/product/cv-tailoring.md`); a cover note draft; a gap check across many postings ("6 of your
