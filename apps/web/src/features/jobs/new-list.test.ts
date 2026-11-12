@@ -48,20 +48,42 @@ test("no pay information at all has nothing to show", () => {
 });
 
 test("a saved posting shows Saved, overriding New", () => {
-  assert.equal(postingBadge({ savedAt: new Date(), viewedAt: null, firstSeenAt: new Date() }), "Saved");
+  assert.equal(
+    postingBadge({ savedAt: new Date(), appliedAt: null, viewedAt: null, firstSeenAt: new Date() }),
+    "Saved",
+  );
 });
 
 test("a saved posting shows Saved even once it's no longer New", () => {
   assert.equal(
-    postingBadge({ savedAt: new Date(), viewedAt: new Date(), firstSeenAt: new Date(Date.now() - 4 * DAY_MS) }),
+    postingBadge({
+      savedAt: new Date(),
+      appliedAt: null,
+      viewedAt: new Date(),
+      firstSeenAt: new Date(Date.now() - 4 * DAY_MS),
+    }),
     "Saved",
   );
 });
 
 test("an unsaved, new posting falls back to New", () => {
-  assert.equal(postingBadge({ savedAt: null, viewedAt: null, firstSeenAt: new Date() }), "New");
+  assert.equal(postingBadge({ savedAt: null, appliedAt: null, viewedAt: null, firstSeenAt: new Date() }), "New");
 });
 
 test("an unsaved posting that's neither Saved nor New shows no badge", () => {
-  assert.equal(postingBadge({ savedAt: null, viewedAt: new Date(), firstSeenAt: new Date() }), null);
+  assert.equal(postingBadge({ savedAt: null, appliedAt: null, viewedAt: new Date(), firstSeenAt: new Date() }), null);
+});
+
+test("an applied posting shows Applied, overriding Saved", () => {
+  assert.equal(
+    postingBadge({ savedAt: new Date(), appliedAt: new Date(), viewedAt: new Date(), firstSeenAt: new Date() }),
+    "Applied",
+  );
+});
+
+test("an applied, unsaved posting shows Applied, overriding New", () => {
+  assert.equal(
+    postingBadge({ savedAt: null, appliedAt: new Date(), viewedAt: null, firstSeenAt: new Date() }),
+    "Applied",
+  );
 });

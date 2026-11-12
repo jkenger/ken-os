@@ -130,16 +130,18 @@ export function isNew(posting: Pick<PostingView, "viewedAt" | "firstSeenAt">): b
   return Date.now() - posting.firstSeenAt.getTime() <= NEW_BADGE_MAX_AGE_DAYS * DAY_MS;
 }
 
-/** The card's badge slot: Saved wins over New (a posting the owner saved stays marked Saved regardless of age),
- *  New otherwise, or no badge at all (docs/architecture/job-board.md). */
+/** The card's badge slot: Applied wins over Saved (a posting applied to from Job Board stays marked Applied even
+ *  if also saved, docs/mockups/jobs-redesign-canvas/JB.dc.html), Saved wins over New, New otherwise, or no badge
+ *  at all (docs/architecture/job-board.md). */
 export function postingBadge(
-  posting: Pick<PostingView, "viewedAt" | "firstSeenAt" | "savedAt">,
-): "Saved" | "New" | null {
+  posting: Pick<PostingView, "viewedAt" | "firstSeenAt" | "savedAt" | "appliedAt">,
+): "Applied" | "Saved" | "New" | null {
+  if (posting.appliedAt) return "Applied";
   if (posting.savedAt) return "Saved";
   return isNew(posting) ? "New" : null;
 }
 
-function PostingCard({
+export function PostingCard({
   posting,
   profileSkills,
   index,
@@ -168,6 +170,7 @@ function PostingCard({
     viewedAt: posting.viewedAt,
     firstSeenAt: posting.firstSeenAt,
     savedAt: saved ? new Date() : null,
+    appliedAt: posting.appliedAt,
   });
 
   return (

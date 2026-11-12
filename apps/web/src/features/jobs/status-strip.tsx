@@ -52,6 +52,10 @@ export function StatusStrip({
         <Link href="/jobs/filtered-out" className="text-muted-foreground underline">
           {filteredOutCount} filtered out
         </Link>
+        <Separator orientation="vertical" className="h-3.5" />
+        <Link href="/jobs/board" className="text-muted-foreground underline">
+          Job board
+        </Link>
       </ItemContent>
       <ItemActions>
         <Button

@@ -1153,6 +1153,51 @@ async function main() {
     const unsaved = await store.getPosting(userId, savedCheckPosting!.id);
     assert.equal(unsaved!.savedAt, null, "un-saving clears savedAt back to null");
     console.log("ok - setSaved toggles savedAt on and back off");
+
+    await store.savePostings(userId, [
+      {
+        source: "linkedin",
+        sourceId: "li-board-saved",
+        title: "Board Saved Role",
+        company: "BoardCo",
+        location: "Remote",
+        snippet: "Join our team.",
+        link: "https://www.linkedin.com/jobs/view/board-saved",
+      },
+      {
+        source: "linkedin",
+        sourceId: "li-board-applied",
+        title: "Board Applied Role",
+        company: "BoardCo",
+        location: "Remote",
+        snippet: "Join our team.",
+        link: "https://www.linkedin.com/jobs/view/board-applied",
+      },
+      {
+        source: "linkedin",
+        sourceId: "li-board-neither",
+        title: "Board Neither Role",
+        company: "BoardCo",
+        location: "Remote",
+        snippet: "Join our team.",
+        link: "https://www.linkedin.com/jobs/view/board-neither",
+      },
+    ]);
+    const boardCandidates = await store.listPostings(userId, "new");
+    const boardSaved = boardCandidates.find((posting) => posting.title === "Board Saved Role")!;
+    const boardApplied = boardCandidates.find((posting) => posting.title === "Board Applied Role")!;
+    await store.setSaved(userId, boardSaved.id, true);
+    await store.markApplied(userId, boardApplied.id);
+
+    const board = await store.listJobBoard(userId);
+    const boardTitles = board.map((posting) => posting.title);
+    assert.ok(boardTitles.includes("Board Saved Role"), "a saved posting shows on the Job Board");
+    assert.ok(boardTitles.includes("Board Applied Role"), "an applied posting shows on the Job Board");
+    assert.ok(
+      !boardTitles.includes("Board Neither Role"),
+      "a posting neither saved nor applied to is excluded from the Job Board",
+    );
+    console.log("ok - listJobBoard returns every saved or applied posting, excluding one with neither");
   } finally {
     await db().delete(users).where(eq(users.id, userId));
     await closeDb();
