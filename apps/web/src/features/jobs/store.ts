@@ -392,6 +392,16 @@ export async function markApplied(userId: string, postingId: string): Promise<vo
     .where(and(eq(jobMatches.postingId, postingId), eq(jobMatches.userId, userId)));
 }
 
+/** Job Board's own undo for Applied: clears `appliedAt`, leaving `savedAt` untouched (plans/jobs-job-board.md,
+ *  Slice 4 -- unlike `setSaved`, there's no un-apply confirmation, since this is the owner correcting a mistake,
+ *  not confirming one). Scoped to the owner's own posting. */
+export async function unapply(userId: string, postingId: string): Promise<void> {
+  await db()
+    .update(jobMatches)
+    .set({ appliedAt: null })
+    .where(and(eq(jobMatches.postingId, postingId), eq(jobMatches.userId, userId)));
+}
+
 /** Everything on the owner's Job Board: every posting saved or applied to, regardless of its New/Filtered out
  *  `state` (docs/architecture/job-board.md -- neither `saved_at` nor `applied_at` is touched by `refilterExisting`,
  *  so a posting can be on the board even after a later preference change moves it to Filtered out). Newest action
