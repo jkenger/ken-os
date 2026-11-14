@@ -392,6 +392,27 @@ export async function markApplied(userId: string, postingId: string): Promise<vo
     .where(and(eq(jobMatches.postingId, postingId), eq(jobMatches.userId, userId)));
 }
 
+/** Everything on the owner's Job Board: every posting saved or applied to, regardless of its New/Filtered out
+ *  `state` (docs/architecture/job-board.md -- neither `saved_at` nor `applied_at` is touched by `refilterExisting`,
+ *  so a posting can be on the board even after a later preference change moves it to Filtered out). Newest action
+ *  first. Reuses `POSTING_COLUMNS`, so the same card component renders these rows with no new props. */
+export async function listJobBoard(userId: string): Promise<PostingView[]> {
+  const rows = await db()
+    .select(POSTING_COLUMNS)
+    .from(jobPostings)
+    .innerJoin(jobMatches, eq(jobMatches.postingId, jobPostings.id))
+    .where(
+      and(
+        eq(jobPostings.userId, userId),
+        sql`(${jobMatches.savedAt} is not null or ${jobMatches.appliedAt} is not null)`,
+      ),
+    )
+    .orderBy(sql`coalesce(${jobMatches.appliedAt}, ${jobMatches.savedAt}) desc`);
+
+  const attached = await attachSourcesAndScore(rows);
+  return rows.map((row) => toPostingView(row, attached.get(row.id)!));
+}
+
 /** Other open postings from the same company, for the job detail page's "Related postings" section. Scoped to
  *  `new` only -- a related posting the owner already filtered out or dismissed isn't worth resurfacing here. */
 export async function getRelatedPostings(userId: string, company: string, excludeId: string): Promise<PostingView[]> {
