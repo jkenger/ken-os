@@ -114,6 +114,35 @@ function SaveButton({
   );
 }
 
+/** Job Board's undo for Applied (plans/jobs-job-board.md, Slice 4) -- clears `appliedAt` only, leaving Saved as
+ *  it was. Shown only on Job Board's own card variant, next to "Applied <when>". */
+function MarkNotAppliedButton({ postingId, onDone }: { postingId: string; onDone: () => void }) {
+  const [pending, setPending] = useState(false);
+  async function markNotApplied() {
+    setPending(true);
+    try {
+      await send(`/api/jobs/postings/${postingId}/unapply`, "POST");
+      onDone();
+    } catch (error) {
+      toast({ tone: "error", title: error instanceof Error ? error.message : "Couldn't update. Try again" });
+    } finally {
+      setPending(false);
+    }
+  }
+  return (
+    <Button
+      type="button"
+      variant="ghost"
+      size="sm"
+      disabled={pending}
+      onClick={markNotApplied}
+      className="h-6 px-2 text-xs text-muted-foreground"
+    >
+      Mark not applied
+    </Button>
+  );
+}
+
 /** Batch size the infinite scroll fetches at a time (`/api/jobs/postings`) -- stagger delay resets every this
  *  many cards, so a newly loaded batch animates in from its own top rather than picking up where the last one's
  *  delay left off. */
@@ -145,12 +174,18 @@ export function PostingCard({
   posting,
   profileSkills,
   index,
+  onBoard = false,
 }: {
   posting: PostingView;
   profileSkills: string[];
   index: number;
+  /** Job Board's own card variant (plans/jobs-job-board.md, Slice 4): shows "Applied"/"Saved <when>" with a
+   *  "Mark not applied" undo, and hides itself the instant neither status is left. The New list never passes
+   *  this. */
+  onBoard?: boolean;
 }) {
   const [saved, setSaved] = useState(posting.savedAt != null);
+  const [applied, setApplied] = useState(posting.appliedAt != null);
   const metaItems = [
     posting.workSetup && WORK_SETUP_LABELS[posting.workSetup],
     countryMeta(posting.countries ?? []),
@@ -170,8 +205,12 @@ export function PostingCard({
     viewedAt: posting.viewedAt,
     firstSeenAt: posting.firstSeenAt,
     savedAt: saved ? new Date() : null,
-    appliedAt: posting.appliedAt,
+    appliedAt: applied ? new Date() : null,
   });
+
+  // Job Board shows only Saved/Applied postings -- once neither status is left, this card leaves the board
+  // immediately (plans/jobs-job-board.md, Slice 4). The New list never passes onBoard, so it never hides.
+  if (onBoard && !saved && !applied) return null;
 
   return (
     <div
@@ -234,7 +273,20 @@ export function PostingCard({
       </div>
 
       <Separator className="mt-3" />
-      <div className="pointer-events-auto relative z-10 mt-3 flex justify-end">
+      <div
+        className={`pointer-events-auto relative z-10 mt-3 flex items-center gap-2 ${onBoard ? "justify-between" : "justify-end"}`}
+      >
+        {onBoard && applied && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            Applied <span className="font-mono">{timeAgo(posting.appliedAt ?? new Date())}</span>
+            <MarkNotAppliedButton postingId={posting.id} onDone={() => setApplied(false)} />
+          </div>
+        )}
+        {onBoard && !applied && saved && (
+          <span className="text-xs text-muted-foreground">
+            Saved <span className="font-mono">{timeAgo(posting.savedAt ?? new Date())}</span>
+          </span>
+        )}
         <Button type="button" size="sm" disabled={!link} onClick={onApplyClick} className="group/apply">
           Apply
           <ArrowUpRight className="transition-transform duration-200 ease-out group-hover/apply:translate-x-0.5 group-hover/apply:-translate-y-0.5" />

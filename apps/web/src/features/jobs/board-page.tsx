@@ -24,7 +24,7 @@ export function JobsBoardPage({
         </h1>
         <div className="mt-6 flex flex-col gap-3">
           {postings.map((posting, index) => (
-            <PostingCard key={posting.id} posting={posting} profileSkills={profileSkills} index={index} />
+            <PostingCard key={posting.id} posting={posting} profileSkills={profileSkills} index={index} onBoard />
           ))}
           {postings.length === 0 && <p className="p-4 text-sm text-muted-foreground">Nothing saved or applied yet</p>}
         </div>

@@ -1198,6 +1198,32 @@ async function main() {
       "a posting neither saved nor applied to is excluded from the Job Board",
     );
     console.log("ok - listJobBoard returns every saved or applied posting, excluding one with neither");
+
+    await store.savePostings(userId, [
+      {
+        source: "linkedin",
+        sourceId: "li-unapply-check",
+        title: "Unapply Check Role",
+        company: "UnapplyCo",
+        location: "Remote",
+        snippet: "Join our team.",
+        link: "https://www.linkedin.com/jobs/view/unapply-check",
+      },
+    ]);
+    const [unapplyPosting] = (await store.listPostings(userId, "new")).filter(
+      (posting) => posting.title === "Unapply Check Role",
+    );
+    await store.setSaved(userId, unapplyPosting!.id, true);
+    await store.markApplied(userId, unapplyPosting!.id);
+    const beforeUnapply = await store.getPosting(userId, unapplyPosting!.id);
+    assert.ok(beforeUnapply!.savedAt instanceof Date, "setup: saved before unapply");
+    assert.ok(beforeUnapply!.appliedAt instanceof Date, "setup: applied before unapply");
+
+    await store.unapply(userId, unapplyPosting!.id);
+    const afterUnapply = await store.getPosting(userId, unapplyPosting!.id);
+    assert.equal(afterUnapply!.appliedAt, null, "unapply clears appliedAt");
+    assert.ok(afterUnapply!.savedAt instanceof Date, "unapply leaves savedAt untouched when both were set");
+    console.log("ok - unapply clears appliedAt only, leaving savedAt untouched when both were set");
   } finally {
     await db().delete(users).where(eq(users.id, userId));
     await closeDb();
