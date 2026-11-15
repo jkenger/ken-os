@@ -860,15 +860,19 @@ export const jobMatches = pgTable(
     /** Set only when the owner confirms "yes" on the post-Apply dialog (docs/architecture/job-board.md) -- never
      *  by clicking Apply itself, which proves nothing. */
     appliedAt: timestamp("applied_at", { withTimezone: true }),
+    /** Set once a strong-match email has gone out for this posting (docs/architecture/jobs-email.md). Checked by
+     *  `needsStrongMatchEmail`, not the score, and never cleared -- a later rescore never sends a second one even
+     *  if the score changes (docs/product/job-finder.md: "scoring the same posting again sends none"). */
+    instantEmailSentAt: timestamp("instant_email_sent_at", { withTimezone: true }),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (table) => [index("job_matches_user_state_idx").on(table.userId, table.state)],
 );
 
-/** The owner's Jobs filter preferences (docs/product/job-finder.md, Preferences table). Timing (instant-email
- *  threshold, digest time) is still step 3 scope, not here. Minimum pay is one currency; a posting's own stated
- *  pay is converted into it via the cached rates in `job_currency_rates` before comparing, so it's checked
- *  regardless of what currency the posting states. */
+/** The owner's Jobs filter preferences (docs/product/job-finder.md, Preferences table). Digest time is still
+ *  step 3 slice 2 scope, not here yet. Minimum pay is one currency; a posting's own stated pay is converted into
+ *  it via the cached rates in `job_currency_rates` before comparing, so it's checked regardless of what currency
+ *  the posting states. */
 export const jobPreferences = pgTable("job_preferences", {
   userId: text("user_id")
     .primaryKey()
@@ -899,6 +903,9 @@ export const jobPreferences = pgTable("job_preferences", {
    *  (docs/product/job-finder.md, Preferences table). Day and Mid by default. */
   shifts: jsonb("shifts").$type<("day" | "mid" | "night")[]>().notNull().default(["day", "mid"]),
   agenciesHide: boolean("agencies_hide").notNull().default(false),
+  /** Below this score, a posting waits for the digest instead of getting its own email right away
+   *  (docs/product/job-finder.md, Preferences table "Instant email from"). */
+  instantEmailThreshold: integer("instant_email_threshold").notNull().default(80),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

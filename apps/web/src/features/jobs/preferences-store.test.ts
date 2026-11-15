@@ -19,6 +19,7 @@ function validInput(overrides: Record<string, unknown> = {}) {
     seniority: ["mid", "senior"],
     shifts: ["day", "night"],
     agenciesHide: true,
+    instantEmailThreshold: 80,
     ...overrides,
   };
 }
@@ -39,6 +40,7 @@ test("valid input parses to preferences", () => {
     seniority: ["mid", "senior"],
     shifts: ["day", "night"],
     agenciesHide: true,
+    instantEmailThreshold: 80,
   });
 });
 
@@ -146,4 +148,21 @@ test("an empty shifts list is allowed (no shift shown differently)", () => {
 
 test("a non-boolean agenciesHide is rejected", () => {
   assert.throws(() => parsePreferences(validInput({ agenciesHide: "yes" })), JobsInputError);
+});
+
+test("an instantEmailThreshold of 0 or 100 is allowed (the boundary values)", () => {
+  assert.equal(parsePreferences(validInput({ instantEmailThreshold: 0 })).instantEmailThreshold, 0);
+  assert.equal(parsePreferences(validInput({ instantEmailThreshold: 100 })).instantEmailThreshold, 100);
+});
+
+test("a negative instantEmailThreshold is rejected", () => {
+  assert.throws(() => parsePreferences(validInput({ instantEmailThreshold: -1 })), JobsInputError);
+});
+
+test("an instantEmailThreshold over 100 is rejected", () => {
+  assert.throws(() => parsePreferences(validInput({ instantEmailThreshold: 101 })), JobsInputError);
+});
+
+test("a non-integer instantEmailThreshold is rejected", () => {
+  assert.throws(() => parsePreferences(validInput({ instantEmailThreshold: 80.5 })), JobsInputError);
 });

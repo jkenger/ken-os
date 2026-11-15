@@ -1,0 +1,2 @@
+ALTER TABLE "job_matches" ADD COLUMN "instant_email_sent_at" timestamp with time zone;--> statement-breakpoint
+ALTER TABLE "job_preferences" ADD COLUMN "instant_email_threshold" integer DEFAULT 80 NOT NULL;

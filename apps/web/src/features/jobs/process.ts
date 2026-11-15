@@ -213,6 +213,10 @@ export async function scorePostings(params: {
   getProfileForScoring: () => Promise<{ profile: unknown; version: Date | null }>;
   score: (input: { profile: unknown; title: string; company: string; text: string }) => Promise<ScoreResult>;
   saveScore: (postingId: string, fields: ScoreFields) => Promise<void>;
+  /** Called right after a posting's score is saved, so a dependent step (the strong-match email trigger in
+   *  `pipeline.ts`, docs/architecture/jobs-email.md) can act on the fresh score without this function needing to
+   *  know anything about email. Optional so every existing caller and test keeps working unchanged. */
+  onScored?: (postingId: string, score: number) => Promise<void>;
 }): Promise<{ ok: boolean; reason: string; processed: number }> {
   if (!secretsMatch(params.secret, params.expectedSecret)) return { ok: false, reason: "bad secret", processed: 0 };
 
@@ -230,6 +234,7 @@ export async function scorePostings(params: {
       scorePromptVersion: result.promptVersion,
       profileVersionScored: version,
     });
+    if (params.onScored) await params.onScored(posting.id, result.score);
   }
 
   return { ok: true, reason: "ok", processed: postings.length };

@@ -1,6 +1,7 @@
 import { extractPosting, scoreJobPosting } from "@ken-os/agents";
 import type { ProfileDetails } from "@ken-os/domain";
 import { getProfile } from "@/features/profile/store";
+import { sendEmail } from "@/platform/email/resend-client";
 import { checkFreehire } from "./check-freehire";
 import { getPreferences } from "./preferences-store";
 import { processPostings, scorePostings } from "./process";
@@ -9,11 +10,15 @@ import { freehireDetailUrl, parseFreehireDetail } from "./scrapers/freehire";
 import {
   claimPendingPostings,
   getNeedingScore,
+  getPosting,
+  getUserEmail,
+  markInstantEmailSent,
   saveExtractedFields,
   saveScore,
   savePostings,
   unclaimPosting,
 } from "./store";
+import { sendStrongMatchEmailIfDue } from "./strong-match-email";
 
 // One account's run of each pipeline stage (plans/jobs-score.md, "Architecture decision"): the scheduler's poll
 // loops these over every account with saved Jobs settings, and the "Run pipeline" button calls them for just the
@@ -61,6 +66,7 @@ export async function processUserPostings(
 
   const profileState = await getProfile(userId);
   const profileVersion = profileState.savedAt ? new Date(profileState.savedAt) : null;
+  const preferences = await getPreferences(userId);
 
   const scoreResult = await scorePostings({
     secret,
@@ -75,6 +81,17 @@ export async function processUserPostings(
         text: input.text,
       }),
     saveScore: (postingId, fields) => saveScore(postingId, fields),
+    // Strong match, right after a posting is scored (docs/architecture/jobs-email.md, "Trigger points"). Re-reads
+    // the posting's fresh score and send state rather than trusting the score passed here, so it works the same
+    // way whether this is the first score or a rescore.
+    onScored: (postingId) =>
+      sendStrongMatchEmailIfDue(userId, postingId, preferences.instantEmailThreshold, {
+        getPosting,
+        getUserEmail,
+        sendEmail,
+        markSent: markInstantEmailSent,
+        appUrl: process.env.APP_URL ?? "",
+      }),
   });
 
   return { extracted: extractResult.processed, scored: scoreResult.processed };

@@ -84,6 +84,7 @@ async function main() {
       jobTypes: ["full_time", "contract"],
       workSetups: ["remote"],
       agenciesHide: false,
+      instantEmailThreshold: 80,
     };
 
     const defaults = await preferences.getPreferences(userId);
@@ -406,6 +407,7 @@ async function main() {
       jobTypes: ["full_time", "contract"],
       workSetups: ["remote"],
       agenciesHide: true,
+      instantEmailThreshold: 80,
     });
     await store.savePostings(userId, [
       {
@@ -599,6 +601,7 @@ async function main() {
       jobTypes: ["full_time", "contract"],
       workSetups: ["remote"],
       agenciesHide: true,
+      instantEmailThreshold: 80,
     });
     await store.refilterExisting(userId);
     const afterCountriesCleared = await store.listPostings(userId, "new");
@@ -623,6 +626,7 @@ async function main() {
       jobTypes: ["full_time", "contract"],
       workSetups: ["on_site"],
       agenciesHide: true,
+      instantEmailThreshold: 80,
     });
     await store.refilterExisting(userId);
     const afterWorkSetupChange = await store.listPostings(userId, "filtered_out");
@@ -648,6 +652,7 @@ async function main() {
       jobTypes: ["full_time", "contract"],
       workSetups: ["remote"],
       agenciesHide: false,
+      instantEmailThreshold: 80,
     });
     await store.savePostings(userId, [
       {
@@ -728,6 +733,7 @@ async function main() {
       jobTypes: ["full_time", "contract"],
       workSetups: ["remote"],
       agenciesHide: false,
+      instantEmailThreshold: 80,
     });
     await store.savePostings(userId, [
       {
@@ -829,6 +835,7 @@ async function main() {
       jobTypes: ["full_time", "contract"],
       workSetups: ["on_site"],
       agenciesHide: true,
+      instantEmailThreshold: 80,
     });
 
     await store.savePostings(userId, [
@@ -937,6 +944,130 @@ async function main() {
       "rescoring against the new Profile version updates the stamp, so it's no longer stale",
     );
     console.log("ok - rescoring against the new Profile version updates the stamp and clears the staleness");
+
+    // Slice 1 of plans/jobs-email.md: a strong-match email sends exactly once at or above the owner's
+    // instant-email threshold, never again on a rescore, and never below it. `sendEmail` is a fake the test can
+    // assert was called, standing in for the real Resend client (platform/email/resend-client.ts).
+    const strongMatchEmailModule = await import("../src/features/jobs/strong-match-email");
+    const sentEmails: { to: string; subject: string }[] = [];
+    const emailTriggerDeps = {
+      getPosting: store.getPosting,
+      getUserEmail: store.getUserEmail,
+      sendEmail: async (params: { to: string; subject: string; html: string }) => {
+        sentEmails.push({ to: params.to, subject: params.subject });
+      },
+      markSent: store.markInstantEmailSent,
+      appUrl: "https://app.example",
+    };
+
+    await preferences.savePreferences(userId, {
+      roles: [],
+      seniority: ["junior", "mid", "senior", "lead"],
+      skipWords: [],
+      skipCompanies: [],
+      countries: [],
+      shifts: ["day", "mid"],
+      postedWithinDays: 365,
+      minimumPay: null,
+      maximumPay: null,
+      payCurrency: "USD",
+      payPeriod: "month",
+      jobTypes: ["full_time", "contract"],
+      workSetups: ["remote"],
+      agenciesHide: false,
+      instantEmailThreshold: 80,
+    });
+
+    await store.savePostings(userId, [
+      {
+        source: "linkedin",
+        sourceId: "li-strong-match",
+        title: "Strong Match Role",
+        company: "EmailCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/40",
+      },
+      {
+        source: "linkedin",
+        sourceId: "li-weak-match",
+        title: "Weak Match Role",
+        company: "EmailCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/41",
+      },
+    ]);
+    const emailPending = await store.getPendingPostings(userId, 20);
+    const emailByTitle = (title: string) => emailPending.find((p) => p.title === title)!;
+    await store.saveExtractedFields(emailByTitle("Strong Match Role").id, {
+      ...extractDefaults,
+      payAmount: 90000,
+      payCurrency: "USD",
+      payPeriod: "year",
+      jobType: "full_time",
+      workSetup: "remote",
+      countries: [],
+      isAgency: false,
+    });
+    await store.saveExtractedFields(emailByTitle("Weak Match Role").id, {
+      ...extractDefaults,
+      payAmount: 90000,
+      payCurrency: "USD",
+      payPeriod: "year",
+      jobType: "full_time",
+      workSetup: "remote",
+      countries: [],
+      isAgency: false,
+    });
+    const emailNew = await store.listPostings(userId, "new");
+    const strongMatchId = emailNew.find((p) => p.title === "Strong Match Role")!.id;
+    const weakMatchId = emailNew.find((p) => p.title === "Weak Match Role")!.id;
+
+    await store.saveScore(weakMatchId, {
+      score: 50,
+      whyFits: [],
+      whatsMissing: [],
+      scorePromptVersion: "jobs-score-v1",
+      profileVersionScored: null,
+    });
+    await strongMatchEmailModule.sendStrongMatchEmailIfDue(userId, weakMatchId, 80, emailTriggerDeps);
+    assert.equal(sentEmails.length, 0, "a posting scored below the threshold never sends");
+
+    await store.saveScore(strongMatchId, {
+      score: 90,
+      whyFits: [{ reason: "Strong backend match", citation: "5+ years backend required" }],
+      whatsMissing: [],
+      scorePromptVersion: "jobs-score-v1",
+      profileVersionScored: null,
+    });
+    await strongMatchEmailModule.sendStrongMatchEmailIfDue(userId, strongMatchId, 80, emailTriggerDeps);
+    assert.equal(sentEmails.length, 1, "a posting scored at or above the threshold sends exactly one email");
+    assert.equal(sentEmails[0]!.subject, "90 · Strong Match Role, EmailCo");
+    assert.equal(sentEmails[0]!.to, `${userId}@example.invalid`);
+    const afterFirstSend = await store.getPosting(userId, strongMatchId);
+    assert.ok(afterFirstSend!.instantEmailSentAt instanceof Date, "sending stamps instant_email_sent_at");
+
+    // Simulates a rescore (a Profile version change re-running the same posting through scoring): the score
+    // changes but the email never sends a second time (docs/product/job-finder.md: "scoring the same posting
+    // again sends none").
+    await store.saveScore(strongMatchId, {
+      score: 95,
+      whyFits: [{ reason: "Strong backend match", citation: "5+ years backend required" }],
+      whatsMissing: [],
+      scorePromptVersion: "jobs-score-v1",
+      profileVersionScored: new Date("2026-11-01T00:00:00Z"),
+    });
+    await strongMatchEmailModule.sendStrongMatchEmailIfDue(userId, strongMatchId, 80, emailTriggerDeps);
+    assert.equal(sentEmails.length, 1, "scoring the same posting again, even after a rescore, sends none");
+    console.log(
+      "ok - a strong-match email sends exactly once at or above the threshold, never again on rescore, and never below it",
+    );
+
+    await store.markInstantEmailSent(userId, weakMatchId);
+    const weakMatchAfterManualMark = await store.getPosting(userId, weakMatchId);
+    assert.ok(weakMatchAfterManualMark!.instantEmailSentAt instanceof Date, "markInstantEmailSent sets the timestamp");
+    console.log("ok - markInstantEmailSent stamps instant_email_sent_at directly");
 
     assert.equal(await checkStatusStore.getCheckStatus(userId), null, "a user who's never been checked has no status");
     await checkStatusStore.recordCheck(userId, { ok: true, reason: "ok", found: 3 });
