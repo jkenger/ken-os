@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, ne, sql, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db/db";
-import { jobMatches, jobPostingSources, jobPostings } from "@/lib/db/schema";
+import { jobMatches, jobPostingSources, jobPostings, users } from "@/lib/db/schema";
 import { getCachedRates } from "./currency-rates-store";
 import { filterReason } from "./filters";
 import { getPreferences } from "./preferences-store";
@@ -132,6 +132,9 @@ export type PostingView = {
   savedAt: Date | null;
   /** Null until the owner confirms the post-Apply dialog. */
   appliedAt: Date | null;
+  /** Null until a strong-match email has gone out for this posting (docs/architecture/jobs-email.md). Never
+   *  cleared once set. */
+  instantEmailSentAt: Date | null;
   sources: { source: AlertSource; link: string }[];
   processedAt: Date | null;
   fullDescription: string | null;
@@ -172,6 +175,7 @@ const POSTING_COLUMNS = {
   viewedAt: jobMatches.viewedAt,
   savedAt: jobMatches.savedAt,
   appliedAt: jobMatches.appliedAt,
+  instantEmailSentAt: jobMatches.instantEmailSentAt,
   processedAt: jobPostings.processedAt,
   fullDescription: jobPostings.fullDescription,
   descriptionHtml: jobPostings.descriptionHtml,
@@ -400,6 +404,23 @@ export async function unapply(userId: string, postingId: string): Promise<void> 
     .update(jobMatches)
     .set({ appliedAt: null })
     .where(and(eq(jobMatches.postingId, postingId), eq(jobMatches.userId, userId)));
+}
+
+/** Marks a strong-match email sent for this posting (docs/architecture/jobs-email.md) -- checked by
+ *  `needsStrongMatchEmail`, never cleared, so a later rescore never sends a second one. Scoped to the owner's
+ *  own posting, same as every other state-setting function here. */
+export async function markInstantEmailSent(userId: string, postingId: string): Promise<void> {
+  await db()
+    .update(jobMatches)
+    .set({ instantEmailSentAt: new Date() })
+    .where(and(eq(jobMatches.postingId, postingId), eq(jobMatches.userId, userId)));
+}
+
+/** The account's sign-in email, for sending it its own strong-match and digest emails
+ *  (docs/architecture/jobs-email.md) -- not the Profile's own (editable) contact email, which can differ. */
+export async function getUserEmail(userId: string): Promise<string | null> {
+  const [row] = await db().select({ email: users.email }).from(users).where(eq(users.id, userId)).limit(1);
+  return row?.email ?? null;
 }
 
 /** How many postings are on the owner's Job Board -- the New/Job board tabs' own count, without fetching every

@@ -609,6 +609,18 @@ test("nothing needing a score succeeds, processes nothing, and never fetches the
   assert.equal(profileFetched, false);
 });
 
+test("onScored is called with the posting id and score right after saveScore", async () => {
+  const calls: unknown[] = [];
+  await scorePostings({
+    ...noopScoreDeps(),
+    getNeedingScore: async () => [scorablePosting({ id: "p1" })],
+    onScored: async (postingId, score) => {
+      calls.push({ postingId, score });
+    },
+  });
+  assert.deepEqual(calls, [{ postingId: "p1", score: 82 }]);
+});
+
 test("scores every posting getNeedingScore returns, in order", async () => {
   const scoredIds: string[] = [];
   await scorePostings({

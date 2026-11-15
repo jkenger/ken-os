@@ -18,6 +18,7 @@ const base: JobPreferences = {
   workSetups: ["remote", "hybrid", "on_site"],
   seniority: ["junior", "mid", "senior", "lead"],
   agenciesHide: false,
+  instantEmailThreshold: 80,
 };
 
 test("Posted within under a year shows its own chip, like any other restricted dimension", () => {

@@ -20,6 +20,7 @@ const noFilters: JobPreferences = {
   workSetups: ["remote"],
   seniority: ["junior", "mid", "senior", "lead"],
   agenciesHide: false,
+  instantEmailThreshold: 80,
 };
 const rates = { USD: 1, PHP: 56.5, GBP: 0.79 };
 

@@ -18,4 +18,5 @@ export const DEFAULTS: JobPreferences = {
   seniority: ["junior", "mid", "senior", "lead"],
   shifts: ["day", "mid"],
   agenciesHide: false,
+  instantEmailThreshold: 80,
 };

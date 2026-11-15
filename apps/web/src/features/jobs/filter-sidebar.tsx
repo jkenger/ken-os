@@ -80,6 +80,7 @@ export function FilterSidebar({
   const router = useRouter();
   const [minimumPay, setMinimumPay] = useState(preferences.minimumPay === null ? "" : String(preferences.minimumPay));
   const [maximumPay, setMaximumPay] = useState(preferences.maximumPay === null ? "" : String(preferences.maximumPay));
+  const [instantEmailThreshold, setInstantEmailThreshold] = useState(String(preferences.instantEmailThreshold));
 
   async function save(changes: Partial<JobPreferences>) {
     try {
@@ -320,6 +321,24 @@ export function FilterSidebar({
           <NativeSelectOption value="90">90 days</NativeSelectOption>
           <NativeSelectOption value="365">Anytime</NativeSelectOption>
         </NativeSelect>
+      </div>
+
+      <div className="grid gap-1.5">
+        <Label className="mb-0">Instant email threshold</Label>
+        <Input
+          type="number"
+          min={0}
+          max={100}
+          value={instantEmailThreshold}
+          onChange={(event) => setInstantEmailThreshold(event.target.value)}
+          onBlur={() => {
+            const value = Number(instantEmailThreshold);
+            if (Number.isInteger(value) && value >= 0 && value <= 100) void save({ instantEmailThreshold: value });
+            else setInstantEmailThreshold(String(preferences.instantEmailThreshold));
+          }}
+          className="w-24"
+        />
+        <span className="text-xs text-muted-foreground">Score and above sends an email right away</span>
       </div>
     </aside>
   );

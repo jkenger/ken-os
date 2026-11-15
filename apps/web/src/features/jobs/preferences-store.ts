@@ -48,6 +48,9 @@ export type JobPreferences = {
    *  is shown, not a strict filter, so an empty list is also valid and just means no shift is marked that way. */
   shifts: Shift[];
   agenciesHide: boolean;
+  /** Below this score, a posting waits for the digest instead of getting its own email right away
+   *  (docs/product/job-finder.md, Preferences table "Instant email from"). */
+  instantEmailThreshold: number;
 };
 
 function cleanList(value: unknown, field: string): string[] {
@@ -88,6 +91,15 @@ export function parsePreferences(input: Record<string, unknown>): JobPreferences
   const agenciesHide = input.agenciesHide;
   if (typeof agenciesHide !== "boolean") throw new JobsInputError("Agencies hide must be true or false");
 
+  const instantEmailThreshold = input.instantEmailThreshold;
+  if (
+    typeof instantEmailThreshold !== "number" ||
+    !Number.isInteger(instantEmailThreshold) ||
+    instantEmailThreshold < 0 ||
+    instantEmailThreshold > 100
+  )
+    throw new JobsInputError("Instant email threshold must be a whole number from 0 to 100");
+
   return {
     roles: cleanList(input.roles, "Roles"),
     skipWords: cleanList(input.skipWords, "Skip words"),
@@ -103,6 +115,7 @@ export function parsePreferences(input: Record<string, unknown>): JobPreferences
     seniority: cleanEnumList(input.seniority, "Seniority", SENIORITIES),
     shifts: cleanEnumList(input.shifts, "Shifts", SHIFTS),
     agenciesHide,
+    instantEmailThreshold,
   };
 }
 
@@ -124,6 +137,7 @@ export async function getPreferences(userId: string): Promise<JobPreferences> {
     seniority: row.seniority,
     shifts: row.shifts,
     agenciesHide: row.agenciesHide,
+    instantEmailThreshold: row.instantEmailThreshold,
   };
 }
 
