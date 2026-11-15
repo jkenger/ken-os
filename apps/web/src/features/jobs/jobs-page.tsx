@@ -10,6 +10,7 @@ import { formatBoardName } from "@/features/jobs/job-boards";
 import type { JobPreferences } from "@/features/jobs/preferences-store";
 import type { PostingSortKey, PostingView } from "@/features/jobs/store";
 import { FilterSidebar } from "./filter-sidebar";
+import { JobsTabs } from "./jobs-tabs";
 import { NewList } from "./new-list";
 import { Overview, SetupStatusPanel } from "./overview";
 import { ResultsBar } from "./results-bar";
@@ -70,6 +71,7 @@ export function JobsPage({
   initialPostings,
   initialHasMore,
   newCount,
+  boardCount,
   profileSkills,
   preferences,
   companies,
@@ -88,6 +90,8 @@ export function JobsPage({
   initialHasMore: boolean;
   /** Every New posting the owner has, not just what's loaded -- the list header's stable total. */
   newCount: number;
+  /** The New/Job board tabs' own count for the other tab. */
+  boardCount: number;
   profileSkills: string[];
   preferences: JobPreferences;
   /** Every distinct company name from the owner's own postings, for the Skip companies filter's search list. */
@@ -180,6 +184,7 @@ export function JobsPage({
             </Button>
           </Badge>
         )}
+        <JobsTabs active="new" newCount={newCount} boardCount={boardCount} />
         <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[20rem_1fr]">
           <FilterSidebar
             preferences={preferences}

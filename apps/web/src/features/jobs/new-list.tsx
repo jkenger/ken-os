@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUpRight, Bookmark } from "lucide-react";
+import { ArrowUpRight, Bookmark, Check } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { DotSeparator } from "@/components/dot-separator";
@@ -229,7 +229,13 @@ export function PostingCard({
             <div>
               <div className="flex items-center gap-1.5">
                 <p className="text-sm font-semibold underline-offset-2 group-hover:underline">{posting.title}</p>
-                {badge && <Badge className="h-5 px-1.5 text-[10px]">{badge}</Badge>}
+                {badge && (
+                  <Badge className="h-5 gap-1 px-1.5 text-[10px]">
+                    {badge === "Saved" && <Bookmark className="size-3 fill-current" />}
+                    {badge === "Applied" && <Check className="size-3" />}
+                    {badge}
+                  </Badge>
+                )}
               </div>
               <p className="mt-0.5 text-sm text-muted-foreground">{posting.company}</p>
             </div>

@@ -402,6 +402,22 @@ export async function unapply(userId: string, postingId: string): Promise<void> 
     .where(and(eq(jobMatches.postingId, postingId), eq(jobMatches.userId, userId)));
 }
 
+/** How many postings are on the owner's Job Board -- the New/Job board tabs' own count, without fetching every
+ *  row (docs/mockups/jobs-redesign-canvas/JB.dc.html, the tab pair). Same condition as `listJobBoard`. */
+export async function countJobBoard(userId: string): Promise<number> {
+  const [row] = await db()
+    .select({ n: sql<number>`count(*)::int` })
+    .from(jobPostings)
+    .innerJoin(jobMatches, eq(jobMatches.postingId, jobPostings.id))
+    .where(
+      and(
+        eq(jobPostings.userId, userId),
+        sql`(${jobMatches.savedAt} is not null or ${jobMatches.appliedAt} is not null)`,
+      ),
+    );
+  return row?.n ?? 0;
+}
+
 /** Everything on the owner's Job Board: every posting saved or applied to, regardless of its New/Filtered out
  *  `state` (docs/architecture/job-board.md -- neither `saved_at` nor `applied_at` is touched by `refilterExisting`,
  *  so a posting can be on the board even after a later preference change moves it to Filtered out). Newest action
