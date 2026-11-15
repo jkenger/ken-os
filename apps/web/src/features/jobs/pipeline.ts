@@ -3,12 +3,15 @@ import type { ProfileDetails } from "@ken-os/domain";
 import { getProfile } from "@/features/profile/store";
 import { sendEmail } from "@/platform/email/resend-client";
 import { checkFreehire } from "./check-freehire";
-import { getPreferences } from "./preferences-store";
+import { sendDigestEmailIfDue } from "./digest-email";
+import { getLastDigestSentAt, getPreferences, markDigestSent } from "./preferences-store";
 import { processPostings, scorePostings } from "./process";
 import { deriveRoles } from "./roles";
 import { freehireDetailUrl, parseFreehireDetail } from "./scrapers/freehire";
 import {
   claimPendingPostings,
+  getDigestFilteredOutCounts,
+  getDigestPostings,
   getNeedingScore,
   getPosting,
   getUserEmail,
@@ -92,6 +95,18 @@ export async function processUserPostings(
         markSent: markInstantEmailSent,
         appUrl: process.env.APP_URL ?? "",
       }),
+  });
+
+  // Daily digest, once per user per run (docs/architecture/jobs-email.md, "Trigger points"): checked after this
+  // user's postings are done, not per posting the way the strong-match email is.
+  const lastDigestSentAt = await getLastDigestSentAt(userId);
+  await sendDigestEmailIfDue(userId, { digestTime: preferences.digestTime, lastDigestSentAt }, new Date(), {
+    getUserEmail,
+    getDigestPostings,
+    getFilteredOutCounts: getDigestFilteredOutCounts,
+    sendEmail,
+    markSent: markDigestSent,
+    appUrl: process.env.APP_URL ?? "",
   });
 
   return { extracted: extractResult.processed, scored: scoreResult.processed };

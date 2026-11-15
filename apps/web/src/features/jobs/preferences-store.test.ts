@@ -20,6 +20,7 @@ function validInput(overrides: Record<string, unknown> = {}) {
     shifts: ["day", "night"],
     agenciesHide: true,
     instantEmailThreshold: 80,
+    digestTime: "07:00",
     ...overrides,
   };
 }
@@ -41,6 +42,7 @@ test("valid input parses to preferences", () => {
     shifts: ["day", "night"],
     agenciesHide: true,
     instantEmailThreshold: 80,
+    digestTime: "07:00",
   });
 });
 
@@ -165,4 +167,22 @@ test("an instantEmailThreshold over 100 is rejected", () => {
 
 test("a non-integer instantEmailThreshold is rejected", () => {
   assert.throws(() => parsePreferences(validInput({ instantEmailThreshold: 80.5 })), JobsInputError);
+});
+
+test("a valid 24-hour digestTime is accepted", () => {
+  assert.equal(parsePreferences(validInput({ digestTime: "00:00" })).digestTime, "00:00");
+  assert.equal(parsePreferences(validInput({ digestTime: "23:59" })).digestTime, "23:59");
+});
+
+test("a 12-hour-style digestTime is rejected", () => {
+  assert.throws(() => parsePreferences(validInput({ digestTime: "7:00 AM" })), JobsInputError);
+});
+
+test("an out-of-range digestTime is rejected", () => {
+  assert.throws(() => parsePreferences(validInput({ digestTime: "24:00" })), JobsInputError);
+  assert.throws(() => parsePreferences(validInput({ digestTime: "12:60" })), JobsInputError);
+});
+
+test("a non-string digestTime is rejected", () => {
+  assert.throws(() => parsePreferences(validInput({ digestTime: 700 })), JobsInputError);
 });

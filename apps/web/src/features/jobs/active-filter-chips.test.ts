@@ -19,6 +19,7 @@ const base: JobPreferences = {
   seniority: ["junior", "mid", "senior", "lead"],
   agenciesHide: false,
   instantEmailThreshold: 80,
+  digestTime: "07:00",
 };
 
 test("Posted within under a year shows its own chip, like any other restricted dimension", () => {

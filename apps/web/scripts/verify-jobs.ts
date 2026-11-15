@@ -85,6 +85,7 @@ async function main() {
       workSetups: ["remote"],
       agenciesHide: false,
       instantEmailThreshold: 80,
+      digestTime: "07:00",
     };
 
     const defaults = await preferences.getPreferences(userId);
@@ -408,6 +409,7 @@ async function main() {
       workSetups: ["remote"],
       agenciesHide: true,
       instantEmailThreshold: 80,
+      digestTime: "07:00",
     });
     await store.savePostings(userId, [
       {
@@ -602,6 +604,7 @@ async function main() {
       workSetups: ["remote"],
       agenciesHide: true,
       instantEmailThreshold: 80,
+      digestTime: "07:00",
     });
     await store.refilterExisting(userId);
     const afterCountriesCleared = await store.listPostings(userId, "new");
@@ -627,6 +630,7 @@ async function main() {
       workSetups: ["on_site"],
       agenciesHide: true,
       instantEmailThreshold: 80,
+      digestTime: "07:00",
     });
     await store.refilterExisting(userId);
     const afterWorkSetupChange = await store.listPostings(userId, "filtered_out");
@@ -653,6 +657,7 @@ async function main() {
       workSetups: ["remote"],
       agenciesHide: false,
       instantEmailThreshold: 80,
+      digestTime: "07:00",
     });
     await store.savePostings(userId, [
       {
@@ -734,6 +739,7 @@ async function main() {
       workSetups: ["remote"],
       agenciesHide: false,
       instantEmailThreshold: 80,
+      digestTime: "07:00",
     });
     await store.savePostings(userId, [
       {
@@ -836,6 +842,7 @@ async function main() {
       workSetups: ["on_site"],
       agenciesHide: true,
       instantEmailThreshold: 80,
+      digestTime: "07:00",
     });
 
     await store.savePostings(userId, [
@@ -976,6 +983,7 @@ async function main() {
       workSetups: ["remote"],
       agenciesHide: false,
       instantEmailThreshold: 80,
+      digestTime: "07:00",
     });
 
     await store.savePostings(userId, [
@@ -1355,6 +1363,126 @@ async function main() {
     assert.equal(afterUnapply!.appliedAt, null, "unapply clears appliedAt");
     assert.ok(afterUnapply!.savedAt instanceof Date, "unapply leaves savedAt untouched when both were set");
     console.log("ok - unapply clears appliedAt only, leaving savedAt untouched when both were set");
+
+    // Slice 2 of plans/jobs-email.md: the daily digest's own query, and lastDigestSentAt/markDigestSent
+    // (docs/architecture/jobs-email.md, "Trigger points"). No minimum pay/countries/skip words active here, so
+    // only the skip word set just below this block filters anything out.
+    await preferences.savePreferences(userId, {
+      roles: [],
+      seniority: ["junior", "mid", "senior", "lead"],
+      skipWords: [],
+      skipCompanies: [],
+      countries: [],
+      shifts: ["day", "mid"],
+      postedWithinDays: 365,
+      minimumPay: null,
+      maximumPay: null,
+      payCurrency: "USD",
+      payPeriod: "month",
+      jobTypes: ["full_time", "contract"],
+      workSetups: ["remote"],
+      agenciesHide: false,
+      instantEmailThreshold: 80,
+      digestTime: "07:00",
+    });
+
+    await store.savePostings(userId, [
+      {
+        source: "linkedin",
+        sourceId: "li-digest-before-cutoff",
+        title: "Before Cutoff Role",
+        company: "DigestCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/60",
+      },
+    ]);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    const digestCutoff = new Date();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+
+    await store.savePostings(userId, [
+      {
+        source: "linkedin",
+        sourceId: "li-digest-after-cutoff",
+        title: "After Cutoff Role",
+        company: "DigestCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/61",
+      },
+    ]);
+    const afterCutoffId = (await store.listPostings(userId, "new")).find((p) => p.title === "After Cutoff Role")!.id;
+    await store.saveScore(afterCutoffId, {
+      score: 85,
+      whyFits: [],
+      whatsMissing: [],
+      scorePromptVersion: "jobs-score-v1",
+      profileVersionScored: null,
+    });
+
+    await preferences.savePreferences(userId, {
+      roles: [],
+      seniority: ["junior", "mid", "senior", "lead"],
+      skipWords: ["DigestSkip"],
+      skipCompanies: [],
+      countries: [],
+      shifts: ["day", "mid"],
+      postedWithinDays: 365,
+      minimumPay: null,
+      maximumPay: null,
+      payCurrency: "USD",
+      payPeriod: "month",
+      jobTypes: ["full_time", "contract"],
+      workSetups: ["remote"],
+      agenciesHide: false,
+      instantEmailThreshold: 80,
+      digestTime: "07:00",
+    });
+    await store.savePostings(userId, [
+      {
+        source: "linkedin",
+        sourceId: "li-digest-filtered-1",
+        title: "DigestSkip Filtered Role One",
+        company: "DigestCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/62",
+      },
+      {
+        source: "linkedin",
+        sourceId: "li-digest-filtered-2",
+        title: "DigestSkip Filtered Role Two",
+        company: "DigestCo",
+        location: "Remote",
+        snippet: "",
+        link: "https://www.linkedin.com/jobs/view/63",
+      },
+    ]);
+
+    const digestPostings = await store.getDigestPostings(userId, digestCutoff);
+    const digestTitles = digestPostings.map((p) => p.title);
+    assert.ok(digestTitles.includes("After Cutoff Role"), "a posting first seen after the cutoff is included");
+    assert.ok(!digestTitles.includes("Before Cutoff Role"), "a posting first seen before the cutoff is excluded");
+    console.log("ok - getDigestPostings returns only new postings first seen after the given cutoff");
+
+    const digestFilteredOutCounts = await store.getDigestFilteredOutCounts(userId, digestCutoff);
+    assert.deepEqual(
+      digestFilteredOutCounts.find((c) => c.reason === "Skip word: DigestSkip"),
+      { reason: "Skip word: DigestSkip", count: 2 },
+      "both postings sharing a filter reason in the window are counted together",
+    );
+    console.log("ok - getDigestFilteredOutCounts groups postings filtered out in the window by reason");
+
+    assert.equal(
+      await preferences.getLastDigestSentAt(userId),
+      null,
+      "a user whose digest has never sent has no lastDigestSentAt",
+    );
+    await preferences.markDigestSent(userId);
+    const afterDigestSent = await preferences.getLastDigestSentAt(userId);
+    assert.ok(afterDigestSent instanceof Date, "markDigestSent stamps lastDigestSentAt");
+    console.log("ok - getLastDigestSentAt and markDigestSent round-trip lastDigestSentAt");
   } finally {
     await db().delete(users).where(eq(users.id, userId));
     await closeDb();

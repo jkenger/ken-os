@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, desc, eq, ilike, inArray, isNotNull, isNull, ne, sql, type SQL } from "drizzle-orm";
+import { and, asc, desc, eq, gt, ilike, inArray, isNotNull, isNull, ne, sql, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db/db";
 import { jobMatches, jobPostingSources, jobPostings, users } from "@/lib/db/schema";
 import { getCachedRates } from "./currency-rates-store";
@@ -414,6 +414,38 @@ export async function markInstantEmailSent(userId: string, postingId: string): P
     .update(jobMatches)
     .set({ instantEmailSentAt: new Date() })
     .where(and(eq(jobMatches.postingId, postingId), eq(jobMatches.userId, userId)));
+}
+
+/** New postings for the daily digest (docs/architecture/jobs-email.md, "Trigger points"): every "new" posting
+ *  first seen after `since`, highest score first so the digest reads top-match-first. */
+export async function getDigestPostings(userId: string, since: Date): Promise<PostingView[]> {
+  const rows = await db()
+    .select(POSTING_COLUMNS)
+    .from(jobPostings)
+    .innerJoin(jobMatches, eq(jobMatches.postingId, jobPostings.id))
+    .where(and(eq(jobPostings.userId, userId), eq(jobMatches.state, "new"), gt(jobPostings.firstSeenAt, since)))
+    .orderBy(desc(jobMatches.score), desc(jobPostings.firstSeenAt));
+
+  const attached = await attachSourcesAndScore(rows);
+  return rows.map((row) => toPostingView(row, attached.get(row.id)!));
+}
+
+export type DigestFilterReasonCount = { reason: string; count: number };
+
+/** How many postings were filtered out in the same digest window, grouped by reason -- the digest's own "why"
+ *  breakdown (docs/product/job-finder.md, "Emails": "how many were filtered out and why"). No existing screen
+ *  groups by reason today (Filtered out lists one reason per posting row, ungrouped); this is the digest's own
+ *  shape. */
+export async function getDigestFilteredOutCounts(userId: string, since: Date): Promise<DigestFilterReasonCount[]> {
+  const rows = await db()
+    .select({ reason: jobMatches.filterReason, count: sql<number>`count(*)::int` })
+    .from(jobPostings)
+    .innerJoin(jobMatches, eq(jobMatches.postingId, jobPostings.id))
+    .where(
+      and(eq(jobPostings.userId, userId), eq(jobMatches.state, "filtered_out"), gt(jobPostings.firstSeenAt, since)),
+    )
+    .groupBy(jobMatches.filterReason);
+  return rows.map((row) => ({ reason: row.reason ?? "Unknown", count: row.count }));
 }
 
 /** The account's sign-in email, for sending it its own strong-match and digest emails
