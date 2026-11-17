@@ -259,7 +259,7 @@ The mockup brief is [docs/mockups/job-finder.md](../mockups/job-finder.md).
 ## Job Board
 
 A second thing a posting can be, on top of New/Viewed/Filtered out: Saved or Applied, tracked on its own screen.
-Specified 5 Nov 2026; not yet built.
+Specified 5 Nov 2026; built.
 
 - **Scope:** one feature, not an Applied flag bolted onto the existing fake Save. Save stops being a client-only
   toggle (`new-list.tsx`'s `SaveButton`, never persisted) and becomes real, alongside Applied.
@@ -306,8 +306,9 @@ New tables, added in one migration. Nothing existing changes.
   came from.
 - `job_matches`: the score, reasons, shift, the owner's state and `viewed_at` (null until the owner opens the
   posting's detail page once) for each posting, with the prompt version and the Profile version it was scored
-  against. State today is only `new`/`filtered_out`; Saved and Applied (Job Board, above) are spec'd but not yet
-  in the schema — that's technical design, not decided here.
+  against. State today is only `new`/`filtered_out`; Saved, Applied and whether a strong-match email went out
+  (Job Board and Email, above) are their own columns — `docs/architecture/job-board.md`,
+  `docs/architecture/jobs-email.md`.
 
 freehire needs no block/backoff state (no anti-scraping posture to track against) — the `job_scraper_state` table
 this used to need for LinkedIn/Indeed was removed along with the scrapers themselves; `onlinejobs`, if the checker
@@ -319,11 +320,13 @@ is built, will need its own equivalent since it's a site LinkedIn/Indeed-style b
    planned here — see Getting postings in). Repeat dropping, the Jobs page with New and Filtered out, and settings.
    `plans/jobs-freehire-source.md`.
 2. **Score.** ✅ Built — full posting read, AI extract and score, shift labels, the side panel. `plans/jobs-score.md`.
-3. **Email.** Strong match emails and the daily digest.
+3. **Email.** ✅ Built — strong match emails and the daily digest, both triggered from the existing
+   `/api/jobs/process` poll. `plans/jobs-email.md` (removed; both slices landed), technical design
+   `docs/architecture/jobs-email.md`.
 4. **OnlineJobs.** Its alert parser if it sends alerts; otherwise the checker, if the owner accepts the risk.
-5. **Job Board.** Save becomes real and Applied gets built — confirmation dialog, Viewed-on-confirm, the Job
-   Board screen itself (spec'd above, under Job Board). Dismiss with a reason and turning its reasons into
-   suggested filter changes stay sketched, not built, until their own pass.
+5. **Job Board.** ✅ Built — Save is real, Applied has its confirmation dialog and Viewed-on-confirm, the Job
+   Board screen and Undo. Dismiss with a reason and turning its reasons into suggested filter changes stay
+   sketched, not built, until their own pass.
 
 Later, not in these steps: a resume tailored to one posting, built from the Profile like the other resumes
 (specified, see `docs/product/cv-tailoring.md`); a cover note draft; a gap check across many postings ("6 of your

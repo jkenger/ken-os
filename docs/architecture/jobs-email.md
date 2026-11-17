@@ -1,8 +1,7 @@
 # Jobs: Email — technical design
 
 Product spec: `docs/product/job-finder.md`, "Emails" and "Preferences" (Instant email from, Digest time), Release
-step 3. `resend` is already an installed dependency and `RESEND_API_KEY` already documented in `.env.example` —
-neither has been wired up yet.
+step 3. Built — both slices below landed (`plans/jobs-email.md`, removed).
 
 ## Data model
 
