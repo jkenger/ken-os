@@ -164,6 +164,10 @@ Density is a working tool's: a 48px top bar, 14px body, 36px controls, 24px titl
 
 The source of truth is code. The shadcn default block at the top of `src/app/globals.css` stays exactly as `shadcn init` wrote it; every Loots token lives after the "Loots: additions on top of the shadcn default" comment, and the console overrides the shadcn neutrals there, in the "Console (DESIGN.md)" block, rather than in the default block. The white SaaS card grid and the warm paper look are the confirmed rejections.
 
+**Exception, owner-approved 17 Nov 2026**: the CV tailoring button (`docs/architecture/cv-tailoring.md`) carries a
+multi-hue gradient border — the one deliberately decorative, non-state-colour treatment in the app. Scoped to
+that one button; "nothing decorative" still holds everywhere else. Token: `--cv-tailor-gradient`.
+
 **Key Characteristics:**
 
 - Cool graphite neutrals (hue 265, chroma under 0.01) in both themes, no brand hue.
