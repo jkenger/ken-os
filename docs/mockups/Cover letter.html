@@ -1,0 +1,2077 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cover letter: mockup snapshot</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap"
+    />
+    <style>
+      /* Static snapshot of docs/mockups/cover-letter-canvas (the canvas is the source). No runtime: every state is
+   written out. Tokens are the Loots console values from apps/web/DESIGN.md. */
+
+      @property --ang {
+        syntax: "<angle>";
+        initial-value: 0deg;
+        inherits: false;
+      }
+      body {
+        margin: 0;
+        background: oklch(0.93 0.003 265);
+        font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+        color: oklch(0.22 0.005 265);
+      }
+      .page {
+        padding: 32px 24px 64px;
+        display: flex;
+        flex-direction: column;
+        gap: 36px;
+      }
+      .page > header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .page > header p {
+        margin: 6px 0 0;
+        font-size: 14px;
+        color: oklch(0.48 0.008 265);
+        max-width: 80ch;
+      }
+      .group-title {
+        margin: 12px 0 -12px;
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .frame h2 {
+        margin: 0 0 10px;
+        font-size: 13px;
+        font-weight: 600;
+        color: oklch(0.48 0.008 265);
+      }
+      .scroll {
+        overflow-x: auto;
+        border: 1px solid oklch(0.885 0.004 265);
+        border-radius: 4px;
+        width: fit-content;
+        max-width: 100%;
+      }
+      .lp {
+        --bg: oklch(0.975 0.002 265);
+        --fg: oklch(0.22 0.005 265);
+        --card: oklch(0.995 0.001 265);
+        --pop: oklch(0.995 0.001 265);
+        --muted: oklch(0.945 0.003 265);
+        --mfg: oklch(0.48 0.008 265);
+        --border: oklch(0.885 0.004 265);
+        --ring: oklch(0.52 0.16 262);
+        --pfg: oklch(0.985 0.001 265);
+        --red: oklch(0.53 0.19 25);
+        --scrim: oklch(0.22 0.005 265 / 0.4);
+        position: relative;
+        font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+        color: var(--fg);
+        background: var(--bg);
+        font-size: 14px;
+        line-height: 1.43;
+      }
+      .lp.dk {
+        --bg: oklch(0.205 0.004 265);
+        --fg: oklch(0.93 0.004 100);
+        --card: oklch(0.235 0.005 265);
+        --pop: oklch(0.255 0.006 265);
+        --muted: oklch(0.275 0.006 265);
+        --mfg: oklch(0.74 0.006 100);
+        --border: oklch(0.33 0.008 265);
+        --ring: oklch(0.76 0.11 262);
+        --pfg: oklch(0.205 0.004 265);
+        --red: oklch(0.72 0.15 20);
+        --scrim: oklch(0 0 0 / 0.55);
+      }
+      .lp * {
+        box-sizing: border-box;
+      }
+      .lp a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .lp.desk {
+        width: 1000px;
+        padding: 32px 36px;
+      }
+      .lp.phone {
+        width: 390px;
+        padding: 20px 16px 24px;
+      }
+      .rows {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+      .line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .co {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 500;
+      }
+      .avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 3.2px;
+        background: var(--muted);
+        color: var(--mfg);
+        display: grid;
+        place-items: center;
+        font-weight: 600;
+        font-size: 16px;
+      }
+      .meta {
+        text-align: right;
+      }
+      .meta p {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--mfg);
+      }
+      .dot {
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background: var(--mfg);
+      }
+      .title {
+        margin: 0;
+        max-width: 576px;
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 36px;
+        padding: 0 12px;
+        border-radius: 10.4px;
+        border: 1px solid transparent;
+        font: inherit;
+        font-weight: 500;
+        white-space: nowrap;
+        cursor: pointer;
+        background: transparent;
+        color: var(--fg);
+      }
+      .btn-p {
+        background: var(--fg);
+        color: var(--pfg) !important;
+      }
+      .btn-o {
+        background: var(--bg);
+        border-color: var(--border);
+      }
+      .dk .btn-o {
+        background: transparent;
+      }
+      .btn-xs {
+        height: 24px;
+        padding: 0 10px;
+        font-size: 12px;
+        gap: 4px;
+        margin-top: 6px;
+      }
+      .btn-red {
+        background: var(--red);
+        color: oklch(0.985 0.001 265);
+      }
+      .btn[disabled] {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+      .btn-icon {
+        width: 36px;
+        padding: 0;
+      }
+      .arw {
+        transition: transform 0.2s ease-out;
+      }
+      .btn:hover .arw {
+        transform: translate(2px, -2px);
+      }
+      .rb {
+        display: inline-flex;
+        padding: 1.5px;
+        border-radius: 10.4px;
+        background: conic-gradient(
+          from var(--ang),
+          oklch(0.68 0.19 25),
+          oklch(0.78 0.16 75),
+          oklch(0.72 0.17 150),
+          oklch(0.66 0.15 230),
+          oklch(0.62 0.2 295),
+          oklch(0.68 0.19 25)
+        );
+      }
+      .rb-idle {
+        opacity: 0.45;
+      }
+      .rbi {
+        height: 33px;
+        border: 0;
+        border-radius: 9px;
+        background: var(--bg);
+      }
+      .split {
+        display: inline-flex;
+        align-items: center;
+      }
+      .seg {
+        height: 33px;
+        border: 0;
+        border-radius: 9px;
+        background: transparent;
+      }
+      .seam {
+        width: 1px;
+        height: 18px;
+        background: var(--border);
+      }
+      .spin {
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .tabs {
+        display: inline-flex;
+        gap: 2px;
+        padding: 3px;
+        border-radius: 10.4px;
+        background: var(--muted);
+      }
+      .tabs button {
+        height: 30px;
+        padding: 0 14px;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+        font: inherit;
+        font-weight: 500;
+        color: var(--mfg);
+      }
+      .tabs button[aria-selected="true"] {
+        background: var(--card);
+        color: var(--fg);
+        box-shadow: 0 0 0 1px var(--border);
+      }
+      .panel {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .ta {
+        width: 100%;
+        min-height: 380px;
+        resize: vertical;
+        padding: 16px 18px;
+        border-radius: 8.8px;
+        background: var(--muted);
+        border: 1px solid transparent;
+        font: inherit;
+        font-size: 15px;
+        line-height: 1.7;
+        color: var(--fg);
+        outline: 0;
+        display: block;
+      }
+      .ta.focus {
+        border-color: var(--ring);
+        box-shadow: 0 0 0 3px oklch(0.52 0.16 262 / 0.3);
+        background: var(--card);
+      }
+      .ta.busy {
+        opacity: 0.6;
+      }
+      .empty {
+        width: 100%;
+        border: 1px dashed var(--border);
+        border-radius: 4px;
+        padding: 72px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        text-align: center;
+      }
+      .empty p {
+        margin: 0;
+      }
+      .foot {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .foot .status {
+        font-size: 12px;
+        color: var(--mfg);
+      }
+      .foot .btns {
+        display: flex;
+        gap: 8px;
+      }
+      .phone .foot {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .phone .foot .btns {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .phone .foot .btns .btn {
+        height: 44px;
+      }
+      .phone .foot .btns .save {
+        grid-column: 1 / -1;
+      }
+      .scrim {
+        position: absolute;
+        inset: 0;
+        background: var(--scrim);
+        display: grid;
+        place-items: center;
+        padding: 16px;
+      }
+      .dlg {
+        width: 420px;
+        background: var(--pop);
+        border-radius: 10.4px;
+        border: 1px solid var(--border);
+        box-shadow:
+          0 20px 25px -5px rgb(0 0 0 / 0.1),
+          0 8px 10px -6px rgb(0 0 0 / 0.1);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      .dlg h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .dlg p {
+        margin: 6px 0 0;
+        color: var(--mfg);
+      }
+      .dlg .row {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+      .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs>
+        <linearGradient id="cvRainbow" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stop-color="oklch(0.62 0.2 25)" />
+          <stop offset="0.3" stop-color="oklch(0.72 0.16 75)" />
+          <stop offset="0.55" stop-color="oklch(0.62 0.17 150)" />
+          <stop offset="0.8" stop-color="oklch(0.6 0.15 230)" />
+          <stop offset="1" stop-color="oklch(0.58 0.2 295)" />
+        </linearGradient>
+        <symbol id="i-file" viewBox="0 0 24 24">
+          <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+          <path d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8" />
+        </symbol>
+        <symbol id="i-spin" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></symbol>
+        <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10" /></symbol>
+        <symbol id="i-regen" viewBox="0 0 24 24">
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+          <path d="M21 3v5h-5" />
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+          <path d="M8 16H3v5" />
+        </symbol>
+        <symbol id="i-bookmark" viewBox="0 0 24 24">
+          <path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+        </symbol>
+        <symbol id="i-mail" viewBox="0 0 24 24">
+          <rect x="2" y="4" width="20" height="16" rx="2" />
+          <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+        </symbol>
+        <symbol id="i-pen" viewBox="0 0 24 24">
+          <path d="M12 20h9" />
+          <path d="M16.4 3.6a2.1 2.1 0 0 1 3 3L7.4 18.6a2 2 0 0 1-.9.5l-2.9.8.8-2.9a2 2 0 0 1 .5-.8z" />
+        </symbol>
+        <symbol id="i-copy" viewBox="0 0 24 24">
+          <rect x="8" y="8" width="14" height="14" rx="2" />
+          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+        </symbol>
+        <symbol id="i-alert" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <path d="M12 8v4M12 16h.01" />
+        </symbol>
+      </defs>
+    </svg>
+    <main class="page">
+      <header>
+        <h1>Cover letter: mockup snapshot</h1>
+        <p>
+          Static snapshot of the cover letter frames after the owner's 17 Nov 2026 review: a Cover letter tab on Job
+          detail, not a separate page. The source and README are in docs/mockups/cover-letter-canvas; the live canvas is
+          https://claude.ai/artifact/LpmDPnv1cziB8odRYofNsh.
+        </p>
+      </header>
+      <h2 class="group-title">Job detail title row</h2>
+      <section class="frame">
+        <h2>C1 · Title row, no letter yet (CV button idle)</h2>
+        <div class="scroll">
+          <div class="lp desk">
+            <div class="rows">
+              <div class="line">
+                <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                <div class="meta">
+                  <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                  <button class="btn btn-o btn-xs" disabled>
+                    <svg
+                      width="12"
+                      height="12"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-bookmark" />
+                    </svg>
+                    Save to board
+                  </button>
+                </div>
+              </div>
+              <div class="line">
+                <h1 class="title">Senior Full-stack Engineer</h1>
+                <div class="actions">
+                  <span class="rb rb-idle"
+                    ><button class="btn rbi">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="url(#cvRainbow)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-file" />
+                      </svg>
+                      Tailor my CV
+                    </button></span
+                  ><button class="btn btn-o">
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-mail" />
+                    </svg>
+                    Write cover letter</button
+                  ><a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>C2 · Title row, letter exists (CV button ready)</h2>
+        <div class="scroll">
+          <div class="lp desk">
+            <div class="rows">
+              <div class="line">
+                <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                <div class="meta">
+                  <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                  <button class="btn btn-o btn-xs" disabled>
+                    <svg
+                      width="12"
+                      height="12"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-bookmark" />
+                    </svg>
+                    Save to board
+                  </button>
+                </div>
+              </div>
+              <div class="line">
+                <h1 class="title">Senior Full-stack Engineer</h1>
+                <div class="actions">
+                  <span class="rb" role="group" aria-label="Tailored CV"
+                    ><span class="rbi split"
+                      ><a class="btn seg" href="#"
+                        >View tailored CV
+                        <svg
+                          class="arw"
+                          width="16"
+                          height="16"
+                          fill="none"
+                          stroke="url(#cvRainbow)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-arrow" /></svg></a
+                      ><span class="seam" aria-hidden="true"></span
+                      ><button class="btn seg btn-icon" aria-label="Regenerate tailored CV">
+                        <svg
+                          width="16"
+                          height="16"
+                          fill="none"
+                          stroke="url(#cvRainbow)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-regen" />
+                        </svg></button></span></span
+                  ><button class="btn btn-o">
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-mail" />
+                    </svg>
+                    View cover letter</button
+                  ><a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>C3 · Title row at 390: the action group wraps</h2>
+        <div class="scroll">
+          <div>
+            <div class="lp phone">
+              <div class="rows">
+                <div class="line">
+                  <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                  <div class="meta">
+                    <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                    <button class="btn btn-o btn-xs" disabled>
+                      <svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-bookmark" />
+                      </svg>
+                      Save to board
+                    </button>
+                  </div>
+                </div>
+                <div class="line">
+                  <h1 class="title">Senior Full-stack Engineer</h1>
+                  <div class="actions">
+                    <span class="rb rb-idle"
+                      ><button class="btn rbi">
+                        <svg
+                          width="16"
+                          height="16"
+                          fill="none"
+                          stroke="url(#cvRainbow)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-file" />
+                        </svg>
+                        Tailor my CV
+                      </button></span
+                    ><button class="btn btn-o">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-mail" />
+                      </svg>
+                      Write cover letter</button
+                    ><a class="btn btn-p" href="#"
+                      >Apply
+                      <svg
+                        class="arw"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-arrow" /></svg
+                    ></a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="lp phone">
+              <div class="rows">
+                <div class="line">
+                  <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                  <div class="meta">
+                    <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                    <button class="btn btn-o btn-xs" disabled>
+                      <svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-bookmark" />
+                      </svg>
+                      Save to board
+                    </button>
+                  </div>
+                </div>
+                <div class="line">
+                  <h1 class="title">Senior Full-stack Engineer</h1>
+                  <div class="actions">
+                    <span class="rb" role="group" aria-label="Tailored CV"
+                      ><span class="rbi split"
+                        ><a class="btn seg" href="#"
+                          >View tailored CV
+                          <svg
+                            class="arw"
+                            width="16"
+                            height="16"
+                            fill="none"
+                            stroke="url(#cvRainbow)"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <use href="#i-arrow" /></svg></a
+                        ><span class="seam" aria-hidden="true"></span
+                        ><button class="btn seg btn-icon" aria-label="Regenerate tailored CV">
+                          <svg
+                            width="16"
+                            height="16"
+                            fill="none"
+                            stroke="url(#cvRainbow)"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <use href="#i-regen" />
+                          </svg></button></span></span
+                    ><button class="btn btn-o">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-mail" />
+                      </svg>
+                      View cover letter</button
+                    ><a class="btn btn-p" href="#"
+                      >Apply
+                      <svg
+                        class="arw"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-arrow" /></svg
+                    ></a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <h2 class="group-title">
+        Cover letter tab (the rail, breadcrumb and profile match panel are unchanged and left out)
+      </h2>
+      <section class="frame">
+        <h2>D1 · Empty</h2>
+        <div class="scroll">
+          <div class="lp desk">
+            <div class="rows">
+              <div class="line">
+                <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                <div class="meta">
+                  <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                  <button class="btn btn-o btn-xs" disabled>
+                    <svg
+                      width="12"
+                      height="12"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-bookmark" />
+                    </svg>
+                    Save to board
+                  </button>
+                </div>
+              </div>
+              <div class="line">
+                <h1 class="title">Senior Full-stack Engineer</h1>
+                <div class="actions">
+                  <span class="rb rb-idle"
+                    ><button class="btn rbi">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="url(#cvRainbow)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-file" />
+                      </svg>
+                      Tailor my CV
+                    </button></span
+                  ><button class="btn btn-o">
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-mail" />
+                    </svg>
+                    Write cover letter</button
+                  ><a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
+              </div>
+              <div class="tabs" role="tablist" aria-label="Posting">
+                <button role="tab" aria-selected="false">Description</button
+                ><button role="tab" aria-selected="false">Company</button
+                ><button role="tab" aria-selected="true">Cover letter</button>
+              </div>
+              <div class="panel" role="tabpanel" aria-label="Cover letter">
+                <div class="empty">
+                  <svg
+                    width="24"
+                    height="24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                    style="color: var(--mfg)"
+                  >
+                    <use href="#i-mail" />
+                  </svg>
+                  <p style="color: var(--mfg)">Write a cover letter for this posting</p>
+                  <button class="btn btn-p">
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-pen" />
+                    </svg>
+                    Write cover letter
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>D2 · Generating</h2>
+        <div class="scroll">
+          <div class="lp desk">
+            <div class="rows">
+              <div class="line">
+                <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                <div class="meta">
+                  <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                  <button class="btn btn-o btn-xs" disabled>
+                    <svg
+                      width="12"
+                      height="12"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-bookmark" />
+                    </svg>
+                    Save to board
+                  </button>
+                </div>
+              </div>
+              <div class="line">
+                <h1 class="title">Senior Full-stack Engineer</h1>
+                <div class="actions">
+                  <span class="rb rb-idle"
+                    ><button class="btn rbi">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="url(#cvRainbow)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-file" />
+                      </svg>
+                      Tailor my CV
+                    </button></span
+                  ><button class="btn btn-o">
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-mail" />
+                    </svg>
+                    Write cover letter</button
+                  ><a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
+              </div>
+              <div class="tabs" role="tablist" aria-label="Posting">
+                <button role="tab" aria-selected="false">Description</button
+                ><button role="tab" aria-selected="false">Company</button
+                ><button role="tab" aria-selected="true">Cover letter</button>
+              </div>
+              <div class="panel" role="tabpanel" aria-label="Cover letter">
+                <div class="empty">
+                  <svg
+                    width="24"
+                    height="24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                    style="color: var(--mfg)"
+                  >
+                    <use href="#i-mail" />
+                  </svg>
+                  <p style="color: var(--mfg)">Write a cover letter for this posting</p>
+                  <button class="btn btn-p" disabled aria-busy="true">
+                    <svg
+                      class="spin"
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-spin" />
+                    </svg>
+                    Write cover letter
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>D3 · Letter, unedited: Save disabled</h2>
+        <div class="scroll">
+          <div class="lp desk">
+            <div class="rows">
+              <div class="line">
+                <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                <div class="meta">
+                  <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                  <button class="btn btn-o btn-xs" disabled>
+                    <svg
+                      width="12"
+                      height="12"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-bookmark" />
+                    </svg>
+                    Save to board
+                  </button>
+                </div>
+              </div>
+              <div class="line">
+                <h1 class="title">Senior Full-stack Engineer</h1>
+                <div class="actions">
+                  <span class="rb rb-idle"
+                    ><button class="btn rbi">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="url(#cvRainbow)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-file" />
+                      </svg>
+                      Tailor my CV
+                    </button></span
+                  ><button class="btn btn-o">
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-mail" />
+                    </svg>
+                    View cover letter</button
+                  ><a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
+              </div>
+              <div class="tabs" role="tablist" aria-label="Posting">
+                <button role="tab" aria-selected="false">Description</button
+                ><button role="tab" aria-selected="false">Company</button
+                ><button role="tab" aria-selected="true">Cover letter</button>
+              </div>
+              <div class="panel" role="tabpanel" aria-label="Cover letter">
+                <label class="sr" for="letter-unedited">Cover letter</label>
+                <textarea id="letter-unedited" class="ta">
+Dear Tidepool hiring team,
+
+I'm applying for the Senior Full-stack Engineer role. I build features end to end in React, TypeScript and Node, and most recently moved a scheduling flow onto Next.js and PostgreSQL, from the schema change to the last screen.
+
+The way your team works, close to design and across time zones, matches how I like to build: small, steady slices that reach clinics quickly. I'd welcome the chance to talk about how I could help grow your patient and staff tools.
+
+Best regards,
+[Your name]</textarea>
+                <div class="foot">
+                  <span class="status">Written Nov 17</span>
+                  <div class="btns">
+                    <button class="btn btn-o">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-copy" />
+                      </svg>
+                      Copy letter</button
+                    ><button class="btn btn-o">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-regen" />
+                      </svg>
+                      Regenerate</button
+                    ><button class="btn btn-p save" disabled>Save</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>D4 · Letter, edited: Save enabled</h2>
+        <div class="scroll">
+          <div class="lp desk">
+            <div class="rows">
+              <div class="line">
+                <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                <div class="meta">
+                  <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                  <button class="btn btn-o btn-xs" disabled>
+                    <svg
+                      width="12"
+                      height="12"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-bookmark" />
+                    </svg>
+                    Save to board
+                  </button>
+                </div>
+              </div>
+              <div class="line">
+                <h1 class="title">Senior Full-stack Engineer</h1>
+                <div class="actions">
+                  <span class="rb rb-idle"
+                    ><button class="btn rbi">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="url(#cvRainbow)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-file" />
+                      </svg>
+                      Tailor my CV
+                    </button></span
+                  ><button class="btn btn-o">
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-mail" />
+                    </svg>
+                    View cover letter</button
+                  ><a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
+              </div>
+              <div class="tabs" role="tablist" aria-label="Posting">
+                <button role="tab" aria-selected="false">Description</button
+                ><button role="tab" aria-selected="false">Company</button
+                ><button role="tab" aria-selected="true">Cover letter</button>
+              </div>
+              <div class="panel" role="tabpanel" aria-label="Cover letter">
+                <label class="sr" for="letter-edited">Cover letter</label>
+                <textarea id="letter-edited" class="ta focus">
+Dear Tidepool hiring team,
+
+I'm applying for the Senior Full-stack Engineer role. I build features end to end in React, TypeScript and Node, and most recently moved a scheduling flow onto Next.js and PostgreSQL, from the schema change to the last screen.
+
+The way your team works, close to design and across time zones, matches how I like to build: small, steady slices that reach clinics quickly. I'd welcome the chance to talk about how I could help grow your patient and staff tools.
+
+I'm happy to share more examples of my work, including the scheduling flow above.
+
+Best regards,
+[Your name]</textarea>
+                <div class="foot">
+                  <span class="status">Edited</span>
+                  <div class="btns">
+                    <button class="btn btn-o">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-copy" />
+                      </svg>
+                      Copy letter</button
+                    ><button class="btn btn-o">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-regen" />
+                      </svg>
+                      Regenerate</button
+                    ><button class="btn btn-p save">Save</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>D5 · Regenerate while edited: confirm</h2>
+        <div class="scroll">
+          <div class="lp desk">
+            <div class="rows">
+              <div class="line">
+                <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                <div class="meta">
+                  <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                  <button class="btn btn-o btn-xs" disabled>
+                    <svg
+                      width="12"
+                      height="12"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-bookmark" />
+                    </svg>
+                    Save to board
+                  </button>
+                </div>
+              </div>
+              <div class="line">
+                <h1 class="title">Senior Full-stack Engineer</h1>
+                <div class="actions">
+                  <span class="rb rb-idle"
+                    ><button class="btn rbi">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="url(#cvRainbow)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-file" />
+                      </svg>
+                      Tailor my CV
+                    </button></span
+                  ><button class="btn btn-o">
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-mail" />
+                    </svg>
+                    View cover letter</button
+                  ><a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
+              </div>
+              <div class="tabs" role="tablist" aria-label="Posting">
+                <button role="tab" aria-selected="false">Description</button
+                ><button role="tab" aria-selected="false">Company</button
+                ><button role="tab" aria-selected="true">Cover letter</button>
+              </div>
+              <div class="panel" role="tabpanel" aria-label="Cover letter">
+                <label class="sr" for="letter-dialog">Cover letter</label>
+                <textarea id="letter-dialog" class="ta focus">
+Dear Tidepool hiring team,
+
+I'm applying for the Senior Full-stack Engineer role. I build features end to end in React, TypeScript and Node, and most recently moved a scheduling flow onto Next.js and PostgreSQL, from the schema change to the last screen.
+
+The way your team works, close to design and across time zones, matches how I like to build: small, steady slices that reach clinics quickly. I'd welcome the chance to talk about how I could help grow your patient and staff tools.
+
+I'm happy to share more examples of my work, including the scheduling flow above.
+
+Best regards,
+[Your name]</textarea>
+                <div class="foot">
+                  <span class="status">Edited</span>
+                  <div class="btns">
+                    <button class="btn btn-o">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-copy" />
+                      </svg>
+                      Copy letter</button
+                    ><button class="btn btn-o">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-regen" />
+                      </svg>
+                      Regenerate</button
+                    ><button class="btn btn-p save">Save</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="scrim">
+              <div class="dlg" role="alertdialog" aria-modal="true" aria-labelledby="rw-t" aria-describedby="rw-d">
+                <div>
+                  <h3 id="rw-t">Rewrite this letter?</h3>
+                  <p id="rw-d">Your edits are replaced by a new letter</p>
+                </div>
+                <div class="row">
+                  <button class="btn btn-o">Cancel</button><button class="btn btn-red">Rewrite letter</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>D6 · Regenerating</h2>
+        <div class="scroll">
+          <div class="lp desk">
+            <div class="rows">
+              <div class="line">
+                <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                <div class="meta">
+                  <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                  <button class="btn btn-o btn-xs" disabled>
+                    <svg
+                      width="12"
+                      height="12"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-bookmark" />
+                    </svg>
+                    Save to board
+                  </button>
+                </div>
+              </div>
+              <div class="line">
+                <h1 class="title">Senior Full-stack Engineer</h1>
+                <div class="actions">
+                  <span class="rb rb-idle"
+                    ><button class="btn rbi">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="url(#cvRainbow)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-file" />
+                      </svg>
+                      Tailor my CV
+                    </button></span
+                  ><button class="btn btn-o">
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-mail" />
+                    </svg>
+                    View cover letter</button
+                  ><a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
+              </div>
+              <div class="tabs" role="tablist" aria-label="Posting">
+                <button role="tab" aria-selected="false">Description</button
+                ><button role="tab" aria-selected="false">Company</button
+                ><button role="tab" aria-selected="true">Cover letter</button>
+              </div>
+              <div class="panel" role="tabpanel" aria-label="Cover letter">
+                <label class="sr" for="letter-regenerating">Cover letter</label>
+                <textarea id="letter-regenerating" class="ta busy">
+Dear Tidepool hiring team,
+
+I'm applying for the Senior Full-stack Engineer role. I build features end to end in React, TypeScript and Node, and most recently moved a scheduling flow onto Next.js and PostgreSQL, from the schema change to the last screen.
+
+The way your team works, close to design and across time zones, matches how I like to build: small, steady slices that reach clinics quickly. I'd welcome the chance to talk about how I could help grow your patient and staff tools.
+
+Best regards,
+[Your name]</textarea>
+                <div class="foot">
+                  <span class="status">Writing a new letter…</span>
+                  <div class="btns">
+                    <button class="btn btn-o" disabled>
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-copy" />
+                      </svg>
+                      Copy letter</button
+                    ><button class="btn btn-o" disabled aria-busy="true">
+                      <svg
+                        class="spin"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-spin" />
+                      </svg>
+                      Regenerate</button
+                    ><button class="btn btn-p save" disabled>Save</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>D7 · First generation failed</h2>
+        <div class="scroll">
+          <div class="lp desk">
+            <div class="rows">
+              <div class="line">
+                <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                <div class="meta">
+                  <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                  <button class="btn btn-o btn-xs" disabled>
+                    <svg
+                      width="12"
+                      height="12"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-bookmark" />
+                    </svg>
+                    Save to board
+                  </button>
+                </div>
+              </div>
+              <div class="line">
+                <h1 class="title">Senior Full-stack Engineer</h1>
+                <div class="actions">
+                  <span class="rb rb-idle"
+                    ><button class="btn rbi">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="url(#cvRainbow)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-file" />
+                      </svg>
+                      Tailor my CV
+                    </button></span
+                  ><button class="btn btn-o">
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-mail" />
+                    </svg>
+                    Write cover letter</button
+                  ><a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
+              </div>
+              <div class="tabs" role="tablist" aria-label="Posting">
+                <button role="tab" aria-selected="false">Description</button
+                ><button role="tab" aria-selected="false">Company</button
+                ><button role="tab" aria-selected="true">Cover letter</button>
+              </div>
+              <div class="panel" role="tabpanel" aria-label="Cover letter">
+                <div class="empty">
+                  <svg
+                    width="24"
+                    height="24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                    aria-hidden="true"
+                    style="color: var(--red)"
+                  >
+                    <use href="#i-alert" />
+                  </svg>
+                  <p role="alert" style="font-weight: 500">Couldn't write a letter for this posting</p>
+                  <button class="btn btn-p">
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-pen" />
+                    </svg>
+                    Write cover letter
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>D8 · Dark, D3</h2>
+        <div class="scroll">
+          <div class="lp desk dk">
+            <div class="rows">
+              <div class="line">
+                <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                <div class="meta">
+                  <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                  <button class="btn btn-o btn-xs" disabled>
+                    <svg
+                      width="12"
+                      height="12"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-bookmark" />
+                    </svg>
+                    Save to board
+                  </button>
+                </div>
+              </div>
+              <div class="line">
+                <h1 class="title">Senior Full-stack Engineer</h1>
+                <div class="actions">
+                  <span class="rb rb-idle"
+                    ><button class="btn rbi">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="url(#cvRainbow)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-file" />
+                      </svg>
+                      Tailor my CV
+                    </button></span
+                  ><button class="btn btn-o">
+                    <svg
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-mail" />
+                    </svg>
+                    View cover letter</button
+                  ><a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="16"
+                      height="16"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
+              </div>
+              <div class="tabs" role="tablist" aria-label="Posting">
+                <button role="tab" aria-selected="false">Description</button
+                ><button role="tab" aria-selected="false">Company</button
+                ><button role="tab" aria-selected="true">Cover letter</button>
+              </div>
+              <div class="panel" role="tabpanel" aria-label="Cover letter">
+                <label class="sr" for="letter-unedited">Cover letter</label>
+                <textarea id="letter-unedited" class="ta">
+Dear Tidepool hiring team,
+
+I'm applying for the Senior Full-stack Engineer role. I build features end to end in React, TypeScript and Node, and most recently moved a scheduling flow onto Next.js and PostgreSQL, from the schema change to the last screen.
+
+The way your team works, close to design and across time zones, matches how I like to build: small, steady slices that reach clinics quickly. I'd welcome the chance to talk about how I could help grow your patient and staff tools.
+
+Best regards,
+[Your name]</textarea>
+                <div class="foot">
+                  <span class="status">Written Nov 17</span>
+                  <div class="btns">
+                    <button class="btn btn-o">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-copy" />
+                      </svg>
+                      Copy letter</button
+                    ><button class="btn btn-o">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-regen" />
+                      </svg>
+                      Regenerate</button
+                    ><button class="btn btn-p save" disabled>Save</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>D9 · Phone at 390, D1 and D3</h2>
+        <div class="scroll">
+          <div>
+            <div class="lp phone">
+              <div class="rows">
+                <div class="line">
+                  <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                  <div class="meta">
+                    <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                    <button class="btn btn-o btn-xs" disabled>
+                      <svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-bookmark" />
+                      </svg>
+                      Save to board
+                    </button>
+                  </div>
+                </div>
+                <div class="line">
+                  <h1 class="title">Senior Full-stack Engineer</h1>
+                  <div class="actions">
+                    <span class="rb rb-idle"
+                      ><button class="btn rbi">
+                        <svg
+                          width="16"
+                          height="16"
+                          fill="none"
+                          stroke="url(#cvRainbow)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-file" />
+                        </svg>
+                        Tailor my CV
+                      </button></span
+                    ><button class="btn btn-o">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-mail" />
+                      </svg>
+                      Write cover letter</button
+                    ><a class="btn btn-p" href="#"
+                      >Apply
+                      <svg
+                        class="arw"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-arrow" /></svg
+                    ></a>
+                  </div>
+                </div>
+                <div class="tabs" role="tablist" aria-label="Posting">
+                  <button role="tab" aria-selected="false">Description</button
+                  ><button role="tab" aria-selected="false">Company</button
+                  ><button role="tab" aria-selected="true">Cover letter</button>
+                </div>
+                <div class="panel" role="tabpanel" aria-label="Cover letter">
+                  <div class="empty">
+                    <svg
+                      width="24"
+                      height="24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                      style="color: var(--mfg)"
+                    >
+                      <use href="#i-mail" />
+                    </svg>
+                    <p style="color: var(--mfg)">Write a cover letter for this posting</p>
+                    <button class="btn btn-p">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-pen" />
+                      </svg>
+                      Write cover letter
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="lp phone">
+              <div class="rows">
+                <div class="line">
+                  <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                  <div class="meta">
+                    <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                    <button class="btn btn-o btn-xs" disabled>
+                      <svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-bookmark" />
+                      </svg>
+                      Save to board
+                    </button>
+                  </div>
+                </div>
+                <div class="line">
+                  <h1 class="title">Senior Full-stack Engineer</h1>
+                  <div class="actions">
+                    <span class="rb rb-idle"
+                      ><button class="btn rbi">
+                        <svg
+                          width="16"
+                          height="16"
+                          fill="none"
+                          stroke="url(#cvRainbow)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-file" />
+                        </svg>
+                        Tailor my CV
+                      </button></span
+                    ><button class="btn btn-o">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-mail" />
+                      </svg>
+                      View cover letter</button
+                    ><a class="btn btn-p" href="#"
+                      >Apply
+                      <svg
+                        class="arw"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-arrow" /></svg
+                    ></a>
+                  </div>
+                </div>
+                <div class="tabs" role="tablist" aria-label="Posting">
+                  <button role="tab" aria-selected="false">Description</button
+                  ><button role="tab" aria-selected="false">Company</button
+                  ><button role="tab" aria-selected="true">Cover letter</button>
+                </div>
+                <div class="panel" role="tabpanel" aria-label="Cover letter">
+                  <label class="sr" for="letter-unedited">Cover letter</label>
+                  <textarea id="letter-unedited" class="ta">
+Dear Tidepool hiring team,
+
+I'm applying for the Senior Full-stack Engineer role. I build features end to end in React, TypeScript and Node, and most recently moved a scheduling flow onto Next.js and PostgreSQL, from the schema change to the last screen.
+
+The way your team works, close to design and across time zones, matches how I like to build: small, steady slices that reach clinics quickly. I'd welcome the chance to talk about how I could help grow your patient and staff tools.
+
+Best regards,
+[Your name]</textarea>
+                  <div class="foot">
+                    <span class="status">Written Nov 17</span>
+                    <div class="btns">
+                      <button class="btn btn-o">
+                        <svg
+                          width="16"
+                          height="16"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-copy" />
+                        </svg>
+                        Copy letter</button
+                      ><button class="btn btn-o">
+                        <svg
+                          width="16"
+                          height="16"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-regen" />
+                        </svg>
+                        Regenerate</button
+                      ><button class="btn btn-p save" disabled>Save</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

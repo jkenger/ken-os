@@ -1,0 +1,433 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Job detail title row with cover letter</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap"
+        />
+        <style>
+          body {
+            margin: 0;
+          }
+          @property --ang {
+            syntax: "<angle>";
+            initial-value: 0deg;
+            inherits: false;
+          }
+          .cv {
+            --bg: oklch(0.975 0.002 265);
+            --fg: oklch(0.22 0.005 265);
+            --muted: oklch(0.945 0.003 265);
+            --mfg: oklch(0.48 0.008 265);
+            --border: oklch(0.885 0.004 265);
+            --pfg: oklch(0.985 0.001 265);
+            font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+            color: var(--fg);
+            background: var(--bg);
+            font-size: 14px;
+            line-height: 1.43;
+          }
+          .cv * {
+            box-sizing: border-box;
+          }
+          .cv button {
+            font: inherit;
+          }
+          a {
+            color: inherit;
+            text-decoration: none;
+          }
+          a:hover {
+            color: inherit;
+          }
+          .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            height: 36px;
+            padding: 0 12px;
+            border-radius: 10.4px;
+            border: 1px solid transparent;
+            font-weight: 500;
+            font-size: 14px;
+            white-space: nowrap;
+            cursor: pointer;
+            background: transparent;
+            color: var(--fg);
+            text-decoration: none;
+          }
+          .btn-p {
+            background: var(--fg);
+            color: var(--pfg) !important;
+          }
+          .btn-o {
+            background: var(--bg);
+            border-color: var(--border);
+          }
+          .btn-o:hover {
+            background: var(--muted);
+          }
+          .btn-icon {
+            width: 36px;
+            padding: 0;
+          }
+          .btn-xs {
+            height: 24px;
+            padding: 0 10px;
+            font-size: 12px;
+            gap: 4px;
+          }
+          .btn[disabled] {
+            opacity: 0.5;
+            pointer-events: none;
+          }
+          .arw {
+            transition: transform 0.2s ease-out;
+          }
+          .btn:hover .arw {
+            transform: translate(2px, -2px);
+          }
+          .rb {
+            display: inline-flex;
+            padding: 1.5px;
+            border-radius: 10.4px;
+            background: conic-gradient(
+              from var(--ang),
+              oklch(0.68 0.19 25),
+              oklch(0.78 0.16 75),
+              oklch(0.72 0.17 150),
+              oklch(0.66 0.15 230),
+              oklch(0.62 0.2 295),
+              oklch(0.68 0.19 25)
+            );
+          }
+          .rb-idle {
+            opacity: 0.45;
+          }
+          .rb-idle:hover {
+            opacity: 1;
+          }
+          .rbi {
+            height: 33px;
+            border: 0;
+            border-radius: 9px;
+            background: var(--bg);
+          }
+          .seg {
+            height: 33px;
+            border: 0;
+            border-radius: 9px;
+            background: transparent;
+          }
+          .seg:hover {
+            background: var(--muted);
+          }
+          .dot {
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: var(--mfg);
+            display: inline-block;
+          }
+          .ctx {
+            border: 1px dashed var(--border);
+            border-radius: 4px;
+            padding: 14px 16px;
+            font-size: 12px;
+            color: var(--mfg);
+          }
+          .new {
+            box-shadow:
+              0 0 0 2px var(--bg),
+              0 0 0 4px oklch(0.52 0.16 262 / 0.5);
+          }
+        </style>
+      </helmet>
+      <div class="cv" style="{{rootStyle}}">
+        <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+          <defs>
+            <linearGradient id="cvRainbow" x1="0" y1="1" x2="1" y2="0">
+              <stop offset="0" stop-color="oklch(0.62 0.2 25)"></stop>
+              <stop offset="0.3" stop-color="oklch(0.72 0.16 75)"></stop>
+              <stop offset="0.55" stop-color="oklch(0.62 0.17 150)"></stop>
+              <stop offset="0.8" stop-color="oklch(0.6 0.15 230)"></stop>
+              <stop offset="1" stop-color="oklch(0.58 0.2 295)"></stop>
+            </linearGradient>
+          </defs>
+        </svg>
+        <div style="{{gridStyle}}">
+          <sc-if value="{{isDesk}}" hint-placeholder-val="{{true}}"
+            ><div class="ctx" aria-hidden="true">
+              Profile match panel, unchanged
+            </div></sc-if
+          >
+          <div
+            style="
+              display: flex;
+              flex-direction: column;
+              gap: 24px;
+              min-width: 0;
+            "
+          >
+            <div
+              style="
+                display: flex;
+                flex-wrap: wrap;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 12px;
+              "
+            >
+              <div style="display: flex; align-items: center; gap: 12px">
+                <span
+                  aria-hidden="true"
+                  style="
+                    width: 48px;
+                    height: 48px;
+                    border-radius: 3.2px;
+                    background: var(--muted);
+                    color: var(--mfg);
+                    display: grid;
+                    place-items: center;
+                    font-weight: 600;
+                    font-size: 16px;
+                  "
+                  >TP</span
+                >
+                <span style="font-weight: 500">Tidepool</span>
+              </div>
+              <div style="text-align: right">
+                <p
+                  style="
+                    margin: 0;
+                    display: flex;
+                    align-items: center;
+                    justify-content: flex-end;
+                    gap: 6px;
+                    font-size: 12px;
+                    color: var(--mfg);
+                  "
+                >
+                  <span>Posted 3d ago</span
+                  ><span class="dot" aria-hidden="true"></span
+                  ><span>Updated 1d ago</span>
+                </p>
+                <button
+                  class="btn btn-o btn-xs"
+                  disabled=""
+                  style="margin-top: 6px"
+                >
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"
+                    ></path></svg
+                  >Save to board
+                </button>
+              </div>
+            </div>
+            <div
+              style="
+                display: flex;
+                flex-wrap: wrap;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 12px;
+              "
+            >
+              <h1
+                style="
+                  margin: 0;
+                  max-width: 576px;
+                  font-size: 24px;
+                  font-weight: 600;
+                  line-height: 1.3;
+                "
+              >
+                Senior Full-stack Engineer
+              </h1>
+              <div style="{{actionsStyle}}">
+                <sc-if value="{{cvIdle}}" hint-placeholder-val="{{true}}">
+                  <span class="rb rb-idle"
+                    ><button class="btn rbi">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="url(#cvRainbow)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"
+                        ></path>
+                        <path
+                          d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"
+                        ></path></svg
+                      >Tailor my CV
+                    </button></span
+                  >
+                </sc-if>
+                <sc-if value="{{cvReady}}" hint-placeholder-val="{{false}}">
+                  <span class="rb" role="group" aria-label="Tailored CV"
+                    ><span
+                      class="rbi"
+                      style="display: inline-flex; align-items: center"
+                    >
+                      <a
+                        class="btn seg"
+                        href="#"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        >View tailored CV<svg
+                          class="arw"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="url(#cvRainbow)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="M7 17 17 7M7 7h10v10"></path></svg
+                      ></a>
+                      <span
+                        aria-hidden="true"
+                        style="
+                          width: 1px;
+                          height: 18px;
+                          background: var(--border);
+                        "
+                      ></span>
+                      <button
+                        class="btn seg btn-icon"
+                        aria-label="Regenerate tailored CV"
+                      >
+                        <svg
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="url(#cvRainbow)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"
+                          ></path>
+                          <path d="M21 3v5h-5"></path>
+                          <path
+                            d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"
+                          ></path>
+                          <path d="M8 16H3v5"></path>
+                        </svg>
+                      </button> </span
+                  ></span>
+                </sc-if>
+                <sc-if value="{{noLetter}}" hint-placeholder-val="{{true}}">
+                  <a class="btn btn-o" href="#"
+                    ><svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                      <path
+                        d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"
+                      ></path></svg
+                    >Write cover letter</a
+                  >
+                </sc-if>
+                <sc-if value="{{hasLetter}}" hint-placeholder-val="{{false}}">
+                  <a class="btn btn-o" href="#"
+                    ><svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                      <path
+                        d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"
+                      ></path></svg
+                    >View cover letter</a
+                  >
+                </sc-if>
+                <a class="btn btn-p" href="#"
+                  >Apply<svg
+                    class="arw"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M7 17 17 7M7 7h10v10"></path></svg
+                ></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"variant":{"editor":"enum","options":["C1","C2","P1","P2"],"default":"C1"},"$preview":{"width":1440,"height":280}}'
+    >
+      class Component extends DCLogic {
+        renderVals() {
+          const v = this.props.variant || 'C1';
+          const phone = v === 'P1' || v === 'P2';
+          const second = v === 'C2' || v === 'P2';
+          return {
+            rootStyle: phone ? 'width: 390px; padding: 20px 16px 24px; position: relative' : 'width: 1440px; height: 280px; padding: 56px 40px 0; position: relative; overflow: hidden',
+            gridStyle: phone ? 'display: block' : 'max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 32px',
+            actionsStyle: phone ? 'display: flex; flex-wrap: wrap; gap: 10px' : 'display: flex; gap: 10px; flex: none',
+            isDesk: !phone,
+            cvIdle: !second, cvReady: second,
+            noLetter: !second, hasLetter: second
+          };
+        }
+      }
+    </script>
+  </body>
+</html>

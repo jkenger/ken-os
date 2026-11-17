@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>D9 Cover letter, phone</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;display=swap"
+        />
+        <style>
+          body {
+            margin: 0;
+          }
+        </style>
+      </helmet>
+      <div
+        style="
+          width: 390px;
+          height: 2260px;
+          background: oklch(0.93 0.003 265);
+          font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+          color: oklch(0.48 0.008 265);
+          display: flex;
+          flex-direction: column;
+          gap: 0;
+        "
+      >
+        <h2
+          style="
+            margin: 0;
+            padding: 18px 16px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+          "
+        >
+          D1 at 390
+        </h2>
+        <dc-import
+          name="LetterPage"
+          variant="P1"
+          hint-size="390px,1100px"
+        ></dc-import>
+        <h2
+          style="
+            margin: 0;
+            padding: 18px 16px 10px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+          "
+        >
+          D3 at 390
+        </h2>
+        <dc-import
+          name="LetterPage"
+          variant="P3"
+          hint-size="390px,1100px"
+        ></dc-import>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"$preview":{"width":390,"height":2260}}'
+    >
+      class Component extends DCLogic {
+        renderVals() { return {}; }
+      }
+    </script>
+  </body>
+</html>
