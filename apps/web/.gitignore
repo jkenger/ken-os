@@ -2,3 +2,7 @@
 # Design system bundle output, published to the Claude design system
 /design-system/dist/
 .env*.local
+
+# Stryker mutation testing output
+.stryker-tmp/
+reports/mutation/

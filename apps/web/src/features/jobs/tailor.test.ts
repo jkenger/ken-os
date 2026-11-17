@@ -68,6 +68,25 @@ test("buildTailoredProfile drops an out-of-bounds index instead of throwing or i
   assert.deepEqual(result.experience, [base.experience[0]]);
 });
 
+test("buildTailoredProfile drops an index exactly at the array's length, one past its last real entry", () => {
+  const base = profile();
+  const result = buildTailoredProfile(base, { experience: [base.experience.length], skills: [], projects: [] });
+  assert.deepEqual(result.experience, []);
+});
+
+test("a selection with only one non-empty section still filters -- it is not treated as fully empty", () => {
+  const base = profile();
+  const onlyProjects = buildTailoredProfile(base, { experience: [], skills: [], projects: [0] });
+  assert.deepEqual(onlyProjects.experience, []);
+  assert.deepEqual(onlyProjects.skills, []);
+  assert.deepEqual(onlyProjects.projects, [base.projects[0]]);
+
+  const onlySkills = buildTailoredProfile(base, { experience: [], skills: [1], projects: [] });
+  assert.deepEqual(onlySkills.experience, []);
+  assert.deepEqual(onlySkills.skills, [base.skills[1]]);
+  assert.deepEqual(onlySkills.projects, []);
+});
+
 function noopDeps() {
   return {
     userId: "user-1",
@@ -162,6 +181,59 @@ test("a thrown error from render propagates and save is never called", async () 
     /render failed/,
   );
   assert.equal(saveCalled, false);
+});
+
+test("selectEntries receives the profile and the posting's title/company, and prefers the full description over the summary when both are present", async () => {
+  const calls: unknown[] = [];
+  const base = profile();
+  await tailorResume({
+    ...noopDeps(),
+    getProfile: async () => ({ details: base, resume: { template: "classic" as const, paper: "letter" as const } }),
+    getPosting: async () => ({
+      title: "Senior Engineer",
+      company: "Acme",
+      fullDescription: "The full description.",
+      summary: "A short summary.",
+    }),
+    selectEntries: async (input) => {
+      calls.push(input);
+      return { experience: [], skills: [], projects: [], promptVersion: "v", model: "m" };
+    },
+  });
+  const [call] = calls as [{ profile: unknown; title: string; company: string; text: string }];
+  assert.equal(call.profile, base);
+  assert.equal(call.title, "Senior Engineer");
+  assert.equal(call.company, "Acme");
+  assert.equal(call.text, "The full description.");
+});
+
+test("selectEntries falls back to the summary when there's no full description, and to an empty string when there's neither", async () => {
+  const withSummaryOnly: unknown[] = [];
+  await tailorResume({
+    ...noopDeps(),
+    getPosting: async () => ({
+      title: "Senior Engineer",
+      company: "Acme",
+      fullDescription: null,
+      summary: "A short summary.",
+    }),
+    selectEntries: async (input) => {
+      withSummaryOnly.push(input);
+      return { experience: [], skills: [], projects: [], promptVersion: "v", model: "m" };
+    },
+  });
+  assert.equal((withSummaryOnly[0] as { text: string }).text, "A short summary.");
+
+  const withNeither: unknown[] = [];
+  await tailorResume({
+    ...noopDeps(),
+    getPosting: async () => ({ title: "Senior Engineer", company: "Acme", fullDescription: null, summary: null }),
+    selectEntries: async (input) => {
+      withNeither.push(input);
+      return { experience: [], skills: [], projects: [], promptVersion: "v", model: "m" };
+    },
+  });
+  assert.equal((withNeither[0] as { text: string }).text, "");
 });
 
 test("a posting that doesn't exist for this owner throws instead of calling the AI or saving", async () => {

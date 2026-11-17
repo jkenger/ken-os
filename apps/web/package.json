@@ -24,7 +24,10 @@
     "test:db:profile": "tsx scripts/verify-profile.ts",
     "db:migrate:deploy": "tsx scripts/migrate-on-deploy.ts",
     "test:db:portfolio": "tsx scripts/verify-portfolio.ts",
-    "test:db:jobs": "tsx scripts/verify-jobs.ts"
+    "test:db:jobs": "tsx scripts/verify-jobs.ts",
+    "mutation": "stryker run",
+    "mutation:incremental": "stryker run --incremental",
+    "mutation:diff": "node scripts/stryker-diff.mjs"
   },
   "dependencies": {
     "@codemirror/commands": "^6.11.1",
@@ -66,6 +69,7 @@
   "devDependencies": {
     "@babel/parser": "^7.29.9",
     "@electric-sql/pglite": "0.5.8",
+    "@stryker-mutator/core": "10.1.1",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "latest",
     "@types/react": "latest",
