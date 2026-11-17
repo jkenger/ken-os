@@ -2808,13 +2808,12 @@ export const studioManifest: StudioManifest = {
     },
     {
       "name": "cv-tailor-gradient",
-      "light": "linear-gradient(90deg, oklch(0.6 0.19 300), oklch(0.62 0.18 230), oklch(0.62 0.17 155))",
-      "dark": "linear-gradient(90deg, oklch(0.72 0.19 300), oklch(0.74 0.17 230), oklch(0.74 0.17 155))"
+      "light": "conic-gradient(\n    from var(--cv-tailor-angle),\n    oklch(0.68 0.19 25),\n    oklch(0.78 0.16 75),\n    oklch(0.72 0.17 150),\n    oklch(0.66 0.15 230),\n    oklch(0.62 0.2 295),\n    oklch(0.68 0.19 25)\n  )"
     }
   ],
   "globals": {
     "file": "app/globals.css",
-    "lines": 441,
+    "lines": 456,
     "tail": [
       "    animation: none;",
       "  }",

@@ -101,6 +101,19 @@ export function PostingDetail({
 
   return (
     <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[19rem_1fr]">
+      {/* Shared def for the CV tailoring button's icons (docs/mockups/cv-tailoring-canvas/Row.dc.html): the icons
+          inside the gradient ring are stroked with the same rainbow as the ring itself, per the owner's decision. */}
+      <svg width="0" height="0" className="absolute" aria-hidden="true">
+        <defs>
+          <linearGradient id="cvRainbow" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" stopColor="oklch(0.62 0.2 25)" />
+            <stop offset="0.3" stopColor="oklch(0.72 0.16 75)" />
+            <stop offset="0.55" stopColor="oklch(0.62 0.17 150)" />
+            <stop offset="0.8" stopColor="oklch(0.6 0.15 230)" />
+            <stop offset="1" stopColor="oklch(0.58 0.2 295)" />
+          </linearGradient>
+        </defs>
+      </svg>
       <aside className="flex flex-col gap-5 rounded-xl border bg-card p-5 lg:sticky lg:top-[4.25rem]">
         {posting.score != null && (
           <div className="grid gap-2">
@@ -214,7 +227,10 @@ export function PostingDetail({
                 <Button type="button" variant="outline" className="group/tailor border-transparent" asChild>
                   <a href={`/api/jobs/postings/${posting.id}/tailor`} target="_blank" rel="noopener noreferrer">
                     View tailored CV
-                    <ArrowUpRight className="transition-transform duration-200 ease-out group-hover/tailor:translate-x-0.5 group-hover/tailor:-translate-y-0.5" />
+                    <ArrowUpRight
+                      color="url(#cvRainbow)"
+                      className="transition-transform duration-200 ease-out group-hover/tailor:translate-x-0.5 group-hover/tailor:-translate-y-0.5"
+                    />
                   </a>
                 </Button>
               ) : (
@@ -225,7 +241,11 @@ export function PostingDetail({
                   disabled={tailorStatus === "pending"}
                   onClick={onTailorClick}
                 >
-                  {tailorStatus === "pending" ? <LoaderCircle className="animate-spin" /> : <FileText />}
+                  {tailorStatus === "pending" ? (
+                    <LoaderCircle color="url(#cvRainbow)" className="animate-spin" />
+                  ) : (
+                    <FileText color="url(#cvRainbow)" />
+                  )}
                   Tailor my CV
                 </Button>
               )}
