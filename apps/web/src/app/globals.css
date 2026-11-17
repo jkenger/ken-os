@@ -291,6 +291,9 @@
   --diff-add-soft: oklch(0.96 0.03 152);
   --diff-remove: oklch(0.5 0.16 27);
   --diff-remove-soft: oklch(0.965 0.02 27);
+  /* CV tailoring (apps/web/DESIGN.md, "Exception, owner-approved 17 Nov 2026"): the one deliberately decorative,
+     non-state-colour treatment in the app, scoped to the Tailor my CV button. */
+  --cv-tailor-gradient: linear-gradient(90deg, oklch(0.6 0.19 300), oklch(0.62 0.18 230), oklch(0.62 0.17 155));
 }
 
 .dark {
@@ -342,6 +345,7 @@
   --diff-add-soft: oklch(0.3 0.05 152);
   --diff-remove: oklch(0.8 0.1 27);
   --diff-remove-soft: oklch(0.31 0.06 27);
+  --cv-tailor-gradient: linear-gradient(90deg, oklch(0.72 0.19 300), oklch(0.74 0.17 230), oklch(0.74 0.17 155));
 }
 
 @theme inline {
@@ -349,6 +353,38 @@
   --color-diff-add-soft: var(--diff-add-soft);
   --color-diff-remove: var(--diff-remove);
   --color-diff-remove-soft: var(--diff-remove-soft);
+}
+
+/* CV tailoring button (docs/mockups/cv-tailoring-canvas/): the gradient ring is a 1.5px padding around the real
+   Button, not a border property, so the gradient itself -- not just a solid colour -- shows through the gap.
+   Idle at 45% opacity, full on hover; rotating (via a moving background-position) while pending, alongside the
+   spinner so the state is never colour alone; full and still once ready. */
+.cv-tailor-ring {
+  display: inline-flex;
+  border-radius: 9999px;
+  padding: 1.5px;
+  background: var(--cv-tailor-gradient);
+  opacity: 0.45;
+  transition: opacity 200ms ease-out;
+}
+.cv-tailor-ring:hover,
+.cv-tailor-ring[data-status="ready"] {
+  opacity: 1;
+}
+.cv-tailor-ring[data-status="pending"] {
+  opacity: 1;
+  background-size: 200% 100%;
+  animation: cv-tailor-ring-spin 1.6s linear infinite;
+}
+@keyframes cv-tailor-ring-spin {
+  to {
+    background-position: 200% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cv-tailor-ring[data-status="pending"] {
+    animation: none;
+  }
 }
 
 /* `dark:` utilities stop at a `.light` boundary, the same way the tokens do. Redefines the variant above without editing it. */
