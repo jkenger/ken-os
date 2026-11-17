@@ -9,7 +9,8 @@ mockup brief (17 Nov 2026), frames A1 to A7. Live canvas: https://claude.ai/arti
 - `Row.dc.html` is the shared title row. Every frame file (`A1.dc.html` to `A6.dc.html`) imports it with a `variant`
   prop; `A7.dc.html` imports it twice at 390 wide (phone variants `P1` and `P3`).
 - The files need the canvas runtime (`support.js`) to render, so read them as source rather than opening them in a
-  browser. Tokens are the Loots console values from `apps/web/DESIGN.md`, light, with A6 in dark.
+  browser. To look at the frames outside the canvas, open `../CV tailoring.html`, a static snapshot with every state
+  written out. Tokens are the Loots console values from `apps/web/DESIGN.md`, light, with A6 in dark.
 
 Owner decisions folded into the frames on 17 Nov 2026:
 

@@ -1,0 +1,900 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>CV tailoring: mockup snapshot</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500&amp;display=swap"
+    />
+    <style>
+      /* Static snapshot of docs/mockups/cv-tailoring-canvas (the canvas is the source). No runtime: every state is
+         written out. Tokens are the Loots console values from apps/web/DESIGN.md. */
+      @property --ang {
+        syntax: "<angle>";
+        initial-value: 0deg;
+        inherits: false;
+      }
+      body {
+        margin: 0;
+        background: oklch(0.93 0.003 265);
+        font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+        color: oklch(0.22 0.005 265);
+      }
+      .page {
+        padding: 32px 24px 64px;
+        display: flex;
+        flex-direction: column;
+        gap: 36px;
+      }
+      .page > header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .page > header p {
+        margin: 6px 0 0;
+        font-size: 14px;
+        color: oklch(0.48 0.008 265);
+      }
+      .frame h2 {
+        margin: 0 0 10px;
+        font-size: 13px;
+        font-weight: 600;
+        color: oklch(0.48 0.008 265);
+      }
+      .scroll {
+        overflow-x: auto;
+        border: 1px solid oklch(0.885 0.004 265);
+        border-radius: 4px;
+        width: fit-content;
+        max-width: 100%;
+      }
+      .cv {
+        --bg: oklch(0.975 0.002 265);
+        --fg: oklch(0.22 0.005 265);
+        --pop: oklch(0.995 0.001 265);
+        --muted: oklch(0.945 0.003 265);
+        --mfg: oklch(0.48 0.008 265);
+        --border: oklch(0.885 0.004 265);
+        --pfg: oklch(0.985 0.001 265);
+        --red: oklch(0.53 0.19 25);
+        position: relative;
+        font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+        color: var(--fg);
+        background: var(--bg);
+        font-size: 14px;
+        line-height: 1.43;
+      }
+      .cv.dk {
+        --bg: oklch(0.205 0.004 265);
+        --fg: oklch(0.93 0.004 100);
+        --pop: oklch(0.255 0.006 265);
+        --muted: oklch(0.275 0.006 265);
+        --mfg: oklch(0.74 0.006 100);
+        --border: oklch(0.33 0.008 265);
+        --pfg: oklch(0.205 0.004 265);
+        --red: oklch(0.72 0.15 20);
+      }
+      .cv * {
+        box-sizing: border-box;
+      }
+      .cv a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .cv.desk {
+        width: 1440px;
+        padding: 56px 40px;
+      }
+      .cv.desk.tall {
+        height: 440px;
+      }
+      .cv.phone {
+        width: 390px;
+        padding: 20px 16px 24px;
+      }
+      .grid {
+        max-width: 1280px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 320px minmax(0, 1fr);
+        gap: 32px;
+      }
+      .ctx {
+        border: 1px dashed var(--border);
+        border-radius: 4px;
+        padding: 14px 16px;
+        font-size: 12px;
+        color: var(--mfg);
+      }
+      .rows {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        min-width: 0;
+      }
+      .line {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .co {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 500;
+      }
+      .avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 3.2px;
+        background: var(--muted);
+        color: var(--mfg);
+        display: grid;
+        place-items: center;
+        font-weight: 600;
+        font-size: 16px;
+      }
+      .meta {
+        text-align: right;
+      }
+      .meta p {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 6px;
+        font-size: 12px;
+        color: var(--mfg);
+      }
+      .dot {
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background: var(--mfg);
+      }
+      .title {
+        margin: 0;
+        max-width: 576px;
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex: none;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 36px;
+        padding: 0 12px;
+        border-radius: 10.4px;
+        border: 1px solid transparent;
+        font: inherit;
+        font-weight: 500;
+        white-space: nowrap;
+        cursor: pointer;
+        background: transparent;
+        color: var(--fg);
+      }
+      .btn-p {
+        background: var(--fg);
+        color: var(--pfg) !important;
+      }
+      .btn-o {
+        background: var(--bg);
+        border-color: var(--border);
+      }
+      .btn-xs {
+        height: 24px;
+        padding: 0 10px;
+        font-size: 12px;
+        gap: 4px;
+        margin-top: 6px;
+      }
+      .btn[disabled] {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+      .btn-icon {
+        width: 36px;
+        padding: 0;
+      }
+      .arw {
+        transition: transform 0.2s ease-out;
+      }
+      .btn:hover .arw {
+        transform: translate(2px, -2px);
+      }
+      .rb {
+        display: inline-flex;
+        padding: 1.5px;
+        border-radius: 10.4px;
+        background: conic-gradient(
+          from var(--ang),
+          oklch(0.68 0.19 25),
+          oklch(0.78 0.16 75),
+          oklch(0.72 0.17 150),
+          oklch(0.66 0.15 230),
+          oklch(0.62 0.2 295),
+          oklch(0.68 0.19 25)
+        );
+      }
+      .rb-idle {
+        opacity: 0.45;
+      }
+      .rb-idle:hover {
+        opacity: 1;
+      }
+      .rb-busy {
+        animation: rbspin 1.6s linear infinite;
+      }
+      @keyframes rbspin {
+        to {
+          --ang: 360deg;
+        }
+      }
+      .rbi {
+        height: 33px;
+        border: 0;
+        border-radius: 9px;
+        background: var(--bg);
+      }
+      .rb .btn[disabled] {
+        opacity: 1;
+        color: var(--mfg);
+      }
+      .split {
+        display: inline-flex;
+        align-items: center;
+      }
+      .seg {
+        height: 33px;
+        border: 0;
+        border-radius: 9px;
+        background: transparent;
+      }
+      .seg:hover {
+        background: var(--muted);
+      }
+      .seam {
+        width: 1px;
+        height: 18px;
+        background: var(--border);
+      }
+      .spin {
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .tipwrap {
+        position: relative;
+        display: inline-flex;
+      }
+      .tip {
+        position: absolute;
+        bottom: calc(100% + 8px);
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--fg);
+        color: var(--pfg);
+        font-size: 12px;
+        line-height: 1;
+        padding: 7px 10px;
+        border-radius: 6px;
+        white-space: nowrap;
+      }
+      .tip::after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border: 5px solid transparent;
+        border-top-color: var(--fg);
+      }
+      .toast {
+        position: absolute;
+        right: 24px;
+        bottom: 24px;
+        width: 356px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 16px;
+        background: var(--pop);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow:
+          0 10px 15px -3px rgb(0 0 0 / 0.1),
+          0 4px 6px -4px rgb(0 0 0 / 0.1);
+        font-size: 13px;
+        font-weight: 500;
+      }
+      .toast svg {
+        color: var(--red);
+        flex: none;
+      }
+      .phones {
+        display: flex;
+        flex-direction: column;
+      }
+      .phones h3 {
+        margin: 0;
+        padding: 16px 16px 0;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: oklch(0.48 0.008 265);
+        background: oklch(0.975 0.002 265);
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs>
+        <linearGradient id="cvRainbow" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stop-color="oklch(0.62 0.2 25)" />
+          <stop offset="0.3" stop-color="oklch(0.72 0.16 75)" />
+          <stop offset="0.55" stop-color="oklch(0.62 0.17 150)" />
+          <stop offset="0.8" stop-color="oklch(0.6 0.15 230)" />
+          <stop offset="1" stop-color="oklch(0.58 0.2 295)" />
+        </linearGradient>
+        <symbol id="i-file" viewBox="0 0 24 24">
+          <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+          <path d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8" />
+        </symbol>
+        <symbol id="i-spin" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></symbol>
+        <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10" /></symbol>
+        <symbol id="i-regen" viewBox="0 0 24 24">
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+          <path d="M21 3v5h-5" />
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+          <path d="M8 16H3v5" />
+        </symbol>
+        <symbol id="i-bookmark" viewBox="0 0 24 24">
+          <path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+        </symbol>
+        <symbol id="i-x" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <path d="m15 9-6 6M9 9l6 6" />
+        </symbol>
+      </defs>
+    </svg>
+
+    <main class="page">
+      <header>
+        <h1>CV tailoring: mockup snapshot</h1>
+        <p>
+          Static snapshot of the Job detail title row's CV button, frames A1 to A7. The source and README are in
+          docs/mockups/cv-tailoring-canvas; the live canvas is https://claude.ai/artifact/SoWKeukikWanKMbWrWVhUa.
+        </p>
+      </header>
+
+      <!-- A1 -->
+      <section class="frame">
+        <h2>A1 · No tailored CV yet</h2>
+        <div class="scroll">
+          <div class="cv desk">
+            <div class="grid">
+              <div class="ctx" aria-hidden="true">Profile match panel, unchanged</div>
+              <div class="rows">
+                <div class="line">
+                  <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                  <div class="meta">
+                    <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                    <button class="btn btn-o btn-xs" disabled>
+                      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <use href="#i-bookmark" />
+                      </svg>
+                      Save to board
+                    </button>
+                  </div>
+                </div>
+                <div class="line">
+                  <h1 class="title">Senior Full-stack Engineer</h1>
+                  <div class="actions">
+                    <span class="rb rb-idle">
+                      <button class="btn rbi">
+                        <svg
+                          width="16"
+                          height="16"
+                          fill="none"
+                          stroke="url(#cvRainbow)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-file" />
+                        </svg>
+                        Tailor my CV
+                      </button>
+                    </span>
+                    <a class="btn btn-p" href="#">
+                      Apply
+                      <svg
+                        class="arw"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-arrow" />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- A2 -->
+      <section class="frame">
+        <h2>A2 · Pending (also A4, regenerating)</h2>
+        <div class="scroll">
+          <div class="cv desk">
+            <div class="grid">
+              <div class="ctx" aria-hidden="true">Profile match panel, unchanged</div>
+              <div class="rows">
+                <div class="line">
+                  <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                  <div class="meta">
+                    <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                    <button class="btn btn-o btn-xs" disabled>
+                      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <use href="#i-bookmark" />
+                      </svg>
+                      Save to board
+                    </button>
+                  </div>
+                </div>
+                <div class="line">
+                  <h1 class="title">Senior Full-stack Engineer</h1>
+                  <div class="actions">
+                    <span class="rb rb-busy">
+                      <button class="btn rbi" disabled aria-busy="true">
+                        <svg
+                          class="spin"
+                          width="16"
+                          height="16"
+                          fill="none"
+                          stroke="url(#cvRainbow)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-spin" />
+                        </svg>
+                        Tailor my CV
+                      </button>
+                    </span>
+                    <a class="btn btn-p" href="#">
+                      Apply
+                      <svg
+                        class="arw"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-arrow" />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- A3 -->
+      <section class="frame">
+        <h2>A3 · Tailored CV ready (Regenerate tooltip shown)</h2>
+        <div class="scroll">
+          <div class="cv desk">
+            <div class="grid">
+              <div class="ctx" aria-hidden="true">Profile match panel, unchanged</div>
+              <div class="rows">
+                <div class="line">
+                  <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                  <div class="meta">
+                    <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                    <button class="btn btn-o btn-xs" disabled>
+                      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <use href="#i-bookmark" />
+                      </svg>
+                      Save to board
+                    </button>
+                  </div>
+                </div>
+                <div class="line">
+                  <h1 class="title">Senior Full-stack Engineer</h1>
+                  <div class="actions">
+                    <span class="rb" role="group" aria-label="Tailored CV">
+                      <span class="rbi split">
+                        <a class="btn seg" href="#" target="_blank" rel="noopener noreferrer">
+                          View tailored CV
+                          <svg
+                            class="arw"
+                            width="16"
+                            height="16"
+                            fill="none"
+                            stroke="url(#cvRainbow)"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <use href="#i-arrow" />
+                          </svg>
+                        </a>
+                        <span class="seam" aria-hidden="true"></span>
+                        <span class="tipwrap">
+                          <button class="btn seg btn-icon" aria-label="Regenerate tailored CV">
+                            <svg
+                              width="16"
+                              height="16"
+                              fill="none"
+                              stroke="url(#cvRainbow)"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              aria-hidden="true"
+                            >
+                              <use href="#i-regen" />
+                            </svg>
+                          </button>
+                          <span class="tip" role="tooltip">Regenerate</span>
+                        </span>
+                      </span>
+                    </span>
+                    <a class="btn btn-p" href="#">
+                      Apply
+                      <svg
+                        class="arw"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-arrow" />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- A5 -->
+      <section class="frame">
+        <h2>A5 · Error: back to A1 (or A3 when regenerate fails), toast</h2>
+        <div class="scroll">
+          <div class="cv desk tall">
+            <div class="grid">
+              <div class="ctx" aria-hidden="true">Profile match panel, unchanged</div>
+              <div class="rows">
+                <div class="line">
+                  <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                  <div class="meta">
+                    <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                    <button class="btn btn-o btn-xs" disabled>
+                      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <use href="#i-bookmark" />
+                      </svg>
+                      Save to board
+                    </button>
+                  </div>
+                </div>
+                <div class="line">
+                  <h1 class="title">Senior Full-stack Engineer</h1>
+                  <div class="actions">
+                    <span class="rb rb-idle">
+                      <button class="btn rbi">
+                        <svg
+                          width="16"
+                          height="16"
+                          fill="none"
+                          stroke="url(#cvRainbow)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-file" />
+                        </svg>
+                        Tailor my CV
+                      </button>
+                    </span>
+                    <a class="btn btn-p" href="#">
+                      Apply
+                      <svg
+                        class="arw"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-arrow" />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="toast" role="status">
+              <svg
+                width="16"
+                height="16"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                aria-hidden="true"
+              >
+                <use href="#i-x" />
+              </svg>
+              Couldn't generate. Try again
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- A6 -->
+      <section class="frame">
+        <h2>A6 · Dark, A3</h2>
+        <div class="scroll">
+          <div class="cv desk dk">
+            <div class="grid">
+              <div class="ctx" aria-hidden="true">Profile match panel, unchanged</div>
+              <div class="rows">
+                <div class="line">
+                  <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                  <div class="meta">
+                    <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                    <button class="btn btn-o btn-xs" disabled style="background: transparent">
+                      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <use href="#i-bookmark" />
+                      </svg>
+                      Save to board
+                    </button>
+                  </div>
+                </div>
+                <div class="line">
+                  <h1 class="title">Senior Full-stack Engineer</h1>
+                  <div class="actions">
+                    <span class="rb" role="group" aria-label="Tailored CV">
+                      <span class="rbi split">
+                        <a class="btn seg" href="#" target="_blank" rel="noopener noreferrer">
+                          View tailored CV
+                          <svg
+                            class="arw"
+                            width="16"
+                            height="16"
+                            fill="none"
+                            stroke="url(#cvRainbow)"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <use href="#i-arrow" />
+                          </svg>
+                        </a>
+                        <span class="seam" aria-hidden="true"></span>
+                        <span class="tipwrap">
+                          <button class="btn seg btn-icon" aria-label="Regenerate tailored CV">
+                            <svg
+                              width="16"
+                              height="16"
+                              fill="none"
+                              stroke="url(#cvRainbow)"
+                              stroke-width="2"
+                              stroke-linecap="round"
+                              stroke-linejoin="round"
+                              aria-hidden="true"
+                            >
+                              <use href="#i-regen" />
+                            </svg>
+                          </button>
+                          <span class="tip" role="tooltip">Regenerate</span>
+                        </span>
+                      </span>
+                    </span>
+                    <a class="btn btn-p" href="#">
+                      Apply
+                      <svg
+                        class="arw"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-arrow" />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- A7 -->
+      <section class="frame">
+        <h2>A7 · Phone at 390: the button group wraps under the title</h2>
+        <div class="scroll">
+          <div class="phones">
+            <h3>A1 at 390</h3>
+            <div class="cv phone">
+              <div class="rows">
+                <div class="line">
+                  <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                  <div class="meta">
+                    <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                    <button class="btn btn-o btn-xs" disabled>
+                      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <use href="#i-bookmark" />
+                      </svg>
+                      Save to board
+                    </button>
+                  </div>
+                </div>
+                <div class="line">
+                  <h1 class="title">Senior Full-stack Engineer</h1>
+                  <div class="actions">
+                    <span class="rb rb-idle">
+                      <button class="btn rbi">
+                        <svg
+                          width="16"
+                          height="16"
+                          fill="none"
+                          stroke="url(#cvRainbow)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-file" />
+                        </svg>
+                        Tailor my CV
+                      </button>
+                    </span>
+                    <a class="btn btn-p" href="#">
+                      Apply
+                      <svg
+                        class="arw"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-arrow" />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <h3>A3 at 390</h3>
+            <div class="cv phone">
+              <div class="rows">
+                <div class="line">
+                  <div class="co"><span class="avatar" aria-hidden="true">TP</span>Tidepool</div>
+                  <div class="meta">
+                    <p><span>Posted 3d ago</span><span class="dot"></span><span>Updated 1d ago</span></p>
+                    <button class="btn btn-o btn-xs" disabled>
+                      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <use href="#i-bookmark" />
+                      </svg>
+                      Save to board
+                    </button>
+                  </div>
+                </div>
+                <div class="line">
+                  <h1 class="title">Senior Full-stack Engineer</h1>
+                  <div class="actions">
+                    <span class="rb" role="group" aria-label="Tailored CV">
+                      <span class="rbi split">
+                        <a class="btn seg" href="#" target="_blank" rel="noopener noreferrer">
+                          View tailored CV
+                          <svg
+                            class="arw"
+                            width="16"
+                            height="16"
+                            fill="none"
+                            stroke="url(#cvRainbow)"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <use href="#i-arrow" />
+                          </svg>
+                        </a>
+                        <span class="seam" aria-hidden="true"></span>
+                        <button class="btn seg btn-icon" aria-label="Regenerate tailored CV">
+                          <svg
+                            width="16"
+                            height="16"
+                            fill="none"
+                            stroke="url(#cvRainbow)"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <use href="#i-regen" />
+                          </svg>
+                        </button>
+                      </span>
+                    </span>
+                    <a class="btn btn-p" href="#">
+                      Apply
+                      <svg
+                        class="arw"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-arrow" />
+                      </svg>
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
