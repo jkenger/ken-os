@@ -8,6 +8,7 @@ import {
   ExternalLink,
   FileText,
   LoaderCircle,
+  Mail,
   RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
@@ -82,6 +83,7 @@ export function PostingDetail({
   yearsExperience,
   preferredWorkSetups,
   hasTailoredResume,
+  hasCoverLetter,
 }: {
   posting: PostingView;
   profileSkills: string[];
@@ -93,6 +95,9 @@ export function PostingDetail({
   /** Whether this posting already has a tailored resume, so reopening it opens straight to "View tailored CV"
    *  instead of re-offering "Tailor my CV" (docs/product/cv-tailoring.md: "serves the stored file instantly"). */
   hasTailoredResume: boolean;
+  /** Whether this posting already has a cover letter, so the button reads "View cover letter" instead of "Write
+   *  cover letter" (docs/architecture/cover-letter.md). */
+  hasCoverLetter: boolean;
 }) {
   const link = posting.sources[0]?.link;
   const { onApplyClick, dialog } = useApplyFlow({ postingId: posting.id, link });
@@ -286,6 +291,12 @@ export function PostingDetail({
                 </Button>
               )}
             </span>
+            <Button type="button" variant="outline" asChild>
+              <Link href={`/jobs/${posting.id}/cover-letter`}>
+                <Mail />
+                {hasCoverLetter ? "View cover letter" : "Write cover letter"}
+              </Link>
+            </Button>
             <Button type="button" disabled={!link} onClick={onApplyClick}>
               Apply
               <ExternalLink />

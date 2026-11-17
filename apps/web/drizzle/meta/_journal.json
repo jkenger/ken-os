@@ -463,6 +463,13 @@
       "when": 1794900666808,
       "tag": "0065_sweet_black_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 66,
+      "version": "7",
+      "when": 1794911555702,
+      "tag": "0066_wakeful_radioactive_man",
+      "breakpoints": true
     }
   ]
 }
