@@ -4,3 +4,4 @@ export { analyzeProfile, PROFILE_ANALYZE_PROMPT_VERSION } from "./profile/analyz
 export { AutofillError, autofillProfile, PROFILE_AUTOFILL_PROMPT_VERSION, type ResumeSource } from "./profile/autofill";
 export { extractPosting, JOBS_EXTRACT_PROMPT_VERSION, type ExtractedPosting } from "./jobs/extract";
 export { scoreJobPosting, JOBS_SCORE_PROMPT_VERSION, type PostingScore, type ScoreReason } from "./jobs/score";
+export { selectTailoredEntries, JOBS_TAILOR_PROMPT_VERSION, type TailoredSelection } from "./jobs/tailor";

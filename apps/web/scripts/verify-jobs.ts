@@ -1,9 +1,9 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { config } from "dotenv";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { closeDb, db } from "../src/lib/db/db";
-import { jobCurrencyRates, jobMatches, jobPostings, users } from "../src/lib/db/schema";
+import { jobCurrencyRates, jobMatches, jobPostings, jobTailoredResumes, users } from "../src/lib/db/schema";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
@@ -922,6 +922,39 @@ async function main() {
     assert.equal(scoredRow?.scorePromptVersion, "jobs-score-v1");
     assert.equal(scoredRow?.profileVersionScored, null);
     console.log("ok - saveScore stores the score, reasons, prompt version and Profile-version stamp");
+
+    assert.equal(await store.hasTailoredResume(userId, scorableId), false, "no tailored resume exists yet");
+    console.log("ok - hasTailoredResume is false before any resume is generated");
+
+    const tailoredPdf = Buffer.from("%PDF-1.4 fake first version");
+    await store.saveTailoredResume(scorableId, userId, {
+      data: tailoredPdf,
+      size: tailoredPdf.length,
+      selection: { experience: [0], skills: [], projects: [] },
+      promptVersion: "jobs-tailor-v1",
+      model: "gpt-test",
+    });
+    assert.equal(await store.hasTailoredResume(userId, scorableId), true);
+    const fetchedTailored = await store.getTailoredResume(userId, scorableId);
+    assert.deepEqual(fetchedTailored?.data, tailoredPdf);
+    console.log("ok - saveTailoredResume stores the PDF; hasTailoredResume and getTailoredResume reflect it");
+
+    const regeneratedPdf = Buffer.from("%PDF-1.4 regenerated version");
+    await store.saveTailoredResume(scorableId, userId, {
+      data: regeneratedPdf,
+      size: regeneratedPdf.length,
+      selection: { experience: [], skills: [0, 1], projects: [] },
+      promptVersion: "jobs-tailor-v1",
+      model: "gpt-test",
+    });
+    const refetchedTailored = await store.getTailoredResume(userId, scorableId);
+    assert.deepEqual(refetchedTailored?.data, regeneratedPdf, "regenerate overwrites the stored bytes in place");
+    const [{ count: tailoredRowCount }] = await db()
+      .select({ count: sql<number>`count(*)::int` })
+      .from(jobTailoredResumes)
+      .where(eq(jobTailoredResumes.postingId, scorableId));
+    assert.equal(tailoredRowCount, 1, "regenerating keeps exactly one row -- no version history");
+    console.log("ok - saveTailoredResume on an existing row overwrites in place, no version history kept");
 
     const needingScoreAfterScoring = await store.getNeedingScore(userId, null, 10);
     assert.ok(

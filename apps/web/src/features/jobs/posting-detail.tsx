@@ -1,11 +1,21 @@
 "use client";
 
-import { AlertTriangle, Bookmark, CircleHelp, ExternalLink, FileText } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowUpRight,
+  Bookmark,
+  CircleHelp,
+  ExternalLink,
+  FileText,
+  LoaderCircle,
+  RefreshCw,
+} from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { DotSeparator } from "@/components/dot-separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -24,11 +34,12 @@ import { EmptyState } from "./empty-state";
 import { SkillBadge, SkillGroup } from "./skill-badge";
 import { SkillLogo } from "./skill-logo";
 import { useApplyFlow } from "./use-apply-flow";
+import { useTailorFlow } from "./use-tailor-flow";
 
 // The job detail page (docs/mockups/Jobs redesign.html, "Desktop / Job detail"): a full page, not a side panel.
 // Left is the profile match rail (score, skills matching, metadata); right is the posting itself. Mark
-// applied/Dismiss/Save to board/Tailor my CV stay inert here -- acting on a match and CV tailoring are both their
-// own, separate story.
+// applied/Dismiss/Save to board stay inert here -- acting on a match is its own, separate story. Tailor my CV
+// (docs/architecture/cv-tailoring.md) is live.
 
 const WORK_SETUP_LABELS: Record<string, string> = {
   remote: "Remote",
@@ -70,6 +81,7 @@ export function PostingDetail({
   profileSkills,
   yearsExperience,
   preferredWorkSetups,
+  hasTailoredResume,
 }: {
   posting: PostingView;
   profileSkills: string[];
@@ -78,9 +90,16 @@ export function PostingDetail({
   yearsExperience: number | null;
   /** The owner's own `job_preferences.workSetups`, for the work-setup mismatch check. */
   preferredWorkSetups: WorkSetup[];
+  /** Whether this posting already has a tailored resume, so reopening it opens straight to "View tailored CV"
+   *  instead of re-offering "Tailor my CV" (docs/product/cv-tailoring.md: "serves the stored file instantly"). */
+  hasTailoredResume: boolean;
 }) {
   const link = posting.sources[0]?.link;
   const { onApplyClick, dialog } = useApplyFlow({ postingId: posting.id, link });
+  const { status: tailorStatus, onTailorClick } = useTailorFlow({
+    postingId: posting.id,
+    initialStatus: hasTailoredResume ? "ready" : "idle",
+  });
   const skillMatches = matchSkills(posting.skills, profileSkills);
   const mismatches = requirementMismatches(
     { yearsRequired: posting.yearsRequired, workSetup: posting.workSetup },
@@ -92,6 +111,19 @@ export function PostingDetail({
 
   return (
     <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[19rem_1fr]">
+      {/* Shared def for the CV tailoring button's icons (docs/mockups/cv-tailoring-canvas/Row.dc.html): the icons
+          inside the gradient ring are stroked with the same rainbow as the ring itself, per the owner's decision. */}
+      <svg width="0" height="0" className="absolute" aria-hidden="true">
+        <defs>
+          <linearGradient id="cvRainbow" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" stopColor="oklch(0.62 0.2 25)" />
+            <stop offset="0.3" stopColor="oklch(0.72 0.16 75)" />
+            <stop offset="0.55" stopColor="oklch(0.62 0.17 150)" />
+            <stop offset="0.8" stopColor="oklch(0.6 0.15 230)" />
+            <stop offset="1" stopColor="oklch(0.58 0.2 295)" />
+          </linearGradient>
+        </defs>
+      </svg>
       <aside className="flex flex-col gap-5 rounded-xl border bg-card p-5 lg:sticky lg:top-[4.25rem]">
         {posting.score != null && (
           <div className="grid gap-2">
@@ -200,10 +232,60 @@ export function PostingDetail({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <h1 className="max-w-xl text-2xl font-semibold">{posting.title}</h1>
           <div className="flex shrink-0 gap-2.5">
-            <Button type="button" variant="outline" disabled>
-              <FileText />
-              Tailor my CV
-            </Button>
+            <span
+              className="cv-tailor-ring inline-flex rounded-4xl border-[1.5px] border-transparent"
+              data-status={tailorStatus}
+            >
+              {tailorStatus === "ready" ? (
+                <ButtonGroup aria-label="Tailored CV">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="group/tailor rounded-r-none border-r-0 border-transparent"
+                    asChild
+                  >
+                    <a href={`/api/jobs/postings/${posting.id}/tailor`} target="_blank" rel="noopener noreferrer">
+                      View tailored CV
+                      <ArrowUpRight
+                        color="url(#cvRainbow)"
+                        className="transition-transform duration-200 ease-out group-hover/tailor:translate-x-0.5 group-hover/tailor:-translate-y-0.5"
+                      />
+                    </a>
+                  </Button>
+                  <ButtonGroupSeparator />
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="rounded-l-none border-transparent"
+                        aria-label="Regenerate tailored CV"
+                        onClick={onTailorClick}
+                      >
+                        <RefreshCw color="url(#cvRainbow)" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Regenerate</TooltipContent>
+                  </Tooltip>
+                </ButtonGroup>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-transparent"
+                  disabled={tailorStatus === "pending"}
+                  onClick={onTailorClick}
+                >
+                  {tailorStatus === "pending" ? (
+                    <LoaderCircle color="url(#cvRainbow)" className="animate-spin" />
+                  ) : (
+                    <FileText color="url(#cvRainbow)" />
+                  )}
+                  Tailor my CV
+                </Button>
+              )}
+            </span>
             <Button type="button" disabled={!link} onClick={onApplyClick}>
               Apply
               <ExternalLink />

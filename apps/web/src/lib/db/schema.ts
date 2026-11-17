@@ -869,6 +869,26 @@ export const jobMatches = pgTable(
   (table) => [index("job_matches_user_state_idx").on(table.userId, table.state)],
 );
 
+/** One resume tailored to one posting (docs/architecture/cv-tailoring.md). At most one per posting per owner --
+ *  clicking Tailor/Regenerate again overwrites it, no version history. `selection` is the AI's chosen indices
+ *  into the Profile's `experience`/`skills`/`projects` arrays at generation time (empty on all three means the
+ *  no-relevant-content fallback: the full, unfiltered Profile was used instead). A frozen snapshot: nothing but
+ *  another click here ever changes a row, same precedent as `jobMatches.profileVersionScored`. */
+export const jobTailoredResumes = pgTable("job_tailored_resumes", {
+  postingId: text("posting_id")
+    .primaryKey()
+    .references(() => jobPostings.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  data: bytea("data").notNull(),
+  size: integer("size").notNull(),
+  selection: jsonb("selection").$type<{ experience: number[]; skills: number[]; projects: number[] }>().notNull(),
+  promptVersion: text("prompt_version").notNull(),
+  model: text("model").notNull(),
+  generatedAt: timestamp("generated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 /** The owner's Jobs filter preferences (docs/product/job-finder.md, Preferences table). Digest time is still
  *  step 3 slice 2 scope, not here yet. Minimum pay is one currency; a posting's own stated pay is converted into
  *  it via the cached rates in `job_currency_rates` before comparing, so it's checked regardless of what currency

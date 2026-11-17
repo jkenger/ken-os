@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, desc, eq, gt, ilike, inArray, isNotNull, isNull, ne, sql, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db/db";
-import { jobMatches, jobPostingSources, jobPostings, users } from "@/lib/db/schema";
+import { jobMatches, jobPostingSources, jobPostings, jobTailoredResumes, users } from "@/lib/db/schema";
 import { getCachedRates } from "./currency-rates-store";
 import { filterReason } from "./filters";
 import { getPreferences } from "./preferences-store";
@@ -804,4 +804,47 @@ export async function saveScore(postingId: string, fields: ScoreFields): Promise
       updatedAt: new Date(),
     })
     .where(eq(jobMatches.postingId, postingId));
+}
+
+export type TailoredResumeFields = {
+  data: Buffer;
+  size: number;
+  selection: { experience: number[]; skills: number[]; projects: number[] };
+  promptVersion: string;
+  model: string;
+};
+
+/** Whether a tailored resume already exists, without fetching its bytes -- so the detail page can open straight
+ *  to "View tailored CV" on reopen (docs/product/cv-tailoring.md: "serves the stored file instantly"). */
+export async function hasTailoredResume(userId: string, postingId: string): Promise<boolean> {
+  const [row] = await db()
+    .select({ postingId: jobTailoredResumes.postingId })
+    .from(jobTailoredResumes)
+    .where(and(eq(jobTailoredResumes.postingId, postingId), eq(jobTailoredResumes.userId, userId)))
+    .limit(1);
+  return row !== undefined;
+}
+
+/** Scoped to the owner's own posting; null when no tailored resume has been generated yet. */
+export async function getTailoredResume(userId: string, postingId: string): Promise<{ data: Buffer } | null> {
+  const [row] = await db()
+    .select({ data: jobTailoredResumes.data })
+    .from(jobTailoredResumes)
+    .where(and(eq(jobTailoredResumes.postingId, postingId), eq(jobTailoredResumes.userId, userId)))
+    .limit(1);
+  return row ?? null;
+}
+
+/** Upsert: clicking Tailor the first time inserts, Regenerate overwrites in place -- no version history
+ *  (docs/architecture/cv-tailoring.md). */
+export async function saveTailoredResume(
+  postingId: string,
+  userId: string,
+  fields: TailoredResumeFields,
+): Promise<void> {
+  const generatedAt = new Date();
+  await db()
+    .insert(jobTailoredResumes)
+    .values({ postingId, userId, generatedAt, ...fields })
+    .onConflictDoUpdate({ target: jobTailoredResumes.postingId, set: { generatedAt, ...fields } });
 }
