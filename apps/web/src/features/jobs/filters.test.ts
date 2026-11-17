@@ -21,6 +21,7 @@ const noFilters: JobPreferences = {
   seniority: ["junior", "mid", "senior", "lead"],
   agenciesHide: false,
   instantEmailThreshold: 80,
+  digestTime: "07:00",
 };
 const rates = { USD: 1, PHP: 56.5, GBP: 0.79 };
 

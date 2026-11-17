@@ -51,7 +51,13 @@ export type JobPreferences = {
   /** Below this score, a posting waits for the digest instead of getting its own email right away
    *  (docs/product/job-finder.md, Preferences table "Instant email from"). */
   instantEmailThreshold: number;
+  /** Philippine time, `HH:MM`, 24-hour -- when the daily digest checks whether it's due
+   *  (docs/product/job-finder.md, Preferences table "Digest time"). `job_preferences.last_digest_sent_at` tracks
+   *  whether it's actually gone out; that's bookkeeping, not an owner setting, so it's deliberately not here. */
+  digestTime: string;
 };
+
+const DIGEST_TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
 function cleanList(value: unknown, field: string): string[] {
   if (!Array.isArray(value) || !value.every((item) => typeof item === "string"))
@@ -100,6 +106,10 @@ export function parsePreferences(input: Record<string, unknown>): JobPreferences
   )
     throw new JobsInputError("Instant email threshold must be a whole number from 0 to 100");
 
+  const digestTime = input.digestTime;
+  if (typeof digestTime !== "string" || !DIGEST_TIME_PATTERN.test(digestTime))
+    throw new JobsInputError("Digest time must be a 24-hour time, HH:MM");
+
   return {
     roles: cleanList(input.roles, "Roles"),
     skipWords: cleanList(input.skipWords, "Skip words"),
@@ -116,6 +126,7 @@ export function parsePreferences(input: Record<string, unknown>): JobPreferences
     shifts: cleanEnumList(input.shifts, "Shifts", SHIFTS),
     agenciesHide,
     instantEmailThreshold,
+    digestTime,
   };
 }
 
@@ -138,6 +149,7 @@ export async function getPreferences(userId: string): Promise<JobPreferences> {
     shifts: row.shifts,
     agenciesHide: row.agenciesHide,
     instantEmailThreshold: row.instantEmailThreshold,
+    digestTime: row.digestTime,
   };
 }
 
@@ -157,4 +169,21 @@ export async function savePreferences(userId: string, preferences: JobPreference
 export async function listUsersWithPreferences(): Promise<string[]> {
   const rows = await db().select({ userId: jobPreferences.userId }).from(jobPreferences);
   return rows.map((row) => row.userId);
+}
+
+/** When this user's daily digest last went out, checked by `isDigestDue` -- null for a user who's never had one
+ *  sent (docs/architecture/jobs-email.md, "Trigger points"). */
+export async function getLastDigestSentAt(userId: string): Promise<Date | null> {
+  const [row] = await db()
+    .select({ lastDigestSentAt: jobPreferences.lastDigestSentAt })
+    .from(jobPreferences)
+    .where(eq(jobPreferences.userId, userId))
+    .limit(1);
+  return row?.lastDigestSentAt ?? null;
+}
+
+/** Marks the daily digest sent for this user (docs/architecture/jobs-email.md) -- checked by `isDigestDue`, same
+ *  "stamp it, never clear it" shape as `markInstantEmailSent`. */
+export async function markDigestSent(userId: string): Promise<void> {
+  await db().update(jobPreferences).set({ lastDigestSentAt: new Date() }).where(eq(jobPreferences.userId, userId));
 }

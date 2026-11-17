@@ -340,6 +340,17 @@ export function FilterSidebar({
         />
         <span className="text-xs text-muted-foreground">Score and above sends an email right away</span>
       </div>
+
+      <div className="grid gap-1.5">
+        <Label className="mb-0">Digest time</Label>
+        <Input
+          type="time"
+          value={preferences.digestTime}
+          onChange={(event) => void save({ digestTime: event.target.value })}
+          className="w-32"
+        />
+        <span className="text-xs text-muted-foreground">Philippine time, once a day</span>
+      </div>
     </aside>
   );
 }

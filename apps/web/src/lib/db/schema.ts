@@ -906,6 +906,13 @@ export const jobPreferences = pgTable("job_preferences", {
   /** Below this score, a posting waits for the digest instead of getting its own email right away
    *  (docs/product/job-finder.md, Preferences table "Instant email from"). */
   instantEmailThreshold: integer("instant_email_threshold").notNull().default(80),
+  /** Philippine time, `HH:MM`, 24-hour (docs/architecture/jobs-email.md, "Data model"). An owner setting,
+   *  validated by `parsePreferences`. */
+  digestTime: text("digest_time").notNull().default("07:00"),
+  /** Set once the daily digest has gone out, checked by `isDigestDue` -- not an owner setting, so it's
+   *  deliberately outside `JobPreferences`/`parsePreferences`, the same separation `job_matches.instant_email_
+   *  sent_at` has from `instantEmailThreshold`. */
+  lastDigestSentAt: timestamp("last_digest_sent_at", { withTimezone: true }),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

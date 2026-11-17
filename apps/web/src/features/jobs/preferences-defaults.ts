@@ -19,4 +19,5 @@ export const DEFAULTS: JobPreferences = {
   shifts: ["day", "mid"],
   agenciesHide: false,
   instantEmailThreshold: 80,
+  digestTime: "07:00",
 };
