@@ -1,11 +1,12 @@
 # Cover letter: mockup brief
 
-Status: proposed, 17 Nov 2026. Draws the UI half of [cover-letter.md](../architecture/cover-letter.md)
+Status: drawn and reviewed, 17 Nov 2026 (see "Decided" below: the new page became a tab). Was: proposed, 17 Nov 2026. Draws the UI half of [cover-letter.md](../architecture/cover-letter.md)
 (technical design) and [cover-letter.md](../product/cover-letter.md) (product spec). This brief says which
 frames, states and words to draw. Code follows the chosen mockups.
 
 Two surfaces change: one new button on the existing Job detail title row (same row CV tailoring's own brief
-already covers), and a brand-new page at `/jobs/[id]/cover-letter`.
+already covers), and a brand-new page at `/jobs/[id]/cover-letter` (superseded: a Cover letter tab on Job
+detail, see "Decided").
 
 ## Handoff: what to return
 
@@ -91,7 +92,23 @@ A sibling to the posting detail page, not a modal, not inline in the panel.
 
 ## Open questions
 
-- Exact empty-state icon for D1/D7 (CV tailoring's title row has no page-level empty state to match against).
+None left; see "Decided".
+
+## Decided
+
+From the owner's review of the canvas (`docs/mockups/cover-letter-canvas/`, 17 Nov 2026):
+
+- **A tab, not a page**: the letter lives in a third Job detail tab, Cover letter, beside Description and Company.
+  No `/jobs/[id]/cover-letter` route. The title row button switches to that tab.
+- **Empty and error states** span the tab's full width, content centred: Mail (muted) for the empty state,
+  CircleAlert (destructive) for the error, each beside its line. The error's retry is the same "Write cover
+  letter" button.
+- **Phone title row** wraps its action group.
+- **Status line** reads "Edited" for an edited letter, "Written <date>" otherwise.
+- **Copy letter** sits before Regenerate and Save, with a "Letter copied" toast.
+- **Dialog copy** follows the app's confirmation pattern: "Rewrite this letter?" / "Your edits are replaced by a
+  new letter" / Cancel, Rewrite letter.
+- **Default tab** is always Description; unsaved edits survive switching tabs while the page is open.
 
 ## Explicitly out of scope here
 

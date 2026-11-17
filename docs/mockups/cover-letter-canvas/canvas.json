@@ -1,0 +1,195 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-17T12:00:00Z"
+  },
+  "title": "Cover letter mockups",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": -1120,
+      "y": 0,
+      "w": 1000,
+      "h": 1700,
+      "title": "README"
+    },
+    "C1.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 280,
+      "title": "C1 · Title row, no letter yet"
+    },
+    "C2.dc.html": {
+      "x": 0,
+      "y": 400,
+      "w": 1440,
+      "h": 280,
+      "title": "C2 · Title row, letter exists"
+    },
+    "C3.dc.html": {
+      "x": 1520,
+      "y": 0,
+      "w": 390,
+      "h": 680,
+      "title": "C3 · Title row at 390 (added)"
+    },
+    "TitleRow.dc.html": {
+      "x": 1990,
+      "y": 0,
+      "w": 1440,
+      "h": 280,
+      "title": "Title row (shared by C1 to C3)"
+    },
+    "D1.dc.html": {
+      "x": 0,
+      "y": 1100,
+      "w": 1440,
+      "h": 1040,
+      "title": "D1 · Cover letter tab, empty"
+    },
+    "D2.dc.html": {
+      "x": 1520,
+      "y": 1100,
+      "w": 1440,
+      "h": 1040,
+      "title": "D2 · Generating"
+    },
+    "D3.dc.html": {
+      "x": 3040,
+      "y": 1100,
+      "w": 1440,
+      "h": 1040,
+      "title": "D3 · Letter, unedited"
+    },
+    "D4.dc.html": {
+      "x": 4560,
+      "y": 1100,
+      "w": 1440,
+      "h": 1040,
+      "title": "D4 · Letter, edited"
+    },
+    "D5.dc.html": {
+      "x": 0,
+      "y": 2260,
+      "w": 1440,
+      "h": 1040,
+      "title": "D5 · Regenerate while edited, confirm"
+    },
+    "D6.dc.html": {
+      "x": 1520,
+      "y": 2260,
+      "w": 1440,
+      "h": 1040,
+      "title": "D6 · Regenerating"
+    },
+    "D7.dc.html": {
+      "x": 3040,
+      "y": 2260,
+      "w": 1440,
+      "h": 1040,
+      "title": "D7 · First generation failed"
+    },
+    "D8.dc.html": {
+      "x": 4560,
+      "y": 2260,
+      "w": 1440,
+      "h": 1040,
+      "title": "D8 · Dark, D3"
+    },
+    "D9.dc.html": {
+      "x": 6080,
+      "y": 1100,
+      "w": 390,
+      "h": 2260,
+      "title": "D9 · Phone, D1 and D3"
+    },
+    "LetterPage.dc.html": {
+      "x": 6550,
+      "y": 1100,
+      "w": 1440,
+      "h": 1040,
+      "title": "Job detail, Cover letter tab (shared by D1 to D9)"
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "TitleRow.dc.html",
+    "C1.dc.html",
+    "C2.dc.html",
+    "C3.dc.html",
+    "LetterPage.dc.html",
+    "D1.dc.html",
+    "D2.dc.html",
+    "D3.dc.html",
+    "D4.dc.html",
+    "D5.dc.html",
+    "D6.dc.html",
+    "D7.dc.html",
+    "D8.dc.html",
+    "D9.dc.html"
+  ],
+  "notes": {
+    "tC": {
+      "x": 0,
+      "y": -280,
+      "text": "Job detail title row",
+      "kind": "title1",
+      "maxW": 3430
+    },
+    "tD": {
+      "x": 0,
+      "y": 840,
+      "text": "Job detail, Cover letter tab",
+      "kind": "title1",
+      "maxW": 7990
+    },
+    "nC": {
+      "x": 1520,
+      "y": 720,
+      "w": 380,
+      "text": "C1 and C2 open the Cover letter tab on the same page: no pending or error state in the title row. The CV button beside it keeps its own states (C1 shows it idle, C2 ready). On phones the action group wraps (C3).",
+      "fill": "blue"
+    },
+    "nD5": {
+      "x": 0,
+      "y": 3340,
+      "w": 420,
+      "text": "D4 → D5 → Rewrite letter → D6 is the only path that shows the dialog. Regenerate from D3 (never edited, or saved back to exactly the generated text) goes straight to D6.",
+      "fill": "blue"
+    },
+    "nSave": {
+      "x": 480,
+      "y": 3340,
+      "w": 420,
+      "text": "Save (D4) calls the PUT route directly, no confirmation. The owner chose to keep their own edit; only the AI overwrite is warned about.",
+      "fill": "blue"
+    },
+    "nFail": {
+      "x": 1520,
+      "y": 3340,
+      "w": 420,
+      "text": "A failed Regenerate never reaches D7 and never clears the textarea: the letter stays, both buttons return to enabled, and an error toast says \"Couldn't write a letter. Try again\". D7 is only reachable from D1.",
+      "fill": "blue"
+    },
+    "nKb": {
+      "x": 2000,
+      "y": 3340,
+      "w": 420,
+      "text": "Tabs, Textarea, Copy letter, Regenerate and Save are Tab stops. The dialog traps focus, Cancel takes it first, Escape closes it. Pending is the spinner replacing the icon plus the disabled button, never colour alone.",
+      "fill": "blue"
+    },
+    "nCopy": {
+      "x": 2480,
+      "y": 3340,
+      "w": 420,
+      "text": "Copy letter copies the Textarea as it is now, edits included, and shows a \"Letter copied\" toast. It works on an unsaved edit too.",
+      "fill": "blue"
+    }
+  },
+  "designSystems": []
+}

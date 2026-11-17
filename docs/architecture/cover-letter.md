@@ -119,27 +119,39 @@ other reasons (frozen-snapshot staleness needs `generatedAt`; any editable conte
 No separate route needed to answer "has this been edited" — the page already has `generatedAt`/`updatedAt` from
 `GET` and computes it the same way the POST route's own check does.
 
-## UI: `/jobs/[id]/cover-letter`
+## UI: a Cover letter tab on Job detail
 
-New route, sibling to the existing posting detail page, not inline in `posting-detail.tsx`'s panel (spec: "its
-own page/route"). `posting-detail.tsx` gains a "Write cover letter" button next to "Tailor my CV" — unlike that
-button, this one is a plain `Link` to the new route (no inline pending/ready state in the panel itself; the
-route owns its own states):
+No new route. The letter lives in a third tab, **Cover letter**, on the existing Job detail page
+(`posting-detail.tsx`), beside Description and Company (owner, 17 Nov 2026, from the mockup review in
+`docs/mockups/cover-letter-canvas/`). `posting-detail.tsx` also gains a "Write cover letter" button next to the
+CV button in the title row. Unlike the CV button it has no pending or ready state of its own: it only switches to
+the Cover letter tab, and reads "View cover letter" once a letter exists. The page server component reads the
+letter with `GET` alongside the posting, the same way it already reads `hasTailoredResume`.
 
-- **No letter yet**: the page shows an empty state ("Write a cover letter for this posting", one line, the
-  "Write cover letter" action) — same copy register as every other Jobs empty state (`job-finder.md`,
-  app-language rules).
+- **Default tab**: Job detail always opens on Description, even when a letter exists; the title row button is
+  how the owner jumps to the tab.
+- **No letter yet**: the tab shows an empty state across its full width ("Write a cover letter for this posting",
+  one line, the "Write cover letter" action) — same copy register as every other Jobs empty state
+  (`job-finder.md`, app-language rules).
 - **Generating**: pending state on the one action available.
-- **Has a letter**: an editable `Textarea` (shadcn) pre-filled with `content`, a "Save" button (enabled only
-  once the text differs from what's loaded — same dirty-check every other autosave-less form in this app uses),
-  and a "Regenerate" action.
+- **Has a letter**: an editable `Textarea` (shadcn) pre-filled with `content`, a status line ("Written <date>",
+  or "Edited" once the text differs from what loaded), and three actions: "Copy letter" (copies the textarea as
+  it is, edits included, then a "Letter copied" toast), "Regenerate", and "Save" (enabled only once the text
+  differs from what's loaded — same dirty-check every other autosave-less form in this app uses).
+- **Switching tabs**: unsaved edits live in the tab's client state for as long as the page is open, so moving to
+  Description and back loses nothing.
 - **Regenerate, not edited**: calls `POST` directly, replaces the text on success.
-- **Regenerate, edited** (`updatedAt > generatedAt`): `AlertDialog` ("This replaces your edited letter" / Yes,
-  rewrite / Cancel), same primitive `use-apply-flow.tsx`'s dialog already uses — `Yes` calls `POST` with
-  `force: true`.
-- **Error** (AI failure, number check, empty `whyFits`): the page shows "Couldn't write a letter for this
-  posting" inline, not a toast — this route's only content _is_ the letter, so an error replacing the empty
-  state is more honest than a toast floating over nothing.
+- **Regenerate, edited** (`updatedAt > generatedAt`): `AlertDialog` ("Rewrite this letter?" / "Your edits are
+  replaced by a new letter" / Cancel, Rewrite letter), same primitive `use-apply-flow.tsx`'s dialog already uses —
+  "Rewrite letter" calls `POST` with `force: true`.
+- **Regenerate fails**: the letter stays as it was, the buttons re-enable, and an error toast says "Couldn't
+  write a letter. Try again".
+- **Error, first generation** (AI failure, number check, empty `whyFits`): the tab shows "Couldn't write a
+  letter for this posting" inline with the same "Write cover letter" action, not a toast — the tab's only
+  content _is_ the letter, so an error replacing the empty state is more honest than a toast floating over
+  nothing.
+- **Phones**: the title row's action group wraps (`flex-wrap`), since the CV button, the cover letter button and
+  Apply together are wider than a phone.
 
 ## Explicitly out of scope here
 
