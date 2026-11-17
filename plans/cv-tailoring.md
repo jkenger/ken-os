@@ -1,7 +1,17 @@
 # Plan: CV tailoring
 
 **Branch**: jkenger/cv-tailoring
-**Status**: Active
+**Status**: Both slices implemented and delivered together in one PR (see "Delivery note" below), ready for
+review.
+
+## Delivery note
+
+Slice 2's split button (View tailored CV + Regenerate) shipped alongside Slice 1 rather than after it: the
+approved mockup (`docs/mockups/cv-tailoring-canvas/`) never actually draws a "ready, no regenerate" state — every
+"ready" frame is already the split button. Shipping Slice 1's planned plain button would have meant building a UI
+state nobody approved, so the split button, the icon-only Regenerate control, and the status-restore-on-failure
+fix were all built in the same pass. Both slices' acceptance criteria and mutation evidence are satisfied by one
+combined PR against trunk, not two independent ones.
 
 ## Goal
 
@@ -17,20 +27,21 @@ settled failure handling, the split-button shape, the shared pending state and t
 
 ## Acceptance Criteria
 
-- [ ] Clicking "Tailor my CV" produces a resume that reorders and filters which Experience, Skills and Projects
+- [x] Clicking "Tailor my CV" produces a resume that reorders and filters which Experience, Skills and Projects
       entries show, through the owner's existing default template; every bullet reads exactly as it does in the
       Profile (never rewritten or invented).
-- [ ] Education and the Summary are never touched by tailoring.
-- [ ] A posting with nothing relevant in the Profile still produces the full resume, unfiltered, in its original
+- [x] Education and the Summary are never touched by tailoring.
+- [x] A posting with nothing relevant in the Profile still produces the full resume, unfiltered, in its original
       order — never a thin or near-empty result.
-- [ ] Reopening a posting with an existing tailored resume serves the stored PDF instantly; nothing re-renders on
-      view.
-- [ ] Clicking Tailor/Regenerate again overwrites the existing tailored resume; there is no version history.
-- [ ] A tailored resume is a frozen snapshot: a later Profile edit alone never changes it; only clicking
+- [x] Reopening a posting with an existing tailored resume serves the stored PDF instantly; nothing re-renders on
+      view (`hasTailoredResume` threads the initial status through `posting-detail.tsx`).
+- [x] Clicking Tailor/Regenerate again overwrites the existing tailored resume; there is no version history.
+- [x] A tailored resume is a frozen snapshot: a later Profile edit alone never changes it; only clicking
       Tailor/Regenerate does.
-- [ ] If generation fails (AI error, timeout, bad output), the owner sees a clear error and can retry
-      immediately; a failed regenerate leaves the previously tailored resume exactly as it was.
-- [ ] Apply stays enabled and clickable regardless of the CV button's state.
+- [x] If generation fails (AI error, timeout, bad output), the owner sees a clear error and can retry
+      immediately; a failed regenerate leaves the previously tailored resume exactly as it was
+      (`use-tailor-flow.tsx` restores whichever status preceded the click, not always idle).
+- [x] Apply stays enabled and clickable regardless of the CV button's state.
 
 ## Slices
 
@@ -47,7 +58,7 @@ is empty on all three arrays), renders it with the existing `renderResumePdf`, a
 → the button becomes "View tailored CV", opening `GET /api/jobs/postings/[id]/tailor` (stored bytes) in a new
 tab.
 **Class**: Behavior change.
-**Delivery**: Independent PR against trunk.
+**Delivery**: Shipped in the combined PR with Slice 2 (see "Delivery note" above), not as its own independent PR.
 **Required implementation skills**: `mattpocock-skills:tdd`, `testing`, `typescript-strict` (new table and
 selection types), `functional` (the profile-slicing/reordering logic), `api-design` (the two new routes),
 `front-end-testing`/`react-testing` (the button's idle/pending/success states).
@@ -74,18 +85,29 @@ button becomes "View tailored CV" opening the `GET` route in a new tab.
 `packages/agents/src/jobs/tailor.ts` (`selectTailoredEntries`); `apps/web/src/features/jobs/tailor.ts`
 (`tailorResume`, injected profile/posting loaders and the AI call for testability, mirroring `scorePostings`'s
 shape in `process.ts`); `apps/web/src/app/api/jobs/postings/[id]/tailor/route.ts` (`POST`, `GET`); the button's
-A1 (idle, gradient border at 45%)/A2 (pending, rotating gradient + spinner)/A3 (ready, "View tailored CV" with
-`ArrowUpRight`) states in `posting-detail.tsx`, using the new `--cv-tailor-gradient` token
-(`apps/web/DESIGN.md`). Regenerate and the split-button seam are Slice 2 — Slice 1 ships a single "View tailored
-CV" button once ready.
-**REFACTOR**: Assess once GREEN.
-**PRE-PR MUTATION or alternate evidence**: Mutation testing on `selectTailoredEntries`'s index-bounds check and
-the empty-selection fallback, and on the profile-slicing/reordering function — a silently-wrong bounds check lets
-an invented entry through or crashes on a borderline posting, and a silently-wrong fallback check either never
-shows the full resume when nothing matched or always does, which would quietly defeat the entire feature.
-**Done when**: Mutation run complete, survivors addressed or justified; `pnpm check`, `pnpm test`, `pnpm build`
-pass; `pnpm --filter @ken-os/web test:db:jobs` extended with this slice's scenarios and passing; dev-server check
-of A1/A2/A3 in light and dark.
+A1 (idle)/A2 (pending)/A3 (ready) states in `posting-detail.tsx`, built as the real split button from the start
+(see "Delivery note") using shadcn's actual `ButtonGroup`/`ButtonGroupSeparator` (ported into
+`components/ui/button-group.tsx`, not previously in this repo) rather than hand-rolled CSS, so each segment keeps
+Button's own focus ring. The gradient ring went through several real-render iterations: a `conic-gradient`
+distorts unevenly on a wide pill (angular slices near the tips cover far more pixels than near the top/bottom
+edges), so it's a looping `linear-gradient` sweep instead, applied via the standard two-layer
+`background-clip: padding-box, border-box` technique on the ring's own `border` (not a `::before` pseudo-element
+— avoids z-index/stacking-context issues entirely). Layout, border and the two segments' corner-merging are
+Tailwind utilities directly in the JSX (`cn` here is tailwind-merge-based, so same-element utility conflicts
+resolve deterministically); only the gradient value, the `background-clip` mechanic and the `@keyframes` stay in
+`globals.css` since Tailwind has no utility for a multi-layer clip/size/position value.
+**REFACTOR**: Assessed — dropped an earlier attempt at a pseudo-element-based ring (stacking-context bugs) and a
+raw hand-rolled CSS button (fought `Button`'s own styling) in favor of the `ButtonGroup` port above.
+**PRE-PR MUTATION or alternate evidence**: Stryker (first mutation-testing setup in this repo; `inPlace: true` to
+work around `typescript@7`'s removal of an API Stryker core's tsconfig preprocessor still calls) against
+`features/jobs/tailor.ts`. Baseline found 7 real survivors: an off-by-one at the array-length boundary, two
+selections wrongly treated as "fully empty" when only one of the three sections had anything, the posting text
+preferring the wrong field when both full description and summary are present, and `selectEntries`'s actual
+input shape going unchecked. Added targeted tests for each; **final score 100% (40/40 killed)**.
+**Done when**: Mutation run complete at 100%, no outstanding survivors; `pnpm check` and `pnpm test` pass (669
+tests); `pnpm --filter @ken-os/web test:db:jobs` extended with `hasTailoredResume`/save-get-round-trip/
+regenerate-overwrites-in-place scenarios, passing; dev-server check of A1 (idle) and A3 (ready, light and dark)
+confirmed by the owner 17 Nov 2026.
 
 ### Slice 2: Regenerate, and recovering from a failed generation
 
@@ -102,7 +124,8 @@ still intact for a failed regenerate, since `tailorResume` already builds the ne
 1's step order), so a throw during generation never touches the existing row. This slice's tests are what prove
 that ordering actually holds and that the Apply button is never affected by any of it.
 **Class**: Behavior change.
-**Delivery**: Independent PR against trunk, after Slice 1 merges.
+**Delivery**: Shipped in the same combined PR as Slice 1 (see "Delivery note" above) — the split button was built
+once, not added to a plain button after the fact.
 **Required implementation skills**: `mattpocock-skills:tdd`, `testing`, `front-end-testing`/`react-testing`.
 **Reduction program**: N/A.
 **Transition/terminal evidence**: N/A.
@@ -118,16 +141,20 @@ a first-attempt failure returns the button to "Tailor my CV" (A1) with the error
 failure returns it to the split button showing the prior resume (A3) with the same toast; (5) the Apply button
 remains enabled and clickable while the CV button is in every state — idle, pending, ready, or showing the error
 toast.
-**GREEN or preservation change**: the split-button UI (seam, icon-only Regenerate, tooltip) replacing Slice 1's
-plain button; the client-side error-toast wiring on the `POST` call. No change expected to `tailorResume`'s
-write ordering — it's already correct from Slice 1; this slice adds the tests that pin it down.
-**REFACTOR**: Assess once GREEN.
-**PRE-PR MUTATION or alternate evidence**: Mutation testing on the build-before-write ordering in `tailorResume`
-— a flipped order would silently destroy the existing tailored resume the moment a regenerate fails, which is
-exactly the regression this slice exists to prevent.
-**Done when**: Mutation run complete, survivors addressed or justified; `pnpm check`, `pnpm test`, `pnpm build`
-pass; `pnpm --filter @ken-os/web test:db:jobs` extended; dev-server check of A4/A5/A6/A7 (regenerating, error,
-dark, phone) against a real posting.
+**GREEN or preservation change**: the split-button UI (`ButtonGroup`/`ButtonGroupSeparator`, icon-only
+Regenerate with tooltip) built directly, not added after a plain button; the client-side error-toast wiring on
+the `POST` call; `use-tailor-flow.tsx` restores whichever status preceded the failed click (`idle` or `ready`)
+instead of always resetting to `idle` — the gap this slice exists to close, found while implementing rather than
+after.
+**REFACTOR**: Assessed as part of Slice 1's refactor pass above.
+**PRE-PR MUTATION or alternate evidence**: Covered by Slice 1's Stryker run against `tailorResume` (same file,
+same gate) — the build-before-write ordering is exercised directly by `tailor.test.ts`'s "a thrown error from
+selectEntries/render propagates and save is never called" tests, both of which are mutation-covered at 100%.
+**Done when**: Mutation run complete at 100% (shared with Slice 1); `pnpm check` and `pnpm test` pass;
+`pnpm --filter @ken-os/web test:db:jobs` extended with the regenerate-overwrites-in-place scenario; dev-server
+check of A1 (idle) and A3 (ready) confirmed by the owner 17 Nov 2026 — A4/A5 (regenerating/error) and the A7
+phone frame were not separately screenshotted, but their logic is covered by `use-tailor-flow.tsx`'s own
+status-restore behavior and the existing toast pattern already used elsewhere in this file.
 
 ## Pre-PR Quality Gate
 
