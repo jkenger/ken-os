@@ -2805,11 +2805,16 @@ export const studioManifest: StudioManifest = {
       "name": "diff-remove-soft",
       "light": "oklch(0.965 0.02 27)",
       "dark": "oklch(0.31 0.06 27)"
+    },
+    {
+      "name": "cv-tailor-gradient",
+      "light": "linear-gradient(90deg, oklch(0.6 0.19 300), oklch(0.62 0.18 230), oklch(0.62 0.17 155))",
+      "dark": "linear-gradient(90deg, oklch(0.72 0.19 300), oklch(0.74 0.17 230), oklch(0.74 0.17 155))"
     }
   ],
   "globals": {
     "file": "app/globals.css",
-    "lines": 405,
+    "lines": 441,
     "tail": [
       "    animation: none;",
       "  }",

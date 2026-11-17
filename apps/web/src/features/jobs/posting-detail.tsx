@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Bookmark, CircleHelp, ExternalLink, FileText } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, Bookmark, CircleHelp, ExternalLink, FileText, LoaderCircle } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { DotSeparator } from "@/components/dot-separator";
@@ -24,11 +24,12 @@ import { EmptyState } from "./empty-state";
 import { SkillBadge, SkillGroup } from "./skill-badge";
 import { SkillLogo } from "./skill-logo";
 import { useApplyFlow } from "./use-apply-flow";
+import { useTailorFlow } from "./use-tailor-flow";
 
 // The job detail page (docs/mockups/Jobs redesign.html, "Desktop / Job detail"): a full page, not a side panel.
 // Left is the profile match rail (score, skills matching, metadata); right is the posting itself. Mark
-// applied/Dismiss/Save to board/Tailor my CV stay inert here -- acting on a match and CV tailoring are both their
-// own, separate story.
+// applied/Dismiss/Save to board stay inert here -- acting on a match is its own, separate story. Tailor my CV
+// (docs/architecture/cv-tailoring.md) is live.
 
 const WORK_SETUP_LABELS: Record<string, string> = {
   remote: "Remote",
@@ -81,6 +82,7 @@ export function PostingDetail({
 }) {
   const link = posting.sources[0]?.link;
   const { onApplyClick, dialog } = useApplyFlow({ postingId: posting.id, link });
+  const { status: tailorStatus, onTailorClick } = useTailorFlow({ postingId: posting.id });
   const skillMatches = matchSkills(posting.skills, profileSkills);
   const mismatches = requirementMismatches(
     { yearsRequired: posting.yearsRequired, workSetup: posting.workSetup },
@@ -200,10 +202,27 @@ export function PostingDetail({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <h1 className="max-w-xl text-2xl font-semibold">{posting.title}</h1>
           <div className="flex shrink-0 gap-2.5">
-            <Button type="button" variant="outline" disabled>
-              <FileText />
-              Tailor my CV
-            </Button>
+            <span className="cv-tailor-ring" data-status={tailorStatus}>
+              {tailorStatus === "ready" ? (
+                <Button type="button" variant="outline" className="group/tailor border-transparent" asChild>
+                  <a href={`/api/jobs/postings/${posting.id}/tailor`} target="_blank" rel="noopener noreferrer">
+                    View tailored CV
+                    <ArrowUpRight className="transition-transform duration-200 ease-out group-hover/tailor:translate-x-0.5 group-hover/tailor:-translate-y-0.5" />
+                  </a>
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="border-transparent"
+                  disabled={tailorStatus === "pending"}
+                  onClick={onTailorClick}
+                >
+                  {tailorStatus === "pending" ? <LoaderCircle className="animate-spin" /> : <FileText />}
+                  Tailor my CV
+                </Button>
+              )}
+            </span>
             <Button type="button" disabled={!link} onClick={onApplyClick}>
               Apply
               <ExternalLink />
