@@ -71,6 +71,7 @@ export function PostingDetail({
   profileSkills,
   yearsExperience,
   preferredWorkSetups,
+  hasTailoredResume,
 }: {
   posting: PostingView;
   profileSkills: string[];
@@ -79,10 +80,16 @@ export function PostingDetail({
   yearsExperience: number | null;
   /** The owner's own `job_preferences.workSetups`, for the work-setup mismatch check. */
   preferredWorkSetups: WorkSetup[];
+  /** Whether this posting already has a tailored resume, so reopening it opens straight to "View tailored CV"
+   *  instead of re-offering "Tailor my CV" (docs/product/cv-tailoring.md: "serves the stored file instantly"). */
+  hasTailoredResume: boolean;
 }) {
   const link = posting.sources[0]?.link;
   const { onApplyClick, dialog } = useApplyFlow({ postingId: posting.id, link });
-  const { status: tailorStatus, onTailorClick } = useTailorFlow({ postingId: posting.id });
+  const { status: tailorStatus, onTailorClick } = useTailorFlow({
+    postingId: posting.id,
+    initialStatus: hasTailoredResume ? "ready" : "idle",
+  });
   const skillMatches = matchSkills(posting.skills, profileSkills);
   const mismatches = requirementMismatches(
     { yearsRequired: posting.yearsRequired, workSetup: posting.workSetup },
