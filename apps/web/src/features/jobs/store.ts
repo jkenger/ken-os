@@ -1,7 +1,14 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, desc, eq, gt, ilike, inArray, isNotNull, isNull, ne, sql, type SQL } from "drizzle-orm";
 import { db } from "@/lib/db/db";
-import { jobMatches, jobPostingSources, jobPostings, jobTailoredResumes, users } from "@/lib/db/schema";
+import {
+  jobCoverLetters,
+  jobMatches,
+  jobPostingSources,
+  jobPostings,
+  jobTailoredResumes,
+  users,
+} from "@/lib/db/schema";
 import { getCachedRates } from "./currency-rates-store";
 import { filterReason } from "./filters";
 import { getPreferences } from "./preferences-store";
@@ -847,4 +854,45 @@ export async function saveTailoredResume(
     .insert(jobTailoredResumes)
     .values({ postingId, userId, generatedAt, ...fields })
     .onConflictDoUpdate({ target: jobTailoredResumes.postingId, set: { generatedAt, ...fields } });
+}
+
+export type CoverLetterFields = { content: string; promptVersion: string; model: string };
+
+/** Whether a cover letter already exists, so the detail page can open straight to "View cover letter"
+ *  (docs/architecture/cover-letter.md). */
+export async function hasCoverLetter(userId: string, postingId: string): Promise<boolean> {
+  const [row] = await db()
+    .select({ postingId: jobCoverLetters.postingId })
+    .from(jobCoverLetters)
+    .where(and(eq(jobCoverLetters.postingId, postingId), eq(jobCoverLetters.userId, userId)))
+    .limit(1);
+  return row !== undefined;
+}
+
+/** Scoped to the owner's own posting; null when no cover letter has been generated yet. */
+export async function getCoverLetter(
+  userId: string,
+  postingId: string,
+): Promise<{ content: string; generatedAt: Date; updatedAt: Date } | null> {
+  const [row] = await db()
+    .select({
+      content: jobCoverLetters.content,
+      generatedAt: jobCoverLetters.generatedAt,
+      updatedAt: jobCoverLetters.updatedAt,
+    })
+    .from(jobCoverLetters)
+    .where(and(eq(jobCoverLetters.postingId, postingId), eq(jobCoverLetters.userId, userId)))
+    .limit(1);
+  return row ?? null;
+}
+
+/** Upsert: clicking Write the first time inserts, Regenerate overwrites in place -- no version history.
+ *  `generatedAt` and `updatedAt` are set equal here; only a later manual save (Slice 2's PUT) ever moves
+ *  `updatedAt` on its own. */
+export async function saveCoverLetter(postingId: string, userId: string, fields: CoverLetterFields): Promise<void> {
+  const generatedAt = new Date();
+  await db()
+    .insert(jobCoverLetters)
+    .values({ postingId, userId, generatedAt, updatedAt: generatedAt, ...fields })
+    .onConflictDoUpdate({ target: jobCoverLetters.postingId, set: { generatedAt, updatedAt: generatedAt, ...fields } });
 }

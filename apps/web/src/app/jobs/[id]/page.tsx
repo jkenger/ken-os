@@ -5,7 +5,14 @@ import { NewList } from "@/features/jobs/new-list";
 import { PostingDetail } from "@/features/jobs/posting-detail";
 import { getPreferences } from "@/features/jobs/preferences-store";
 import { getProfile } from "@/features/profile/store";
-import { getPosting, getRelatedByRole, getRelatedPostings, hasTailoredResume, markViewed } from "@/features/jobs/store";
+import {
+  getPosting,
+  getRelatedByRole,
+  getRelatedPostings,
+  hasCoverLetter,
+  hasTailoredResume,
+  markViewed,
+} from "@/features/jobs/store";
 import { yearsOfExperience } from "@/features/jobs/years-of-experience";
 import { requireSession } from "@/lib/auth/session";
 
@@ -21,11 +28,12 @@ export default async function JobPosting({ params }: { params: Promise<{ id: str
   ]);
   if (!posting) notFound();
 
-  const [related, relatedByRole, , tailored] = await Promise.all([
+  const [related, relatedByRole, , tailored, coverLetter] = await Promise.all([
     getRelatedPostings(session.userId, posting.company, posting.id),
     getRelatedByRole(session.userId, posting.title, posting.company, posting.id),
     markViewed(session.userId, posting.id),
     hasTailoredResume(session.userId, posting.id),
+    hasCoverLetter(session.userId, posting.id),
   ]);
   const profileSkills = profile.details.skills.flatMap((group) => group.items);
   return (
@@ -38,6 +46,7 @@ export default async function JobPosting({ params }: { params: Promise<{ id: str
           yearsExperience={profile.details.experience.length > 0 ? yearsOfExperience(profile.details.experience) : null}
           preferredWorkSetups={preferences.workSetups}
           hasTailoredResume={tailored}
+          hasCoverLetter={coverLetter}
         />
         {related.length > 0 && (
           <div className="mt-8 grid gap-3">

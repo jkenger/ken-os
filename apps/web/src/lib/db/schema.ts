@@ -889,6 +889,23 @@ export const jobTailoredResumes = pgTable("job_tailored_resumes", {
   generatedAt: timestamp("generated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** One cover letter per posting per owner (docs/architecture/cover-letter.md). `generatedAt`/`updatedAt` start
+ *  equal; a manual save (Slice 2's PUT) only moves `updatedAt` -- "edited since generation" is exactly
+ *  `updatedAt > generatedAt`, no separate boolean to keep in sync. */
+export const jobCoverLetters = pgTable("job_cover_letters", {
+  postingId: text("posting_id")
+    .primaryKey()
+    .references(() => jobPostings.id, { onDelete: "cascade" }),
+  userId: text("user_id")
+    .notNull()
+    .references(() => users.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  promptVersion: text("prompt_version").notNull(),
+  model: text("model").notNull(),
+  generatedAt: timestamp("generated_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 /** The owner's Jobs filter preferences (docs/product/job-finder.md, Preferences table). Digest time is still
  *  step 3 slice 2 scope, not here yet. Minimum pay is one currency; a posting's own stated pay is converted into
  *  it via the cached rates in `job_currency_rates` before comparing, so it's checked regardless of what currency

@@ -1,9 +1,17 @@
 import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
+import { emptyProfile, type ProfileDetails } from "@ken-os/domain";
 import { config } from "dotenv";
 import { eq, sql } from "drizzle-orm";
 import { closeDb, db } from "../src/lib/db/db";
-import { jobCurrencyRates, jobMatches, jobPostings, jobTailoredResumes, users } from "../src/lib/db/schema";
+import {
+  jobCoverLetters,
+  jobCurrencyRates,
+  jobMatches,
+  jobPostings,
+  jobTailoredResumes,
+  users,
+} from "../src/lib/db/schema";
 
 config({ path: ".env.local" });
 config({ path: ".env" });
@@ -955,6 +963,144 @@ async function main() {
       .where(eq(jobTailoredResumes.postingId, scorableId));
     assert.equal(tailoredRowCount, 1, "regenerating keeps exactly one row -- no version history");
     console.log("ok - saveTailoredResume on an existing row overwrites in place, no version history kept");
+
+    // Slice 1 of plans/cover-letter.md: writeCoverLetterForPosting (docs/architecture/cover-letter.md) and its
+    // pure number fact-check, hasInventedNumber.
+    const coverLetterModule = await import("../src/features/jobs/cover-letter");
+    const profileWithKnownNumbers: ProfileDetails = {
+      ...emptyProfile(),
+      experience: [
+        {
+          company: "Acme",
+          title: "Engineer",
+          location: "",
+          start: "2020-01",
+          end: "2022-01",
+          bullets: ["Led a team of 5 engineers"],
+        },
+      ],
+    };
+
+    assert.equal(
+      coverLetterModule.hasInventedNumber("Managed 5 engineers over a two year stint.", profileWithKnownNumbers),
+      false,
+      "a number already in the profile is not flagged",
+    );
+    assert.equal(
+      coverLetterModule.hasInventedNumber("Cut deploy time by 40%.", profileWithKnownNumbers),
+      true,
+      "a number absent from the profile is flagged",
+    );
+    assert.equal(
+      coverLetterModule.hasInventedNumber("A letter with no numbers at all.", profileWithKnownNumbers),
+      false,
+      "content with no numbers is never flagged",
+    );
+    console.log("ok - hasInventedNumber flags only a number the profile doesn't already contain");
+
+    const coverLetterDeps = (
+      overrides: Partial<Parameters<typeof coverLetterModule.writeCoverLetterForPosting>[0]> = {},
+    ) => ({
+      userId: "cover-letter-user",
+      postingId: "cover-letter-posting",
+      getProfile: async () => profileWithKnownNumbers,
+      getPosting: async () => ({
+        title: "Senior Engineer",
+        company: "Acme",
+        whyFits: [{ reason: "Backend match", citation: "5+ years backend required" }],
+      }),
+      generate: async () => ({
+        content: "A fact-bound letter.",
+        promptVersion: "jobs-cover-letter-v1",
+        model: "test-model",
+      }),
+      save: async () => {},
+      ...overrides,
+    });
+
+    let coverLetterSaved: { postingId: string; userId: string; fields: Record<string, unknown> }[] = [];
+    await coverLetterModule.writeCoverLetterForPosting(
+      coverLetterDeps({
+        save: async (postingId, userId, fields) => {
+          coverLetterSaved.push({ postingId, userId, fields });
+        },
+      }),
+    );
+    assert.equal(coverLetterSaved.length, 1);
+    assert.equal(coverLetterSaved[0]!.fields.content, "A fact-bound letter.");
+    assert.equal(coverLetterSaved[0]!.fields.promptVersion, "jobs-cover-letter-v1");
+    assert.equal(coverLetterSaved[0]!.fields.model, "test-model");
+    console.log("ok - writeCoverLetterForPosting saves content, promptVersion and model");
+
+    coverLetterSaved = [];
+    let generateCalled = false;
+    await assert.rejects(
+      coverLetterModule.writeCoverLetterForPosting(
+        coverLetterDeps({
+          getPosting: async () => ({ title: "Senior Engineer", company: "Acme", whyFits: [] }),
+          generate: async () => {
+            generateCalled = true;
+            return { content: "unused", promptVersion: "v", model: "m" };
+          },
+          save: async (postingId, userId, fields) => {
+            coverLetterSaved.push({ postingId, userId, fields });
+          },
+        }),
+      ),
+    );
+    assert.equal(generateCalled, false, "an empty whyFits throws before ever calling generate");
+    assert.equal(coverLetterSaved.length, 0, "nothing is saved when whyFits is empty");
+    console.log(
+      "ok - writeCoverLetterForPosting throws and saves nothing when whyFits is empty, never calling generate",
+    );
+
+    coverLetterSaved = [];
+    await assert.rejects(
+      coverLetterModule.writeCoverLetterForPosting(
+        coverLetterDeps({
+          generate: async () => ({
+            content: "Cut deploy time by 40%, a number nowhere in the profile.",
+            promptVersion: "v",
+            model: "m",
+          }),
+          save: async (postingId, userId, fields) => {
+            coverLetterSaved.push({ postingId, userId, fields });
+          },
+        }),
+      ),
+    );
+    assert.equal(coverLetterSaved.length, 0, "nothing is saved when the generated content invents a number");
+    console.log("ok - writeCoverLetterForPosting throws and saves nothing when the generated content invents a number");
+
+    assert.equal(await store.hasCoverLetter(userId, scorableId), false, "no cover letter exists yet");
+    console.log("ok - hasCoverLetter is false before any letter is generated");
+
+    await store.saveCoverLetter(scorableId, userId, {
+      content: "First version of the letter.",
+      promptVersion: "jobs-cover-letter-v1",
+      model: "gpt-test",
+    });
+    assert.equal(await store.hasCoverLetter(userId, scorableId), true);
+    const fetchedLetter = await store.getCoverLetter(userId, scorableId);
+    assert.equal(fetchedLetter?.content, "First version of the letter.");
+    assert.deepEqual(fetchedLetter?.generatedAt, fetchedLetter?.updatedAt, "generatedAt and updatedAt start equal");
+    console.log(
+      "ok - saveCoverLetter stores the letter; hasCoverLetter and getCoverLetter reflect it, generatedAt===updatedAt",
+    );
+
+    await store.saveCoverLetter(scorableId, userId, {
+      content: "Regenerated version.",
+      promptVersion: "jobs-cover-letter-v1",
+      model: "gpt-test",
+    });
+    const refetchedLetter = await store.getCoverLetter(userId, scorableId);
+    assert.equal(refetchedLetter?.content, "Regenerated version.", "regenerate overwrites the stored content in place");
+    const [{ count: coverLetterRowCount }] = await db()
+      .select({ count: sql<number>`count(*)::int` })
+      .from(jobCoverLetters)
+      .where(eq(jobCoverLetters.postingId, scorableId));
+    assert.equal(coverLetterRowCount, 1, "regenerating keeps exactly one row -- no version history");
+    console.log("ok - saveCoverLetter on an existing row overwrites in place, no version history kept");
 
     const needingScoreAfterScoring = await store.getNeedingScore(userId, null, 10);
     assert.ok(
