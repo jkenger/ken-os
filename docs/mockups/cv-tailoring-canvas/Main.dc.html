@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CV tailoring mockups, README</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap">
+<style>
+body{margin:0}
+a{color:oklch(0.22 0.005 265)}a:hover{color:oklch(0.48 0.008 265)}
+.rd h2{font-size:18px;font-weight:600;letter-spacing:-0.02em;margin:0 0 10px;padding-bottom:8px;border-bottom:1px solid oklch(0.885 0.004 265)}
+.rd table{border-collapse:collapse;width:100%;font-size:13px}
+.rd th{text-align:left;font-weight:600;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:oklch(0.48 0.008 265);padding:6px 8px;border-bottom:1px solid oklch(0.885 0.004 265)}
+.rd td{padding:5px 8px;border-bottom:1px solid oklch(0.93 0.003 265);vertical-align:top}
+.rd ol,.rd ul{margin:0;padding-left:20px;font-size:14px;line-height:1.55}
+.rd li{margin:0 0 6px}
+.mono{font-family:"Geist Mono",ui-monospace,monospace}
+</style>
+</helmet>
+<div class="rd" style="width: 1000px; height: 1480px; box-sizing: border-box; padding: 44px 52px; background: oklch(0.995 0.001 265); color: oklch(0.22 0.005 265); font-family: Geist, ui-sans-serif, system-ui, sans-serif; font-size: 14px; line-height: 1.45; display: flex; flex-direction: column; gap: 26px">
+  <div>
+    <h1 style="margin: 0; font-size: 28px; font-weight: 600; letter-spacing: -0.025em">cv-tailoring-mockups / README</h1>
+    <p style="margin: 6px 0 0; color: oklch(0.48 0.008 265)">From the CV tailoring mockup brief (proposed 17 Nov 2026). The Job detail title row only, Loots console tokens from apps/web/DESIGN.md.</p>
+  </div>
+  <section>
+    <h2>Frames</h2>
+    <table>
+      <thead><tr><th>Frame</th><th>State</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">A1</td><td>No tailored CV yet, button enabled</td><td>Done</td></tr>
+        <tr><td class="mono">A2</td><td>Pending, spinner replaces FileText</td><td>Done</td></tr>
+        <tr><td class="mono">A3</td><td>View tailored CV and Regenerate in one split button, tooltip shown</td><td>Changed (3, 4)</td></tr>
+        <tr><td class="mono">A4</td><td>Regenerating: the same pending button as A2</td><td>Changed (6)</td></tr>
+        <tr><td class="mono">A5</td><td>Error toast, pair back to A1 (or A3)</td><td>Changed (1)</td></tr>
+        <tr><td class="mono">A6</td><td>Dark, A3</td><td>Done</td></tr>
+        <tr><td class="mono">A7</td><td>Phone 390, A1 and A3 in one artboard</td><td>Changed (5)</td></tr>
+      </tbody>
+    </table>
+  </section>
+  <section>
+    <h2>Changes from this brief</h2>
+    <ol>
+      <li>A5 toast reads "Couldn't generate. Try again", not "Couldn't generate — try again": app language allows no em dashes, and the error pattern is "what failed. what to do".</li>
+      <li>The surrounding chrome uses a sample posting (Tidepool, Senior Full-stack Engineer), not a real Job board posting: this canvas cannot read the live database. Swap in a real one at review; nothing in the row depends on which.</li>
+      <li>Owner, 17 Nov: View tailored CV and Regenerate are one split button inside the gradient border, split by a 1px seam. Regenerate only exists once a tailored CV does, so it never appears in A1, A2 or A5.</li>
+      <li>A3 draws the Regenerate tooltip open (hover or focus) so its copy is visible on the canvas.</li>
+      <li>A7 is one 390 artboard holding both A1 and A3. With the row's existing flex-wrap, the title takes the full width and the button group wraps to its own line under it, left aligned; both pairs fit on that one line (A3 is about 300 of 358 px).</li>
+      <li>Owner, 17 Nov: one pending state for both first run and regenerate. A4 now shows the A2 button (Tailor my CV, spinner, rotating border) instead of a disabled pair with its own spinner; A3 returns once the new CV is ready.</li>
+    </ol>
+  </section>
+  <section>
+    <h2>Proposals</h2>
+    <ul>
+      <li><strong>Gradient border for the CV button</strong> (owner request, 17 Nov): a 1.5px multi-hue border in three states. Idle (A1, A5): at 45%, full on hover. Working (A2, A4): the gradient rotates, alongside the spinner, so the state is never colour alone. Ready (A3, A6): full and still. This is a new decorative treatment, not one of the Loots state colours, so it needs a decision log entry and a token or a Button variant before code.</li>
+      <li><strong>ArrowUpRight with a hover nudge</strong> on View tailored CV and Apply, matching the job list card's Apply (translate 2px up and right, 200ms ease-out). Already in the app; no new token.</li>
+      <li>Otherwise none: Button, Tooltip, the sonner toaster and LoaderCircle with animate-spin are already in the app.</li>
+    </ul>
+  </section>
+  <section>
+    <h2>Open questions</h2>
+    <ol>
+      <li><strong>Regenerate fails:</strong> does the earlier tailored CV survive? Recommend yes: write the new PDF before replacing the old one, so A5 can fall back to A3 as drawn.</li>
+      <li><strong>Apply while pending:</strong> stays enabled in A2 and A4. Recommend keeping it enabled; tailoring is optional and should never block applying.</li>
+      <li><strong>Long waits:</strong> the spinner is the only feedback. Recommend adding the app's progress pattern as a tooltip on the pending button, "Tailoring CV… ~1 min", if calls routinely take more than 10 seconds.</li>
+      <li><strong>Leaving the page mid-call:</strong> recommend the request keeps running server side and the page shows A3 on return, with the success toast "Tailored CV ready" only if the owner is still on the page.</li>
+    </ol>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1000,"height":1480}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

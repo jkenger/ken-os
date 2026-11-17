@@ -1,0 +1,27 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-11-17T09:00:00Z" },
+  "title": "CV tailoring mockups",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": -1120, "y": 0, "w": 1000, "h": 1480, "title": "README" },
+    "A1.dc.html": { "x": 0, "y": 0, "w": 1440, "h": 280, "title": "A1 · No tailored CV yet" },
+    "A2.dc.html": { "x": 0, "y": 400, "w": 1440, "h": 280, "title": "A2 · Pending" },
+    "A3.dc.html": { "x": 0, "y": 800, "w": 1440, "h": 300, "title": "A3 · Tailored CV ready" },
+    "A4.dc.html": { "x": 0, "y": 1220, "w": 1440, "h": 300, "title": "A4 · Regenerating, same pending as A2" },
+    "A5.dc.html": { "x": 0, "y": 1640, "w": 1440, "h": 440, "title": "A5 · Error, toast" },
+    "A6.dc.html": { "x": 0, "y": 2200, "w": 1440, "h": 300, "title": "A6 · Dark, A3" },
+    "A7.dc.html": { "x": 1520, "y": 0, "w": 390, "h": 760, "title": "A7 · Phone, A1 and A3" },
+    "Row.dc.html": { "x": 1990, "y": 0, "w": 1440, "h": 300, "title": "Title row (shared, imported by every frame)" }
+  },
+  "order": ["Main.dc.html", "Row.dc.html", "A1.dc.html", "A2.dc.html", "A3.dc.html", "A4.dc.html", "A5.dc.html", "A6.dc.html", "A7.dc.html"],
+  "notes": {
+    "t": { "x": 0, "y": -280, "text": "CV tailoring, Job detail title row", "kind": "title1", "maxW": 3430 },
+    "n1": { "x": 1520, "y": 860, "w": 380, "text": "Unchanged and drawn for context only: company avatar and name, Posted and Updated, Save to board (disabled, out of scope), the title, Apply. Only the button left of Apply changes.", "fill": "gray" },
+    "n2": { "x": 1520, "y": 1220, "w": 380, "text": "A5 is reached from A1 (first attempt fails, back to A1) or from A4 (regenerate fails, back to A3 with the earlier CV still there). The toast is the same either way.", "fill": "blue" },
+    "n3": { "x": 1520, "y": 1580, "w": 380, "text": "Regenerate overwrites the tailored CV straight away. No confirm dialog, no version history.", "fill": "blue" },
+    "n4": { "x": 1520, "y": 1880, "w": 380, "text": "View tailored CV and Regenerate are two Tab stops inside one split button. Regenerate is icon-only: aria-label \"Regenerate tailored CV\" plus the Regenerate tooltip on hover and focus. First run and regenerate share one pending state (A2): the spinner replaces the icon and the button disables, never colour alone.", "fill": "blue" }
+  },
+  "designSystems": []
+}
