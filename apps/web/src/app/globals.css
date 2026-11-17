@@ -292,10 +292,12 @@
   --diff-remove: oklch(0.5 0.16 27);
   --diff-remove-soft: oklch(0.965 0.02 27);
   /* CV tailoring (apps/web/DESIGN.md, "Exception, owner-approved 17 Nov 2026"): the one deliberately decorative,
-     non-state-colour treatment in the app, scoped to the Tailor my CV button. Five-stop rainbow, matching the
-     approved canvas (docs/mockups/cv-tailoring-canvas/Row.dc.html) exactly, not an approximation. */
-  --cv-tailor-gradient: conic-gradient(
-    from var(--cv-tailor-angle),
+     non-state-colour treatment in the app, scoped to the Tailor my CV button. A linear sweep, not the canvas's
+     literal conic-gradient: a true conic sweep distorts badly on a wide pill (angular slices near the left/right
+     tips cover far more pixels than the same slices near the top/bottom edges), which only gets worse once the
+     split button widens it further. Same five hues, looping (first stop repeats last so the sweep has no seam). */
+  --cv-tailor-gradient: linear-gradient(
+    90deg,
     oklch(0.68 0.19 25),
     oklch(0.78 0.16 75),
     oklch(0.72 0.17 150),
@@ -364,36 +366,30 @@
   --color-diff-remove-soft: var(--diff-remove-soft);
 }
 
-/* CV tailoring button (docs/mockups/cv-tailoring-canvas/Row.dc.html): the gradient ring is a 1.5px padding around
-   the real Button, not a border property, so the gradient itself -- not just a solid colour -- shows through the
-   gap. Idle at 45% opacity, full on hover; rotating a full turn while pending, alongside the spinner so the state
-   is never colour alone; full and still once ready. The rotation animates `--cv-tailor-angle` itself (registered
-   below), not `background-position`, matching the canvas's `conic-gradient(from var(--ang))` approach exactly. */
-@property --cv-tailor-angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
+/* CV tailoring button (docs/mockups/cv-tailoring-canvas/, apps/web/DESIGN.md "Exception, owner-approved
+   17 Nov 2026"): layout, border and radius live as Tailwind utilities directly on the element in
+   posting-detail.tsx -- only what Tailwind genuinely can't express stays here. The gradient itself is the
+   standard two-layer background-clip technique: a solid fill clipped to the padding-box sits on top (visually
+   "inside" the border), the gradient clipped to the border-box shows only in the border's own 1.5px gap. No
+   pseudo-element, no z-index, no stacking context. The solid fill (`var(--background)`) also means the outline
+   variant's `dark:bg-transparent` is a non-issue -- whatever shows through it matches anyway. Full strength in
+   every state; only `pending` adds the sweep so the state is never colour alone. */
 .cv-tailor-ring {
-  --cv-tailor-angle: 0deg;
-  display: inline-flex;
-  border-radius: 9999px;
-  padding: 1.5px;
-  background: var(--cv-tailor-gradient);
-  opacity: 0.45;
-  transition: opacity 200ms ease-out;
-}
-.cv-tailor-ring:hover,
-.cv-tailor-ring[data-status="ready"] {
-  opacity: 1;
+  background-image: linear-gradient(var(--background), var(--background)), var(--cv-tailor-gradient);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  background-size:
+    100% 100%,
+    300% 100%;
 }
 .cv-tailor-ring[data-status="pending"] {
-  opacity: 1;
-  animation: cv-tailor-ring-spin 1.6s linear infinite;
+  animation: cv-tailor-ring-sweep 1.6s linear infinite;
 }
-@keyframes cv-tailor-ring-spin {
+@keyframes cv-tailor-ring-sweep {
   to {
-    --cv-tailor-angle: 360deg;
+    background-position:
+      0 0,
+      300% 0;
   }
 }
 @media (prefers-reduced-motion: reduce) {

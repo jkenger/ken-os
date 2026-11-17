@@ -1,11 +1,21 @@
 "use client";
 
-import { AlertTriangle, ArrowUpRight, Bookmark, CircleHelp, ExternalLink, FileText, LoaderCircle } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowUpRight,
+  Bookmark,
+  CircleHelp,
+  ExternalLink,
+  FileText,
+  LoaderCircle,
+  RefreshCw,
+} from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { DotSeparator } from "@/components/dot-separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -222,17 +232,43 @@ export function PostingDetail({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <h1 className="max-w-xl text-2xl font-semibold">{posting.title}</h1>
           <div className="flex shrink-0 gap-2.5">
-            <span className="cv-tailor-ring" data-status={tailorStatus}>
+            <span
+              className="cv-tailor-ring inline-flex rounded-4xl border-[1.5px] border-transparent"
+              data-status={tailorStatus}
+            >
               {tailorStatus === "ready" ? (
-                <Button type="button" variant="outline" className="group/tailor border-transparent" asChild>
-                  <a href={`/api/jobs/postings/${posting.id}/tailor`} target="_blank" rel="noopener noreferrer">
-                    View tailored CV
-                    <ArrowUpRight
-                      color="url(#cvRainbow)"
-                      className="transition-transform duration-200 ease-out group-hover/tailor:translate-x-0.5 group-hover/tailor:-translate-y-0.5"
-                    />
-                  </a>
-                </Button>
+                <ButtonGroup aria-label="Tailored CV">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="group/tailor rounded-r-none border-r-0 border-transparent"
+                    asChild
+                  >
+                    <a href={`/api/jobs/postings/${posting.id}/tailor`} target="_blank" rel="noopener noreferrer">
+                      View tailored CV
+                      <ArrowUpRight
+                        color="url(#cvRainbow)"
+                        className="transition-transform duration-200 ease-out group-hover/tailor:translate-x-0.5 group-hover/tailor:-translate-y-0.5"
+                      />
+                    </a>
+                  </Button>
+                  <ButtonGroupSeparator />
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        className="rounded-l-none border-transparent"
+                        aria-label="Regenerate tailored CV"
+                        onClick={onTailorClick}
+                      >
+                        <RefreshCw color="url(#cvRainbow)" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Regenerate</TooltipContent>
+                  </Tooltip>
+                </ButtonGroup>
               ) : (
                 <Button
                   type="button"

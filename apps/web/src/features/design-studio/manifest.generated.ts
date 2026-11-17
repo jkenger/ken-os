@@ -146,6 +146,38 @@ export const studioManifest: StudioManifest = {
       "scoped": true
     },
     {
+      "id": "ui/button-group",
+      "name": "ButtonGroup",
+      "kind": "primitive",
+      "file": "components/ui/button-group.tsx",
+      "exports": [
+        "ButtonGroup",
+        "ButtonGroupSeparator",
+        "ButtonGroupText",
+        "buttonGroupVariants"
+      ],
+      "variants": [
+        {
+          "name": "orientation",
+          "options": [
+            "horizontal",
+            "vertical"
+          ],
+          "defaultOption": "horizontal"
+        }
+      ],
+      "uses": [
+        "ui/separator"
+      ],
+      "tokens": [
+        "muted",
+        "border",
+        "input",
+        "radius"
+      ],
+      "slot": "button-group"
+    },
+    {
       "id": "ui/button",
       "name": "Button",
       "kind": "primitive",
@@ -1421,6 +1453,7 @@ export const studioManifest: StudioManifest = {
           "uses": [
             "ui/separator"
           ],
+          "installed": "ui/button-group",
           "add": "pnpm dlx shadcn@latest add @shadcn/button-group",
           "docs": "https://ui.shadcn.com/docs/components/radix/button-group"
         },
@@ -2808,12 +2841,12 @@ export const studioManifest: StudioManifest = {
     },
     {
       "name": "cv-tailor-gradient",
-      "light": "conic-gradient(\n    from var(--cv-tailor-angle),\n    oklch(0.68 0.19 25),\n    oklch(0.78 0.16 75),\n    oklch(0.72 0.17 150),\n    oklch(0.66 0.15 230),\n    oklch(0.62 0.2 295),\n    oklch(0.68 0.19 25)\n  )"
+      "light": "linear-gradient(\n    90deg,\n    oklch(0.68 0.19 25),\n    oklch(0.78 0.16 75),\n    oklch(0.72 0.17 150),\n    oklch(0.66 0.15 230),\n    oklch(0.62 0.2 295),\n    oklch(0.68 0.19 25)\n  )"
     }
   ],
   "globals": {
     "file": "app/globals.css",
-    "lines": 456,
+    "lines": 452,
     "tail": [
       "    animation: none;",
       "  }",
