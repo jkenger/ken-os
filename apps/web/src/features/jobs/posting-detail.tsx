@@ -12,7 +12,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
-import type { ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { DotSeparator } from "@/components/dot-separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,10 +31,12 @@ import { matchSkills } from "@/features/jobs/skills-match";
 import type { PostingView } from "@/features/jobs/store";
 import { timeAgo } from "@/features/jobs/time-ago";
 import { CountryAvatarGroup } from "./country-avatar-group";
+import { CoverLetterTab } from "./cover-letter-tab";
 import { EmptyState } from "./empty-state";
 import { SkillBadge, SkillGroup } from "./skill-badge";
 import { SkillLogo } from "./skill-logo";
 import { useApplyFlow } from "./use-apply-flow";
+import { useCoverLetterFlow } from "./use-cover-letter-flow";
 import { useTailorFlow } from "./use-tailor-flow";
 
 // The job detail page (docs/mockups/Jobs redesign.html, "Desktop / Job detail"): a full page, not a side panel.
@@ -83,7 +85,7 @@ export function PostingDetail({
   yearsExperience,
   preferredWorkSetups,
   hasTailoredResume,
-  hasCoverLetter,
+  coverLetter,
 }: {
   posting: PostingView;
   profileSkills: string[];
@@ -95,16 +97,18 @@ export function PostingDetail({
   /** Whether this posting already has a tailored resume, so reopening it opens straight to "View tailored CV"
    *  instead of re-offering "Tailor my CV" (docs/product/cv-tailoring.md: "serves the stored file instantly"). */
   hasTailoredResume: boolean;
-  /** Whether this posting already has a cover letter, so the button reads "View cover letter" instead of "Write
-   *  cover letter" (docs/architecture/cover-letter.md). */
-  hasCoverLetter: boolean;
+  /** The posting's stored cover letter, if one has been generated, read by the Cover letter tab (docs/
+   *  architecture/cover-letter.md). Null until the owner generates one. */
+  coverLetter: { content: string; generatedAt: Date; updatedAt: Date } | null;
 }) {
+  const [activeTab, setActiveTab] = useState("description");
   const link = posting.sources[0]?.link;
   const { onApplyClick, dialog } = useApplyFlow({ postingId: posting.id, link });
   const { status: tailorStatus, onTailorClick } = useTailorFlow({
     postingId: posting.id,
     initialStatus: hasTailoredResume ? "ready" : "idle",
   });
+  const coverLetterFlow = useCoverLetterFlow({ postingId: posting.id, initial: coverLetter });
   const skillMatches = matchSkills(posting.skills, profileSkills);
   const mismatches = requirementMismatches(
     { yearsRequired: posting.yearsRequired, workSetup: posting.workSetup },
@@ -236,7 +240,7 @@ export function PostingDetail({
 
         <div className="flex flex-wrap items-start justify-between gap-3">
           <h1 className="max-w-xl text-2xl font-semibold">{posting.title}</h1>
-          <div className="flex shrink-0 gap-2.5">
+          <div className="flex shrink-0 flex-wrap gap-2.5">
             <span
               className="cv-tailor-ring inline-flex rounded-4xl border-[1.5px] border-transparent"
               data-status={tailorStatus}
@@ -291,11 +295,9 @@ export function PostingDetail({
                 </Button>
               )}
             </span>
-            <Button type="button" variant="outline" asChild>
-              <Link href={`/jobs/${posting.id}/cover-letter`}>
-                <Mail />
-                {hasCoverLetter ? "View cover letter" : "Write cover letter"}
-              </Link>
+            <Button type="button" variant="outline" onClick={() => setActiveTab("cover-letter")}>
+              <Mail />
+              {coverLetterFlow.hasLetter ? "View cover letter" : "Write cover letter"}
             </Button>
             <Button type="button" disabled={!link} onClick={onApplyClick}>
               Apply
@@ -304,10 +306,11 @@ export function PostingDetail({
           </div>
         </div>
 
-        <Tabs defaultValue="description">
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
             <TabsTrigger value="description">Description</TabsTrigger>
             <TabsTrigger value="company">Company</TabsTrigger>
+            <TabsTrigger value="cover-letter">Cover letter</TabsTrigger>
           </TabsList>
           <TabsContent value="description" className="grid gap-3 text-sm leading-relaxed">
             {descriptionHtml ? (
@@ -367,9 +370,24 @@ export function PostingDetail({
               }
             />
           </TabsContent>
+          <TabsContent value="cover-letter">
+            <CoverLetterTab
+              status={coverLetterFlow.status}
+              content={coverLetterFlow.content}
+              onContentChange={coverLetterFlow.setContent}
+              edited={coverLetterFlow.edited}
+              regenerating={coverLetterFlow.regenerating}
+              generatedAt={coverLetterFlow.generatedAt}
+              onWriteClick={coverLetterFlow.onWriteClick}
+              onRegenerateClick={coverLetterFlow.onRegenerateClick}
+              onSaveClick={coverLetterFlow.onSaveClick}
+              onCopyClick={coverLetterFlow.onCopyClick}
+            />
+          </TabsContent>
         </Tabs>
       </div>
       {dialog}
+      {coverLetterFlow.dialog}
     </div>
   );
 }

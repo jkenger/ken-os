@@ -11,11 +11,15 @@ export function EmptyState({
   message,
   action,
   className,
+  icon,
 }: {
   title?: string;
   message: string;
   action?: ReactNode;
   className?: string;
+  /** Shown above the title/message, e.g. the Cover letter tab's Mail/CircleAlert (docs/mockups/
+   *  cover-letter-canvas/). */
+  icon?: ReactNode;
 }) {
   return (
     <div
@@ -24,6 +28,7 @@ export function EmptyState({
         className,
       )}
     >
+      {icon}
       <div className="grid gap-1">
         {title && <p className="font-semibold text-foreground">{title}</p>}
         <p>{message}</p>
