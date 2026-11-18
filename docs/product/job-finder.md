@@ -161,6 +161,24 @@ Both AI jobs follow the structured-output pattern in `packages/agents`: a zod sc
 with each result, and posting text treated as untrusted data. Postings are written by strangers, so the AI never gets
 tools and nothing in a posting can change a setting.
 
+## ATS compatibility
+
+Specified 18 Nov 2026, alongside the Job listing card redesign. A second number shown beside the match score on
+the card and the posting detail page: the share of this posting's own stated skills the Profile already has,
+the same `skillMatches` (have/related/missing) data already computed for the detail page's Skills section — not
+a new AI call, not new data. Plain code: `(number of "have" skills) / (total posting skills)`, shown as a
+percentage. Deliberately a dumb keyword-coverage number rather than a qualitative judgment — real ATS screeners
+are literal keyword matchers, so a formula is more faithful to what it's simulating than an AI call would be.
+
+A posting with no stated skills (`job_postings.skills` empty) shows no ATS badge at all, same "nothing disappears
+silently, nothing invents a number" rule as every other Jobs field.
+
+**Dropped for now (18 Nov 2026):** a Company Match Score, researched per company (size, industry, funding stage,
+remote culture) against new owner-set company preferences, with the research also filling the currently-empty
+Company tab on the detail page. Real scope, not UI-only — needs an actual research capability this app has never
+had (every existing AI call here is explicitly tool-less), new owner preferences, and its own storage. The owner
+didn't see the need for it yet; revisit as its own story if that changes.
+
 ## Roles from the Profile
 
 - Loots builds the roles to look for from the Profile: the headline, the last two job titles, and the skill groups.
