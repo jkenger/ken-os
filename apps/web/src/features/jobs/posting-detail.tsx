@@ -120,11 +120,12 @@ export function PostingDetail({
 
   return (
     <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[19rem_1fr]">
-      {/* Shared def for the CV tailoring button's icons (docs/mockups/cv-tailoring-canvas/Row.dc.html): the icons
-          inside the gradient ring are stroked with the same rainbow as the ring itself, per the owner's decision. */}
+      {/* Shared def for the rainbow-ring buttons' icons (docs/mockups/cv-tailoring-canvas/Row.dc.html): the icons
+          inside the ring are stroked with the same rainbow as the ring itself, per the owner's decision. Shared
+          by the Tailor my CV and Write/View cover letter buttons. */}
       <svg width="0" height="0" className="absolute" aria-hidden="true">
         <defs>
-          <linearGradient id="cvRainbow" x1="0" y1="1" x2="1" y2="0">
+          <linearGradient id="rainbowGradient" x1="0" y1="1" x2="1" y2="0">
             <stop offset="0" stopColor="oklch(0.62 0.2 25)" />
             <stop offset="0.3" stopColor="oklch(0.72 0.16 75)" />
             <stop offset="0.55" stopColor="oklch(0.62 0.17 150)" />
@@ -242,7 +243,7 @@ export function PostingDetail({
           <h1 className="max-w-xl text-2xl font-semibold">{posting.title}</h1>
           <div className="flex shrink-0 flex-wrap gap-2.5">
             <span
-              className="cv-tailor-ring inline-flex rounded-4xl border-[1.5px] border-transparent"
+              className="rainbow-ring inline-flex rounded-4xl border-[1.5px] border-transparent"
               data-status={tailorStatus}
             >
               {tailorStatus === "ready" ? (
@@ -256,7 +257,7 @@ export function PostingDetail({
                     <a href={`/api/jobs/postings/${posting.id}/tailor`} target="_blank" rel="noopener noreferrer">
                       View tailored CV
                       <ArrowUpRight
-                        color="url(#cvRainbow)"
+                        color="url(#rainbowGradient)"
                         className="transition-transform duration-200 ease-out group-hover/tailor:translate-x-0.5 group-hover/tailor:-translate-y-0.5"
                       />
                     </a>
@@ -272,7 +273,7 @@ export function PostingDetail({
                         aria-label="Regenerate tailored CV"
                         onClick={onTailorClick}
                       >
-                        <RefreshCw color="url(#cvRainbow)" />
+                        <RefreshCw color="url(#rainbowGradient)" />
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>Regenerate</TooltipContent>
@@ -287,18 +288,32 @@ export function PostingDetail({
                   onClick={onTailorClick}
                 >
                   {tailorStatus === "pending" ? (
-                    <LoaderCircle color="url(#cvRainbow)" className="animate-spin" />
+                    <LoaderCircle color="url(#rainbowGradient)" className="animate-spin" />
                   ) : (
-                    <FileText color="url(#cvRainbow)" />
+                    <FileText color="url(#rainbowGradient)" />
                   )}
                   Tailor my CV
                 </Button>
               )}
             </span>
-            <Button type="button" variant="outline" onClick={() => setActiveTab("cover-letter")}>
-              <Mail />
-              {coverLetterFlow.hasLetter ? "View cover letter" : "Write cover letter"}
-            </Button>
+            <span
+              className="rainbow-ring inline-flex rounded-4xl border-[1.5px] border-transparent"
+              data-status={coverLetterFlow.status === "generating" ? "pending" : "ready"}
+            >
+              <Button
+                type="button"
+                variant="outline"
+                className="border-transparent"
+                onClick={() => setActiveTab("cover-letter")}
+              >
+                {coverLetterFlow.status === "generating" ? (
+                  <LoaderCircle color="url(#rainbowGradient)" className="animate-spin" />
+                ) : (
+                  <Mail color="url(#rainbowGradient)" />
+                )}
+                {coverLetterFlow.hasLetter ? "View cover letter" : "Write cover letter"}
+              </Button>
+            </span>
             <Button type="button" disabled={!link} onClick={onApplyClick}>
               Apply
               <ExternalLink />

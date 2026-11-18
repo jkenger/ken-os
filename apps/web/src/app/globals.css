@@ -291,12 +291,13 @@
   --diff-add-soft: oklch(0.96 0.03 152);
   --diff-remove: oklch(0.5 0.16 27);
   --diff-remove-soft: oklch(0.965 0.02 27);
-  /* CV tailoring (apps/web/DESIGN.md, "Exception, owner-approved 17 Nov 2026"): the one deliberately decorative,
-     non-state-colour treatment in the app, scoped to the Tailor my CV button. A linear sweep, not the canvas's
-     literal conic-gradient: a true conic sweep distorts badly on a wide pill (angular slices near the left/right
-     tips cover far more pixels than the same slices near the top/bottom edges), which only gets worse once the
-     split button widens it further. Same five hues, looping (first stop repeats last so the sweep has no seam). */
-  --cv-tailor-gradient: linear-gradient(
+  /* Rainbow ring (apps/web/DESIGN.md, "Exception, owner-approved 17 Nov 2026"): the one deliberately decorative,
+     non-state-colour treatment in the app, scoped to the Tailor my CV and Write/View cover letter buttons. A
+     linear sweep, not the canvas's literal conic-gradient: a true conic sweep distorts badly on a wide pill
+     (angular slices near the left/right tips cover far more pixels than the same slices near the top/bottom
+     edges), which only gets worse once the split button widens it further. Same five hues, looping (first stop
+     repeats last so the sweep has no seam). */
+  --rainbow-gradient: linear-gradient(
     90deg,
     oklch(0.68 0.19 25),
     oklch(0.78 0.16 75),
@@ -366,26 +367,26 @@
   --color-diff-remove-soft: var(--diff-remove-soft);
 }
 
-/* CV tailoring button (docs/mockups/cv-tailoring-canvas/, apps/web/DESIGN.md "Exception, owner-approved
-   17 Nov 2026"): layout, border and radius live as Tailwind utilities directly on the element in
-   posting-detail.tsx -- only what Tailwind genuinely can't express stays here. The gradient itself is the
-   standard two-layer background-clip technique: a solid fill clipped to the padding-box sits on top (visually
-   "inside" the border), the gradient clipped to the border-box shows only in the border's own 1.5px gap. No
-   pseudo-element, no z-index, no stacking context. The solid fill (`var(--background)`) also means the outline
-   variant's `dark:bg-transparent` is a non-issue -- whatever shows through it matches anyway. Full strength in
-   every state; only `pending` adds the sweep so the state is never colour alone. */
-.cv-tailor-ring {
-  background-image: linear-gradient(var(--background), var(--background)), var(--cv-tailor-gradient);
+/* Rainbow ring (docs/mockups/cv-tailoring-canvas/, apps/web/DESIGN.md "Exception, owner-approved 17 Nov 2026"):
+   shared by the Tailor my CV and Write/View cover letter buttons. Layout, border and radius live as Tailwind
+   utilities directly on the element -- only what Tailwind genuinely can't express stays here. The gradient
+   itself is the standard two-layer background-clip technique: a solid fill clipped to the padding-box sits on
+   top (visually "inside" the border), the gradient clipped to the border-box shows only in the border's own
+   1.5px gap. No pseudo-element, no z-index, no stacking context. The solid fill (`var(--background)`) also means
+   the outline variant's `dark:bg-transparent` is a non-issue -- whatever shows through it matches anyway. Full
+   strength in every state; only `pending` adds the sweep so the state is never colour alone. */
+.rainbow-ring {
+  background-image: linear-gradient(var(--background), var(--background)), var(--rainbow-gradient);
   background-origin: border-box;
   background-clip: padding-box, border-box;
   background-size:
     100% 100%,
     300% 100%;
 }
-.cv-tailor-ring[data-status="pending"] {
-  animation: cv-tailor-ring-sweep 1.6s linear infinite;
+.rainbow-ring[data-status="pending"] {
+  animation: rainbow-ring-sweep 1.6s linear infinite;
 }
-@keyframes cv-tailor-ring-sweep {
+@keyframes rainbow-ring-sweep {
   to {
     background-position:
       0 0,
@@ -393,7 +394,7 @@
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .cv-tailor-ring[data-status="pending"] {
+  .rainbow-ring[data-status="pending"] {
     animation: none;
   }
 }

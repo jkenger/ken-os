@@ -2840,13 +2840,13 @@ export const studioManifest: StudioManifest = {
       "dark": "oklch(0.31 0.06 27)"
     },
     {
-      "name": "cv-tailor-gradient",
+      "name": "rainbow-gradient",
       "light": "linear-gradient(\n    90deg,\n    oklch(0.68 0.19 25),\n    oklch(0.78 0.16 75),\n    oklch(0.72 0.17 150),\n    oklch(0.66 0.15 230),\n    oklch(0.62 0.2 295),\n    oklch(0.68 0.19 25)\n  )"
     }
   ],
   "globals": {
     "file": "app/globals.css",
-    "lines": 452,
+    "lines": 453,
     "tail": [
       "    animation: none;",
       "  }",
