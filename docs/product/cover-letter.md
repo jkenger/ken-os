@@ -1,6 +1,6 @@
 # Cover letter tailoring
 
-Status: specified 17 Nov 2026, not yet planned or built. Decisions below were agreed with the owner in chat on
+Status: specified 17 Nov 2026, built. Decisions below were agreed with the owner in chat on
 17 Nov 2026. Depends on the Jobs feature (`docs/product/job-finder.md`, built, specifically scoring's `whyFits`)
 and the Profile (`docs/product/profile-resume.md`, built). Does **not** depend on CV tailoring
 (`docs/product/cv-tailoring.md`, specified, not yet built) — the two are independent, despite CV tailoring's own
