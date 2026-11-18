@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Job listing card mockups, README</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap"
+        />
+        <style>
+          body {
+            margin: 0;
+          }
+          a {
+            color: oklch(0.22 0.005 265);
+          }
+          a:hover {
+            color: oklch(0.48 0.008 265);
+          }
+          .rd h2 {
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin: 0 0 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid oklch(0.885 0.004 265);
+          }
+          .rd table {
+            border-collapse: collapse;
+            width: 100%;
+            font-size: 13px;
+          }
+          .rd th {
+            text-align: left;
+            font-weight: 600;
+            font-size: 11px;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: oklch(0.48 0.008 265);
+            padding: 6px 8px;
+            border-bottom: 1px solid oklch(0.885 0.004 265);
+          }
+          .rd td {
+            padding: 5px 8px;
+            border-bottom: 1px solid oklch(0.93 0.003 265);
+            vertical-align: top;
+          }
+          .rd ol,
+          .rd ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 14px;
+            line-height: 1.55;
+          }
+          .rd li {
+            margin: 0 0 6px;
+          }
+          .mono {
+            font-family: "Geist Mono", ui-monospace, monospace;
+          }
+        </style>
+      </helmet>
+      <div
+        class="rd"
+        style="
+          width: 1000px;
+          height: 1900px;
+          box-sizing: border-box;
+          padding: 44px 52px;
+          background: oklch(0.995 0.001 265);
+          color: oklch(0.22 0.005 265);
+          font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+          font-size: 14px;
+          line-height: 1.45;
+          display: flex;
+          flex-direction: column;
+          gap: 24px;
+        "
+      >
+        <div>
+          <h1
+            style="
+              margin: 0;
+              font-size: 28px;
+              font-weight: 600;
+              letter-spacing: -0.025em;
+            "
+          >
+            job-card-actions-canvas / README
+          </h1>
+          <p style="margin: 6px 0 0; color: oklch(0.48 0.008 265)">
+            From the Job listing card mockup brief (proposed 18 Nov 2026). Loots
+            console tokens from apps/web/DESIGN.md; the card, its skill badges
+            and the rainbow ring match what ships on main.
+          </p>
+        </div>
+        <section>
+          <h2>Frames</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Frame</th>
+                <th>State</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono">E1</td>
+                <td>
+                  Slot-in baseline: restyled score, ATS badge, Tailor CV and
+                  Write cover letter beside Apply
+                </td>
+                <td>Changed (1)</td>
+              </tr>
+              <tr>
+                <td class="mono">E2</td>
+                <td>Score today vs restyled, and three ATS wordings, at 2x</td>
+                <td>Done</td>
+              </tr>
+              <tr>
+                <td class="mono">E3</td>
+                <td>Tailor CV pending: spinner in place, ring sweeping</td>
+                <td>Changed (1)</td>
+              </tr>
+              <tr>
+                <td class="mono">E4</td>
+                <td>Tailor CV ready: View CV</td>
+                <td>Changed (2)</td>
+              </tr>
+              <tr>
+                <td class="mono">E5</td>
+                <td>
+                  Write cover letter pending, with a long title and company
+                </td>
+                <td>Done</td>
+              </tr>
+              <tr>
+                <td class="mono">E6</td>
+                <td>Cover letter ready: View cover letter</td>
+                <td>Done</td>
+              </tr>
+              <tr>
+                <td class="mono">E7</td>
+                <td>Tailored CV modal over the list</td>
+                <td>Done</td>
+              </tr>
+              <tr>
+                <td class="mono">E8</td>
+                <td>Cover letter modal over the list</td>
+                <td>Done</td>
+              </tr>
+              <tr>
+                <td class="mono">E9</td>
+                <td>Reorganization proposal</td>
+                <td>Done</td>
+              </tr>
+              <tr>
+                <td class="mono">E10</td>
+                <td>Phone 390, E1 then E9</td>
+                <td>Done</td>
+              </tr>
+              <tr>
+                <td class="mono">E11</td>
+                <td>Dark, E1</td>
+                <td>Done</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+        <section>
+          <h2>Changes from this brief</h2>
+          <ol>
+            <li>
+              "Tailor" reads "Tailor CV": app language wants a verb and an
+              object on every button, and it is still shorter than the detail
+              page's "Tailor my CV".
+            </li>
+            <li>
+              Tailor's ready label is "View CV", with the same FileText icon and
+              no arrow: it opens a modal, not a new tab, so the up-right arrow
+              would promise the wrong thing.
+            </li>
+            <li>
+              The posting is a sample (Tidepool, Senior Full-stack Engineer):
+              this canvas cannot read the live Job board. E5 uses a deliberately
+              long title and company to test overflow. Swap in real postings at
+              review.
+            </li>
+            <li>
+              The score keeps its neutral outline badge and only grows: the
+              figure is Geist Mono 20px semibold, the badge 36px tall. The ATS
+              badge sits after it, one step smaller (28px), so the score stays
+              the first thing read.
+            </li>
+          </ol>
+        </section>
+        <section>
+          <h2>Proposals</h2>
+          <p style="margin: 0">
+            No new token or component. The card actions reuse the shipped
+            rainbow-ring class at Button size sm (32px), the same FileText and
+            Mail icons stroked with the ring's gradient, Dialog, Textarea and
+            the toaster.
+          </p>
+        </section>
+        <section>
+          <h2>The reorganization recommendation (E9)</h2>
+          <p style="margin: 0 0 8px">
+            E1 holds on desktop: the title keeps over 600px beside the score,
+            ATS and Save, and the three footer actions fit on one line. Two
+            things do read as crowded once drawn with real content, so I
+            recommend a small restructure rather than a new card:
+          </p>
+          <ul>
+            <li>
+              <strong>Split the footer by role.</strong> Tailor CV and Write
+              cover letter sit together on the left; Apply stays alone on the
+              right as the one primary action. In E1, three right-aligned
+              buttons of near-equal weight compete with Apply.
+            </li>
+            <li>
+              <strong>Move pay into the footer</strong>, just left of Apply.
+              Today pay sits on its own right-aligned line above the separator;
+              folding it into the footer saves a row on every card, which pays
+              for the new buttons.
+            </li>
+            <li>
+              <strong
+                >On phones (E10), move score and ATS out of the header</strong
+              >
+              into a row under the company, so the title keeps its width. The
+              footer wraps to two rows: the AI actions, then pay and Apply.
+              Labels fit at 390, so no icon-only collapse is needed.
+            </li>
+          </ul>
+        </section>
+        <section>
+          <h2>Open questions</h2>
+          <ol>
+            <li>
+              <strong>ATS wording</strong> (E2): "ATS 85%", "85% ATS" or "ATS
+              match 85%". Recommend "ATS 85%": shortest, and the label before
+              the figure mirrors "92 match" without copying it.
+            </li>
+            <li>
+              <strong>Icons on the card buttons:</strong> recommend keeping
+              FileText and Mail. The rainbow icon is what ties the card action
+              to the detail page's, and it costs about 22px each, which fits.
+            </li>
+            <li>
+              <strong>Explaining ATS:</strong> recommend a Tooltip on the badge,
+              "6 of 7 posting skills in your Profile", since a bare percentage
+              does not say what it counts.
+            </li>
+            <li>
+              <strong>No skills on a posting:</strong> the spec hides the ATS
+              badge. Recommend the score stays exactly where it is, so the
+              header does not shift between cards.
+            </li>
+          </ol>
+        </section>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"$preview":{"width":1000,"height":1900}}'
+    >
+      class Component extends DCLogic {
+        renderVals() { return {}; }
+      }
+    </script>
+  </body>
+</html>

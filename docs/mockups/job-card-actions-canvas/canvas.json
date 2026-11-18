@@ -1,0 +1,153 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-11-18T09:00:00Z" },
+  "title": "Job listing card mockups",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": -1120,
+      "y": 0,
+      "w": 1000,
+      "h": 1900,
+      "title": "README"
+    },
+    "E1.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1000,
+      "h": 380,
+      "title": "E1 · Slot-in baseline"
+    },
+    "E2.dc.html": {
+      "x": 1080,
+      "y": 0,
+      "w": 1000,
+      "h": 480,
+      "title": "E2 · Score and ATS badges"
+    },
+    "E3.dc.html": {
+      "x": 2160,
+      "y": 0,
+      "w": 1000,
+      "h": 380,
+      "title": "E3 · Tailor pending"
+    },
+    "E4.dc.html": {
+      "x": 3240,
+      "y": 0,
+      "w": 1000,
+      "h": 380,
+      "title": "E4 · Tailor ready"
+    },
+    "E5.dc.html": {
+      "x": 0,
+      "y": 600,
+      "w": 1000,
+      "h": 420,
+      "title": "E5 · Cover letter pending, long title"
+    },
+    "E6.dc.html": {
+      "x": 1080,
+      "y": 600,
+      "w": 1000,
+      "h": 380,
+      "title": "E6 · Cover letter ready"
+    },
+    "E9.dc.html": {
+      "x": 2160,
+      "y": 600,
+      "w": 1000,
+      "h": 400,
+      "title": "E9 · Reorganization proposal"
+    },
+    "E11.dc.html": {
+      "x": 3240,
+      "y": 600,
+      "w": 1000,
+      "h": 380,
+      "title": "E11 · Dark, E1"
+    },
+    "E7.dc.html": {
+      "x": 0,
+      "y": 1260,
+      "w": 1000,
+      "h": 760,
+      "title": "E7 · Tailor modal"
+    },
+    "E8.dc.html": {
+      "x": 1080,
+      "y": 1260,
+      "w": 1000,
+      "h": 900,
+      "title": "E8 · Cover letter modal"
+    },
+    "E10.dc.html": {
+      "x": 2160,
+      "y": 1260,
+      "w": 390,
+      "h": 1200,
+      "title": "E10 · Phone, E1 and E9"
+    },
+    "Card.dc.html": {
+      "x": 2630,
+      "y": 1260,
+      "w": 1000,
+      "h": 380,
+      "title": "Card (shared by every frame)"
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Card.dc.html",
+    "E1.dc.html",
+    "E2.dc.html",
+    "E3.dc.html",
+    "E4.dc.html",
+    "E5.dc.html",
+    "E6.dc.html",
+    "E9.dc.html",
+    "E11.dc.html",
+    "E7.dc.html",
+    "E8.dc.html",
+    "E10.dc.html"
+  ],
+  "notes": {
+    "t": {
+      "x": 0,
+      "y": -280,
+      "text": "Job listing card",
+      "kind": "title1",
+      "maxW": 4240
+    },
+    "n1": {
+      "x": 4320,
+      "y": 0,
+      "w": 400,
+      "text": "E3 → E4 and E5 → E6 each start from their own idle state. A card never shows both idle and ready for the same action. Pending spins in place; the modal opens on the next click once ready, never by itself.",
+      "fill": "blue"
+    },
+    "n2": {
+      "x": 4320,
+      "y": 560,
+      "w": 400,
+      "text": "Clicking anywhere else on the card opens the posting's detail page as today. Save, Tailor CV, Write cover letter and Apply stop the click from reaching the card link.",
+      "fill": "blue"
+    },
+    "n3": {
+      "x": 4320,
+      "y": 1120,
+      "w": 400,
+      "text": "Regenerate in either modal behaves exactly as on the detail page: Tailor overwrites silently; Cover letter asks first when the letter was edited (Rewrite this letter?). The dialog stacks over the modal; no narrower version needed.",
+      "fill": "blue"
+    },
+    "n4": {
+      "x": 4320,
+      "y": 1680,
+      "w": 400,
+      "text": "Score and ATS carry their numbers as the signal, never colour. Every new control is a Tab stop; the modal traps focus and Escape closes it.",
+      "fill": "blue"
+    }
+  },
+  "designSystems": []
+}

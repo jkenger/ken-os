@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>E2 Score and ATS badges</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap"
+        />
+        <style>
+          body {
+            margin: 0;
+          }
+          .bx {
+            --fg: oklch(0.22 0.005 265);
+            --mfg: oklch(0.48 0.008 265);
+            --border: oklch(0.885 0.004 265);
+            --card: oklch(0.995 0.001 265);
+          }
+          .z {
+            zoom: 2;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--card);
+          }
+          .old {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            height: 32px;
+            padding: 0 12px;
+            border: 1px solid var(--border);
+            border-radius: 10.4px;
+            font-size: 14px;
+            font-weight: 500;
+          }
+          .old span {
+            font-weight: 400;
+            color: var(--mfg);
+          }
+          .score {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 5px;
+            height: 36px;
+            padding: 0 12px;
+            border: 1px solid var(--border);
+            border-radius: 10.4px;
+            line-height: 34px;
+          }
+          .score b {
+            font-family: "Geist Mono", ui-monospace, monospace;
+            font-size: 20px;
+            font-weight: 600;
+          }
+          .score span {
+            font-size: 13px;
+            color: var(--mfg);
+          }
+          .ats {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 4px;
+            height: 28px;
+            padding: 0 9px;
+            border: 1px solid var(--border);
+            border-radius: 8.8px;
+            line-height: 26px;
+            font-size: 12px;
+          }
+          .ats span {
+            font-weight: 500;
+            color: var(--mfg);
+          }
+          .ats b {
+            font-family: "Geist Mono", ui-monospace, monospace;
+            font-size: 14px;
+            font-weight: 600;
+          }
+          .lbl {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--mfg);
+            margin: 0 0 12px;
+          }
+          .cap {
+            font-size: 12px;
+            color: var(--mfg);
+            margin: 8px 0 0;
+          }
+        </style>
+      </helmet>
+      <div
+        class="bx"
+        style="
+          width: 1000px;
+          height: 480px;
+          padding: 36px 48px;
+          box-sizing: border-box;
+          background: oklch(0.995 0.001 265);
+          color: oklch(0.22 0.005 265);
+          font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 36px 48px;
+          align-content: start;
+        "
+      >
+        <section>
+          <h2 class="lbl">Score today</h2>
+          <div class="z">
+            <span class="old">92<span>match</span></span>
+          </div>
+          <p class="cap">Shipped: 32px outline badge, 14px figure</p>
+        </section>
+        <section>
+          <h2 class="lbl">Score restyled, with ATS</h2>
+          <div class="z">
+            <span class="score"><b>92</b><span>match</span></span
+            ><span class="ats"><span>ATS</span><b>85%</b></span>
+          </div>
+          <p class="cap">
+            36px badge, 20px mono figure; ATS one step smaller beside it
+          </p>
+        </section>
+        <section style="grid-column: 1 / -1">
+          <h2 class="lbl">ATS wording, at card size x2</h2>
+          <div style="display: flex; gap: 40px; align-items: flex-start">
+            <div>
+              <div class="z">
+                <span class="ats"><span>ATS</span><b>85%</b></span>
+              </div>
+              <p class="cap">ATS 85% (recommended)</p>
+            </div>
+            <div>
+              <div class="z">
+                <span class="ats"><b>85%</b><span>ATS</span></span>
+              </div>
+              <p class="cap">85% ATS</p>
+            </div>
+            <div>
+              <div class="z">
+                <span class="ats"><span>ATS match</span><b>85%</b></span>
+              </div>
+              <p class="cap">ATS match 85%, widest</p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"$preview":{"width":1000,"height":480}}'
+    >
+      class Component extends DCLogic {
+        renderVals() { return {}; }
+      }
+    </script>
+  </body>
+</html>

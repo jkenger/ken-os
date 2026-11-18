@@ -1,0 +1,3047 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Job listing card: mockup snapshot</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap"
+    />
+    <style>
+      /* Static snapshot of docs/mockups/job-card-actions-canvas (the canvas is the source). No runtime: every state is
+   written out. Tokens are the Loots console values from apps/web/DESIGN.md. */
+
+      body {
+        margin: 0;
+        background: oklch(0.93 0.003 265);
+        font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+        color: oklch(0.22 0.005 265);
+      }
+      .page {
+        padding: 32px 24px 64px;
+        display: flex;
+        flex-direction: column;
+        gap: 36px;
+      }
+      .page > header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .page > header p {
+        margin: 6px 0 0;
+        font-size: 14px;
+        color: oklch(0.48 0.008 265);
+        max-width: 80ch;
+      }
+      .frame h2 {
+        margin: 0 0 10px;
+        font-size: 13px;
+        font-weight: 600;
+        color: oklch(0.48 0.008 265);
+      }
+      .scroll {
+        overflow-x: auto;
+        border: 1px solid oklch(0.885 0.004 265);
+        border-radius: 4px;
+        width: fit-content;
+        max-width: 100%;
+      }
+      .jc {
+        --bg: oklch(0.975 0.002 265);
+        --fg: oklch(0.22 0.005 265);
+        --card: oklch(0.995 0.001 265);
+        --pop: oklch(0.995 0.001 265);
+        --muted: oklch(0.945 0.003 265);
+        --mfg: oklch(0.48 0.008 265);
+        --border: oklch(0.885 0.004 265);
+        --pfg: oklch(0.985 0.001 265);
+        --rainbow: linear-gradient(
+          90deg,
+          oklch(0.68 0.19 25),
+          oklch(0.78 0.16 75),
+          oklch(0.72 0.17 150),
+          oklch(0.66 0.15 230),
+          oklch(0.62 0.2 295),
+          oklch(0.68 0.19 25)
+        );
+        position: relative;
+        font-family: Geist, ui-sans-serif, system-ui, sans-serif;
+        color: var(--fg);
+        background: var(--bg);
+        font-size: 14px;
+        line-height: 1.43;
+      }
+      .jc.dk {
+        --bg: oklch(0.205 0.004 265);
+        --fg: oklch(0.93 0.004 100);
+        --card: oklch(0.235 0.005 265);
+        --pop: oklch(0.255 0.006 265);
+        --muted: oklch(0.275 0.006 265);
+        --mfg: oklch(0.74 0.006 100);
+        --border: oklch(0.33 0.008 265);
+        --pfg: oklch(0.205 0.004 265);
+      }
+      .jc * {
+        box-sizing: border-box;
+      }
+      .jc a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .desk {
+        width: 1000px;
+        padding: 40px 48px;
+      }
+      .phone {
+        width: 390px;
+        padding: 16px;
+      }
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 5.6px;
+        padding: 16px;
+      }
+      .row {
+        display: flex;
+        gap: 12px;
+      }
+      .av {
+        width: 40px;
+        height: 40px;
+        border-radius: 3.2px;
+        display: grid;
+        place-items: center;
+        flex: none;
+        background: var(--muted);
+        color: var(--mfg);
+        font-weight: 600;
+      }
+      .grow {
+        flex: 1;
+        min-width: 0;
+      }
+      .head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .tline {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+      .title {
+        font-weight: 600;
+      }
+      .company {
+        margin: 2px 0 0;
+        color: var(--mfg);
+      }
+      .cluster {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: none;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        height: 32px;
+        padding: 0 10px;
+        border-radius: 10.4px;
+        border: 1px solid transparent;
+        font: inherit;
+        font-weight: 500;
+        white-space: nowrap;
+        cursor: pointer;
+        background: transparent;
+        color: var(--fg);
+      }
+      .btn-p {
+        background: var(--fg);
+        color: var(--pfg) !important;
+      }
+      .btn-o {
+        background: var(--bg);
+        border-color: var(--border);
+      }
+      .dk .btn-o {
+        background: transparent;
+      }
+      .btn-icon {
+        width: 32px;
+        padding: 0;
+      }
+      .btn36 {
+        height: 36px;
+        padding: 0 12px;
+      }
+      .arw {
+        transition: transform 0.2s ease-out;
+      }
+      .btn:hover .arw {
+        transform: translate(2px, -2px);
+      }
+      .ring {
+        display: inline-flex;
+        align-items: center;
+        border: 1.5px solid transparent;
+        border-radius: 10.4px;
+        background-image: linear-gradient(var(--card), var(--card)), var(--rainbow);
+        background-origin: border-box;
+        background-clip: padding-box, border-box;
+        background-size:
+          100% 100%,
+          300% 100%;
+      }
+      .ring.pop {
+        background-image: linear-gradient(var(--pop), var(--pop)), var(--rainbow);
+      }
+      .ring .btn {
+        height: 29px;
+        border: 0;
+        border-radius: 9px;
+      }
+      .ring.big .btn {
+        height: 33px;
+      }
+      .ring.busy {
+        animation: sweep 1.6s linear infinite;
+      }
+      .ring.busy .btn {
+        color: var(--mfg);
+      }
+      @keyframes sweep {
+        to {
+          background-position:
+            0 0,
+            300% 0;
+        }
+      }
+      .spin {
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .kb {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        height: 22px;
+        padding: 0 8px;
+        border-radius: 8.8px;
+        border: 1px solid transparent;
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+        line-height: 1;
+      }
+      .slot {
+        height: 20px;
+        padding: 0 6px;
+        font-size: 10px;
+        background: var(--fg);
+        color: var(--pfg);
+      }
+      .have {
+        background: oklch(0.962 0.044 156.743);
+        border-color: oklch(0.925 0.084 155.995);
+        color: oklch(0.448 0.119 151.328);
+      }
+      .rel {
+        background: oklch(0.962 0.059 95.617);
+        border-color: oklch(0.924 0.12 95.746);
+        color: oklch(0.473 0.137 46.201);
+      }
+      .dk .have {
+        background: oklch(0.448 0.119 151.328 / 0.18);
+        border-color: oklch(0.62 0.13 151 / 0.35);
+        color: oklch(0.8 0.12 151);
+      }
+      .dk .rel {
+        background: oklch(0.555 0.13 70 / 0.18);
+        border-color: oklch(0.7 0.13 70 / 0.35);
+        color: oklch(0.85 0.11 80);
+      }
+      .miss {
+        background: var(--muted);
+      }
+      .score {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 5px;
+        height: 36px;
+        padding: 0 12px;
+        border: 1px solid var(--border);
+        border-radius: 10.4px;
+        line-height: 34px;
+      }
+      .score b {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 20px;
+        font-weight: 600;
+      }
+      .score span,
+      .ats span,
+      .old span {
+        color: var(--mfg);
+      }
+      .score span {
+        font-size: 13px;
+      }
+      .ats {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 4px;
+        height: 28px;
+        padding: 0 9px;
+        border: 1px solid var(--border);
+        border-radius: 8.8px;
+        line-height: 26px;
+        font-size: 12px;
+      }
+      .ats span {
+        font-weight: 500;
+      }
+      .ats b {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .old {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        height: 32px;
+        padding: 0 12px;
+        border: 1px solid var(--border);
+        border-radius: 10.4px;
+        font-weight: 500;
+      }
+      .old span {
+        font-weight: 400;
+      }
+      .meta {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        color: var(--mfg);
+      }
+      .dot {
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background: var(--mfg);
+      }
+      .snip {
+        margin: 10px 0 0;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      .skills {
+        margin-top: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+      .pay {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--mfg);
+      }
+      .payline {
+        margin-top: 8px;
+        display: flex;
+        justify-content: flex-end;
+      }
+      .sep {
+        margin-top: 12px;
+        height: 1px;
+        background: var(--border);
+      }
+      .foot {
+        margin-top: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .foot.slot-in {
+        justify-content: flex-end;
+      }
+      .foot.reorg {
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .phone .foot.reorg {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .applywrap {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .badgerow {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .zoom {
+        zoom: 2;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .cap {
+        font-size: 12px;
+        color: var(--mfg);
+        margin: 8px 0 0;
+      }
+      .lbl {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mfg);
+        margin: 0 0 12px;
+      }
+      .overlay {
+        position: absolute;
+        inset: 0;
+        background: oklch(0.22 0.005 265 / 0.4);
+        display: grid;
+        place-items: center;
+        padding: 16px;
+      }
+      .dlg {
+        position: relative;
+        background: var(--pop);
+        border: 1px solid var(--border);
+        border-radius: 10.4px;
+        box-shadow:
+          0 20px 25px -5px rgb(0 0 0 / 0.1),
+          0 8px 10px -6px rgb(0 0 0 / 0.1);
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .dlg h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+      }
+      .dlg .sub {
+        margin: 6px 0 0;
+        color: var(--mfg);
+      }
+      .close {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        color: var(--mfg);
+      }
+      .ta {
+        width: 100%;
+        min-height: 360px;
+        resize: vertical;
+        padding: 16px 18px;
+        border-radius: 8.8px;
+        background: var(--muted);
+        border: 1px solid transparent;
+        font: inherit;
+        font-size: 15px;
+        line-height: 1.7;
+        color: var(--fg);
+        display: block;
+      }
+      .btn[disabled] {
+        opacity: 0.5;
+        pointer-events: none;
+      }
+      .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs>
+        <linearGradient id="rbw" x1="0" y1="1" x2="1" y2="0">
+          <stop offset="0" stop-color="oklch(0.62 0.2 25)" />
+          <stop offset="0.3" stop-color="oklch(0.72 0.16 75)" />
+          <stop offset="0.55" stop-color="oklch(0.62 0.17 150)" />
+          <stop offset="0.8" stop-color="oklch(0.6 0.15 230)" />
+          <stop offset="1" stop-color="oklch(0.58 0.2 295)" />
+        </linearGradient>
+        <symbol id="i-file" viewBox="0 0 24 24">
+          <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+          <path d="M14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8" />
+        </symbol>
+        <symbol id="i-mail" viewBox="0 0 24 24">
+          <rect x="2" y="4" width="20" height="16" rx="2" />
+          <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+        </symbol>
+        <symbol id="i-spin" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-6.219-8.56" /></symbol>
+        <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10" /></symbol>
+        <symbol id="i-regen" viewBox="0 0 24 24">
+          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+          <path d="M21 3v5h-5" />
+          <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+          <path d="M8 16H3v5" />
+        </symbol>
+        <symbol id="i-bookmark" viewBox="0 0 24 24">
+          <path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
+        </symbol>
+        <symbol id="i-check" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <path d="m9 12 2 2 4-4" />
+        </symbol>
+        <symbol id="i-near" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10" />
+          <circle cx="12" cy="12" r="1.5" fill="currentColor" />
+        </symbol>
+        <symbol id="i-copy" viewBox="0 0 24 24">
+          <rect x="8" y="8" width="14" height="14" rx="2" />
+          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+        </symbol>
+        <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12" /></symbol>
+      </defs>
+    </svg>
+    <main class="page">
+      <header>
+        <h1>Job listing card: mockup snapshot</h1>
+        <p>
+          Static snapshot of the Job listing card frames E1 to E11: the restyled score, the ATS badge, Tailor CV and
+          Write cover letter on the card, their modals, and the recommended reorganization (E9). The source and README
+          are in docs/mockups/job-card-actions-canvas; the live canvas is
+          https://claude.ai/artifact/82KqsAPh8pHtSy74b35qG8.
+        </p>
+      </header>
+      <section class="frame">
+        <h2>E1 · Slot-in baseline</h2>
+        <div class="scroll">
+          <div class="jc desk">
+            <article class="card">
+              <div class="row">
+                <span class="av" aria-hidden="true">TP</span>
+                <div class="grow">
+                  <div class="head">
+                    <div style="min-width: 0">
+                      <div class="tline">
+                        <a class="title" href="#">Senior Full-stack Engineer</a><span class="kb slot">New</span>
+                      </div>
+                      <p class="company">Tidepool</p>
+                    </div>
+                    <div class="cluster">
+                      <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
+                      ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
+                      ><button
+                        class="btn btn-o btn-icon"
+                        aria-label="Save Senior Full-stack Engineer"
+                        aria-pressed="false"
+                      >
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-bookmark" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="meta">
+                    <span>Remote</span><span class="dot"></span><span>🇵🇭 Philippines +10</span><span class="dot"></span
+                    ><span>Full time</span><span class="dot"></span><span>Senior</span><span class="dot"></span
+                    ><span>2d ago</span>
+                  </div>
+                  <p class="snip">
+                    Tidepool builds scheduling and intake software for community clinics. We are hiring a senior
+                    engineer to own features end to end across our Next.js app and Node services, working with one
+                    designer and a small product team across four time zones.
+                  </p>
+                  <div class="skills">
+                    <span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >React</span
+                    ><span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >TypeScript</span
+                    ><span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >Node.js</span
+                    ><span class="kb rel"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-near" /></svg
+                      >Next.js</span
+                    ><span class="kb miss">AWS</span><span class="kb miss">+2</span>
+                  </div>
+                  <div class="payline"><span class="pay">USD 4,000–6,000 a month</span></div>
+                </div>
+              </div>
+              <div class="sep"></div>
+              <div class="foot slot-in">
+                <div class="group">
+                  <span class="ring"
+                    ><button class="btn">
+                      <svg
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="url(#rbw)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-file" />
+                      </svg>
+                      Tailor CV
+                    </button></span
+                  ><span class="ring"
+                    ><button class="btn">
+                      <svg
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="url(#rbw)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-mail" />
+                      </svg>
+                      Write cover letter
+                    </button></span
+                  >
+                </div>
+                <a class="btn btn-p" href="#"
+                  >Apply
+                  <svg
+                    class="arw"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <use href="#i-arrow" /></svg
+                ></a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>E2 · Score and ATS badges, x2</h2>
+        <div class="scroll">
+          <div
+            class="jc desk"
+            style="
+              display: grid;
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              gap: 36px 48px;
+              background: var(--card);
+            "
+          >
+            <section>
+              <h3 class="lbl">Score today</h3>
+              <div class="zoom">
+                <span class="old">92<span>match</span></span>
+              </div>
+              <p class="cap">Shipped: 32px outline badge, 14px figure</p>
+            </section>
+            <section>
+              <h3 class="lbl">Score restyled, with ATS</h3>
+              <div class="zoom">
+                <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
+                ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span>
+              </div>
+              <p class="cap">36px badge, 20px mono figure; ATS one step smaller beside it</p>
+            </section>
+            <section style="grid-column: 1 / -1">
+              <h3 class="lbl">ATS wording, at card size x2</h3>
+              <div style="display: flex; gap: 40px; align-items: flex-start">
+                <div>
+                  <div class="zoom">
+                    <span class="ats"><span>ATS</span><b>85%</b></span>
+                  </div>
+                  <p class="cap">ATS 85% (recommended)</p>
+                </div>
+                <div>
+                  <div class="zoom">
+                    <span class="ats"><b>85%</b><span>ATS</span></span>
+                  </div>
+                  <p class="cap">85% ATS</p>
+                </div>
+                <div>
+                  <div class="zoom">
+                    <span class="ats"><span>ATS match</span><b>85%</b></span>
+                  </div>
+                  <p class="cap">ATS match 85%, widest</p>
+                </div>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>E3 · Tailor CV pending</h2>
+        <div class="scroll">
+          <div class="jc desk">
+            <article class="card">
+              <div class="row">
+                <span class="av" aria-hidden="true">TP</span>
+                <div class="grow">
+                  <div class="head">
+                    <div style="min-width: 0">
+                      <div class="tline">
+                        <a class="title" href="#">Senior Full-stack Engineer</a><span class="kb slot">New</span>
+                      </div>
+                      <p class="company">Tidepool</p>
+                    </div>
+                    <div class="cluster">
+                      <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
+                      ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
+                      ><button
+                        class="btn btn-o btn-icon"
+                        aria-label="Save Senior Full-stack Engineer"
+                        aria-pressed="false"
+                      >
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-bookmark" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="meta">
+                    <span>Remote</span><span class="dot"></span><span>🇵🇭 Philippines +10</span><span class="dot"></span
+                    ><span>Full time</span><span class="dot"></span><span>Senior</span><span class="dot"></span
+                    ><span>2d ago</span>
+                  </div>
+                  <p class="snip">
+                    Tidepool builds scheduling and intake software for community clinics. We are hiring a senior
+                    engineer to own features end to end across our Next.js app and Node services, working with one
+                    designer and a small product team across four time zones.
+                  </p>
+                  <div class="skills">
+                    <span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >React</span
+                    ><span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >TypeScript</span
+                    ><span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >Node.js</span
+                    ><span class="kb rel"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-near" /></svg
+                      >Next.js</span
+                    ><span class="kb miss">AWS</span><span class="kb miss">+2</span>
+                  </div>
+                  <div class="payline"><span class="pay">USD 4,000–6,000 a month</span></div>
+                </div>
+              </div>
+              <div class="sep"></div>
+              <div class="foot slot-in">
+                <div class="group">
+                  <span class="busy ring"
+                    ><button class="btn" disabled aria-busy="true">
+                      <svg
+                        class="spin"
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="url(#rbw)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-spin" />
+                      </svg>
+                      Tailor CV
+                    </button></span
+                  ><span class="ring"
+                    ><button class="btn">
+                      <svg
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="url(#rbw)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-mail" />
+                      </svg>
+                      Write cover letter
+                    </button></span
+                  >
+                </div>
+                <a class="btn btn-p" href="#"
+                  >Apply
+                  <svg
+                    class="arw"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <use href="#i-arrow" /></svg
+                ></a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>E4 · Tailor CV ready</h2>
+        <div class="scroll">
+          <div class="jc desk">
+            <article class="card">
+              <div class="row">
+                <span class="av" aria-hidden="true">TP</span>
+                <div class="grow">
+                  <div class="head">
+                    <div style="min-width: 0">
+                      <div class="tline">
+                        <a class="title" href="#">Senior Full-stack Engineer</a><span class="kb slot">New</span>
+                      </div>
+                      <p class="company">Tidepool</p>
+                    </div>
+                    <div class="cluster">
+                      <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
+                      ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
+                      ><button
+                        class="btn btn-o btn-icon"
+                        aria-label="Save Senior Full-stack Engineer"
+                        aria-pressed="false"
+                      >
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-bookmark" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="meta">
+                    <span>Remote</span><span class="dot"></span><span>🇵🇭 Philippines +10</span><span class="dot"></span
+                    ><span>Full time</span><span class="dot"></span><span>Senior</span><span class="dot"></span
+                    ><span>2d ago</span>
+                  </div>
+                  <p class="snip">
+                    Tidepool builds scheduling and intake software for community clinics. We are hiring a senior
+                    engineer to own features end to end across our Next.js app and Node services, working with one
+                    designer and a small product team across four time zones.
+                  </p>
+                  <div class="skills">
+                    <span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >React</span
+                    ><span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >TypeScript</span
+                    ><span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >Node.js</span
+                    ><span class="kb rel"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-near" /></svg
+                      >Next.js</span
+                    ><span class="kb miss">AWS</span><span class="kb miss">+2</span>
+                  </div>
+                  <div class="payline"><span class="pay">USD 4,000–6,000 a month</span></div>
+                </div>
+              </div>
+              <div class="sep"></div>
+              <div class="foot slot-in">
+                <div class="group">
+                  <span class="ring"
+                    ><button class="btn" aria-haspopup="dialog">
+                      <svg
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="url(#rbw)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-file" />
+                      </svg>
+                      View CV
+                    </button></span
+                  ><span class="ring"
+                    ><button class="btn">
+                      <svg
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="url(#rbw)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-mail" />
+                      </svg>
+                      Write cover letter
+                    </button></span
+                  >
+                </div>
+                <a class="btn btn-p" href="#"
+                  >Apply
+                  <svg
+                    class="arw"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <use href="#i-arrow" /></svg
+                ></a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>E5 · Write cover letter pending, long title and company</h2>
+        <div class="scroll">
+          <div class="jc desk">
+            <article class="card">
+              <div class="row">
+                <span class="av" aria-hidden="true">BP</span>
+                <div class="grow">
+                  <div class="head">
+                    <div style="min-width: 0">
+                      <div class="tline">
+                        <a class="title" href="#"
+                          >Senior Staff Full-stack Software Engineer, Payments Infrastructure and Developer Platform</a
+                        ><span class="kb slot">New</span>
+                      </div>
+                      <p class="company">Brightline Payments International Holdings</p>
+                    </div>
+                    <div class="cluster">
+                      <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
+                      ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
+                      ><button
+                        class="btn btn-o btn-icon"
+                        aria-label="Save Senior Staff Full-stack Software Engineer, Payments Infrastructure and Developer Platform"
+                        aria-pressed="false"
+                      >
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-bookmark" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="meta">
+                    <span>Remote</span><span class="dot"></span><span>🇵🇭 Philippines +10</span><span class="dot"></span
+                    ><span>Full time</span><span class="dot"></span><span>Senior</span><span class="dot"></span
+                    ><span>2d ago</span>
+                  </div>
+                  <p class="snip">
+                    Brightline Payments International Holdings builds scheduling and intake software for community
+                    clinics. We are hiring a senior engineer to own features end to end across our Next.js app and Node
+                    services, working with one designer and a small product team across four time zones.
+                  </p>
+                  <div class="skills">
+                    <span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >React</span
+                    ><span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >TypeScript</span
+                    ><span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >Node.js</span
+                    ><span class="kb rel"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-near" /></svg
+                      >Next.js</span
+                    ><span class="kb miss">AWS</span><span class="kb miss">+2</span>
+                  </div>
+                  <div class="payline"><span class="pay">USD 4,000–6,000 a month</span></div>
+                </div>
+              </div>
+              <div class="sep"></div>
+              <div class="foot slot-in">
+                <div class="group">
+                  <span class="ring"
+                    ><button class="btn">
+                      <svg
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="url(#rbw)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-file" />
+                      </svg>
+                      Tailor CV
+                    </button></span
+                  ><span class="busy ring"
+                    ><button class="btn" disabled aria-busy="true">
+                      <svg
+                        class="spin"
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="url(#rbw)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-spin" />
+                      </svg>
+                      Write cover letter
+                    </button></span
+                  >
+                </div>
+                <a class="btn btn-p" href="#"
+                  >Apply
+                  <svg
+                    class="arw"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <use href="#i-arrow" /></svg
+                ></a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>E6 · Cover letter ready</h2>
+        <div class="scroll">
+          <div class="jc desk">
+            <article class="card">
+              <div class="row">
+                <span class="av" aria-hidden="true">TP</span>
+                <div class="grow">
+                  <div class="head">
+                    <div style="min-width: 0">
+                      <div class="tline">
+                        <a class="title" href="#">Senior Full-stack Engineer</a><span class="kb slot">New</span>
+                      </div>
+                      <p class="company">Tidepool</p>
+                    </div>
+                    <div class="cluster">
+                      <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
+                      ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
+                      ><button
+                        class="btn btn-o btn-icon"
+                        aria-label="Save Senior Full-stack Engineer"
+                        aria-pressed="false"
+                      >
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-bookmark" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="meta">
+                    <span>Remote</span><span class="dot"></span><span>🇵🇭 Philippines +10</span><span class="dot"></span
+                    ><span>Full time</span><span class="dot"></span><span>Senior</span><span class="dot"></span
+                    ><span>2d ago</span>
+                  </div>
+                  <p class="snip">
+                    Tidepool builds scheduling and intake software for community clinics. We are hiring a senior
+                    engineer to own features end to end across our Next.js app and Node services, working with one
+                    designer and a small product team across four time zones.
+                  </p>
+                  <div class="skills">
+                    <span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >React</span
+                    ><span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >TypeScript</span
+                    ><span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >Node.js</span
+                    ><span class="kb rel"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-near" /></svg
+                      >Next.js</span
+                    ><span class="kb miss">AWS</span><span class="kb miss">+2</span>
+                  </div>
+                  <div class="payline"><span class="pay">USD 4,000–6,000 a month</span></div>
+                </div>
+              </div>
+              <div class="sep"></div>
+              <div class="foot slot-in">
+                <div class="group">
+                  <span class="ring"
+                    ><button class="btn">
+                      <svg
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="url(#rbw)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-file" />
+                      </svg>
+                      Tailor CV
+                    </button></span
+                  ><span class="ring"
+                    ><button class="btn" aria-haspopup="dialog">
+                      <svg
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="url(#rbw)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-mail" />
+                      </svg>
+                      View cover letter
+                    </button></span
+                  >
+                </div>
+                <a class="btn btn-p" href="#"
+                  >Apply
+                  <svg
+                    class="arw"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <use href="#i-arrow" /></svg
+                ></a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>E7 · Tailored CV modal</h2>
+        <div class="scroll">
+          <div class="jc desk" style="padding: 40px 48px">
+            <div class="stack" aria-hidden="true">
+              <article class="card">
+                <div class="row">
+                  <span class="av" aria-hidden="true">TP</span>
+                  <div class="grow">
+                    <div class="head">
+                      <div style="min-width: 0">
+                        <div class="tline">
+                          <a class="title" href="#">Senior Full-stack Engineer</a><span class="kb slot">New</span>
+                        </div>
+                        <p class="company">Tidepool</p>
+                      </div>
+                      <div class="cluster">
+                        <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
+                        ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
+                        ><button
+                          class="btn btn-o btn-icon"
+                          aria-label="Save Senior Full-stack Engineer"
+                          aria-pressed="false"
+                        >
+                          <svg
+                            width="15"
+                            height="15"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <use href="#i-bookmark" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="meta">
+                      <span>Remote</span><span class="dot"></span><span>🇵🇭 Philippines +10</span
+                      ><span class="dot"></span><span>Full time</span><span class="dot"></span><span>Senior</span
+                      ><span class="dot"></span><span>2d ago</span>
+                    </div>
+                    <p class="snip">
+                      Tidepool builds scheduling and intake software for community clinics. We are hiring a senior
+                      engineer to own features end to end across our Next.js app and Node services, working with one
+                      designer and a small product team across four time zones.
+                    </p>
+                    <div class="skills">
+                      <span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >React</span
+                      ><span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >TypeScript</span
+                      ><span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >Node.js</span
+                      ><span class="kb rel"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-near" /></svg
+                        >Next.js</span
+                      ><span class="kb miss">AWS</span><span class="kb miss">+2</span>
+                    </div>
+                    <div class="payline"><span class="pay">USD 4,000–6,000 a month</span></div>
+                  </div>
+                </div>
+                <div class="sep"></div>
+                <div class="foot slot-in">
+                  <div class="group">
+                    <span class="ring"
+                      ><button class="btn" aria-haspopup="dialog">
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="url(#rbw)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-file" />
+                        </svg>
+                        View CV
+                      </button></span
+                    ><span class="ring"
+                      ><button class="btn">
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="url(#rbw)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-mail" />
+                        </svg>
+                        Write cover letter
+                      </button></span
+                    >
+                  </div>
+                  <a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="15"
+                      height="15"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
+              </article>
+              <article class="card">
+                <div class="row">
+                  <span class="av" aria-hidden="true">TP</span>
+                  <div class="grow">
+                    <div class="head">
+                      <div style="min-width: 0">
+                        <div class="tline">
+                          <a class="title" href="#">Senior Full-stack Engineer</a><span class="kb slot">New</span>
+                        </div>
+                        <p class="company">Tidepool</p>
+                      </div>
+                      <div class="cluster">
+                        <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
+                        ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
+                        ><button
+                          class="btn btn-o btn-icon"
+                          aria-label="Save Senior Full-stack Engineer"
+                          aria-pressed="false"
+                        >
+                          <svg
+                            width="15"
+                            height="15"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <use href="#i-bookmark" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="meta">
+                      <span>Remote</span><span class="dot"></span><span>🇵🇭 Philippines +10</span
+                      ><span class="dot"></span><span>Full time</span><span class="dot"></span><span>Senior</span
+                      ><span class="dot"></span><span>2d ago</span>
+                    </div>
+                    <p class="snip">
+                      Tidepool builds scheduling and intake software for community clinics. We are hiring a senior
+                      engineer to own features end to end across our Next.js app and Node services, working with one
+                      designer and a small product team across four time zones.
+                    </p>
+                    <div class="skills">
+                      <span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >React</span
+                      ><span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >TypeScript</span
+                      ><span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >Node.js</span
+                      ><span class="kb rel"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-near" /></svg
+                        >Next.js</span
+                      ><span class="kb miss">AWS</span><span class="kb miss">+2</span>
+                    </div>
+                    <div class="payline"><span class="pay">USD 4,000–6,000 a month</span></div>
+                  </div>
+                </div>
+                <div class="sep"></div>
+                <div class="foot slot-in">
+                  <div class="group">
+                    <span class="ring"
+                      ><button class="btn">
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="url(#rbw)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-file" />
+                        </svg>
+                        Tailor CV
+                      </button></span
+                    ><span class="ring"
+                      ><button class="btn">
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="url(#rbw)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-mail" />
+                        </svg>
+                        Write cover letter
+                      </button></span
+                    >
+                  </div>
+                  <a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="15"
+                      height="15"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
+              </article>
+            </div>
+            <div class="overlay">
+              <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="e7t" style="width: 480px; gap: 20px">
+                <button class="btn btn-icon close" aria-label="Close">
+                  <svg
+                    width="16"
+                    height="16"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <use href="#i-x" />
+                  </svg>
+                </button>
+                <div style="padding-right: 32px">
+                  <h3 id="e7t">Tailored CV</h3>
+                  <p class="sub">Senior Full-stack Engineer at Tidepool</p>
+                </div>
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 12px;
+                    padding: 14px 16px;
+                    border: 1px solid var(--border);
+                    border-radius: 5.6px;
+                  "
+                >
+                  <span class="av" aria-hidden="true"
+                    ><svg
+                      width="18"
+                      height="18"
+                      fill="none"
+                      stroke="url(#rbw)"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-file" /></svg
+                  ></span>
+                  <div class="grow">
+                    <div style="font-weight: 500">Tailored CV, PDF</div>
+                    <div style="font-size: 12px; color: var(--mfg)">
+                      Made <span style="font-family: &quot;Geist Mono&quot;, monospace">Nov 17</span>
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; justify-content: flex-end">
+                  <span class="pop big ring" role="group" aria-label="Tailored CV"
+                    ><a class="btn" href="#"
+                      >View tailored CV
+                      <svg
+                        class="arw"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="url(#rbw)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-arrow" /></svg></a
+                    ><span aria-hidden="true" style="width: 1px; height: 18px; background: var(--border)"></span
+                    ><button class="btn btn-icon" aria-label="Regenerate tailored CV">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="url(#rbw)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-regen" />
+                      </svg></button
+                  ></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>E8 · Cover letter modal</h2>
+        <div class="scroll">
+          <div class="jc desk">
+            <div class="stack" aria-hidden="true">
+              <article class="card">
+                <div class="row">
+                  <span class="av" aria-hidden="true">TP</span>
+                  <div class="grow">
+                    <div class="head">
+                      <div style="min-width: 0">
+                        <div class="tline">
+                          <a class="title" href="#">Senior Full-stack Engineer</a><span class="kb slot">New</span>
+                        </div>
+                        <p class="company">Tidepool</p>
+                      </div>
+                      <div class="cluster">
+                        <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
+                        ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
+                        ><button
+                          class="btn btn-o btn-icon"
+                          aria-label="Save Senior Full-stack Engineer"
+                          aria-pressed="false"
+                        >
+                          <svg
+                            width="15"
+                            height="15"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <use href="#i-bookmark" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="meta">
+                      <span>Remote</span><span class="dot"></span><span>🇵🇭 Philippines +10</span
+                      ><span class="dot"></span><span>Full time</span><span class="dot"></span><span>Senior</span
+                      ><span class="dot"></span><span>2d ago</span>
+                    </div>
+                    <p class="snip">
+                      Tidepool builds scheduling and intake software for community clinics. We are hiring a senior
+                      engineer to own features end to end across our Next.js app and Node services, working with one
+                      designer and a small product team across four time zones.
+                    </p>
+                    <div class="skills">
+                      <span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >React</span
+                      ><span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >TypeScript</span
+                      ><span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >Node.js</span
+                      ><span class="kb rel"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-near" /></svg
+                        >Next.js</span
+                      ><span class="kb miss">AWS</span><span class="kb miss">+2</span>
+                    </div>
+                    <div class="payline"><span class="pay">USD 4,000–6,000 a month</span></div>
+                  </div>
+                </div>
+                <div class="sep"></div>
+                <div class="foot slot-in">
+                  <div class="group">
+                    <span class="ring"
+                      ><button class="btn">
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="url(#rbw)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-file" />
+                        </svg>
+                        Tailor CV
+                      </button></span
+                    ><span class="ring"
+                      ><button class="btn" aria-haspopup="dialog">
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="url(#rbw)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-mail" />
+                        </svg>
+                        View cover letter
+                      </button></span
+                    >
+                  </div>
+                  <a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="15"
+                      height="15"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
+              </article>
+              <article class="card">
+                <div class="row">
+                  <span class="av" aria-hidden="true">TP</span>
+                  <div class="grow">
+                    <div class="head">
+                      <div style="min-width: 0">
+                        <div class="tline">
+                          <a class="title" href="#">Senior Full-stack Engineer</a><span class="kb slot">New</span>
+                        </div>
+                        <p class="company">Tidepool</p>
+                      </div>
+                      <div class="cluster">
+                        <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
+                        ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
+                        ><button
+                          class="btn btn-o btn-icon"
+                          aria-label="Save Senior Full-stack Engineer"
+                          aria-pressed="false"
+                        >
+                          <svg
+                            width="15"
+                            height="15"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <use href="#i-bookmark" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="meta">
+                      <span>Remote</span><span class="dot"></span><span>🇵🇭 Philippines +10</span
+                      ><span class="dot"></span><span>Full time</span><span class="dot"></span><span>Senior</span
+                      ><span class="dot"></span><span>2d ago</span>
+                    </div>
+                    <p class="snip">
+                      Tidepool builds scheduling and intake software for community clinics. We are hiring a senior
+                      engineer to own features end to end across our Next.js app and Node services, working with one
+                      designer and a small product team across four time zones.
+                    </p>
+                    <div class="skills">
+                      <span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >React</span
+                      ><span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >TypeScript</span
+                      ><span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >Node.js</span
+                      ><span class="kb rel"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-near" /></svg
+                        >Next.js</span
+                      ><span class="kb miss">AWS</span><span class="kb miss">+2</span>
+                    </div>
+                    <div class="payline"><span class="pay">USD 4,000–6,000 a month</span></div>
+                  </div>
+                </div>
+                <div class="sep"></div>
+                <div class="foot slot-in">
+                  <div class="group">
+                    <span class="ring"
+                      ><button class="btn">
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="url(#rbw)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-file" />
+                        </svg>
+                        Tailor CV
+                      </button></span
+                    ><span class="ring"
+                      ><button class="btn">
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="url(#rbw)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-mail" />
+                        </svg>
+                        Write cover letter
+                      </button></span
+                    >
+                  </div>
+                  <a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="15"
+                      height="15"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
+              </article>
+              <article class="card">
+                <div class="row">
+                  <span class="av" aria-hidden="true">TP</span>
+                  <div class="grow">
+                    <div class="head">
+                      <div style="min-width: 0">
+                        <div class="tline">
+                          <a class="title" href="#">Senior Full-stack Engineer</a><span class="kb slot">New</span>
+                        </div>
+                        <p class="company">Tidepool</p>
+                      </div>
+                      <div class="cluster">
+                        <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
+                        ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
+                        ><button
+                          class="btn btn-o btn-icon"
+                          aria-label="Save Senior Full-stack Engineer"
+                          aria-pressed="false"
+                        >
+                          <svg
+                            width="15"
+                            height="15"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <use href="#i-bookmark" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="meta">
+                      <span>Remote</span><span class="dot"></span><span>🇵🇭 Philippines +10</span
+                      ><span class="dot"></span><span>Full time</span><span class="dot"></span><span>Senior</span
+                      ><span class="dot"></span><span>2d ago</span>
+                    </div>
+                    <p class="snip">
+                      Tidepool builds scheduling and intake software for community clinics. We are hiring a senior
+                      engineer to own features end to end across our Next.js app and Node services, working with one
+                      designer and a small product team across four time zones.
+                    </p>
+                    <div class="skills">
+                      <span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >React</span
+                      ><span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >TypeScript</span
+                      ><span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >Node.js</span
+                      ><span class="kb rel"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-near" /></svg
+                        >Next.js</span
+                      ><span class="kb miss">AWS</span><span class="kb miss">+2</span>
+                    </div>
+                    <div class="payline"><span class="pay">USD 4,000–6,000 a month</span></div>
+                  </div>
+                </div>
+                <div class="sep"></div>
+                <div class="foot slot-in">
+                  <div class="group">
+                    <span class="ring"
+                      ><button class="btn">
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="url(#rbw)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-file" />
+                        </svg>
+                        Tailor CV
+                      </button></span
+                    ><span class="ring"
+                      ><button class="btn">
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="url(#rbw)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-mail" />
+                        </svg>
+                        Write cover letter
+                      </button></span
+                    >
+                  </div>
+                  <a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="15"
+                      height="15"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
+              </article>
+            </div>
+            <div class="overlay">
+              <div class="dlg" role="dialog" aria-modal="true" aria-labelledby="e8t" style="width: 640px">
+                <button class="btn btn-icon close" aria-label="Close">
+                  <svg
+                    width="16"
+                    height="16"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <use href="#i-x" />
+                  </svg>
+                </button>
+                <div style="padding-right: 32px">
+                  <h3 id="e8t">Cover letter</h3>
+                  <p class="sub">Senior Full-stack Engineer at Tidepool</p>
+                </div>
+                <label class="sr" for="e8l">Cover letter</label
+                ><textarea id="e8l" class="ta">
+Dear Tidepool hiring team,
+
+I'm applying for the Senior Full-stack Engineer role. I build features end to end in React, TypeScript and Node, and most recently moved a scheduling flow onto Next.js and PostgreSQL, from the schema change to the last screen.
+
+The way your team works, close to design and across time zones, matches how I like to build: small, steady slices that reach clinics quickly. I'd welcome the chance to talk about how I could help grow your patient and staff tools.
+
+Best regards,
+[Your name]</textarea>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+                  <span style="font-size: 12px; color: var(--mfg)"
+                    >Written <span style="font-family: &quot;Geist Mono&quot;, monospace">Nov 17</span></span
+                  >
+                  <div style="display: flex; gap: 8px">
+                    <button class="btn btn-o btn36">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-copy" />
+                      </svg>
+                      Copy letter</button
+                    ><button class="btn btn-o btn36">
+                      <svg
+                        width="16"
+                        height="16"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-regen" />
+                      </svg>
+                      Regenerate</button
+                    ><button class="btn btn-p btn36" disabled>Save</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>E9 · Reorganization proposal (recommended)</h2>
+        <div class="scroll">
+          <div class="jc desk">
+            <article class="card">
+              <div class="row">
+                <span class="av" aria-hidden="true">TP</span>
+                <div class="grow">
+                  <div class="head">
+                    <div style="min-width: 0">
+                      <div class="tline">
+                        <a class="title" href="#">Senior Full-stack Engineer</a><span class="kb slot">New</span>
+                      </div>
+                      <p class="company">Tidepool</p>
+                    </div>
+                    <div class="cluster">
+                      <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
+                      ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
+                      ><button
+                        class="btn btn-o btn-icon"
+                        aria-label="Save Senior Full-stack Engineer"
+                        aria-pressed="false"
+                      >
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-bookmark" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="meta">
+                    <span>Remote</span><span class="dot"></span><span>🇵🇭 Philippines +10</span><span class="dot"></span
+                    ><span>Full time</span><span class="dot"></span><span>Senior</span><span class="dot"></span
+                    ><span>2d ago</span>
+                  </div>
+                  <p class="snip">
+                    Tidepool builds scheduling and intake software for community clinics. We are hiring a senior
+                    engineer to own features end to end across our Next.js app and Node services, working with one
+                    designer and a small product team across four time zones.
+                  </p>
+                  <div class="skills">
+                    <span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >React</span
+                    ><span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >TypeScript</span
+                    ><span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >Node.js</span
+                    ><span class="kb rel"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-near" /></svg
+                      >Next.js</span
+                    ><span class="kb miss">AWS</span><span class="kb miss">+2</span>
+                  </div>
+                </div>
+              </div>
+              <div class="sep"></div>
+              <div class="foot reorg">
+                <div class="group">
+                  <span class="ring"
+                    ><button class="btn">
+                      <svg
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="url(#rbw)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-file" />
+                      </svg>
+                      Tailor CV
+                    </button></span
+                  ><span class="ring"
+                    ><button class="btn">
+                      <svg
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="url(#rbw)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-mail" />
+                      </svg>
+                      Write cover letter
+                    </button></span
+                  >
+                </div>
+                <div class="applywrap">
+                  <span class="pay">USD 4,000–6,000 a month</span
+                  ><a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="15"
+                      height="15"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>E10 · Phone at 390: E1 slot-in, then E9 proposed</h2>
+        <div class="scroll">
+          <div class="stack">
+            <div class="jc phone">
+              <article class="card">
+                <div class="row">
+                  <span class="av" aria-hidden="true">TP</span>
+                  <div class="grow">
+                    <div class="head">
+                      <div style="min-width: 0">
+                        <div class="tline">
+                          <a class="title" href="#">Senior Full-stack Engineer</a><span class="kb slot">New</span>
+                        </div>
+                        <p class="company">Tidepool</p>
+                      </div>
+                      <div class="cluster">
+                        <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
+                        ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
+                        ><button
+                          class="btn btn-o btn-icon"
+                          aria-label="Save Senior Full-stack Engineer"
+                          aria-pressed="false"
+                        >
+                          <svg
+                            width="15"
+                            height="15"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <use href="#i-bookmark" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="meta">
+                      <span>Remote</span><span class="dot"></span><span>🇵🇭 Philippines +10</span
+                      ><span class="dot"></span><span>Full time</span><span class="dot"></span><span>Senior</span
+                      ><span class="dot"></span><span>2d ago</span>
+                    </div>
+                    <p class="snip">
+                      Tidepool builds scheduling and intake software for community clinics. We are hiring a senior
+                      engineer to own features end to end across our Next.js app and Node services, working with one
+                      designer and a small product team across four time zones.
+                    </p>
+                    <div class="skills">
+                      <span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >React</span
+                      ><span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >TypeScript</span
+                      ><span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >Node.js</span
+                      ><span class="kb rel"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-near" /></svg
+                        >Next.js</span
+                      ><span class="kb miss">AWS</span><span class="kb miss">+2</span>
+                    </div>
+                    <div class="payline"><span class="pay">USD 4,000–6,000 a month</span></div>
+                  </div>
+                </div>
+                <div class="sep"></div>
+                <div class="foot slot-in">
+                  <div class="group">
+                    <span class="ring"
+                      ><button class="btn">
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="url(#rbw)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-file" />
+                        </svg>
+                        Tailor CV
+                      </button></span
+                    ><span class="ring"
+                      ><button class="btn">
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="url(#rbw)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-mail" />
+                        </svg>
+                        Write cover letter
+                      </button></span
+                    >
+                  </div>
+                  <a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="15"
+                      height="15"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
+              </article>
+            </div>
+            <div class="jc phone">
+              <article class="card">
+                <div class="row">
+                  <span class="av" aria-hidden="true">TP</span>
+                  <div class="grow">
+                    <div class="head">
+                      <div style="min-width: 0">
+                        <div class="tline">
+                          <a class="title" href="#">Senior Full-stack Engineer</a><span class="kb slot">New</span>
+                        </div>
+                        <p class="company">Tidepool</p>
+                      </div>
+                      <div class="cluster">
+                        <button
+                          class="btn btn-o btn-icon"
+                          aria-label="Save Senior Full-stack Engineer"
+                          aria-pressed="false"
+                        >
+                          <svg
+                            width="15"
+                            height="15"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            aria-hidden="true"
+                          >
+                            <use href="#i-bookmark" />
+                          </svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="badgerow">
+                      <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
+                      ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span>
+                    </div>
+                    <div class="meta">
+                      <span>Remote</span><span class="dot"></span><span>🇵🇭 Philippines +10</span
+                      ><span class="dot"></span><span>Full time</span><span class="dot"></span><span>Senior</span
+                      ><span class="dot"></span><span>2d ago</span>
+                    </div>
+                    <p class="snip">
+                      Tidepool builds scheduling and intake software for community clinics. We are hiring a senior
+                      engineer to own features end to end across our Next.js app and Node services, working with one
+                      designer and a small product team across four time zones.
+                    </p>
+                    <div class="skills">
+                      <span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >React</span
+                      ><span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >TypeScript</span
+                      ><span class="kb have"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-check" /></svg
+                        >Node.js</span
+                      ><span class="kb rel"
+                        ><svg
+                          width="12"
+                          height="12"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-near" /></svg
+                        >Next.js</span
+                      ><span class="kb miss">AWS</span><span class="kb miss">+2</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="sep"></div>
+                <div class="foot reorg">
+                  <div class="group">
+                    <span class="ring"
+                      ><button class="btn">
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="url(#rbw)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-file" />
+                        </svg>
+                        Tailor CV
+                      </button></span
+                    ><span class="ring"
+                      ><button class="btn">
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="url(#rbw)"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-mail" />
+                        </svg>
+                        Write cover letter
+                      </button></span
+                    >
+                  </div>
+                  <div class="applywrap">
+                    <span class="pay">USD 4,000–6,000 a month</span
+                    ><a class="btn btn-p" href="#"
+                      >Apply
+                      <svg
+                        class="arw"
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-arrow" /></svg
+                    ></a>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>E11 · Dark, E1</h2>
+        <div class="scroll">
+          <div class="jc desk dk">
+            <article class="card">
+              <div class="row">
+                <span class="av" aria-hidden="true">TP</span>
+                <div class="grow">
+                  <div class="head">
+                    <div style="min-width: 0">
+                      <div class="tline">
+                        <a class="title" href="#">Senior Full-stack Engineer</a><span class="kb slot">New</span>
+                      </div>
+                      <p class="company">Tidepool</p>
+                    </div>
+                    <div class="cluster">
+                      <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
+                      ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
+                      ><button
+                        class="btn btn-o btn-icon"
+                        aria-label="Save Senior Full-stack Engineer"
+                        aria-pressed="false"
+                      >
+                        <svg
+                          width="15"
+                          height="15"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          aria-hidden="true"
+                        >
+                          <use href="#i-bookmark" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="meta">
+                    <span>Remote</span><span class="dot"></span><span>🇵🇭 Philippines +10</span><span class="dot"></span
+                    ><span>Full time</span><span class="dot"></span><span>Senior</span><span class="dot"></span
+                    ><span>2d ago</span>
+                  </div>
+                  <p class="snip">
+                    Tidepool builds scheduling and intake software for community clinics. We are hiring a senior
+                    engineer to own features end to end across our Next.js app and Node services, working with one
+                    designer and a small product team across four time zones.
+                  </p>
+                  <div class="skills">
+                    <span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >React</span
+                    ><span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >TypeScript</span
+                    ><span class="kb have"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-check" /></svg
+                      >Node.js</span
+                    ><span class="kb rel"
+                      ><svg
+                        width="12"
+                        height="12"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-near" /></svg
+                      >Next.js</span
+                    ><span class="kb miss">AWS</span><span class="kb miss">+2</span>
+                  </div>
+                  <div class="payline"><span class="pay">USD 4,000–6,000 a month</span></div>
+                </div>
+              </div>
+              <div class="sep"></div>
+              <div class="foot slot-in">
+                <div class="group">
+                  <span class="ring"
+                    ><button class="btn">
+                      <svg
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="url(#rbw)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-file" />
+                      </svg>
+                      Tailor CV
+                    </button></span
+                  ><span class="ring"
+                    ><button class="btn">
+                      <svg
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="url(#rbw)"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-mail" />
+                      </svg>
+                      Write cover letter
+                    </button></span
+                  >
+                </div>
+                <a class="btn btn-p" href="#"
+                  >Apply
+                  <svg
+                    class="arw"
+                    width="15"
+                    height="15"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    aria-hidden="true"
+                  >
+                    <use href="#i-arrow" /></svg
+                ></a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
