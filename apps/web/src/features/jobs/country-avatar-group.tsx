@@ -8,10 +8,9 @@ import { countryFlag, countryName } from "@/features/jobs/country-flags";
 import { EmptyState } from "./empty-state";
 
 // A posting's countries on the detail page's Location/Country rows (docs/mockups/Jobs redesign.html, "Desktop /
-// Job detail"): stacked avatars showing the plain two-letter code, click to expand into a flag-and-name badge
-// row. Flags only appear once expanded -- the collapsed avatars read as avatars, not a row of flags. No
-// countries stated reuses the Company tab's own boxed empty state, shrunk to one row, instead of a bare text
-// fallback that reads as broken rather than intentional.
+// Job detail"): stacked avatars showing the flag, click to expand into a flag-and-name badge row. No countries
+// stated reuses the Company tab's own boxed empty state, shrunk to one row, instead of a bare text fallback
+// that reads as broken rather than intentional.
 //
 // The root is `display: contents` (invisible to layout) so the trigger button and the expanded panel become
 // direct children of whatever flex-wrap row the caller puts this in -- the trigger then sits inline with a
@@ -45,7 +44,7 @@ export function CountryAvatarGroup({ countries, max = 5 }: { countries: string[]
         <AvatarGroup>
           {shown.map((code) => (
             <Avatar key={code} size="sm" title={countryName(code)}>
-              <AvatarFallback className="text-[0.625rem]">{code.toUpperCase()}</AvatarFallback>
+              <AvatarFallback className="text-sm">{countryFlag(code)}</AvatarFallback>
             </Avatar>
           ))}
           {overflow > 0 && <AvatarGroupCount className="text-xs">+{overflow}</AvatarGroupCount>}
