@@ -1102,6 +1102,36 @@ async function main() {
     assert.equal(coverLetterRowCount, 1, "regenerating keeps exactly one row -- no version history");
     console.log("ok - saveCoverLetter on an existing row overwrites in place, no version history kept");
 
+    // Slice 2 of plans/cover-letter.md: updateCoverLetterContent (the PUT-equivalent store function) and the pure
+    // "does Regenerate need to confirm" decision, needsRewriteConfirmation.
+    const neverEdited = new Date("2026-11-17T10:00:00Z");
+    const laterEdit = new Date("2026-11-17T12:00:00Z");
+    assert.equal(
+      coverLetterModule.needsRewriteConfirmation({ generatedAt: neverEdited, updatedAt: neverEdited, force: false }),
+      false,
+      "a never-edited letter regenerates with no confirmation, even without force",
+    );
+    assert.equal(
+      coverLetterModule.needsRewriteConfirmation({ generatedAt: neverEdited, updatedAt: laterEdit, force: false }),
+      true,
+      "an edited letter needs confirming before Regenerate overwrites it",
+    );
+    assert.equal(
+      coverLetterModule.needsRewriteConfirmation({ generatedAt: neverEdited, updatedAt: laterEdit, force: true }),
+      false,
+      "force skips confirmation on an edited letter -- the confirm dialog's own resubmit",
+    );
+    console.log("ok - needsRewriteConfirmation covers never-edited, edited-no-force and edited-with-force");
+
+    await store.updateCoverLetterContent(userId, scorableId, "Owner-edited version.");
+    const editedLetter = await store.getCoverLetter(userId, scorableId);
+    assert.equal(editedLetter?.content, "Owner-edited version.", "updateCoverLetterContent updates the content");
+    assert.ok(
+      editedLetter!.updatedAt.getTime() > editedLetter!.generatedAt.getTime(),
+      "a manual save moves updatedAt without touching generatedAt",
+    );
+    console.log("ok - updateCoverLetterContent updates content and updatedAt only, leaving generatedAt untouched");
+
     const needingScoreAfterScoring = await store.getNeedingScore(userId, null, 10);
     assert.ok(
       !needingScoreAfterScoring.some((p) => p.id === scorableId),

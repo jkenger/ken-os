@@ -13,6 +13,15 @@ export function hasInventedNumber(content: string, profile: ProfileDetails): boo
   return found.some((number) => !known.has(number));
 }
 
+/** Whether clicking Regenerate needs the owner's confirmation before overwriting the letter (docs/architecture/
+ *  cover-letter.md, "UI: a Cover letter tab" and the POST route's own 409 check -- the same decision, applied on
+ *  both sides). A letter never edited (`generatedAt === updatedAt`) always regenerates with no confirmation; an
+ *  edited one needs confirming unless `force` is already set, which is the confirm dialog's own resubmit. */
+export function needsRewriteConfirmation(params: { generatedAt: Date; updatedAt: Date; force: boolean }): boolean {
+  const edited = params.updatedAt.getTime() > params.generatedAt.getTime();
+  return edited && !params.force;
+}
+
 export async function writeCoverLetterForPosting(params: {
   userId: string;
   postingId: string;

@@ -896,3 +896,16 @@ export async function saveCoverLetter(postingId: string, userId: string, fields:
     .values({ postingId, userId, generatedAt, updatedAt: generatedAt, ...fields })
     .onConflictDoUpdate({ target: jobCoverLetters.postingId, set: { generatedAt, updatedAt: generatedAt, ...fields } });
 }
+
+/** The owner's own manual edit (PUT, not a regenerate) -- moves `updatedAt` only, leaving `generatedAt` untouched
+ *  so "edited since generation" (`updatedAt > generatedAt`) keeps meaning what it says (docs/architecture/
+ *  cover-letter.md). Mirrors `setSaved`'s shape: a direct update of one field, scoped to the owner's own posting,
+ *  no upsert -- the route checks the row exists first, since there's nothing sensible to edit into existence. */
+export async function updateCoverLetterContent(userId: string, postingId: string, content: string): Promise<Date> {
+  const updatedAt = new Date();
+  await db()
+    .update(jobCoverLetters)
+    .set({ content, updatedAt })
+    .where(and(eq(jobCoverLetters.postingId, postingId), eq(jobCoverLetters.userId, userId)));
+  return updatedAt;
+}

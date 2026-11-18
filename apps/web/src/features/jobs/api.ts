@@ -7,6 +7,9 @@ export class JobsInputError extends Error {
   constructor(
     message: string,
     readonly status = 400,
+    /** Overrides the default `{ error: message }` body -- the cover letter route's 409 needs `{ edited: true }`
+     *  instead (docs/architecture/cover-letter.md). */
+    readonly body?: Record<string, unknown>,
   ) {
     super(message);
   }
@@ -28,7 +31,8 @@ export async function jobsRoute(
       headers: { "Cache-Control": "no-store" },
     });
   } catch (error) {
-    if (error instanceof JobsInputError) return NextResponse.json({ error: error.message }, { status: error.status });
+    if (error instanceof JobsInputError)
+      return NextResponse.json(error.body ?? { error: error.message }, { status: error.status });
     console.error("jobs route failed", error instanceof Error ? error.message : error);
     return NextResponse.json({ error: "Couldn't save. Try again" }, { status: 502 });
   }

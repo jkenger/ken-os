@@ -6,10 +6,10 @@ import { PostingDetail } from "@/features/jobs/posting-detail";
 import { getPreferences } from "@/features/jobs/preferences-store";
 import { getProfile } from "@/features/profile/store";
 import {
+  getCoverLetter,
   getPosting,
   getRelatedByRole,
   getRelatedPostings,
-  hasCoverLetter,
   hasTailoredResume,
   markViewed,
 } from "@/features/jobs/store";
@@ -33,7 +33,7 @@ export default async function JobPosting({ params }: { params: Promise<{ id: str
     getRelatedByRole(session.userId, posting.title, posting.company, posting.id),
     markViewed(session.userId, posting.id),
     hasTailoredResume(session.userId, posting.id),
-    hasCoverLetter(session.userId, posting.id),
+    getCoverLetter(session.userId, posting.id),
   ]);
   const profileSkills = profile.details.skills.flatMap((group) => group.items);
   return (
@@ -46,7 +46,7 @@ export default async function JobPosting({ params }: { params: Promise<{ id: str
           yearsExperience={profile.details.experience.length > 0 ? yearsOfExperience(profile.details.experience) : null}
           preferredWorkSetups={preferences.workSetups}
           hasTailoredResume={tailored}
-          hasCoverLetter={coverLetter}
+          coverLetter={coverLetter}
         />
         {related.length > 0 && (
           <div className="mt-8 grid gap-3">
