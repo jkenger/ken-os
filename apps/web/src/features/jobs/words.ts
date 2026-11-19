@@ -5,4 +5,5 @@ export const sourceWords: Record<AlertSource, string> = {
   linkedin: "LinkedIn",
   indeed: "Indeed",
   freehire: "freehire",
+  jobstreet: "JobStreet",
 };

@@ -1,11 +1,11 @@
 // A posting pulled from one source (docs/product/job-finder.md). Everything after dedup never knows which source a
 // posting came from except through `sourceId`'s prefix and `source` itself.
 
-/** "linkedin" is live again (plans/jobs-scraper-sources.md, Slice 1) after being deleted in the freehire
- *  migration (plans/jobs-freehire-source.md) and reversed back on -- freehire's own coverage of LinkedIn/Indeed/
- *  JobStreet turned out too thin and too stale (see that plan's gap-check spike). "indeed" is still historical
- *  only until Slice 2 lands. */
-export type AlertSource = "linkedin" | "indeed" | "freehire";
+/** "linkedin" and "jobstreet" are live (plans/jobs-scraper-sources.md, Slices 1 and 4) after being deleted (or,
+ *  for JobStreet, never built) in the freehire migration (plans/jobs-freehire-source.md) and reversed back on
+ *  -- freehire's own coverage of LinkedIn/Indeed/JobStreet turned out too thin and too stale (see that plan's
+ *  gap-check spike). "indeed" is still historical only until Slice 2 lands. */
+export type AlertSource = "linkedin" | "indeed" | "freehire" | "jobstreet";
 
 export type RawPosting = {
   source: AlertSource;
