@@ -3,6 +3,7 @@ import { JobsPage } from "@/features/jobs/jobs-page";
 import { getProfile } from "@/features/profile/store";
 import { getPreferences } from "@/features/jobs/preferences-store";
 import { deriveRoles } from "@/features/jobs/roles";
+import { getAllScraperStates } from "@/features/jobs/scraper-state";
 import { countJobBoard, countPostings, getDistinctCompanies, listPostingsPage } from "@/features/jobs/store";
 import { requireSession } from "@/lib/auth/session";
 
@@ -13,25 +14,35 @@ export default async function Jobs({ searchParams }: { searchParams: Promise<{ b
   const session = await requireSession("/jobs");
   const { board } = await searchParams;
   const boardFilter = board?.trim() || undefined;
-  const [profile, firstPage, newCount, filteredOutCount, boardCount, preferences, companies, checkStatus] =
-    await Promise.all([
-      getProfile(session.userId),
-      listPostingsPage(session.userId, {
-        state: "new",
-        search: "",
-        sort: "score",
-        board: boardFilter,
-        cursorValue: null,
-        cursorId: null,
-        limit: PAGE_SIZE,
-      }),
-      countPostings(session.userId, "new", boardFilter),
-      countPostings(session.userId, "filtered_out"),
-      countJobBoard(session.userId),
-      getPreferences(session.userId),
-      getDistinctCompanies(session.userId),
-      getCheckStatus(session.userId),
-    ]);
+  const [
+    profile,
+    firstPage,
+    newCount,
+    filteredOutCount,
+    boardCount,
+    preferences,
+    companies,
+    checkStatus,
+    scraperStates,
+  ] = await Promise.all([
+    getProfile(session.userId),
+    listPostingsPage(session.userId, {
+      state: "new",
+      search: "",
+      sort: "score",
+      board: boardFilter,
+      cursorValue: null,
+      cursorId: null,
+      limit: PAGE_SIZE,
+    }),
+    countPostings(session.userId, "new", boardFilter),
+    countPostings(session.userId, "filtered_out"),
+    countJobBoard(session.userId),
+    getPreferences(session.userId),
+    getDistinctCompanies(session.userId),
+    getCheckStatus(session.userId),
+    getAllScraperStates(),
+  ]);
   const derivedRoles = deriveRoles(profile.details);
   const profileSkills = profile.details.skills.flatMap((group) => group.items);
   return (
@@ -49,6 +60,7 @@ export default async function Jobs({ searchParams }: { searchParams: Promise<{ b
       filteredOutCount={filteredOutCount}
       boardFilter={boardFilter}
       checkStatus={checkStatus}
+      scraperStates={scraperStates}
     />
   );
 }
