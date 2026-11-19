@@ -192,45 +192,78 @@
           .sk-miss {
             background: var(--muted);
           }
-          .score {
-            display: inline-flex;
-            align-items: baseline;
-            gap: 5px;
-            height: 36px;
-            padding: 0 12px;
-            border: 1px solid var(--border);
-            border-radius: 10.4px;
-            line-height: 34px;
+          .gauges {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            position: relative;
+            z-index: 1;
           }
-          .score b {
+          .gauge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+          }
+          .dial {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            flex: none;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+          }
+          .dial::before,
+          .dial::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+          }
+          .dial::before {
+            border: 4px solid var(--muted);
+          }
+          .dial::after {
+            background: conic-gradient(
+              oklch(0.68 0.19 25) 0%,
+              oklch(0.78 0.16 75) calc(var(--p) * 0.25%),
+              oklch(0.72 0.17 150) calc(var(--p) * 0.5%),
+              oklch(0.66 0.15 230) calc(var(--p) * 0.75%),
+              oklch(0.62 0.2 295) calc(var(--p) * 1%)
+            );
+            -webkit-mask:
+              radial-gradient(
+                farthest-side,
+                transparent calc(100% - 4px),
+                #000 calc(100% - 3.5px)
+              ),
+              conic-gradient(#000 calc(var(--p) * 1%), transparent 0);
+            -webkit-mask-composite: source-in;
+            mask:
+              radial-gradient(
+                farthest-side,
+                transparent calc(100% - 4px),
+                #000 calc(100% - 3.5px)
+              ),
+              conic-gradient(#000 calc(var(--p) * 1%), transparent 0);
+            mask-composite: intersect;
+          }
+          .dial b {
+            position: relative;
             font-family: "Geist Mono", ui-monospace, monospace;
-            font-size: 20px;
+            font-size: 12px;
             font-weight: 600;
+            letter-spacing: -0.03em;
             font-variant-numeric: tabular-nums;
           }
-          .score span {
-            font-size: 13px;
-            color: var(--mfg);
+          .dial b small {
+            font-size: 9px;
+            font-weight: 500;
           }
-          .ats {
-            display: inline-flex;
-            align-items: baseline;
-            gap: 4px;
-            height: 28px;
-            padding: 0 9px;
-            border: 1px solid var(--border);
-            border-radius: 8.8px;
-            line-height: 26px;
-          }
-          .ats span {
+          .gl {
             font-size: 12px;
             font-weight: 500;
             color: var(--mfg);
-          }
-          .ats b {
-            font-family: "Geist Mono", ui-monospace, monospace;
-            font-size: 14px;
-            font-weight: 600;
           }
           .dot {
             width: 3px;
@@ -316,17 +349,6 @@
                     z-index: 1;
                   "
                 >
-                  <sc-if
-                    value="{{badgesInHeader}}"
-                    hint-placeholder-val="{{true}}"
-                  >
-                    <span class="score" aria-label="Match score 92"
-                      ><b>92</b><span>match</span></span
-                    >
-                    <span class="ats" aria-label="ATS compatibility 85 percent"
-                      ><span>ATS</span><b>85%</b></span
-                    >
-                  </sc-if>
                   <button
                     class="btn btn-o btn-icon"
                     aria-label="Save {{title}}"
@@ -349,23 +371,6 @@
                   </button>
                 </div>
               </div>
-              <sc-if value="{{badgesInRow}}" hint-placeholder-val="{{false}}">
-                <div
-                  style="
-                    margin-top: 10px;
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-                  "
-                >
-                  <span class="score" aria-label="Match score 92"
-                    ><b>92</b><span>match</span></span
-                  >
-                  <span class="ats" aria-label="ATS compatibility 85 percent"
-                    ><span>ATS</span><b>85%</b></span
-                  >
-                </div>
-              </sc-if>
               <div
                 style="
                   margin-top: 10px;
@@ -489,15 +494,22 @@
             style="margin-top: 12px; height: 1px; background: var(--border)"
           ></div>
           <div style="{{footStyle}}">
-            <div
-              style="
-                display: flex;
-                flex-wrap: wrap;
-                gap: 8px;
-                position: relative;
-                z-index: 1;
-              "
-            >
+            <div class="gauges">
+              <span class="gauge" role="img" aria-label="Match score 92"
+                ><span class="dial" style="--p: 92" aria-hidden="true"
+                  ><b>92</b></span
+                ><span class="gl" aria-hidden="true">Match</span></span
+              >
+              <span
+                class="gauge"
+                role="img"
+                aria-label="ATS compatibility 85 percent"
+                ><span class="dial" style="--p: 85" aria-hidden="true"
+                  ><b>85<small>%</small></b></span
+                ><span class="gl" aria-hidden="true">ATS</span></span
+              >
+            </div>
+            <div style="{{actStyle}}">
               <sc-if value="{{tIdle}}" hint-placeholder-val="{{true}}"
                 ><span class="ring"
                   ><button class="btn">
@@ -665,26 +677,32 @@
         renderVals() {
           const v = this.props.variant || 'E1';
           const phone = v === 'P1' || v === 'P9';
-          const reorg = v === 'E9' || v === 'P9';
+          const reorg = v === 'E9';
           const long = v === 'E5';
-          const t = v === 'E3' ? 'busy' : (v === 'E4' ? 'ready' : 'idle');
-          const l = v === 'E5' ? 'busy' : (v === 'E6' ? 'ready' : 'idle');
-          let footStyle = 'margin-top: 12px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap';
-          if (reorg) footStyle = phone
-            ? 'margin-top: 12px; display: flex; flex-direction: column; align-items: stretch; gap: 10px'
-            : 'margin-top: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px';
+          const t = v === 'E3' ? 'busy' : (v === 'E4' || v === 'P9' ? 'ready' : 'idle');
+          const l = v === 'E5' ? 'busy' : (v === 'E6' || v === 'P9' ? 'ready' : 'idle');
+          const grp = 'display: flex; flex-wrap: wrap; align-items: center; gap: 8px; position: relative; z-index: 1';
+          let actStyle = grp + '; margin-left: auto';
+          let applyWrap = 'display: flex; position: relative; z-index: 1';
+          if (reorg) {
+            actStyle = grp + '; padding-left: 14px; border-left: 1px solid var(--border)';
+            applyWrap = 'display: flex; align-items: center; gap: 12px; margin-left: auto; position: relative; z-index: 1';
+          }
+          if (phone) {
+            actStyle = grp + '; order: 3; flex-basis: 100%';
+            applyWrap = 'display: flex; order: 2; margin-left: auto; position: relative; z-index: 1';
+          }
           return {
             rootClass: v === 'E11' ? 'jc dk' : 'jc',
             rootStyle: phone ? 'width: 390px; padding: 16px' : 'width: 1000px; padding: 40px 48px',
             title: long ? 'Senior Staff Full-stack Software Engineer, Payments Infrastructure and Developer Platform' : 'Senior Full-stack Engineer',
             company: long ? 'Brightline Payments International Holdings' : 'Tidepool',
             ini: long ? 'BP' : 'TP',
-            badgesInHeader: !(phone && reorg),
-            badgesInRow: phone && reorg,
             payLine: !reorg,
             payInFoot: reorg,
-            footStyle,
-            applyWrap: reorg ? 'display: flex; align-items: center; justify-content: space-between; gap: 12px' + (phone ? '' : '') : 'display: flex',
+            footStyle: 'margin-top: 12px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 8px',
+            actStyle,
+            applyWrap,
             tIdle: t === 'idle', tBusy: t === 'busy', tReady: t === 'ready',
             lIdle: l === 'idle', lBusy: l === 'busy', lReady: l === 'ready'
           };

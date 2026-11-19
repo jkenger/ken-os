@@ -113,14 +113,14 @@
               <tr>
                 <td class="mono">E1</td>
                 <td>
-                  Slot-in baseline: restyled score, ATS badge, Tailor CV and
-                  Write cover letter beside Apply
+                  Slot-in baseline: score and ATS rings at the footer's far
+                  left, Tailor CV and Write cover letter beside Apply
                 </td>
                 <td>Changed (1)</td>
               </tr>
               <tr>
                 <td class="mono">E2</td>
-                <td>Score today vs restyled, and three ATS wordings, at 2x</td>
+                <td>Badges before vs the new rings, and the arc range, at 2x</td>
                 <td>Done</td>
               </tr>
               <tr>
@@ -162,7 +162,7 @@
               </tr>
               <tr>
                 <td class="mono">E10</td>
-                <td>Phone 390, E1 then E9</td>
+                <td>Phone 390, idle then both ready</td>
                 <td>Done</td>
               </tr>
               <tr>
@@ -193,27 +193,34 @@
               review.
             </li>
             <li>
-              The score keeps its neutral outline badge and only grows: the
-              figure is Geist Mono 20px semibold, the badge 36px tall. The ATS
-              badge sits after it, one step smaller (28px), so the score stays
-              the first thing read.
+              <strong>Score and ATS are rings, not badges</strong> (owner's
+              decision, 19 Nov). Both are the same 40px circle: a muted track,
+              a progress arc whose length is the figure, and the figure centred
+              in Geist Mono 12px ("92", "85%"), with "Match" or "ATS" beside
+              it. They move out of the header to the footer's far left on
+              every card, so the header keeps only Save and the title gets its
+              width back on every screen.
             </li>
           </ol>
         </section>
         <section>
           <h2>Proposals</h2>
           <p style="margin: 0">
-            No new token or component. The card actions reuse the shipped
-            rainbow-ring class at Button size sm (32px), the same FileText and
-            Mail icons stroked with the ring's gradient, Dialog, Textarea and
-            the toaster.
+            One new component: a ScoreRing (40px, value 0 to 100, label). The
+            arc is a conic gradient built from the same five hues as
+            --rainbow-gradient, scaled to the arc so every ring shows the whole
+            rainbow; a mask cuts it to a 4px stroke. No new token. The card
+            actions reuse the shipped rainbow-ring class at Button size sm
+            (32px), the same FileText and Mail icons stroked with the ring's
+            gradient, Dialog, Textarea and the toaster.
           </p>
         </section>
         <section>
           <h2>The reorganization recommendation (E9)</h2>
           <p style="margin: 0 0 8px">
-            E1 holds on desktop: the title keeps over 600px beside the score,
-            ATS and Save, and the three footer actions fit on one line. Two
+            E1 holds on desktop: with the rings in the footer the title has
+            the full header beside Save, and rings, two actions and Apply fit
+            on one line. Two
             things do read as crowded once drawn with real content, so I
             recommend a small restructure rather than a new card:
           </p>
@@ -231,12 +238,10 @@
               for the new buttons.
             </li>
             <li>
-              <strong
-                >On phones (E10), move score and ATS out of the header</strong
-              >
-              into a row under the company, so the title keeps its width. The
-              footer wraps to two rows: the AI actions, then pay and Apply.
-              Labels fit at 390, so no icon-only collapse is needed.
+              <strong>On phones (E10)</strong> the footer wraps to two rows:
+              the rings with Apply at the right, then the AI actions. Pay stays
+              on its own line above the separator, since the first row has no
+              room for it. Labels fit at 390, so no icon-only collapse.
             </li>
           </ul>
         </section>
@@ -244,9 +249,11 @@
           <h2>Open questions</h2>
           <ol>
             <li>
-              <strong>ATS wording</strong> (E2): "ATS 85%", "85% ATS" or "ATS
-              match 85%". Recommend "ATS 85%": shortest, and the label before
-              the figure mirrors "92 match" without copying it.
+              <strong>Rainbow on figures:</strong> until now the rainbow meant
+              "AI action". The rings make it mark data too. Recommend keeping
+              it, since both come from the same matching work, but a neutral
+              arc (foreground colour) is the fallback if the footer reads as
+              too busy beside the ringed buttons.
             </li>
             <li>
               <strong>Icons on the card buttons:</strong> recommend keeping
@@ -254,14 +261,14 @@
               to the detail page's, and it costs about 22px each, which fits.
             </li>
             <li>
-              <strong>Explaining ATS:</strong> recommend a Tooltip on the badge,
-              "6 of 7 posting skills in your Profile", since a bare percentage
-              does not say what it counts.
+              <strong>Explaining the rings:</strong> recommend a Tooltip on
+              each, "6 of 7 posting skills in your Profile" for ATS, since a
+              bare percentage does not say what it counts.
             </li>
             <li>
-              <strong>No skills on a posting:</strong> the spec hides the ATS
-              badge. Recommend the score stays exactly where it is, so the
-              header does not shift between cards.
+              <strong>No skills on a posting:</strong> the spec hides ATS.
+              Recommend only the Match ring shows, still at the far left, so
+              the actions do not shift between cards.
             </li>
           </ol>
         </section>
