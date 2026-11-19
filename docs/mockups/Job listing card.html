@@ -281,47 +281,68 @@
       .miss {
         background: var(--muted);
       }
-      .score {
-        display: inline-flex;
-        align-items: baseline;
-        gap: 5px;
-        height: 36px;
-        padding: 0 12px;
-        border: 1px solid var(--border);
-        border-radius: 10.4px;
-        line-height: 34px;
+      .gauges {
+        display: flex;
+        align-items: center;
+        gap: 14px;
       }
-      .score b {
+      .gauge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .dial {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        flex: none;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+      }
+      .dial::before,
+      .dial::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+      }
+      .dial::before {
+        border: 4px solid var(--muted);
+      }
+      .dial::after {
+        background: conic-gradient(
+          oklch(0.68 0.19 25) 0%,
+          oklch(0.78 0.16 75) calc(var(--p) * 0.25%),
+          oklch(0.72 0.17 150) calc(var(--p) * 0.5%),
+          oklch(0.66 0.15 230) calc(var(--p) * 0.75%),
+          oklch(0.62 0.2 295) calc(var(--p) * 1%)
+        );
+        -webkit-mask:
+          radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3.5px)),
+          conic-gradient(#000 calc(var(--p) * 1%), transparent 0);
+        -webkit-mask-composite: source-in;
+        mask:
+          radial-gradient(farthest-side, transparent calc(100% - 4px), #000 calc(100% - 3.5px)),
+          conic-gradient(#000 calc(var(--p) * 1%), transparent 0);
+        mask-composite: intersect;
+      }
+      .dial b {
+        position: relative;
         font-family: "Geist Mono", ui-monospace, monospace;
-        font-size: 20px;
-        font-weight: 600;
-      }
-      .score span,
-      .ats span,
-      .old span {
-        color: var(--mfg);
-      }
-      .score span {
-        font-size: 13px;
-      }
-      .ats {
-        display: inline-flex;
-        align-items: baseline;
-        gap: 4px;
-        height: 28px;
-        padding: 0 9px;
-        border: 1px solid var(--border);
-        border-radius: 8.8px;
-        line-height: 26px;
         font-size: 12px;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+        font-variant-numeric: tabular-nums;
       }
-      .ats span {
+      .dial b small {
+        font-size: 9px;
         font-weight: 500;
       }
-      .ats b {
-        font-family: "Geist Mono", ui-monospace, monospace;
-        font-size: 14px;
-        font-weight: 600;
+      .gl {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--mfg);
       }
       .old {
         display: inline-flex;
@@ -335,6 +356,7 @@
       }
       .old span {
         font-weight: 400;
+        color: var(--mfg);
       }
       .meta {
         margin-top: 10px;
@@ -382,38 +404,40 @@
       .foot {
         margin-top: 12px;
         display: flex;
-        align-items: center;
-        gap: 8px;
         flex-wrap: wrap;
-      }
-      .foot.slot-in {
-        justify-content: flex-end;
-      }
-      .foot.reorg {
-        justify-content: space-between;
-        gap: 12px;
-      }
-      .phone .foot.reorg {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
+        align-items: center;
+        gap: 12px 8px;
       }
       .group {
         display: flex;
         flex-wrap: wrap;
+        align-items: center;
         gap: 8px;
+      }
+      .foot .group {
+        margin-left: auto;
+      }
+      .foot.reorg .group {
+        margin-left: 0;
+        padding-left: 14px;
+        border-left: 1px solid var(--border);
       }
       .applywrap {
         display: flex;
         align-items: center;
-        justify-content: space-between;
         gap: 12px;
       }
-      .badgerow {
-        margin-top: 10px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
+      .foot.reorg .applywrap {
+        margin-left: auto;
+      }
+      .phone .foot .applywrap {
+        order: 2;
+        margin-left: auto;
+      }
+      .phone .foot .group {
+        order: 3;
+        flex-basis: 100%;
+        margin-left: 0;
       }
       .zoom {
         zoom: 2;
@@ -546,9 +570,9 @@
       <header>
         <h1>Job listing card: mockup snapshot</h1>
         <p>
-          Static snapshot of the Job listing card frames E1 to E11: the restyled score, the ATS badge, Tailor CV and
-          Write cover letter on the card, their modals, and the recommended reorganization (E9). The source and README
-          are in docs/mockups/job-card-actions-canvas; the live canvas is
+          Static snapshot of the Job listing card frames E1 to E11: the score and ATS rings at the footer's left, Tailor
+          CV and Write cover letter on the card, their modals, and the recommended reorganization (E9). The source and
+          README are in docs/mockups/job-card-actions-canvas; the live canvas is
           https://claude.ai/artifact/82KqsAPh8pHtSy74b35qG8.
         </p>
       </header>
@@ -568,9 +592,7 @@
                       <p class="company">Tidepool</p>
                     </div>
                     <div class="cluster">
-                      <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
-                      ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
-                      ><button
+                      <button
                         class="btn btn-o btn-icon"
                         aria-label="Save Senior Full-stack Engineer"
                         aria-pressed="false"
@@ -660,7 +682,17 @@
                 </div>
               </div>
               <div class="sep"></div>
-              <div class="foot slot-in">
+              <div class="foot">
+                <div class="gauges">
+                  <span class="gauge" role="img" aria-label="Match score 92"
+                    ><span class="dial" style="--p: 92" aria-hidden="true"><b>92</b></span
+                    ><span class="gl" aria-hidden="true">Match</span></span
+                  ><span class="gauge" role="img" aria-label="ATS compatibility 85 percent"
+                    ><span class="dial" style="--p: 85" aria-hidden="true"
+                      ><b>85<small>%</small></b></span
+                    ><span class="gl" aria-hidden="true">ATS</span></span
+                  >
+                </div>
                 <div class="group">
                   <span class="ring"
                     ><button class="btn">
@@ -696,28 +728,30 @@
                     </button></span
                   >
                 </div>
-                <a class="btn btn-p" href="#"
-                  >Apply
-                  <svg
-                    class="arw"
-                    width="15"
-                    height="15"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <use href="#i-arrow" /></svg
-                ></a>
+                <div class="applywrap">
+                  <a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="15"
+                      height="15"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
               </div>
             </article>
           </div>
         </div>
       </section>
       <section class="frame">
-        <h2>E2 · Score and ATS badges, x2</h2>
+        <h2>E2 · Score and ATS rings, x2</h2>
         <div class="scroll">
           <div
             class="jc desk"
@@ -729,42 +763,52 @@
             "
           >
             <section>
-              <h3 class="lbl">Score today</h3>
+              <h3 class="lbl">Before</h3>
               <div class="zoom">
-                <span class="old">92<span>match</span></span>
+                <span class="old">92<span>match</span></span
+                ><span class="old">ATS<span>85%</span></span>
               </div>
-              <p class="cap">Shipped: 32px outline badge, 14px figure</p>
+              <p class="cap">Two outline badges of different sizes in the header</p>
             </section>
             <section>
-              <h3 class="lbl">Score restyled, with ATS</h3>
-              <div class="zoom">
-                <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
-                ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span>
+              <h3 class="lbl">After</h3>
+              <div class="zoom" style="gap: 14px">
+                <span class="gauge" role="img" aria-label="Match score 92"
+                  ><span class="dial" style="--p: 92" aria-hidden="true"><b>92</b></span
+                  ><span class="gl" aria-hidden="true">Match</span></span
+                ><span class="gauge" role="img" aria-label="ATS compatibility 85 percent"
+                  ><span class="dial" style="--p: 85" aria-hidden="true"
+                    ><b>85<small>%</small></b></span
+                  ><span class="gl" aria-hidden="true">ATS</span></span
+                >
               </div>
-              <p class="cap">36px badge, 20px mono figure; ATS one step smaller beside it</p>
+              <p class="cap">
+                Two 40px rings, same size, at the footer's far left. The arc is the figure; the rainbow always spans the
+                whole arc, so colour never hints at the value.
+              </p>
             </section>
             <section style="grid-column: 1 / -1">
-              <h3 class="lbl">ATS wording, at card size x2</h3>
-              <div style="display: flex; gap: 40px; align-items: flex-start">
-                <div>
-                  <div class="zoom">
-                    <span class="ats"><span>ATS</span><b>85%</b></span>
-                  </div>
-                  <p class="cap">ATS 85% (recommended)</p>
-                </div>
-                <div>
-                  <div class="zoom">
-                    <span class="ats"><b>85%</b><span>ATS</span></span>
-                  </div>
-                  <p class="cap">85% ATS</p>
-                </div>
-                <div>
-                  <div class="zoom">
-                    <span class="ats"><span>ATS match</span><b>85%</b></span>
-                  </div>
-                  <p class="cap">ATS match 85%, widest</p>
-                </div>
+              <h3 class="lbl">Arc range, at card size x2</h3>
+              <div class="zoom" style="gap: 28px">
+                <span class="gauge" role="img" aria-label="Match score 12"
+                  ><span class="dial" style="--p: 12" aria-hidden="true"><b>12</b></span
+                  ><span class="gl" aria-hidden="true">Match</span></span
+                ><span class="gauge" role="img" aria-label="Match score 41"
+                  ><span class="dial" style="--p: 41" aria-hidden="true"><b>41</b></span
+                  ><span class="gl" aria-hidden="true">Match</span></span
+                ><span class="gauge" role="img" aria-label="ATS compatibility 68 percent"
+                  ><span class="dial" style="--p: 68" aria-hidden="true"
+                    ><b>68<small>%</small></b></span
+                  ><span class="gl" aria-hidden="true">ATS</span></span
+                ><span class="gauge" role="img" aria-label="ATS compatibility 100 percent"
+                  ><span class="dial" style="--p: 100" aria-hidden="true"
+                    ><b>100<small>%</small></b></span
+                  ><span class="gl" aria-hidden="true">ATS</span></span
+                >
               </div>
+              <p class="cap">
+                12, 41, 68 and 100. Three-character figures (100, 85%) still fit inside the ring at 12px Geist Mono.
+              </p>
             </section>
           </div>
         </div>
@@ -785,9 +829,7 @@
                       <p class="company">Tidepool</p>
                     </div>
                     <div class="cluster">
-                      <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
-                      ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
-                      ><button
+                      <button
                         class="btn btn-o btn-icon"
                         aria-label="Save Senior Full-stack Engineer"
                         aria-pressed="false"
@@ -877,7 +919,17 @@
                 </div>
               </div>
               <div class="sep"></div>
-              <div class="foot slot-in">
+              <div class="foot">
+                <div class="gauges">
+                  <span class="gauge" role="img" aria-label="Match score 92"
+                    ><span class="dial" style="--p: 92" aria-hidden="true"><b>92</b></span
+                    ><span class="gl" aria-hidden="true">Match</span></span
+                  ><span class="gauge" role="img" aria-label="ATS compatibility 85 percent"
+                    ><span class="dial" style="--p: 85" aria-hidden="true"
+                      ><b>85<small>%</small></b></span
+                    ><span class="gl" aria-hidden="true">ATS</span></span
+                  >
+                </div>
                 <div class="group">
                   <span class="busy ring"
                     ><button class="btn" disabled aria-busy="true">
@@ -914,21 +966,23 @@
                     </button></span
                   >
                 </div>
-                <a class="btn btn-p" href="#"
-                  >Apply
-                  <svg
-                    class="arw"
-                    width="15"
-                    height="15"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <use href="#i-arrow" /></svg
-                ></a>
+                <div class="applywrap">
+                  <a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="15"
+                      height="15"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
               </div>
             </article>
           </div>
@@ -950,9 +1004,7 @@
                       <p class="company">Tidepool</p>
                     </div>
                     <div class="cluster">
-                      <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
-                      ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
-                      ><button
+                      <button
                         class="btn btn-o btn-icon"
                         aria-label="Save Senior Full-stack Engineer"
                         aria-pressed="false"
@@ -1042,7 +1094,17 @@
                 </div>
               </div>
               <div class="sep"></div>
-              <div class="foot slot-in">
+              <div class="foot">
+                <div class="gauges">
+                  <span class="gauge" role="img" aria-label="Match score 92"
+                    ><span class="dial" style="--p: 92" aria-hidden="true"><b>92</b></span
+                    ><span class="gl" aria-hidden="true">Match</span></span
+                  ><span class="gauge" role="img" aria-label="ATS compatibility 85 percent"
+                    ><span class="dial" style="--p: 85" aria-hidden="true"
+                      ><b>85<small>%</small></b></span
+                    ><span class="gl" aria-hidden="true">ATS</span></span
+                  >
+                </div>
                 <div class="group">
                   <span class="ring"
                     ><button class="btn" aria-haspopup="dialog">
@@ -1078,21 +1140,23 @@
                     </button></span
                   >
                 </div>
-                <a class="btn btn-p" href="#"
-                  >Apply
-                  <svg
-                    class="arw"
-                    width="15"
-                    height="15"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <use href="#i-arrow" /></svg
-                ></a>
+                <div class="applywrap">
+                  <a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="15"
+                      height="15"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
               </div>
             </article>
           </div>
@@ -1116,9 +1180,7 @@
                       <p class="company">Brightline Payments International Holdings</p>
                     </div>
                     <div class="cluster">
-                      <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
-                      ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
-                      ><button
+                      <button
                         class="btn btn-o btn-icon"
                         aria-label="Save Senior Staff Full-stack Software Engineer, Payments Infrastructure and Developer Platform"
                         aria-pressed="false"
@@ -1208,7 +1270,17 @@
                 </div>
               </div>
               <div class="sep"></div>
-              <div class="foot slot-in">
+              <div class="foot">
+                <div class="gauges">
+                  <span class="gauge" role="img" aria-label="Match score 92"
+                    ><span class="dial" style="--p: 92" aria-hidden="true"><b>92</b></span
+                    ><span class="gl" aria-hidden="true">Match</span></span
+                  ><span class="gauge" role="img" aria-label="ATS compatibility 85 percent"
+                    ><span class="dial" style="--p: 85" aria-hidden="true"
+                      ><b>85<small>%</small></b></span
+                    ><span class="gl" aria-hidden="true">ATS</span></span
+                  >
+                </div>
                 <div class="group">
                   <span class="ring"
                     ><button class="btn">
@@ -1245,21 +1317,23 @@
                     </button></span
                   >
                 </div>
-                <a class="btn btn-p" href="#"
-                  >Apply
-                  <svg
-                    class="arw"
-                    width="15"
-                    height="15"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <use href="#i-arrow" /></svg
-                ></a>
+                <div class="applywrap">
+                  <a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="15"
+                      height="15"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
               </div>
             </article>
           </div>
@@ -1281,9 +1355,7 @@
                       <p class="company">Tidepool</p>
                     </div>
                     <div class="cluster">
-                      <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
-                      ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
-                      ><button
+                      <button
                         class="btn btn-o btn-icon"
                         aria-label="Save Senior Full-stack Engineer"
                         aria-pressed="false"
@@ -1373,7 +1445,17 @@
                 </div>
               </div>
               <div class="sep"></div>
-              <div class="foot slot-in">
+              <div class="foot">
+                <div class="gauges">
+                  <span class="gauge" role="img" aria-label="Match score 92"
+                    ><span class="dial" style="--p: 92" aria-hidden="true"><b>92</b></span
+                    ><span class="gl" aria-hidden="true">Match</span></span
+                  ><span class="gauge" role="img" aria-label="ATS compatibility 85 percent"
+                    ><span class="dial" style="--p: 85" aria-hidden="true"
+                      ><b>85<small>%</small></b></span
+                    ><span class="gl" aria-hidden="true">ATS</span></span
+                  >
+                </div>
                 <div class="group">
                   <span class="ring"
                     ><button class="btn">
@@ -1409,21 +1491,23 @@
                     </button></span
                   >
                 </div>
-                <a class="btn btn-p" href="#"
-                  >Apply
-                  <svg
-                    class="arw"
-                    width="15"
-                    height="15"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <use href="#i-arrow" /></svg
-                ></a>
+                <div class="applywrap">
+                  <a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="15"
+                      height="15"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
               </div>
             </article>
           </div>
@@ -1446,9 +1530,7 @@
                         <p class="company">Tidepool</p>
                       </div>
                       <div class="cluster">
-                        <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
-                        ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
-                        ><button
+                        <button
                           class="btn btn-o btn-icon"
                           aria-label="Save Senior Full-stack Engineer"
                           aria-pressed="false"
@@ -1538,7 +1620,17 @@
                   </div>
                 </div>
                 <div class="sep"></div>
-                <div class="foot slot-in">
+                <div class="foot">
+                  <div class="gauges">
+                    <span class="gauge" role="img" aria-label="Match score 92"
+                      ><span class="dial" style="--p: 92" aria-hidden="true"><b>92</b></span
+                      ><span class="gl" aria-hidden="true">Match</span></span
+                    ><span class="gauge" role="img" aria-label="ATS compatibility 85 percent"
+                      ><span class="dial" style="--p: 85" aria-hidden="true"
+                        ><b>85<small>%</small></b></span
+                      ><span class="gl" aria-hidden="true">ATS</span></span
+                    >
+                  </div>
                   <div class="group">
                     <span class="ring"
                       ><button class="btn" aria-haspopup="dialog">
@@ -1574,21 +1666,23 @@
                       </button></span
                     >
                   </div>
-                  <a class="btn btn-p" href="#"
-                    >Apply
-                    <svg
-                      class="arw"
-                      width="15"
-                      height="15"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      aria-hidden="true"
-                    >
-                      <use href="#i-arrow" /></svg
-                  ></a>
+                  <div class="applywrap">
+                    <a class="btn btn-p" href="#"
+                      >Apply
+                      <svg
+                        class="arw"
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-arrow" /></svg
+                    ></a>
+                  </div>
                 </div>
               </article>
               <article class="card">
@@ -1603,9 +1697,7 @@
                         <p class="company">Tidepool</p>
                       </div>
                       <div class="cluster">
-                        <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
-                        ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
-                        ><button
+                        <button
                           class="btn btn-o btn-icon"
                           aria-label="Save Senior Full-stack Engineer"
                           aria-pressed="false"
@@ -1695,7 +1787,17 @@
                   </div>
                 </div>
                 <div class="sep"></div>
-                <div class="foot slot-in">
+                <div class="foot">
+                  <div class="gauges">
+                    <span class="gauge" role="img" aria-label="Match score 92"
+                      ><span class="dial" style="--p: 92" aria-hidden="true"><b>92</b></span
+                      ><span class="gl" aria-hidden="true">Match</span></span
+                    ><span class="gauge" role="img" aria-label="ATS compatibility 85 percent"
+                      ><span class="dial" style="--p: 85" aria-hidden="true"
+                        ><b>85<small>%</small></b></span
+                      ><span class="gl" aria-hidden="true">ATS</span></span
+                    >
+                  </div>
                   <div class="group">
                     <span class="ring"
                       ><button class="btn">
@@ -1731,21 +1833,23 @@
                       </button></span
                     >
                   </div>
-                  <a class="btn btn-p" href="#"
-                    >Apply
-                    <svg
-                      class="arw"
-                      width="15"
-                      height="15"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      aria-hidden="true"
-                    >
-                      <use href="#i-arrow" /></svg
-                  ></a>
+                  <div class="applywrap">
+                    <a class="btn btn-p" href="#"
+                      >Apply
+                      <svg
+                        class="arw"
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-arrow" /></svg
+                    ></a>
+                  </div>
                 </div>
               </article>
             </div>
@@ -1853,9 +1957,7 @@
                         <p class="company">Tidepool</p>
                       </div>
                       <div class="cluster">
-                        <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
-                        ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
-                        ><button
+                        <button
                           class="btn btn-o btn-icon"
                           aria-label="Save Senior Full-stack Engineer"
                           aria-pressed="false"
@@ -1945,7 +2047,17 @@
                   </div>
                 </div>
                 <div class="sep"></div>
-                <div class="foot slot-in">
+                <div class="foot">
+                  <div class="gauges">
+                    <span class="gauge" role="img" aria-label="Match score 92"
+                      ><span class="dial" style="--p: 92" aria-hidden="true"><b>92</b></span
+                      ><span class="gl" aria-hidden="true">Match</span></span
+                    ><span class="gauge" role="img" aria-label="ATS compatibility 85 percent"
+                      ><span class="dial" style="--p: 85" aria-hidden="true"
+                        ><b>85<small>%</small></b></span
+                      ><span class="gl" aria-hidden="true">ATS</span></span
+                    >
+                  </div>
                   <div class="group">
                     <span class="ring"
                       ><button class="btn">
@@ -1981,21 +2093,23 @@
                       </button></span
                     >
                   </div>
-                  <a class="btn btn-p" href="#"
-                    >Apply
-                    <svg
-                      class="arw"
-                      width="15"
-                      height="15"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      aria-hidden="true"
-                    >
-                      <use href="#i-arrow" /></svg
-                  ></a>
+                  <div class="applywrap">
+                    <a class="btn btn-p" href="#"
+                      >Apply
+                      <svg
+                        class="arw"
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-arrow" /></svg
+                    ></a>
+                  </div>
                 </div>
               </article>
               <article class="card">
@@ -2010,9 +2124,7 @@
                         <p class="company">Tidepool</p>
                       </div>
                       <div class="cluster">
-                        <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
-                        ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
-                        ><button
+                        <button
                           class="btn btn-o btn-icon"
                           aria-label="Save Senior Full-stack Engineer"
                           aria-pressed="false"
@@ -2102,7 +2214,17 @@
                   </div>
                 </div>
                 <div class="sep"></div>
-                <div class="foot slot-in">
+                <div class="foot">
+                  <div class="gauges">
+                    <span class="gauge" role="img" aria-label="Match score 92"
+                      ><span class="dial" style="--p: 92" aria-hidden="true"><b>92</b></span
+                      ><span class="gl" aria-hidden="true">Match</span></span
+                    ><span class="gauge" role="img" aria-label="ATS compatibility 85 percent"
+                      ><span class="dial" style="--p: 85" aria-hidden="true"
+                        ><b>85<small>%</small></b></span
+                      ><span class="gl" aria-hidden="true">ATS</span></span
+                    >
+                  </div>
                   <div class="group">
                     <span class="ring"
                       ><button class="btn">
@@ -2138,21 +2260,23 @@
                       </button></span
                     >
                   </div>
-                  <a class="btn btn-p" href="#"
-                    >Apply
-                    <svg
-                      class="arw"
-                      width="15"
-                      height="15"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      aria-hidden="true"
-                    >
-                      <use href="#i-arrow" /></svg
-                  ></a>
+                  <div class="applywrap">
+                    <a class="btn btn-p" href="#"
+                      >Apply
+                      <svg
+                        class="arw"
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-arrow" /></svg
+                    ></a>
+                  </div>
                 </div>
               </article>
               <article class="card">
@@ -2167,9 +2291,7 @@
                         <p class="company">Tidepool</p>
                       </div>
                       <div class="cluster">
-                        <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
-                        ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
-                        ><button
+                        <button
                           class="btn btn-o btn-icon"
                           aria-label="Save Senior Full-stack Engineer"
                           aria-pressed="false"
@@ -2259,7 +2381,17 @@
                   </div>
                 </div>
                 <div class="sep"></div>
-                <div class="foot slot-in">
+                <div class="foot">
+                  <div class="gauges">
+                    <span class="gauge" role="img" aria-label="Match score 92"
+                      ><span class="dial" style="--p: 92" aria-hidden="true"><b>92</b></span
+                      ><span class="gl" aria-hidden="true">Match</span></span
+                    ><span class="gauge" role="img" aria-label="ATS compatibility 85 percent"
+                      ><span class="dial" style="--p: 85" aria-hidden="true"
+                        ><b>85<small>%</small></b></span
+                      ><span class="gl" aria-hidden="true">ATS</span></span
+                    >
+                  </div>
                   <div class="group">
                     <span class="ring"
                       ><button class="btn">
@@ -2295,21 +2427,23 @@
                       </button></span
                     >
                   </div>
-                  <a class="btn btn-p" href="#"
-                    >Apply
-                    <svg
-                      class="arw"
-                      width="15"
-                      height="15"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      aria-hidden="true"
-                    >
-                      <use href="#i-arrow" /></svg
-                  ></a>
+                  <div class="applywrap">
+                    <a class="btn btn-p" href="#"
+                      >Apply
+                      <svg
+                        class="arw"
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-arrow" /></svg
+                    ></a>
+                  </div>
                 </div>
               </article>
             </div>
@@ -2400,9 +2534,7 @@ Best regards,
                       <p class="company">Tidepool</p>
                     </div>
                     <div class="cluster">
-                      <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
-                      ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
-                      ><button
+                      <button
                         class="btn btn-o btn-icon"
                         aria-label="Save Senior Full-stack Engineer"
                         aria-pressed="false"
@@ -2492,6 +2624,16 @@ Best regards,
               </div>
               <div class="sep"></div>
               <div class="foot reorg">
+                <div class="gauges">
+                  <span class="gauge" role="img" aria-label="Match score 92"
+                    ><span class="dial" style="--p: 92" aria-hidden="true"><b>92</b></span
+                    ><span class="gl" aria-hidden="true">Match</span></span
+                  ><span class="gauge" role="img" aria-label="ATS compatibility 85 percent"
+                    ><span class="dial" style="--p: 85" aria-hidden="true"
+                      ><b>85<small>%</small></b></span
+                    ><span class="gl" aria-hidden="true">ATS</span></span
+                  >
+                </div>
                 <div class="group">
                   <span class="ring"
                     ><button class="btn">
@@ -2551,7 +2693,7 @@ Best regards,
         </div>
       </section>
       <section class="frame">
-        <h2>E10 · Phone at 390: E1 slot-in, then E9 proposed</h2>
+        <h2>E10 · Phone at 390: idle, then both ready</h2>
         <div class="scroll">
           <div class="stack">
             <div class="jc phone">
@@ -2567,9 +2709,7 @@ Best regards,
                         <p class="company">Tidepool</p>
                       </div>
                       <div class="cluster">
-                        <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
-                        ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
-                        ><button
+                        <button
                           class="btn btn-o btn-icon"
                           aria-label="Save Senior Full-stack Engineer"
                           aria-pressed="false"
@@ -2659,7 +2799,17 @@ Best regards,
                   </div>
                 </div>
                 <div class="sep"></div>
-                <div class="foot slot-in">
+                <div class="foot">
+                  <div class="gauges">
+                    <span class="gauge" role="img" aria-label="Match score 92"
+                      ><span class="dial" style="--p: 92" aria-hidden="true"><b>92</b></span
+                      ><span class="gl" aria-hidden="true">Match</span></span
+                    ><span class="gauge" role="img" aria-label="ATS compatibility 85 percent"
+                      ><span class="dial" style="--p: 85" aria-hidden="true"
+                        ><b>85<small>%</small></b></span
+                      ><span class="gl" aria-hidden="true">ATS</span></span
+                    >
+                  </div>
                   <div class="group">
                     <span class="ring"
                       ><button class="btn">
@@ -2695,21 +2845,23 @@ Best regards,
                       </button></span
                     >
                   </div>
-                  <a class="btn btn-p" href="#"
-                    >Apply
-                    <svg
-                      class="arw"
-                      width="15"
-                      height="15"
-                      fill="none"
-                      stroke="currentColor"
-                      stroke-width="2"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      aria-hidden="true"
-                    >
-                      <use href="#i-arrow" /></svg
-                  ></a>
+                  <div class="applywrap">
+                    <a class="btn btn-p" href="#"
+                      >Apply
+                      <svg
+                        class="arw"
+                        width="15"
+                        height="15"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        aria-hidden="true"
+                      >
+                        <use href="#i-arrow" /></svg
+                    ></a>
+                  </div>
                 </div>
               </article>
             </div>
@@ -2746,10 +2898,7 @@ Best regards,
                         </button>
                       </div>
                     </div>
-                    <div class="badgerow">
-                      <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
-                      ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span>
-                    </div>
+
                     <div class="meta">
                       <span>Remote</span><span class="dot"></span><span>🇵🇭 Philippines +10</span
                       ><span class="dot"></span><span>Full time</span><span class="dot"></span><span>Senior</span
@@ -2815,13 +2964,24 @@ Best regards,
                         >Next.js</span
                       ><span class="kb miss">AWS</span><span class="kb miss">+2</span>
                     </div>
+                    <div class="payline"><span class="pay">USD 4,000–6,000 a month</span></div>
                   </div>
                 </div>
                 <div class="sep"></div>
-                <div class="foot reorg">
+                <div class="foot">
+                  <div class="gauges">
+                    <span class="gauge" role="img" aria-label="Match score 92"
+                      ><span class="dial" style="--p: 92" aria-hidden="true"><b>92</b></span
+                      ><span class="gl" aria-hidden="true">Match</span></span
+                    ><span class="gauge" role="img" aria-label="ATS compatibility 85 percent"
+                      ><span class="dial" style="--p: 85" aria-hidden="true"
+                        ><b>85<small>%</small></b></span
+                      ><span class="gl" aria-hidden="true">ATS</span></span
+                    >
+                  </div>
                   <div class="group">
                     <span class="ring"
-                      ><button class="btn">
+                      ><button class="btn" aria-haspopup="dialog">
                         <svg
                           width="15"
                           height="15"
@@ -2834,10 +2994,10 @@ Best regards,
                         >
                           <use href="#i-file" />
                         </svg>
-                        Tailor CV
+                        View CV
                       </button></span
                     ><span class="ring"
-                      ><button class="btn">
+                      ><button class="btn" aria-haspopup="dialog">
                         <svg
                           width="15"
                           height="15"
@@ -2850,13 +3010,12 @@ Best regards,
                         >
                           <use href="#i-mail" />
                         </svg>
-                        Write cover letter
+                        View cover letter
                       </button></span
                     >
                   </div>
                   <div class="applywrap">
-                    <span class="pay">USD 4,000–6,000 a month</span
-                    ><a class="btn btn-p" href="#"
+                    <a class="btn btn-p" href="#"
                       >Apply
                       <svg
                         class="arw"
@@ -2894,9 +3053,7 @@ Best regards,
                       <p class="company">Tidepool</p>
                     </div>
                     <div class="cluster">
-                      <span class="score" aria-label="Match score 92"><b>92</b><span>match</span></span
-                      ><span class="ats" aria-label="ATS compatibility 85 percent"><span>ATS</span><b>85%</b></span
-                      ><button
+                      <button
                         class="btn btn-o btn-icon"
                         aria-label="Save Senior Full-stack Engineer"
                         aria-pressed="false"
@@ -2986,7 +3143,17 @@ Best regards,
                 </div>
               </div>
               <div class="sep"></div>
-              <div class="foot slot-in">
+              <div class="foot">
+                <div class="gauges">
+                  <span class="gauge" role="img" aria-label="Match score 92"
+                    ><span class="dial" style="--p: 92" aria-hidden="true"><b>92</b></span
+                    ><span class="gl" aria-hidden="true">Match</span></span
+                  ><span class="gauge" role="img" aria-label="ATS compatibility 85 percent"
+                    ><span class="dial" style="--p: 85" aria-hidden="true"
+                      ><b>85<small>%</small></b></span
+                    ><span class="gl" aria-hidden="true">ATS</span></span
+                  >
+                </div>
                 <div class="group">
                   <span class="ring"
                     ><button class="btn">
@@ -3022,21 +3189,23 @@ Best regards,
                     </button></span
                   >
                 </div>
-                <a class="btn btn-p" href="#"
-                  >Apply
-                  <svg
-                    class="arw"
-                    width="15"
-                    height="15"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    aria-hidden="true"
-                  >
-                    <use href="#i-arrow" /></svg
-                ></a>
+                <div class="applywrap">
+                  <a class="btn btn-p" href="#"
+                    >Apply
+                    <svg
+                      class="arw"
+                      width="15"
+                      height="15"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      aria-hidden="true"
+                    >
+                      <use href="#i-arrow" /></svg
+                  ></a>
+                </div>
               </div>
             </article>
           </div>

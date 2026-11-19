@@ -1,8 +1,13 @@
 {
   "v": 3,
-  "createdOnFiles": { "v": 1, "at": "2026-11-18T09:00:00Z" },
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-11-18T09:00:00Z"
+  },
   "title": "Job listing card mockups",
-  "launch": { "view": "canvas" },
+  "launch": {
+    "view": "canvas"
+  },
   "pages": [],
   "boards": {
     "Main.dc.html": {
@@ -24,7 +29,7 @@
       "y": 0,
       "w": 1000,
       "h": 480,
-      "title": "E2 · Score and ATS badges"
+      "title": "E2 · Score and ATS rings"
     },
     "E3.dc.html": {
       "x": 2160,
@@ -87,7 +92,7 @@
       "y": 1260,
       "w": 390,
       "h": 1200,
-      "title": "E10 · Phone, E1 and E9"
+      "title": "E10 · Phone, idle and ready"
     },
     "Card.dc.html": {
       "x": 2630,
@@ -145,7 +150,7 @@
       "x": 4320,
       "y": 1680,
       "w": 400,
-      "text": "Score and ATS carry their numbers as the signal, never colour. Every new control is a Tab stop; the modal traps focus and Escape closes it.",
+      "text": "Score and ATS carry their numbers as the signal, never colour: the rainbow spans every arc whatever its length. Each ring is one image with an aria-label (\"Match score 92\"). Every new control is a Tab stop; the modal traps focus and Escape closes it.",
       "fill": "blue"
     }
   },

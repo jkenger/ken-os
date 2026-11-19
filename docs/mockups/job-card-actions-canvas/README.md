@@ -12,6 +12,6 @@ card mockup brief, 18 Nov 2026). Live canvas: https://claude.ai/artifact/82KqsAP
   browser. To look at the frames outside the canvas, open `../Job listing card.html`, a static snapshot with every
   state written out.
 
-The E9 recommendation, in short: keep the card, split its footer by role (Tailor CV and Write cover letter left,
-Apply alone right), move pay into the footer beside Apply, and on phones move the score and ATS badges under the
-company so the title keeps its width.
+Score and ATS are two same-size 40px progress rings (owner's decision, 19 Nov 2026) at the footer's far left, with
+the rainbow gradient spanning each arc. The E9 recommendation, in short: keep the card, split its footer by role
+(rings and the AI actions left, pay and Apply right), and move pay into the footer beside Apply.

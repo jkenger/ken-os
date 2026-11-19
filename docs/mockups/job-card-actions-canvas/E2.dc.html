@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>E2 Score and ATS badges</title>
+    <title>E2 Score and ATS rings</title>
     <script src="./support.js"></script>
   </head>
   <body>
@@ -21,6 +21,7 @@
             --mfg: oklch(0.48 0.008 265);
             --border: oklch(0.885 0.004 265);
             --card: oklch(0.995 0.001 265);
+            --muted: oklch(0.945 0.003 265);
           }
           .z {
             zoom: 2;
@@ -44,44 +45,71 @@
             font-weight: 400;
             color: var(--mfg);
           }
-          .score {
+          .gauge {
             display: inline-flex;
-            align-items: baseline;
-            gap: 5px;
-            height: 36px;
-            padding: 0 12px;
-            border: 1px solid var(--border);
-            border-radius: 10.4px;
-            line-height: 34px;
+            align-items: center;
+            gap: 6px;
           }
-          .score b {
+          .dial {
+            position: relative;
+            width: 40px;
+            height: 40px;
+            flex: none;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+          }
+          .dial::before,
+          .dial::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+          }
+          .dial::before {
+            border: 4px solid var(--muted);
+          }
+          .dial::after {
+            background: conic-gradient(
+              oklch(0.68 0.19 25) 0%,
+              oklch(0.78 0.16 75) calc(var(--p) * 0.25%),
+              oklch(0.72 0.17 150) calc(var(--p) * 0.5%),
+              oklch(0.66 0.15 230) calc(var(--p) * 0.75%),
+              oklch(0.62 0.2 295) calc(var(--p) * 1%)
+            );
+            -webkit-mask:
+              radial-gradient(
+                farthest-side,
+                transparent calc(100% - 4px),
+                #000 calc(100% - 3.5px)
+              ),
+              conic-gradient(#000 calc(var(--p) * 1%), transparent 0);
+            -webkit-mask-composite: source-in;
+            mask:
+              radial-gradient(
+                farthest-side,
+                transparent calc(100% - 4px),
+                #000 calc(100% - 3.5px)
+              ),
+              conic-gradient(#000 calc(var(--p) * 1%), transparent 0);
+            mask-composite: intersect;
+          }
+          .dial b {
+            position: relative;
             font-family: "Geist Mono", ui-monospace, monospace;
-            font-size: 20px;
-            font-weight: 600;
-          }
-          .score span {
-            font-size: 13px;
-            color: var(--mfg);
-          }
-          .ats {
-            display: inline-flex;
-            align-items: baseline;
-            gap: 4px;
-            height: 28px;
-            padding: 0 9px;
-            border: 1px solid var(--border);
-            border-radius: 8.8px;
-            line-height: 26px;
             font-size: 12px;
+            font-weight: 600;
+            letter-spacing: -0.03em;
+            font-variant-numeric: tabular-nums;
           }
-          .ats span {
+          .dial b small {
+            font-size: 9px;
+            font-weight: 500;
+          }
+          .gl {
+            font-size: 12px;
             font-weight: 500;
             color: var(--mfg);
-          }
-          .ats b {
-            font-family: "Geist Mono", ui-monospace, monospace;
-            font-size: 14px;
-            font-weight: 600;
           }
           .lbl {
             font-size: 11px;
@@ -115,44 +143,37 @@
         "
       >
         <section>
-          <h2 class="lbl">Score today</h2>
+          <h2 class="lbl">Before</h2>
           <div class="z">
-            <span class="old">92<span>match</span></span>
+            <span class="old">92<span>match</span></span
+            ><span class="old">ATS<span>85%</span></span>
           </div>
-          <p class="cap">Shipped: 32px outline badge, 14px figure</p>
+          <p class="cap">Two outline badges of different sizes in the header</p>
         </section>
         <section>
-          <h2 class="lbl">Score restyled, with ATS</h2>
-          <div class="z">
-            <span class="score"><b>92</b><span>match</span></span
-            ><span class="ats"><span>ATS</span><b>85%</b></span>
+          <h2 class="lbl">After</h2>
+          <div class="z" style="gap: 14px">
+            <span class="gauge"><span class="dial" style="--p: 92"><b>92</b></span><span class="gl">Match</span></span>
+            <span class="gauge"><span class="dial" style="--p: 85"><b>85<small>%</small></b></span><span class="gl">ATS</span></span>
           </div>
           <p class="cap">
-            36px badge, 20px mono figure; ATS one step smaller beside it
+            Two 40px rings, same size, at the footer's far left. The arc is the
+            figure; the rainbow always spans the whole arc, so colour never
+            hints at the value.
           </p>
         </section>
         <section style="grid-column: 1 / -1">
-          <h2 class="lbl">ATS wording, at card size x2</h2>
-          <div style="display: flex; gap: 40px; align-items: flex-start">
-            <div>
-              <div class="z">
-                <span class="ats"><span>ATS</span><b>85%</b></span>
-              </div>
-              <p class="cap">ATS 85% (recommended)</p>
-            </div>
-            <div>
-              <div class="z">
-                <span class="ats"><b>85%</b><span>ATS</span></span>
-              </div>
-              <p class="cap">85% ATS</p>
-            </div>
-            <div>
-              <div class="z">
-                <span class="ats"><span>ATS match</span><b>85%</b></span>
-              </div>
-              <p class="cap">ATS match 85%, widest</p>
-            </div>
+          <h2 class="lbl">Arc range, at card size x2</h2>
+          <div class="z" style="gap: 28px">
+            <span class="gauge"><span class="dial" style="--p: 12"><b>12</b></span><span class="gl">Match</span></span>
+            <span class="gauge"><span class="dial" style="--p: 41"><b>41</b></span><span class="gl">Match</span></span>
+            <span class="gauge"><span class="dial" style="--p: 68"><b>68<small>%</small></b></span><span class="gl">ATS</span></span>
+            <span class="gauge"><span class="dial" style="--p: 100"><b>100<small>%</small></b></span><span class="gl">ATS</span></span>
           </div>
+          <p class="cap">
+            12, 41, 68 and 100. Three-character figures (100, 85%) still fit
+            inside the ring at 12px Geist Mono.
+          </p>
         </section>
       </div>
     </x-dc>
