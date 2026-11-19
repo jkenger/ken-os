@@ -9,13 +9,12 @@ const config = {
   inPlace: true,
   testRunner: "command",
   commandRunner: {
-    command:
-      "pnpm exec tsx --test src/features/jobs/scraper-contract.test.ts src/features/jobs/scrapers/linkedin.test.ts",
+    command: "pnpm exec tsx --test src/features/jobs/scrapers/jobstreet.test.ts",
   },
   // No per-test coverage analysis: Node's built-in test runner (tsx --test) has no Stryker plugin, so the
   // generic command runner reruns the whole test file per mutant.
   coverageAnalysis: "off",
-  mutate: ["src/features/jobs/scraper-contract.ts", "src/features/jobs/scrapers/linkedin.ts"],
+  mutate: ["src/features/jobs/scrapers/jobstreet.ts"],
   reporters: ["html", "clear-text", "progress"],
   htmlReporter: {
     fileName: "reports/mutation/index.html",

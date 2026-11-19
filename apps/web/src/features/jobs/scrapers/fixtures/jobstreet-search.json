@@ -1,0 +1,1115 @@
+{
+  "data": [
+    {
+      "advertiser": { "id": "60261861", "description": "NCS Philippines" },
+      "bulletPoints": [],
+      "branding": {},
+      "classifications": [
+        {
+          "classification": { "id": "6281", "description": "Information & Communication Technology" },
+          "subclassification": { "id": "6290", "description": "Engineering - Software" }
+        }
+      ],
+      "companyName": "NCS Philippines",
+      "companyProfileStructuredDataId": 393778,
+      "displayType": "standard",
+      "employer": {
+        "id": "393778",
+        "name": "NCS Philippines",
+        "companyId": "168555075375710",
+        "companyUrl": "https://ph.jobstreet.com/companies/ncs-philippines-168555075375710"
+      },
+      "id": "95987372",
+      "isFeatured": false,
+      "listingDate": "2026-11-19T03:30:17Z",
+      "listingDateDisplay": "35m ago",
+      "locations": [
+        {
+          "label": "Makati City, Metro Manila",
+          "countryCode": "PH",
+          "seoHierarchy": [{ "contextualName": "Makati City Metro Manila" }, { "contextualName": "Metro Manila" }]
+        }
+      ],
+      "roleId": ".net-software-engineer",
+      "salaryLabel": "",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95987372",
+        "section": "MAIN",
+        "sectionRank": 1,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "tags": [{ "type": "EARLY_APPLICANT", "label": "Be an early applicant" }],
+      "teaser": "Build innovative software solutions with competitive salary, professional growth & modern onsite facilities in Makati.",
+      "title": "Software Engineer (.Net) | with Banking background | Onsite",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfMSIKfQ==",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "1", "label": { "text": "On-site" } }] }
+    },
+    {
+      "advertiser": { "id": "60242082", "description": "Accenture" },
+      "bulletPoints": [],
+      "branding": {
+        "serpLogoUrl": "https://bx-branding-gateway.cloud.seek.com.au/a94c007c-40dc-4185-92f0-f87ad40d735d.1/jdpLogo"
+      },
+      "classifications": [
+        {
+          "classification": { "id": "6281", "description": "Information & Communication Technology" },
+          "subclassification": { "id": "6287", "description": "Developers/Programmers" }
+        }
+      ],
+      "companyName": "Accenture",
+      "companyProfileStructuredDataId": 1369,
+      "displayStyle": { "search": "sourcrProfile" },
+      "displayType": "standard",
+      "employer": {
+        "id": "1369",
+        "name": "Accenture",
+        "companyId": "168430182370928",
+        "companyUrl": "https://ph.jobstreet.com/companies/accenture-168430182370928"
+      },
+      "id": "95942999",
+      "isFeatured": false,
+      "listingDate": "2026-11-17T06:16:04Z",
+      "listingDateDisplay": "1d ago",
+      "locations": [
+        { "label": "Central Visayas", "countryCode": "PH", "seoHierarchy": [{ "contextualName": "Central Visayas" }] }
+      ],
+      "roleId": "software-engineer",
+      "salaryLabel": "",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95942999",
+        "section": "MAIN",
+        "sectionRank": 2,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "teaser": "Launch your tech career with Accenture through training, innovation, and opportunities to create meaningful impact.",
+      "title": "Associate Software Engineer (Entry-Level) | Open Market",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfMiIKfQ==",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "3", "label": { "text": "Remote" } }], "displayText": "Remote" }
+    },
+    {
+      "advertiser": { "id": "60352747", "description": "DSLC DATA SUPPORT, INC." },
+      "bulletPoints": [],
+      "branding": {},
+      "classifications": [
+        {
+          "classification": { "id": "6281", "description": "Information & Communication Technology" },
+          "subclassification": { "id": "6287", "description": "Developers/Programmers" }
+        }
+      ],
+      "companyName": "DSLC Data Support, Inc.",
+      "companyProfileStructuredDataId": 714177,
+      "displayType": "standard",
+      "employer": {
+        "id": "714177",
+        "name": "DSLC Data Support, Inc.",
+        "companyId": "175679162445071",
+        "companyUrl": "https://ph.jobstreet.com/companies/dslc-data-support-inc-175679162445071"
+      },
+      "id": "95982088",
+      "isFeatured": false,
+      "listingDate": "2026-11-19T00:59:33Z",
+      "listingDateDisplay": "3h ago",
+      "locations": [
+        {
+          "label": "Davao City, Davao del Sur",
+          "countryCode": "PH",
+          "seoHierarchy": [
+            { "contextualName": "Davao City Davao del Sur" },
+            { "contextualName": "Davao del Sur Davao" }
+          ]
+        }
+      ],
+      "roleId": "software-developer",
+      "salaryLabel": "",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95982088",
+        "section": "MAIN",
+        "sectionRank": 3,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "teaser": "We are seeking additional team members to join our IT team in Davao.",
+      "title": "SOFTWARE DEVELOPER",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfMyIKfQ==",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "1", "label": { "text": "On-site" } }] }
+    },
+    {
+      "advertiser": { "id": "60378189", "description": "MACKY CHAMP SOFTWARE VENTURES INC." },
+      "bulletPoints": [],
+      "branding": {},
+      "classifications": [
+        {
+          "classification": { "id": "6281", "description": "Information & Communication Technology" },
+          "subclassification": { "id": "6287", "description": "Developers/Programmers" }
+        }
+      ],
+      "companyName": "Macky Champ Software Ventures Inc.",
+      "companyProfileStructuredDataId": 654263,
+      "displayType": "standard",
+      "employer": {
+        "id": "654263",
+        "name": "Macky Champ Software Ventures Inc.",
+        "companyId": "168550028485266",
+        "companyUrl": "https://ph.jobstreet.com/companies/macky-champ-software-ventures-inc-168550028485266"
+      },
+      "id": "95957857",
+      "isFeatured": false,
+      "listingDate": "2026-11-18T00:17:02Z",
+      "listingDateDisplay": "1d ago",
+      "locations": [
+        {
+          "label": "Paranaque City, Metro Manila",
+          "countryCode": "PH",
+          "seoHierarchy": [{ "contextualName": "Paranaque City Metro Manila" }, { "contextualName": "Metro Manila" }]
+        }
+      ],
+      "roleId": "software-developer",
+      "salaryLabel": "",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95957857",
+        "section": "MAIN",
+        "sectionRank": 4,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "teaser": "We seek motivated and talented Junior Software Developers to join our growing team. As a Junior Software Developer at MCSV Inc., you will...",
+      "title": "Junior Software Developer",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfNCIKfQ==",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "1", "label": { "text": "On-site" } }] }
+    },
+    {
+      "advertiser": { "id": "60359340", "description": "Rising Tide Digital, Inc." },
+      "bulletPoints": [],
+      "branding": {
+        "serpLogoUrl": "https://bx-branding-gateway.cloud.seek.com.au/7ef4d30e-60ef-4a25-8c29-9fc67d8e41d5.2/jdpLogo"
+      },
+      "classifications": [
+        {
+          "classification": { "id": "6281", "description": "Information & Communication Technology" },
+          "subclassification": { "id": "6287", "description": "Developers/Programmers" }
+        }
+      ],
+      "companyName": "Rising Tide Digital",
+      "companyProfileStructuredDataId": 406903,
+      "displayType": "standard",
+      "employer": {
+        "id": "406903",
+        "name": "Rising Tide Digital",
+        "companyId": "168555007057173",
+        "companyUrl": "https://ph.jobstreet.com/companies/rising-tide-digital-168555007057173"
+      },
+      "id": "95983892",
+      "isFeatured": false,
+      "listingDate": "2026-11-19T01:57:40Z",
+      "listingDateDisplay": "2h ago",
+      "locations": [
+        {
+          "label": "Taguig City, Metro Manila",
+          "countryCode": "PH",
+          "seoHierarchy": [{ "contextualName": "Taguig City Metro Manila" }, { "contextualName": "Metro Manila" }]
+        }
+      ],
+      "roleId": "full-stack-developer",
+      "salaryLabel": "₱75,000 – ₱85,000 per month",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95983892",
+        "section": "MAIN",
+        "sectionRank": 5,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "teaser": "We are looking for a skilled Full Stack Software Developer responsible for designing, developing, and maintaining",
+      "title": "Software Developer - Full Stack (Java Spring Boot + ReactJS)",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfNSIKfQ==",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "1", "label": { "text": "On-site" } }] }
+    },
+    {
+      "advertiser": { "id": "60157569", "description": "Staff Domain Inc" },
+      "bulletPoints": [],
+      "branding": {
+        "serpLogoUrl": "https://bx-branding-gateway.cloud.seek.com.au/ad4d4f12-3941-4657-b5c7-9964ae3cd542.2/jdpLogo"
+      },
+      "classifications": [
+        {
+          "classification": { "id": "6281", "description": "Information & Communication Technology" },
+          "subclassification": { "id": "6290", "description": "Engineering - Software" }
+        }
+      ],
+      "companyName": "Staff Domain Inc",
+      "companyProfileStructuredDataId": 429586,
+      "displayType": "standard",
+      "employer": {
+        "id": "429586",
+        "name": "Staff Domain Inc",
+        "companyId": "168554130322689",
+        "companyUrl": "https://ph.jobstreet.com/companies/staff-domain-inc-168554130322689"
+      },
+      "id": "95956756",
+      "isFeatured": false,
+      "listingDate": "2026-11-17T23:18:12Z",
+      "listingDateDisplay": "1d ago",
+      "locations": [
+        {
+          "label": "Pasig City, Metro Manila",
+          "countryCode": "PH",
+          "seoHierarchy": [{ "contextualName": "Pasig City Metro Manila" }, { "contextualName": "Metro Manila" }]
+        }
+      ],
+      "roleId": ".net-software-engineer",
+      "salaryLabel": "",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95956756",
+        "section": "MAIN",
+        "sectionRank": 6,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "teaser": "Software Engineer is to work independently on small projects, and be focused on learning with a trajectory of growth into the contribution.",
+      "title": ".Net Software Engineer - Card Management | Hybrid - Ortigas | AU",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfNiIKfQ==",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "2", "label": { "text": "Hybrid" } }], "displayText": "Hybrid" }
+    },
+    {
+      "advertiser": { "id": "60377234", "description": "BTCPower Cebu Inc." },
+      "bulletPoints": [],
+      "branding": {
+        "serpLogoUrl": "https://bx-branding-gateway.cloud.seek.com.au/b12394c2-361d-403b-a364-7e28362d21de.1/jdpLogo"
+      },
+      "classifications": [
+        {
+          "classification": { "id": "6281", "description": "Information & Communication Technology" },
+          "subclassification": { "id": "6290", "description": "Engineering - Software" }
+        }
+      ],
+      "companyName": "BTC Power Cebu Inc.",
+      "companyProfileStructuredDataId": 647049,
+      "displayStyle": { "search": "sourcrProfile" },
+      "displayType": "standard",
+      "employer": {
+        "id": "647049",
+        "name": "BTC Power Cebu Inc.",
+        "companyId": "168552461789425",
+        "companyUrl": "https://ph.jobstreet.com/companies/btc-power-cebu-inc-168552461789425"
+      },
+      "id": "95933347",
+      "isFeatured": false,
+      "listingDate": "2026-11-17T00:58:36Z",
+      "listingDateDisplay": "2d ago",
+      "locations": [
+        {
+          "label": "Lapu-Lapu City, Cebu",
+          "countryCode": "PH",
+          "seoHierarchy": [{ "contextualName": "Lapu-Lapu City Cebu" }, { "contextualName": "Cebu Central Visayas" }]
+        }
+      ],
+      "roleId": "software-engineer",
+      "salaryLabel": "",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95933347",
+        "section": "MAIN",
+        "sectionRank": 7,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "teaser": "Must have in-depth knowledge of embedded programming languages such as but not limited to C and C++.",
+      "title": "Software Engineer",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfNyIKfQ==",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "1", "label": { "text": "On-site" } }] }
+    },
+    {
+      "advertiser": { "id": "60414428", "description": "Platserv PH" },
+      "bulletPoints": ["Permanent work from home", "PHP 160,000 per month", "HMO Day 1 for you and a dependent"],
+      "branding": {
+        "serpLogoUrl": "https://bx-branding-gateway.cloud.seek.com.au/0fd28fe9-01d0-40ba-ae28-0ebcd8e19089.1/jdpLogo"
+      },
+      "classifications": [
+        {
+          "classification": { "id": "6281", "description": "Information & Communication Technology" },
+          "subclassification": { "id": "6287", "description": "Developers/Programmers" }
+        }
+      ],
+      "companyName": "Platintel",
+      "companyProfileStructuredDataId": 657033,
+      "displayStyle": { "search": "sourcrProfile" },
+      "displayType": "standard",
+      "employer": {
+        "id": "657033",
+        "name": "Platintel",
+        "companyId": "168549852981224",
+        "companyUrl": "https://ph.jobstreet.com/companies/platintel-168549852981224"
+      },
+      "id": "95979534",
+      "isFeatured": false,
+      "listingDate": "2026-11-18T22:56:21Z",
+      "listingDateDisplay": "5h ago",
+      "locations": [
+        {
+          "label": "Muntinlupa City, Metro Manila",
+          "countryCode": "PH",
+          "seoHierarchy": [{ "contextualName": "Muntinlupa City Metro Manila" }, { "contextualName": "Metro Manila" }]
+        }
+      ],
+      "roleId": "full-stack-developer",
+      "salaryLabel": "₱160,000 per month",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95979534",
+        "section": "MAIN",
+        "sectionRank": 8,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "teaser": "Permanent work from home Senior Fullstack Developer role (React, .NET C#) on New Zealand hours, PHP 160,000 per month with HMO from Day 1.",
+      "title": "Senior Fullstack Developer (React, .NET C#) | WFH | NZ Hours",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfOCIKfQ==",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "3", "label": { "text": "Remote" } }], "displayText": "Remote" }
+    },
+    {
+      "advertiser": { "id": "61940454", "description": "Gencars, Inc." },
+      "bulletPoints": [],
+      "branding": {},
+      "classifications": [
+        {
+          "classification": { "id": "6281", "description": "Information & Communication Technology" },
+          "subclassification": { "id": "6287", "description": "Developers/Programmers" }
+        }
+      ],
+      "companyProfileStructuredDataId": 0,
+      "displayType": "standard",
+      "id": "95980801",
+      "isFeatured": false,
+      "listingDate": "2026-11-18T23:53:27Z",
+      "listingDateDisplay": "4h ago",
+      "locations": [
+        {
+          "label": "Makati City, Metro Manila",
+          "countryCode": "PH",
+          "seoHierarchy": [{ "contextualName": "Makati City Metro Manila" }, { "contextualName": "Metro Manila" }]
+        }
+      ],
+      "roleId": "technical-writer",
+      "salaryLabel": "",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95980801",
+        "section": "MAIN",
+        "sectionRank": 9,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "teaser": "Responsible for generating statistics and writing reports for management and team members.\nResponsible for working with Network Administrators,...",
+      "title": "Junior Web Developer / Technical Writer",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfOSIKfQ==",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "1", "label": { "text": "On-site" } }] }
+    },
+    {
+      "advertiser": { "id": "63259255", "description": "HERU HUMAN RESOURCES SPECIALIST" },
+      "bulletPoints": [],
+      "branding": {},
+      "classifications": [
+        {
+          "classification": { "id": "1209", "description": "Engineering" },
+          "subclassification": { "id": "6031", "description": "Industrial Engineering" }
+        }
+      ],
+      "companyName": "HERU Human Resources Specialist",
+      "companyProfileStructuredDataId": 521860,
+      "displayType": "standard",
+      "employer": { "id": "521860", "name": "HERU Human Resources Specialist" },
+      "id": "95962005",
+      "isFeatured": false,
+      "listingDate": "2026-11-18T02:41:20Z",
+      "listingDateDisplay": "1d ago",
+      "locations": [
+        {
+          "label": "Rosario, Cavite",
+          "countryCode": "PH",
+          "seoHierarchy": [{ "contextualName": "Rosario Cavite" }, { "contextualName": "Cavite Calabarzon" }]
+        }
+      ],
+      "roleId": "software-engineer",
+      "salaryLabel": "₱18,000 – ₱20,000 per month",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95962005",
+        "section": "MAIN",
+        "sectionRank": 10,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "teaser": "SOFTWARE ENGINEER",
+      "title": "SOFTWARE ENGINEER",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfMTAiCn0=",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "1", "label": { "text": "On-site" } }] }
+    },
+    {
+      "advertiser": { "id": "60242082", "description": "Accenture" },
+      "bulletPoints": [
+        "Train with Accenture for free — boost skills now, get job-ready next!",
+        "Strong Career Growth",
+        "₱60,000* sign‑on bonus after successful pre-employment training completion"
+      ],
+      "branding": {
+        "serpLogoUrl": "https://bx-branding-gateway.cloud.seek.com.au/a94c007c-40dc-4185-92f0-f87ad40d735d.1/jdpLogo"
+      },
+      "classifications": [
+        {
+          "classification": { "id": "6281", "description": "Information & Communication Technology" },
+          "subclassification": { "id": "6287", "description": "Developers/Programmers" }
+        }
+      ],
+      "companyName": "Accenture",
+      "companyProfileStructuredDataId": 1369,
+      "displayStyle": { "search": "sourcrProfile" },
+      "displayType": "standard",
+      "employer": {
+        "id": "1369",
+        "name": "Accenture",
+        "companyId": "168430182370928",
+        "companyUrl": "https://ph.jobstreet.com/companies/accenture-168430182370928"
+      },
+      "id": "95783848",
+      "isFeatured": false,
+      "listingDate": "2026-11-09T10:44:15Z",
+      "listingDateDisplay": "9d ago",
+      "locations": [
+        { "label": "Metro Manila", "countryCode": "PH", "seoHierarchy": [{ "contextualName": "Metro Manila" }] }
+      ],
+      "roleId": "software-engineer",
+      "salaryLabel": "",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95783848",
+        "section": "MAIN",
+        "sectionRank": 11,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "teaser": "If you're driven by growth and excited to build a meaningful career in tech — you'll thrive here.",
+      "title": "Associate Software Engineer (Entry-Level) | Open Market",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfMTEiCn0=",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "1", "label": { "text": "On-site" } }] }
+    },
+    {
+      "advertiser": { "id": "60399655", "description": "OnSource Inc." },
+      "bulletPoints": [],
+      "branding": {
+        "serpLogoUrl": "https://bx-branding-gateway.cloud.seek.com.au/438c52cc-81f7-458c-9c28-016afeacbca0.2/jdpLogo"
+      },
+      "classifications": [
+        {
+          "classification": { "id": "6281", "description": "Information & Communication Technology" },
+          "subclassification": { "id": "6287", "description": "Developers/Programmers" }
+        }
+      ],
+      "companyName": "Onsource Inc.",
+      "companyProfileStructuredDataId": 442859,
+      "displayType": "standard",
+      "employer": {
+        "id": "442859",
+        "name": "Onsource Inc.",
+        "companyId": "168558366072140",
+        "companyUrl": "https://ph.jobstreet.com/companies/onsource-inc-168558366072140"
+      },
+      "id": "95906084",
+      "isFeatured": false,
+      "listingDate": "2026-11-15T23:53:30Z",
+      "listingDateDisplay": "3d ago",
+      "locations": [
+        { "label": "Metro Manila", "countryCode": "PH", "seoHierarchy": [{ "contextualName": "Metro Manila" }] }
+      ],
+      "roleId": "staff-software-engineer",
+      "salaryLabel": "",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95906084",
+        "section": "MAIN",
+        "sectionRank": 12,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "teaser": "Lead scalable software architecture and shape high-performance platforms with an international technology team.",
+      "title": "Staff Software Engineer",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfMTIiCn0=",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "3", "label": { "text": "Remote" } }], "displayText": "Remote" }
+    },
+    {
+      "advertiser": { "id": "63883124", "description": "SERVICECO PTE. LTD." },
+      "bulletPoints": [],
+      "branding": {},
+      "classifications": [
+        {
+          "classification": { "id": "6281", "description": "Information & Communication Technology" },
+          "subclassification": { "id": "6287", "description": "Developers/Programmers" }
+        }
+      ],
+      "companyName": "Serviceco Pte. Ltd.",
+      "companyProfileStructuredDataId": 3804517,
+      "displayType": "standard",
+      "employer": { "id": "3804517", "name": "Serviceco Pte. Ltd." },
+      "id": "95960180",
+      "isFeatured": false,
+      "listingDate": "2026-11-18T01:50:19Z",
+      "listingDateDisplay": "1d ago",
+      "locations": [
+        {
+          "label": "Manila City, Metro Manila",
+          "countryCode": "PH",
+          "seoHierarchy": [{ "contextualName": "Manila City Metro Manila" }, { "contextualName": "Metro Manila" }]
+        }
+      ],
+      "roleId": "web-developer",
+      "salaryLabel": "₱50,000 – ₱60,000 per month",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95960180",
+        "section": "MAIN",
+        "sectionRank": 13,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "teaser": "Build real websites and web apps with Next.js, React and Shopify. AI-assisted dev, senior support, fully remote. Grow fast with a small, sharp team.",
+      "title": "Junior Web Developer (AI-Assisted)",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfMTMiCn0=",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "3", "label": { "text": "Remote" } }], "displayText": "Remote" }
+    },
+    {
+      "advertiser": { "id": "60367978", "description": "The Lead Tree - Clark Outsourcing" },
+      "bulletPoints": [],
+      "branding": {},
+      "classifications": [
+        {
+          "classification": { "id": "6281", "description": "Information & Communication Technology" },
+          "subclassification": { "id": "6290", "description": "Engineering - Software" }
+        }
+      ],
+      "companyName": "Clark Outsourcing",
+      "companyProfileStructuredDataId": 521487,
+      "displayType": "standard",
+      "employer": {
+        "id": "521487",
+        "name": "Clark Outsourcing",
+        "companyId": "168556958311428",
+        "companyUrl": "https://ph.jobstreet.com/companies/clark-outsourcing-168556958311428"
+      },
+      "id": "95977509",
+      "isFeatured": false,
+      "listingDate": "2026-11-18T17:09:23Z",
+      "listingDateDisplay": "10h ago",
+      "locations": [
+        {
+          "label": "Angeles City, Pampanga",
+          "countryCode": "PH",
+          "seoHierarchy": [
+            { "contextualName": "Angeles City Pampanga" },
+            { "contextualName": "Pampanga Central Luzon" }
+          ]
+        }
+      ],
+      "roleId": ".net-software-developer",
+      "salaryLabel": "",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95977509",
+        "section": "MAIN",
+        "sectionRank": 14,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "teaser": "Experience with ERP integrations, PowerShell, IIS, reporting tools, or Azure is an asset.\nStrong coding and SQL skills\nAnalytical and...",
+      "title": ".NET Developer",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfMTQiCn0=",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "3", "label": { "text": "Remote" } }], "displayText": "Remote" }
+    },
+    {
+      "advertiser": { "id": "60239030", "description": "Emapta" },
+      "bulletPoints": [
+        "Competitive Salary Package",
+        "Mentorship and exposure to global leaders and teams",
+        "Unlimited upskilling through Emapta Academy courses"
+      ],
+      "branding": {
+        "serpLogoUrl": "https://bx-branding-gateway.cloud.seek.com.au/7895f0e9-844d-4d16-af1b-aff9241c65eb.1/jdpLogo"
+      },
+      "classifications": [
+        {
+          "classification": { "id": "6281", "description": "Information & Communication Technology" },
+          "subclassification": { "id": "6287", "description": "Developers/Programmers" }
+        }
+      ],
+      "companyName": "EMAPTA",
+      "companyProfileStructuredDataId": 393743,
+      "displayStyle": { "search": "sourcrProfile" },
+      "displayType": "standard",
+      "employer": {
+        "id": "393743",
+        "name": "EMAPTA",
+        "companyId": "168542849033992",
+        "companyUrl": "https://ph.jobstreet.com/companies/emapta-168542849033992"
+      },
+      "id": "95958801",
+      "isFeatured": false,
+      "listingDate": "2026-11-18T00:59:06Z",
+      "listingDateDisplay": "1d ago",
+      "locations": [
+        { "label": "Metro Manila", "countryCode": "PH", "seoHierarchy": [{ "contextualName": "Metro Manila" }] }
+      ],
+      "roleId": "software-developer",
+      "salaryLabel": "Weekends Off, Remote",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95958801",
+        "section": "MAIN",
+        "sectionRank": 15,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "teaser": "Excel in software development, SQL, and enterprise applications supporting US plumbing manufacturing, supply chains, and business operations.",
+      "title": "Software Developer | Work From Home | Night Shift | Weekends Off",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfMTUiCn0=",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "3", "label": { "text": "Remote" } }], "displayText": "Remote" }
+    },
+    {
+      "advertiser": { "id": "61940454", "description": "Shore 360" },
+      "bulletPoints": [],
+      "branding": {},
+      "classifications": [
+        {
+          "classification": { "id": "6281", "description": "Information & Communication Technology" },
+          "subclassification": { "id": "6290", "description": "Engineering - Software" }
+        }
+      ],
+      "companyProfileStructuredDataId": 0,
+      "displayType": "standard",
+      "id": "95941537",
+      "isFeatured": false,
+      "listingDate": "2026-11-17T04:56:22Z",
+      "listingDateDisplay": "1d ago",
+      "locations": [
+        {
+          "label": "Angeles City, Pampanga",
+          "countryCode": "PH",
+          "seoHierarchy": [
+            { "contextualName": "Angeles City Pampanga" },
+            { "contextualName": "Pampanga Central Luzon" }
+          ]
+        }
+      ],
+      "roleId": "software-engineer",
+      "salaryLabel": "",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95941537",
+        "section": "MAIN",
+        "sectionRank": 16,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "teaser": "We are seeking a skilled and motivated Software Engineer to join our software development team. The successful candidate will be responsible for...",
+      "title": "Software Engineer (Day shift, Hybrid Clark Office)",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfMTYiCn0=",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "2", "label": { "text": "Hybrid" } }], "displayText": "Hybrid" }
+    },
+    {
+      "advertiser": { "id": "24518161", "description": "MyBudget" },
+      "bulletPoints": [
+        "Seeking an exceptional Senior Software Engineer who specialises in Platforms.",
+        "Join a leader in Financial Wellness and help our clients find financial freedom.",
+        "Excellent career opportunities and highly competitive salary."
+      ],
+      "branding": {
+        "serpLogoUrl": "https://bx-branding-gateway.cloud.seek.com.au/02347e0f-abb0-0d80-90ea-dc06cf935810.1/jdpLogo"
+      },
+      "classifications": [
+        {
+          "classification": { "id": "6281", "description": "Information & Communication Technology" },
+          "subclassification": { "id": "6290", "description": "Engineering - Software" }
+        }
+      ],
+      "companyName": "MyBudget",
+      "companyProfileStructuredDataId": 3702,
+      "displayStyle": { "search": "sourcrProfile" },
+      "displayType": "standard",
+      "employer": { "id": "3702", "name": "MyBudget" },
+      "id": "95921083",
+      "isFeatured": false,
+      "listingDate": "2026-11-16T08:05:56Z",
+      "listingDateDisplay": "2d ago",
+      "locations": [
+        {
+          "label": "Taguig City, Metro Manila",
+          "countryCode": "PH",
+          "seoHierarchy": [{ "contextualName": "Taguig City Metro Manila" }, { "contextualName": "Metro Manila" }]
+        }
+      ],
+      "roleId": "Platform-Software-Engineer",
+      "salaryLabel": "",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95921083",
+        "section": "MAIN",
+        "sectionRank": 17,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "tags": [{ "type": "URGENT", "label": "Urgently hiring" }],
+      "teaser": "Solve complex challenges, influence technical decisions and help shape the future of engineering at MyBudget.",
+      "title": "Senior Software Engineer - Platform",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfMTciCn0=",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "2", "label": { "text": "Hybrid" } }], "displayText": "Hybrid" }
+    },
+    {
+      "advertiser": { "id": "60266866", "description": "Technidata Incorporated" },
+      "bulletPoints": [],
+      "branding": {
+        "serpLogoUrl": "https://bx-branding-gateway.cloud.seek.com.au/9216715b-5600-4dba-b1f2-f2255f0d518d.1/jdpLogo"
+      },
+      "classifications": [
+        {
+          "classification": { "id": "6281", "description": "Information & Communication Technology" },
+          "subclassification": { "id": "6290", "description": "Engineering - Software" }
+        }
+      ],
+      "companyName": "Technidata Incorporated",
+      "companyProfileStructuredDataId": 660120,
+      "displayStyle": { "search": "sourcrProfile" },
+      "displayType": "standard",
+      "employer": {
+        "id": "660120",
+        "name": "Technidata Incorporated",
+        "companyId": "168550468719368",
+        "companyUrl": "https://ph.jobstreet.com/companies/technidata-incorporated-168550468719368"
+      },
+      "id": "95890959",
+      "isFeatured": false,
+      "listingDate": "2026-11-14T01:58:05Z",
+      "listingDateDisplay": "5d ago",
+      "locations": [
+        {
+          "label": "Makati City, Metro Manila",
+          "countryCode": "PH",
+          "seoHierarchy": [{ "contextualName": "Makati City Metro Manila" }, { "contextualName": "Metro Manila" }]
+        }
+      ],
+      "roleId": "Software-Application-Engineer",
+      "salaryLabel": "",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95890959",
+        "section": "MAIN",
+        "sectionRank": 18,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "teaser": "Join TECHNIDATA to shape digital health through software implementation, integration and continuous improvement.",
+      "title": "HEALTHCARE SOFTWARE APPLICATION ENGINEER (M/F)",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfMTgiCn0=",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "2", "label": { "text": "Hybrid" } }], "displayText": "Hybrid" }
+    },
+    {
+      "advertiser": { "id": "62260412", "description": "Cadre Crew" },
+      "bulletPoints": [],
+      "branding": {},
+      "classifications": [
+        {
+          "classification": { "id": "6281", "description": "Information & Communication Technology" },
+          "subclassification": { "id": "6287", "description": "Developers/Programmers" }
+        }
+      ],
+      "companyName": "Cadre Crew",
+      "companyProfileStructuredDataId": 713042,
+      "displayType": "standard",
+      "employer": {
+        "id": "713042",
+        "name": "Cadre Crew",
+        "companyId": "174965628971384",
+        "companyUrl": "https://ph.jobstreet.com/companies/cadre-crew-174965628971384"
+      },
+      "id": "95979192",
+      "isFeatured": false,
+      "listingDate": "2026-11-18T22:30:08Z",
+      "listingDateDisplay": "5h ago",
+      "locations": [
+        {
+          "label": "Makati City, Metro Manila",
+          "countryCode": "PH",
+          "seoHierarchy": [{ "contextualName": "Makati City Metro Manila" }, { "contextualName": "Metro Manila" }]
+        }
+      ],
+      "roleId": "automation-developer",
+      "salaryLabel": "",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95979192",
+        "section": "MAIN",
+        "sectionRank": 19,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "teaser": "Build and maintain AI workflows, integrations, and internal tools for live client systems.",
+      "title": "Junior AI Automation Developer",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfMTkiCn0=",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "1", "label": { "text": "On-site" } }] }
+    },
+    {
+      "advertiser": { "id": "63943908", "description": "PayCoinect Technologies Corporation" },
+      "bulletPoints": [],
+      "branding": {},
+      "classifications": [
+        {
+          "classification": { "id": "6281", "description": "Information & Communication Technology" },
+          "subclassification": { "id": "6287", "description": "Developers/Programmers" }
+        }
+      ],
+      "companyProfileStructuredDataId": 0,
+      "displayType": "standard",
+      "id": "95896690",
+      "isFeatured": false,
+      "listingDate": "2026-11-15T01:59:25Z",
+      "listingDateDisplay": "4d ago",
+      "locations": [
+        {
+          "label": "Imus City, Cavite",
+          "countryCode": "PH",
+          "seoHierarchy": [{ "contextualName": "Imus City Cavite" }, { "contextualName": "Cavite Calabarzon" }]
+        }
+      ],
+      "roleId": "full-stack-software-engineer",
+      "salaryLabel": "",
+      "solMetadata": {
+        "searchRequestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+        "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+        "jobId": "95896690",
+        "section": "MAIN",
+        "sectionRank": 20,
+        "jobAdType": "ORGANIC",
+        "tags": {
+          "mordor__flights": "mordor_1180",
+          "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+          "mordor__flight_performance_signal": "mordor_1208",
+          "mordor__flight_performance": "mordor_1146",
+          "mordor__flight_candidate_fit_plugin": "mordor_1158",
+          "mordor__s": "0"
+        }
+      },
+      "teaser": "As a Full-Stack Software Engineer, you will own the end-to-end development lifecycle of our digital wallet platform",
+      "title": "Full-Stack Software Engineer",
+      "tracking": "ewogICJ0b2tlbiI6ICJlYmMxMzAyZi01ZGI4LTQ1NzUtOTdmMi01NGZmMjcwZTk0ZTVfMjAiCn0=",
+      "workTypes": ["Full time"],
+      "workArrangements": { "data": [{ "id": "3", "label": { "text": "Remote" } }], "displayText": "Remote" }
+    }
+  ],
+  "totalCount": 4585,
+  "info": { "timeTaken": 77, "source": "JobSearch-sm", "experiment": "mordor_1180", "newSince": 1795061174 },
+  "userQueryId": "API7522246563884053863",
+  "sortModes": [
+    { "isActive": true, "name": "Relevance", "value": "KeywordRelevance" },
+    { "isActive": false, "name": "Date", "value": "ListedDate" }
+  ],
+  "solMetadata": {
+    "requestToken": "b4479811-2f79-4442-932a-3f58c644d043",
+    "token": "0~b4479811-2f79-4442-932a-3f58c644d043",
+    "keywords": "software engineer",
+    "sortMode": "RELEVANCE",
+    "pageSize": 20,
+    "pageNumber": 1,
+    "totalJobCount": 4585,
+    "tags": {
+      "mordor:searchMarket": "UNIFIED_PH",
+      "mordor__flight_performance": "mordor_1146",
+      "mordor:rt": "70",
+      "mordor:count_vec": "1290",
+      "mordor__flights": "mordor_1180",
+      "mordor__flight_candidate_fit_plugin": "mordor_1158",
+      "mordor:count_rst": "3258",
+      "mordor:result_count_ir": "37",
+      "mordor__flight_performance_signal": "mordor_1208",
+      "mordor:result_count_rst": "3258",
+      "mordor:result_count_vec": "1290",
+      "mordor__flight_retrieval_and_relevance_ranking": "mordor_1180",
+      "mordor:count_ir": "37"
+    }
+  },
+  "facets": {},
+  "searchParams": { "sitekey": "PH-Main", "keywords": "software engineer", "page": "1", "pagesize": "20" }
+}

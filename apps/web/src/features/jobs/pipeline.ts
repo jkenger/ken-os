@@ -17,6 +17,13 @@ import {
   parseLinkedInSearch,
 } from "./scrapers/linkedin";
 import {
+  JOBSTREET_GRAPHQL_URL,
+  jobStreetDetailsRequestBody,
+  jobStreetSearchUrl,
+  parseJobStreetDetails,
+  parseJobStreetSearch,
+} from "./scrapers/jobstreet";
+import {
   claimPendingPostings,
   getDigestFilteredOutCounts,
   getDigestPostings,
@@ -95,6 +102,46 @@ export async function scrapeLinkedInForUser(
 }
 
 const LINKEDIN_USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+
+/** Searches SEEK's PH edition (JobStreet) for this account's own roles and saves whatever's new. Same
+ *  block/backoff gate as LinkedIn (plans/jobs-scraper-sources.md, Slice 4) -- live-tested unproxied and
+ *  unimpersonated this session (see `scrapers/jobstreet.ts`), so a plain `fetch` is enough. */
+export async function scrapeJobStreetForUser(
+  userId: string,
+  secret: string,
+  expectedSecret: string,
+): Promise<{ ok: boolean; reason: string; found: number }> {
+  const [profile, preferences] = await Promise.all([getProfile(userId), getPreferences(userId)]);
+  return checkScraperSource({
+    secret,
+    expectedSecret,
+    keywords: preferences.roles.length > 0 ? preferences.roles : deriveRoles(profile.details),
+    searchUrl: (keyword) => jobStreetSearchUrl(keyword, 1),
+    parse: parseJobStreetSearch,
+    fetchSearch: async (url) => {
+      const response = await fetch(url, { headers: { "User-Agent": JOBSTREET_USER_AGENT } });
+      return { status: response.status, text: await response.text() };
+    },
+    isBlockedStatus: (status) => status === 403 || status === 429,
+    savePostings: (postings) =>
+      savePostings(userId, postings, async (sourceId) => {
+        const id = sourceId.replace(/^js-/, "");
+        const response = await fetch(JOBSTREET_GRAPHQL_URL, {
+          method: "POST",
+          headers: { "User-Agent": JOBSTREET_USER_AGENT, "Content-Type": "application/json" },
+          body: JSON.stringify(jobStreetDetailsRequestBody(id)),
+        });
+        if (response.status !== 200) return null;
+        return parseJobStreetDetails(await response.text(), id);
+      }),
+    getBlockedUntil: () => getBlockedUntil("jobstreet"),
+    recordBlocked: (until) => recordBlocked("jobstreet", until),
+    recordRunning: () => recordRunning("jobstreet"),
+  });
+}
+
+const JOBSTREET_USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
 /** Extracts and scores this account's own pending postings against this account's own Profile. */
