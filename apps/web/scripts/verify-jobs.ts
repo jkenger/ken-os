@@ -1340,6 +1340,12 @@ async function main() {
         "a successful run clears a previous block, not just lets it expire",
       );
       console.log("ok - recordRunning clears a previous block");
+
+      const allStates = await scraperState.getAllScraperStates();
+      const ownRow = allStates.find((row) => row.source === testSource);
+      assert.ok(ownRow, "getAllScraperStates reads every row, including this test's own, with no source filter");
+      assert.equal(ownRow!.blocked, false);
+      console.log("ok - getAllScraperStates reads every source's row generically, not a hardcoded list");
     } finally {
       await db().delete(jobScraperState).where(eq(jobScraperState.source, testSource));
     }

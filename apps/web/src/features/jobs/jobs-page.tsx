@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import type { CheckStatus } from "@/features/jobs/format-check-status";
 import { formatBoardName } from "@/features/jobs/job-boards";
 import type { JobPreferences } from "@/features/jobs/preferences-store";
+import type { ScraperSourceState } from "@/features/jobs/scraper-state";
 import type { PostingSortKey, PostingView } from "@/features/jobs/store";
 import { FilterSidebar } from "./filter-sidebar";
 import { JobsTabs } from "./jobs-tabs";
@@ -78,6 +79,7 @@ export function JobsPage({
   filteredOutCount,
   boardFilter,
   checkStatus,
+  scraperStates,
 }: {
   email: string;
   effectiveRoles: string[];
@@ -105,6 +107,9 @@ export function JobsPage({
   /** `null` means the outside scheduler has never called `/api/jobs/check/freehire` for this owner -- the
    *  Overview's "Last checked" fact. */
   checkStatus: CheckStatus | null;
+  /** Every scraped source's own block/run state (plans/jobs-scraper-sources.md, Slice 3) -- the Overview's
+   *  per-source rows, generic over however many sources have run at least once. */
+  scraperStates: ScraperSourceState[];
 }) {
   const [sort, setSort] = useState<PostingSortKey>("score");
   const [search, setSearch] = useState("");
@@ -208,6 +213,7 @@ export function JobsPage({
                     effectiveRoles={effectiveRoles}
                     preferences={preferences}
                     checkStatus={checkStatus}
+                    scraperStates={scraperStates}
                   />
                 </div>
               )}
@@ -223,7 +229,12 @@ export function JobsPage({
               {loadingMore && <p className="py-3 text-center text-xs text-muted-foreground">Loading more…</p>}
             </div>
           ) : (
-            <Overview effectiveRoles={effectiveRoles} preferences={preferences} checkStatus={checkStatus} />
+            <Overview
+              effectiveRoles={effectiveRoles}
+              preferences={preferences}
+              checkStatus={checkStatus}
+              scraperStates={scraperStates}
+            />
           )}
         </div>
       </div>

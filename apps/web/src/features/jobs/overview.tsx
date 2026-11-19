@@ -1,4 +1,4 @@
-import { CircleCheck, CircleDashed, SlidersHorizontal } from "lucide-react";
+import { CircleCheck, CircleDashed, Clock, SlidersHorizontal } from "lucide-react";
 import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,6 +6,26 @@ import { CheckStatusIcon } from "@/features/jobs/check-status-icon";
 import { describeCheckStatus, type CheckStatus } from "@/features/jobs/format-check-status";
 import { preferencesSummary } from "@/features/jobs/preferences-summary";
 import type { JobPreferences } from "@/features/jobs/preferences-store";
+import type { AlertSource } from "@/features/jobs/raw-posting";
+import { describeScraperState, type ScraperStatusView } from "@/features/jobs/scraper-status";
+import type { ScraperSourceState } from "@/features/jobs/scraper-state";
+import { sourceWords } from "@/features/jobs/words";
+
+/** One icon per scraped source's own state (docs/mockups/jobs-scraper-status.md) -- reuses `CheckStatusIcon`'s
+ *  vocabulary (`CircleCheck`/`Clock`/`CircleDashed`) since Blocked reads the same as freehire's existing Late:
+ *  not actively running right now, whether the cause is scheduler silence or a deliberate 24h backoff. */
+function ScraperStatusIcon({ kind }: { kind: ScraperStatusView["kind"] }) {
+  if (kind === "running") return <CircleCheck />;
+  if (kind === "blocked") return <Clock className="text-muted-foreground" />;
+  return <CircleDashed className="text-muted-foreground" strokeDasharray="3.5 3" />;
+}
+
+/** freehire has no `job_scraper_state` row (`check-freehire.ts`), so `scraperStates` only ever lists the sources
+ *  that actively try to stop scraping -- `sourceWords` falls back to the raw source string for one not yet in
+ *  that map (e.g. a source whose display-name entry hasn't landed yet). */
+function sourceLabel(source: string): string {
+  return sourceWords[source as AlertSource] ?? source;
+}
 
 function StatusRow({
   icon,
@@ -42,23 +62,30 @@ export function SetupStatusPanel({
   effectiveRoles,
   preferences,
   checkStatus,
+  scraperStates,
 }: {
   effectiveRoles: string[];
   preferences: JobPreferences;
   checkStatus: CheckStatus | null;
+  scraperStates: ScraperSourceState[];
 }) {
   const rolesReady = effectiveRoles.length > 0;
   const prefs = preferencesSummary(preferences);
   const check = describeCheckStatus(checkStatus);
   const checkReady = check.kind === "working";
-  const readyCount = Number(rolesReady) + 1 + Number(checkReady);
+  const scraperViews = scraperStates.map((state) => ({ source: state.source, view: describeScraperState(state) }));
+  const scraperReadyCount = scraperViews.filter(({ view }) => view.kind === "running").length;
+  const totalChecks = 3 + scraperViews.length;
+  const readyCount = Number(rolesReady) + 1 + Number(checkReady) + scraperReadyCount;
 
   return (
     <div className="grid gap-5">
       <div className="overflow-hidden rounded-xl border">
         <div className="flex h-11 items-center justify-between border-b bg-card px-5">
           <h2 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">Setup status</h2>
-          <span className="text-xs text-muted-foreground">{readyCount} of 3 ready</span>
+          <span className="text-xs text-muted-foreground">
+            {readyCount} of {totalChecks} ready
+          </span>
         </div>
         <div className="grid gap-px bg-border">
           <StatusRow
@@ -118,6 +145,30 @@ export function SetupStatusPanel({
                   : check.agoLabel}
             </div>
           </StatusRow>
+
+          {scraperViews.map(({ source, view }) => (
+            <StatusRow
+              key={source}
+              icon={<ScraperStatusIcon kind={view.kind} />}
+              title={sourceLabel(source)}
+              stateWord={view.kind === "never" ? "Never" : view.kind === "blocked" ? "Blocked" : "Running"}
+              caption={
+                view.kind === "never"
+                  ? `The scheduler should call the ${sourceLabel(source)} check every minute. If this stays at Never, the scheduler isn't set up or can't reach Loots`
+                  : undefined
+              }
+            >
+              <div className="text-sm font-medium">
+                {view.kind === "never"
+                  ? "No check has run yet"
+                  : view.kind === "blocked"
+                    ? `Blocked until ${view.untilLabel}`
+                    : view.agoLabel
+                      ? `Last ran ${view.agoLabel}`
+                      : "Running"}
+              </div>
+            </StatusRow>
+          ))}
         </div>
       </div>
 
@@ -140,10 +191,12 @@ export function Overview({
   effectiveRoles,
   preferences,
   checkStatus,
+  scraperStates,
 }: {
   effectiveRoles: string[];
   preferences: JobPreferences;
   checkStatus: CheckStatus | null;
+  scraperStates: ScraperSourceState[];
 }) {
   return (
     <div className="grid gap-5">
@@ -153,7 +206,12 @@ export function Overview({
           Jobs searches freehire for your roles and scores each posting against your Profile
         </p>
       </div>
-      <SetupStatusPanel effectiveRoles={effectiveRoles} preferences={preferences} checkStatus={checkStatus} />
+      <SetupStatusPanel
+        effectiveRoles={effectiveRoles}
+        preferences={preferences}
+        checkStatus={checkStatus}
+        scraperStates={scraperStates}
+      />
     </div>
   );
 }
