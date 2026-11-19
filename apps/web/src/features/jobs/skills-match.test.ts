@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { matchSkills } from "./skills-match";
+import { atsScore, matchSkills } from "./skills-match";
 
 test("a posting skill present in the Profile's skills is have, case and punctuation insensitive", () => {
   const result = matchSkills(["typescript", "node.js"], ["TypeScript", "Node.js"]);
@@ -50,4 +50,26 @@ test("no Profile skills means everything is missing", () => {
     { skill: "React", status: "missing" },
     { skill: "TypeScript", status: "missing" },
   ]);
+});
+
+test("atsScore is null for a posting with no stated skills", () => {
+  assert.equal(atsScore([]), null);
+});
+
+test("atsScore is 100 when every posting skill is have", () => {
+  const result = matchSkills(["react", "typescript"], ["React", "TypeScript"]);
+  assert.equal(atsScore(result), 100);
+});
+
+test("atsScore rounds the have share of total posting skills, related and missing count against it", () => {
+  const skillMatches: Parameters<typeof atsScore>[0] = [
+    { skill: "A", status: "have" },
+    { skill: "B", status: "have" },
+    { skill: "C", status: "have" },
+    { skill: "D", status: "have" },
+    { skill: "E", status: "have" },
+    { skill: "F", status: "have" },
+    { skill: "G", status: "missing" },
+  ];
+  assert.equal(atsScore(skillMatches), 86); // 6/7 = 0.857... -> Math.round -> 86
 });

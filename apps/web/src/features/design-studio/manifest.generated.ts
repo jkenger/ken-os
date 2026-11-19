@@ -2846,7 +2846,7 @@ export const studioManifest: StudioManifest = {
   ],
   "globals": {
     "file": "app/globals.css",
-    "lines": 453,
+    "lines": 489,
     "tail": [
       "    animation: none;",
       "  }",
