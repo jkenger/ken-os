@@ -1,11 +1,12 @@
 "use client";
 
-import { ArrowUpRight, Bookmark, Check } from "lucide-react";
+import { ArrowUpRight, Bookmark, Check, FileText, LoaderCircle, Mail } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DotSeparator } from "@/components/dot-separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/toaster";
 import { CompanyAvatar } from "@/features/jobs/company-avatar";
@@ -14,9 +15,13 @@ import { atsScore, matchSkills } from "@/features/jobs/skills-match";
 import type { PostingView } from "@/features/jobs/store";
 import { timeAgo } from "@/features/jobs/time-ago";
 import { send } from "@/lib/api-client";
+import { CoverLetterTab } from "./cover-letter-tab";
 import { ScoreRing } from "./score-ring";
 import { SkillBadge } from "./skill-badge";
+import { TailoredCvActions } from "./tailored-cv-actions";
 import { useApplyFlow } from "./use-apply-flow";
+import { useCoverLetterFlow } from "./use-cover-letter-flow";
+import { useTailorFlow } from "./use-tailor-flow";
 
 // New postings as cards (docs/mockups/Jobs redesign.html, "Desktop / New (cards)"): company, title, score, a meta
 // row (work setup, countries, job type, seniority, posted), the posting's own snippet truncated to two lines,
@@ -70,6 +75,11 @@ export function payRangeLabel(
   }
   if (posting.payAmount == null) return null;
   return `${posting.payCurrency} ${Math.round(posting.payAmount).toLocaleString()} a ${posting.payPeriod}`;
+}
+
+/** The Tailored CV modal's "Made <date>" row (docs/architecture/job-card-actions.md, "Two new modals"). */
+function madeOnLabel(date: Date): string {
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
 function SaveButton({
@@ -205,6 +215,19 @@ export function PostingCard({
   const haveSkillCount = allSkillMatches.filter((match) => match.status === "have").length;
   const link = posting.sources[0]?.link;
   const { onApplyClick, dialog } = useApplyFlow({ postingId: posting.id, link });
+  // Each card starts idle/empty regardless of a tailored resume or cover letter generated earlier from the
+  // detail page (docs/architecture/job-card-actions.md: "no backend changes beyond the ATS formula" -- knowing
+  // which cards already have one would need a new New-list query join, out of this slice's scope). Clicking
+  // Tailor CV/Write cover letter again on such a posting just regenerates it, the same idempotent upsert either
+  // button already does, not a destructive restart.
+  const { status: tailorStatus, onTailorClick } = useTailorFlow({ postingId: posting.id });
+  const [tailorMadeAt, setTailorMadeAt] = useState<Date | null>(null);
+  useEffect(() => {
+    if (tailorStatus === "ready") setTailorMadeAt(new Date());
+  }, [tailorStatus]);
+  const [tailorModalOpen, setTailorModalOpen] = useState(false);
+  const coverLetterFlow = useCoverLetterFlow({ postingId: posting.id, initial: null });
+  const [letterModalOpen, setLetterModalOpen] = useState(false);
   const badge = postingBadge({
     viewedAt: posting.viewedAt,
     firstSeenAt: posting.firstSeenAt,
@@ -269,7 +292,7 @@ export function PostingCard({
           )}
 
           {payRangeLabel(posting) && (
-            <div className="mt-2 flex justify-end">
+            <div className="mt-2 flex justify-end sm:hidden">
               <span className="text-xs font-medium text-muted-foreground">{payRangeLabel(posting)}</span>
             </div>
           )}
@@ -277,7 +300,7 @@ export function PostingCard({
       </div>
 
       <Separator className="mt-3" />
-      <div className="pointer-events-auto relative z-10 mt-3 flex items-center justify-between gap-2">
+      <div className="pointer-events-auto relative z-10 mt-3 flex flex-wrap items-center gap-x-2 gap-y-3">
         <div className="flex items-center gap-3.5">
           {posting.score != null && (
             <ScoreRing
@@ -305,12 +328,143 @@ export function PostingCard({
             </span>
           )}
         </div>
-        <Button type="button" size="sm" disabled={!link} onClick={onApplyClick} className="group/apply">
-          Apply
-          <ArrowUpRight className="transition-transform duration-200 ease-out group-hover/apply:translate-x-0.5 group-hover/apply:-translate-y-0.5" />
-        </Button>
+        <div className="order-3 flex basis-full flex-wrap items-center gap-2 sm:order-none sm:basis-auto sm:border-l sm:pl-3.5">
+          <span
+            className="rainbow-ring inline-flex rounded-4xl border-[1.5px] border-transparent"
+            data-status={tailorStatus}
+          >
+            {tailorStatus === "ready" ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="border-transparent"
+                onClick={() => setTailorModalOpen(true)}
+              >
+                <FileText color="url(#rainbowGradient)" />
+                View CV
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="border-transparent"
+                disabled={tailorStatus === "pending"}
+                onClick={onTailorClick}
+              >
+                {tailorStatus === "pending" ? (
+                  <LoaderCircle color="url(#rainbowGradient)" className="animate-spin" />
+                ) : (
+                  <FileText color="url(#rainbowGradient)" />
+                )}
+                Tailor CV
+              </Button>
+            )}
+          </span>
+          <span
+            className="rainbow-ring inline-flex rounded-4xl border-[1.5px] border-transparent"
+            data-status={coverLetterFlow.status === "generating" ? "pending" : "ready"}
+          >
+            {coverLetterFlow.status === "ready" ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="border-transparent"
+                onClick={() => setLetterModalOpen(true)}
+              >
+                <Mail color="url(#rainbowGradient)" />
+                View cover letter
+              </Button>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="border-transparent"
+                disabled={coverLetterFlow.status === "generating"}
+                onClick={coverLetterFlow.onWriteClick}
+              >
+                {coverLetterFlow.status === "generating" ? (
+                  <LoaderCircle color="url(#rainbowGradient)" className="animate-spin" />
+                ) : (
+                  <Mail color="url(#rainbowGradient)" />
+                )}
+                Write cover letter
+              </Button>
+            )}
+          </span>
+        </div>
+        <div className="order-2 ml-auto flex items-center gap-3 sm:order-none">
+          {payRangeLabel(posting) && (
+            <span className="hidden text-xs font-medium text-muted-foreground sm:inline">{payRangeLabel(posting)}</span>
+          )}
+          <Button type="button" size="sm" disabled={!link} onClick={onApplyClick} className="group/apply">
+            Apply
+            <ArrowUpRight className="transition-transform duration-200 ease-out group-hover/apply:translate-x-0.5 group-hover/apply:-translate-y-0.5" />
+          </Button>
+        </div>
       </div>
       {dialog}
+      {coverLetterFlow.dialog}
+      <Dialog open={tailorModalOpen} onOpenChange={setTailorModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Tailored CV</DialogTitle>
+            <DialogDescription>
+              {posting.title} at {posting.company}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex items-center gap-3 rounded-lg border p-3.5">
+            <span className="grid size-10 shrink-0 place-items-center rounded-sm bg-muted">
+              <FileText color="url(#rainbowGradient)" className="size-[18px]" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium">Tailored CV, PDF</p>
+              <p className="text-xs text-muted-foreground">
+                Made <span className="font-mono">{madeOnLabel(tailorMadeAt ?? new Date())}</span>
+              </p>
+            </div>
+          </div>
+          <div className="flex justify-end">
+            {tailorStatus === "ready" ? (
+              <TailoredCvActions postingId={posting.id} onRegenerateClick={onTailorClick} />
+            ) : (
+              <Button type="button" variant="outline" disabled={tailorStatus === "pending"} onClick={onTailorClick}>
+                {tailorStatus === "pending" ? (
+                  <LoaderCircle color="url(#rainbowGradient)" className="animate-spin" />
+                ) : (
+                  <FileText color="url(#rainbowGradient)" />
+                )}
+                Tailor CV
+              </Button>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={letterModalOpen} onOpenChange={setLetterModalOpen}>
+        <DialogContent className="sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Cover letter</DialogTitle>
+            <DialogDescription>
+              {posting.title} at {posting.company}
+            </DialogDescription>
+          </DialogHeader>
+          <CoverLetterTab
+            status={coverLetterFlow.status}
+            content={coverLetterFlow.content}
+            onContentChange={coverLetterFlow.setContent}
+            edited={coverLetterFlow.edited}
+            regenerating={coverLetterFlow.regenerating}
+            generatedAt={coverLetterFlow.generatedAt}
+            onWriteClick={coverLetterFlow.onWriteClick}
+            onRegenerateClick={coverLetterFlow.onRegenerateClick}
+            onSaveClick={coverLetterFlow.onSaveClick}
+            onCopyClick={coverLetterFlow.onCopyClick}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -318,6 +472,19 @@ export function PostingCard({
 export function NewList({ postings, profileSkills }: { postings: PostingView[]; profileSkills: string[] }) {
   return (
     <div className="flex flex-col gap-3">
+      {/* Shared def for the card actions' rainbow-stroked icons (same technique as posting-detail.tsx's title
+          row): defined once here, not per card, so multiple cards on one page don't each repeat the id. */}
+      <svg width="0" height="0" className="absolute" aria-hidden="true">
+        <defs>
+          <linearGradient id="rainbowGradient" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" stopColor="oklch(0.62 0.2 25)" />
+            <stop offset="0.3" stopColor="oklch(0.72 0.16 75)" />
+            <stop offset="0.55" stopColor="oklch(0.62 0.17 150)" />
+            <stop offset="0.8" stopColor="oklch(0.6 0.15 230)" />
+            <stop offset="1" stopColor="oklch(0.58 0.2 295)" />
+          </linearGradient>
+        </defs>
+      </svg>
       {postings.map((posting, index) => (
         <PostingCard key={posting.id} posting={posting} profileSkills={profileSkills} index={index} />
       ))}

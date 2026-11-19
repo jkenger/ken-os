@@ -1,22 +1,11 @@
 "use client";
 
-import {
-  AlertTriangle,
-  ArrowUpRight,
-  Bookmark,
-  CircleHelp,
-  ExternalLink,
-  FileText,
-  LoaderCircle,
-  Mail,
-  RefreshCw,
-} from "lucide-react";
+import { AlertTriangle, Bookmark, CircleHelp, ExternalLink, FileText, LoaderCircle, Mail } from "lucide-react";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { DotSeparator } from "@/components/dot-separator";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ButtonGroup, ButtonGroupSeparator } from "@/components/ui/button-group";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -35,6 +24,7 @@ import { CoverLetterTab } from "./cover-letter-tab";
 import { EmptyState } from "./empty-state";
 import { SkillBadge, SkillGroup } from "./skill-badge";
 import { SkillLogo } from "./skill-logo";
+import { TailoredCvActions } from "./tailored-cv-actions";
 import { useApplyFlow } from "./use-apply-flow";
 import { useCoverLetterFlow } from "./use-cover-letter-flow";
 import { useTailorFlow } from "./use-tailor-flow";
@@ -247,38 +237,7 @@ export function PostingDetail({
               data-status={tailorStatus}
             >
               {tailorStatus === "ready" ? (
-                <ButtonGroup aria-label="Tailored CV">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="group/tailor rounded-r-none border-r-0 border-transparent"
-                    asChild
-                  >
-                    <a href={`/api/jobs/postings/${posting.id}/tailor`} target="_blank" rel="noopener noreferrer">
-                      View tailored CV
-                      <ArrowUpRight
-                        color="url(#rainbowGradient)"
-                        className="transition-transform duration-200 ease-out group-hover/tailor:translate-x-0.5 group-hover/tailor:-translate-y-0.5"
-                      />
-                    </a>
-                  </Button>
-                  <ButtonGroupSeparator />
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="rounded-l-none border-transparent"
-                        aria-label="Regenerate tailored CV"
-                        onClick={onTailorClick}
-                      >
-                        <RefreshCw color="url(#rainbowGradient)" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Regenerate</TooltipContent>
-                  </Tooltip>
-                </ButtonGroup>
+                <TailoredCvActions postingId={posting.id} onRegenerateClick={onTailorClick} />
               ) : (
                 <Button
                   type="button"
