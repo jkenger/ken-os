@@ -11,6 +11,13 @@ import { checkScraperSource } from "./scraper-contract";
 import { getBlockedUntil, recordBlocked, recordRunning } from "./scraper-state";
 import { freehireDetailUrl, parseFreehireDetail } from "./scrapers/freehire";
 import {
+  indeedSearchQuery,
+  indeedSearchUrl,
+  INDEED_API_URL,
+  INDEED_HEADERS,
+  parseIndeedSearch,
+} from "./scrapers/indeed";
+import {
   linkedInDetailUrl,
   linkedInSearchUrl,
   parseLinkedInDescription,
@@ -143,6 +150,38 @@ export async function scrapeJobStreetForUser(
 
 const JOBSTREET_USER_AGENT =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+
+/** Searches Indeed's mobile-app GraphQL endpoint for this account's own roles and saves whatever's new. Same
+ *  block/backoff gate as LinkedIn (plans/jobs-scraper-sources.md, Slice 2) -- `indeedSearchUrl`'s "URL" is never
+ *  actually fetched as a GET, it just carries the keyword back out to the real POST (see `scrapers/indeed.ts`). */
+export async function scrapeIndeedForUser(
+  userId: string,
+  secret: string,
+  expectedSecret: string,
+): Promise<{ ok: boolean; reason: string; found: number }> {
+  const [profile, preferences] = await Promise.all([getProfile(userId), getPreferences(userId)]);
+  return checkScraperSource({
+    secret,
+    expectedSecret,
+    keywords: preferences.roles.length > 0 ? preferences.roles : deriveRoles(profile.details),
+    searchUrl: indeedSearchUrl,
+    parse: parseIndeedSearch,
+    fetchSearch: async (url) => {
+      const keyword = new URL(url).searchParams.get("q") ?? "";
+      const response = await fetch(INDEED_API_URL, {
+        method: "POST",
+        headers: INDEED_HEADERS,
+        body: JSON.stringify({ query: indeedSearchQuery(keyword, null) }),
+      });
+      return { status: response.status, text: await response.text() };
+    },
+    isBlockedStatus: (status) => status === 403 || status === 429,
+    savePostings: (postings) => savePostings(userId, postings),
+    getBlockedUntil: () => getBlockedUntil("indeed"),
+    recordBlocked: (until) => recordBlocked("indeed", until),
+    recordRunning: () => recordRunning("indeed"),
+  });
+}
 
 /** Extracts and scores this account's own pending postings against this account's own Profile. */
 export async function processUserPostings(
