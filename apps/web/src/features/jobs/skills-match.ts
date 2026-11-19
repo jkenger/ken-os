@@ -29,3 +29,13 @@ export function matchSkills(postingSkills: string[], profileSkills: string[]): S
     return { skill: displayName, status: "missing" };
   });
 }
+
+/** ATS compatibility (docs/product/job-finder.md, "ATS compatibility"): the share of this posting's own stated
+ *  skills the Profile already has, computed from the same `matchSkills` result the card already has -- no new
+ *  AI call. `null` means no posting skills to score, so the card hides the ring entirely rather than showing a
+ *  fake 0%. */
+export function atsScore(skillMatches: SkillMatch[]): number | null {
+  if (skillMatches.length === 0) return null;
+  const have = skillMatches.filter((m) => m.status === "have").length;
+  return Math.round((have / skillMatches.length) * 100);
+}

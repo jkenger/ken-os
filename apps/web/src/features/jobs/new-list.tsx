@@ -10,10 +10,11 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/toaster";
 import { CompanyAvatar } from "@/features/jobs/company-avatar";
 import { countryFlag, countryName } from "@/features/jobs/country-flags";
-import { matchSkills } from "@/features/jobs/skills-match";
+import { atsScore, matchSkills } from "@/features/jobs/skills-match";
 import type { PostingView } from "@/features/jobs/store";
 import { timeAgo } from "@/features/jobs/time-ago";
 import { send } from "@/lib/api-client";
+import { ScoreRing } from "./score-ring";
 import { SkillBadge } from "./skill-badge";
 import { useApplyFlow } from "./use-apply-flow";
 
@@ -197,8 +198,11 @@ export function PostingCard({
   // fullDescription fills in when the full page was read; summary is what's left for a Partial posting
   // (every source's page failed to read), which never gets a fullDescription at all.
   const previewText = posting.snippet || posting.fullDescription || posting.summary || "";
-  const skillMatches = matchSkills(posting.skills, profileSkills).slice(0, MAX_SKILLS);
+  const allSkillMatches = matchSkills(posting.skills, profileSkills);
+  const skillMatches = allSkillMatches.slice(0, MAX_SKILLS);
   const overflow = posting.skills.length - skillMatches.length;
+  const ats = atsScore(allSkillMatches);
+  const haveSkillCount = allSkillMatches.filter((match) => match.status === "have").length;
   const link = posting.sources[0]?.link;
   const { onApplyClick, dialog } = useApplyFlow({ postingId: posting.id, link });
   const badge = postingBadge({
@@ -240,12 +244,6 @@ export function PostingCard({
               <p className="mt-0.5 text-sm text-muted-foreground">{posting.company}</p>
             </div>
             <div className="pointer-events-auto relative z-10 flex shrink-0 items-center gap-2">
-              {posting.score != null && (
-                <Badge variant="outline" className="h-8 gap-1 rounded-4xl px-3 text-sm">
-                  {posting.score}
-                  <span className="font-normal text-muted-foreground">match</span>
-                </Badge>
-              )}
               <SaveButton postingId={posting.id} title={posting.title} saved={saved} onSavedChange={setSaved} />
             </div>
           </div>
@@ -279,20 +277,34 @@ export function PostingCard({
       </div>
 
       <Separator className="mt-3" />
-      <div
-        className={`pointer-events-auto relative z-10 mt-3 flex items-center gap-2 ${onBoard ? "justify-between" : "justify-end"}`}
-      >
-        {onBoard && applied && (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            Applied <span className="font-mono">{timeAgo(posting.appliedAt ?? new Date())}</span>
-            <MarkNotAppliedButton postingId={posting.id} onDone={() => setApplied(false)} />
-          </div>
-        )}
-        {onBoard && !applied && saved && (
-          <span className="text-xs text-muted-foreground">
-            Saved <span className="font-mono">{timeAgo(posting.savedAt ?? new Date())}</span>
-          </span>
-        )}
+      <div className="pointer-events-auto relative z-10 mt-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-3.5">
+          {posting.score != null && (
+            <ScoreRing
+              value={posting.score}
+              label="Match"
+              tooltip={`${posting.score} out of 100 overall fit with your Profile`}
+            />
+          )}
+          {ats != null && (
+            <ScoreRing
+              value={ats}
+              label="ATS"
+              tooltip={`${haveSkillCount} of ${allSkillMatches.length} posting skills in your Profile`}
+            />
+          )}
+          {onBoard && applied && (
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              Applied <span className="font-mono">{timeAgo(posting.appliedAt ?? new Date())}</span>
+              <MarkNotAppliedButton postingId={posting.id} onDone={() => setApplied(false)} />
+            </div>
+          )}
+          {onBoard && !applied && saved && (
+            <span className="text-xs text-muted-foreground">
+              Saved <span className="font-mono">{timeAgo(posting.savedAt ?? new Date())}</span>
+            </span>
+          )}
+        </div>
         <Button type="button" size="sm" disabled={!link} onClick={onApplyClick} className="group/apply">
           Apply
           <ArrowUpRight className="transition-transform duration-200 ease-out group-hover/apply:translate-x-0.5 group-hover/apply:-translate-y-0.5" />
