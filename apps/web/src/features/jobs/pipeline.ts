@@ -7,7 +7,15 @@ import { sendDigestEmailIfDue } from "./digest-email";
 import { getLastDigestSentAt, getPreferences, markDigestSent } from "./preferences-store";
 import { processPostings, scorePostings } from "./process";
 import { deriveRoles } from "./roles";
+import { checkScraperSource } from "./scraper-contract";
+import { getBlockedUntil, recordBlocked, recordRunning } from "./scraper-state";
 import { freehireDetailUrl, parseFreehireDetail } from "./scrapers/freehire";
+import {
+  linkedInDetailUrl,
+  linkedInSearchUrl,
+  parseLinkedInDescription,
+  parseLinkedInSearch,
+} from "./scrapers/linkedin";
 import {
   claimPendingPostings,
   getDigestFilteredOutCounts,
@@ -51,6 +59,43 @@ export async function scrapeFreehireForUser(
       }),
   });
 }
+
+/** Searches LinkedIn's guest endpoint for this account's own roles and saves whatever's new. Unlike freehire,
+ *  LinkedIn actively tries to stop scraping, so this goes through `checkScraperSource`'s block/backoff gate
+ *  (plans/jobs-scraper-sources.md, Slice 1) -- a 403/429 stops every account's LinkedIn search for 24 hours, not
+ *  just this one. */
+export async function scrapeLinkedInForUser(
+  userId: string,
+  secret: string,
+  expectedSecret: string,
+): Promise<{ ok: boolean; reason: string; found: number }> {
+  const [profile, preferences] = await Promise.all([getProfile(userId), getPreferences(userId)]);
+  return checkScraperSource({
+    secret,
+    expectedSecret,
+    keywords: preferences.roles.length > 0 ? preferences.roles : deriveRoles(profile.details),
+    searchUrl: (keyword) => linkedInSearchUrl(keyword, 0),
+    parse: parseLinkedInSearch,
+    fetchSearch: async (url) => {
+      const response = await fetch(url, { headers: { "User-Agent": LINKEDIN_USER_AGENT } });
+      return { status: response.status, text: await response.text() };
+    },
+    isBlockedStatus: (status) => status === 403 || status === 429,
+    savePostings: (postings) =>
+      savePostings(userId, postings, async (sourceId) => {
+        const id = sourceId.replace(/^li-/, "");
+        const response = await fetch(linkedInDetailUrl(id), { headers: { "User-Agent": LINKEDIN_USER_AGENT } });
+        if (response.status !== 200) return null;
+        return parseLinkedInDescription(await response.text());
+      }),
+    getBlockedUntil: () => getBlockedUntil("linkedin"),
+    recordBlocked: (until) => recordBlocked("linkedin", until),
+    recordRunning: () => recordRunning("linkedin"),
+  });
+}
+
+const LINKEDIN_USER_AGENT =
+  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
 
 /** Extracts and scores this account's own pending postings against this account's own Profile. */
 export async function processUserPostings(
