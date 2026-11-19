@@ -975,6 +975,17 @@ export const jobCheckStatus = pgTable("job_check_status", {
   lastOkAt: timestamp("last_ok_at", { withTimezone: true }),
 });
 
+/** Block/backoff state for a source that actively tries to stop scraping (LinkedIn, Indeed, JobStreet), keyed
+ *  by `source` alone -- every account's search shares the same outbound IP, so one account's block applies to
+ *  every other account's calls too (`scraper-state.ts`, plans/jobs-scraper-sources.md). freehire has no row
+ *  here: it's a cooperative API with nothing to back off from (`check-freehire.ts`). */
+export const jobScraperState = pgTable("job_scraper_state", {
+  source: text("source").primaryKey(),
+  blocked: boolean("blocked").notNull().default(false),
+  blockedUntil: timestamp("blocked_until", { withTimezone: true }),
+  lastRunAt: timestamp("last_run_at", { withTimezone: true }),
+});
+
 /** One cached snapshot of currency rates (1 USD = N of that currency), refreshed periodically by
  *  `/api/jobs/process` (plans: Jobs multi-currency pay, single-currency revision) rather than fetched live
  *  during filtering. A single, fixed-id row -- there is only ever one current snapshot. */

@@ -9,6 +9,7 @@ import {
   jobCurrencyRates,
   jobMatches,
   jobPostings,
+  jobScraperState,
   jobTailoredResumes,
   users,
 } from "../src/lib/db/schema";
@@ -22,6 +23,7 @@ async function main() {
   const store = await import("../src/features/jobs/store");
   const currencyRatesStore = await import("../src/features/jobs/currency-rates-store");
   const checkStatusStore = await import("../src/features/jobs/check-status-store");
+  const scraperState = await import("../src/features/jobs/scraper-state");
   const userId = `jobs-check-${randomUUID()}`;
   await db()
     .insert(users)
@@ -1320,6 +1322,27 @@ async function main() {
     console.log(
       "ok - recording a second, failing check updates the status in place, counting up and preserving lastOkAt",
     );
+
+    const testSource = `test-scraper-${randomUUID()}`;
+    try {
+      assert.equal(await scraperState.getBlockedUntil(testSource), null, "a source that's never run isn't blocked");
+      const until = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      await scraperState.recordBlocked(testSource, until);
+      const blockedUntil = await scraperState.getBlockedUntil(testSource);
+      assert.ok(blockedUntil instanceof Date);
+      assert.equal(blockedUntil.getTime(), until.getTime());
+      console.log("ok - recordBlocked sets a global blockedUntil for that source");
+
+      await scraperState.recordRunning(testSource);
+      assert.equal(
+        await scraperState.getBlockedUntil(testSource),
+        null,
+        "a successful run clears a previous block, not just lets it expire",
+      );
+      console.log("ok - recordRunning clears a previous block");
+    } finally {
+      await db().delete(jobScraperState).where(eq(jobScraperState.source, testSource));
+    }
 
     const pageUserId = `jobs-page-check-${randomUUID()}`;
     await db()

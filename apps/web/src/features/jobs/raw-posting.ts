@@ -1,8 +1,10 @@
 // A posting pulled from one source (docs/product/job-finder.md). Everything after dedup never knows which source a
 // posting came from except through `sourceId`'s prefix and `source` itself.
 
-/** "linkedin"/"indeed" are kept only for reading and displaying postings scraped before the move to freehire
- *  (plans/jobs-freehire-source.md) -- nothing saves them anymore. Every new posting is "freehire". */
+/** "linkedin" is live again (plans/jobs-scraper-sources.md, Slice 1) after being deleted in the freehire
+ *  migration (plans/jobs-freehire-source.md) and reversed back on -- freehire's own coverage of LinkedIn/Indeed/
+ *  JobStreet turned out too thin and too stale (see that plan's gap-check spike). "indeed" is still historical
+ *  only until Slice 2 lands. */
 export type AlertSource = "linkedin" | "indeed" | "freehire";
 
 export type RawPosting = {

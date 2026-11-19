@@ -6,11 +6,13 @@ const FRESHNESS_DAYS = 14;
 const RESULTS_PER_KEYWORD = 100;
 
 /**
- * Searches freehire for each of the owner's roles (plans/jobs-freehire-source.md). Unlike the LinkedIn/Indeed
- * scrapers this replaces, there's no block-detection loop: freehire is a cooperative, public, unauthenticated API,
- * not a site actively trying to stop scraping, so a failed request for one keyword is just skipped for this run,
- * not escalated to a block state -- the other keywords, and the next poll, are unaffected. Searches run in
- * parallel; there's no reason to pace requests against an API with no documented rate limit.
+ * Searches freehire for each of the owner's roles (plans/jobs-freehire-source.md). Unlike LinkedIn/Indeed/
+ * JobStreet (`scraper-contract.ts`'s `checkScraperSource`, reintroduced in plans/jobs-scraper-sources.md after
+ * freehire's own coverage of those three turned out too thin), there's no block-detection loop here: freehire is
+ * a cooperative, public, unauthenticated API, not a site actively trying to stop scraping, so a failed request
+ * for one keyword is just skipped for this run, not escalated to a block state -- the other keywords, and the
+ * next poll, are unaffected. Searches run in parallel; there's no reason to pace requests against an API with no
+ * documented rate limit.
  */
 export async function checkFreehire(params: {
   secret: string;
