@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
+import useSWRInfinite from "swr/infinite";
 import { WorkspaceShell } from "@/components/workspace-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,13 +41,17 @@ function cursorValueFor(sort: PostingSortKey, posting: PostingView): string | nu
   return (posting.sourcePostedAt ?? posting.firstSeenAt).toISOString();
 }
 
-async function fetchPostingsPage(params: {
+type PostingsPage = { postings: PostingView[]; hasMore: boolean };
+type PostingsPageKey = {
   search: string;
   sort: PostingSortKey;
   board?: string;
+  preferences: JobPreferences;
   cursorValue: string | null;
   cursorId: string | null;
-}): Promise<{ postings: PostingView[]; hasMore: boolean }> {
+};
+
+async function fetchPostingsPage(params: PostingsPageKey): Promise<PostingsPage> {
   const query = new URLSearchParams({ sort: params.sort });
   if (params.search) query.set("search", params.search);
   if (params.board) query.set("board", params.board);
@@ -113,58 +118,66 @@ export function JobsPage({
 }) {
   const [sort, setSort] = useState<PostingSortKey>("score");
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [showSetupStatus, setShowSetupStatus] = useState(false);
-  const [items, setItems] = useState(initialPostings);
-  const [hasMore, setHasMore] = useState(initialHasMore);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const skipNextReload = useRef(true);
-  const requestId = useRef(0);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // Search, sort and a saved preferences change (Filter sidebar, or dropping a chip in ResultsBar) all replace
-  // the whole list from the server. `preferences` is a dependency here, not just a display prop: `items` was
-  // seeded from `initialPostings` once at mount, so without this, `router.refresh()` after a preferences PUT
-  // recomputes the server data (see store.ts's `refilterExisting`) but the already-mounted list never re-fetches
-  // to pick it up -- the owner had to reload the page to see a changed filter actually apply. Skips its own
-  // first run: the initial render already matches the default sort, an empty search and the server component's
-  // own first page.
+  // Only the search box debounces -- a sort click or a filter chip is a discrete action the owner expects to act
+  // on immediately, not wait out an artificial delay for.
   useEffect(() => {
-    if (skipNextReload.current) {
-      skipNextReload.current = false;
-      return;
-    }
-    const id = ++requestId.current;
-    const timer = setTimeout(
-      () => {
-        void fetchPostingsPage({ search, sort, board: boardFilter, cursorValue: null, cursorId: null }).then((page) => {
-          if (requestId.current !== id) return; // a newer search/sort/preferences change already landed
-          setItems(page.postings);
-          setHasMore(page.hasMore);
-        });
-      },
-      search ? SEARCH_DEBOUNCE_MS : 0,
-    );
+    const timer = setTimeout(() => setDebouncedSearch(search), search ? SEARCH_DEBOUNCE_MS : 0);
     return () => clearTimeout(timer);
-  }, [search, sort, boardFilter, preferences]);
+  }, [search]);
+
+  // Search, sort and a saved preferences change (Filter sidebar, or dropping a chip in ResultsBar) each form a
+  // different key, so SWR fetches page 1 fresh under the new key automatically -- no manual "skip the first
+  // render" bookkeeping the way a plain effect needed. `preferences` is a key dependency, not just a display
+  // prop: `router.refresh()` after a preferences PUT recomputes the server data (see store.ts's
+  // `refilterExisting`), and changing the key is what makes the already-mounted list pick that up instead of
+  // needing a hard reload. `previousPageData.hasMore === false` stops paging at the key's own end, matching
+  // `listPostingsPage`'s own cursor contract.
+  const getKey = useCallback(
+    (pageIndex: number, previousPageData: PostingsPage | null): PostingsPageKey | null => {
+      if (previousPageData && !previousPageData.hasMore) return null;
+      if (pageIndex === 0) {
+        return { search: debouncedSearch, sort, board: boardFilter, preferences, cursorValue: null, cursorId: null };
+      }
+      const last = previousPageData!.postings[previousPageData!.postings.length - 1]!;
+      return {
+        search: debouncedSearch,
+        sort,
+        board: boardFilter,
+        preferences,
+        cursorValue: cursorValueFor(sort, last),
+        cursorId: last.id,
+      };
+    },
+    [debouncedSearch, sort, boardFilter, preferences],
+  );
+
+  const { data, size, setSize, isValidating } = useSWRInfinite(getKey, fetchPostingsPage, {
+    fallbackData: [{ postings: initialPostings, hasMore: initialHasMore }],
+    revalidateFirstPage: false,
+    revalidateOnMount: false,
+    revalidateOnFocus: false,
+    revalidateOnReconnect: false,
+    keepPreviousData: true,
+  });
+
+  // `useSWRInfinite` doesn't reset `size` on its own when the key changes -- without this, a search typed while
+  // 3 pages were already loaded would re-fetch all 3 pages under the new search instead of just page 1.
+  useEffect(() => {
+    void setSize(1);
+  }, [debouncedSearch, sort, boardFilter, preferences, setSize]);
+
+  const items = data ? data.flatMap((page) => page.postings) : initialPostings;
+  const hasMore = data ? data[data.length - 1]!.hasMore : initialHasMore;
+  const loadingMore = isValidating && size > 1;
 
   const loadMore = useCallback(() => {
-    if (loadingMore || !hasMore || items.length === 0) return;
-    const last = items[items.length - 1]!;
-    setLoadingMore(true);
-    fetchPostingsPage({
-      search,
-      sort,
-      board: boardFilter,
-      cursorValue: cursorValueFor(sort, last),
-      cursorId: last.id,
-    })
-      .then((page) => {
-        setItems((prev) => [...prev, ...page.postings]);
-        setHasMore(page.hasMore);
-      })
-      .catch(() => setHasMore(false))
-      .finally(() => setLoadingMore(false));
-  }, [loadingMore, hasMore, items, search, sort, boardFilter]);
+    if (isValidating || !hasMore || items.length === 0) return;
+    void setSize((current) => current + 1);
+  }, [isValidating, hasMore, items.length, setSize]);
 
   useEffect(() => {
     const node = sentinelRef.current;
