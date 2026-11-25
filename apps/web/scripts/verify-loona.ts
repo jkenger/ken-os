@@ -56,8 +56,8 @@ async function main() {
 
     await assert.rejects(
       store.sendLoonaMessage(userId, "   ", stubRespond),
-      (error: Error) => error instanceof store.LoonaInputError,
-      "blank input is refused before any model call",
+      (error: Error) => error instanceof store.LoonaInputError && error.message === "Type a message first",
+      "blank input is refused before any model call, with a message telling the owner what to do",
     );
     console.log("ok - a blank message is refused");
 
