@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
-import { recordCheck } from "@/features/jobs/check-status-store";
 import { listUsersWithPreferences } from "@/features/jobs/preferences-store";
 import { scrapeJobStreetForUser } from "@/features/jobs/pipeline";
 import { secretsMatch } from "@/features/jobs/secret";
 
 export const runtime = "nodejs";
 
-// Polled every minute by an outside scheduler, same as `check/linkedin/route.ts` (plans/jobs-scraper-sources.md,
-// Slice 4).
+// Polled every few minutes by an outside scheduler, same as `check/linkedin/route.ts` (plans/jobs-scraper-sources.md,
+// Slice 4). Unlike freehire, this doesn't call `recordCheck` -- that table is one row per account, not per source,
+// and freehire already owns it; this source's own Running/Blocked fact lives in `job_scraper_state` instead
+// (`scraper-state.ts`, Slice 3's `getAllScraperStates`), written by `checkScraperSource` itself.
 export async function GET(request: Request) {
   const expectedSecret = process.env.JOBS_CHECK_SECRET;
   if (!expectedSecret) {
@@ -23,11 +24,9 @@ export async function GET(request: Request) {
   for (const userId of userIds) {
     try {
       const result = await scrapeJobStreetForUser(userId, secret, expectedSecret);
-      await recordCheck(userId, result);
       found += result.found;
     } catch (error) {
       console.error(`jobs check jobstreet: user ${userId} failed`, error instanceof Error ? error.message : error);
-      await recordCheck(userId, { ok: false, reason: "A network or server error interrupted the check", found: 0 });
     }
   }
 
