@@ -6,3 +6,5 @@ export { extractPosting, JOBS_EXTRACT_PROMPT_VERSION, type ExtractedPosting } fr
 export { scoreJobPosting, JOBS_SCORE_PROMPT_VERSION, type PostingScore, type ScoreReason } from "./jobs/score";
 export { selectTailoredEntries, JOBS_TAILOR_PROMPT_VERSION, type TailoredSelection } from "./jobs/tailor";
 export { writeCoverLetter, JOBS_COVER_LETTER_PROMPT_VERSION } from "./jobs/cover-letter";
+export { chatWithLoona } from "./loona/chat";
+export type { AgentInputItem } from "@openai/agents";

@@ -994,3 +994,23 @@ export const jobCurrencyRates = pgTable("job_currency_rates", {
   rates: jsonb("rates").$type<Record<string, number>>().notNull(),
   fetchedAt: timestamp("fetched_at", { withTimezone: true }).notNull(),
 });
+
+/** One chat conversation with an agent (docs/product/agents-infrastructure.md). `agentKey` ("loona") is a
+ *  plain string, not an enum -- the infra is deliberately concrete-first, with no agent registry yet.
+ *  `history` is the `@openai/agents` SDK's own opaque `AgentInputItem[]` thread (user turns, assistant
+ *  replies, and later tool calls/results) -- stored and handed straight back to `run()` each turn, rather
+ *  than reshaped into a row-per-message table. One conversation per user per agent, for now. */
+export const agentConversations = pgTable(
+  "agent_conversations",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    agentKey: text("agent_key").notNull(),
+    history: jsonb("history").$type<unknown[]>().notNull().default([]),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [uniqueIndex("agent_conversations_user_agent_idx").on(table.userId, table.agentKey)],
+);
