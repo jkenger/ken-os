@@ -23,5 +23,8 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", ".next/dev/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  // shortcut: src/components/ui/ai-elements is the full shadcn AI Elements set, vendored for future use and
+  // not adopted anywhere yet; its upstream types don't match this repo's strict config (e.g. ai's
+  // LanguageModelUsage shape moved on). Drop this exclude and fix the types for any file you actually import.
+  "exclude": ["node_modules", "src/components/ui/ai-elements"]
 }

@@ -1,12 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import { SendIcon } from "lucide-react";
 import { WorkspaceShell } from "@/components/workspace-shell";
-import { panel } from "@/components/surfaces";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/toaster";
-import { cn } from "@/lib/utils";
+import {
+  Conversation,
+  ConversationContent,
+  ConversationEmptyState,
+  ConversationScrollButton,
+} from "@/components/ui/conversation";
+import { Message, MessageContent } from "@/components/ui/message";
 import type { LoonaMessage } from "@/features/loona/store";
 
 export function LoonaChatPage({ email, initialMessages }: { email: string; initialMessages: LoonaMessage[] }) {
@@ -45,20 +51,20 @@ export function LoonaChatPage({ email, initialMessages }: { email: string; initi
   return (
     <WorkspaceShell email={email} active="agents">
       <div className="mx-auto flex h-[calc(100vh-44px)] w-full max-w-2xl flex-col px-page pt-page pb-section">
-        <div className="flex-1 space-y-3 overflow-y-auto">
-          {messages.map((message, index) => (
-            <div
-              key={index}
-              className={cn(
-                panel,
-                "max-w-[85%] px-3 py-2 text-sm",
-                message.role === "user" ? "ml-auto bg-accent" : "bg-card",
-              )}
-            >
-              {message.content}
-            </div>
-          ))}
-        </div>
+        <Conversation>
+          <ConversationContent>
+            {messages.length === 0 ? (
+              <ConversationEmptyState title="Nothing yet" description="Message Loona below to start." />
+            ) : (
+              messages.map((message, index) => (
+                <Message key={index} from={message.role}>
+                  <MessageContent>{message.content}</MessageContent>
+                </Message>
+              ))
+            )}
+          </ConversationContent>
+          <ConversationScrollButton />
+        </Conversation>
         <form
           onSubmit={(event) => {
             event.preventDefault();
@@ -82,6 +88,7 @@ export function LoonaChatPage({ email, initialMessages }: { email: string; initi
           />
           <Button type="submit" disabled={sending || !text.trim()}>
             Send
+            <SendIcon className="size-4" />
           </Button>
         </form>
       </div>

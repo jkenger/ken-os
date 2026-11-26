@@ -3,3 +3,8 @@ packages:
   - packages/*
 allowBuilds:
   esbuild: true
+overrides:
+  # react-jsx-parser (vendored for src/components/ai-elements, unused so far) pulls @types/react@18, which
+  # duplicates against this repo's @types/react@19 and breaks ref types across unrelated files. Pin to one.
+  "@types/react": 19.3.0
+  "@types/react-dom": 19.3.0
