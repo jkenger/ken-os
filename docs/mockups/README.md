@@ -17,3 +17,4 @@ mockups.
 | [Jobs](job-finder.md)                                      | [job-finder.md](../product/job-finder.md)                                          |
 | [Profile](profile.md)                                      | [profile-resume.md](../product/profile-resume.md)                                  |
 | [CV tailoring](cv-tailoring.md)                            | [cv-tailoring.md](../architecture/cv-tailoring.md)                                 |
+| [Loona agent](loona-agent.md)                              | [loona-agent.md](../architecture/loona-agent.md)                                   |
