@@ -61,6 +61,78 @@ agreed ones in.
 | L9    | Phone width (390) of L1 and L6                                                                                                                                                                                                                  | Same                                                                                                 |
 | L10   | Dark frame of L3 and L6                                                                                                                                                                                                                         | Same                                                                                                 |
 
+## Frame details
+
+Component and token names below are what exists today in this repo — use them exactly where named; where a
+new chip tone is called for, it's flagged so the "Proposals" section in your handoff README can carry it back.
+
+**L1 — Chat, pending.** `Conversation`/`ConversationContent` with two `Message`s so far:
+
+- `Message from="user"` → `MessageContent`: "Add Jane, jane@x.com, 09171234567, GCash 09171234567" (right-aligned,
+  `bg-accent`, same as every user bubble today).
+- `Message from="assistant"` → `MessageContent`: "Got it, adding now" (left-aligned, `panel` surface, same as
+  every assistant bubble today — this frame shows it with NO special treatment yet, as the baseline to contrast
+  against L2).
+- Composer below (`Textarea` + `Button`) sits empty/idle, ready for the next message — the owner isn't blocked
+  waiting.
+
+**L2 — Chat, pending with its loading affordance.** Same two bubbles as L1, but the assistant's "Got it, adding
+now" bubble now carries a visible in-flight cue. Propose one (pick the one that reads best once drawn):
+
+- (a) A small pulsing dot at the bubble's trailing edge, reusing `DESIGN.md`'s status-dot motion (opacity
+  1 → 0.25 → 1, 1.8s loop) — stops once resolved.
+- (b) The bubble's text at `text-muted-foreground` instead of full `text-foreground`, reading as provisional.
+- (c) A small inline spinner (reuse `components/ui/spinner.tsx`) before or after the text.
+
+Whichever you pick, the resolved bubbles in L3/L4 must look visibly different from this one.
+
+**L3 — Chat, resolved (success).** L1/L2's two bubbles, now with a third `Message from="assistant"` appended,
+resolved styling (no loading cue): "Contact added". Consider whether this bubble wants anything beyond plain
+text (e.g. a small success icon inline) — optional, propose if it reads better than plain text.
+
+**L4 — Chat, resolved (failure).** Same structure as L3, but the third bubble is the failure path: the real
+reason, concretely something like "Couldn't add Jane — 09171234567 is already a contact's number" (propose your
+own exact phrasing against the voice rules — plain, no em dashes, says what failed). This is still a normal
+assistant bubble, not a destructive-colored one — the chat is a conversation, not an alert; the red/destructive
+treatment belongs to the activity log (L6/L7), not the chat transcript.
+
+**L5 — Activity log, empty.** A `panel` surface (or full-page empty state, your call) with: a short noun title
+("Nothing yet"), one line on what gets logged here (something like "Loona logs what it adds here, success or
+not"), no action button (nothing to do until Loona has acted once).
+
+**L6 — Activity log, populated.** A list of rows, newest first, each row: an outcome chip (see below), the
+summary text (the same wording as what landed in chat — "Contact added" / the duplicate-phone failure reason),
+a relative timestamp (e.g. "2m ago"), right-aligned or trailing. Show at least 2 success rows and 1 failure row
+so the mix is visible. Reuse the divided-panel convention from `features/jobs/overview.tsx`'s `StatusRow`
+grid (hairline rules between rows, not individual card borders per row) rather than inventing a new list style.
+
+**L7 — The two row types, isolated and large.** Zoom on one success row and one failure row so the chip
+treatment is easy to compare:
+
+- Success chip: reuse the exact shape of `StatusChip` in `features/engineering-lab/roadmap/status.tsx`
+  (`Badge variant="secondary"`, icon + word, `bg-topic-learned-soft text-topic-learned`) with its own word
+  ("Added", not "Learned") and icon (propose `CircleCheck` from `lucide-react`, matching the vocabulary
+  `features/jobs/overview.tsx` already uses for "running"/healthy states).
+- Failure chip: same shape, `text-destructive` icon + word, word "Failed". **Flag as a proposal**: there's no
+  `--destructive-soft` background token today (only `--topic-learned-soft` exists for the success side) — note
+  in your handoff README that this needs adding to `globals.css` (light and dark), mirroring how
+  `--topic-learned-soft` sits beside `--topic-learned`, so the chip has a soft red fill instead of a flat one.
+  Icon: propose `CircleX` or `TriangleAlert` from `lucide-react`.
+
+**L8 — Layout: where the log lives.** Draw this brief's default guess first: a two-tab switcher ("Chat" /
+"Activity") at the top of `/agents/loona`, below the page's own title row, above the conversation area — Chat
+selected by default. Show the full page in both tab states (one frame per tab, or one frame with an inset
+showing the other tab's content, your call on how to present the comparison clearly). If a different layout
+reads better once drawn (a persistent side panel, a separate route reached from the agent card, etc.), draw
+that as an alternative and say why in "Changes from this brief."
+
+**L9 — Phone width (390).** L1 and L6 at phone width: confirm the chat bubbles and activity rows both still
+read cleanly with the timestamp/chip not crowding the summary text; stack them if 390px is too tight for one row.
+
+**L10 — Dark frame.** L3 (chat, resolved) and L6 (activity log, populated) in dark theme, using the existing
+dark-mode token values — no new dark-specific decisions, just confirm the success/destructive tones hold
+contrast at 4.5:1 per `DESIGN.md`.
+
 ## Behaviour to show or annotate
 
 - **Pending vs. final messages must read differently.** The chat polls for new messages while a run is pending
