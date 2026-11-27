@@ -1,0 +1,1865 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Loona agent: mockup snapshot</title>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap"
+    />
+    <style>
+      /* Static snapshot of docs/mockups/loona-agent-canvas (the canvas is the source). No runtime: every state is written
+   out. Tokens are the console values in apps/web/src/app/globals.css on main. */
+      body {
+        margin: 0;
+        background: oklch(0.92 0.006 258);
+        font-family: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+        color: oklch(0.2 0.008 265);
+      }
+      .page {
+        padding: 32px 24px 64px;
+        display: flex;
+        flex-direction: column;
+        gap: 36px;
+      }
+      .page > header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+      }
+      .page > header p {
+        margin: 6px 0 0;
+        font-size: 14px;
+        color: oklch(0.47 0.012 260);
+        max-width: 80ch;
+      }
+      .frame > h2 {
+        margin: 0 0 10px;
+        font-size: 13px;
+        font-weight: 600;
+        color: oklch(0.47 0.012 260);
+      }
+      .scroll {
+        overflow-x: auto;
+        border: 1px solid oklch(0.86 0.008 258);
+        border-radius: 4px;
+        width: fit-content;
+        max-width: 100%;
+      }
+
+      body {
+        margin: 0;
+      }
+      .lp {
+        --bg: oklch(0.968 0.005 255);
+        --fg: oklch(0.2 0.008 265);
+        --card: oklch(0.968 0.005 255);
+        --muted: oklch(0.94 0.006 258);
+        --mfg: oklch(0.47 0.012 260);
+        --accent: oklch(0.925 0.007 258);
+        --border: oklch(0.905 0.007 258);
+        --input: oklch(0.86 0.008 258);
+        --pfg: oklch(0.985 0.001 265);
+        --destructive: oklch(0.53 0.19 25);
+        --destructive-soft: oklch(0.955 0.03 25);
+        --learned: oklch(0.5 0.13 150);
+        --learned-soft: oklch(0.95 0.035 150);
+        --tabon: oklch(1 0 0);
+        width: 1440px;
+        height: 900px;
+        display: flex;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: "Instrument Sans", ui-sans-serif, system-ui, sans-serif;
+        font-size: 14px;
+        line-height: 1.43;
+      }
+      .lp.dk {
+        --bg: oklch(0.205 0.004 265);
+        --fg: oklch(0.93 0.004 100);
+        --card: oklch(0.205 0.004 265);
+        --muted: oklch(0.275 0.006 265);
+        --mfg: oklch(0.74 0.006 100);
+        --accent: oklch(0.3 0.007 265);
+        --border: oklch(0.33 0.008 265);
+        --input: oklch(0.33 0.008 265);
+        --pfg: oklch(0.205 0.004 265);
+        --destructive: oklch(0.72 0.15 20);
+        --destructive-soft: oklch(0.3 0.06 22);
+        --learned: oklch(0.8 0.13 150);
+        --learned-soft: oklch(0.29 0.04 150);
+        --tabon: oklch(0.33 0.008 265);
+      }
+      .lp.ph {
+        width: 390px;
+        height: 844px;
+        flex-direction: column;
+      }
+      .lp * {
+        box-sizing: border-box;
+      }
+      .lp button,
+      .lp textarea {
+        font: inherit;
+        color: inherit;
+      }
+      .lp a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .ic {
+        width: 16px;
+        height: 16px;
+        flex: none;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .sb {
+        width: 256px;
+        flex: none;
+        display: flex;
+        flex-direction: column;
+        border-right: 1px solid var(--border);
+      }
+      .sbh {
+        height: 44px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--border);
+        font-weight: 600;
+        font-size: 16px;
+        letter-spacing: -0.01em;
+      }
+      .mark {
+        width: 22px;
+        height: 22px;
+        border-radius: 4.4px;
+        background: var(--fg);
+        color: var(--pfg);
+        display: grid;
+        place-items: center;
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .nav {
+        list-style: none;
+        margin: 0;
+        padding: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .mi {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        height: 32px;
+        padding: 0 8px;
+        border-radius: 4.4px;
+      }
+      .mi .ic {
+        color: var(--mfg);
+      }
+      .mi.on {
+        background: var(--accent);
+        font-weight: 500;
+      }
+      .mi.on .ic {
+        color: var(--fg);
+      }
+      .subl {
+        list-style: none;
+        margin: 2px 0 4px 15px;
+        padding: 0 0 0 8px;
+        border-left: 1px solid var(--border);
+      }
+      .si {
+        display: flex;
+        align-items: center;
+        height: 28px;
+        padding: 0 8px;
+        border-radius: 4.4px;
+        font-size: 13px;
+      }
+      .si.on {
+        background: var(--accent);
+        font-weight: 500;
+      }
+      .mn {
+        flex: 1;
+        min-width: 0;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .top {
+        height: 44px;
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--border);
+      }
+      .jump {
+        display: inline-flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        width: 224px;
+        height: 32px;
+        padding: 0 6px 0 12px;
+        border: 1px solid var(--input);
+        border-radius: 11.4px;
+        background: transparent;
+        color: var(--mfg);
+        font-size: 12px;
+      }
+      .kbd {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 11px;
+        padding: 1px 5px;
+        border-radius: 3px;
+        background: var(--muted);
+        color: var(--mfg);
+      }
+      .ibtn {
+        display: inline-grid;
+        place-items: center;
+        width: 36px;
+        height: 36px;
+        border: 1px solid transparent;
+        border-radius: 11.4px;
+        background: transparent;
+        color: var(--fg);
+      }
+      .ibtn.o {
+        border-color: var(--input);
+      }
+      .body {
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        padding: 24px 24px 32px;
+      }
+      .ph .body {
+        padding: 20px 20px 20px;
+      }
+      .col {
+        flex: 1;
+        min-width: 0;
+        max-width: 672px;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .tl {
+        align-self: flex-start;
+        display: inline-flex;
+        align-items: center;
+        height: 36px;
+        padding: 4px;
+        border-radius: 999px;
+        background: var(--muted);
+        color: var(--mfg);
+      }
+      .tab {
+        height: 28px;
+        padding: 0 14px;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        background: transparent;
+        font-weight: 500;
+        cursor: pointer;
+      }
+      .tab.on {
+        background: var(--tabon);
+        color: var(--fg);
+        box-shadow: 0 1px 2px rgb(0 0 0 / 0.08);
+      }
+      .cv {
+        flex: 1;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 4px;
+      }
+      .msg {
+        display: flex;
+        flex-direction: column;
+        max-width: 85%;
+      }
+      .msg.u {
+        margin-left: auto;
+      }
+      .bub {
+        border: 1px solid var(--border);
+        border-radius: 4.4px;
+        background: var(--card);
+        padding: 8px 12px;
+      }
+      .u .bub {
+        background: var(--accent);
+      }
+      .dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        margin-left: 8px;
+        border-radius: 50%;
+        background: var(--mfg);
+        vertical-align: middle;
+        animation: pulse 1.8s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        50% {
+          opacity: 0.25;
+        }
+      }
+      .sr {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        white-space: nowrap;
+      }
+      .cmp {
+        flex: none;
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+      }
+      .ta {
+        flex: 1;
+        min-height: 44px;
+        height: 44px;
+        resize: none;
+        padding: 10px 12px;
+        border: 1px solid var(--input);
+        border-radius: 4.4px;
+        background: transparent;
+        outline: 0;
+        display: block;
+      }
+      .ta::placeholder {
+        color: var(--mfg);
+      }
+      .lp .send {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        height: 36px;
+        padding: 0 12px;
+        border: 0;
+        border-radius: 11.4px;
+        background: var(--fg);
+        color: var(--pfg);
+        font-weight: 500;
+        opacity: 0.5;
+      }
+      .lg {
+        border: 1px solid var(--border);
+        border-radius: 4.4px;
+        overflow: hidden;
+        display: grid;
+        gap: 1px;
+        background: var(--border);
+        align-self: stretch;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 76px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        background: var(--card);
+      }
+      .ph .row,
+      .stk .row {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 6px 12px;
+      }
+      .ph .row .sum,
+      .stk .row .sum {
+        grid-column: 1 / -1;
+        grid-row: 2;
+      }
+      .chip {
+        justify-self: start;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        height: 20px;
+        padding: 0 8px;
+        border-radius: 9.7px;
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .chip .ic {
+        width: 12px;
+        height: 12px;
+      }
+      .ok {
+        background: var(--learned-soft);
+        color: var(--learned);
+      }
+      .bad {
+        background: var(--destructive-soft);
+        color: var(--destructive);
+      }
+      .tm {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--mfg);
+        white-space: nowrap;
+      }
+      .emp {
+        border: 1px solid var(--border);
+        border-radius: 4.4px;
+        padding: 56px 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        text-align: center;
+      }
+      .sp {
+        width: 360px;
+        flex: none;
+        align-self: flex-start;
+        border: 1px solid var(--border);
+        border-radius: 4.4px;
+        overflow: hidden;
+      }
+      .sph {
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        border-bottom: 1px solid var(--border);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--mfg);
+      }
+      .sp .lg {
+        border: 0;
+        border-radius: 0;
+      }
+
+      body {
+        margin: 0;
+      }
+      .ox {
+        --card: oklch(0.968 0.005 255);
+        --fg: oklch(0.2 0.008 265);
+        --mfg: oklch(0.47 0.012 260);
+        --accent: oklch(0.925 0.007 258);
+        --border: oklch(0.905 0.007 258);
+      }
+      .ox * {
+        box-sizing: border-box;
+      }
+      .opt {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 20px;
+        border: 1px solid var(--border);
+        border-radius: 4.4px;
+      }
+      .opt.rec {
+        outline: 2px solid oklch(0.52 0.16 262);
+        outline-offset: -1px;
+      }
+      .lbl {
+        margin: 0;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mfg);
+      }
+      .thread {
+        zoom: 1.25;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .msg {
+        display: flex;
+        max-width: 85%;
+      }
+      .msg.u {
+        margin-left: auto;
+      }
+      .bub {
+        border: 1px solid var(--border);
+        border-radius: 4.4px;
+        background: var(--card);
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+      .u .bub {
+        background: var(--accent);
+      }
+      .dot {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        margin-left: 8px;
+        border-radius: 50%;
+        background: var(--mfg);
+        vertical-align: middle;
+        animation: pulse 1.8s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        50% {
+          opacity: 0.25;
+        }
+      }
+      .spin {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        margin-right: 6px;
+        vertical-align: -2px;
+        fill: none;
+        stroke: var(--mfg);
+        stroke-width: 2;
+        stroke-linecap: round;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .cap {
+        margin: 0;
+        font-size: 13px;
+        line-height: 1.45;
+        color: var(--mfg);
+      }
+
+      body {
+        margin: 0;
+      }
+      .rx {
+        --card: oklch(0.968 0.005 255);
+        --mfg: oklch(0.47 0.012 260);
+        --border: oklch(0.905 0.007 258);
+      }
+      .rx * {
+        box-sizing: border-box;
+      }
+      .lbl {
+        margin: 0 0 10px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--mfg);
+      }
+      .z {
+        zoom: 2;
+        width: 448px;
+      }
+      .lg {
+        border: 1px solid var(--border);
+        border-radius: 4.4px;
+        overflow: hidden;
+        display: grid;
+        gap: 1px;
+        background: var(--border);
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .row {
+        display: grid;
+        grid-template-columns: 76px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        background: var(--card);
+        font-size: 14px;
+        line-height: 1.43;
+      }
+      .chip {
+        justify-self: start;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        height: 20px;
+        padding: 0 8px;
+        border-radius: 9.7px;
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .chip svg {
+        width: 12px;
+        height: 12px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .ok {
+        background: oklch(0.95 0.035 150);
+        color: oklch(0.5 0.13 150);
+      }
+      .bad {
+        background: oklch(0.955 0.03 25);
+        color: oklch(0.53 0.19 25);
+      }
+      .tm {
+        font-family: "Geist Mono", ui-monospace, monospace;
+        font-size: 12px;
+        color: var(--mfg);
+        white-space: nowrap;
+      }
+      .cap {
+        margin: 8px 0 0;
+        font-size: 13px;
+        line-height: 1.45;
+        color: var(--mfg);
+      }
+    </style>
+  </head>
+  <body>
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs>
+        <symbol id="lp-user" viewBox="0 0 24 24">
+          <circle cx="12" cy="8" r="5"></circle>
+          <path d="M20 21a8 8 0 0 0-16 0"></path>
+        </symbol>
+        <symbol id="lp-globe" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20M2 12h20"></path>
+        </symbol>
+        <symbol id="lp-book" viewBox="0 0 24 24">
+          <path
+            d="M12 7v14M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"
+          ></path>
+        </symbol>
+        <symbol id="lp-flask" viewBox="0 0 24 24">
+          <path d="M10 2v7.5L4.5 19A2 2 0 0 0 6.2 22h11.6a2 2 0 0 0 1.7-3L14 9.5V2M8.5 2h7M7 16h10"></path>
+        </symbol>
+        <symbol id="lp-case" viewBox="0 0 24 24">
+          <path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          <rect x="2" y="6" width="20" height="14" rx="2"></rect>
+        </symbol>
+        <symbol id="lp-bot" viewBox="0 0 24 24">
+          <path d="M12 8V4H8M2 14h2M20 14h2M15 13v2M9 13v2"></path>
+          <rect x="4" y="8" width="16" height="12" rx="2"></rect>
+        </symbol>
+        <symbol id="lp-marked" viewBox="0 0 24 24">
+          <path
+            d="M10 2v8l3-3 3 3V2M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"
+          ></path>
+        </symbol>
+        <symbol id="lp-palette" viewBox="0 0 24 24">
+          <path d="M12 22a10 10 0 1 1 10-10c0 2.2-1.8 3-3.5 3H16a2 2 0 0 0-1.4 3.4A2 2 0 0 1 12 22z"></path>
+          <circle cx="7.5" cy="10.5" r=".5"></circle>
+          <circle cx="10.5" cy="7" r=".5"></circle>
+          <circle cx="15" cy="8" r=".5"></circle>
+        </symbol>
+        <symbol id="lp-send" viewBox="0 0 24 24">
+          <path
+            d="M14.5 21.7a.5.5 0 0 0 .9 0L22 2.6a.5.5 0 0 0-.6-.6L2.3 8.5a.5.5 0 0 0 0 .9l8 3.2a2 2 0 0 1 1.1 1.1zM21.9 2.1 11 13"
+          ></path>
+        </symbol>
+        <symbol id="lp-menu" viewBox="0 0 24 24">
+          <path d="M4 6h16M4 12h16M4 18h16"></path>
+        </symbol>
+        <symbol id="lp-search" viewBox="0 0 24 24">
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.3-4.3"></path>
+        </symbol>
+        <symbol id="lp-check" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="m9 12 2 2 4-4"></path>
+        </symbol>
+        <symbol id="lp-x" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="m15 9-6 6M9 9l6 6"></path>
+        </symbol>
+      </defs>
+    </svg>
+    <main class="page">
+      <header>
+        <h1>Loona agent: mockup snapshot</h1>
+        <p>
+          Static snapshot of the Loona agent frames L1 to L10: the pending and resolved chat messages, the activity log,
+          the Chat / Activity tabs and the side-panel alternative. The source and README are in
+          docs/mockups/loona-agent-canvas; the live canvas is https://claude.ai/artifact/VsSxXeJMMK3Nh22Lq8Mrne.
+        </p>
+      </header>
+      <section class="frame">
+        <h2>L1 · Chat, pending, no cue (baseline)</h2>
+        <div class="scroll">
+          <div class="lp">
+            <aside class="sb" aria-label="Workspace sidebar">
+              <div class="sbh"><span class="mark" aria-hidden="true">K</span>KEOS</div>
+              <ul class="nav" aria-label="Modules">
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-user"></use></svg>Profile</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-globe"></use></svg>Portfolio</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-book"></use></svg>Project Memory</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-flask"></use></svg>Engineering</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-case"></use></svg>Jobs</a
+                  >
+                </li>
+                <li>
+                  <a class="mi on" href="#" aria-current="page"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-bot"></use></svg>Agents</a
+                  >
+                  <ul class="subl" aria-label="Sections">
+                    <li><a class="si on" href="#" aria-current="location">Loona</a></li>
+                  </ul>
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-marked"></use></svg>Terms</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-palette"></use></svg>Design Studio</a
+                  >
+                </li>
+              </ul>
+            </aside>
+            <div class="mn">
+              <header class="top">
+                <button class="jump" aria-label="Jump to a module">
+                  Jump to a module…<span class="kbd">Ctrl K</span>
+                </button>
+              </header>
+              <div class="body">
+                <div class="col">
+                  <div class="tl" role="tablist" aria-label="Loona">
+                    <button class="tab on" role="tab" aria-selected="true">Chat</button
+                    ><button class="tab" role="tab" aria-selected="false">Activity</button>
+                  </div>
+                  <div class="cv" role="log" aria-label="Conversation with Loona">
+                    <div class="msg u"><div class="bub">Add Jane, jane@x.com, 09171234567, GCash 09171234567</div></div>
+                    <div class="msg"><div class="bub">Got it, adding now.</div></div>
+                  </div>
+                  <form class="cmp" aria-label="Message Loona">
+                    <textarea class="ta" placeholder="Message Loona" aria-label="Message Loona"></textarea
+                    ><button class="send" type="submit" disabled>
+                      Send<svg class="ic" aria-hidden="true"><use href="#lp-send"></use></svg>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>L2 · Chat, pending, pulsing dot (recommended)</h2>
+        <div class="scroll">
+          <div class="lp">
+            <aside class="sb" aria-label="Workspace sidebar">
+              <div class="sbh"><span class="mark" aria-hidden="true">K</span>KEOS</div>
+              <ul class="nav" aria-label="Modules">
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-user"></use></svg>Profile</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-globe"></use></svg>Portfolio</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-book"></use></svg>Project Memory</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-flask"></use></svg>Engineering</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-case"></use></svg>Jobs</a
+                  >
+                </li>
+                <li>
+                  <a class="mi on" href="#" aria-current="page"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-bot"></use></svg>Agents</a
+                  >
+                  <ul class="subl" aria-label="Sections">
+                    <li><a class="si on" href="#" aria-current="location">Loona</a></li>
+                  </ul>
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-marked"></use></svg>Terms</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-palette"></use></svg>Design Studio</a
+                  >
+                </li>
+              </ul>
+            </aside>
+            <div class="mn">
+              <header class="top">
+                <button class="jump" aria-label="Jump to a module">
+                  Jump to a module…<span class="kbd">Ctrl K</span>
+                </button>
+              </header>
+              <div class="body">
+                <div class="col">
+                  <div class="tl" role="tablist" aria-label="Loona">
+                    <button class="tab on" role="tab" aria-selected="true">Chat</button
+                    ><button class="tab" role="tab" aria-selected="false">Activity</button>
+                  </div>
+                  <div class="cv" role="log" aria-label="Conversation with Loona">
+                    <div class="msg u"><div class="bub">Add Jane, jane@x.com, 09171234567, GCash 09171234567</div></div>
+                    <div class="msg">
+                      <div class="bub" aria-busy="true">
+                        Got it, adding now.<span class="dot" aria-hidden="true"></span
+                        ><span class="sr">Still working</span>
+                      </div>
+                    </div>
+                  </div>
+                  <form class="cmp" aria-label="Message Loona">
+                    <textarea class="ta" placeholder="Message Loona" aria-label="Message Loona"></textarea
+                    ><button class="send" type="submit" disabled>
+                      Send<svg class="ic" aria-hidden="true"><use href="#lp-send"></use></svg>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>L2 options · Dot, muted text, spinner</h2>
+        <div class="scroll">
+          <div
+            class="ox"
+            style="
+              width: 1000px;
+              height: 460px;
+              box-sizing: border-box;
+              padding: 36px 40px;
+              background: oklch(0.968 0.005 255);
+              color: oklch(0.2 0.008 265);
+              font-family: &quot;Instrument Sans&quot;, ui-sans-serif, system-ui, sans-serif;
+              display: grid;
+              grid-template-columns: repeat(3, minmax(0, 1fr));
+              gap: 24px;
+              align-content: start;
+            "
+          >
+            <section class="opt rec">
+              <h2 class="lbl">(a) Pulsing dot, recommended</h2>
+              <div class="thread">
+                <div class="msg u">
+                  <div class="bub">Add Jane, jane@x.com, 09171234567, GCash 09171234567</div>
+                </div>
+                <div class="msg">
+                  <div class="bub">Got it, adding now.<span class="dot" aria-hidden="true"></span></div>
+                </div>
+              </div>
+              <p class="cap">
+                Reads as still going without making the words look wrong. Same motion as the status dot: opacity 1 to
+                0.25, 1.8s.
+              </p>
+            </section>
+            <section class="opt">
+              <h2 class="lbl">(b) Muted text</h2>
+              <div class="thread">
+                <div class="msg u">
+                  <div class="bub">Add Jane, jane@x.com, 09171234567, GCash 09171234567</div>
+                </div>
+                <div class="msg">
+                  <div class="bub" style="color: oklch(0.47 0.012 260)">Got it, adding now.</div>
+                </div>
+              </div>
+              <p class="cap">
+                Reads as disabled or failed, and it dims the one line the owner needs to read. No motion, so nothing
+                says it will change.
+              </p>
+            </section>
+            <section class="opt">
+              <h2 class="lbl">(c) Inline spinner</h2>
+              <div class="thread">
+                <div class="msg u">
+                  <div class="bub">Add Jane, jane@x.com, 09171234567, GCash 09171234567</div>
+                </div>
+                <div class="msg">
+                  <div class="bub">
+                    <svg class="spin" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg
+                    >Got it, adding now.
+                  </div>
+                </div>
+              </div>
+              <p class="cap">
+                Clearest, but loud for a run that may take a while, and it pushes the text off its left edge.
+              </p>
+            </section>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>L3 · Chat, resolved, success</h2>
+        <div class="scroll">
+          <div class="lp">
+            <aside class="sb" aria-label="Workspace sidebar">
+              <div class="sbh"><span class="mark" aria-hidden="true">K</span>KEOS</div>
+              <ul class="nav" aria-label="Modules">
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-user"></use></svg>Profile</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-globe"></use></svg>Portfolio</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-book"></use></svg>Project Memory</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-flask"></use></svg>Engineering</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-case"></use></svg>Jobs</a
+                  >
+                </li>
+                <li>
+                  <a class="mi on" href="#" aria-current="page"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-bot"></use></svg>Agents</a
+                  >
+                  <ul class="subl" aria-label="Sections">
+                    <li><a class="si on" href="#" aria-current="location">Loona</a></li>
+                  </ul>
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-marked"></use></svg>Terms</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-palette"></use></svg>Design Studio</a
+                  >
+                </li>
+              </ul>
+            </aside>
+            <div class="mn">
+              <header class="top">
+                <button class="jump" aria-label="Jump to a module">
+                  Jump to a module…<span class="kbd">Ctrl K</span>
+                </button>
+              </header>
+              <div class="body">
+                <div class="col">
+                  <div class="tl" role="tablist" aria-label="Loona">
+                    <button class="tab on" role="tab" aria-selected="true">Chat</button
+                    ><button class="tab" role="tab" aria-selected="false">Activity</button>
+                  </div>
+                  <div class="cv" role="log" aria-label="Conversation with Loona">
+                    <div class="msg u"><div class="bub">Add Jane, jane@x.com, 09171234567, GCash 09171234567</div></div>
+                    <div class="msg"><div class="bub">Got it, adding now.</div></div>
+                    <div class="msg"><div class="bub">Added Jane to your contacts.</div></div>
+                  </div>
+                  <form class="cmp" aria-label="Message Loona">
+                    <textarea class="ta" placeholder="Message Loona" aria-label="Message Loona"></textarea
+                    ><button class="send" type="submit" disabled>
+                      Send<svg class="ic" aria-hidden="true"><use href="#lp-send"></use></svg>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>L4 · Chat, resolved, failure</h2>
+        <div class="scroll">
+          <div class="lp">
+            <aside class="sb" aria-label="Workspace sidebar">
+              <div class="sbh"><span class="mark" aria-hidden="true">K</span>KEOS</div>
+              <ul class="nav" aria-label="Modules">
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-user"></use></svg>Profile</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-globe"></use></svg>Portfolio</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-book"></use></svg>Project Memory</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-flask"></use></svg>Engineering</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-case"></use></svg>Jobs</a
+                  >
+                </li>
+                <li>
+                  <a class="mi on" href="#" aria-current="page"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-bot"></use></svg>Agents</a
+                  >
+                  <ul class="subl" aria-label="Sections">
+                    <li><a class="si on" href="#" aria-current="location">Loona</a></li>
+                  </ul>
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-marked"></use></svg>Terms</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-palette"></use></svg>Design Studio</a
+                  >
+                </li>
+              </ul>
+            </aside>
+            <div class="mn">
+              <header class="top">
+                <button class="jump" aria-label="Jump to a module">
+                  Jump to a module…<span class="kbd">Ctrl K</span>
+                </button>
+              </header>
+              <div class="body">
+                <div class="col">
+                  <div class="tl" role="tablist" aria-label="Loona">
+                    <button class="tab on" role="tab" aria-selected="true">Chat</button
+                    ><button class="tab" role="tab" aria-selected="false">Activity</button>
+                  </div>
+                  <div class="cv" role="log" aria-label="Conversation with Loona">
+                    <div class="msg u"><div class="bub">Add Jane, jane@x.com, 09171234567, GCash 09171234567</div></div>
+                    <div class="msg"><div class="bub">Got it, adding now.</div></div>
+                    <div class="msg">
+                      <div class="bub">Couldn't add Jane. 09171234567 is already saved on a contact.</div>
+                    </div>
+                  </div>
+                  <form class="cmp" aria-label="Message Loona">
+                    <textarea class="ta" placeholder="Message Loona" aria-label="Message Loona"></textarea
+                    ><button class="send" type="submit" disabled>
+                      Send<svg class="ic" aria-hidden="true"><use href="#lp-send"></use></svg>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>L5 · Activity, empty</h2>
+        <div class="scroll">
+          <div class="lp">
+            <aside class="sb" aria-label="Workspace sidebar">
+              <div class="sbh"><span class="mark" aria-hidden="true">K</span>KEOS</div>
+              <ul class="nav" aria-label="Modules">
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-user"></use></svg>Profile</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-globe"></use></svg>Portfolio</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-book"></use></svg>Project Memory</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-flask"></use></svg>Engineering</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-case"></use></svg>Jobs</a
+                  >
+                </li>
+                <li>
+                  <a class="mi on" href="#" aria-current="page"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-bot"></use></svg>Agents</a
+                  >
+                  <ul class="subl" aria-label="Sections">
+                    <li><a class="si on" href="#" aria-current="location">Loona</a></li>
+                  </ul>
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-marked"></use></svg>Terms</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-palette"></use></svg>Design Studio</a
+                  >
+                </li>
+              </ul>
+            </aside>
+            <div class="mn">
+              <header class="top">
+                <button class="jump" aria-label="Jump to a module">
+                  Jump to a module…<span class="kbd">Ctrl K</span>
+                </button>
+              </header>
+              <div class="body">
+                <div class="col">
+                  <div class="tl" role="tablist" aria-label="Loona">
+                    <button class="tab" role="tab" aria-selected="false">Chat</button
+                    ><button class="tab on" role="tab" aria-selected="true">Activity</button>
+                  </div>
+                  <section class="emp" aria-label="Activity">
+                    <p style="margin: 0; font-weight: 500">Nothing yet</p>
+                    <p style="margin: 0; color: var(--mfg)">Every contact Loona adds, or fails to add, shows here.</p>
+                  </section>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>L6 · Activity, populated</h2>
+        <div class="scroll">
+          <div class="lp">
+            <aside class="sb" aria-label="Workspace sidebar">
+              <div class="sbh"><span class="mark" aria-hidden="true">K</span>KEOS</div>
+              <ul class="nav" aria-label="Modules">
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-user"></use></svg>Profile</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-globe"></use></svg>Portfolio</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-book"></use></svg>Project Memory</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-flask"></use></svg>Engineering</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-case"></use></svg>Jobs</a
+                  >
+                </li>
+                <li>
+                  <a class="mi on" href="#" aria-current="page"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-bot"></use></svg>Agents</a
+                  >
+                  <ul class="subl" aria-label="Sections">
+                    <li><a class="si on" href="#" aria-current="location">Loona</a></li>
+                  </ul>
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-marked"></use></svg>Terms</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-palette"></use></svg>Design Studio</a
+                  >
+                </li>
+              </ul>
+            </aside>
+            <div class="mn">
+              <header class="top">
+                <button class="jump" aria-label="Jump to a module">
+                  Jump to a module…<span class="kbd">Ctrl K</span>
+                </button>
+              </header>
+              <div class="body">
+                <div class="col">
+                  <div class="tl" role="tablist" aria-label="Loona">
+                    <button class="tab" role="tab" aria-selected="false">Chat</button
+                    ><button class="tab on" role="tab" aria-selected="true">Activity</button>
+                  </div>
+                  <ol class="lg" aria-label="Activity, newest first" style="list-style: none; margin: 0; padding: 0">
+                    <li class="row">
+                      <span class="chip bad"
+                        ><svg class="ic" aria-hidden="true"><use href="#lp-x"></use></svg>Failed</span
+                      ><span class="sum">Couldn't add Jane. 09171234567 is already saved on a contact.</span
+                      ><time class="tm" datetime="2026-11-26T09:41:00+08:00">1m ago</time>
+                    </li>
+                    <li class="row">
+                      <span class="chip ok"
+                        ><svg class="ic" aria-hidden="true"><use href="#lp-check"></use></svg>Added</span
+                      ><span class="sum">Added Jane to your contacts.</span
+                      ><time class="tm" datetime="2026-11-26T09:36:00+08:00">6m ago</time>
+                    </li>
+                    <li class="row">
+                      <span class="chip ok"
+                        ><svg class="ic" aria-hidden="true"><use href="#lp-check"></use></svg>Added</span
+                      ><span class="sum">Added [SECOND CONTACT] to your contacts.</span
+                      ><time class="tm" datetime="2026-11-24T15:10:00+08:00">2d ago</time>
+                    </li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>L7 · Added vs Failed rows, x2</h2>
+        <div class="scroll">
+          <div
+            class="rx"
+            style="
+              width: 1000px;
+              height: 560px;
+              box-sizing: border-box;
+              padding: 36px 48px;
+              background: oklch(0.968 0.005 255);
+              color: oklch(0.2 0.008 265);
+              font-family: &quot;Instrument Sans&quot;, ui-sans-serif, system-ui, sans-serif;
+              display: flex;
+              flex-direction: column;
+              gap: 28px;
+            "
+          >
+            <section>
+              <h2 class="lbl">Added, x2</h2>
+              <div class="z">
+                <ol class="lg">
+                  <li class="row">
+                    <span class="chip ok"
+                      ><svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="m9 12 2 2 4-4"></path></svg
+                      >Added</span
+                    ><span>Added Jane to your contacts.</span
+                    ><time class="tm" datetime="2026-11-26T09:36:00+08:00">6m ago</time>
+                  </li>
+                </ol>
+              </div>
+              <p class="cap">CircleCheck, bg-topic-learned-soft, text-topic-learned: 4.9:1 light, 7.8:1 dark.</p>
+            </section>
+            <section>
+              <h2 class="lbl">Failed, x2</h2>
+              <div class="z">
+                <ol class="lg">
+                  <li class="row">
+                    <span class="chip bad"
+                      ><svg viewBox="0 0 24 24" aria-hidden="true">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <path d="m15 9-6 6M9 9l6 6"></path></svg
+                      >Failed</span
+                    ><span>Couldn't add Jane. 09171234567 is already saved on a contact.</span
+                    ><time class="tm" datetime="2026-11-26T09:41:00+08:00">1m ago</time>
+                  </li>
+                </ol>
+              </div>
+              <p class="cap">
+                CircleX, proposed bg-destructive-soft, text-destructive: 5.0:1 light, 5.3:1 dark. Word and icon shape
+                differ, so neither relies on hue.
+              </p>
+            </section>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>L8a · Tabs (recommended), Chat selected</h2>
+        <div class="scroll">
+          <div class="lp">
+            <aside class="sb" aria-label="Workspace sidebar">
+              <div class="sbh"><span class="mark" aria-hidden="true">K</span>KEOS</div>
+              <ul class="nav" aria-label="Modules">
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-user"></use></svg>Profile</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-globe"></use></svg>Portfolio</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-book"></use></svg>Project Memory</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-flask"></use></svg>Engineering</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-case"></use></svg>Jobs</a
+                  >
+                </li>
+                <li>
+                  <a class="mi on" href="#" aria-current="page"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-bot"></use></svg>Agents</a
+                  >
+                  <ul class="subl" aria-label="Sections">
+                    <li><a class="si on" href="#" aria-current="location">Loona</a></li>
+                  </ul>
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-marked"></use></svg>Terms</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-palette"></use></svg>Design Studio</a
+                  >
+                </li>
+              </ul>
+            </aside>
+            <div class="mn">
+              <header class="top">
+                <button class="jump" aria-label="Jump to a module">
+                  Jump to a module…<span class="kbd">Ctrl K</span>
+                </button>
+              </header>
+              <div class="body">
+                <div class="col">
+                  <div class="tl" role="tablist" aria-label="Loona">
+                    <button class="tab on" role="tab" aria-selected="true">Chat</button
+                    ><button class="tab" role="tab" aria-selected="false">Activity</button>
+                  </div>
+                  <div class="cv" role="log" aria-label="Conversation with Loona">
+                    <div class="msg u"><div class="bub">Add Jane, jane@x.com, 09171234567, GCash 09171234567</div></div>
+                    <div class="msg"><div class="bub">Got it, adding now.</div></div>
+                    <div class="msg"><div class="bub">Added Jane to your contacts.</div></div>
+                  </div>
+                  <form class="cmp" aria-label="Message Loona">
+                    <textarea class="ta" placeholder="Message Loona" aria-label="Message Loona"></textarea
+                    ><button class="send" type="submit" disabled>
+                      Send<svg class="ic" aria-hidden="true"><use href="#lp-send"></use></svg>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>L8b · Tabs (recommended), Activity selected</h2>
+        <div class="scroll">
+          <div class="lp">
+            <aside class="sb" aria-label="Workspace sidebar">
+              <div class="sbh"><span class="mark" aria-hidden="true">K</span>KEOS</div>
+              <ul class="nav" aria-label="Modules">
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-user"></use></svg>Profile</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-globe"></use></svg>Portfolio</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-book"></use></svg>Project Memory</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-flask"></use></svg>Engineering</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-case"></use></svg>Jobs</a
+                  >
+                </li>
+                <li>
+                  <a class="mi on" href="#" aria-current="page"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-bot"></use></svg>Agents</a
+                  >
+                  <ul class="subl" aria-label="Sections">
+                    <li><a class="si on" href="#" aria-current="location">Loona</a></li>
+                  </ul>
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-marked"></use></svg>Terms</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-palette"></use></svg>Design Studio</a
+                  >
+                </li>
+              </ul>
+            </aside>
+            <div class="mn">
+              <header class="top">
+                <button class="jump" aria-label="Jump to a module">
+                  Jump to a module…<span class="kbd">Ctrl K</span>
+                </button>
+              </header>
+              <div class="body">
+                <div class="col">
+                  <div class="tl" role="tablist" aria-label="Loona">
+                    <button class="tab" role="tab" aria-selected="false">Chat</button
+                    ><button class="tab on" role="tab" aria-selected="true">Activity</button>
+                  </div>
+                  <ol class="lg" aria-label="Activity, newest first" style="list-style: none; margin: 0; padding: 0">
+                    <li class="row">
+                      <span class="chip bad"
+                        ><svg class="ic" aria-hidden="true"><use href="#lp-x"></use></svg>Failed</span
+                      ><span class="sum">Couldn't add Jane. 09171234567 is already saved on a contact.</span
+                      ><time class="tm" datetime="2026-11-26T09:41:00+08:00">1m ago</time>
+                    </li>
+                    <li class="row">
+                      <span class="chip ok"
+                        ><svg class="ic" aria-hidden="true"><use href="#lp-check"></use></svg>Added</span
+                      ><span class="sum">Added Jane to your contacts.</span
+                      ><time class="tm" datetime="2026-11-26T09:36:00+08:00">6m ago</time>
+                    </li>
+                    <li class="row">
+                      <span class="chip ok"
+                        ><svg class="ic" aria-hidden="true"><use href="#lp-check"></use></svg>Added</span
+                      ><span class="sum">Added [SECOND CONTACT] to your contacts.</span
+                      ><time class="tm" datetime="2026-11-24T15:10:00+08:00">2d ago</time>
+                    </li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>L8c · Alternative: side panel</h2>
+        <div class="scroll">
+          <div class="lp">
+            <aside class="sb" aria-label="Workspace sidebar">
+              <div class="sbh"><span class="mark" aria-hidden="true">K</span>KEOS</div>
+              <ul class="nav" aria-label="Modules">
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-user"></use></svg>Profile</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-globe"></use></svg>Portfolio</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-book"></use></svg>Project Memory</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-flask"></use></svg>Engineering</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-case"></use></svg>Jobs</a
+                  >
+                </li>
+                <li>
+                  <a class="mi on" href="#" aria-current="page"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-bot"></use></svg>Agents</a
+                  >
+                  <ul class="subl" aria-label="Sections">
+                    <li><a class="si on" href="#" aria-current="location">Loona</a></li>
+                  </ul>
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-marked"></use></svg>Terms</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-palette"></use></svg>Design Studio</a
+                  >
+                </li>
+              </ul>
+            </aside>
+            <div class="mn">
+              <header class="top">
+                <button class="jump" aria-label="Jump to a module">
+                  Jump to a module…<span class="kbd">Ctrl K</span>
+                </button>
+              </header>
+              <div class="body">
+                <div class="col">
+                  <div class="cv" role="log" aria-label="Conversation with Loona">
+                    <div class="msg u"><div class="bub">Add Jane, jane@x.com, 09171234567, GCash 09171234567</div></div>
+                    <div class="msg"><div class="bub">Got it, adding now.</div></div>
+                    <div class="msg">
+                      <div class="bub">Couldn't add Jane. 09171234567 is already saved on a contact.</div>
+                    </div>
+                  </div>
+                  <form class="cmp" aria-label="Message Loona">
+                    <textarea class="ta" placeholder="Message Loona" aria-label="Message Loona"></textarea
+                    ><button class="send" type="submit" disabled>
+                      Send<svg class="ic" aria-hidden="true"><use href="#lp-send"></use></svg>
+                    </button>
+                  </form>
+                </div>
+                <aside class="sp stk" aria-label="Activity">
+                  <div class="sph">
+                    Activity<span class="tm" style="text-transform: none; letter-spacing: 0">3</span>
+                  </div>
+                  <ol class="lg" style="list-style: none; margin: 0; padding: 0">
+                    <li class="row">
+                      <span class="chip bad"
+                        ><svg class="ic" aria-hidden="true"><use href="#lp-x"></use></svg>Failed</span
+                      ><span class="sum">Couldn't add Jane. 09171234567 is already saved on a contact.</span
+                      ><time class="tm" datetime="2026-11-26T09:41:00+08:00">1m ago</time>
+                    </li>
+                    <li class="row">
+                      <span class="chip ok"
+                        ><svg class="ic" aria-hidden="true"><use href="#lp-check"></use></svg>Added</span
+                      ><span class="sum">Added Jane to your contacts.</span
+                      ><time class="tm" datetime="2026-11-26T09:36:00+08:00">6m ago</time>
+                    </li>
+                    <li class="row">
+                      <span class="chip ok"
+                        ><svg class="ic" aria-hidden="true"><use href="#lp-check"></use></svg>Added</span
+                      ><span class="sum">Added [SECOND CONTACT] to your contacts.</span
+                      ><time class="tm" datetime="2026-11-24T15:10:00+08:00">2d ago</time>
+                    </li>
+                  </ol>
+                </aside>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>L9 · Phone at 390: L1, then L6</h2>
+        <div class="scroll">
+          <div style="display: flex; gap: 24px; flex-wrap: wrap">
+            <div class="lp ph">
+              <div class="mn">
+                <header class="top">
+                  <button class="ibtn" aria-label="Open menu">
+                    <svg class="ic" aria-hidden="true"><use href="#lp-menu"></use></svg></button
+                  ><span style="font-weight: 600">Loona</span><span style="flex: 1"></span
+                  ><button class="ibtn o" aria-label="Jump to a module">
+                    <svg class="ic" aria-hidden="true"><use href="#lp-search"></use></svg>
+                  </button>
+                </header>
+                <div class="body">
+                  <div class="col">
+                    <div class="tl" role="tablist" aria-label="Loona">
+                      <button class="tab on" role="tab" aria-selected="true">Chat</button
+                      ><button class="tab" role="tab" aria-selected="false">Activity</button>
+                    </div>
+                    <div class="cv" role="log" aria-label="Conversation with Loona">
+                      <div class="msg u">
+                        <div class="bub">Add Jane, jane@x.com, 09171234567, GCash 09171234567</div>
+                      </div>
+                      <div class="msg"><div class="bub">Got it, adding now.</div></div>
+                    </div>
+                    <form class="cmp" aria-label="Message Loona">
+                      <textarea class="ta" placeholder="Message Loona" aria-label="Message Loona"></textarea
+                      ><button class="send" type="submit" disabled>
+                        Send<svg class="ic" aria-hidden="true"><use href="#lp-send"></use></svg>
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="lp ph">
+              <div class="mn">
+                <header class="top">
+                  <button class="ibtn" aria-label="Open menu">
+                    <svg class="ic" aria-hidden="true"><use href="#lp-menu"></use></svg></button
+                  ><span style="font-weight: 600">Loona</span><span style="flex: 1"></span
+                  ><button class="ibtn o" aria-label="Jump to a module">
+                    <svg class="ic" aria-hidden="true"><use href="#lp-search"></use></svg>
+                  </button>
+                </header>
+                <div class="body">
+                  <div class="col">
+                    <div class="tl" role="tablist" aria-label="Loona">
+                      <button class="tab" role="tab" aria-selected="false">Chat</button
+                      ><button class="tab on" role="tab" aria-selected="true">Activity</button>
+                    </div>
+                    <ol class="lg" aria-label="Activity, newest first" style="list-style: none; margin: 0; padding: 0">
+                      <li class="row">
+                        <span class="chip bad"
+                          ><svg class="ic" aria-hidden="true"><use href="#lp-x"></use></svg>Failed</span
+                        ><span class="sum">Couldn't add Jane. 09171234567 is already saved on a contact.</span
+                        ><time class="tm" datetime="2026-11-26T09:41:00+08:00">1m ago</time>
+                      </li>
+                      <li class="row">
+                        <span class="chip ok"
+                          ><svg class="ic" aria-hidden="true"><use href="#lp-check"></use></svg>Added</span
+                        ><span class="sum">Added Jane to your contacts.</span
+                        ><time class="tm" datetime="2026-11-26T09:36:00+08:00">6m ago</time>
+                      </li>
+                      <li class="row">
+                        <span class="chip ok"
+                          ><svg class="ic" aria-hidden="true"><use href="#lp-check"></use></svg>Added</span
+                        ><span class="sum">Added [SECOND CONTACT] to your contacts.</span
+                        ><time class="tm" datetime="2026-11-24T15:10:00+08:00">2d ago</time>
+                      </li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>L10a · Dark, L3</h2>
+        <div class="scroll">
+          <div class="lp dk">
+            <aside class="sb" aria-label="Workspace sidebar">
+              <div class="sbh"><span class="mark" aria-hidden="true">K</span>KEOS</div>
+              <ul class="nav" aria-label="Modules">
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-user"></use></svg>Profile</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-globe"></use></svg>Portfolio</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-book"></use></svg>Project Memory</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-flask"></use></svg>Engineering</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-case"></use></svg>Jobs</a
+                  >
+                </li>
+                <li>
+                  <a class="mi on" href="#" aria-current="page"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-bot"></use></svg>Agents</a
+                  >
+                  <ul class="subl" aria-label="Sections">
+                    <li><a class="si on" href="#" aria-current="location">Loona</a></li>
+                  </ul>
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-marked"></use></svg>Terms</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-palette"></use></svg>Design Studio</a
+                  >
+                </li>
+              </ul>
+            </aside>
+            <div class="mn">
+              <header class="top">
+                <button class="jump" aria-label="Jump to a module">
+                  Jump to a module…<span class="kbd">Ctrl K</span>
+                </button>
+              </header>
+              <div class="body">
+                <div class="col">
+                  <div class="tl" role="tablist" aria-label="Loona">
+                    <button class="tab on" role="tab" aria-selected="true">Chat</button
+                    ><button class="tab" role="tab" aria-selected="false">Activity</button>
+                  </div>
+                  <div class="cv" role="log" aria-label="Conversation with Loona">
+                    <div class="msg u"><div class="bub">Add Jane, jane@x.com, 09171234567, GCash 09171234567</div></div>
+                    <div class="msg"><div class="bub">Got it, adding now.</div></div>
+                    <div class="msg"><div class="bub">Added Jane to your contacts.</div></div>
+                  </div>
+                  <form class="cmp" aria-label="Message Loona">
+                    <textarea class="ta" placeholder="Message Loona" aria-label="Message Loona"></textarea
+                    ><button class="send" type="submit" disabled>
+                      Send<svg class="ic" aria-hidden="true"><use href="#lp-send"></use></svg>
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="frame">
+        <h2>L10b · Dark, L6</h2>
+        <div class="scroll">
+          <div class="lp dk">
+            <aside class="sb" aria-label="Workspace sidebar">
+              <div class="sbh"><span class="mark" aria-hidden="true">K</span>KEOS</div>
+              <ul class="nav" aria-label="Modules">
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-user"></use></svg>Profile</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-globe"></use></svg>Portfolio</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-book"></use></svg>Project Memory</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-flask"></use></svg>Engineering</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-case"></use></svg>Jobs</a
+                  >
+                </li>
+                <li>
+                  <a class="mi on" href="#" aria-current="page"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-bot"></use></svg>Agents</a
+                  >
+                  <ul class="subl" aria-label="Sections">
+                    <li><a class="si on" href="#" aria-current="location">Loona</a></li>
+                  </ul>
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-marked"></use></svg>Terms</a
+                  >
+                </li>
+                <li>
+                  <a class="mi" href="#"
+                    ><svg class="ic" aria-hidden="true"><use href="#lp-palette"></use></svg>Design Studio</a
+                  >
+                </li>
+              </ul>
+            </aside>
+            <div class="mn">
+              <header class="top">
+                <button class="jump" aria-label="Jump to a module">
+                  Jump to a module…<span class="kbd">Ctrl K</span>
+                </button>
+              </header>
+              <div class="body">
+                <div class="col">
+                  <div class="tl" role="tablist" aria-label="Loona">
+                    <button class="tab" role="tab" aria-selected="false">Chat</button
+                    ><button class="tab on" role="tab" aria-selected="true">Activity</button>
+                  </div>
+                  <ol class="lg" aria-label="Activity, newest first" style="list-style: none; margin: 0; padding: 0">
+                    <li class="row">
+                      <span class="chip bad"
+                        ><svg class="ic" aria-hidden="true"><use href="#lp-x"></use></svg>Failed</span
+                      ><span class="sum">Couldn't add Jane. 09171234567 is already saved on a contact.</span
+                      ><time class="tm" datetime="2026-11-26T09:41:00+08:00">1m ago</time>
+                    </li>
+                    <li class="row">
+                      <span class="chip ok"
+                        ><svg class="ic" aria-hidden="true"><use href="#lp-check"></use></svg>Added</span
+                      ><span class="sum">Added Jane to your contacts.</span
+                      ><time class="tm" datetime="2026-11-26T09:36:00+08:00">6m ago</time>
+                    </li>
+                    <li class="row">
+                      <span class="chip ok"
+                        ><svg class="ic" aria-hidden="true"><use href="#lp-check"></use></svg>Added</span
+                      ><span class="sum">Added [SECOND CONTACT] to your contacts.</span
+                      ><time class="tm" datetime="2026-11-24T15:10:00+08:00">2d ago</time>
+                    </li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

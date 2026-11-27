@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>L7 Activity rows compared</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap"
+        />
+        <style>
+          body {
+            margin: 0;
+          }
+          .rx {
+            --card: oklch(0.968 0.005 255);
+            --mfg: oklch(0.47 0.012 260);
+            --border: oklch(0.905 0.007 258);
+          }
+          .rx * {
+            box-sizing: border-box;
+          }
+          .lbl {
+            margin: 0 0 10px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--mfg);
+          }
+          .z {
+            zoom: 2;
+            width: 448px;
+          }
+          .lg {
+            border: 1px solid var(--border);
+            border-radius: 4.4px;
+            overflow: hidden;
+            display: grid;
+            gap: 1px;
+            background: var(--border);
+            list-style: none;
+            margin: 0;
+            padding: 0;
+          }
+          .row {
+            display: grid;
+            grid-template-columns: 76px minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: var(--card);
+            font-size: 14px;
+            line-height: 1.43;
+          }
+          .chip {
+            justify-self: start;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            height: 20px;
+            padding: 0 8px;
+            border-radius: 9.7px;
+            font-size: 12px;
+            font-weight: 500;
+            white-space: nowrap;
+          }
+          .chip svg {
+            width: 12px;
+            height: 12px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+          }
+          .ok {
+            background: oklch(0.95 0.035 150);
+            color: oklch(0.5 0.13 150);
+          }
+          .bad {
+            background: oklch(0.955 0.03 25);
+            color: oklch(0.53 0.19 25);
+          }
+          .tm {
+            font-family: "Geist Mono", ui-monospace, monospace;
+            font-size: 12px;
+            color: var(--mfg);
+            white-space: nowrap;
+          }
+          .cap {
+            margin: 8px 0 0;
+            font-size: 13px;
+            line-height: 1.45;
+            color: var(--mfg);
+          }
+        </style>
+      </helmet>
+      <div
+        class="rx"
+        style="
+          width: 1000px;
+          height: 560px;
+          box-sizing: border-box;
+          padding: 36px 48px;
+          background: oklch(0.968 0.005 255);
+          color: oklch(0.2 0.008 265);
+          font-family:
+            &quot;Instrument Sans&quot;, ui-sans-serif, system-ui, sans-serif;
+          display: flex;
+          flex-direction: column;
+          gap: 28px;
+        "
+      >
+        <section>
+          <h2 class="lbl">Added, x2</h2>
+          <div class="z">
+            <ol class="lg">
+              <li class="row">
+                <span class="chip ok"
+                  ><svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="m9 12 2 2 4-4"></path></svg
+                  >Added</span
+                ><span>Added Jane to your contacts.</span
+                ><time class="tm" datetime="2026-11-26T09:36:00+08:00"
+                  >6m ago</time
+                >
+              </li>
+            </ol>
+          </div>
+          <p class="cap">
+            CircleCheck, bg-topic-learned-soft, text-topic-learned: 4.9:1 light,
+            7.8:1 dark.
+          </p>
+        </section>
+        <section>
+          <h2 class="lbl">Failed, x2</h2>
+          <div class="z">
+            <ol class="lg">
+              <li class="row">
+                <span class="chip bad"
+                  ><svg viewBox="0 0 24 24" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="m15 9-6 6M9 9l6 6"></path></svg
+                  >Failed</span
+                ><span
+                  >Couldn't add Jane. 09171234567 is already saved on a
+                  contact.</span
+                ><time class="tm" datetime="2026-11-26T09:41:00+08:00"
+                  >1m ago</time
+                >
+              </li>
+            </ol>
+          </div>
+          <p class="cap">
+            CircleX, proposed bg-destructive-soft, text-destructive: 5.0:1
+            light, 5.3:1 dark. Word and icon shape differ, so neither relies on
+            hue.
+          </p>
+        </section>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"$preview":{"width":1000,"height":560}}'
+    >
+      class Component extends DCLogic {
+        renderVals() { return {}; }
+      }
+    </script>
+  </body>
+</html>
