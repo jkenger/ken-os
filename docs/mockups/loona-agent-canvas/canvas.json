@@ -1,0 +1,185 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-11-26T09:00:00Z" },
+  "title": "Loona agent mockups",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": -1120,
+      "y": 0,
+      "w": 1000,
+      "h": 2300,
+      "title": "README"
+    },
+    "L1.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "title": "L1 · Chat, pending, no cue (baseline)"
+    },
+    "L2.dc.html": {
+      "x": 1520,
+      "y": 0,
+      "w": 1440,
+      "h": 900,
+      "title": "L2 · Chat, pending, pulsing dot (recommended)"
+    },
+    "L2x.dc.html": {
+      "x": 3040,
+      "y": 0,
+      "w": 1000,
+      "h": 460,
+      "title": "L2 options · Dot, muted text, spinner"
+    },
+    "L3.dc.html": {
+      "x": 0,
+      "y": 1020,
+      "w": 1440,
+      "h": 900,
+      "title": "L3 · Chat, resolved, success"
+    },
+    "L4.dc.html": {
+      "x": 1520,
+      "y": 1020,
+      "w": 1440,
+      "h": 900,
+      "title": "L4 · Chat, resolved, failure"
+    },
+    "L5.dc.html": {
+      "x": 0,
+      "y": 2040,
+      "w": 1440,
+      "h": 900,
+      "title": "L5 · Activity, empty"
+    },
+    "L6.dc.html": {
+      "x": 1520,
+      "y": 2040,
+      "w": 1440,
+      "h": 900,
+      "title": "L6 · Activity, populated"
+    },
+    "L7.dc.html": {
+      "x": 3040,
+      "y": 2040,
+      "w": 1000,
+      "h": 560,
+      "title": "L7 · Added vs Failed rows, x2"
+    },
+    "L8a.dc.html": {
+      "x": 0,
+      "y": 3060,
+      "w": 1440,
+      "h": 900,
+      "title": "L8a · Tabs (recommended), Chat selected"
+    },
+    "L8b.dc.html": {
+      "x": 1520,
+      "y": 3060,
+      "w": 1440,
+      "h": 900,
+      "title": "L8b · Tabs (recommended), Activity selected"
+    },
+    "L8c.dc.html": {
+      "x": 3040,
+      "y": 3060,
+      "w": 1440,
+      "h": 900,
+      "title": "L8c · Alternative: side panel"
+    },
+    "L9a.dc.html": {
+      "x": 0,
+      "y": 4080,
+      "w": 390,
+      "h": 844,
+      "title": "L9a · Phone, L1"
+    },
+    "L9b.dc.html": {
+      "x": 470,
+      "y": 4080,
+      "w": 390,
+      "h": 844,
+      "title": "L9b · Phone, L6"
+    },
+    "L10a.dc.html": {
+      "x": 940,
+      "y": 4080,
+      "w": 1440,
+      "h": 900,
+      "title": "L10a · Dark, L3"
+    },
+    "L10b.dc.html": {
+      "x": 2460,
+      "y": 4080,
+      "w": 1440,
+      "h": 900,
+      "title": "L10b · Dark, L6"
+    },
+    "Page.dc.html": {
+      "x": 3980,
+      "y": 4080,
+      "w": 1440,
+      "h": 900,
+      "title": "Page (shared by every frame)"
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "Page.dc.html",
+    "L1.dc.html",
+    "L2.dc.html",
+    "L2x.dc.html",
+    "L3.dc.html",
+    "L4.dc.html",
+    "L5.dc.html",
+    "L6.dc.html",
+    "L7.dc.html",
+    "L8a.dc.html",
+    "L8b.dc.html",
+    "L8c.dc.html",
+    "L9a.dc.html",
+    "L9b.dc.html",
+    "L10a.dc.html",
+    "L10b.dc.html"
+  ],
+  "notes": {
+    "t": {
+      "x": 0,
+      "y": -280,
+      "text": "Loona agent: chat outcomes and activity log",
+      "kind": "title1",
+      "maxW": 4040
+    },
+    "n1": {
+      "x": 4560,
+      "y": 0,
+      "w": 400,
+      "text": "L1 → L2 → L3 or L4 is one thread over time. The dot pulses only while the run is pending (the chat polls); it stops and the outcome lands as its own new message. The composer stays usable throughout.",
+      "fill": "blue"
+    },
+    "n2": {
+      "x": 4560,
+      "y": 1020,
+      "w": 400,
+      "text": "The chat never turns red. Failure is a plain assistant message that says what failed. Red, and the Added/Failed words, belong to the activity log.",
+      "fill": "blue"
+    },
+    "n3": {
+      "x": 4560,
+      "y": 2040,
+      "w": 400,
+      "text": "Activity rows are read-only: no action, dismiss or delete. Newest first. The chip's word and icon shape carry the outcome; colour only reinforces it.",
+      "fill": "blue"
+    },
+    "n4": {
+      "x": 4560,
+      "y": 3060,
+      "w": 400,
+      "text": "Tabs keep one route (/agents/loona?view=activity). The composer belongs to Chat and hides on Activity.",
+      "fill": "blue"
+    }
+  },
+  "designSystems": []
+}

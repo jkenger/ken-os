@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>L2 options for the pending cue</title>
+    <script src="./support.js"></script>
+  </head>
+  <body>
+    <x-dc>
+      <helmet>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap"
+        />
+        <style>
+          body {
+            margin: 0;
+          }
+          .ox {
+            --card: oklch(0.968 0.005 255);
+            --fg: oklch(0.2 0.008 265);
+            --mfg: oklch(0.47 0.012 260);
+            --accent: oklch(0.925 0.007 258);
+            --border: oklch(0.905 0.007 258);
+          }
+          .ox * {
+            box-sizing: border-box;
+          }
+          .opt {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: 4.4px;
+          }
+          .opt.rec {
+            outline: 2px solid oklch(0.52 0.16 262);
+            outline-offset: -1px;
+          }
+          .lbl {
+            margin: 0;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--mfg);
+          }
+          .thread {
+            zoom: 1.25;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+          }
+          .msg {
+            display: flex;
+            max-width: 85%;
+          }
+          .msg.u {
+            margin-left: auto;
+          }
+          .bub {
+            border: 1px solid var(--border);
+            border-radius: 4.4px;
+            background: var(--card);
+            padding: 8px 12px;
+            font-size: 14px;
+          }
+          .u .bub {
+            background: var(--accent);
+          }
+          .dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            margin-left: 8px;
+            border-radius: 50%;
+            background: var(--mfg);
+            vertical-align: middle;
+            animation: pulse 1.8s ease-in-out infinite;
+          }
+          @keyframes pulse {
+            50% {
+              opacity: 0.25;
+            }
+          }
+          .spin {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            margin-right: 6px;
+            vertical-align: -2px;
+            fill: none;
+            stroke: var(--mfg);
+            stroke-width: 2;
+            stroke-linecap: round;
+            animation: spin 1s linear infinite;
+          }
+          @keyframes spin {
+            to {
+              transform: rotate(360deg);
+            }
+          }
+          .cap {
+            margin: 0;
+            font-size: 13px;
+            line-height: 1.45;
+            color: var(--mfg);
+          }
+        </style>
+      </helmet>
+      <div
+        class="ox"
+        style="
+          width: 1000px;
+          height: 460px;
+          box-sizing: border-box;
+          padding: 36px 40px;
+          background: oklch(0.968 0.005 255);
+          color: oklch(0.2 0.008 265);
+          font-family:
+            &quot;Instrument Sans&quot;, ui-sans-serif, system-ui, sans-serif;
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 24px;
+          align-content: start;
+        "
+      >
+        <section class="opt rec">
+          <h2 class="lbl">(a) Pulsing dot, recommended</h2>
+          <div class="thread">
+            <div class="msg u">
+              <div class="bub">
+                Add Jane, jane@x.com, 09171234567, GCash 09171234567
+              </div>
+            </div>
+            <div class="msg">
+              <div class="bub">
+                Got it, adding now.<span class="dot" aria-hidden="true"></span>
+              </div>
+            </div>
+          </div>
+          <p class="cap">
+            Reads as still going without making the words look wrong. Same
+            motion as the status dot: opacity 1 to 0.25, 1.8s.
+          </p>
+        </section>
+        <section class="opt">
+          <h2 class="lbl">(b) Muted text</h2>
+          <div class="thread">
+            <div class="msg u">
+              <div class="bub">
+                Add Jane, jane@x.com, 09171234567, GCash 09171234567
+              </div>
+            </div>
+            <div class="msg">
+              <div class="bub" style="color: oklch(0.47 0.012 260)">
+                Got it, adding now.
+              </div>
+            </div>
+          </div>
+          <p class="cap">
+            Reads as disabled or failed, and it dims the one line the owner
+            needs to read. No motion, so nothing says it will change.
+          </p>
+        </section>
+        <section class="opt">
+          <h2 class="lbl">(c) Inline spinner</h2>
+          <div class="thread">
+            <div class="msg u">
+              <div class="bub">
+                Add Jane, jane@x.com, 09171234567, GCash 09171234567
+              </div>
+            </div>
+            <div class="msg">
+              <div class="bub">
+                <svg class="spin" viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56"></path></svg
+                >Got it, adding now.
+              </div>
+            </div>
+          </div>
+          <p class="cap">
+            Clearest, but loud for a run that may take a while, and it pushes
+            the text off its left edge.
+          </p>
+        </section>
+      </div>
+    </x-dc>
+    <script
+      type="text/x-dc"
+      data-dc-script
+      data-props='{"$preview":{"width":1000,"height":460}}'
+    >
+      class Component extends DCLogic {
+        renderVals() { return {}; }
+      }
+    </script>
+  </body>
+</html>
