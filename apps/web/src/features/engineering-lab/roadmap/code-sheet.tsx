@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import useSWR from "swr";
 import { ThinkingOrb } from "thinking-orbs";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,6 +16,20 @@ interface CodeView {
   /** The newest version still waiting for its browser check, when there's no usable version yet. */
   pending: ExercisePanel["check"];
   progress: { exercisePassed: boolean; solutionOpened: boolean };
+}
+
+async function loadCode(topicId: string): Promise<CodeView> {
+  const response = await fetch(`/api/lab/topics/${encodeURIComponent(topicId)}/code`);
+  const body = (await response.json().catch(() => ({}))) as CodeView & { error?: string };
+  if (!response.ok) throw new Error(body.error ?? "Couldn't load the exercise. Try again");
+  return body;
+}
+
+/** `null` while closed -- SWR fetches nothing until the sheet opens. Reopening an already-viewed topic shows its
+ *  last known exercise instantly, then silently revalidates in the background (SWR's default stale-while-
+ *  revalidate), which matters here since Claude or a browser check can change this between visits. */
+function codeKey(open: boolean, topicId: string) {
+  return open ? { scope: "topic-code" as const, topicId } : null;
 }
 
 function Pending({
@@ -47,27 +61,8 @@ export function CodeSheet({
   onClose: () => void;
   onChanged: () => void;
 }) {
-  const [view, setView] = useState<CodeView | null>(null);
-  const [problem, setProblem] = useState("");
-
-  const load = useCallback(() => {
-    setProblem("");
-    void fetch(`/api/lab/topics/${encodeURIComponent(topic.id)}/code`)
-      .then(async (response) => {
-        const body = (await response.json().catch(() => ({}))) as CodeView & { error?: string };
-        if (!response.ok) throw new Error(body.error ?? "Couldn't load the exercise. Try again");
-        setView(body);
-      })
-      .catch((error: unknown) =>
-        setProblem(error instanceof Error ? error.message : "Couldn't load the exercise. Try again"),
-      );
-  }, [topic.id]);
-
-  useEffect(() => {
-    if (!open) return;
-    setView(null);
-    load();
-  }, [open, load]);
+  const { data: view, error, mutate } = useSWR(codeKey(open, topic.id), (key) => loadCode(key.topicId));
+  const load = () => void mutate();
 
   return (
     <Sheet open={open} onOpenChange={(next) => !next && (onClose(), onChanged())}>
@@ -77,8 +72,12 @@ export function CodeSheet({
           <SheetTitle className="text-xl">{topic.title}</SheetTitle>
         </SheetHeader>
         <div className="p-4">
-          {problem && <p className="text-sm text-destructive">{problem}</p>}
-          {!view && !problem && <Skeleton className="h-72 w-full" />}
+          {error && (
+            <p className="text-sm text-destructive">
+              {error instanceof Error ? error.message : "Couldn't load the exercise. Try again"}
+            </p>
+          )}
+          {!view && !error && <Skeleton className="h-72 w-full" />}
           {view?.exercise && (
             <Exercise
               key={view.exercise.exercise.id}

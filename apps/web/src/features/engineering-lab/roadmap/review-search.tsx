@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import useSWR from "swr";
 import { IconSearch } from "@tabler/icons-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,39 +25,36 @@ const groups: { where: SearchHit["where"]; heading: string }[] = [
   { where: "note", heading: "Notes" },
 ];
 
+async function searchReviews(term: string): Promise<SearchHit[]> {
+  const response = await fetch(`/api/lab/reviews/search?q=${encodeURIComponent(term)}`);
+  const body = (await response.json().catch(() => ({}))) as { hits?: SearchHit[]; error?: string };
+  if (!response.ok) throw new Error(body.error ?? "Couldn't search. Try again");
+  return body.hits ?? [];
+}
+
+/** `null` under the minimum term length -- SWR fetches nothing until there's enough to search. Caching here means
+ *  retyping a term already searched this session (backspace then retype, or reopening the dialog) shows results
+ *  instantly instead of hitting the server again. */
+function searchKey(term: string) {
+  return term.length >= SEARCH_MIN ? { scope: "review-search" as const, term } : null;
+}
+
 export function ReviewSearch({ onOpen }: { onOpen: (topicId: string) => void }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const [hits, setHits] = useState<SearchHit[]>([]);
-  const [problem, setProblem] = useState("");
+  const [debouncedTerm, setDebouncedTerm] = useState("");
 
   useEffect(() => {
-    const term = query.trim();
-    if (term.length < SEARCH_MIN) {
-      setHits([]);
-      return;
-    }
-    const controller = new AbortController();
-    const timer = window.setTimeout(() => {
-      fetch(`/api/lab/reviews/search?q=${encodeURIComponent(term)}`, { signal: controller.signal })
-        .then(async (response) => {
-          const body = (await response.json().catch(() => ({}))) as { hits?: SearchHit[]; error?: string };
-          if (!response.ok) throw new Error(body.error ?? "Couldn't search. Try again");
-          setHits(body.hits ?? []);
-          setProblem("");
-        })
-        .catch((error: unknown) => {
-          if (controller.signal.aborted) return;
-          setProblem(error instanceof Error ? error.message : "Couldn't search. Try again");
-        });
-    }, 200);
-    return () => {
-      window.clearTimeout(timer);
-      controller.abort();
-    };
+    const timer = window.setTimeout(() => setDebouncedTerm(query.trim()), 200);
+    return () => window.clearTimeout(timer);
   }, [query]);
 
-  const searched = query.trim().length >= SEARCH_MIN;
+  const { data: hits = [], error } = useSWR(searchKey(debouncedTerm), (key) => searchReviews(key.term), {
+    keepPreviousData: true,
+  });
+  const problem = error instanceof Error ? error.message : error ? "Couldn't search. Try again" : "";
+
+  const searched = debouncedTerm.length >= SEARCH_MIN;
   return (
     <>
       <Tooltip>

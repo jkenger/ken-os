@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import useSWR from "swr";
 import { IconArrowRight, IconLink, IconPencil, IconTrash } from "@tabler/icons-react";
 import { TOPIC_STATUSES, type TopicStatus } from "@ken-os/domain";
 import { DotSeparator } from "@/components/dot-separator";
@@ -45,6 +46,12 @@ async function load(topicId: string, roadmapId: string | null): Promise<TopicPan
   const body = (await response.json().catch(() => ({}))) as TopicPanelView & { error?: string };
   if (!response.ok) throw new Error(body.error ?? "Couldn't load the topic. Try again");
   return body;
+}
+
+/** `null` when there's no topic open -- SWR fetches nothing for a null key. Keyed on both ids so switching back to
+ *  an already-viewed topic shows its cached panel instantly instead of the loading skeleton every time. */
+function topicPanelKey(topicId: string | null, roadmapId: string | null) {
+  return topicId ? { scope: "topic-panel" as const, topicId, roadmapId } : null;
 }
 
 function StatusMenu({ panel, onSaved }: { panel: TopicPanelView; onSaved: () => void }) {
@@ -343,38 +350,30 @@ export function TopicSheet({
   /** The topic's chapter position on the roadmap, for its accent; null when it isn't on it. */
   chapterIndex?: number | null;
 }) {
-  const [panel, setPanel] = useState<TopicPanelView | null>(null);
-  const [problem, setProblem] = useState("");
+  const {
+    data: panel,
+    error,
+    mutate: refreshPanel,
+  } = useSWR(topicPanelKey(topicId, roadmapId), (key) => load(key.topicId, key.roadmapId));
   const [coding, setCoding] = useState(false);
   const [linking, setLinking] = useState(false);
 
-  const refresh = useCallback(
-    (id: string) =>
-      load(id, roadmapId)
-        .then((next) => {
-          setPanel(next);
-          setProblem("");
-        })
-        .catch((error: unknown) => setProblem(errorText(error, "Couldn't load the topic. Try again"))),
-    [roadmapId],
-  );
-
   useEffect(() => {
-    setPanel(null);
     setCoding(false);
     setLinking(false);
-    if (topicId) void refresh(topicId);
-  }, [topicId, refresh]);
+  }, [topicId]);
 
   const saved = () => {
-    if (topicId) void refresh(topicId);
+    void refreshPanel();
     onChanged();
   };
 
   const loading = (
     <>
-      {problem && <p className="p-4 text-sm text-destructive">{problem}</p>}
-      {!panel && !problem && (
+      {error && (
+        <p className="p-4 text-sm text-destructive">{errorText(error, "Couldn't load the topic. Try again")}</p>
+      )}
+      {!panel && !error && (
         <div className="grid gap-3 p-4" aria-busy="true" aria-label="Loading topic">
           <Skeleton className="h-8 w-full" />
           <Skeleton className="h-8 w-full" />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type ReactNode } from "react";
+import useSWR from "swr";
 import { IconChevronDown } from "@tabler/icons-react";
 import { DotSeparator } from "@/components/dot-separator";
 import { formatDate } from "@/features/engineering-lab/words";
@@ -26,6 +27,12 @@ async function load(topicId: string, version: number | null): Promise<ReviewView
   const body = (await response.json().catch(() => ({}))) as ReviewView & { error?: string };
   if (!response.ok) throw new Error(body.error ?? "Couldn't load the review. Try again");
   return body;
+}
+
+/** Keyed on both topicId and version -- switching back to a version already viewed this session (or back to a
+ *  topic already opened) shows its cached review instantly instead of the loading skeleton every time. */
+function reviewKey(topicId: string, version: number | null) {
+  return { scope: "topic-review" as const, topicId, version };
 }
 
 function Answer({ point }: { point: ReviewPoint }) {
@@ -65,8 +72,6 @@ function Question({ point }: { point: ReviewPoint }) {
 }
 
 export function ReviewTab({ topicId, notes }: { topicId: string; notes: ReactNode }) {
-  const [review, setReview] = useState<ReviewView | null>(null);
-  const [problem, setProblem] = useState("");
   const [version, setVersion] = useState<number | null>(null);
   const [testing, setTesting] = useState(false);
 
@@ -75,21 +80,15 @@ export function ReviewTab({ topicId, notes }: { topicId: string; notes: ReactNod
     setTesting(false);
   }, [topicId]);
 
-  useEffect(() => {
-    let current = true;
-    setProblem("");
-    load(topicId, version)
-      .then((next) => current && setReview(next))
-      .catch((error: unknown) => {
-        if (current) setProblem(error instanceof Error ? error.message : "Couldn't load the review. Try again");
-      });
-    return () => {
-      current = false;
-    };
-  }, [topicId, version]);
+  const { data: review, error } = useSWR(reviewKey(topicId, version), (key) => load(key.topicId, key.version));
 
-  if (problem) return <p className="text-sm text-destructive">{problem}</p>;
-  if (!review || review.topicId !== topicId)
+  if (error)
+    return (
+      <p className="text-sm text-destructive">
+        {error instanceof Error ? error.message : "Couldn't load the review. Try again"}
+      </p>
+    );
+  if (!review)
     return (
       <div className="grid gap-3">
         <Skeleton className="h-6 w-1/2" />
