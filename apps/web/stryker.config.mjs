@@ -9,12 +9,12 @@ const config = {
   inPlace: true,
   testRunner: "command",
   commandRunner: {
-    command: "pnpm exec tsx --test src/features/jobs/scrapers/indeed.test.ts",
+    command: "pnpm exec tsx --test src/features/loona/store.test.ts && pnpm exec tsx scripts/verify-loona.ts",
   },
   // No per-test coverage analysis: Node's built-in test runner (tsx --test) has no Stryker plugin, so the
   // generic command runner reruns the whole test file per mutant.
   coverageAnalysis: "off",
-  mutate: ["src/features/jobs/scrapers/indeed.ts"],
+  mutate: ["src/features/loona/store.ts"],
   reporters: ["html", "clear-text", "progress"],
   htmlReporter: {
     fileName: "reports/mutation/index.html",

@@ -477,6 +477,13 @@
       "when": 1795060657634,
       "tag": "0067_sparkling_chronomancer",
       "breakpoints": true
+    },
+    {
+      "idx": 68,
+      "version": "7",
+      "when": 1795606980961,
+      "tag": "0068_parallel_lifeguard",
+      "breakpoints": true
     }
   ]
 }

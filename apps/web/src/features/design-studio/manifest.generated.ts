@@ -5,6 +5,28 @@ export const studioManifest: StudioManifest = {
   "style": "radix-luma",
   "components": [
     {
+      "id": "ui/accordion",
+      "name": "Accordion",
+      "kind": "primitive",
+      "file": "components/ui/accordion.tsx",
+      "exports": [
+        "Accordion",
+        "AccordionItem",
+        "AccordionTrigger",
+        "AccordionContent"
+      ],
+      "variants": [],
+      "uses": [],
+      "tokens": [
+        "muted",
+        "muted-foreground",
+        "border",
+        "radius",
+        "foreground"
+      ],
+      "slot": "accordion"
+    },
+    {
       "id": "ui/alert-dialog",
       "name": "AlertDialog",
       "kind": "primitive",
@@ -173,6 +195,7 @@ export const studioManifest: StudioManifest = {
         "muted",
         "border",
         "input",
+        "ring",
         "radius"
       ],
       "slot": "button-group"
@@ -257,6 +280,39 @@ export const studioManifest: StudioManifest = {
         "foreground"
       ],
       "slot": "card"
+    },
+    {
+      "id": "ui/carousel",
+      "name": "Carousel",
+      "kind": "primitive",
+      "file": "components/ui/carousel.tsx",
+      "exports": [
+        "Carousel",
+        "CarouselContent",
+        "CarouselItem",
+        "CarouselPrevious",
+        "CarouselNext",
+        "useCarousel"
+      ],
+      "variants": [],
+      "uses": [
+        "ui/button"
+      ],
+      "tokens": [
+        "primary",
+        "primary-foreground",
+        "secondary",
+        "secondary-foreground",
+        "muted",
+        "destructive",
+        "border",
+        "input",
+        "ring",
+        "radius",
+        "background",
+        "foreground"
+      ],
+      "slot": "carousel"
     },
     {
       "id": "ui/checkbox",
@@ -350,6 +406,37 @@ export const studioManifest: StudioManifest = {
       "slot": "command"
     },
     {
+      "id": "ui/conversation",
+      "name": "Conversation",
+      "kind": "primitive",
+      "file": "components/ui/conversation.tsx",
+      "exports": [
+        "Conversation",
+        "ConversationContent",
+        "ConversationEmptyState",
+        "ConversationScrollButton"
+      ],
+      "variants": [],
+      "uses": [
+        "ui/button"
+      ],
+      "tokens": [
+        "primary",
+        "primary-foreground",
+        "secondary",
+        "secondary-foreground",
+        "muted",
+        "muted-foreground",
+        "destructive",
+        "border",
+        "input",
+        "ring",
+        "radius",
+        "background",
+        "foreground"
+      ]
+    },
+    {
       "id": "ui/dialog",
       "name": "Dialog",
       "kind": "primitive",
@@ -432,6 +519,25 @@ export const studioManifest: StudioManifest = {
         "accent-foreground",
         "destructive",
         "border",
+        "radius",
+        "foreground"
+      ]
+    },
+    {
+      "id": "ui/hover-card",
+      "name": "HoverCard",
+      "kind": "primitive",
+      "file": "components/ui/hover-card.tsx",
+      "exports": [
+        "HoverCard",
+        "HoverCardTrigger",
+        "HoverCardContent"
+      ],
+      "variants": [],
+      "uses": [],
+      "tokens": [
+        "popover",
+        "popover-foreground",
         "radius",
         "foreground"
       ]
@@ -598,6 +704,21 @@ export const studioManifest: StudioManifest = {
       "slot": "label"
     },
     {
+      "id": "ui/message",
+      "name": "Message",
+      "kind": "primitive",
+      "file": "components/ui/message.tsx",
+      "exports": [
+        "Message",
+        "MessageContent"
+      ],
+      "variants": [],
+      "uses": [],
+      "tokens": [
+        "accent"
+      ]
+    },
+    {
       "id": "ui/native-select",
       "name": "NativeSelect",
       "kind": "primitive",
@@ -687,6 +808,57 @@ export const studioManifest: StudioManifest = {
         "radius"
       ],
       "slot": "progress"
+    },
+    {
+      "id": "ui/scroll-area",
+      "name": "ScrollArea",
+      "kind": "primitive",
+      "file": "components/ui/scroll-area.tsx",
+      "exports": [
+        "ScrollArea",
+        "ScrollBar"
+      ],
+      "variants": [],
+      "uses": [],
+      "tokens": [
+        "border",
+        "ring",
+        "radius"
+      ],
+      "slot": "scroll-area"
+    },
+    {
+      "id": "ui/select",
+      "name": "Select",
+      "kind": "primitive",
+      "file": "components/ui/select.tsx",
+      "exports": [
+        "Select",
+        "SelectContent",
+        "SelectGroup",
+        "SelectItem",
+        "SelectLabel",
+        "SelectScrollDownButton",
+        "SelectScrollUpButton",
+        "SelectSeparator",
+        "SelectTrigger",
+        "SelectValue"
+      ],
+      "variants": [],
+      "uses": [],
+      "tokens": [
+        "popover",
+        "popover-foreground",
+        "muted-foreground",
+        "accent",
+        "accent-foreground",
+        "destructive",
+        "border",
+        "input",
+        "ring",
+        "radius",
+        "foreground"
+      ]
     },
     {
       "id": "ui/separator",
@@ -851,6 +1023,19 @@ export const studioManifest: StudioManifest = {
       "variants": [],
       "uses": [],
       "tokens": []
+    },
+    {
+      "id": "ui/spinner",
+      "name": "Spinner",
+      "kind": "primitive",
+      "file": "components/ui/spinner.tsx",
+      "exports": [
+        "Spinner"
+      ],
+      "variants": [],
+      "uses": [],
+      "tokens": [],
+      "slot": "spinner"
     },
     {
       "id": "ui/switch",
@@ -1380,6 +1565,7 @@ export const studioManifest: StudioManifest = {
           "name": "Accordion",
           "description": "A vertically stacked set of interactive headings that each reveal a section of content.",
           "uses": [],
+          "installed": "ui/accordion",
           "add": "pnpm dlx shadcn@latest add @shadcn/accordion",
           "docs": "https://ui.shadcn.com/docs/components/radix/accordion"
         },
@@ -1483,6 +1669,7 @@ export const studioManifest: StudioManifest = {
           "uses": [
             "ui/button"
           ],
+          "installed": "ui/carousel",
           "add": "pnpm dlx shadcn@latest add @shadcn/carousel",
           "docs": "https://ui.shadcn.com/docs/components/radix/carousel"
         },
@@ -1615,6 +1802,7 @@ export const studioManifest: StudioManifest = {
           "name": "HoverCard",
           "description": "For sighted users to preview content available behind a link.",
           "uses": [],
+          "installed": "ui/hover-card",
           "add": "pnpm dlx shadcn@latest add @shadcn/hover-card",
           "docs": "https://ui.shadcn.com/docs/components/radix/hover-card"
         },
@@ -1763,6 +1951,7 @@ export const studioManifest: StudioManifest = {
           "name": "ScrollArea",
           "description": "Augments native scroll functionality for custom, cross-browser styling.",
           "uses": [],
+          "installed": "ui/scroll-area",
           "add": "pnpm dlx shadcn@latest add @shadcn/scroll-area",
           "docs": "https://ui.shadcn.com/docs/components/radix/scroll-area"
         },
@@ -1771,6 +1960,7 @@ export const studioManifest: StudioManifest = {
           "name": "Select",
           "description": "Displays a list of options for the user to pick from—triggered by a button.",
           "uses": [],
+          "installed": "ui/select",
           "add": "pnpm dlx shadcn@latest add @shadcn/select",
           "docs": "https://ui.shadcn.com/docs/components/radix/select"
         },
@@ -1841,6 +2031,7 @@ export const studioManifest: StudioManifest = {
           "name": "Spinner",
           "description": "An indicator that can be used to show a loading state.",
           "uses": [],
+          "installed": "ui/spinner",
           "add": "pnpm dlx shadcn@latest add @shadcn/spinner",
           "docs": "https://ui.shadcn.com/docs/components/radix/spinner"
         },

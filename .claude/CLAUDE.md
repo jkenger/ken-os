@@ -25,6 +25,7 @@ Database checks, one for the area you changed:
 - `pnpm --filter @ken-os/web test:db:connector`
 - `pnpm --filter @ken-os/web test:db:portfolio`
 - `pnpm --filter @ken-os/web test:db:jobs`
+- `pnpm --filter @ken-os/web test:db:loona`
 
 After editing the curriculum YAML, a lesson or a lab, run `pnpm --filter @ken-os/web lab:generate` before `pnpm check`. After changing a component or a token in `globals.css`, run `pnpm --filter @ken-os/web studio:generate`.
 

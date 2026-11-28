@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   BookMarked,
+  Bot,
   Briefcase,
   ChevronRight,
   BookOpenText,
@@ -56,7 +57,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { engineering, tabForPath, type EngineeringTab } from "@/features/engineering-lab/routes";
 import { cn } from "@/lib/utils";
 
-type Module = "profile" | "portfolio" | "memory" | "lab" | "terms" | "studio" | "jobs";
+type Module = "profile" | "portfolio" | "memory" | "lab" | "terms" | "studio" | "jobs" | "agents";
 
 const modules = [
   { id: "profile" as const, label: "Profile", href: "/profile", icon: UserRound },
@@ -64,6 +65,7 @@ const modules = [
   { id: "memory" as const, label: "Project Memory", href: "/memory", icon: BookOpenText },
   { id: "lab" as const, label: "Engineering", href: engineering.roadmap(), icon: FlaskConical },
   { id: "jobs" as const, label: "Jobs", href: "/jobs", icon: Briefcase },
+  { id: "agents" as const, label: "Agents", href: "/agents", icon: Bot },
   { id: "terms" as const, label: "Terms", href: "/terms", icon: BookMarked },
   { id: "studio" as const, label: "Design Studio", href: "/studio", icon: Palette },
 ];
@@ -101,6 +103,9 @@ const moduleDetails: Record<
     sections: [],
   },
   terms: { title: "Terms", sections: [{ label: "Terms", href: "/terms", icon: BookMarked }] },
+  // Agents is a listing page (docs/product/agents-infrastructure.md) -- Loona is its first and only entry
+  // today, nested the same way Memory nests its own sections under one module.
+  agents: { title: "Agents", sections: [{ label: "Loona", href: "/agents/loona", icon: Bot }] },
   // No section column: the studio needs the width for its tree, canvas and inspector (mockup frame A1).
   studio: { title: "Design Studio", sections: [] },
 };
