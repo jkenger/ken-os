@@ -49,17 +49,26 @@ import { sendStrongMatchEmailIfDue } from "./strong-match-email";
 // loops these over every account with saved Jobs settings, and the "Run pipeline" button calls them for just the
 // signed-in account, so the two never disagree about what one account's run actually does.
 
+/** The account's own roles, or a guess from its Profile when none are set. `getProfile` is a wasted query once
+ *  roles exist (the common case after first setup) -- fetched lazily, not alongside preferences, since every
+ *  scraper below polls this every few minutes and Profile data changes only when the owner edits it by hand. */
+async function resolveKeywords(userId: string): Promise<string[]> {
+  const preferences = await getPreferences(userId);
+  if (preferences.roles.length > 0) return preferences.roles;
+  const profile = await getProfile(userId);
+  return deriveRoles(profile.details);
+}
+
 /** Searches freehire for this account's own roles and saves whatever's new into this account's own postings. */
 export async function scrapeFreehireForUser(
   userId: string,
   secret: string,
   expectedSecret: string,
 ): Promise<{ ok: boolean; reason: string; found: number }> {
-  const [profile, preferences] = await Promise.all([getProfile(userId), getPreferences(userId)]);
   return checkFreehire({
     secret,
     expectedSecret,
-    keywords: preferences.roles.length > 0 ? preferences.roles : deriveRoles(profile.details),
+    keywords: await resolveKeywords(userId),
     fetchSearch: async (url) => {
       const response = await fetch(url);
       return { status: response.status, text: await response.text() };
@@ -83,11 +92,10 @@ export async function scrapeLinkedInForUser(
   secret: string,
   expectedSecret: string,
 ): Promise<{ ok: boolean; reason: string; found: number }> {
-  const [profile, preferences] = await Promise.all([getProfile(userId), getPreferences(userId)]);
   return checkScraperSource({
     secret,
     expectedSecret,
-    keywords: preferences.roles.length > 0 ? preferences.roles : deriveRoles(profile.details),
+    keywords: await resolveKeywords(userId),
     searchUrl: (keyword) => linkedInSearchUrl(keyword, 0),
     parse: parseLinkedInSearch,
     fetchSearch: async (url) => {
@@ -119,11 +127,10 @@ export async function scrapeJobStreetForUser(
   secret: string,
   expectedSecret: string,
 ): Promise<{ ok: boolean; reason: string; found: number }> {
-  const [profile, preferences] = await Promise.all([getProfile(userId), getPreferences(userId)]);
   return checkScraperSource({
     secret,
     expectedSecret,
-    keywords: preferences.roles.length > 0 ? preferences.roles : deriveRoles(profile.details),
+    keywords: await resolveKeywords(userId),
     searchUrl: (keyword) => jobStreetSearchUrl(keyword, 1),
     parse: parseJobStreetSearch,
     fetchSearch: async (url) => {
@@ -159,11 +166,10 @@ export async function scrapeIndeedForUser(
   secret: string,
   expectedSecret: string,
 ): Promise<{ ok: boolean; reason: string; found: number }> {
-  const [profile, preferences] = await Promise.all([getProfile(userId), getPreferences(userId)]);
   return checkScraperSource({
     secret,
     expectedSecret,
-    keywords: preferences.roles.length > 0 ? preferences.roles : deriveRoles(profile.details),
+    keywords: await resolveKeywords(userId),
     searchUrl: indeedSearchUrl,
     parse: parseIndeedSearch,
     fetchSearch: async (url) => {
